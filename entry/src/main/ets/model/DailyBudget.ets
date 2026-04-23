@@ -1,5 +1,19 @@
 // 今日预算数据模型
 
+// DailyBudget JSON 输出类
+export class DailyBudgetJson {
+  memberId: Object = '';
+  date: Object = '';
+  sodiumBudget: Object = 0;
+  sodiumRemaining: Object = 0;
+  sugarBudget: Object = 0;
+  sugarRemaining: Object = 0;
+  calorieBudget: Object = 0;
+  calorieRemaining: Object = 0;
+  fatBudget: Object = 0;
+  fatRemaining: Object = 0;
+}
+
 export class DailyBudget {
   memberId: string = '';
   date: string = '';              // YYYY-MM-DD
@@ -54,19 +68,19 @@ export class DailyBudget {
     this.fatRemaining -= fat;
   }
 
-  toJson(): Record<string, Object> {
-    return {
-      memberId: this.memberId,
-      date: this.date,
-      sodiumBudget: this.sodiumBudget,
-      sodiumRemaining: this.sodiumRemaining,
-      sugarBudget: this.sugarBudget,
-      sugarRemaining: this.sugarRemaining,
-      calorieBudget: this.calorieBudget,
-      calorieRemaining: this.calorieRemaining,
-      fatBudget: this.fatBudget,
-      fatRemaining: this.fatRemaining
-    };
+  toJson(): DailyBudgetJson {
+    const json = new DailyBudgetJson();
+    json.memberId = this.memberId;
+    json.date = this.date;
+    json.sodiumBudget = this.sodiumBudget;
+    json.sodiumRemaining = this.sodiumRemaining;
+    json.sugarBudget = this.sugarBudget;
+    json.sugarRemaining = this.sugarRemaining;
+    json.calorieBudget = this.calorieBudget;
+    json.calorieRemaining = this.calorieRemaining;
+    json.fatBudget = this.fatBudget;
+    json.fatRemaining = this.fatRemaining;
+    return json;
   }
 
   static fromJson(json: Record<string, Object>): DailyBudget {

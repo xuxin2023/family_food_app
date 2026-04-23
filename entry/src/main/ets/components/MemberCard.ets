@@ -6,7 +6,7 @@ import { FamilyProfile, HealthGoal } from '../model/FamilyProfile';
 export struct MemberCard {
   @Prop member: FamilyProfile = new FamilyProfile();
   @Prop isSelected: boolean = false;
-  private onSelect: (memberId: string) => void = () => {};
+  onSelect: (memberId: string) => void = () => {};
 
   build() {
     Column() {

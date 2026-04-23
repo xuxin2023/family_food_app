@@ -1,7 +1,7 @@
 // 应用入口Ability - V4完整生命周期管理
 
 import { UIAbility, Want, AbilityConstant } from '@kit.AbilityKit';
-import { hilog } from '@kit.BasicServicesKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
 import { AppState } from '../AppState';
 import { SubscriptionTier } from '../model/PricingModel';

@@ -29,6 +29,12 @@ export class WeeklyReport {
   buyMore: string[] = [];         // 建议备什么
 }
 
+// 采购建议
+export class PurchaseAdvice {
+  buyLess: string[] = [];
+  buyMore: string[] = [];
+}
+
 export class WeeklyReportEngine {
   /**
    * 生成周报
@@ -148,32 +154,31 @@ export class WeeklyReportEngine {
     return suggestions;
   }
 
-  private generatePurchaseAdvice(data: WeeklyDietData, profile: FamilyProfile): { buyLess: string[]; buyMore: string[] } {
-    const buyLess: string[] = [];
-    const buyMore: string[] = [];
+  private generatePurchaseAdvice(data: WeeklyDietData, profile: FamilyProfile): PurchaseAdvice {
+    const advice = new PurchaseAdvice();
 
     if (data.highSodiumDays >= 2) {
-      buyLess.push('高盐调味品、方便面、卤味、加工肉');
-      buyMore.push('低盐调味品、新鲜蔬菜、清淡蛋白');
+      advice.buyLess.push('高盐调味品、方便面、卤味、加工肉');
+      advice.buyMore.push('低盐调味品、新鲜蔬菜、清淡蛋白');
     }
     if (data.highSugarDays >= 2) {
-      buyLess.push('含糖饮料、甜食、高糖零食');
-      buyMore.push('原味酸奶、水果、坚果');
+      advice.buyLess.push('含糖饮料、甜食、高糖零食');
+      advice.buyMore.push('原味酸奶、水果、坚果');
     }
     if (data.highFatDays >= 2) {
-      buyLess.push('油炸食品、高脂烘焙');
-      buyMore.push('蒸煮类蛋白、全谷物、蔬菜');
+      advice.buyLess.push('油炸食品、高脂烘焙');
+      advice.buyMore.push('蒸煮类蛋白、全谷物、蔬菜');
     }
     if (profile.isChild() && data.childSnackOverLimit >= 1) {
-      buyLess.push('高糖儿童零食');
-      buyMore.push('低糖酸奶、水果、原味坚果、水煮蛋');
+      advice.buyLess.push('高糖儿童零食');
+      advice.buyMore.push('低糖酸奶、水果、原味坚果、水煮蛋');
     }
 
     // 默认正向建议
-    if (buyMore.length === 0) {
-      buyMore.push('蔬菜、水果、优质蛋白、全谷物');
+    if (advice.buyMore.length === 0) {
+      advice.buyMore.push('蔬菜、水果、优质蛋白、全谷物');
     }
 
-    return { buyLess, buyMore };
+    return advice;
   }
 }

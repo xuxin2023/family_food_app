@@ -6,6 +6,12 @@ import { WeeklyDietData, WeeklyReport, WeeklyReportEngine } from '../engine/Week
 import { DietRecord, ScanHistoryRecord } from '../repository/HistoryRepository';
 import { DateUtil } from '../utils/DateUtil';
 
+// 周范围
+class WeekRange {
+  startDate: string = '';
+  endDate: string = '';
+}
+
 @Entry
 @Component
 struct WeeklyReportPage {
@@ -149,7 +155,7 @@ struct WeeklyReportPage {
     .margin({ bottom: 12 })
   }
 
-  private getCurrentWeekRange(): { startDate: string; endDate: string } {
+  private getCurrentWeekRange(): WeekRange {
     const today = new Date()
     const day = today.getDay()
     const diffToMonday = day === 0 ? 6 : day - 1
@@ -158,10 +164,10 @@ struct WeeklyReportPage {
     start.setDate(today.getDate() - diffToMonday)
     const end = new Date(start)
     end.setDate(start.getDate() + 6)
-    return {
-      startDate: DateUtil.formatDate(start),
-      endDate: DateUtil.formatDate(end)
-    }
+    const range = new WeekRange();
+    range.startDate = DateUtil.formatDate(start);
+    range.endDate = DateUtil.formatDate(end);
+    return range;
   }
 
   private async buildWeeklyData(
@@ -218,19 +224,20 @@ struct WeeklyReportPage {
       record.memberId === member.memberId && this.timestampInRange(record.scannedAt, startDate, endDate)
     ).length
 
-    return {
+    const data: WeeklyDietData = {
       memberId: member.memberId,
       weekStart: startDate,
       weekEnd: endDate,
-      totalScans,
+      totalScans: totalScans,
       highSodiumDays: highSodiumDays.size,
       highSugarDays: highSugarDays.size,
       highFatDays: highFatDays.size,
-      sweetNearMealCount,
-      lateNightSnackCount,
-      heavyFlavorCount,
-      childSnackOverLimit
-    }
+      sweetNearMealCount: sweetNearMealCount,
+      lateNightSnackCount: lateNightSnackCount,
+      heavyFlavorCount: heavyFlavorCount,
+      childSnackOverLimit: childSnackOverLimit
+    };
+    return data;
   }
 
   private timestampInRange(timestamp: number, startDate: string, endDate: string): boolean {

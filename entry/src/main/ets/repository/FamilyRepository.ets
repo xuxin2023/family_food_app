@@ -2,8 +2,8 @@
 
 import { common } from '@kit.AbilityKit';
 import { relationalStore } from '@kit.ArkData';
-import { FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig } from '../model/FamilyProfile';
-import { hilog } from '@kit.BasicServicesKit';
+import { FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig, MealTimes } from '../model/FamilyProfile';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'FamilyRepository';
 const DOMAIN_ZERO = 0;
@@ -102,8 +102,16 @@ export class FamilyRepository {
         profile.memberId = resultSet.getString(resultSet.getColumnIndex('member_id'));
         profile.nickname = resultSet.getString(resultSet.getColumnIndex('nickname'));
         profile.ageGroup = resultSet.getString(resultSet.getColumnIndex('age_group')) as AgeGroup;
-        profile.healthGoals = JSON.parse(resultSet.getString(resultSet.getColumnIndex('health_goals'))) as HealthGoal[];
-        profile.allergens = JSON.parse(resultSet.getString(resultSet.getColumnIndex('allergens')) || '[]') as string[];
+        try {
+          profile.healthGoals = JSON.parse(resultSet.getString(resultSet.getColumnIndex('health_goals'))) as HealthGoal[];
+        } catch (e) {
+          profile.healthGoals = [];
+        }
+        try {
+          profile.allergens = JSON.parse(resultSet.getString(resultSet.getColumnIndex('allergens')) || '[]') as string[];
+        } catch (e) {
+          profile.allergens = [];
+        }
 
         // 回填每日预算
         profile.dailyBudget = new DailyBudgetConfig();
@@ -116,9 +124,13 @@ export class FamilyRepository {
         const mealTimesStr = resultSet.getString(resultSet.getColumnIndex('meal_times'));
         if (mealTimesStr && mealTimesStr.length > 0) {
           try {
-            profile.mealTimes = JSON.parse(mealTimesStr) as Record<string, string>;
+            const parsed = JSON.parse(mealTimesStr) as Record<string, string>;
+            profile.mealTimes = new MealTimes();
+            profile.mealTimes.breakfast = parsed.breakfast || '07:30';
+            profile.mealTimes.lunch = parsed.lunch || '12:00';
+            profile.mealTimes.dinner = parsed.dinner || '18:00';
           } catch (e) {
-            profile.mealTimes = {};
+            profile.mealTimes = new MealTimes();
           }
         }
         profile.bedtime = resultSet.getString(resultSet.getColumnIndex('bedtime')) || '';

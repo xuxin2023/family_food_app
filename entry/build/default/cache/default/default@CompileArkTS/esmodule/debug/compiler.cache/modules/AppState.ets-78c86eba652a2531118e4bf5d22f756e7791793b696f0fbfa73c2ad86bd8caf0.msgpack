@@ -1,0 +1,1348 @@
+Ôr@Ÿªassertions¤code´customTransformCache¬dependencies¢id¤meta±moduleSideEffects¬originalCode±originalSourcemap«resolvedIds®sourcemapChainµsyntheticNamedExportsµtransformDependencies®transformFiles¨cacheAstÔrAÚKÉ// å…¨å±€åº”ç”¨çŠ¶æ€ç®¡ç†å™¨ - ç»Ÿä¸€æ•°æ®è®¿é—®å…¥å£ï¼Œæ›¿ä»£å„é¡µé¢çš„æ¨¡æ‹Ÿæ•°æ®
+import { FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig, MealTimes } from './model/FamilyProfile';
+import { HealthSignal, StepLevel, SleepStatus, WeightTrend, DataSource } from './model/HealthSignal';
+import { DailyBudget } from './model/DailyBudget';
+import { FamilyRepository } from './repository/FamilyRepository';
+import { FoodRepository } from './repository/FoodRepository';
+import { HistoryRepository } from './repository/HistoryRepository';
+import { RuleRepository } from './repository/RuleRepository';
+import { RuleEngine } from './engine/RuleEngine';
+import { HealthService } from './service/HealthService';
+import { RecommendationEngine } from './engine/RecommendationEngine';
+import { MealBalanceEngine } from './engine/MealBalanceEngine';
+import { ChildProtectionEngine } from './engine/ChildProtectionEngine';
+import { CredibilityEngine } from './engine/CredibilityEngine';
+import { BasketCheckEngine } from './engine/BasketCheckEngine';
+import { WeeklyReportEngine } from './engine/WeeklyReportEngine';
+import { ElderFriendlyEngine } from './engine/ElderFriendlyEngine';
+import { PositiveAdviceEngine } from './engine/PositiveAdviceEngine';
+import { DateUtil } from './utils/DateUtil';
+import { SubscriptionTier, PricingService } from './model/PricingModel';
+import relationalStore from "@ohos.data.relationalStore";
+import hilog from "@ohos.hilog";
+const TAG = 'AppState';
+const DOMAIN_ZERO = 0;
+// å…¨å±€å•ä¾‹
+let appStateInstance = null;
+export class AppState {
+    constructor() {
+        // æ•°æ®ä»“åº“
+        this.familyRepo = new FamilyRepository();
+        this.foodRepo = new FoodRepository();
+        this.historyRepo = new HistoryRepository();
+        this.ruleRepo = new RuleRepository();
+        // ä¸šåŠ¡å¼•æ“
+        this.ruleEngine = new RuleEngine();
+        this.recEngine = new RecommendationEngine();
+        this.mealBalanceEngine = new MealBalanceEngine();
+        this.childProtectionEngine = new ChildProtectionEngine();
+        this.credibilityEngine = new CredibilityEngine();
+        this.basketCheckEngine = new BasketCheckEngine();
+        this.weeklyReportEngine = new WeeklyReportEngine();
+        this.elderFriendlyEngine = new ElderFriendlyEngine();
+        this.positiveAdviceEngine = new PositiveAdviceEngine();
+        // åä¸ºKitæœåŠ¡
+        this.healthService = new HealthService();
+        // å†…å­˜ç¼“å­˜
+        this.membersCache = [];
+        this.healthSignalsCache = new Map();
+        this.dailyBudgetsCache = new Map();
+        this.isInitialized = false;
+        // è´­ç‰©ç¯®ï¼ˆå†…å­˜ä¸­æš‚å­˜ï¼‰
+        this.basketItems = [];
+        // è®¢é˜…çŠ¶æ€
+        this.currentTier = SubscriptionTier.FREE;
+        this.todayScanCount = 0;
+        this.todayScanDate = '';
+    }
+    /**
+     * è·å–å…¨å±€å•ä¾‹
+     */
+    static getInstance() {
+        if (!appStateInstance) {
+            appStateInstance = new AppState();
+        }
+        return appStateInstance;
+    }
+    /**
+     * åˆå§‹åŒ–æ•°æ®åº“å’Œè§„åˆ™
+     */
+    async init(context) {
+        if (this.isInitialized)
+            return;
+        try {
+            // åˆå§‹åŒ–æ•°æ®åº“
+            await this.familyRepo.init(context);
+            const rdbConfig = {
+                name: 'food_helper.db',
+                securityLevel: relationalStore.SecurityLevel.S1
+            };
+            const rdbStore = await relationalStore.getRdbStore(context, rdbConfig);
+            await this.foodRepo.init(rdbStore);
+            await this.historyRepo.init(rdbStore);
+            // è®¾ç½®è§„åˆ™ä»“åº“ä¸Šä¸‹æ–‡
+            this.ruleRepo.setContext(context);
+            // åŠ è½½ç¼“å­˜
+            this.membersCache = await this.familyRepo.getAllMembers();
+            await this.restoreTodayBudgets();
+            this.isInitialized = true;
+            hilog.info(DOMAIN_ZERO, TAG, 'AppState initialized');
+        }
+        catch (error) {
+            hilog.error(DOMAIN_ZERO, TAG, 'AppState init failed: %{public}s', JSON.stringify(error));
+            // åˆå§‹åŒ–å¤±è´¥æ—¶ä½¿ç”¨é»˜è®¤æ•°æ®
+            this.membersCache = this.createDefaultMembers();
+            this.isInitialized = true;
+        }
+    }
+    // ========== å®¶åº­æˆå‘˜ç®¡ç† ==========
+    /**
+     * è·å–æ‰€æœ‰å®¶åº­æˆå‘˜
+     */
+    async getAllMembers() {
+        if (this.membersCache.length === 0) {
+            this.membersCache = await this.familyRepo.getAllMembers();
+            if (this.membersCache.length === 0) {
+                // é¦–æ¬¡ä½¿ç”¨ï¼Œåˆ›å»ºé»˜è®¤æˆå‘˜
+                this.membersCache = this.createDefaultMembers();
+                for (const member of this.membersCache) {
+                    await this.familyRepo.saveMember(member);
+                }
+            }
+        }
+        return this.membersCache;
+    }
+    /**
+     * ä¿å­˜æˆå‘˜
+     */
+    async saveMember(profile) {
+        await this.familyRepo.saveMember(profile);
+        // æ›´æ–°ç¼“å­˜
+        const index = this.membersCache.findIndex(m => m.memberId === profile.memberId);
+        if (index >= 0) {
+            this.membersCache[index] = profile;
+        }
+        else {
+            this.membersCache.push(profile);
+        }
+    }
+    /**
+     * åˆ é™¤æˆå‘˜
+     */
+    async deleteMember(memberId) {
+        await this.familyRepo.deleteMember(memberId);
+        this.membersCache = this.membersCache.filter(m => m.memberId !== memberId);
+        this.healthSignalsCache.delete(memberId);
+        this.dailyBudgetsCache.delete(memberId);
+    }
+    // ========== å¥åº·ä¿¡å·ç®¡ç† ==========
+    /**
+     * è·å–æˆå‘˜ä»Šæ—¥å¥åº·ä¿¡å·
+     * ä¼˜å…ˆä»åä¸ºå¥åº·Appè¯»å–ï¼Œæœªæˆæƒåˆ™ä½¿ç”¨ç¼“å­˜/é»˜è®¤å€¼
+     */
+    async getHealthSignalAsync(memberId) {
+        const today = DateUtil.getToday();
+        const cached = this.healthSignalsCache.get(memberId);
+        if (cached && cached.date === today && cached.source === DataSource.HUAWEI_HEALTH) {
+            return cached;
+        }
+        // å°è¯•ä»åä¸ºå¥åº·Appè¯»å–
+        try {
+            const signal = await this.healthService.getTodayHealthData(memberId);
+            if (signal.source === DataSource.HUAWEI_HEALTH) {
+                this.healthSignalsCache.set(memberId, signal);
+                return signal;
+            }
+        }
+        catch (error) {
+            hilog.warn(DOMAIN_ZERO, TAG, 'Health Service read failed, using cache');
+        }
+        // å›é€€åˆ°ç¼“å­˜æˆ–é»˜è®¤å€¼
+        if (cached && cached.date === today) {
+            return cached;
+        }
+        return this.getDefaultHealthSignal(memberId);
+    }
+    /**
+     * è·å–æˆå‘˜ä»Šæ—¥å¥åº·ä¿¡å·ï¼ˆåŒæ­¥ç‰ˆæœ¬ï¼Œç”¨äºéasyncä¸Šä¸‹æ–‡ï¼‰
+     */
+    getHealthSignal(memberId) {
+        const today = DateUtil.getToday();
+        const cached = this.healthSignalsCache.get(memberId);
+        if (cached && cached.date === today) {
+            return cached;
+        }
+        return this.getDefaultHealthSignal(memberId);
+    }
+    getDefaultHealthSignal(memberId) {
+        const signal = new HealthSignal();
+        signal.memberId = memberId;
+        signal.date = DateUtil.getToday();
+        signal.stepLevel = StepLevel.NORMAL;
+        signal.sleepStatus = SleepStatus.GOOD;
+        signal.weightTrend = WeightTrend.STABLE;
+        signal.source = DataSource.MANUAL;
+        return signal;
+    }
+    /**
+     * æ›´æ–°æˆå‘˜å¥åº·ä¿¡å·
+     */
+    updateHealthSignal(signal) {
+        this.healthSignalsCache.set(signal.memberId, signal);
+    }
+    /**
+     * è¯·æ±‚åä¸ºå¥åº·æ•°æ®æˆæƒ
+     */
+    async requestHealthAuthorization() {
+        return await this.healthService.requestAuthorization();
+    }
+    /**
+     * æ£€æŸ¥åä¸ºå¥åº·æ•°æ®æˆæƒçŠ¶æ€
+     */
+    async checkHealthAuthorization() {
+        return await this.healthService.checkAuthorization();
+    }
+    // ========== ä»Šæ—¥é¢„ç®—ç®¡ç† ==========
+    /**
+     * è·å–æˆå‘˜ä»Šæ—¥é¢„ç®—
+     */
+    getDailyBudget(memberId) {
+        const today = DateUtil.getToday();
+        const cached = this.dailyBudgetsCache.get(memberId);
+        if (cached && cached.date === today) {
+            return cached;
+        }
+        const budget = this.createBudgetForMember(memberId);
+        this.dailyBudgetsCache.set(memberId, budget);
+        return budget;
+    }
+    createBudgetForMember(memberId) {
+        const member = this.membersCache.find(m => m.memberId === memberId);
+        const budget = new DailyBudget();
+        budget.memberId = memberId;
+        budget.date = DateUtil.getToday();
+        if (member) {
+            budget.sodiumBudget = member.dailyBudget.sodiumBudget;
+            budget.sugarBudget = member.dailyBudget.sugarBudget;
+            budget.calorieBudget = member.dailyBudget.calorieBudget;
+            budget.fatBudget = member.dailyBudget.fatBudget;
+        }
+        budget.sodiumRemaining = budget.sodiumBudget;
+        budget.sugarRemaining = budget.sugarBudget;
+        budget.calorieRemaining = budget.calorieBudget;
+        budget.fatRemaining = budget.fatBudget;
+        return budget;
+    }
+    async restoreTodayBudgets() {
+        const today = DateUtil.getToday();
+        this.dailyBudgetsCache.clear();
+        for (const member of this.membersCache) {
+            const budget = this.createBudgetForMember(member.memberId);
+            const records = await this.historyRepo.getDietRecordsByDateRange(member.memberId, today, today);
+            for (const record of records) {
+                budget.deductIntake(record.sodiumIntake, record.sugarIntake, record.calorieIntake, record.fatIntake);
+            }
+            this.dailyBudgetsCache.set(member.memberId, budget);
+        }
+    }
+    /**
+     * æ‰£å‡æ‘„å…¥é‡
+     */
+    deductIntake(memberId, sodium, sugar, calories, fat) {
+        const budget = this.getDailyBudget(memberId);
+        budget.deductIntake(sodium, sugar, calories, fat);
+    }
+    // ========== é£Ÿå“æ ‡ç­¾ç®¡ç† ==========
+    /**
+     * ä¿å­˜é£Ÿå“æ ‡ç­¾
+     */
+    async saveFoodLabel(label) {
+        if (label.foodId.length === 0) {
+            label.foodId = `food_${Date.now()}`;
+        }
+        if (label.identifiedAt <= 0) {
+            label.identifiedAt = Date.now();
+        }
+        await this.foodRepo.saveFoodLabel(label);
+    }
+    /**
+     * æ ¹æ®æ¡ç æŸ¥æ‰¾
+     */
+    async findFoodByBarcode(barcode) {
+        return await this.foodRepo.findByBarcode(barcode);
+    }
+    async findFoodById(foodId) {
+        return await this.foodRepo.findById(foodId);
+    }
+    async getRecentScanHistory(limit = 50) {
+        return await this.historyRepo.getRecentScanHistory(limit);
+    }
+    async getDietRecordsByDateRange(memberId, startDate, endDate) {
+        return await this.historyRepo.getDietRecordsByDateRange(memberId, startDate, endDate);
+    }
+    // ========== æ ¸å¿ƒä¸šåŠ¡è®¡ç®— ==========
+    /**
+     * è®¡ç®—å•ä¸ªæˆå‘˜é€‚é…ç»“è®º
+     */
+    calculateRecommendation(memberId, foodLabel) {
+        const profile = this.membersCache.find(m => m.memberId === memberId) || new FamilyProfile();
+        const signal = this.getHealthSignal(memberId);
+        const budget = this.getDailyBudget(memberId);
+        return this.ruleEngine.calculate({ profile, healthSignal: signal, foodLabel, dailyBudget: budget });
+    }
+    /**
+     * è®¡ç®—å®¶åº­å¯¹æ¯”
+     */
+    calculateFamilyComparison(foodLabel) {
+        return this.membersCache.map(member => {
+            return this.calculateRecommendation(member.memberId, foodLabel);
+        });
+    }
+    /**
+     * è®¡ç®—ç¾é£Ÿå¹³è¡¡
+     */
+    calculateMealBalance(scenario, memberId) {
+        const profile = this.membersCache.find(m => m.memberId === memberId) || new FamilyProfile();
+        const signal = this.getHealthSignal(memberId);
+        return this.mealBalanceEngine.calculate(scenario, profile, signal);
+    }
+    /**
+     * è®¡ç®—å„¿ç«¥ä¿æŠ¤
+     */
+    calculateChildProtection(memberId, foodLabel) {
+        const profile = this.membersCache.find(m => m.memberId === memberId) || new FamilyProfile();
+        return this.childProtectionEngine.calculate(profile, foodLabel, new Date(), { breakfast: '07:30', lunch: '12:00', dinner: '18:00' }, '22:00');
+    }
+    /**
+     * è®¡ç®—é£Ÿå“å¯ä¿¡åº¦
+     */
+    calculateCredibility(foodLabel) {
+        return this.credibilityEngine.calculate(foodLabel);
+    }
+    /**
+     * æ£€æŸ¥è´­ç‰©ç¯®
+     */
+    checkBasket() {
+        return this.basketCheckEngine.check(this.basketItems, this.membersCache);
+    }
+    /**
+     * ç”Ÿæˆè€äººå‹å¥½æŠ¥å‘Š
+     */
+    generateElderFriendlyReport(rec, memberId, food) {
+        const profile = this.membersCache.find(m => m.memberId === memberId) || new FamilyProfile();
+        return this.elderFriendlyEngine.generate(rec, profile, food);
+    }
+    /**
+     * ç”Ÿæˆæ­£å‘è¡¥è¶³å»ºè®®
+     */
+    generatePositiveAdvice(scenario, memberId) {
+        const profile = this.membersCache.find(m => m.memberId === memberId) || new FamilyProfile();
+        return this.positiveAdviceEngine.generateForScenario(scenario, profile);
+    }
+    // ========== è´­ç‰©ç¯®ç®¡ç† ==========
+    addToBasket(item) {
+        this.basketItems.push(item);
+    }
+    getBasketItems() {
+        return this.basketItems;
+    }
+    clearBasket() {
+        this.basketItems = [];
+    }
+    // ========== å†å²è®°å½• ==========
+    /**
+     * ä¿å­˜æ‰«æå†å²
+     */
+    async saveScanHistory(memberId, foodLabel, rec) {
+        await this.historyRepo.saveScanHistory({
+            memberId,
+            foodId: foodLabel.foodId,
+            foodName: foodLabel.foodName,
+            level: rec.level,
+            maxAmount: rec.maxAmount,
+            reasons: rec.reasons,
+            scannedAt: Date.now()
+        });
+    }
+    /**
+     * ä¿å­˜é¥®é£Ÿè®°å½•
+     */
+    async saveDietRecord(memberId, scenario, foodId, amountG, sodium, sugar, calories, fat) {
+        await this.historyRepo.saveDietRecord({
+            memberId,
+            date: DateUtil.getToday(),
+            scenario,
+            foodId,
+            amountG,
+            sodiumIntake: sodium,
+            sugarIntake: sugar,
+            calorieIntake: calories,
+            fatIntake: fat,
+            recordedAt: Date.now()
+        });
+        // åŒæ­¥æ‰£å‡é¢„ç®—
+        this.deductIntake(memberId, sodium, sugar, calories, fat);
+    }
+    // ========== é»˜è®¤æ•°æ® ==========
+    createDefaultMembers() {
+        const members = [];
+        const now = Date.now();
+        const dad = new FamilyProfile();
+        dad.memberId = 'dad';
+        dad.nickname = 'çˆ¸çˆ¸';
+        dad.ageGroup = AgeGroup.MIDDLE_OLD;
+        dad.healthGoals = [HealthGoal.CONTROL_BP, HealthGoal.CONTROL_FAT];
+        dad.dailyBudget = new DailyBudgetConfig();
+        dad.dailyBudget.sodiumBudget = 1500;
+        dad.dailyBudget.sugarBudget = 40;
+        dad.dailyBudget.calorieBudget = 1800;
+        dad.dailyBudget.fatBudget = 55;
+        dad.createdAt = now;
+        dad.updatedAt = now;
+        members.push(dad);
+        const mom = new FamilyProfile();
+        mom.memberId = 'mom';
+        mom.nickname = 'å¦ˆå¦ˆ';
+        mom.ageGroup = AgeGroup.ADULT;
+        mom.healthGoals = [HealthGoal.CONTROL_SUGAR];
+        mom.dailyBudget = new DailyBudgetConfig();
+        mom.dailyBudget.sodiumBudget = 2000;
+        mom.dailyBudget.sugarBudget = 25;
+        mom.dailyBudget.calorieBudget = 2000;
+        mom.dailyBudget.fatBudget = 65;
+        mom.createdAt = now;
+        mom.updatedAt = now;
+        members.push(mom);
+        const child = new FamilyProfile();
+        child.memberId = 'child';
+        child.nickname = 'å­©å­';
+        child.ageGroup = AgeGroup.CHILD;
+        child.healthGoals = [HealthGoal.CHILD];
+        child.allergens = ['åšæœ'];
+        child.dailyBudget = new DailyBudgetConfig();
+        child.dailyBudget.sodiumBudget = 1200;
+        child.dailyBudget.sugarBudget = 25;
+        child.dailyBudget.calorieBudget = 1500;
+        child.dailyBudget.fatBudget = 50;
+        child.mealTimes = new MealTimes();
+        child.mealTimes.breakfast = '07:30';
+        child.mealTimes.lunch = '12:00';
+        child.mealTimes.dinner = '18:00';
+        child.bedtime = '22:00';
+        child.createdAt = now;
+        child.updatedAt = now;
+        members.push(child);
+        const me = new FamilyProfile();
+        me.memberId = 'me';
+        me.nickname = 'æˆ‘';
+        me.ageGroup = AgeGroup.ADULT;
+        me.healthGoals = [HealthGoal.LOSE_FAT];
+        me.dailyBudget = new DailyBudgetConfig();
+        me.dailyBudget.sodiumBudget = 2000;
+        me.dailyBudget.sugarBudget = 50;
+        me.dailyBudget.calorieBudget = 1500;
+        me.dailyBudget.fatBudget = 45;
+        me.createdAt = now;
+        me.updatedAt = now;
+        members.push(me);
+        return members;
+    }
+    // ========== è®¢é˜…ä¸åŠŸèƒ½é—¨æ§ ==========
+    /**
+     * è·å–å½“å‰è®¢é˜…ç‰ˆæœ¬
+     */
+    getCurrentTier() {
+        return this.currentTier;
+    }
+    /**
+     * è®¾ç½®è®¢é˜…ç‰ˆæœ¬ï¼ˆè´­ä¹°æˆåŠŸåè°ƒç”¨ï¼‰
+     */
+    setTier(tier) {
+        this.currentTier = tier;
+    }
+    /**
+     * åˆ¤æ–­åŠŸèƒ½æ˜¯å¦å¯è®¿é—®
+     */
+    canAccess(requiredTier) {
+        return PricingService.canAccess(this.currentTier, requiredTier);
+    }
+    /**
+     * æ£€æŸ¥æ˜¯å¦å¯ä»¥æ‰§è¡Œæ‰«æï¼ˆå…è´¹ç‰ˆæ¯æ—¥é™åˆ¶ï¼‰
+     * è¿”å›trueè¡¨ç¤ºå¯ä»¥æ‰«æï¼Œfalseè¡¨ç¤ºå·²è¾¾ä¸Šé™
+     */
+    canScanToday() {
+        this.resetScanCountIfNewDay();
+        if (this.currentTier === SubscriptionTier.FREE) {
+            return this.todayScanCount < PricingService.FREE_DAILY_SCAN_LIMIT;
+        }
+        return true; // ä»˜è´¹ç‰ˆæ— é™æ‰«æ
+    }
+    /**
+     * è®°å½•ä¸€æ¬¡æ‰«æ
+     */
+    recordScan() {
+        this.resetScanCountIfNewDay();
+        this.todayScanCount++;
+    }
+    /**
+     * è·å–ä»Šæ—¥å‰©ä½™æ‰«ææ¬¡æ•°
+     */
+    getRemainingScansToday() {
+        this.resetScanCountIfNewDay();
+        if (this.currentTier === SubscriptionTier.FREE) {
+            return Math.max(0, PricingService.FREE_DAILY_SCAN_LIMIT - this.todayScanCount);
+        }
+        return -1; // -1è¡¨ç¤ºæ— é™
+    }
+    /**
+     * æ£€æŸ¥æ˜¯å¦å¯ä»¥æ·»åŠ å®¶åº­æˆå‘˜ï¼ˆå…è´¹ç‰ˆé™åˆ¶1äººï¼‰
+     */
+    canAddMember() {
+        if (this.currentTier === SubscriptionTier.FREE) {
+            return this.membersCache.length < PricingService.FREE_MEMBER_LIMIT;
+        }
+        return true; // ä»˜è´¹ç‰ˆæ— é™åˆ¶
+    }
+    /**
+     * è·å–æˆå‘˜æ•°ä¸Šé™ï¼ˆ-1è¡¨ç¤ºæ— é™ï¼‰
+     */
+    getMemberLimit() {
+        if (this.currentTier === SubscriptionTier.FREE) {
+            return PricingService.FREE_MEMBER_LIMIT;
+        }
+        return -1;
+    }
+    resetScanCountIfNewDay() {
+        const today = DateUtil.getToday();
+        if (this.todayScanDate !== today) {
+            this.todayScanDate = today;
+            this.todayScanCount = 0;
+        }
+    }
+}
+//# sourceMappingURL=AppState.js.mapÂÜ ÙQC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\FamilyProfile.etsÙPC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\HealthSignal.etsÙOC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\DailyBudget.etsÙYC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\repository\FamilyRepository.etsÙWC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\repository\FoodRepository.etsÙZC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\repository\HistoryRepository.etsÙWC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\repository\RuleRepository.etsÙOC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\engine\RuleEngine.etsÙSC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\service\HealthService.etsÙYC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\engine\RecommendationEngine.etsÙVC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\engine\MealBalanceEngine.etsÙZC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\engine\ChildProtectionEngine.etsÙVC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\engine\CredibilityEngine.etsÙVC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\engine\BasketCheckEngine.etsÙWC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\engine\WeeklyReportEngine.etsÙXC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\engine\ElderFriendlyEngine.etsÙYC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\engine\PositiveAdviceEngine.etsÙLC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\utils\DateUtil.etsÙPC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\PricingModel.etsÙt hvigor_ignore_E:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.data.relationalStore.d.tsÙe hvigor_ignore_E:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.hilog.d.tsÙFC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\AppState.etsÔrB›ªmoduleName±isLocalDependency¯isNodeEntryFile§pkgPath±belongProjectPath§pkgNameªpkgVersion±dependencyPkgInfo¯hostModulesInfo°belongModulePath¬shouldEmitJs¥entryÃÂÙ,C:\Users\A\IDEProjects\family_food_app\entryÙ&C:\Users\A\IDEProjects\family_food_app¥entry¥1.0.0Ô  œÔrC’²hostDependencyName®hostModuleName«../AppState¥entryC«../AppState¥entryC«../AppState¥entryC«../AppState¥entryC«../AppState¥entryC«../AppState¥entryC«../AppState¥entryC«../AppState¥entryC«../AppState¥entryC«../AppState¥entryC«../AppState¥entryC«../AppState¥entryÙ,C:\Users\A\IDEProjects\family_food_app\entryÃÃÚKJ// å…¨å±€åº”ç”¨çŠ¶æ€ç®¡ç†å™¨ - ç»Ÿä¸€æ•°æ®è®¿é—®å…¥å£ï¼Œæ›¿ä»£å„é¡µé¢çš„æ¨¡æ‹Ÿæ•°æ®
+
+import { FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig, MealTimes } from './model/FamilyProfile';
+import { HealthSignal, StepLevel, SleepStatus, WeightTrend, BpStatus, BsStatus, DataSource } from './model/HealthSignal';
+import { FoodLabel, FoodSource, NutritionPer100g } from './model/FoodLabel';
+import { DailyBudget } from './model/DailyBudget';
+import { Recommendation } from './model/Recommendation';
+import { MealBalance, MealScenario } from './model/MealBalance';
+import { ChildProtection } from './model/ChildProtection';
+import { CredibilityResult } from './model/CredibilityResult';
+import { FamilyRepository } from './repository/FamilyRepository';
+import { FoodRepository } from './repository/FoodRepository';
+import { HistoryRepository, ScanHistoryRecord, DietRecord } from './repository/HistoryRepository';
+import { RuleRepository } from './repository/RuleRepository';
+import { RuleEngine, RuleEngineParams } from './engine/RuleEngine';
+import { HealthService } from './service/HealthService';
+import { RecommendationEngine } from './engine/RecommendationEngine';
+import { MealBalanceEngine } from './engine/MealBalanceEngine';
+import { ChildProtectionEngine } from './engine/ChildProtectionEngine';
+import { CredibilityEngine } from './engine/CredibilityEngine';
+import { BasketCheckEngine, BasketCheckResult } from './engine/BasketCheckEngine';
+import { WeeklyReportEngine, WeeklyDietData, WeeklyReport } from './engine/WeeklyReportEngine';
+import { ElderFriendlyEngine, ElderFriendlyReport } from './engine/ElderFriendlyEngine';
+import { PositiveAdviceEngine, PositiveAdvice } from './engine/PositiveAdviceEngine';
+import { DateUtil } from './utils/DateUtil';
+import { SubscriptionTier, PricingService } from './model/PricingModel';
+import { common } from '@kit.AbilityKit';
+import { relationalStore } from '@kit.ArkData';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+
+const TAG = 'AppState';
+const DOMAIN_ZERO = 0;
+
+// å…¨å±€å•ä¾‹
+let appStateInstance: AppState | null = null;
+
+export class AppState {
+  // æ•°æ®ä»“åº“
+  private familyRepo: FamilyRepository = new FamilyRepository();
+  private foodRepo: FoodRepository = new FoodRepository();
+  private historyRepo: HistoryRepository = new HistoryRepository();
+  private ruleRepo: RuleRepository = new RuleRepository();
+
+  // ä¸šåŠ¡å¼•æ“
+  private ruleEngine: RuleEngine = new RuleEngine();
+  private recEngine: RecommendationEngine = new RecommendationEngine();
+  private mealBalanceEngine: MealBalanceEngine = new MealBalanceEngine();
+  private childProtectionEngine: ChildProtectionEngine = new ChildProtectionEngine();
+  private credibilityEngine: CredibilityEngine = new CredibilityEngine();
+  private basketCheckEngine: BasketCheckEngine = new BasketCheckEngine();
+  private weeklyReportEngine: WeeklyReportEngine = new WeeklyReportEngine();
+  private elderFriendlyEngine: ElderFriendlyEngine = new ElderFriendlyEngine();
+  private positiveAdviceEngine: PositiveAdviceEngine = new PositiveAdviceEngine();
+
+  // åä¸ºKitæœåŠ¡
+  private healthService: HealthService = new HealthService();
+
+  // å†…å­˜ç¼“å­˜
+  private membersCache: FamilyProfile[] = [];
+  private healthSignalsCache: Map<string, HealthSignal> = new Map();
+  private dailyBudgetsCache: Map<string, DailyBudget> = new Map();
+  private isInitialized: boolean = false;
+
+  // è´­ç‰©ç¯®ï¼ˆå†…å­˜ä¸­æš‚å­˜ï¼‰
+  private basketItems: FoodLabel[] = [];
+
+  // è®¢é˜…çŠ¶æ€
+  private currentTier: SubscriptionTier = SubscriptionTier.FREE;
+  private todayScanCount: number = 0;
+  private todayScanDate: string = '';
+
+  private constructor() {}
+
+  /**
+   * è·å–å…¨å±€å•ä¾‹
+   */
+  static getInstance(): AppState {
+    if (!appStateInstance) {
+      appStateInstance = new AppState();
+    }
+    return appStateInstance;
+  }
+
+  /**
+   * åˆå§‹åŒ–æ•°æ®åº“å’Œè§„åˆ™
+   */
+  async init(context: common.Context): Promise<void> {
+    if (this.isInitialized) return;
+
+    try {
+      // åˆå§‹åŒ–æ•°æ®åº“
+      await this.familyRepo.init(context);
+
+      const rdbConfig: relationalStore.StoreConfig = {
+        name: 'food_helper.db',
+        securityLevel: relationalStore.SecurityLevel.S1
+      };
+      const rdbStore = await relationalStore.getRdbStore(context, rdbConfig);
+      await this.foodRepo.init(rdbStore);
+      await this.historyRepo.init(rdbStore);
+
+      // è®¾ç½®è§„åˆ™ä»“åº“ä¸Šä¸‹æ–‡
+      this.ruleRepo.setContext(context);
+
+      // åŠ è½½ç¼“å­˜
+      this.membersCache = await this.familyRepo.getAllMembers();
+      await this.restoreTodayBudgets();
+
+      this.isInitialized = true;
+      hilog.info(DOMAIN_ZERO, TAG, 'AppState initialized');
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'AppState init failed: %{public}s', JSON.stringify(error));
+      // åˆå§‹åŒ–å¤±è´¥æ—¶ä½¿ç”¨é»˜è®¤æ•°æ®
+      this.membersCache = this.createDefaultMembers();
+      this.isInitialized = true;
+    }
+  }
+
+  // ========== å®¶åº­æˆå‘˜ç®¡ç† ==========
+
+  /**
+   * è·å–æ‰€æœ‰å®¶åº­æˆå‘˜
+   */
+  async getAllMembers(): Promise<FamilyProfile[]> {
+    if (this.membersCache.length === 0) {
+      this.membersCache = await this.familyRepo.getAllMembers();
+      if (this.membersCache.length === 0) {
+        // é¦–æ¬¡ä½¿ç”¨ï¼Œåˆ›å»ºé»˜è®¤æˆå‘˜
+        this.membersCache = this.createDefaultMembers();
+        for (const member of this.membersCache) {
+          await this.familyRepo.saveMember(member);
+        }
+      }
+    }
+    return this.membersCache;
+  }
+
+  /**
+   * ä¿å­˜æˆå‘˜
+   */
+  async saveMember(profile: FamilyProfile): Promise<void> {
+    await this.familyRepo.saveMember(profile);
+    // æ›´æ–°ç¼“å­˜
+    const index = this.membersCache.findIndex(m => m.memberId === profile.memberId);
+    if (index >= 0) {
+      this.membersCache[index] = profile;
+    } else {
+      this.membersCache.push(profile);
+    }
+  }
+
+  /**
+   * åˆ é™¤æˆå‘˜
+   */
+  async deleteMember(memberId: string): Promise<void> {
+    await this.familyRepo.deleteMember(memberId);
+    this.membersCache = this.membersCache.filter(m => m.memberId !== memberId);
+    this.healthSignalsCache.delete(memberId);
+    this.dailyBudgetsCache.delete(memberId);
+  }
+
+  // ========== å¥åº·ä¿¡å·ç®¡ç† ==========
+
+  /**
+   * è·å–æˆå‘˜ä»Šæ—¥å¥åº·ä¿¡å·
+   * ä¼˜å…ˆä»åä¸ºå¥åº·Appè¯»å–ï¼Œæœªæˆæƒåˆ™ä½¿ç”¨ç¼“å­˜/é»˜è®¤å€¼
+   */
+  async getHealthSignalAsync(memberId: string): Promise<HealthSignal> {
+    const today = DateUtil.getToday();
+    const cached = this.healthSignalsCache.get(memberId);
+    if (cached && cached.date === today && cached.source === DataSource.HUAWEI_HEALTH) {
+      return cached;
+    }
+
+    // å°è¯•ä»åä¸ºå¥åº·Appè¯»å–
+    try {
+      const signal = await this.healthService.getTodayHealthData(memberId);
+      if (signal.source === DataSource.HUAWEI_HEALTH) {
+        this.healthSignalsCache.set(memberId, signal);
+        return signal;
+      }
+    } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Health Service read failed, using cache');
+    }
+
+    // å›é€€åˆ°ç¼“å­˜æˆ–é»˜è®¤å€¼
+    if (cached && cached.date === today) {
+      return cached;
+    }
+    return this.getDefaultHealthSignal(memberId);
+  }
+
+  /**
+   * è·å–æˆå‘˜ä»Šæ—¥å¥åº·ä¿¡å·ï¼ˆåŒæ­¥ç‰ˆæœ¬ï¼Œç”¨äºéasyncä¸Šä¸‹æ–‡ï¼‰
+   */
+  getHealthSignal(memberId: string): HealthSignal {
+    const today = DateUtil.getToday();
+    const cached = this.healthSignalsCache.get(memberId);
+    if (cached && cached.date === today) {
+      return cached;
+    }
+    return this.getDefaultHealthSignal(memberId);
+  }
+
+  private getDefaultHealthSignal(memberId: string): HealthSignal {
+    const signal = new HealthSignal();
+    signal.memberId = memberId;
+    signal.date = DateUtil.getToday();
+    signal.stepLevel = StepLevel.NORMAL;
+    signal.sleepStatus = SleepStatus.GOOD;
+    signal.weightTrend = WeightTrend.STABLE;
+    signal.source = DataSource.MANUAL;
+    return signal;
+  }
+
+  /**
+   * æ›´æ–°æˆå‘˜å¥åº·ä¿¡å·
+   */
+  updateHealthSignal(signal: HealthSignal): void {
+    this.healthSignalsCache.set(signal.memberId, signal);
+  }
+
+  /**
+   * è¯·æ±‚åä¸ºå¥åº·æ•°æ®æˆæƒ
+   */
+  async requestHealthAuthorization(): Promise<boolean> {
+    return await this.healthService.requestAuthorization();
+  }
+
+  /**
+   * æ£€æŸ¥åä¸ºå¥åº·æ•°æ®æˆæƒçŠ¶æ€
+   */
+  async checkHealthAuthorization(): Promise<boolean> {
+    return await this.healthService.checkAuthorization();
+  }
+
+  // ========== ä»Šæ—¥é¢„ç®—ç®¡ç† ==========
+
+  /**
+   * è·å–æˆå‘˜ä»Šæ—¥é¢„ç®—
+   */
+  getDailyBudget(memberId: string): DailyBudget {
+    const today = DateUtil.getToday();
+    const cached = this.dailyBudgetsCache.get(memberId);
+    if (cached && cached.date === today) {
+      return cached;
+    }
+    const budget = this.createBudgetForMember(memberId);
+    this.dailyBudgetsCache.set(memberId, budget);
+    return budget;
+  }
+
+  private createBudgetForMember(memberId: string): DailyBudget {
+    const member = this.membersCache.find(m => m.memberId === memberId);
+    const budget = new DailyBudget();
+    budget.memberId = memberId;
+    budget.date = DateUtil.getToday();
+
+    if (member) {
+      budget.sodiumBudget = member.dailyBudget.sodiumBudget;
+      budget.sugarBudget = member.dailyBudget.sugarBudget;
+      budget.calorieBudget = member.dailyBudget.calorieBudget;
+      budget.fatBudget = member.dailyBudget.fatBudget;
+    }
+
+    budget.sodiumRemaining = budget.sodiumBudget;
+    budget.sugarRemaining = budget.sugarBudget;
+    budget.calorieRemaining = budget.calorieBudget;
+    budget.fatRemaining = budget.fatBudget;
+    return budget;
+  }
+
+  private async restoreTodayBudgets(): Promise<void> {
+    const today = DateUtil.getToday();
+    this.dailyBudgetsCache.clear();
+    for (const member of this.membersCache) {
+      const budget = this.createBudgetForMember(member.memberId);
+      const records = await this.historyRepo.getDietRecordsByDateRange(member.memberId, today, today);
+      for (const record of records) {
+        budget.deductIntake(
+          record.sodiumIntake,
+          record.sugarIntake,
+          record.calorieIntake,
+          record.fatIntake
+        );
+      }
+      this.dailyBudgetsCache.set(member.memberId, budget);
+    }
+  }
+
+  /**
+   * æ‰£å‡æ‘„å…¥é‡
+   */
+  deductIntake(memberId: string, sodium: number, sugar: number, calories: number, fat: number): void {
+    const budget = this.getDailyBudget(memberId);
+    budget.deductIntake(sodium, sugar, calories, fat);
+  }
+
+  // ========== é£Ÿå“æ ‡ç­¾ç®¡ç† ==========
+
+  /**
+   * ä¿å­˜é£Ÿå“æ ‡ç­¾
+   */
+  async saveFoodLabel(label: FoodLabel): Promise<void> {
+    if (label.foodId.length === 0) {
+      label.foodId = `food_${Date.now()}`;
+    }
+    if (label.identifiedAt <= 0) {
+      label.identifiedAt = Date.now();
+    }
+    await this.foodRepo.saveFoodLabel(label);
+  }
+
+  /**
+   * æ ¹æ®æ¡ç æŸ¥æ‰¾
+   */
+  async findFoodByBarcode(barcode: string): Promise<FoodLabel | null> {
+    return await this.foodRepo.findByBarcode(barcode);
+  }
+
+  async findFoodById(foodId: string): Promise<FoodLabel | null> {
+    return await this.foodRepo.findById(foodId);
+  }
+
+  async getRecentScanHistory(limit: number = 50): Promise<ScanHistoryRecord[]> {
+    return await this.historyRepo.getRecentScanHistory(limit);
+  }
+
+  async getDietRecordsByDateRange(memberId: string, startDate: string, endDate: string): Promise<DietRecord[]> {
+    return await this.historyRepo.getDietRecordsByDateRange(memberId, startDate, endDate);
+  }
+
+  // ========== æ ¸å¿ƒä¸šåŠ¡è®¡ç®— ==========
+
+  /**
+   * è®¡ç®—å•ä¸ªæˆå‘˜é€‚é…ç»“è®º
+   */
+  calculateRecommendation(memberId: string, foodLabel: FoodLabel): Recommendation {
+    const profile = this.membersCache.find(m => m.memberId === memberId) || new FamilyProfile();
+    const signal = this.getHealthSignal(memberId);
+    const budget = this.getDailyBudget(memberId);
+    return this.ruleEngine.calculate({ profile, healthSignal: signal, foodLabel, dailyBudget: budget });
+  }
+
+  /**
+   * è®¡ç®—å®¶åº­å¯¹æ¯”
+   */
+  calculateFamilyComparison(foodLabel: FoodLabel): Recommendation[] {
+    return this.membersCache.map(member => {
+      return this.calculateRecommendation(member.memberId, foodLabel);
+    });
+  }
+
+  /**
+   * è®¡ç®—ç¾é£Ÿå¹³è¡¡
+   */
+  calculateMealBalance(scenario: MealScenario, memberId: string): MealBalance {
+    const profile = this.membersCache.find(m => m.memberId === memberId) || new FamilyProfile();
+    const signal = this.getHealthSignal(memberId);
+    return this.mealBalanceEngine.calculate(scenario, profile, signal);
+  }
+
+  /**
+   * è®¡ç®—å„¿ç«¥ä¿æŠ¤
+   */
+  calculateChildProtection(memberId: string, foodLabel: FoodLabel): ChildProtection {
+    const profile = this.membersCache.find(m => m.memberId === memberId) || new FamilyProfile();
+    return this.childProtectionEngine.calculate(
+      profile, foodLabel, new Date(),
+      { breakfast: '07:30', lunch: '12:00', dinner: '18:00' },
+      '22:00'
+    );
+  }
+
+  /**
+   * è®¡ç®—é£Ÿå“å¯ä¿¡åº¦
+   */
+  calculateCredibility(foodLabel: FoodLabel): CredibilityResult {
+    return this.credibilityEngine.calculate(foodLabel);
+  }
+
+  /**
+   * æ£€æŸ¥è´­ç‰©ç¯®
+   */
+  checkBasket(): BasketCheckResult {
+    return this.basketCheckEngine.check(this.basketItems, this.membersCache);
+  }
+
+  /**
+   * ç”Ÿæˆè€äººå‹å¥½æŠ¥å‘Š
+   */
+  generateElderFriendlyReport(rec: Recommendation, memberId: string, food: FoodLabel): ElderFriendlyReport {
+    const profile = this.membersCache.find(m => m.memberId === memberId) || new FamilyProfile();
+    return this.elderFriendlyEngine.generate(rec, profile, food);
+  }
+
+  /**
+   * ç”Ÿæˆæ­£å‘è¡¥è¶³å»ºè®®
+   */
+  generatePositiveAdvice(scenario: MealScenario, memberId: string): PositiveAdvice {
+    const profile = this.membersCache.find(m => m.memberId === memberId) || new FamilyProfile();
+    return this.positiveAdviceEngine.generateForScenario(scenario, profile);
+  }
+
+  // ========== è´­ç‰©ç¯®ç®¡ç† ==========
+
+  addToBasket(item: FoodLabel): void {
+    this.basketItems.push(item);
+  }
+
+  getBasketItems(): FoodLabel[] {
+    return this.basketItems;
+  }
+
+  clearBasket(): void {
+    this.basketItems = [];
+  }
+
+  // ========== å†å²è®°å½• ==========
+
+  /**
+   * ä¿å­˜æ‰«æå†å²
+   */
+  async saveScanHistory(memberId: string, foodLabel: FoodLabel, rec: Recommendation): Promise<void> {
+    await this.historyRepo.saveScanHistory({
+      memberId,
+      foodId: foodLabel.foodId,
+      foodName: foodLabel.foodName,
+      level: rec.level,
+      maxAmount: rec.maxAmount,
+      reasons: rec.reasons,
+      scannedAt: Date.now()
+    });
+  }
+
+  /**
+   * ä¿å­˜é¥®é£Ÿè®°å½•
+   */
+  async saveDietRecord(memberId: string, scenario: string, foodId: string,
+    amountG: number, sodium: number, sugar: number, calories: number, fat: number): Promise<void> {
+    await this.historyRepo.saveDietRecord({
+      memberId,
+      date: DateUtil.getToday(),
+      scenario,
+      foodId,
+      amountG,
+      sodiumIntake: sodium,
+      sugarIntake: sugar,
+      calorieIntake: calories,
+      fatIntake: fat,
+      recordedAt: Date.now()
+    });
+    // åŒæ­¥æ‰£å‡é¢„ç®—
+    this.deductIntake(memberId, sodium, sugar, calories, fat);
+  }
+
+  // ========== é»˜è®¤æ•°æ® ==========
+
+  private createDefaultMembers(): FamilyProfile[] {
+    const members: FamilyProfile[] = [];
+    const now = Date.now();
+
+    const dad = new FamilyProfile();
+    dad.memberId = 'dad'; dad.nickname = 'çˆ¸çˆ¸'; dad.ageGroup = AgeGroup.MIDDLE_OLD;
+    dad.healthGoals = [HealthGoal.CONTROL_BP, HealthGoal.CONTROL_FAT];
+    dad.dailyBudget = new DailyBudgetConfig();
+    dad.dailyBudget.sodiumBudget = 1500; dad.dailyBudget.sugarBudget = 40;
+    dad.dailyBudget.calorieBudget = 1800; dad.dailyBudget.fatBudget = 55;
+    dad.createdAt = now; dad.updatedAt = now;
+    members.push(dad);
+
+    const mom = new FamilyProfile();
+    mom.memberId = 'mom'; mom.nickname = 'å¦ˆå¦ˆ'; mom.ageGroup = AgeGroup.ADULT;
+    mom.healthGoals = [HealthGoal.CONTROL_SUGAR];
+    mom.dailyBudget = new DailyBudgetConfig();
+    mom.dailyBudget.sodiumBudget = 2000; mom.dailyBudget.sugarBudget = 25;
+    mom.dailyBudget.calorieBudget = 2000; mom.dailyBudget.fatBudget = 65;
+    mom.createdAt = now; mom.updatedAt = now;
+    members.push(mom);
+
+    const child = new FamilyProfile();
+    child.memberId = 'child'; child.nickname = 'å­©å­'; child.ageGroup = AgeGroup.CHILD;
+    child.healthGoals = [HealthGoal.CHILD]; child.allergens = ['åšæœ'];
+    child.dailyBudget = new DailyBudgetConfig();
+    child.dailyBudget.sodiumBudget = 1200; child.dailyBudget.sugarBudget = 25;
+    child.dailyBudget.calorieBudget = 1500; child.dailyBudget.fatBudget = 50;
+    child.mealTimes = new MealTimes();
+    child.mealTimes.breakfast = '07:30';
+    child.mealTimes.lunch = '12:00';
+    child.mealTimes.dinner = '18:00';
+    child.bedtime = '22:00';
+    child.createdAt = now; child.updatedAt = now;
+    members.push(child);
+
+    const me = new FamilyProfile();
+    me.memberId = 'me'; me.nickname = 'æˆ‘'; me.ageGroup = AgeGroup.ADULT;
+    me.healthGoals = [HealthGoal.LOSE_FAT];
+    me.dailyBudget = new DailyBudgetConfig();
+    me.dailyBudget.sodiumBudget = 2000; me.dailyBudget.sugarBudget = 50;
+    me.dailyBudget.calorieBudget = 1500; me.dailyBudget.fatBudget = 45;
+    me.createdAt = now; me.updatedAt = now;
+    members.push(me);
+
+    return members;
+  }
+
+  // ========== è®¢é˜…ä¸åŠŸèƒ½é—¨æ§ ==========
+
+  /**
+   * è·å–å½“å‰è®¢é˜…ç‰ˆæœ¬
+   */
+  getCurrentTier(): SubscriptionTier {
+    return this.currentTier;
+  }
+
+  /**
+   * è®¾ç½®è®¢é˜…ç‰ˆæœ¬ï¼ˆè´­ä¹°æˆåŠŸåè°ƒç”¨ï¼‰
+   */
+  setTier(tier: SubscriptionTier): void {
+    this.currentTier = tier;
+  }
+
+  /**
+   * åˆ¤æ–­åŠŸèƒ½æ˜¯å¦å¯è®¿é—®
+   */
+  canAccess(requiredTier: SubscriptionTier): boolean {
+    return PricingService.canAccess(this.currentTier, requiredTier);
+  }
+
+  /**
+   * æ£€æŸ¥æ˜¯å¦å¯ä»¥æ‰§è¡Œæ‰«æï¼ˆå…è´¹ç‰ˆæ¯æ—¥é™åˆ¶ï¼‰
+   * è¿”å›trueè¡¨ç¤ºå¯ä»¥æ‰«æï¼Œfalseè¡¨ç¤ºå·²è¾¾ä¸Šé™
+   */
+  canScanToday(): boolean {
+    this.resetScanCountIfNewDay();
+    if (this.currentTier === SubscriptionTier.FREE) {
+      return this.todayScanCount < PricingService.FREE_DAILY_SCAN_LIMIT;
+    }
+    return true; // ä»˜è´¹ç‰ˆæ— é™æ‰«æ
+  }
+
+  /**
+   * è®°å½•ä¸€æ¬¡æ‰«æ
+   */
+  recordScan(): void {
+    this.resetScanCountIfNewDay();
+    this.todayScanCount++;
+  }
+
+  /**
+   * è·å–ä»Šæ—¥å‰©ä½™æ‰«ææ¬¡æ•°
+   */
+  getRemainingScansToday(): number {
+    this.resetScanCountIfNewDay();
+    if (this.currentTier === SubscriptionTier.FREE) {
+      return Math.max(0, PricingService.FREE_DAILY_SCAN_LIMIT - this.todayScanCount);
+    }
+    return -1; // -1è¡¨ç¤ºæ— é™
+  }
+
+  /**
+   * æ£€æŸ¥æ˜¯å¦å¯ä»¥æ·»åŠ å®¶åº­æˆå‘˜ï¼ˆå…è´¹ç‰ˆé™åˆ¶1äººï¼‰
+   */
+  canAddMember(): boolean {
+    if (this.currentTier === SubscriptionTier.FREE) {
+      return this.membersCache.length < PricingService.FREE_MEMBER_LIMIT;
+    }
+    return true; // ä»˜è´¹ç‰ˆæ— é™åˆ¶
+  }
+
+  /**
+   * è·å–æˆå‘˜æ•°ä¸Šé™ï¼ˆ-1è¡¨ç¤ºæ— é™ï¼‰
+   */
+  getMemberLimit(): number {
+    if (this.currentTier === SubscriptionTier.FREE) {
+      return PricingService.FREE_MEMBER_LIMIT;
+    }
+    return -1;
+  }
+
+  private resetScanCountIfNewDay(): void {
+    const today = DateUtil.getToday();
+    if (this.todayScanDate !== today) {
+      this.todayScanDate = today;
+      this.todayScanCount = 0;
+    }
+  }
+}
+ÀÔrDÜ º@ohos.data.relationalStore«@ohos.hilogµ./model/FamilyProfile´./model/HealthSignal³./model/DailyBudget»./repository/FoodRepository»./repository/RuleRepository¾./repository/HistoryRepository½./repository/FamilyRepository³./engine/RuleEngine·./service/HealthService½./engine/RecommendationEngineº./engine/MealBalanceEngine»./engine/WeeklyReportEngine¾./engine/ChildProtectionEngineº./engine/BasketCheckEngine°./utils/DateUtil´./model/PricingModel¼./engine/ElderFriendlyEngineº./engine/CredibilityEngine½./engine/PositiveAdviceEngineÔrE—ªassertions¨external¢id¤meta±moduleSideEffectsªresolvedByµsyntheticNamedExportsAÃÙt hvigor_ignore_E:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.data.relationalStore.d.tsÔrF‘¯hostModulesInfo”Cº@ohos.data.relationalStore¥entryCº@ohos.data.relationalStore¥entryCº@ohos.data.relationalStore¥entryCº@ohos.data.relationalStore¥entryÃªoh-resolveÂEAÃÙe hvigor_ignore_E:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.hilog.d.tsAÃªoh-resolveÂEAÂÙQC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\FamilyProfile.etsAÃªoh-resolveÂEAÂÙPC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\HealthSignal.etsAÃªoh-resolveÂEAÂÙOC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\DailyBudget.etsAÃªoh-resolveÂEAÂÙWC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\repository\FoodRepository.etsAÃªoh-resolveÂEAÂÙWC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\repository\RuleRepository.etsAÃªoh-resolveÂEAÂÙZC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\repository\HistoryRepository.etsAÃªoh-resolveÂEAÂÙYC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\repository\FamilyRepository.etsAÃªoh-resolveÂEAÂÙOC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\engine\RuleEngine.etsAÃªoh-resolveÂEAÂÙSC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\service\HealthService.etsAÃªoh-resolveÂEAÂÙYC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\engine\RecommendationEngine.etsAÃªoh-resolveÂEAÂÙVC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\engine\MealBalanceEngine.etsAÃªoh-resolveÂEAÂÙWC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\engine\WeeklyReportEngine.etsAÃªoh-resolveÂEAÂÙZC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\engine\ChildProtectionEngine.etsAÃªoh-resolveÂEAÂÙVC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\engine\BasketCheckEngine.etsAÃªoh-resolveÂEAÂÙLC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\utils\DateUtil.etsAÃªoh-resolveÂEAÂÙPC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\PricingModel.etsAÃªoh-resolveÂEAÂÙXC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\engine\ElderFriendlyEngine.etsAÃªoh-resolveÂEAÂÙVC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\engine\CredibilityEngine.etsAÃªoh-resolveÂEAÂÙYC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\engine\PositiveAdviceEngine.etsAÃªoh-resolveÂ“ÔrG–§version¤fileªsourceRoot§sources¥names¨mappings«AppState.js ‘¬AppState.etsÜ
+’”    ”"  "Ü ”   ” ”	 	” ” ”   ”" "”, ,”. .”? ?”ÌA ÌA”ÌJ ÌJ”ÌL ÌL”ÌR ÌR”Ìi Ìi”Ìj ÌjÜ ”   ” ”	 	” ” ”   ”" "”- -”/ /”: :”< ÌP”ÌF ÌZ”ÌH Ì\”ÌN Ìb”Ìd Ìx”Ìe Ìy˜”   ” ”	 	” ” ” ”1 1”2 2˜”  
+ ” 
+”	 
+	” 
+” 
+”! 
+!”Ì@ 
+Ì@”ÌA 
+ÌA˜”   ” ”	 	” ” ” ”< <”= =˜”   ” ”	 	” ” ;”" ÌA”ÌB Ìa”ÌC Ìb˜”   ” ”	 	” ” ” ”< <”= =˜”   ” ”	 	” ” '” -”0 ÌB”1 ÌC˜”   ” ”	 	” ” ” ”7 7”8 8˜”   ” ”	 	” ” ”% %”ÌD ÌD”ÌE ÌE˜”   ” ”	 	” ” ”" "”> >”? ?˜”   ” ”	 	” ”   ”& &”ÌF ÌF”ÌG ÌG˜”   ” ”	 	” ” ”" "”> >”? ?˜”   ” ”	 	” ” /”" 5”> ÌQ”? ÌR˜”   ” ”	 	” ” ;”# ÌA”Ì@ Ì^”ÌA Ì_˜”   ” ”	 	” ” 3”$ 9”ÌB ÌW”ÌC ÌX˜”   ” ”	 	” ” /”% 5”ÌD ÌT”ÌE ÌU˜”   ” ”	 	” ” ” ”+ +”, ,š”   ” ”	 	” ” ”) )”+ +”1 1”ÌG ÌG”ÌH ÌH–”   ” 	” ”  ”8 .”9 /–”   ” 	” ” ” 3”  4–”   ” ”	 	” ” ” –”   ” ” ” ” ” ’”  ! ” !–”  " ” "” "” "(” ",” "-””  $ ” $” $” $‘” ÌG’” %” %	—” &
+” &” &)” &-”. &=”0 &?”1 &Ì@—” '
+” '” '%” ')”* '7”, '9”- ':—” (
+” (” (+” (/”0 (Ì@”2 (ÌB”3 (ÌC—” )
+” )” )%” ))”* )7”, )9”- ):’” +” +	—” ,
+” ,” ,#” ,'”( ,1”* ,3”+ ,4—” -
+” -” -,” -0”1 -ÌD”3 -ÌF”4 -ÌG—” .
+” .”! .1”% .5”6 .ÌF”8 .ÌH”9 .ÌI—” /
+”" /”% /9”) /=”> /ÌR”Ì@ /ÌT”ÌA /ÌU—” 0
+” 0”! 01”% 05”6 0ÌF”8 0ÌH”9 0ÌI—” 1
+” 1”! 11”% 15”6 1ÌF”8 1ÌH”9 1ÌI—” 2
+” 2”" 23”& 27”8 2ÌI”: 2ÌK”; 2ÌL—” 3
+”  3”# 35”' 39”: 3ÌL”< 3ÌN”= 3ÌO—” 4
+”! 4”$ 47”( 4;”< 4ÌO”> 4ÌQ”? 4ÌR’” 6” 6—” 7
+” 7” 7)”! 7-”. 7:”0 7<”1 7=’” 9” 9	•” :
+” :” :*” :,” :-—” ;
+” ;”" ;:”& ;>”) ;ÌA”+ ;ÌC”, ;ÌD—” <
+” <”! <8”% <<”( <?”* <ÌA”+ <ÌB•” =
+” =” =#”" =(”# =)’” ?” ?•” Ì@
+” Ì@” Ì@%” Ì@'” Ì@(’” ÌB” ÌB	—” ÌC
+” ÌC” ÌC*”+ ÌC:”, ÌC;”0 ÌC?”1 ÌCÌ@•” ÌD
+” ÌD” ÌD#” ÌD$”  ÌD%•” ÌE
+” ÌE” ÌE"” ÌE$”  ÌE%’” ÌG” ÌG‘” ÌI‘” ÌK”” ÌL”
+ ÌL” ÌL	” ÌL•” ÌM” ÌM” ÌM	” ÌM” ÌM—” ÌN” ÌN” ÌN”# ÌN”+ ÌN%”- ÌN'”. ÌN(‘”	 ÌO”” ÌP” ÌP” ÌP”  ÌP’” ÌQ” ÌQ‘” ÌS‘” ÌU–” ÌV”	 ÌV”
+ ÌV” ÌV” ÌV” ÌV$•” ÌW” ÌW” ÌW” ÌW” ÌW’” ÌW” ÌW#’” ÌY” ÌY’” ÌZ” ÌZ›” Ì[” Ì[” Ì[” Ì[”! Ì[”" Ì[”& Ì[ ”' Ì[!”. Ì[(”/ Ì[)”0 Ì[*”” Ì]” Ì]” Ì]” Ì]5”” Ì^” Ì^” Ì^”& Ì^˜” Ì_” Ì_” Ì_”. Ì_&”/ Ì_'”< Ì_4”= Ì_5”? Ì_7’” Ì`” Ì`” Ìa” Ìa” Ìa” Ìa”# Ìa”2 Ìa,”3 Ìa-”> Ìa8”? Ìa9”ÌF ÌaÌ@”ÌH ÌaÌB”ÌQ ÌaÌK”ÌR ÌaÌL”ÌS ÌaÌM›” Ìb” Ìb” Ìb” Ìb” Ìb”  Ìb”$ Ìb”% Ìb”- Ìb'”. Ìb(”/ Ìb)›” Ìc” Ìc” Ìc” Ìc”" Ìc”# Ìc”' Ìc!”( Ìc"”0 Ìc*”1 Ìc+”2 Ìc,’” Ìe” Ìeš” Ìf” Ìf
+” Ìf” Ìf” Ìf”$ Ìf”% Ìf”, Ìf&”- Ìf'”. Ìf(’” Ìh” Ìh” Ìi” Ìi
+” Ìi” Ìi”  Ìi”& Ìi ”* Ìi$”+ Ìi%”5 Ìi/”6 Ìi0”ÌC Ìi=”ÌE Ìi?”ÌF ÌiÌ@—” Ìj” Ìj” Ìj” Ìj”* Ìj$”, Ìj&”- Ìj'—” Ìl” Ìl
+” Ìl” Ìl”! Ìl”% Ìl”& Ìl œ” Ìm” Ìm” Ìm” Ìm” Ìm”" Ìm”$ Ìm”' Ìm!”) Ìm#”? Ìm9”Ì@ Ìm:”ÌA Ìm;‘”	 Ìn”” Ìn” Ìn” Ìn” ÌnÜ ” Ìo” Ìo” Ìo” Ìo” Ìo”# Ìo”% Ìo”( Ìo"”* Ìo$”ÌL ÌoÌF”ÌN ÌoÌH”ÌR ÌoÌL”ÌS ÌoÌM”Ì\ ÌoÌV”Ì] ÌoÌW”Ìb ÌoÌ\”Ìc ÌoÌ]”Ìd ÌoÌ^”Ìe ÌoÌ_’” Ìp” Ìpš” Ìq” Ìq
+” Ìq” Ìq”  Ìq”$ Ìq”% Ìq”9 Ìq3”; Ìq5”< Ìq6—” Ìr” Ìr
+” Ìr” Ìr”! Ìr”% Ìr”& Ìr ‘”	 Ìs’” Ìt” Ìt’” Ìv”# Ìv!‘” Ìx‘” Ìz”” Ì{”	 Ì{”
+ Ì{” Ì{š” Ì|” Ì|” Ì|” Ì|” Ì|” Ì|”$ Ì| ”) Ì|%”* Ì|&”, Ì|(” Ì}” Ì}
+” Ì}” Ì}”  Ì}”& Ì} ”* Ì}$”+ Ì}%”5 Ì}/”6 Ì}0”ÌC Ì}=”ÌE Ì}?”ÌF Ì}Ì@š” Ì~” Ì~
+” Ì~” Ì~”! Ì~”" Ì~”( Ì~"”- Ì~'”. Ì~(”0 Ì~*’” Ì” Ìš” Ì€” Ì€” Ì€”! Ì€”$ Ì€”( Ì€ ”) Ì€!”= Ì€5”? Ì€7”Ì@ Ì€8™” Ì” Ì” Ì”! Ì”% Ì”) Ì!”* Ì"”6 Ì.”8 Ì0›” Ì‚
+” Ì‚” Ì‚” Ì‚”) Ì‚”* Ì‚ ”4 Ì‚*”5 Ì‚+”; Ì‚1”< Ì‚2”= Ì‚3‘” Ìƒ	‘” Ì„‘”	 Ì…–” Ì†” Ì†” Ì†” Ì†”  Ì†”! Ì†’” Ì‡” Ì‡‘” Ì‰‘” Ì‹–” ÌŒ”	 ÌŒ”
+ ÌŒ” ÌŒ” ÌŒ” ÌŒ)›” Ì” Ì
+” Ì” Ì” Ì” Ì”( Ì$”) Ì%”0 Ì,”1 Ì-”2 Ì.’” Ì” ÌÜ ” Ì” Ì
+” Ì” Ì” Ì” Ì”' Ì#”( Ì$”1 Ì-”2 Ì.”3 Ì/”4 Ì0”6 Ì2”7 Ì3”8 Ì4”9 Ì5”ÌA Ì=”ÌF ÌÌB”ÌM ÌÌI”ÌN ÌÌJ”ÌV ÌÌR”ÌW ÌÌS”ÌX ÌÌT–” Ì” Ì” Ì” Ì” Ì” Ìš” Ì‘” Ì‘
+” Ì‘” Ì‘” Ì‘”# Ì‘”$ Ì‘”' Ì‘!”. Ì‘(”/ Ì‘)‘”	 Ì’‘” Ì’š” Ì“” Ì“
+” Ì“” Ì“” Ì“”" Ì“”# Ì“”* Ì“$”+ Ì“%”, Ì“&‘”	 Ì”’” Ì•” Ì•‘” Ì—‘” Ì™–” Ìš”	 Ìš”
+ Ìš” Ìš” Ìš” Ìš%›” Ì›” Ì›
+” Ì›” Ì›” Ì›” Ì›”* Ì›&”+ Ì›'”3 Ì›/”4 Ì›0”5 Ì›1Ü ” Ìœ” Ìœ” Ìœ	” Ìœ” Ìœ”  Ìœ”! Ìœ”- Ìœ)”. Ìœ*”4 Ìœ0”5 Ìœ1”6 Ìœ2”7 Ìœ3”9 Ìœ5”: Ìœ6”; Ìœ7”< Ìœ8”ÌD ÌœÌ@”ÌI ÌœÌE”ÌQ ÌœÌM”ÌR ÌœÌN”ÌS ÌœÌOš” Ì” Ì” Ì	” Ì”  Ì”& Ì"”' Ì#”/ Ì+”0 Ì,”1 Ì-š” Ì” Ì” Ì	” Ì” Ì”% Ì!”& Ì"”. Ì*”/ Ì+”0 Ì,’” ÌŸ” ÌŸ’” Ì¡”# Ì¡!‘” Ì£‘” Ì¦–” Ì§”	 Ì§”
+ Ì§” Ì§” Ì§”' Ì§-™” Ì¨” Ì¨
+” Ì¨” Ì¨” Ì¨” Ì¨”' Ì¨#”) Ì¨%”* Ì¨&” Ì©” Ì©
+” Ì©” Ì©” Ì©” Ì©”. Ì©*”/ Ì©+”2 Ì©.”3 Ì©/”; Ì©7”< Ì©8”= Ì©9Ü ” Ìª” Ìª” Ìª” Ìª” Ìª” Ìª”! Ìª”& Ìª"”+ Ìª'”/ Ìª+”5 Ìª1”6 Ìª2”< Ìª8”ÌA Ìª=”ÌK ÌªÌG”ÌL ÌªÌH”ÌY ÌªÌU”Ì[ ÌªÌW”” Ì«” Ì«” Ì«” Ì«‘”	 Ì¬’” Ì®” Ì®’” Ì¯” Ì¯” Ì°” Ì°” Ì°” Ì°”! Ì°”% Ì°”& Ì° ”3 Ì°-”4 Ì°.”ÌF Ì°Ì@”ÌG Ì°ÌA”ÌO Ì°ÌI”ÌP Ì°ÌJ”ÌQ Ì°ÌKš” Ì±” Ì±
+” Ì±” Ì±” Ì±”" Ì±”, Ì±&”- Ì±'”: Ì±4”< Ì±6œ” Ì²” Ì²” Ì²”' Ì²”( Ì² ”+ Ì²#”, Ì²$”4 Ì²,”6 Ì².”< Ì²4”= Ì²5”> Ì²6”” Ì³” Ì³” Ì³” Ì³‘” Ì´‘”	 Ìµ”” Ìµ” Ìµ” Ìµ” Ìµœ” Ì¶” Ì¶” Ì¶” Ì¶” Ì¶”" Ì¶”$ Ì¶”' Ì¶!”) Ì¶#”ÌR Ì¶ÌL”ÌS Ì¶ÌM”ÌT Ì¶ÌN‘”	 Ì·’” Ì¹” Ì¹š” Ìº” Ìº” Ìº” Ìº” Ìº” Ìº”! Ìº”& Ìº"”+ Ìº'”- Ìº)”” Ì»” Ì»” Ì»” Ì»‘”	 Ì¼™” Ì½” Ì½” Ì½” Ì½”* Ì½&”+ Ì½'”3 Ì½/”4 Ì½0”5 Ì½1’” Ì¾” Ì¾‘” ÌÀ‘” ÌÂ”” ÌÃ” ÌÃ” ÌÃ” ÌÃ"™” ÌÄ” ÌÄ
+” ÌÄ” ÌÄ” ÌÄ” ÌÄ”' ÌÄ#”) ÌÄ%”* ÌÄ&” ÌÅ” ÌÅ
+” ÌÅ” ÌÅ” ÌÅ” ÌÅ”. ÌÅ*”/ ÌÅ+”2 ÌÅ.”3 ÌÅ/”; ÌÅ7”< ÌÅ8”= ÌÅ9š” ÌÆ” ÌÆ” ÌÆ” ÌÆ” ÌÆ” ÌÆ”! ÌÆ”& ÌÆ"”+ ÌÆ'”- ÌÆ)”” ÌÇ” ÌÇ” ÌÇ” ÌÇ‘”	 ÌÈ™” ÌÉ” ÌÉ” ÌÉ” ÌÉ”* ÌÉ&”+ ÌÉ'”3 ÌÉ/”4 ÌÉ0”5 ÌÉ1’” ÌÊ” ÌÊ”” ÌÌ
+” ÌÌ ” ÌÌ!”# ÌÌ1˜” ÌÍ” ÌÍ
+” ÌÍ” ÌÍ” ÌÍ”' ÌÍ#”) ÌÍ%”* ÌÍ&—” ÌÎ” ÌÎ
+” ÌÎ” ÌÎ” ÌÎ”" ÌÎ”# ÌÎš” ÌÏ” ÌÏ
+” ÌÏ” ÌÏ” ÌÏ” ÌÏ” ÌÏ”' ÌÏ#”) ÌÏ%”* ÌÏ&™” ÌĞ” ÌĞ
+” ÌĞ” ÌĞ” ÌĞ”$ ÌĞ ”% ÌĞ!”+ ÌĞ'”, ÌĞ(™” ÌÑ” ÌÑ
+” ÌÑ” ÌÑ” ÌÑ”( ÌÑ$”) ÌÑ%”- ÌÑ)”. ÌÑ*™” ÌÒ” ÌÒ
+” ÌÒ” ÌÒ” ÌÒ”( ÌÒ$”) ÌÒ%”/ ÌÒ+”0 ÌÒ,™” ÌÓ” ÌÓ
+” ÌÓ” ÌÓ” ÌÓ”" ÌÓ”# ÌÓ”) ÌÓ%”* ÌÓ&”” ÌÔ” ÌÔ” ÌÔ” ÌÔ’” ÌÕ” ÌÕ‘” Ì×‘” ÌÙ”” ÌÚ” ÌÚ” ÌÚ” ÌÚ)” ÌÛ” ÌÛ” ÌÛ	” ÌÛ”  ÌÛ”# ÌÛ”$ ÌÛ ”* ÌÛ&”+ ÌÛ'”3 ÌÛ/”5 ÌÛ1”; ÌÛ7”< ÌÛ8”= ÌÛ9’” ÌÜ” ÌÜ‘” ÌŞ‘” Ìà”” Ìá”	 Ìá”
+ Ìá”$ Ìá"š” Ìâ” Ìâ” Ìâ” Ìâ” Ìâ”' Ìâ#”( Ìâ$”< Ìâ8”> Ìâ:”? Ìâ;’” Ìã” Ìã‘” Ìå‘” Ìç”” Ìè”	 Ìè”
+ Ìè”" Ìè š” Ìé” Ìé” Ìé” Ìé” Ìé”' Ìé#”( Ìé$”: Ìé6”< Ìé8”= Ìé9’” Ìê” Ìê’” Ìì”# Ìì!‘” Ìî‘” Ìğ”” Ìñ” Ìñ” Ìñ” Ìñ!™” Ìò” Ìò
+” Ìò” Ìò” Ìò” Ìò”' Ìò#”) Ìò%”* Ìò&” Ìó” Ìó
+” Ìó” Ìó” Ìó” Ìó”- Ìó)”. Ìó*”1 Ìó-”2 Ìó.”: Ìó6”; Ìó7”< Ìó8š” Ìô” Ìô” Ìô” Ìô” Ìô” Ìô”! Ìô”& Ìô"”+ Ìô'”- Ìô)”” Ìõ” Ìõ” Ìõ” Ìõ‘”	 Ìö›” Ì÷” Ì÷
+” Ì÷” Ì÷” Ì÷” Ì÷”1 Ì÷-”2 Ì÷.”: Ì÷6”; Ì÷7”< Ì÷8œ” Ìø” Ìø” Ìø	” Ìø” Ìø”" Ìø”# Ìø”+ Ìø'”- Ìø)”3 Ìø/”4 Ìø0”5 Ìø1”” Ìù” Ìù” Ìù” Ìù’” Ìú” Ìú”” Ìü
+” Ìü” Ìü ”" Ìü0Ü ” Ìı” Ìı
+” Ìı” Ìı” Ìı” Ìı”( Ìı$”) Ìı%”- Ìı)”. Ìı*”/ Ìı+”0 Ìı,”2 Ìı.”3 Ìı/”4 Ìı0”5 Ìı1”= Ìı9”ÌB Ìı>”ÌJ ÌıÌF”ÌK ÌıÌG”ÌL ÌıÌH˜” Ìş” Ìş
+” Ìş” Ìş” Ìş”& Ìş"”( Ìş$”) Ìş%—” Ìÿ” Ìÿ
+” Ìÿ” Ìÿ” Ìÿ”" Ìÿ”# Ìÿš” Í ” Í 
+” Í ” Í ” Í ” Í ” Í ”' Í #”) Í %”* Í &”” Í” Í” Í” Í›” Í” Í” Í” Í”" Í”( Í"”) Í#”4 Í.”5 Í/”ÌA Í;”ÌB Í<›” Í” Í” Í” Í”! Í”' Í!”( Í"”3 Í-”4 Í.”? Í9”Ì@ Í:›” Í” Í” Í”  Í”# Í”) Í#”* Í$”5 Í/”6 Í0”ÌC Í=”ÌD Í>›” Í” Í” Í” Í” Í”% Í”& Í ”1 Í+”2 Í,”; Í5”< Í6‘”	 Í™” Í	” Í	
+” Í	” Í	”! Í	”' Í	#”( Í	$”4 Í	0”5 Í	1™” Í
+” Í
+
+” Í
+” Í
+”  Í
+”& Í
+"”' Í
+#”2 Í
+.”3 Í
+/™” Í” Í
+” Í” Í”" Í”( Í$”) Í%”6 Í2”7 Í3™” Í” Í
+” Í” Í” Í”$ Í ”% Í!”. Í*”/ Í+”” Í” Í” Í” Í’” Í” Í”” Í
+”	 Í”
+ Í” Í#™” Í” Í
+” Í” Í” Í” Í”' Í#”) Í%”* Í&˜” Í” Í” Í	” Í” Í”$ Í ”& Í"”' Í#™” Í” Í	” Í” Í” Í”! Í”" Í”. Í*”0 Í,” Í” Í” Í” Í” Í”  Í”5 Í/”6 Í0”< Í6”= Í7”ÌE Í?”ÌF ÍÌ@”ÌG ÍÌAÜ ” Í” Í” Í” Í”" Í”& Í ”' Í!”2 Í,”3 Í-”ÌL ÍÌF”ÌM ÍÌG”ÌS ÍÌM”ÌT ÍÌN”Ì\ ÍÌV”Ì^ ÍÌX”Ìc ÍÌ]”Ìe ÍÌ_”Ìj ÍÌd”Ìk ÍÌe”Ìl ÍÌf—” Í” Í” Í” Í”! Í”( Í"”* Í$Ü ” Í” Í” Í”# Í”$ Í
+”* Í”+ Í”7 Í”9 Í
+”? Í”Ì@ Í”ÌK Í”ÌM Í
+”ÌS Í”ÌT Í”Ìa Í”Ìc Í
+”Ìi Í”Ìj Í”Ìs Í”Ìt Í	”Ìu Í
+‘” Í” Í” Í
+” Í”" Í”# Í”& Í ”' Í!”- Í'”. Í(”6 Í0”8 Í2”> Í8”? Í9”Ì@ Í:‘”	 Í’” Í ” Í ‘” Í"‘” Í$œ” Í%” Í%” Í%” Í%” Í%!”! Í%/”# Í%1”( Í%>”* Í%Ì@”2 Í%ÌP”4 Í%ÌR”7 Í%Ì]›” Í&” Í&
+” Í&” Í&” Í&” Í&”* Í&&”+ Í&'”3 Í&/”4 Í&0”5 Í&1” Í'” Í'
+” Í'” Í'” Í'”" Í'”$ Í' ”) Í'%”+ Í''”3 Í'/”5 Í'1”8 Í'4”9 Í'5”: Í'6’” Í(” Í(’” Í*”# Í*!‘” Í,‘” Í.–” Í/”	 Í/”
+ Í/” Í/” Í/” Í/&š” Í0” Í0” Í0” Í0” Í0” Í0” Í0”$ Í0 ”% Í0!”' Í0#œ” Í1” Í1” Í1” Í1” Í1”# Í1”' Í1!”( Í1"”+ Í1%”- Í1'”/ Í1)”0 Í1*‘”	 Í2˜” Í3” Í3” Í3” Í3” Í3”" Í3”# Í3”% Í3!š” Í4” Í4” Í4” Í4”! Í4”% Í4”& Í4 ”) Í4#”+ Í4%”, Í4&‘”	 Í5›” Í6” Í6
+” Í6” Í6” Í6” Í6”) Í6%”* Í6&”/ Í6+”0 Í6,”1 Í6-’” Í7” Í7‘” Í9‘” Í;–” Í<”	 Í<”
+ Í<” Í<” Í<”# Í<)œ” Í=” Í=” Í=” Í=” Í=”" Í=”# Í=”0 Í=,”1 Í=-”8 Í=4”9 Í=5”: Í=6’” Í>” Í>–” Í@”	 Í@”
+ Í@” Í@” Í@” Í@#œ” ÍA” ÍA” ÍA” ÍA” ÍA”" ÍA”# ÍA”+ ÍA'”, ÍA(”2 ÍA.”3 ÍA/”4 ÍA0’” ÍB” ÍB—” ÍD”	 ÍD”
+ ÍD” ÍD” ÍD”' ÍD-”) ÍD/œ” ÍE” ÍE” ÍE” ÍE” ÍE”% ÍE!”& ÍE"”: ÍE6”; ÍE7”Ì@ ÍE<”ÌA ÍE=”ÌB ÍE>’” ÍF” ÍFš” ÍH”	 ÍH”
+ ÍH”# ÍH!”$ ÍH"”, ÍH2”. ÍH4”7 ÍHÌE”9 ÍHÌG”Ì@ ÍHÌVÜ ” ÍI” ÍI” ÍI” ÍI” ÍI”% ÍI!”& ÍI"”? ÍI;”Ì@ ÍI<”ÌH ÍIÌD”ÌJ ÍIÌF”ÌS ÍIÌO”ÌU ÍIÌQ”Ì\ ÍIÌX”Ì] ÍIÌY”Ì^ ÍIÌZ’” ÍJ” ÍJ’” ÍL”# ÍL!‘” ÍN‘” ÍP–” ÍQ” ÍQ” ÍQ”$ ÍQ*”& ÍQ,”/ ÍQÌ@Ü ” ÍR” ÍR
+” ÍR” ÍR” ÍR” ÍR”) ÍR%”* ÍR&”. ÍR*”/ ÍR+”0 ÍR,”1 ÍR-”3 ÍR/”4 ÍR0”5 ÍR1”6 ÍR2”> ÍR:”ÌC ÍR?”ÌK ÍRÌG”ÌL ÍRÌH”ÌP ÍRÌL”ÌT ÍRÌP”Ìa ÍRÌ]”Ìc ÍRÌ_”Ìd ÍRÌ`›” ÍS” ÍS
+” ÍS” ÍS” ÍS” ÍS”+ ÍS'”, ÍS(”4 ÍS0”5 ÍS1”6 ÍS2›” ÍT” ÍT
+” ÍT” ÍT” ÍT” ÍT”* ÍT&”+ ÍT'”3 ÍT/”4 ÍT0”5 ÍT1Ü ” ÍU” ÍU” ÍU” ÍU” ÍU” ÍU”( ÍU$”) ÍU%”+ ÍU'”2 ÍU.”4 ÍU0”Ì@ ÍU<”ÌB ÍU>”ÌH ÍUÌD”ÌJ ÍUÌF”ÌS ÍUÌO”ÌU ÍUÌQ”Ì` ÍUÌ\”Ìb ÍUÌ^”Ìh ÍUÌd”Ìj ÍUÌf”Ìk ÍUÌg”Ìl ÍUÌh’” ÍV” ÍV‘” ÍX‘” ÍZ”” Í[” Í[” Í[”' Í[0›” Í\” Í\” Í\” Í\”  Í\”! Í\”$ Í\ ”% Í\!”+ Í\'”, Í\(”. Í\*” Í]” Í]” Í]” Í]”/ Í])”0 Í]*”6 Í]0”7 Í]1”? Í]9”ÌA Í];”ÌJ Í]ÌD”ÌK Í]ÌE”ÌL Í]ÌF”” Í^”	 Í^”
+ Í^” Í^’” Í_” Í_‘” Ía‘” Íc–” Íd” Íd” Íd”! Íd-”# Íd/”+ Íd?Ü ” Íe” Íe
+” Íe” Íe” Íe” Íe”) Íe%”* Íe&”. Íe*”/ Íe+”0 Íe,”1 Íe-”3 Íe/”4 Íe0”5 Íe1”6 Íe2”> Íe:”ÌC Íe?”ÌK ÍeÌG”ÌL ÍeÌH”ÌP ÍeÌL”ÌT ÍeÌP”Ìa ÍeÌ]”Ìc ÍeÌ_”Ìd ÍeÌ`›” Íf” Íf
+” Íf” Íf” Íf” Íf”+ Íf'”, Íf(”4 Íf0”5 Íf1”6 Íf2Ÿ” Íg” Íg” Íg” Íg”% Íg!”& Íg"”/ Íg+”0 Íg,”8 Íg4”: Íg6”ÌA Íg=”ÌC Íg?”ÌI ÍgÌE”ÌJ ÍgÌF”ÌK ÍgÌG’” Íh” Íh‘” Íj‘” Íl–” Ím” Ím” Ím”% Ím+”' Ím-”0 ÍmÌAÜ ” Ín” Ín
+” Ín” Ín” Ín” Ín”) Ín%”* Ín&”. Ín*”/ Ín+”0 Ín,”1 Ín-”3 Ín/”4 Ín0”5 Ín1”6 Ín2”> Ín:”ÌC Ín?”ÌK ÍnÌG”ÌL ÍnÌH”ÌP ÍnÌL”ÌT ÍnÌP”Ìa ÍnÌ]”Ìc ÍnÌ_”Ìd ÍnÌ`Ü !” Ío” Ío” Ío” Ío”) Ío%”* Ío&”3 Ío/”4 Íp”; Íp”= Íp”ÌF Íp”ÌH Íp”ÌL Íp”ÌP Íp"”ÌR Íp$”ÌT Íq”ÌV Íq”Ì_ Íq”Ìa Íq”Ìh Íq”Ìj Íq”Ìo Íq!”Ìq Íq#”Ìx Íq*”Ìz Íq,”Ì€ Íq2”Ì‚ Íq4”Ì‰ Íq;”Ì‹ Íq=”Ì Ír”Ì” Ír”Ì• Ís”Ì– Ís’” Ít” Ít‘” Ív‘” Íx”” Íy” Íy” Íy”" Íy+›” Íz” Íz” Íz” Íz”% Íz!”& Íz"”/ Íz+”0 Íz,”9 Íz5”: Íz6”; Íz7’” Í{” Í{‘” Í}‘” Í’” Í€” Í€Ü ” Í” Í” Í” Í”% Í!”& Í"”+ Í'”, Í(”0 Í,”1 Í-”< Í8”> Í:”ÌB Í>”ÌC Í?”ÌO ÍÌK”ÌP ÍÌL”ÌQ ÍÌM’” Í‚” Í‚‘” Í„‘” Í†˜” Í‡” Í‡”  Í‡”# Í‡1”% Í‡3”- Í‡ÌC”/ Í‡ÌE”3 Í‡ÌTÜ ” Íˆ” Íˆ
+” Íˆ” Íˆ” Íˆ” Íˆ”) Íˆ%”* Íˆ&”. Íˆ*”/ Íˆ+”0 Íˆ,”1 Íˆ-”3 Íˆ/”4 Íˆ0”5 Íˆ1”6 Íˆ2”> Íˆ:”ÌC Íˆ?”ÌK ÍˆÌG”ÌL ÍˆÌH”ÌP ÍˆÌL”ÌT ÍˆÌP”Ìa ÍˆÌ]”Ìc ÍˆÌ_”Ìd ÍˆÌ`Ÿ” Í‰” Í‰” Í‰” Í‰”' Í‰#”( Í‰$”0 Í‰,”1 Í‰-”4 Í‰0”6 Í‰2”= Í‰9”? Í‰;”ÌC Í‰?”ÌD Í‰Ì@”ÌE Í‰ÌA’” ÍŠ” ÍŠ‘” ÍŒ‘” Í–” Í” Í” Í”# Í/”% Í1”- ÍÌAÜ ” Í” Í
+” Í” Í” Í” Í”) Í%”* Í&”. Í*”/ Í+”0 Í,”1 Í-”3 Í/”4 Í0”5 Í1”6 Í2”> Í:”ÌC Í?”ÌK ÍÌG”ÌL ÍÌH”ÌP ÍÌL”ÌT ÍÌP”Ìa ÍÌ]”Ìc ÍÌ_”Ìd ÍÌ`” Í‘” Í‘” Í‘” Í‘”( Í‘$”) Í‘%”< Í‘8”= Í‘9”ÌE Í‘ÌA”ÌG Í‘ÌC”ÌN Í‘ÌJ”ÌO Í‘ÌK”ÌP Í‘ÌL’” Í’” Í’’” Í””" Í” ”” Í–” Í–” Í–” Í–š” Í—” Í—” Í—	” Í—” Í—” Í—” Í—”" Í—”# Í—”$ Í— ’” Í˜” Í˜’” Íš” Íš–” Í›” Í›” Í›” Í›” Í›”  Í›’” Íœ” Íœ’” Í” Í—” ÍŸ” ÍŸ” ÍŸ	” ÍŸ” ÍŸ” ÍŸ” ÍŸ’” Í ” Í ’” Í¢”! Í¢‘” Í¤‘” Í¦š” Í§”	 Í§”
+ Í§” Í§” Í§”" Í§(”$ Í§*”- Í§>”/ Í§Ì@”2 Í§ÌS˜” Í¨” Í¨
+” Í¨” Í¨” Í¨” Í¨”. Í¨*”/ Í¨+’” Í©” Í©–” Íª” Íª” Íª” Íª” Íª”$ Íª–” Í«” Í«” Í«” Í«”  Í«”( Í«"–” Í¬” Í¬” Í¬” Í¬” Í¬” Í¬–” Í­” Í­” Í­” Í­” Í­”$ Í­–” Í®” Í®” Í®” Í®” Í®”  Í®—” Í¯” Í¯” Í¯” Í¯” Í¯” Í¯”! Í¯“”	 Í°”
+ Í°” Í°’” Í±” Í±‘” Í³‘” ÍµÜ ” Í¶”	 Í¶”
+ Í¶” Í¶” Í¶”! Í¶'”# Í¶)”+ Í¶9”- Í¶;”3 Í¶ÌI”5 Í·”< Í·”> Í·”ÌD Í·#”ÌF Í·%”ÌK Í·2”ÌM Í·4”ÌU Í·ÌD”ÌW Í·ÌF”ÌZ Í·ÌQ˜” Í¸” Í¸
+” Í¸” Í¸” Í¸” Í¸”- Í¸)”. Í¸*’” Í¹” Í¹—” Íº” Íº
+” Íº” Íº” Íº”# Íº”% Íº’” Í»” Í»’” Í¼” Í¼’” Í½” Í½”” Í¾” Í¾” Í¾”  Í¾”” Í¿” Í¿” Í¿” Í¿”” ÍÀ” ÍÀ” ÍÀ”# ÍÀ”” ÍÁ” ÍÁ” ÍÁ” ÍÁ—” ÍÂ” ÍÂ” ÍÂ” ÍÂ” ÍÂ”  ÍÂ”" ÍÂ“”	 ÍÃ”
+ ÍÃ” ÍÃ’” ÍÄ” ÍÄÜ ” ÍÅ” ÍÅ” ÍÅ	” ÍÅ” ÍÅ”" ÍÅ”$ ÍÅ ”* ÍÅ&”, ÍÅ(”1 ÍÅ-”3 ÍÅ/”; ÍÅ7”= ÍÅ9”Ì@ ÍÅ<”ÌA ÍÅ=”ÌB ÍÅ>’” ÍÆ” ÍÆ’” ÍÈ”! ÍÈ’” ÍÊ
+” ÍÊ–” ÍË” ÍË
+” ÍË” ÍË%” ÍË'” ÍË(™” ÍÌ” ÍÌ
+” ÍÌ” ÍÌ” ÍÌ” ÍÌ” ÍÌ” ÍÌ” ÍÌ˜” ÍÎ” ÍÎ
+” ÍÎ” ÍÎ” ÍÎ”% ÍÎ!”' ÍÎ#”( ÍÎ$—” ÍÏ” ÍÏ” ÍÏ” ÍÏ” ÍÏ” ÍÏ” ÍÏ—” ÍÏ” ÍÏ” ÍÏ” ÍÏ&” ÍÏ)” ÍÏ-” ÍÏ.™” ÍÏ/” ÍÏ2” ÍÏ3” ÍÏ;” ÍÏ>” ÍÏÌF”  ÍÏÌG”* ÍÏÌQ”+ ÍÏÌRŸ” ÍĞ” ÍĞ” ÍĞ” ÍĞ” ÍĞ” ÍĞ”% ÍĞ!”& ÍĞ"”0 ÍĞ,”2 ÍĞ.”< ÍĞ8”= ÍĞ9”ÌH ÍĞÌD”ÌI ÍĞÌE”ÌJ ÍĞÌF™” ÍÑ” ÍÑ” ÍÑ” ÍÑ” ÍÑ” ÍÑ”/ ÍÑ+”1 ÍÑ-”2 ÍÑ.™” ÍÒ” ÍÒ” ÍÒ” ÍÒ” ÍÒ”$ ÍÒ ”' ÍÒ#”+ ÍÒ'”, ÍÒ(™” ÍÒ)” ÍÒ,” ÍÒ-” ÍÒ8” ÍÒ9”# ÍÒÌD”& ÍÒÌG”( ÍÒÌI”) ÍÒÌJ™” ÍÓ” ÍÓ” ÍÓ” ÍÓ” ÍÓ”% ÍÓ!”( ÍÓ$”, ÍÓ(”- ÍÓ)™” ÍÓ*” ÍÓ-” ÍÓ.” ÍÓ9” ÍÓ:”! ÍÓÌC”$ ÍÓÌF”& ÍÓÌH”' ÍÓÌI—” ÍÔ” ÍÔ” ÍÔ” ÍÔ” ÍÔ” ÍÔ” ÍÔ—” ÍÔ” ÍÔ” ÍÔ” ÍÔ&” ÍÔ)” ÍÔ,” ÍÔ-˜” ÍÕ” ÍÕ” ÍÕ” ÍÕ” ÍÕ” ÍÕ” ÍÕ” ÍÕ˜” Í×” Í×
+” Í×” Í×” Í×”% Í×!”' Í×#”( Í×$—” ÍØ” ÍØ” ÍØ” ÍØ” ÍØ” ÍØ” ÍØ—” ÍØ” ÍØ” ÍØ” ÍØ&” ÍØ)” ÍØ-” ÍØ.™” ÍØ/” ÍØ2” ÍØ3” ÍØ;” ÍØ>” ÍØÌF”  ÍØÌG”% ÍØÌL”& ÍØÌM›” ÍÙ” ÍÙ” ÍÙ” ÍÙ” ÍÙ” ÍÙ”% ÍÙ!”& ÍÙ"”3 ÍÙ/”4 ÍÙ0”5 ÍÙ1™” ÍÚ” ÍÚ” ÍÚ” ÍÚ” ÍÚ” ÍÚ”/ ÍÚ+”1 ÍÚ-”2 ÍÚ.™” ÍÛ” ÍÛ” ÍÛ” ÍÛ” ÍÛ”$ ÍÛ ”' ÍÛ#”+ ÍÛ'”, ÍÛ(™” ÍÛ)” ÍÛ,” ÍÛ-” ÍÛ8” ÍÛ9”# ÍÛÌD”& ÍÛÌG”( ÍÛÌI”) ÍÛÌJ™” ÍÜ” ÍÜ” ÍÜ” ÍÜ” ÍÜ”% ÍÜ!”( ÍÜ$”, ÍÜ(”- ÍÜ)™” ÍÜ*” ÍÜ-” ÍÜ.” ÍÜ9” ÍÜ:”! ÍÜÌC”$ ÍÜÌF”& ÍÜÌH”' ÍÜÌI—” Íİ” Íİ” Íİ” Íİ” Íİ” Íİ” Íİ—” Íİ” Íİ” Íİ” Íİ&” Íİ)” Íİ,” Íİ-˜” ÍŞ” ÍŞ” ÍŞ” ÍŞ” ÍŞ” ÍŞ” ÍŞ” ÍŞ˜” Íà” Íà
+” Íà” Íà” Íà”' Íà#”) Íà%”* Íà&—” Íá” Íá	” Íá
+” Íá” Íá”  Íá”! Íá—” Íá” Íá#” Íá$” Íá,” Íá/” Íá3” Íá4™” Íá5” Íá:” Íá;” ÍáÌC” ÍáÌF”! ÍáÌN”" ÍáÌO”' ÍáÌT”( ÍáÌU›” Íâ” Íâ	” Íâ
+” Íâ” Íâ” Íâ”' Íâ#”( Íâ$”- Íâ)”. Íâ*”/ Íâ+™” Íâ,” Íâ1” Íâ2” Íâ;” Íâ>” Íâ?” ÍâÌC”  ÍâÌD”! ÍâÌE™” Íã” Íã	” Íã
+” Íã” Íã”  Íã”1 Íã-”3 Íã/”4 Íã0™” Íä” Íä	” Íä
+” Íä” Íä”& Íä"”) Íä%”- Íä)”. Íä*™” Íä+” Íä0” Íä1” Íä<” Íä=”% ÍäÌH”( ÍäÌK”* ÍäÌM”+ ÍäÌN™” Íå” Íå	” Íå
+” Íå” Íå”' Íå#”* Íå&”. Íå*”/ Íå+™” Íå,” Íå1” Íå2” Íå=” Íå>”# ÍåÌG”& ÍåÌJ”( ÍåÌL”) ÍåÌM™” Íæ” Íæ	” Íæ
+” Íæ” Íæ” Íæ”' Íæ#”) Íæ%”* Íæ&™” Íç” Íç	” Íç
+” Íç” Íç”! Íç”$ Íç ”+ Íç'”, Íç(™” Íè” Íè	” Íè
+” Íè” Íè” Íè”  Íè”' Íè#”( Íè$™” Íé” Íé	” Íé
+” Íé” Íé” Íé”! Íé”( Íé$”) Íé%—” Íê” Íê	” Íê
+” Íê” Íê” Íê”  Íê—” Íë” Íë	” Íë
+” Íë” Íë” Íë” Íë—” Íë” Íë ” Íë!” Íë*” Íë-” Íë0” Íë1˜” Íì” Íì” Íì” Íì” Íì” Íì” Íì” Íì˜” Íî” Íî
+” Íî” Íî” Íî”$ Íî ”& Íî"”' Íî#—” Íï”
+ Íï” Íï” Íï” Íï” Íï” Íï—” Íï”
+ Íï” Íï” Íï#” Íï&” Íï)” Íï*™” Íï+”
+ Íï-” Íï.” Íï6” Íï9” ÍïÌA” ÍïÌB”$ ÍïÌG”% ÍïÌH›” Íğ”
+ Íğ” Íğ” Íğ” Íğ” Íğ”$ Íğ ”% Íğ!”- Íğ)”. Íğ*”/ Íğ+™” Íñ”
+ Íñ” Íñ” Íñ” Íñ” Íñ”. Íñ*”0 Íñ,”1 Íñ-™” Íò”
+ Íò” Íò” Íò” Íò”# Íò”& Íò"”* Íò&”+ Íò'™” Íò(”
+ Íò*” Íò+” Íò6” Íò7”" ÍòÌB”% ÍòÌE”' ÍòÌG”( ÍòÌH™” Íó”
+ Íó” Íó” Íó” Íó”$ Íó ”' Íó#”+ Íó'”, Íó(™” Íó)”
+ Íó+” Íó,” Íó7” Íó8”  ÍóÌA”# ÍóÌD”% ÍóÌF”& ÍóÌG—” Íô”
+ Íô” Íô” Íô” Íô” Íô” Íô—” Íô”
+ Íô” Íô” Íô$” Íô'” Íô*” Íô+˜” Íõ” Íõ” Íõ” Íõ” Íõ” Íõ” Íõ” Íõ”” Í÷” Í÷” Í÷” Í÷’” Íø” Íø’” Íú”$ Íú"‘” Íü‘” Íş’” Íÿ” Íÿ–” Í ” Í ” Í ” Í ” Í ”  Í ’” Í” Í‘” Í‘” Í”” Í” Í	” Í
+” Í —” Í” Í” Í	” Í” Í” Í”  Í’” Í” Í‘” Í
+‘” Í”” Í” Í” Í” Í*” Í” Í” Í” Í”' Í#”( Í$”, Í(”- Í)”8 Í4”: Í6”ÌF ÍÌB”ÌG ÍÌC”ÌH ÍÌD’” Í” Í‘” Í‘” Í’” Í” Í–” Í” Í” Í	”# Í”% Í!”& Í"š” Í” Í” Í” Í” Í”! Í”1 Í-”2 Í.”6 Í2”8 Í4š” Í” Í” Í” Í”& Í ”) Í#”7 Í1”8 Í2”ÌM ÍÌG”ÌN ÍÌH‘”	 Í–” Í” Í” Í” Í” Í” Í’” Í” Í‘” Í‘” Í’” Í ” Í –” Í!” Í!” Í!	”# Í!”% Í!!”& Í!"–” Í"” Í"” Í"	” Í"” Í"” Í"’” Í#” Í#‘” Í%‘” Í'’” Í(” Í(–” Í)” Í)” Í)	”# Í)”% Í)!”& Í)"š” Í*” Í*” Í*” Í*” Í*”! Í*”1 Í*-”2 Í*.”6 Í*2”8 Í*4Ü ” Í+” Í+” Í+” Í+” Í+” Í+” Í+” Í+”- Í+'”. Í+(”ÌC Í+=”ÌF Í+Ì@”ÌJ Í+ÌD”ÌK Í+ÌE”ÌY Í+ÌS”ÌZ Í+ÌT”Ì[ Í+ÌU‘”	 Í,—” Í-” Í-” Í-” Í-” Í-” Í-” Í-’” Í.” Í.‘” Í0‘” Í2’” Í3” Í3š” Í4” Í4” Í4” Í4” Í4”! Í4”1 Í4-”2 Í4.”6 Í42”8 Í44œ” Í5” Í5” Í5” Í5”$ Í5”% Í5”+ Í5%”. Í5(”< Í56”= Í57”ÌN Í5ÌH”ÌO Í5ÌI‘”	 Í6–” Í7” Í7” Í7” Í7” Í7” Í7’” Í8” Í8‘” Í:‘” Í<’” Í=” Í=š” Í>” Í>” Í>” Í>” Í>”! Í>”1 Í>-”2 Í>.”6 Í>2”8 Í>4–” Í?” Í?”! Í?”" Í?”3 Í?-”4 Í?.‘”	 Í@•” ÍA” ÍA” ÍA” ÍA” ÍA’” ÍB” ÍB’” ÍD
+” ÍD ™” ÍE” ÍE
+” ÍE” ÍE” ÍE” ÍE”' ÍE#”) ÍE%”* ÍE&˜” ÍF” ÍF” ÍF” ÍF” ÍF”# ÍF”( ÍF$”* ÍF&—” ÍG” ÍG
+” ÍG” ÍG”! ÍG”& ÍG ”' ÍG!—” ÍH” ÍH
+” ÍH” ÍH”" ÍH”# ÍH”$ ÍH‘”	 ÍI’” ÍJ” ÍJ‘” ÍKÔrH–§version¤file§sources®sourcesContent¥names¨mappingsÀ‘À‘ÀÜ‘”    ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”  	 ‘”  
+ ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”    ‘”  ! ‘”  " ‘”  # ‘”  $ ‘”  % ‘”  & ‘”  ' ‘”  ( ‘”  ) ‘”  * ‘”  + ‘”  , ‘”  - ‘”  . ‘”  / ‘”  0 ‘”  1 ‘”  2 ‘”  3 ‘”  4 ‘”  5 ‘”  6 ‘”  7 ‘”  8 ‘”  9 ‘”  : ‘”  ; ‘”  < ‘”  = ‘”  > ‘”  ? ‘”  Ì@ ‘”  ÌA ‘”  ÌB ‘”  ÌC ‘”  ÌD ‘”  ÌE ‘”  ÌF ‘”  ÌG ‘”  ÌH ‘”  ÌI ‘”  ÌJ ‘”  ÌK ‘”  ÌL ‘”  ÌM ‘”  ÌN ‘”  ÌO ‘”  ÌP ‘”  ÌQ ‘”  ÌR ‘”  ÌS ‘”  ÌT ‘”  ÌU ‘”  ÌV ‘”  ÌW ‘”  ÌX ‘”  ÌY ‘”  ÌZ ‘”  Ì[ ‘”  Ì\ ‘”  Ì] ‘”  Ì^ ‘”  Ì_ ‘”  Ì` ‘”  Ìa ‘”  Ìb ‘”  Ìc ‘”  Ìd ‘”  Ìe ‘”  Ìf ‘”  Ìg ‘”  Ìh ‘”  Ìi ‘”  Ìj ‘”  Ìk ‘”  Ìl ‘”  Ìm ‘”  Ìn ‘”  Ìo ‘”  Ìp ‘”  Ìq ‘”  Ìr ‘”  Ìs ‘”  Ìt ‘”  Ìu ‘”  Ìv ‘”  Ìw ‘”  Ìx ‘”  Ìy ‘”  Ìz ‘”  Ì{ ‘”  Ì| ‘”  Ì} ‘”  Ì~ ‘”  Ì ‘”  Ì€ ‘”  Ì ‘”  Ì‚ ‘”  Ìƒ ‘”  Ì„ ‘”  Ì… ‘”  Ì† ‘”  Ì‡ ‘”  Ìˆ ‘”  Ì‰ ‘”  ÌŠ ‘”  Ì‹ ‘”  ÌŒ ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì‘ ‘”  Ì’ ‘”  Ì“ ‘”  Ì” ‘”  Ì• ‘”  Ì– ‘”  Ì— ‘”  Ì˜ ‘”  Ì™ ‘”  Ìš ‘”  Ì› ‘”  Ìœ ‘”  Ì ‘”  Ì ‘”  ÌŸ ‘”  Ì  ‘”  Ì¡ ‘”  Ì¢ ‘”  Ì£ ‘”  Ì¤ ‘”  Ì¥ ‘”  Ì¦ ‘”  Ì§ ‘”  Ì¨ ‘”  Ì© ‘”  Ìª ‘”  Ì« ‘”  Ì¬ ‘”  Ì­ ‘”  Ì® ‘”  Ì¯ ‘”  Ì° ‘”  Ì± ‘”  Ì² ‘”  Ì³ ‘”  Ì´ ‘”  Ìµ ‘”  Ì¶ ‘”  Ì· ‘”  Ì¸ ‘”  Ì¹ ‘”  Ìº ‘”  Ì» ‘”  Ì¼ ‘”  Ì½ ‘”  Ì¾ ‘”  Ì¿ ‘”  ÌÀ ‘”  ÌÁ ‘”  ÌÂ ‘”  ÌÃ ‘”  ÌÄ ‘”  ÌÅ ‘”  ÌÆ ‘”  ÌÇ ‘”  ÌÈ ‘”  ÌÉ ‘”  ÌÊ ‘”  ÌË ‘”  ÌÌ ‘”  ÌÍ ‘”  ÌÎ ‘”  ÌÏ ‘”  ÌĞ ‘”  ÌÑ ‘”  ÌÒ ‘”  ÌÓ ‘”  ÌÔ ‘”  ÌÕ ‘”  ÌÖ ‘”  Ì× ‘”  ÌØ ‘”  ÌÙ ‘”  ÌÚ ‘”  ÌÛ ‘”  ÌÜ ‘”  Ìİ ‘”  ÌŞ ‘”  Ìß ‘”  Ìà ‘”  Ìá ‘”  Ìâ ‘”  Ìã ‘”  Ìä ‘”  Ìå ‘”  Ìæ ‘”  Ìç ‘”  Ìè ‘”  Ìé ‘”  Ìê ‘”  Ìë ‘”  Ìì ‘”  Ìí ‘”  Ìî ‘”  Ìï ‘”  Ìğ ‘”  Ìñ ‘”  Ìò ‘”  Ìó ‘”  Ìô ‘”  Ìõ ‘”  Ìö ‘”  Ì÷ ‘”  Ìø ‘”  Ìù ‘”  Ìú ‘”  Ìû ‘”  Ìü ‘”  Ìı ‘”  Ìş ‘”  Ìÿ ‘”  Í  ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í	 ‘”  Í
+ ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í  ‘”  Í! ‘”  Í" ‘”  Í# ‘”  Í$ ‘”  Í% ‘”  Í& ‘”  Í' ‘”  Í( ‘”  Í) ‘”  Í* ‘”  Í+ ‘”  Í, ‘”  Í- ‘”  Í. ‘”  Í/ ‘”  Í0 ‘”  Í1 ‘”  Í2 ‘”  Í3 ‘”  Í4 ‘”  Í5 ‘”  Í6 ‘”  Í7 ‘”  Í8 ‘”  Í9 ‘”  Í: ‘”  Í; ‘”  Í< ‘”  Í= ‘”  Í> ‘”  Í? ‘”  Í@ ‘”  ÍA ‘”  ÍB ‘”  ÍC ‘”  ÍD ‘”  ÍE ‘”  ÍF ‘”  ÍG ‘”  ÍH ‘”  ÍI ‘”  ÍJ ‘”  ÍK ‘”  ÍL ‘”  ÍM ‘”  ÍN ‘”  ÍO ‘”  ÍP ‘”  ÍQ ‘”  ÍR ‘”  ÍS ‘”  ÍT ‘”  ÍU ‘”  ÍV ‘”  ÍW ‘”  ÍX ‘”  ÍY ‘”  ÍZ ‘”  Í[ ‘”  Í\ ‘”  Í] ‘”  Í^ ‘”  Í_ ‘”  Í` ‘”  Ía ‘”  Íb ‘”  Íc ‘”  Íd ‘”  Íe ‘”  Íf ‘”  Íg ‘”  Íh ‘”  Íi ‘”  Íj ‘”  Ík ‘”  Íl ‘”  Ím ‘”  Ín ‘”  Ío ‘”  Íp ‘”  Íq ‘”  Ír ‘”  Ís ‘”  Ít ‘”  Íu ‘”  Ív ‘”  Íw ‘”  Íx ‘”  Íy ‘”  Íz ‘”  Í{ ‘”  Í| ‘”  Í} ‘”  Í~ ‘”  Í ‘”  Í€ ‘”  Í ‘”  Í‚ ‘”  Íƒ ‘”  Í„ ‘”  Í… ‘”  Í† ‘”  Í‡ ‘”  Íˆ ‘”  Í‰ ‘”  ÍŠ ‘”  Í‹ ‘”  ÍŒ ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í‘ ‘”  Í’ ‘”  Í“ ‘”  Í” ‘”  Í• ‘”  Í– ‘”  Í— ‘”  Í˜ ‘”  Í™ ‘”  Íš ‘”  Í› ‘”  Íœ ‘”  Í ‘”  Í ‘”  ÍŸ ‘”  Í  ‘”  Í¡ ‘”  Í¢ ‘”  Í£ ‘”  Í¤ ‘”  Í¥ ‘”  Í¦ ‘”  Í§ ‘”  Í¨ ‘”  Í© ‘”  Íª ‘”  Í« ‘”  Í¬ ‘”  Í­ ‘”  Í® ‘”  Í¯ ‘”  Í° ‘”  Í± ‘”  Í² ‘”  Í³ ‘”  Í´ ‘”  Íµ ‘”  Í¶ ‘”  Í· ‘”  Í¸ ‘”  Í¹ ‘”  Íº ‘”  Í» ‘”  Í¼ ‘”  Í½ ‘”  Í¾ ‘”  Í¿ ‘”  ÍÀ ‘”  ÍÁ ‘”  ÍÂ ‘”  ÍÃ ‘”  ÍÄ ‘”  ÍÅ ‘”  ÍÆ ‘”  ÍÇ ‘”  ÍÈ ‘”  ÍÉ ‘”  ÍÊ ‘”  ÍË ‘”  ÍÌ ‘”  ÍÍ ‘”  ÍÎ ‘”  ÍÏ ‘”  ÍĞ ‘”  ÍÑ ‘”  ÍÒ ‘”  ÍÓ ‘”  ÍÔ ‘”  ÍÕ ‘”  ÍÖ ‘”  Í× ‘”  ÍØ ‘”  ÍÙ ‘”  ÍÚ ‘”  ÍÛ ‘”  ÍÜ ‘”  Íİ ‘”  ÍŞ ‘”  Íß ‘”  Íà ‘”  Íá ‘”  Íâ ‘”  Íã ‘”  Íä ‘”  Íå ‘”  Íæ ‘”  Íç ‘”  Íè ‘”  Íé ‘”  Íê ‘”  Íë ‘”  Íì ‘”  Íí ‘”  Íî ‘”  Íï ‘”  Íğ ‘”  Íñ ‘”  Íò ‘”  Íó ‘”  Íô ‘”  Íõ ‘”  Íö ‘”  Í÷ ‘”  Íø ‘”  Íù ‘”  Íú ‘”  Íû ‘”  Íü ‘”  Íı ‘”  Íş ‘”  Íÿ ‘”  Í  ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í	 ‘”  Í
+ ÔrI’§missing¦pluginÃ¦genAbcÂÔ  ÔrJ”²dynamicImportCache¹exportAllDeclarationCache»exportNamedDeclarationCache«importCache‘ÔrK–¤type¥start£end«declarationªspecifiers¦source¶ExportNamedDeclarationÍíÍG}ÔrL–¤type¥start£end¢idªsuperClass¤body°ClassDeclarationÍôÍG}ÔrM”¤type¥start£end¤nameªIdentifierÍúÍ¨AppStateÀÔrN”¤type¥start£end¤body©ClassBodyÍÍG}Ü ,ÔrO˜¤type¥start£end¦static¨computed£key¤kind¥value°MethodDefinitionÍ
+Í
+ÔÂÂMªIdentifierÍ
+Í«constructor«constructorÔrP™¤type¥start£end¢idªexpression©generator¥async¦params¤body²FunctionExpressionÍÍ
+ÔÀÂÂÂN®BlockStatementÍÍ
+ÔÜ ÔrQ”¤type¥start£endªexpression³ExpressionStatementÍ4Í]ÔrR–¤type¥start£end¨operator¤left¥right´AssignmentExpressionÍ4Í\¡=ÔrS—¤type¥start£end¦object¨property¨computed¨optional°MemberExpressionÍ4ÍCÔrT“¤type¥start£end®ThisExpressionÍ4Í8MªIdentifierÍ9ÍCªfamilyRepoÂÂÔrU•¤type¥start£end¦callee©arguments­NewExpressionÍFÍ\MªIdentifierÍJÍZ°FamilyRepositoryQ³ExpressionStatementÍgÍŒR´AssignmentExpressionÍgÍ‹¡=S°MemberExpressionÍgÍtT®ThisExpressionÍgÍkMªIdentifierÍlÍt¨foodRepoÂÂU­NewExpressionÍwÍ‹MªIdentifierÍ{Í‰®FoodRepositoryQ³ExpressionStatementÍ–ÍÁR´AssignmentExpressionÍ–ÍÀ¡=S°MemberExpressionÍ–Í¦T®ThisExpressionÍ–ÍšMªIdentifierÍ›Í¦«historyRepoÂÂU­NewExpressionÍ©ÍÀMªIdentifierÍ­Í¾±HistoryRepositoryQ³ExpressionStatementÍËÍğR´AssignmentExpressionÍËÍï¡=S°MemberExpressionÍËÍØT®ThisExpressionÍËÍÏMªIdentifierÍĞÍØ¨ruleRepoÂÂU­NewExpressionÍÛÍïMªIdentifierÍßÍí®RuleRepositoryQ³ExpressionStatementÍÍ.R´AssignmentExpressionÍÍ-¡=S°MemberExpressionÍÍT®ThisExpressionÍÍMªIdentifierÍÍªruleEngineÂÂU­NewExpressionÍÍ-MªIdentifierÍ!Í+ªRuleEngineQ³ExpressionStatementÍ8ÍdR´AssignmentExpressionÍ8Íc¡=S°MemberExpressionÍ8ÍFT®ThisExpressionÍ8Í<MªIdentifierÍ=ÍF©recEngineÂÂU­NewExpressionÍIÍcMªIdentifierÍMÍa´RecommendationEngineQ³ExpressionStatementÍnÍŸR´AssignmentExpressionÍnÍ¡=S°MemberExpressionÍnÍ„T®ThisExpressionÍnÍrMªIdentifierÍsÍ„±mealBalanceEngineÂÂU­NewExpressionÍ‡ÍMªIdentifierÍ‹Íœ±MealBalanceEngineQ³ExpressionStatementÍ©ÍâR´AssignmentExpressionÍ©Íá¡=S°MemberExpressionÍ©ÍÃT®ThisExpressionÍ©Í­MªIdentifierÍ®ÍÃµchildProtectionEngineÂÂU­NewExpressionÍÆÍáMªIdentifierÍÊÍßµChildProtectionEngineQ³ExpressionStatementÍìÍR´AssignmentExpressionÍìÍ¡=S°MemberExpressionÍìÍT®ThisExpressionÍìÍğMªIdentifierÍñÍ±credibilityEngineÂÂU­NewExpressionÍÍMªIdentifierÍ	Í±CredibilityEngineQ³ExpressionStatementÍ'ÍXR´AssignmentExpressionÍ'ÍW¡=S°MemberExpressionÍ'Í=T®ThisExpressionÍ'Í+MªIdentifierÍ,Í=±basketCheckEngineÂÂU­NewExpressionÍ@ÍWMªIdentifierÍDÍU±BasketCheckEngineQ³ExpressionStatementÍbÍ•R´AssignmentExpressionÍbÍ”¡=S°MemberExpressionÍbÍyT®ThisExpressionÍbÍfMªIdentifierÍgÍy²weeklyReportEngineÂÂU­NewExpressionÍ|Í”MªIdentifierÍ€Í’²WeeklyReportEngineQ³ExpressionStatementÍŸÍÔR´AssignmentExpressionÍŸÍÓ¡=S°MemberExpressionÍŸÍ·T®ThisExpressionÍŸÍ£MªIdentifierÍ¤Í·³elderFriendlyEngineÂÂU­NewExpressionÍºÍÓMªIdentifierÍ¾ÍÑ³ElderFriendlyEngineQ³ExpressionStatementÍŞÍ	R´AssignmentExpressionÍŞÍ	¡=S°MemberExpressionÍŞÍ÷T®ThisExpressionÍŞÍâMªIdentifierÍãÍ÷´positiveAdviceEngineÂÂU­NewExpressionÍúÍ	MªIdentifierÍşÍ	´PositiveAdviceEngineQ³ExpressionStatementÍ	3Í	\R´AssignmentExpressionÍ	3Í	[¡=S°MemberExpressionÍ	3Í	ET®ThisExpressionÍ	3Í	7MªIdentifierÍ	8Í	E­healthServiceÂÂU­NewExpressionÍ	HÍ	[MªIdentifierÍ	LÍ	Y­HealthServiceQ³ExpressionStatementÍ	wÍ	R´AssignmentExpressionÍ	wÍ	¡=S°MemberExpressionÍ	wÍ	ˆT®ThisExpressionÍ	wÍ	{MªIdentifierÍ	|Í	ˆ¬membersCacheÂÂÔrV”¤type¥start£end¨elements¯ArrayExpressionÍ	‹Í	Q³ExpressionStatementÍ	˜Í	¼R´AssignmentExpressionÍ	˜Í	»¡=S°MemberExpressionÍ	˜Í	¯T®ThisExpressionÍ	˜Í	œMªIdentifierÍ	Í	¯²healthSignalsCacheÂÂU­NewExpressionÍ	²Í	»MªIdentifierÍ	¶Í	¹£MapQ³ExpressionStatementÍ	ÆÍ	éR´AssignmentExpressionÍ	ÆÍ	è¡=S°MemberExpressionÍ	ÆÍ	ÜT®ThisExpressionÍ	ÆÍ	ÊMªIdentifierÍ	ËÍ	Ü±dailyBudgetsCacheÂÂU­NewExpressionÍ	ßÍ	èMªIdentifierÍ	ãÍ	æ£MapQ³ExpressionStatementÍ	óÍ
+R´AssignmentExpressionÍ	óÍ
+¡=S°MemberExpressionÍ	óÍ
+T®ThisExpressionÍ	óÍ	÷MªIdentifierÍ	øÍ
+­isInitializedÂÂÔrW•¤type¥start£end¥value£raw§LiteralÍ
+Í
+Â¥falseQ³ExpressionStatementÍ
+/Í
+ER´AssignmentExpressionÍ
+/Í
+D¡=S°MemberExpressionÍ
+/Í
+?T®ThisExpressionÍ
+/Í
+3MªIdentifierÍ
+4Í
+?«basketItemsÂÂV¯ArrayExpressionÍ
+BÍ
+DQ³ExpressionStatementÍ
+`Í
+‰R´AssignmentExpressionÍ
+`Í
+ˆ¡=S°MemberExpressionÍ
+`Í
+pT®ThisExpressionÍ
+`Í
+dMªIdentifierÍ
+eÍ
+p«currentTierÂÂS°MemberExpressionÍ
+sÍ
+ˆMªIdentifierÍ
+sÍ
+ƒ°SubscriptionTierMªIdentifierÍ
+„Í
+ˆ¤FREEÂÂQ³ExpressionStatementÍ
+“Í
+«R´AssignmentExpressionÍ
+“Í
+ª¡=S°MemberExpressionÍ
+“Í
+¦T®ThisExpressionÍ
+“Í
+—MªIdentifierÍ
+˜Í
+¦®todayScanCountÂÂW§LiteralÍ
+©Í
+ª ¡0Q³ExpressionStatementÍ
+µÍ
+ÍR´AssignmentExpressionÍ
+µÍ
+Ì¡=S°MemberExpressionÍ
+µÍ
+ÇT®ThisExpressionÍ
+µÍ
+¹MªIdentifierÍ
+ºÍ
+Ç­todayScanDateÂÂW§LiteralÍ
+ÊÍ
+Ì ¢''O°MethodDefinitionÍ
+ûÍ—ÃÂMªIdentifierÍÍ«getInstance¦methodP²FunctionExpressionÍÍ—ÀÂÂÂN®BlockStatementÍÍ—’ÔrX–¤type¥start£end¤testªconsequent©alternate«IfStatementÍÍnÔrY–¤type¥start£end¨operator¦prefix¨argument¯UnaryExpressionÍÍ0¡!ÃMªIdentifierÍ Í0°appStateInstanceN®BlockStatementÍ2Ín‘Q³ExpressionStatementÍAÍcR´AssignmentExpressionÍAÍb¡=MªIdentifierÍAÍQ°appStateInstanceU­NewExpressionÍTÍbMªIdentifierÍXÍ`¨AppStateÀÔrZ”¤type¥start£end¨argument¯ReturnStatementÍxÍMªIdentifierÍÍ°appStateInstanceO°MethodDefinitionÍÁÍÂÂMªIdentifierÍÇÍË¤init¦methodP²FunctionExpressionÍËÍÀÂÂÃ‘MªIdentifierÍÌÍÓ§contextN®BlockStatementÍÕÍ’X«IfStatementÍàÍS°MemberExpressionÍäÍöT®ThisExpressionÍäÍèMªIdentifierÍéÍö­isInitializedÂÂZ¯ReturnStatementÍÍÀÀÔr[–¤type¥start£end¥block§handler©finalizer¬TryStatementÍÍN®BlockStatementÍÍšQ³ExpressionStatementÍ@ÍdZ¯AwaitExpressionÍ@ÍcÔr\–¤type¥start£end¦callee©arguments¨optional®CallExpressionÍFÍcS°MemberExpressionÍFÍZS°MemberExpressionÍFÍUT®ThisExpressionÍFÍJMªIdentifierÍKÍUªfamilyRepoÂÂMªIdentifierÍVÍZ¤initÂÂ‘MªIdentifierÍ[Íb§contextÂÔr]•¤type¥start£end¬declarations¤kind³VariableDeclarationÍrÍÿ‘Ôr^•¤type¥start£end¢id¤init²VariableDeclaratorÍxÍşMªIdentifierÍxÍ©rdbConfigÔr_”¤type¥start£endªproperties°ObjectExpressionÍ„Íş’Ôr`™¤type¥start£end¦method©shorthand¨computed£key¥value¤kind¨PropertyÍ—Í­ÂÂÂMªIdentifierÍ—Í›¤nameW§LiteralÍÍ­®food_helper.db°'food_helper.db'¤init`¨PropertyÍÀÍïÂÂÂMªIdentifierÍÀÍÍ­securityLevelS°MemberExpressionÍÏÍïS°MemberExpressionÍÏÍìMªIdentifierÍÏÍŞ¯relationalStoreMªIdentifierÍßÍì­SecurityLevelÂÂMªIdentifierÍíÍï¢S1ÂÂ¤init¥const]³VariableDeclarationÍÍT‘^²VariableDeclaratorÍÍSMªIdentifierÍÍ¨rdbStoreZ¯AwaitExpressionÍÍS\®CallExpressionÍ$ÍSS°MemberExpressionÍ$Í?MªIdentifierÍ$Í3¯relationalStoreMªIdentifierÍ4Í?«getRdbStoreÂÂ’MªIdentifierÍ@ÍG§contextMªIdentifierÍIÍR©rdbConfigÂ¥constQ³ExpressionStatementÍbÍ…Z¯AwaitExpressionÍbÍ„\®CallExpressionÍhÍ„S°MemberExpressionÍhÍzS°MemberExpressionÍhÍuT®ThisExpressionÍhÍlMªIdentifierÍmÍu¨foodRepoÂÂMªIdentifierÍvÍz¤initÂÂ‘MªIdentifierÍ{Íƒ¨rdbStoreÂQ³ExpressionStatementÍ“Í¹Z¯AwaitExpressionÍ“Í¸\®CallExpressionÍ™Í¸S°MemberExpressionÍ™Í®S°MemberExpressionÍ™Í©T®ThisExpressionÍ™ÍMªIdentifierÍÍ©«historyRepoÂÂMªIdentifierÍªÍ®¤initÂÂ‘MªIdentifierÍ¯Í·¨rdbStoreÂQ³ExpressionStatementÍáÍ\®CallExpressionÍáÍS°MemberExpressionÍáÍùS°MemberExpressionÍáÍîT®ThisExpressionÍáÍåMªIdentifierÍæÍî¨ruleRepoÂÂMªIdentifierÍïÍùªsetContextÂÂ‘MªIdentifierÍúÍ§contextÂQ³ExpressionStatementÍ&Í`R´AssignmentExpressionÍ&Í_¡=S°MemberExpressionÍ&Í7T®ThisExpressionÍ&Í*MªIdentifierÍ+Í7¬membersCacheÂÂZ¯AwaitExpressionÍ:Í_\®CallExpressionÍ@Í_S°MemberExpressionÍ@Í]S°MemberExpressionÍ@ÍOT®ThisExpressionÍ@ÍDMªIdentifierÍEÍOªfamilyRepoÂÂMªIdentifierÍPÍ]­getAllMembersÂÂÂQ³ExpressionStatementÍnÍZ¯AwaitExpressionÍnÍ\®CallExpressionÍtÍS°MemberExpressionÍtÍŒT®ThisExpressionÍtÍxMªIdentifierÍyÍŒ³restoreTodayBudgetsÂÂÂQ³ExpressionStatementÍÍ·R´AssignmentExpressionÍÍ¶¡=S°MemberExpressionÍÍ¯T®ThisExpressionÍÍ¡MªIdentifierÍ¢Í¯­isInitializedÂÂW§LiteralÍ²Í¶Ã¤trueQ³ExpressionStatementÍÅÍú\®CallExpressionÍÅÍùS°MemberExpressionÍÅÍÏMªIdentifierÍÅÍÊ¥hilogMªIdentifierÍËÍÏ¤infoÂÂ“MªIdentifierÍĞÍÛ«DOMAIN_ZEROMªIdentifierÍİÍà£TAGW§LiteralÍâÍø´AppState initialized¶'AppState initialized'ÂÔra•¤type¥start£end¥param¤body«CatchClauseÍÍMªIdentifierÍÍ¥errorN®BlockStatementÍÍ“Q³ExpressionStatementÍ,Í…\®CallExpressionÍ,Í„S°MemberExpressionÍ,Í7MªIdentifierÍ,Í1¥hilogMªIdentifierÍ2Í7¥errorÂÂ”MªIdentifierÍ8ÍC«DOMAIN_ZEROMªIdentifierÍEÍH£TAGW§LiteralÍJÍlÙ AppState init failed: %{public}sÙ"'AppState init failed: %{public}s'\®CallExpressionÍnÍƒS°MemberExpressionÍnÍ|MªIdentifierÍnÍr¤JSONMªIdentifierÍsÍ|©stringifyÂÂ‘MªIdentifierÍ}Í‚¥errorÂÂQ³ExpressionStatementÍ°ÍàR´AssignmentExpressionÍ°Íß¡=S°MemberExpressionÍ°ÍÁT®ThisExpressionÍ°Í´MªIdentifierÍµÍÁ¬membersCacheÂÂ\®CallExpressionÍÄÍßS°MemberExpressionÍÄÍİT®ThisExpressionÍÄÍÈMªIdentifierÍÉÍİ´createDefaultMembersÂÂÂQ³ExpressionStatementÍîÍR´AssignmentExpressionÍîÍ¡=S°MemberExpressionÍîÍ T®ThisExpressionÍîÍòMªIdentifierÍóÍ ­isInitializedÂÂW§LiteralÍÍÃ¤trueÀO°MethodDefinitionÍhÍ\ÂÂMªIdentifierÍnÍ{­getAllMembers¦methodP²FunctionExpressionÍ{Í\ÀÂÂÃN®BlockStatementÍ~Í\’X«IfStatementÍ‰Í2Ôrb–¤type¥start£end¤left¨operator¥right°BinaryExpressionÍÍ«S°MemberExpressionÍÍ¥S°MemberExpressionÍÍT®ThisExpressionÍÍ‘MªIdentifierÍ’Í¬membersCacheÂÂMªIdentifierÍŸÍ¥¦lengthÂÂ£===W§LiteralÍªÍ« ¡0N®BlockStatementÍ­Í2’Q³ExpressionStatementÍ¼ÍöR´AssignmentExpressionÍ¼Íõ¡=S°MemberExpressionÍ¼ÍÍT®ThisExpressionÍ¼ÍÀMªIdentifierÍÁÍÍ¬membersCacheÂÂZ¯AwaitExpressionÍĞÍõ\®CallExpressionÍÖÍõS°MemberExpressionÍÖÍóS°MemberExpressionÍÖÍåT®ThisExpressionÍÖÍÚMªIdentifierÍÛÍåªfamilyRepoÂÂMªIdentifierÍæÍó­getAllMembersÂÂÂX«IfStatementÍÍ'b°BinaryExpressionÍÍ&S°MemberExpressionÍÍ S°MemberExpressionÍÍT®ThisExpressionÍÍMªIdentifierÍÍ¬membersCacheÂÂMªIdentifierÍÍ ¦lengthÂÂ£===W§LiteralÍ%Í& ¡0N®BlockStatementÍ(Í'’Q³ExpressionStatementÍ[Í‹R´AssignmentExpressionÍ[ÍŠ¡=S°MemberExpressionÍ[ÍlT®ThisExpressionÍ[Í_MªIdentifierÍ`Íl¬membersCacheÂÂ\®CallExpressionÍoÍŠS°MemberExpressionÍoÍˆT®ThisExpressionÍoÍsMªIdentifierÍtÍˆ´createDefaultMembersÂÂÂÔrc—¤type¥start£end¥await¤left¥right¤body®ForOfStatementÍÍÂ]³VariableDeclarationÍ¢Í®‘^²VariableDeclaratorÍ¨Í®MªIdentifierÍ¨Í®¦memberÀ¥constS°MemberExpressionÍ²ÍÃT®ThisExpressionÍ²Í¶MªIdentifierÍ·ÍÃ¬membersCacheÂÂN®BlockStatementÍÅÍ‘Q³ExpressionStatementÍÜÍZ¯AwaitExpressionÍÜÍ\®CallExpressionÍâÍS°MemberExpressionÍâÍüS°MemberExpressionÍâÍñT®ThisExpressionÍâÍæMªIdentifierÍçÍñªfamilyRepoÂÂMªIdentifierÍòÍüªsaveMemberÂÂ‘MªIdentifierÍıÍ¦memberÂÀÀZ¯ReturnStatementÍ<ÍUS°MemberExpressionÍCÍTT®ThisExpressionÍCÍGMªIdentifierÍHÍT¬membersCacheÂÂO°MethodDefinitionÍÍâÂÂMªIdentifierÍ‡Í‘ªsaveMember¦methodP²FunctionExpressionÍ‘ÍâÀÂÂÃ‘MªIdentifierÍ’Í™§profileN®BlockStatementÍ›Íâ“Q³ExpressionStatementÍ¦ÍĞZ¯AwaitExpressionÍ¦ÍÏ\®CallExpressionÍ¬ÍÏS°MemberExpressionÍ¬ÍÆS°MemberExpressionÍ¬Í»T®ThisExpressionÍ¬Í°MªIdentifierÍ±Í»ªfamilyRepoÂÂMªIdentifierÍ¼ÍÆªsaveMemberÂÂ‘MªIdentifierÍÇÍÎ§profileÂ]³VariableDeclarationÍëÍ;‘^²VariableDeclaratorÍñÍ:MªIdentifierÍñÍö¥index\®CallExpressionÍùÍ:S°MemberExpressionÍùÍS°MemberExpressionÍùÍ
+T®ThisExpressionÍùÍıMªIdentifierÍşÍ
+¬membersCacheÂÂMªIdentifierÍÍ©findIndexÂÂ‘P·ArrowFunctionExpressionÍÍ9ÀÃÂÂ‘MªIdentifierÍÍ¡mb°BinaryExpressionÍÍ9S°MemberExpressionÍÍ$MªIdentifierÍÍ¡mMªIdentifierÍÍ$¨memberIdÂÂ£===S°MemberExpressionÍ)Í9MªIdentifierÍ)Í0§profileMªIdentifierÍ1Í9¨memberIdÂÂÂ¥constX«IfStatementÍEÍÛb°BinaryExpressionÍIÍSMªIdentifierÍIÍN¥index¢>=W§LiteralÍRÍS ¡0N®BlockStatementÍUÍ’‘Q³ExpressionStatementÍdÍ‡R´AssignmentExpressionÍdÍ†¡=S°MemberExpressionÍdÍ|S°MemberExpressionÍdÍuT®ThisExpressionÍdÍhMªIdentifierÍiÍu¬membersCacheÂÂMªIdentifierÍvÍ{¥indexÃÂMªIdentifierÍÍ†§profileN®BlockStatementÍ¡ÍÛ‘Q³ExpressionStatementÍ°ÍĞ\®CallExpressionÍ°ÍÏS°MemberExpressionÍ°ÍÆS°MemberExpressionÍ°ÍÁT®ThisExpressionÍ°Í´MªIdentifierÍµÍÁ¬membersCacheÂÂMªIdentifierÍÂÍÆ¤pushÂÂ‘MªIdentifierÍÇÍÎ§profileÂO°MethodDefinitionÍÍÂÂMªIdentifierÍÍ¬deleteMember¦methodP²FunctionExpressionÍÍÀÂÂÃ‘MªIdentifierÍÍ"¨memberIdN®BlockStatementÍ$Í”Q³ExpressionStatementÍ/Í\Z¯AwaitExpressionÍ/Í[\®CallExpressionÍ5Í[S°MemberExpressionÍ5ÍQS°MemberExpressionÍ5ÍDT®ThisExpressionÍ5Í9MªIdentifierÍ:ÍDªfamilyRepoÂÂMªIdentifierÍEÍQ¬deleteMemberÂÂ‘MªIdentifierÍRÍZ¨memberIdÂQ³ExpressionStatementÍfÍ±R´AssignmentExpressionÍfÍ°¡=S°MemberExpressionÍfÍwT®ThisExpressionÍfÍjMªIdentifierÍkÍw¬membersCacheÂÂ\®CallExpressionÍzÍ°S°MemberExpressionÍzÍ’S°MemberExpressionÍzÍ‹T®ThisExpressionÍzÍ~MªIdentifierÍÍ‹¬membersCacheÂÂMªIdentifierÍŒÍ’¦filterÂÂ‘P·ArrowFunctionExpressionÍ“Í¯ÀÃÂÂ‘MªIdentifierÍ“Í”¡mb°BinaryExpressionÍ˜Í¯S°MemberExpressionÍ˜Í¢MªIdentifierÍ˜Í™¡mMªIdentifierÍšÍ¢¨memberIdÂÂ£!==MªIdentifierÍ§Í¯¨memberIdÂQ³ExpressionStatementÍ»Íä\®CallExpressionÍ»ÍãS°MemberExpressionÍ»ÍÙS°MemberExpressionÍ»ÍÒT®ThisExpressionÍ»Í¿MªIdentifierÍÀÍÒ²healthSignalsCacheÂÂMªIdentifierÍÓÍÙ¦deleteÂÂ‘MªIdentifierÍÚÍâ¨memberIdÂQ³ExpressionStatementÍîÍ\®CallExpressionÍîÍS°MemberExpressionÍîÍS°MemberExpressionÍîÍT®ThisExpressionÍîÍòMªIdentifierÍóÍ±dailyBudgetsCacheÂÂMªIdentifierÍÍ¦deleteÂÂ‘MªIdentifierÍÍ¨memberIdÂO°MethodDefinitionÍÍşÂÂMªIdentifierÍ•Í©´getHealthSignalAsync¦methodP²FunctionExpressionÍ©ÍşÀÂÂÃ‘MªIdentifierÍªÍ²¨memberIdN®BlockStatementÍ´Íş–]³VariableDeclarationÍ¿Íá‘^²VariableDeclaratorÍÅÍàMªIdentifierÍÅÍÊ¥today\®CallExpressionÍÍÍàS°MemberExpressionÍÍÍŞMªIdentifierÍÍÍÕ¨DateUtilMªIdentifierÍÖÍŞ¨getTodayÂÂÂ¥const]³VariableDeclarationÍëÍ ‘^²VariableDeclaratorÍñÍMªIdentifierÍñÍ÷¦cached\®CallExpressionÍúÍS°MemberExpressionÍúÍS°MemberExpressionÍúÍT®ThisExpressionÍúÍşMªIdentifierÍÿÍ²healthSignalsCacheÂÂMªIdentifierÍÍ£getÂÂ‘MªIdentifierÍÍ¨memberIdÂ¥constX«IfStatementÍ*Í¥b±LogicalExpressionÍ.Í{b±LogicalExpressionÍ.ÍMMªIdentifierÍ.Í4¦cached¢&&b°BinaryExpressionÍ8ÍMS°MemberExpressionÍ8ÍCMªIdentifierÍ8Í>¦cachedMªIdentifierÍ?ÍC¤dateÂÂ£===MªIdentifierÍHÍM¥today¢&&b°BinaryExpressionÍQÍ{S°MemberExpressionÍQÍ^MªIdentifierÍQÍW¦cachedMªIdentifierÍXÍ^¦sourceÂÂ£===S°MemberExpressionÍcÍ{MªIdentifierÍcÍmªDataSourceMªIdentifierÍnÍ{­HUAWEI_HEALTHÂÂN®BlockStatementÍ}Í¥‘Z¯ReturnStatementÍŒÍšMªIdentifierÍ“Í™¦cachedÀ[¬TryStatementÍÈÍSN®BlockStatementÍÌÍÙ’]³VariableDeclarationÍÛÍ ‘^²VariableDeclaratorÍáÍMªIdentifierÍáÍç¦signalZ¯AwaitExpressionÍêÍ\®CallExpressionÍğÍS°MemberExpressionÍğÍS°MemberExpressionÍğÍT®ThisExpressionÍğÍôMªIdentifierÍõÍ­healthServiceÂÂMªIdentifierÍÍ²getTodayHealthDataÂÂ‘MªIdentifierÍÍ¨memberIdÂ¥constX«IfStatementÍ.ÍÎb°BinaryExpressionÍ2Í\S°MemberExpressionÍ2Í?MªIdentifierÍ2Í8¦signalMªIdentifierÍ9Í?¦sourceÂÂ£===S°MemberExpressionÍDÍ\MªIdentifierÍDÍNªDataSourceMªIdentifierÍOÍ\­HUAWEI_HEALTHÂÂN®BlockStatementÍ^ÍÎ’Q³ExpressionStatementÍqÍŸ\®CallExpressionÍqÍS°MemberExpressionÍqÍŒS°MemberExpressionÍqÍˆT®ThisExpressionÍqÍuMªIdentifierÍvÍˆ²healthSignalsCacheÂÂMªIdentifierÍ‰ÍŒ£setÂÂ’MªIdentifierÍÍ•¨memberIdMªIdentifierÍ—Í¦signalÂZ¯ReturnStatementÍ±Í¿MªIdentifierÍ¸Í¾¦signalÀa«CatchClauseÍãÍSMªIdentifierÍêÍï¥errorN®BlockStatementÍñÍS‘Q³ExpressionStatementÍ ÍH\®CallExpressionÍ ÍGS°MemberExpressionÍ Í
+MªIdentifierÍ Í¥hilogMªIdentifierÍÍ
+¤warnÂÂ“MªIdentifierÍÍ«DOMAIN_ZEROMªIdentifierÍÍ£TAGW§LiteralÍÍFÙ'Health Service read failed, using cacheÙ)'Health Service read failed, using cache'ÂÀX«IfStatementÍsÍÀb±LogicalExpressionÍwÍ–MªIdentifierÍwÍ}¦cached¢&&b°BinaryExpressionÍÍ–S°MemberExpressionÍÍŒMªIdentifierÍÍ‡¦cachedMªIdentifierÍˆÍŒ¤dateÂÂ£===MªIdentifierÍ‘Í–¥todayN®BlockStatementÍ˜ÍÀ‘Z¯ReturnStatementÍ§ÍµMªIdentifierÍ®Í´¦cachedÀZ¯ReturnStatementÍÊÍ÷\®CallExpressionÍÑÍöS°MemberExpressionÍÑÍìT®ThisExpressionÍÑÍÕMªIdentifierÍÖÍì¶getDefaultHealthSignalÂÂ‘MªIdentifierÍíÍõ¨memberIdÂO°MethodDefinitionÍ;ÍVÂÂMªIdentifierÍ;ÍJ¯getHealthSignal¦methodP²FunctionExpressionÍJÍVÀÂÂÂ‘MªIdentifierÍKÍS¨memberIdN®BlockStatementÍUÍV”]³VariableDeclarationÍ`Í‚‘^²VariableDeclaratorÍfÍMªIdentifierÍfÍk¥today\®CallExpressionÍnÍS°MemberExpressionÍnÍMªIdentifierÍnÍv¨DateUtilMªIdentifierÍwÍ¨getTodayÂÂÂ¥const]³VariableDeclarationÍŒÍÁ‘^²VariableDeclaratorÍ’ÍÀMªIdentifierÍ’Í˜¦cached\®CallExpressionÍ›ÍÀS°MemberExpressionÍ›Í¶S°MemberExpressionÍ›Í²T®ThisExpressionÍ›ÍŸMªIdentifierÍ Í²²healthSignalsCacheÂÂMªIdentifierÍ³Í¶£getÂÂ‘MªIdentifierÍ·Í¿¨memberIdÂ¥constX«IfStatementÍËÍb±LogicalExpressionÍÏÍîMªIdentifierÍÏÍÕ¦cached¢&&b°BinaryExpressionÍÙÍîS°MemberExpressionÍÙÍäMªIdentifierÍÙÍß¦cachedMªIdentifierÍàÍä¤dateÂÂ£===MªIdentifierÍéÍî¥todayN®BlockStatementÍğÍ‘Z¯ReturnStatementÍÿÍMªIdentifierÍÍ¦cachedÀZ¯ReturnStatementÍ"ÍO\®CallExpressionÍ)ÍNS°MemberExpressionÍ)ÍDT®ThisExpressionÍ)Í-MªIdentifierÍ.ÍD¶getDefaultHealthSignalÂÂ‘MªIdentifierÍEÍM¨memberIdÂO°MethodDefinitionÍ\ÍÖÂÂMªIdentifierÍ\Ír¶getDefaultHealthSignal¦methodP²FunctionExpressionÍrÍÖÀÂÂÂ‘MªIdentifierÍsÍ{¨memberIdN®BlockStatementÍ}ÍÖ˜]³VariableDeclarationÍˆÍª‘^²VariableDeclaratorÍÍ©MªIdentifierÍÍ”¦signalU­NewExpressionÍ—Í©MªIdentifierÍ›Í§¬HealthSignal¥constQ³ExpressionStatementÍ´ÍÏR´AssignmentExpressionÍ´ÍÎ¡=S°MemberExpressionÍ´ÍÃMªIdentifierÍ´Íº¦signalMªIdentifierÍ»ÍÃ¨memberIdÂÂMªIdentifierÍÆÍÎ¨memberIdQ³ExpressionStatementÍÙÍûR´AssignmentExpressionÍÙÍú¡=S°MemberExpressionÍÙÍäMªIdentifierÍÙÍß¦signalMªIdentifierÍàÍä¤dateÂÂ\®CallExpressionÍçÍúS°MemberExpressionÍçÍøMªIdentifierÍçÍï¨DateUtilMªIdentifierÍğÍø¨getTodayÂÂÂQ³ExpressionStatementÍÍ)R´AssignmentExpressionÍÍ(¡=S°MemberExpressionÍÍMªIdentifierÍÍ¦signalMªIdentifierÍÍ©stepLevelÂÂS°MemberExpressionÍÍ(MªIdentifierÍÍ!©StepLevelMªIdentifierÍ"Í(¦NORMALÂÂQ³ExpressionStatementÍ3ÍYR´AssignmentExpressionÍ3ÍX¡=S°MemberExpressionÍ3ÍEMªIdentifierÍ3Í9¦signalMªIdentifierÍ:ÍE«sleepStatusÂÂS°MemberExpressionÍHÍXMªIdentifierÍHÍS«SleepStatusMªIdentifierÍTÍX¤GOODÂÂQ³ExpressionStatementÍcÍ‹R´AssignmentExpressionÍcÍŠ¡=S°MemberExpressionÍcÍuMªIdentifierÍcÍi¦signalMªIdentifierÍjÍu«weightTrendÂÂS°MemberExpressionÍxÍŠMªIdentifierÍxÍƒ«WeightTrendMªIdentifierÍ„ÍŠ¦STABLEÂÂQ³ExpressionStatementÍ•Í·R´AssignmentExpressionÍ•Í¶¡=S°MemberExpressionÍ•Í¢MªIdentifierÍ•Í›¦signalMªIdentifierÍœÍ¢¦sourceÂÂS°MemberExpressionÍ¥Í¶MªIdentifierÍ¥Í¯ªDataSourceMªIdentifierÍ°Í¶¦MANUALÂÂZ¯ReturnStatementÍÁÍÏMªIdentifierÍÈÍÎ¦signalO°MethodDefinitionÍÿÍaÂÂMªIdentifierÍÿÍ²updateHealthSignal¦methodP²FunctionExpressionÍÍaÀÂÂÂ‘MªIdentifierÍÍ¦signalN®BlockStatementÍÍa‘Q³ExpressionStatementÍ%ÍZ\®CallExpressionÍ%ÍYS°MemberExpressionÍ%Í@S°MemberExpressionÍ%Í<T®ThisExpressionÍ%Í)MªIdentifierÍ*Í<²healthSignalsCacheÂÂMªIdentifierÍ=Í@£setÂÂ’S°MemberExpressionÍAÍPMªIdentifierÍAÍG¦signalMªIdentifierÍHÍP¨memberIdÂÂMªIdentifierÍRÍX¦signalÂO°MethodDefinitionÍŒÍøÂÂMªIdentifierÍ’Í¬ºrequestHealthAuthorization¦methodP²FunctionExpressionÍ¬ÍøÀÂÂÃN®BlockStatementÍ¯Íø‘Z¯ReturnStatementÍºÍñZ¯AwaitExpressionÍÁÍğ\®CallExpressionÍÇÍğS°MemberExpressionÍÇÍîS°MemberExpressionÍÇÍÙT®ThisExpressionÍÇÍËMªIdentifierÍÌÍÙ­healthServiceÂÂMªIdentifierÍÚÍî´requestAuthorizationÂÂÂO°MethodDefinitionÍ%ÍÂÂMªIdentifierÍ+ÍC¸checkHealthAuthorization¦methodP²FunctionExpressionÍCÍÀÂÂÃN®BlockStatementÍFÍ‘Z¯ReturnStatementÍQÍ†Z¯AwaitExpressionÍXÍ…\®CallExpressionÍ^Í…S°MemberExpressionÍ^ÍƒS°MemberExpressionÍ^ÍpT®ThisExpressionÍ^ÍbMªIdentifierÍcÍp­healthServiceÂÂMªIdentifierÍqÍƒ²checkAuthorizationÂÂÂO°MethodDefinitionÍÛÍJÂÂMªIdentifierÍÛÍé®getDailyBudget¦methodP²FunctionExpressionÍéÍJÀÂÂÂ‘MªIdentifierÍêÍò¨memberIdN®BlockStatementÍôÍJ–]³VariableDeclarationÍÿÍ!‘^²VariableDeclaratorÍÍ MªIdentifierÍÍ
+¥today\®CallExpressionÍÍ S°MemberExpressionÍÍMªIdentifierÍÍ¨DateUtilMªIdentifierÍÍ¨getTodayÂÂÂ¥const]³VariableDeclarationÍ+Í_‘^²VariableDeclaratorÍ1Í^MªIdentifierÍ1Í7¦cached\®CallExpressionÍ:Í^S°MemberExpressionÍ:ÍTS°MemberExpressionÍ:ÍPT®ThisExpressionÍ:Í>MªIdentifierÍ?ÍP±dailyBudgetsCacheÂÂMªIdentifierÍQÍT£getÂÂ‘MªIdentifierÍUÍ]¨memberIdÂ¥constX«IfStatementÍiÍ¶b±LogicalExpressionÍmÍŒMªIdentifierÍmÍs¦cached¢&&b°BinaryExpressionÍwÍŒS°MemberExpressionÍwÍ‚MªIdentifierÍwÍ}¦cachedMªIdentifierÍ~Í‚¤dateÂÂ£===MªIdentifierÍ‡ÍŒ¥todayN®BlockStatementÍÍ¶‘Z¯ReturnStatementÍÍ«MªIdentifierÍ¤Íª¦cachedÀ]³VariableDeclarationÍÀÍô‘^²VariableDeclaratorÍÆÍóMªIdentifierÍÆÍÌ¦budget\®CallExpressionÍÏÍóS°MemberExpressionÍÏÍéT®ThisExpressionÍÏÍÓMªIdentifierÍÔÍéµcreateBudgetForMemberÂÂ‘MªIdentifierÍêÍò¨memberIdÂ¥constQ³ExpressionStatementÍşÍ+\®CallExpressionÍşÍ*S°MemberExpressionÍşÍS°MemberExpressionÍşÍT®ThisExpressionÍşÍMªIdentifierÍÍ±dailyBudgetsCacheÂÂMªIdentifierÍÍ£setÂÂ’MªIdentifierÍÍ!¨memberIdMªIdentifierÍ#Í)¦budgetÂZ¯ReturnStatementÍ5ÍCMªIdentifierÍ<ÍB¦budgetO°MethodDefinitionÍPÍ"\ÂÂMªIdentifierÍPÍeµcreateBudgetForMember¦methodP²FunctionExpressionÍeÍ"\ÀÂÂÂ‘MªIdentifierÍfÍn¨memberIdN®BlockStatementÍpÍ"\š]³VariableDeclarationÍ{Í¿‘^²VariableDeclaratorÍÍ¾MªIdentifierÍÍ‡¦member\®CallExpressionÍŠÍ¾S°MemberExpressionÍŠÍ S°MemberExpressionÍŠÍ›T®ThisExpressionÍŠÍMªIdentifierÍÍ›¬membersCacheÂÂMªIdentifierÍœÍ ¤findÂÂ‘P·ArrowFunctionExpressionÍ¡Í½ÀÃÂÂ‘MªIdentifierÍ¡Í¢¡mb°BinaryExpressionÍ¦Í½S°MemberExpressionÍ¦Í°MªIdentifierÍ¦Í§¡mMªIdentifierÍ¨Í°¨memberIdÂÂ£===MªIdentifierÍµÍ½¨memberIdÂ¥const]³VariableDeclarationÍÉÍê‘^²VariableDeclaratorÍÏÍéMªIdentifierÍÏÍÕ¦budgetU­NewExpressionÍØÍéMªIdentifierÍÜÍç«DailyBudget¥constQ³ExpressionStatementÍôÍ R´AssignmentExpressionÍôÍ ¡=S°MemberExpressionÍôÍ MªIdentifierÍôÍú¦budgetMªIdentifierÍûÍ ¨memberIdÂÂMªIdentifierÍ Í ¨memberIdQ³ExpressionStatementÍ Í ;R´AssignmentExpressionÍ Í :¡=S°MemberExpressionÍ Í $MªIdentifierÍ Í ¦budgetMªIdentifierÍ  Í $¤dateÂÂ\®CallExpressionÍ 'Í :S°MemberExpressionÍ 'Í 8MªIdentifierÍ 'Í /¨DateUtilMªIdentifierÍ 0Í 8¨getTodayÂÂÂX«IfStatementÍ EÍ!gMªIdentifierÍ IÍ O¦memberN®BlockStatementÍ QÍ!g”Q³ExpressionStatementÍ `Í –R´AssignmentExpressionÍ `Í •¡=S°MemberExpressionÍ `Í sMªIdentifierÍ `Í f¦budgetMªIdentifierÍ gÍ s¬sodiumBudgetÂÂS°MemberExpressionÍ vÍ •S°MemberExpressionÍ vÍ ˆMªIdentifierÍ vÍ |¦memberMªIdentifierÍ }Í ˆ«dailyBudgetÂÂMªIdentifierÍ ‰Í •¬sodiumBudgetÂÂQ³ExpressionStatementÍ ¤Í ØR´AssignmentExpressionÍ ¤Í ×¡=S°MemberExpressionÍ ¤Í ¶MªIdentifierÍ ¤Í ª¦budgetMªIdentifierÍ «Í ¶«sugarBudgetÂÂS°MemberExpressionÍ ¹Í ×S°MemberExpressionÍ ¹Í ËMªIdentifierÍ ¹Í ¿¦memberMªIdentifierÍ ÀÍ Ë«dailyBudgetÂÂMªIdentifierÍ ÌÍ ×«sugarBudgetÂÂQ³ExpressionStatementÍ æÍ!R´AssignmentExpressionÍ æÍ!¡=S°MemberExpressionÍ æÍ úMªIdentifierÍ æÍ ì¦budgetMªIdentifierÍ íÍ ú­calorieBudgetÂÂS°MemberExpressionÍ ıÍ!S°MemberExpressionÍ ıÍ!MªIdentifierÍ ıÍ!¦memberMªIdentifierÍ!Í!«dailyBudgetÂÂMªIdentifierÍ!Í!­calorieBudgetÂÂQ³ExpressionStatementÍ!,Í!\R´AssignmentExpressionÍ!,Í![¡=S°MemberExpressionÍ!,Í!<MªIdentifierÍ!,Í!2¦budgetMªIdentifierÍ!3Í!<©fatBudgetÂÂS°MemberExpressionÍ!?Í![S°MemberExpressionÍ!?Í!QMªIdentifierÍ!?Í!E¦memberMªIdentifierÍ!FÍ!Q«dailyBudgetÂÂMªIdentifierÍ!RÍ![©fatBudgetÂÂÀQ³ExpressionStatementÍ!qÍ!R´AssignmentExpressionÍ!qÍ!¡=S°MemberExpressionÍ!qÍ!‡MªIdentifierÍ!qÍ!w¦budgetMªIdentifierÍ!xÍ!‡¯sodiumRemainingÂÂS°MemberExpressionÍ!ŠÍ!MªIdentifierÍ!ŠÍ!¦budgetMªIdentifierÍ!‘Í!¬sodiumBudgetÂÂQ³ExpressionStatementÍ!¨Í!ÓR´AssignmentExpressionÍ!¨Í!Ò¡=S°MemberExpressionÍ!¨Í!½MªIdentifierÍ!¨Í!®¦budgetMªIdentifierÍ!¯Í!½®sugarRemainingÂÂS°MemberExpressionÍ!ÀÍ!ÒMªIdentifierÍ!ÀÍ!Æ¦budgetMªIdentifierÍ!ÇÍ!Ò«sugarBudgetÂÂQ³ExpressionStatementÍ!İÍ"R´AssignmentExpressionÍ!İÍ"¡=S°MemberExpressionÍ!İÍ!ôMªIdentifierÍ!İÍ!ã¦budgetMªIdentifierÍ!äÍ!ô°calorieRemainingÂÂS°MemberExpressionÍ!÷Í"MªIdentifierÍ!÷Í!ı¦budgetMªIdentifierÍ!şÍ"­calorieBudgetÂÂQ³ExpressionStatementÍ"Í"=R´AssignmentExpressionÍ"Í"<¡=S°MemberExpressionÍ"Í")MªIdentifierÍ"Í"¦budgetMªIdentifierÍ"Í")¬fatRemainingÂÂS°MemberExpressionÍ",Í"<MªIdentifierÍ",Í"2¦budgetMªIdentifierÍ"3Í"<©fatBudgetÂÂZ¯ReturnStatementÍ"GÍ"UMªIdentifierÍ"NÍ"T¦budgetO°MethodDefinitionÍ"bÍ$ÅÂÂMªIdentifierÍ"hÍ"{³restoreTodayBudgets¦methodP²FunctionExpressionÍ"{Í$ÅÀÂÂÃN®BlockStatementÍ"~Í$Å“]³VariableDeclarationÍ"‰Í"«‘^²VariableDeclaratorÍ"Í"ªMªIdentifierÍ"Í"”¥today\®CallExpressionÍ"—Í"ªS°MemberExpressionÍ"—Í"¨MªIdentifierÍ"—Í"Ÿ¨DateUtilMªIdentifierÍ" Í"¨¨getTodayÂÂÂ¥constQ³ExpressionStatementÍ"µÍ"Ô\®CallExpressionÍ"µÍ"ÓS°MemberExpressionÍ"µÍ"ÑS°MemberExpressionÍ"µÍ"ËT®ThisExpressionÍ"µÍ"¹MªIdentifierÍ"ºÍ"Ë±dailyBudgetsCacheÂÂMªIdentifierÍ"ÌÍ"Ñ¥clearÂÂÂc®ForOfStatementÍ"ŞÍ$¾Â]³VariableDeclarationÍ"ãÍ"ï‘^²VariableDeclaratorÍ"éÍ"ïMªIdentifierÍ"éÍ"ï¦memberÀ¥constS°MemberExpressionÍ"óÍ#T®ThisExpressionÍ"óÍ"÷MªIdentifierÍ"øÍ#¬membersCacheÂÂN®BlockStatementÍ#Í$¾”]³VariableDeclarationÍ#Í#P‘^²VariableDeclaratorÍ#Í#OMªIdentifierÍ#Í#!¦budget\®CallExpressionÍ#$Í#OS°MemberExpressionÍ#$Í#>T®ThisExpressionÍ#$Í#(MªIdentifierÍ#)Í#>µcreateBudgetForMemberÂÂ‘S°MemberExpressionÍ#?Í#NMªIdentifierÍ#?Í#E¦memberMªIdentifierÍ#FÍ#N¨memberIdÂÂÂ¥const]³VariableDeclarationÍ#^Í#¾‘^²VariableDeclaratorÍ#dÍ#½MªIdentifierÍ#dÍ#k§recordsZ¯AwaitExpressionÍ#nÍ#½\®CallExpressionÍ#tÍ#½S°MemberExpressionÍ#tÍ#S°MemberExpressionÍ#tÍ#„T®ThisExpressionÍ#tÍ#xMªIdentifierÍ#yÍ#„«historyRepoÂÂMªIdentifierÍ#…Í#¹getDietRecordsByDateRangeÂÂ“S°MemberExpressionÍ#ŸÍ#®MªIdentifierÍ#ŸÍ#¥¦memberMªIdentifierÍ#¦Í#®¨memberIdÂÂMªIdentifierÍ#°Í#µ¥todayMªIdentifierÍ#·Í#¼¥todayÂ¥constc®ForOfStatementÍ#ÌÍ$qÂ]³VariableDeclarationÍ#ÑÍ#İ‘^²VariableDeclaratorÍ#×Í#İMªIdentifierÍ#×Í#İ¦recordÀ¥constMªIdentifierÍ#áÍ#è§recordsN®BlockStatementÍ#êÍ$q‘Q³ExpressionStatementÍ#ıÍ$b\®CallExpressionÍ#ıÍ$aS°MemberExpressionÍ#ıÍ$MªIdentifierÍ#ıÍ$¦budgetMªIdentifierÍ$Í$¬deductIntakeÂÂ”S°MemberExpressionÍ$Í$$MªIdentifierÍ$Í$¦recordMªIdentifierÍ$Í$$¬sodiumIntakeÂÂS°MemberExpressionÍ$&Í$8MªIdentifierÍ$&Í$,¦recordMªIdentifierÍ$-Í$8«sugarIntakeÂÂS°MemberExpressionÍ$:Í$NMªIdentifierÍ$:Í$@¦recordMªIdentifierÍ$AÍ$N­calorieIntakeÂÂS°MemberExpressionÍ$PÍ$`MªIdentifierÍ$PÍ$V¦recordMªIdentifierÍ$WÍ$`©fatIntakeÂÂÂQ³ExpressionStatementÍ$Í$³\®CallExpressionÍ$Í$²S°MemberExpressionÍ$Í$™S°MemberExpressionÍ$Í$•T®ThisExpressionÍ$Í$ƒMªIdentifierÍ$„Í$•±dailyBudgetsCacheÂÂMªIdentifierÍ$–Í$™£setÂÂ’S°MemberExpressionÍ$šÍ$©MªIdentifierÍ$šÍ$ ¦memberMªIdentifierÍ$¡Í$©¨memberIdÂÂMªIdentifierÍ$«Í$±¦budgetÂO°MethodDefinitionÍ$ëÍ%›ÂÂMªIdentifierÍ$ëÍ$÷¬deductIntake¦methodP²FunctionExpressionÍ$÷Í%›ÀÂÂÂ•MªIdentifierÍ$øÍ% ¨memberIdMªIdentifierÍ%Í%¦sodiumMªIdentifierÍ%
+Í%¥sugarMªIdentifierÍ%Í%¨caloriesMªIdentifierÍ%Í%£fatN®BlockStatementÍ% Í%›’]³VariableDeclarationÍ%+Í%X‘^²VariableDeclaratorÍ%1Í%WMªIdentifierÍ%1Í%7¦budget\®CallExpressionÍ%:Í%WS°MemberExpressionÍ%:Í%MT®ThisExpressionÍ%:Í%>MªIdentifierÍ%?Í%M®getDailyBudgetÂÂ‘MªIdentifierÍ%NÍ%V¨memberIdÂ¥constQ³ExpressionStatementÍ%bÍ%”\®CallExpressionÍ%bÍ%“S°MemberExpressionÍ%bÍ%uMªIdentifierÍ%bÍ%h¦budgetMªIdentifierÍ%iÍ%u¬deductIntakeÂÂ”MªIdentifierÍ%vÍ%|¦sodiumMªIdentifierÍ%~Í%ƒ¥sugarMªIdentifierÍ%…Í%¨caloriesMªIdentifierÍ%Í%’£fatÂO°MethodDefinitionÍ%çÍ'ÂÂMªIdentifierÍ%íÍ%ú­saveFoodLabel¦methodP²FunctionExpressionÍ%úÍ'ÀÂÂÃ‘MªIdentifierÍ%ûÍ& ¥labelN®BlockStatementÍ&Í'“X«IfStatementÍ&Í&jb°BinaryExpressionÍ&Í&*S°MemberExpressionÍ&Í&$S°MemberExpressionÍ&Í&MªIdentifierÍ&Í&¥labelMªIdentifierÍ&Í&¦foodIdÂÂMªIdentifierÍ&Í&$¦lengthÂÂ£===W§LiteralÍ&)Í&* ¡0N®BlockStatementÍ&,Í&j‘Q³ExpressionStatementÍ&;Í&_R´AssignmentExpressionÍ&;Í&^¡=S°MemberExpressionÍ&;Í&GMªIdentifierÍ&;Í&@¥labelMªIdentifierÍ&AÍ&G¦foodIdÂÂÔrd•¤type¥start£end«expressions¦quasis¯TemplateLiteralÍ&JÍ&^‘\®CallExpressionÍ&RÍ&\S°MemberExpressionÍ&RÍ&ZMªIdentifierÍ&RÍ&V¤DateMªIdentifierÍ&WÍ&Z£nowÂÂÂ’Ôre•¤type¥start£end¥value¤tail¯TemplateElementÍ&KÍ&PÔrf’£raw¦cooked¥food_¥food_Âe¯TemplateElementÍ&]Í&]f  ÃÀX«IfStatementÍ&tÍ&Ëb°BinaryExpressionÍ&xÍ&S°MemberExpressionÍ&xÍ&ŠMªIdentifierÍ&xÍ&}¥labelMªIdentifierÍ&~Í&Š¬identifiedAtÂÂ¢<=W§LiteralÍ&Í& ¡0N®BlockStatementÍ&‘Í&Ë‘Q³ExpressionStatementÍ& Í&ÀR´AssignmentExpressionÍ& Í&¿¡=S°MemberExpressionÍ& Í&²MªIdentifierÍ& Í&¥¥labelMªIdentifierÍ&¦Í&²¬identifiedAtÂÂ\®CallExpressionÍ&µÍ&¿S°MemberExpressionÍ&µÍ&½MªIdentifierÍ&µÍ&¹¤DateMªIdentifierÍ&ºÍ&½£nowÂÂÂÀQ³ExpressionStatementÍ&ÕÍ&şZ¯AwaitExpressionÍ&ÕÍ&ı\®CallExpressionÍ&ÛÍ&ıS°MemberExpressionÍ&ÛÍ&öS°MemberExpressionÍ&ÛÍ&èT®ThisExpressionÍ&ÛÍ&ßMªIdentifierÍ&àÍ&è¨foodRepoÂÂMªIdentifierÍ&éÍ&ö­saveFoodLabelÂÂ‘MªIdentifierÍ&÷Í&ü¥labelÂO°MethodDefinitionÍ',Í'‘ÂÂMªIdentifierÍ'2Í'C±findFoodByBarcode¦methodP²FunctionExpressionÍ'CÍ'‘ÀÂÂÃ‘MªIdentifierÍ'DÍ'K§barcodeN®BlockStatementÍ'MÍ'‘‘Z¯ReturnStatementÍ'XÍ'ŠZ¯AwaitExpressionÍ'_Í'‰\®CallExpressionÍ'eÍ'‰S°MemberExpressionÍ'eÍ'€S°MemberExpressionÍ'eÍ'rT®ThisExpressionÍ'eÍ'iMªIdentifierÍ'jÍ'r¨foodRepoÂÂMªIdentifierÍ'sÍ'€­findByBarcodeÂÂ‘MªIdentifierÍ'Í'ˆ§barcodeÂO°MethodDefinitionÍ'—Í'ğÂÂMªIdentifierÍ'Í'©¬findFoodById¦methodP²FunctionExpressionÍ'©Í'ğÀÂÂÃ‘MªIdentifierÍ'ªÍ'°¦foodIdN®BlockStatementÍ'²Í'ğ‘Z¯ReturnStatementÍ'½Í'éZ¯AwaitExpressionÍ'ÄÍ'è\®CallExpressionÍ'ÊÍ'èS°MemberExpressionÍ'ÊÍ'àS°MemberExpressionÍ'ÊÍ'×T®ThisExpressionÍ'ÊÍ'ÎMªIdentifierÍ'ÏÍ'×¨foodRepoÂÂMªIdentifierÍ'ØÍ'à¨findByIdÂÂ‘MªIdentifierÍ'áÍ'ç¦foodIdÂO°MethodDefinitionÍ'öÍ(iÂÂMªIdentifierÍ'üÍ(´getRecentScanHistory¦methodP²FunctionExpressionÍ(Í(iÀÂÂÃ‘Ôrg•¤type¥start£end¤left¥right±AssignmentPatternÍ(Í(MªIdentifierÍ(Í(¥limitW§LiteralÍ(Í(2¢50N®BlockStatementÍ(Í(i‘Z¯ReturnStatementÍ((Í(bZ¯AwaitExpressionÍ(/Í(a\®CallExpressionÍ(5Í(aS°MemberExpressionÍ(5Í(ZS°MemberExpressionÍ(5Í(ET®ThisExpressionÍ(5Í(9MªIdentifierÍ(:Í(E«historyRepoÂÂMªIdentifierÍ(FÍ(Z´getRecentScanHistoryÂÂ‘MªIdentifierÍ([Í(`¥limitÂO°MethodDefinitionÍ(oÍ)ÂÂMªIdentifierÍ(uÍ(¹getDietRecordsByDateRange¦methodP²FunctionExpressionÍ(Í)ÀÂÂÃ“MªIdentifierÍ(Í(—¨memberIdMªIdentifierÍ(™Í(¢©startDateMªIdentifierÍ(¤Í(«§endDateN®BlockStatementÍ(­Í)‘Z¯ReturnStatementÍ(¸Í)Z¯AwaitExpressionÍ(¿Í)\®CallExpressionÍ(ÅÍ)S°MemberExpressionÍ(ÅÍ(ïS°MemberExpressionÍ(ÅÍ(ÕT®ThisExpressionÍ(ÅÍ(ÉMªIdentifierÍ(ÊÍ(Õ«historyRepoÂÂMªIdentifierÍ(ÖÍ(ï¹getDietRecordsByDateRangeÂÂ“MªIdentifierÍ(ğÍ(ø¨memberIdMªIdentifierÍ(úÍ)©startDateMªIdentifierÍ)Í)§endDateÂO°MethodDefinitionÍ)eÍ*İÂÂMªIdentifierÍ)eÍ)|·calculateRecommendation¦methodP²FunctionExpressionÍ)|Í*İÀÂÂÂ’MªIdentifierÍ)}Í)…¨memberIdMªIdentifierÍ)‡Í)©foodLabelN®BlockStatementÍ)’Í*İ”]³VariableDeclarationÍ)Í)ù‘^²VariableDeclaratorÍ)£Í)øMªIdentifierÍ)£Í)ª§profileb±LogicalExpressionÍ)­Í)ø\®CallExpressionÍ)­Í)áS°MemberExpressionÍ)­Í)ÃS°MemberExpressionÍ)­Í)¾T®ThisExpressionÍ)­Í)±MªIdentifierÍ)²Í)¾¬membersCacheÂÂMªIdentifierÍ)¿Í)Ã¤findÂÂ‘P·ArrowFunctionExpressionÍ)ÄÍ)àÀÃÂÂ‘MªIdentifierÍ)ÄÍ)Å¡mb°BinaryExpressionÍ)ÉÍ)àS°MemberExpressionÍ)ÉÍ)ÓMªIdentifierÍ)ÉÍ)Ê¡mMªIdentifierÍ)ËÍ)Ó¨memberIdÂÂ£===MªIdentifierÍ)ØÍ)à¨memberIdÂ¢||U­NewExpressionÍ)åÍ)øMªIdentifierÍ)éÍ)ö­FamilyProfile¥const]³VariableDeclarationÍ*Í*1‘^²VariableDeclaratorÍ*	Í*0MªIdentifierÍ*	Í*¦signal\®CallExpressionÍ*Í*0S°MemberExpressionÍ*Í*&T®ThisExpressionÍ*Í*MªIdentifierÍ*Í*&¯getHealthSignalÂÂ‘MªIdentifierÍ*'Í*/¨memberIdÂ¥const]³VariableDeclarationÍ*;Í*h‘^²VariableDeclaratorÍ*AÍ*gMªIdentifierÍ*AÍ*G¦budget\®CallExpressionÍ*JÍ*gS°MemberExpressionÍ*JÍ*]T®ThisExpressionÍ*JÍ*NMªIdentifierÍ*OÍ*]®getDailyBudgetÂÂ‘MªIdentifierÍ*^Í*f¨memberIdÂ¥constZ¯ReturnStatementÍ*rÍ*Ö\®CallExpressionÍ*yÍ*ÕS°MemberExpressionÍ*yÍ*’S°MemberExpressionÍ*yÍ*ˆT®ThisExpressionÍ*yÍ*}MªIdentifierÍ*~Í*ˆªruleEngineÂÂMªIdentifierÍ*‰Í*’©calculateÂÂ‘_°ObjectExpressionÍ*“Í*Ô”Ôrh™¤type¥start£end¦method©shorthand¨computed£key¤kind¥value¨PropertyÍ*•Í*œÂÃÂMªIdentifierÍ*•Í*œ§profile¤initMªIdentifierÍ*•Í*œ§profile`¨PropertyÍ*Í*²ÂÂÂMªIdentifierÍ*Í*ª¬healthSignalMªIdentifierÍ*¬Í*²¦signal¤inith¨PropertyÍ*´Í*½ÂÃÂMªIdentifierÍ*´Í*½©foodLabel¤initMªIdentifierÍ*´Í*½©foodLabel`¨PropertyÍ*¿Í*ÒÂÂÂMªIdentifierÍ*¿Í*Ê«dailyBudgetMªIdentifierÍ*ÌÍ*Ò¦budget¤initÂO°MethodDefinitionÍ+Í+¾ÂÂMªIdentifierÍ+Í+¹calculateFamilyComparison¦methodP²FunctionExpressionÍ+Í+¾ÀÂÂÂ‘MªIdentifierÍ+Í+'©foodLabelN®BlockStatementÍ+)Í+¾‘Z¯ReturnStatementÍ+4Í+·\®CallExpressionÍ+;Í+¶S°MemberExpressionÍ+;Í+PS°MemberExpressionÍ+;Í+LT®ThisExpressionÍ+;Í+?MªIdentifierÍ+@Í+L¬membersCacheÂÂMªIdentifierÍ+MÍ+P£mapÂÂ‘P·ArrowFunctionExpressionÍ+QÍ+µÀÂÂÂ‘MªIdentifierÍ+QÍ+W¦memberN®BlockStatementÍ+[Í+µ‘Z¯ReturnStatementÍ+jÍ+ª\®CallExpressionÍ+qÍ+©S°MemberExpressionÍ+qÍ+T®ThisExpressionÍ+qÍ+uMªIdentifierÍ+vÍ+·calculateRecommendationÂÂ’S°MemberExpressionÍ+Í+MªIdentifierÍ+Í+”¦memberMªIdentifierÍ+•Í+¨memberIdÂÂMªIdentifierÍ+ŸÍ+¨©foodLabelÂÂO°MethodDefinitionÍ+åÍ-ÂÂMªIdentifierÍ+åÍ+ù´calculateMealBalance¦methodP²FunctionExpressionÍ+ùÍ-ÀÂÂÂ’MªIdentifierÍ+úÍ,¨scenarioMªIdentifierÍ,Í,¨memberIdN®BlockStatementÍ,Í-“]³VariableDeclarationÍ,Í,u‘^²VariableDeclaratorÍ,Í,tMªIdentifierÍ,Í,&§profileb±LogicalExpressionÍ,)Í,t\®CallExpressionÍ,)Í,]S°MemberExpressionÍ,)Í,?S°MemberExpressionÍ,)Í,:T®ThisExpressionÍ,)Í,-MªIdentifierÍ,.Í,:¬membersCacheÂÂMªIdentifierÍ,;Í,?¤findÂÂ‘P·ArrowFunctionExpressionÍ,@Í,\ÀÃÂÂ‘MªIdentifierÍ,@Í,A¡mb°BinaryExpressionÍ,EÍ,\S°MemberExpressionÍ,EÍ,OMªIdentifierÍ,EÍ,F¡mMªIdentifierÍ,GÍ,O¨memberIdÂÂ£===MªIdentifierÍ,TÍ,\¨memberIdÂ¢||U­NewExpressionÍ,aÍ,tMªIdentifierÍ,eÍ,r­FamilyProfile¥const]³VariableDeclarationÍ,Í,­‘^²VariableDeclaratorÍ,…Í,¬MªIdentifierÍ,…Í,‹¦signal\®CallExpressionÍ,Í,¬S°MemberExpressionÍ,Í,¢T®ThisExpressionÍ,Í,’MªIdentifierÍ,“Í,¢¯getHealthSignalÂÂ‘MªIdentifierÍ,£Í,«¨memberIdÂ¥constZ¯ReturnStatementÍ,·Í,ú\®CallExpressionÍ,¾Í,ùS°MemberExpressionÍ,¾Í,ŞS°MemberExpressionÍ,¾Í,ÔT®ThisExpressionÍ,¾Í,ÂMªIdentifierÍ,ÃÍ,Ô±mealBalanceEngineÂÂMªIdentifierÍ,ÕÍ,Ş©calculateÂÂ“MªIdentifierÍ,ßÍ,ç¨scenarioMªIdentifierÍ,éÍ,ğ§profileMªIdentifierÍ,òÍ,ø¦signalÂO°MethodDefinitionÍ-(Í.\ÂÂMªIdentifierÍ-(Í-@¸calculateChildProtection¦methodP²FunctionExpressionÍ-@Í.\ÀÂÂÂ’MªIdentifierÍ-AÍ-I¨memberIdMªIdentifierÍ-KÍ-T©foodLabelN®BlockStatementÍ-VÍ.\’]³VariableDeclarationÍ-aÍ-½‘^²VariableDeclaratorÍ-gÍ-¼MªIdentifierÍ-gÍ-n§profileb±LogicalExpressionÍ-qÍ-¼\®CallExpressionÍ-qÍ-¥S°MemberExpressionÍ-qÍ-‡S°MemberExpressionÍ-qÍ-‚T®ThisExpressionÍ-qÍ-uMªIdentifierÍ-vÍ-‚¬membersCacheÂÂMªIdentifierÍ-ƒÍ-‡¤findÂÂ‘P·ArrowFunctionExpressionÍ-ˆÍ-¤ÀÃÂÂ‘MªIdentifierÍ-ˆÍ-‰¡mb°BinaryExpressionÍ-Í-¤S°MemberExpressionÍ-Í-—MªIdentifierÍ-Í-¡mMªIdentifierÍ-Í-—¨memberIdÂÂ£===MªIdentifierÍ-œÍ-¤¨memberIdÂ¢||U­NewExpressionÍ-©Í-¼MªIdentifierÍ-­Í-º­FamilyProfile¥constZ¯ReturnStatementÍ-ÇÍ.U\®CallExpressionÍ-ÎÍ.TS°MemberExpressionÍ-ÎÍ-òS°MemberExpressionÍ-ÎÍ-èT®ThisExpressionÍ-ÎÍ-ÒMªIdentifierÍ-ÓÍ-èµchildProtectionEngineÂÂMªIdentifierÍ-éÍ-ò©calculateÂÂ•MªIdentifierÍ-óÍ-ú§profileMªIdentifierÍ-üÍ.©foodLabelU­NewExpressionÍ.Í.MªIdentifierÍ.Í.¤Date_°ObjectExpressionÍ.Í.J“`¨PropertyÍ.Í.'ÂÂÂMªIdentifierÍ.Í.©breakfastW§LiteralÍ. Í.'¥07:30§'07:30'¤init`¨PropertyÍ.)Í.7ÂÂÂMªIdentifierÍ.)Í..¥lunchW§LiteralÍ.0Í.7¥12:00§'12:00'¤init`¨PropertyÍ.9Í.HÂÂÂMªIdentifierÍ.9Í.?¦dinnerW§LiteralÍ.AÍ.H¥18:00§'18:00'¤initW§LiteralÍ.LÍ.S¥22:00§'22:00'ÂO°MethodDefinitionÍ.„Í.éÂÂMªIdentifierÍ.„Í.˜´calculateCredibility¦methodP²FunctionExpressionÍ.˜Í.éÀÂÂÂ‘MªIdentifierÍ.™Í.¢©foodLabelN®BlockStatementÍ.¤Í.é‘Z¯ReturnStatementÍ.¯Í.â\®CallExpressionÍ.¶Í.áS°MemberExpressionÍ.¶Í.ÖS°MemberExpressionÍ.¶Í.ÌT®ThisExpressionÍ.¶Í.ºMªIdentifierÍ.»Í.Ì±credibilityEngineÂÂMªIdentifierÍ.ÍÍ.Ö©calculateÂÂ‘MªIdentifierÍ.×Í.à©foodLabelÂO°MethodDefinitionÍ/Í/xÂÂMªIdentifierÍ/Í/«checkBasket¦methodP²FunctionExpressionÍ/Í/xÀÂÂÂN®BlockStatementÍ/Í/x‘Z¯ReturnStatementÍ/(Í/q\®CallExpressionÍ//Í/pS°MemberExpressionÍ//Í/KS°MemberExpressionÍ//Í/ET®ThisExpressionÍ//Í/3MªIdentifierÍ/4Í/E±basketCheckEngineÂÂMªIdentifierÍ/FÍ/K¥checkÂÂ’S°MemberExpressionÍ/LÍ/\T®ThisExpressionÍ/LÍ/PMªIdentifierÍ/QÍ/\«basketItemsÂÂS°MemberExpressionÍ/^Í/oT®ThisExpressionÍ/^Í/bMªIdentifierÍ/cÍ/o¬membersCacheÂÂÂO°MethodDefinitionÍ/¡Í0‡ÂÂMªIdentifierÍ/¡Í/¼»generateElderFriendlyReport¦methodP²FunctionExpressionÍ/¼Í0‡ÀÂÂÂ“MªIdentifierÍ/½Í/À£recMªIdentifierÍ/ÂÍ/Ê¨memberIdMªIdentifierÍ/ÌÍ/Ğ¤foodN®BlockStatementÍ/ÒÍ0‡’]³VariableDeclarationÍ/İÍ09‘^²VariableDeclaratorÍ/ãÍ08MªIdentifierÍ/ãÍ/ê§profileb±LogicalExpressionÍ/íÍ08\®CallExpressionÍ/íÍ0!S°MemberExpressionÍ/íÍ0S°MemberExpressionÍ/íÍ/şT®ThisExpressionÍ/íÍ/ñMªIdentifierÍ/òÍ/ş¬membersCacheÂÂMªIdentifierÍ/ÿÍ0¤findÂÂ‘P·ArrowFunctionExpressionÍ0Í0 ÀÃÂÂ‘MªIdentifierÍ0Í0¡mb°BinaryExpressionÍ0	Í0 S°MemberExpressionÍ0	Í0MªIdentifierÍ0	Í0
+¡mMªIdentifierÍ0Í0¨memberIdÂÂ£===MªIdentifierÍ0Í0 ¨memberIdÂ¢||U­NewExpressionÍ0%Í08MªIdentifierÍ0)Í06­FamilyProfile¥constZ¯ReturnStatementÍ0CÍ0€\®CallExpressionÍ0JÍ0S°MemberExpressionÍ0JÍ0kS°MemberExpressionÍ0JÍ0bT®ThisExpressionÍ0JÍ0NMªIdentifierÍ0OÍ0b³elderFriendlyEngineÂÂMªIdentifierÍ0cÍ0k¨generateÂÂ“MªIdentifierÍ0lÍ0o£recMªIdentifierÍ0qÍ0x§profileMªIdentifierÍ0zÍ0~¤foodÂO°MethodDefinitionÍ0°Í1›ÂÂMªIdentifierÍ0°Í0Æ¶generatePositiveAdvice¦methodP²FunctionExpressionÍ0ÆÍ1›ÀÂÂÂ’MªIdentifierÍ0ÇÍ0Ï¨scenarioMªIdentifierÍ0ÑÍ0Ù¨memberIdN®BlockStatementÍ0ÛÍ1›’]³VariableDeclarationÍ0æÍ1B‘^²VariableDeclaratorÍ0ìÍ1AMªIdentifierÍ0ìÍ0ó§profileb±LogicalExpressionÍ0öÍ1A\®CallExpressionÍ0öÍ1*S°MemberExpressionÍ0öÍ1S°MemberExpressionÍ0öÍ1T®ThisExpressionÍ0öÍ0úMªIdentifierÍ0ûÍ1¬membersCacheÂÂMªIdentifierÍ1Í1¤findÂÂ‘P·ArrowFunctionExpressionÍ1Í1)ÀÃÂÂ‘MªIdentifierÍ1Í1¡mb°BinaryExpressionÍ1Í1)S°MemberExpressionÍ1Í1MªIdentifierÍ1Í1¡mMªIdentifierÍ1Í1¨memberIdÂÂ£===MªIdentifierÍ1!Í1)¨memberIdÂ¢||U­NewExpressionÍ1.Í1AMªIdentifierÍ12Í1?­FamilyProfile¥constZ¯ReturnStatementÍ1LÍ1”\®CallExpressionÍ1SÍ1“S°MemberExpressionÍ1SÍ1€S°MemberExpressionÍ1SÍ1lT®ThisExpressionÍ1SÍ1WMªIdentifierÍ1XÍ1l´positiveAdviceEngineÂÂMªIdentifierÍ1mÍ1€³generateForScenarioÂÂ’MªIdentifierÍ1Í1‰¨scenarioMªIdentifierÍ1‹Í1’§profileÂO°MethodDefinitionÍ1ÅÍ2ÂÂMªIdentifierÍ1ÅÍ1Ğ«addToBasket¦methodP²FunctionExpressionÍ1ĞÍ2ÀÂÂÂ‘MªIdentifierÍ1ÑÍ1Õ¤itemN®BlockStatementÍ1×Í2‘Q³ExpressionStatementÍ1âÍ1ş\®CallExpressionÍ1âÍ1ıS°MemberExpressionÍ1âÍ1÷S°MemberExpressionÍ1âÍ1òT®ThisExpressionÍ1âÍ1æMªIdentifierÍ1çÍ1ò«basketItemsÂÂMªIdentifierÍ1óÍ1÷¤pushÂÂ‘MªIdentifierÍ1øÍ1ü¤itemÂO°MethodDefinitionÍ2Í2FÂÂMªIdentifierÍ2Í2®getBasketItems¦methodP²FunctionExpressionÍ2Í2FÀÂÂÂN®BlockStatementÍ2Í2F‘Z¯ReturnStatementÍ2'Í2?S°MemberExpressionÍ2.Í2>T®ThisExpressionÍ2.Í22MªIdentifierÍ23Í2>«basketItemsÂÂO°MethodDefinitionÍ2LÍ2‚ÂÂMªIdentifierÍ2LÍ2W«clearBasket¦methodP²FunctionExpressionÍ2WÍ2‚ÀÂÂÂN®BlockStatementÍ2ZÍ2‚‘Q³ExpressionStatementÍ2eÍ2{R´AssignmentExpressionÍ2eÍ2z¡=S°MemberExpressionÍ2eÍ2uT®ThisExpressionÍ2eÍ2iMªIdentifierÍ2jÍ2u«basketItemsÂÂV¯ArrayExpressionÍ2xÍ2zO°MethodDefinitionÍ2ÌÍ48ÂÂMªIdentifierÍ2ÒÍ2á¯saveScanHistory¦methodP²FunctionExpressionÍ2áÍ48ÀÂÂÃ“MªIdentifierÍ2âÍ2ê¨memberIdMªIdentifierÍ2ìÍ2õ©foodLabelMªIdentifierÍ2÷Í2ú£recN®BlockStatementÍ2üÍ48‘Q³ExpressionStatementÍ3Í41Z¯AwaitExpressionÍ3Í40\®CallExpressionÍ3Í40S°MemberExpressionÍ3Í3-S°MemberExpressionÍ3Í3T®ThisExpressionÍ3Í3MªIdentifierÍ3Í3«historyRepoÂÂMªIdentifierÍ3Í3-¯saveScanHistoryÂÂ‘_°ObjectExpressionÍ3.Í4/—h¨PropertyÍ3=Í3EÂÃÂMªIdentifierÍ3=Í3E¨memberId¤initMªIdentifierÍ3=Í3E¨memberId`¨PropertyÍ3TÍ3lÂÂÂMªIdentifierÍ3TÍ3Z¦foodIdS°MemberExpressionÍ3\Í3lMªIdentifierÍ3\Í3e©foodLabelMªIdentifierÍ3fÍ3l¦foodIdÂÂ¤init`¨PropertyÍ3{Í3—ÂÂÂMªIdentifierÍ3{Í3ƒ¨foodNameS°MemberExpressionÍ3…Í3—MªIdentifierÍ3…Í3©foodLabelMªIdentifierÍ3Í3—¨foodNameÂÂ¤init`¨PropertyÍ3¦Í3¶ÂÂÂMªIdentifierÍ3¦Í3«¥levelS°MemberExpressionÍ3­Í3¶MªIdentifierÍ3­Í3°£recMªIdentifierÍ3±Í3¶¥levelÂÂ¤init`¨PropertyÍ3ÅÍ3İÂÂÂMªIdentifierÍ3ÅÍ3Î©maxAmountS°MemberExpressionÍ3ĞÍ3İMªIdentifierÍ3ĞÍ3Ó£recMªIdentifierÍ3ÔÍ3İ©maxAmountÂÂ¤init`¨PropertyÍ3ìÍ4 ÂÂÂMªIdentifierÍ3ìÍ3ó§reasonsS°MemberExpressionÍ3õÍ4 MªIdentifierÍ3õÍ3ø£recMªIdentifierÍ3ùÍ4 §reasonsÂÂ¤init`¨PropertyÍ4Í4$ÂÂÂMªIdentifierÍ4Í4©scannedAt\®CallExpressionÍ4Í4$S°MemberExpressionÍ4Í4"MªIdentifierÍ4Í4¤DateMªIdentifierÍ4Í4"£nowÂÂÂ¤initÂO°MethodDefinitionÍ4_Í6€ÂÂMªIdentifierÍ4eÍ4s®saveDietRecord¦methodP²FunctionExpressionÍ4sÍ6€ÀÂÂÃ˜MªIdentifierÍ4tÍ4|¨memberIdMªIdentifierÍ4~Í4†¨scenarioMªIdentifierÍ4ˆÍ4¦foodIdMªIdentifierÍ4Í4—§amountGMªIdentifierÍ4™Í4Ÿ¦sodiumMªIdentifierÍ4¡Í4¦¥sugarMªIdentifierÍ4¨Í4°¨caloriesMªIdentifierÍ4²Í4µ£fatN®BlockStatementÍ4·Í6€’Q³ExpressionStatementÍ4ÂÍ6"Z¯AwaitExpressionÍ4ÂÍ6!\®CallExpressionÍ4ÈÍ6!S°MemberExpressionÍ4ÈÍ4çS°MemberExpressionÍ4ÈÍ4ØT®ThisExpressionÍ4ÈÍ4ÌMªIdentifierÍ4ÍÍ4Ø«historyRepoÂÂMªIdentifierÍ4ÙÍ4ç®saveDietRecordÂÂ‘_°ObjectExpressionÍ4èÍ6 šh¨PropertyÍ4÷Í4ÿÂÃÂMªIdentifierÍ4÷Í4ÿ¨memberId¤initMªIdentifierÍ4÷Í4ÿ¨memberId`¨PropertyÍ5Í5'ÂÂÂMªIdentifierÍ5Í5¤date\®CallExpressionÍ5Í5'S°MemberExpressionÍ5Í5%MªIdentifierÍ5Í5¨DateUtilMªIdentifierÍ5Í5%¨getTodayÂÂÂ¤inith¨PropertyÍ56Í5>ÂÃÂMªIdentifierÍ56Í5>¨scenario¤initMªIdentifierÍ56Í5>¨scenarioh¨PropertyÍ5MÍ5SÂÃÂMªIdentifierÍ5MÍ5S¦foodId¤initMªIdentifierÍ5MÍ5S¦foodIdh¨PropertyÍ5bÍ5iÂÃÂMªIdentifierÍ5bÍ5i§amountG¤initMªIdentifierÍ5bÍ5i§amountG`¨PropertyÍ5xÍ5ŒÂÂÂMªIdentifierÍ5xÍ5„¬sodiumIntakeMªIdentifierÍ5†Í5Œ¦sodium¤init`¨PropertyÍ5›Í5­ÂÂÂMªIdentifierÍ5›Í5¦«sugarIntakeMªIdentifierÍ5¨Í5­¥sugar¤init`¨PropertyÍ5¼Í5ÓÂÂÂMªIdentifierÍ5¼Í5É­calorieIntakeMªIdentifierÍ5ËÍ5Ó¨calories¤init`¨PropertyÍ5âÍ5ğÂÂÂMªIdentifierÍ5âÍ5ë©fatIntakeMªIdentifierÍ5íÍ5ğ£fat¤init`¨PropertyÍ5ÿÍ6ÂÂÂMªIdentifierÍ5ÿÍ6	ªrecordedAt\®CallExpressionÍ6Í6S°MemberExpressionÍ6Í6MªIdentifierÍ6Í6¤DateMªIdentifierÍ6Í6£nowÂÂÂ¤initÂQ³ExpressionStatementÍ6?Í6y\®CallExpressionÍ6?Í6xS°MemberExpressionÍ6?Í6PT®ThisExpressionÍ6?Í6CMªIdentifierÍ6DÍ6P¬deductIntakeÂÂ•MªIdentifierÍ6QÍ6Y¨memberIdMªIdentifierÍ6[Í6a¦sodiumMªIdentifierÍ6cÍ6h¥sugarMªIdentifierÍ6jÍ6r¨caloriesMªIdentifierÍ6tÍ6w£fatÂO°MethodDefinitionÍ6©Í@9ÂÂMªIdentifierÍ6©Í6½´createDefaultMembers¦methodP²FunctionExpressionÍ6½Í@9ÀÂÂÂN®BlockStatementÍ6ÀÍ@9Ü =]³VariableDeclarationÍ6ËÍ6Ş‘^²VariableDeclaratorÍ6ÑÍ6İMªIdentifierÍ6ÑÍ6Ø§membersV¯ArrayExpressionÍ6ÛÍ6İ¥const]³VariableDeclarationÍ6èÍ6ÿ‘^²VariableDeclaratorÍ6îÍ6şMªIdentifierÍ6îÍ6ñ£now\®CallExpressionÍ6ôÍ6şS°MemberExpressionÍ6ôÍ6üMªIdentifierÍ6ôÍ6ø¤DateMªIdentifierÍ6ùÍ6ü£nowÂÂÂ¥const]³VariableDeclarationÍ7	Í7)‘^²VariableDeclaratorÍ7Í7(MªIdentifierÍ7Í7£dadU­NewExpressionÍ7Í7(MªIdentifierÍ7Í7&­FamilyProfile¥constQ³ExpressionStatementÍ73Í7HR´AssignmentExpressionÍ73Í7G¡=S°MemberExpressionÍ73Í7?MªIdentifierÍ73Í76£dadMªIdentifierÍ77Í7?¨memberIdÂÂW§LiteralÍ7BÍ7G£dad¥'dad'Q³ExpressionStatementÍ7RÍ7fR´AssignmentExpressionÍ7RÍ7e¡=S°MemberExpressionÍ7RÍ7^MªIdentifierÍ7RÍ7U£dadMªIdentifierÍ7VÍ7^¨nicknameÂÂW§LiteralÍ7aÍ7e¦çˆ¸çˆ¸¨'çˆ¸çˆ¸'Q³ExpressionStatementÍ7pÍ7“R´AssignmentExpressionÍ7pÍ7’¡=S°MemberExpressionÍ7pÍ7|MªIdentifierÍ7pÍ7s£dadMªIdentifierÍ7tÍ7|¨ageGroupÂÂS°MemberExpressionÍ7Í7’MªIdentifierÍ7Í7‡¨AgeGroupMªIdentifierÍ7ˆÍ7’ªMIDDLE_OLDÂÂQ³ExpressionStatementÍ7Í7ßR´AssignmentExpressionÍ7Í7Ş¡=S°MemberExpressionÍ7Í7¬MªIdentifierÍ7Í7 £dadMªIdentifierÍ7¡Í7¬«healthGoalsÂÂV¯ArrayExpressionÍ7¯Í7Ş’S°MemberExpressionÍ7°Í7ÅMªIdentifierÍ7°Í7ºªHealthGoalMªIdentifierÍ7»Í7ÅªCONTROL_BPÂÂS°MemberExpressionÍ7ÇÍ7İMªIdentifierÍ7ÇÍ7ÑªHealthGoalMªIdentifierÍ7ÒÍ7İ«CONTROL_FATÂÂQ³ExpressionStatementÍ7éÍ8R´AssignmentExpressionÍ7éÍ8¡=S°MemberExpressionÍ7éÍ7øMªIdentifierÍ7éÍ7ì£dadMªIdentifierÍ7íÍ7ø«dailyBudgetÂÂU­NewExpressionÍ7ûÍ8MªIdentifierÍ7ÿÍ8±DailyBudgetConfigQ³ExpressionStatementÍ8Í8AR´AssignmentExpressionÍ8Í8@¡=S°MemberExpressionÍ8Í89S°MemberExpressionÍ8Í8,MªIdentifierÍ8Í8 £dadMªIdentifierÍ8!Í8,«dailyBudgetÂÂMªIdentifierÍ8-Í89¬sodiumBudgetÂÂW§LiteralÍ8<Í8@ÍÜ¤1500Q³ExpressionStatementÍ8KÍ8lR´AssignmentExpressionÍ8KÍ8k¡=S°MemberExpressionÍ8KÍ8fS°MemberExpressionÍ8KÍ8ZMªIdentifierÍ8KÍ8N£dadMªIdentifierÍ8OÍ8Z«dailyBudgetÂÂMªIdentifierÍ8[Í8f«sugarBudgetÂÂW§LiteralÍ8iÍ8k(¢40Q³ExpressionStatementÍ8vÍ8›R´AssignmentExpressionÍ8vÍ8š¡=S°MemberExpressionÍ8vÍ8“S°MemberExpressionÍ8vÍ8…MªIdentifierÍ8vÍ8y£dadMªIdentifierÍ8zÍ8…«dailyBudgetÂÂMªIdentifierÍ8†Í8“­calorieBudgetÂÂW§LiteralÍ8–Í8šÍ¤1800Q³ExpressionStatementÍ8¥Í8ÄR´AssignmentExpressionÍ8¥Í8Ã¡=S°MemberExpressionÍ8¥Í8¾S°MemberExpressionÍ8¥Í8´MªIdentifierÍ8¥Í8¨£dadMªIdentifierÍ8©Í8´«dailyBudgetÂÂMªIdentifierÍ8µÍ8¾©fatBudgetÂÂW§LiteralÍ8ÁÍ8Ã7¢55Q³ExpressionStatementÍ8ÎÍ8âR´AssignmentExpressionÍ8ÎÍ8á¡=S°MemberExpressionÍ8ÎÍ8ÛMªIdentifierÍ8ÎÍ8Ñ£dadMªIdentifierÍ8ÒÍ8Û©createdAtÂÂMªIdentifierÍ8ŞÍ8á£nowQ³ExpressionStatementÍ8ìÍ9 R´AssignmentExpressionÍ8ìÍ8ÿ¡=S°MemberExpressionÍ8ìÍ8ùMªIdentifierÍ8ìÍ8ï£dadMªIdentifierÍ8ğÍ8ù©updatedAtÂÂMªIdentifierÍ8üÍ8ÿ£nowQ³ExpressionStatementÍ9
+Í9\®CallExpressionÍ9
+Í9S°MemberExpressionÍ9
+Í9MªIdentifierÍ9
+Í9§membersMªIdentifierÍ9Í9¤pushÂÂ‘MªIdentifierÍ9Í9£dadÂ]³VariableDeclarationÍ9&Í9F‘^²VariableDeclaratorÍ9,Í9EMªIdentifierÍ9,Í9/£momU­NewExpressionÍ92Í9EMªIdentifierÍ96Í9C­FamilyProfile¥constQ³ExpressionStatementÍ9PÍ9eR´AssignmentExpressionÍ9PÍ9d¡=S°MemberExpressionÍ9PÍ9\MªIdentifierÍ9PÍ9S£momMªIdentifierÍ9TÍ9\¨memberIdÂÂW§LiteralÍ9_Í9d£mom¥'mom'Q³ExpressionStatementÍ9oÍ9ƒR´AssignmentExpressionÍ9oÍ9‚¡=S°MemberExpressionÍ9oÍ9{MªIdentifierÍ9oÍ9r£momMªIdentifierÍ9sÍ9{¨nicknameÂÂW§LiteralÍ9~Í9‚¦å¦ˆå¦ˆ¨'å¦ˆå¦ˆ'Q³ExpressionStatementÍ9Í9«R´AssignmentExpressionÍ9Í9ª¡=S°MemberExpressionÍ9Í9™MªIdentifierÍ9Í9£momMªIdentifierÍ9‘Í9™¨ageGroupÂÂS°MemberExpressionÍ9œÍ9ªMªIdentifierÍ9œÍ9¤¨AgeGroupMªIdentifierÍ9¥Í9ª¥ADULTÂÂQ³ExpressionStatementÍ9µÍ9âR´AssignmentExpressionÍ9µÍ9á¡=S°MemberExpressionÍ9µÍ9ÄMªIdentifierÍ9µÍ9¸£momMªIdentifierÍ9¹Í9Ä«healthGoalsÂÂV¯ArrayExpressionÍ9ÇÍ9á‘S°MemberExpressionÍ9ÈÍ9àMªIdentifierÍ9ÈÍ9ÒªHealthGoalMªIdentifierÍ9ÓÍ9à­CONTROL_SUGARÂÂQ³ExpressionStatementÍ9ìÍ:R´AssignmentExpressionÍ9ìÍ:¡=S°MemberExpressionÍ9ìÍ9ûMªIdentifierÍ9ìÍ9ï£momMªIdentifierÍ9ğÍ9û«dailyBudgetÂÂU­NewExpressionÍ9şÍ:MªIdentifierÍ:Í:±DailyBudgetConfigQ³ExpressionStatementÍ: Í:DR´AssignmentExpressionÍ: Í:C¡=S°MemberExpressionÍ: Í:<S°MemberExpressionÍ: Í:/MªIdentifierÍ: Í:#£momMªIdentifierÍ:$Í:/«dailyBudgetÂÂMªIdentifierÍ:0Í:<¬sodiumBudgetÂÂW§LiteralÍ:?Í:CÍĞ¤2000Q³ExpressionStatementÍ:NÍ:oR´AssignmentExpressionÍ:NÍ:n¡=S°MemberExpressionÍ:NÍ:iS°MemberExpressionÍ:NÍ:]MªIdentifierÍ:NÍ:Q£momMªIdentifierÍ:RÍ:]«dailyBudgetÂÂMªIdentifierÍ:^Í:i«sugarBudgetÂÂW§LiteralÍ:lÍ:n¢25Q³ExpressionStatementÍ:yÍ:R´AssignmentExpressionÍ:yÍ:¡=S°MemberExpressionÍ:yÍ:–S°MemberExpressionÍ:yÍ:ˆMªIdentifierÍ:yÍ:|£momMªIdentifierÍ:}Í:ˆ«dailyBudgetÂÂMªIdentifierÍ:‰Í:–­calorieBudgetÂÂW§LiteralÍ:™Í:ÍĞ¤2000Q³ExpressionStatementÍ:¨Í:ÇR´AssignmentExpressionÍ:¨Í:Æ¡=S°MemberExpressionÍ:¨Í:ÁS°MemberExpressionÍ:¨Í:·MªIdentifierÍ:¨Í:«£momMªIdentifierÍ:¬Í:·«dailyBudgetÂÂMªIdentifierÍ:¸Í:Á©fatBudgetÂÂW§LiteralÍ:ÄÍ:ÆÌA¢65Q³ExpressionStatementÍ:ÑÍ:åR´AssignmentExpressionÍ:ÑÍ:ä¡=S°MemberExpressionÍ:ÑÍ:ŞMªIdentifierÍ:ÑÍ:Ô£momMªIdentifierÍ:ÕÍ:Ş©createdAtÂÂMªIdentifierÍ:áÍ:ä£nowQ³ExpressionStatementÍ:ïÍ;R´AssignmentExpressionÍ:ïÍ;¡=S°MemberExpressionÍ:ïÍ:üMªIdentifierÍ:ïÍ:ò£momMªIdentifierÍ:óÍ:ü©updatedAtÂÂMªIdentifierÍ:ÿÍ;£nowQ³ExpressionStatementÍ;Í;\®CallExpressionÍ;Í;S°MemberExpressionÍ;Í;MªIdentifierÍ;Í;§membersMªIdentifierÍ;Í;¤pushÂÂ‘MªIdentifierÍ;Í;£momÂ]³VariableDeclarationÍ;)Í;K‘^²VariableDeclaratorÍ;/Í;JMªIdentifierÍ;/Í;4¥childU­NewExpressionÍ;7Í;JMªIdentifierÍ;;Í;H­FamilyProfile¥constQ³ExpressionStatementÍ;UÍ;nR´AssignmentExpressionÍ;UÍ;m¡=S°MemberExpressionÍ;UÍ;cMªIdentifierÍ;UÍ;Z¥childMªIdentifierÍ;[Í;c¨memberIdÂÂW§LiteralÍ;fÍ;m¥child§'child'Q³ExpressionStatementÍ;xÍ;R´AssignmentExpressionÍ;xÍ;¡=S°MemberExpressionÍ;xÍ;†MªIdentifierÍ;xÍ;}¥childMªIdentifierÍ;~Í;†¨nicknameÂÂW§LiteralÍ;‰Í;¦å­©å­¨'å­©å­'Q³ExpressionStatementÍ;˜Í;¸R´AssignmentExpressionÍ;˜Í;·¡=S°MemberExpressionÍ;˜Í;¦MªIdentifierÍ;˜Í;¥childMªIdentifierÍ;Í;¦¨ageGroupÂÂS°MemberExpressionÍ;©Í;·MªIdentifierÍ;©Í;±¨AgeGroupMªIdentifierÍ;²Í;·¥CHILDÂÂQ³ExpressionStatementÍ;ÂÍ;éR´AssignmentExpressionÍ;ÂÍ;è¡=S°MemberExpressionÍ;ÂÍ;ÓMªIdentifierÍ;ÂÍ;Ç¥childMªIdentifierÍ;ÈÍ;Ó«healthGoalsÂÂV¯ArrayExpressionÍ;ÖÍ;è‘S°MemberExpressionÍ;×Í;çMªIdentifierÍ;×Í;áªHealthGoalMªIdentifierÍ;âÍ;ç¥CHILDÂÂQ³ExpressionStatementÍ;óÍ<R´AssignmentExpressionÍ;óÍ<¡=S°MemberExpressionÍ;óÍ<MªIdentifierÍ;óÍ;ø¥childMªIdentifierÍ;ùÍ<©allergensÂÂV¯ArrayExpressionÍ<Í<‘W§LiteralÍ<Í<
+¦åšæœ¨'åšæœ'Q³ExpressionStatementÍ<Í<BR´AssignmentExpressionÍ<Í<A¡=S°MemberExpressionÍ<Í<'MªIdentifierÍ<Í<¥childMªIdentifierÍ<Í<'«dailyBudgetÂÂU­NewExpressionÍ<*Í<AMªIdentifierÍ<.Í<?±DailyBudgetConfigQ³ExpressionStatementÍ<LÍ<rR´AssignmentExpressionÍ<LÍ<q¡=S°MemberExpressionÍ<LÍ<jS°MemberExpressionÍ<LÍ<]MªIdentifierÍ<LÍ<Q¥childMªIdentifierÍ<RÍ<]«dailyBudgetÂÂMªIdentifierÍ<^Í<j¬sodiumBudgetÂÂW§LiteralÍ<mÍ<qÍ°¤1200Q³ExpressionStatementÍ<|Í<ŸR´AssignmentExpressionÍ<|Í<¡=S°MemberExpressionÍ<|Í<™S°MemberExpressionÍ<|Í<MªIdentifierÍ<|Í<¥childMªIdentifierÍ<‚Í<«dailyBudgetÂÂMªIdentifierÍ<Í<™«sugarBudgetÂÂW§LiteralÍ<œÍ<¢25Q³ExpressionStatementÍ<©Í<ĞR´AssignmentExpressionÍ<©Í<Ï¡=S°MemberExpressionÍ<©Í<ÈS°MemberExpressionÍ<©Í<ºMªIdentifierÍ<©Í<®¥childMªIdentifierÍ<¯Í<º«dailyBudgetÂÂMªIdentifierÍ<»Í<È­calorieBudgetÂÂW§LiteralÍ<ËÍ<ÏÍÜ¤1500Q³ExpressionStatementÍ<ÚÍ<ûR´AssignmentExpressionÍ<ÚÍ<ú¡=S°MemberExpressionÍ<ÚÍ<õS°MemberExpressionÍ<ÚÍ<ëMªIdentifierÍ<ÚÍ<ß¥childMªIdentifierÍ<àÍ<ë«dailyBudgetÂÂMªIdentifierÍ<ìÍ<õ©fatBudgetÂÂW§LiteralÍ<øÍ<ú2¢50Q³ExpressionStatementÍ=Í='R´AssignmentExpressionÍ=Í=&¡=S°MemberExpressionÍ=Í=MªIdentifierÍ=Í=
+¥childMªIdentifierÍ=Í=©mealTimesÂÂU­NewExpressionÍ=Í=&MªIdentifierÍ=Í=$©MealTimesQ³ExpressionStatementÍ=1Í=UR´AssignmentExpressionÍ=1Í=T¡=S°MemberExpressionÍ=1Í=JS°MemberExpressionÍ=1Í=@MªIdentifierÍ=1Í=6¥childMªIdentifierÍ=7Í=@©mealTimesÂÂMªIdentifierÍ=AÍ=J©breakfastÂÂW§LiteralÍ=MÍ=T¥07:30§'07:30'Q³ExpressionStatementÍ=_Í=R´AssignmentExpressionÍ=_Í=~¡=S°MemberExpressionÍ=_Í=tS°MemberExpressionÍ=_Í=nMªIdentifierÍ=_Í=d¥childMªIdentifierÍ=eÍ=n©mealTimesÂÂMªIdentifierÍ=oÍ=t¥lunchÂÂW§LiteralÍ=wÍ=~¥12:00§'12:00'Q³ExpressionStatementÍ=‰Í=ªR´AssignmentExpressionÍ=‰Í=©¡=S°MemberExpressionÍ=‰Í=ŸS°MemberExpressionÍ=‰Í=˜MªIdentifierÍ=‰Í=¥childMªIdentifierÍ=Í=˜©mealTimesÂÂMªIdentifierÍ=™Í=Ÿ¦dinnerÂÂW§LiteralÍ=¢Í=©¥18:00§'18:00'Q³ExpressionStatementÍ=´Í=ÌR´AssignmentExpressionÍ=´Í=Ë¡=S°MemberExpressionÍ=´Í=ÁMªIdentifierÍ=´Í=¹¥childMªIdentifierÍ=ºÍ=Á§bedtimeÂÂW§LiteralÍ=ÄÍ=Ë¥22:00§'22:00'Q³ExpressionStatementÍ=ÖÍ=ìR´AssignmentExpressionÍ=ÖÍ=ë¡=S°MemberExpressionÍ=ÖÍ=åMªIdentifierÍ=ÖÍ=Û¥childMªIdentifierÍ=ÜÍ=å©createdAtÂÂMªIdentifierÍ=èÍ=ë£nowQ³ExpressionStatementÍ=öÍ>R´AssignmentExpressionÍ=öÍ>¡=S°MemberExpressionÍ=öÍ>MªIdentifierÍ=öÍ=û¥childMªIdentifierÍ=üÍ>©updatedAtÂÂMªIdentifierÍ>Í>£nowQ³ExpressionStatementÍ>Í>*\®CallExpressionÍ>Í>)S°MemberExpressionÍ>Í>"MªIdentifierÍ>Í>§membersMªIdentifierÍ>Í>"¤pushÂÂ‘MªIdentifierÍ>#Í>(¥childÂ]³VariableDeclarationÍ>4Í>S‘^²VariableDeclaratorÍ>:Í>RMªIdentifierÍ>:Í><¢meU­NewExpressionÍ>?Í>RMªIdentifierÍ>CÍ>P­FamilyProfile¥constQ³ExpressionStatementÍ>]Í>pR´AssignmentExpressionÍ>]Í>o¡=S°MemberExpressionÍ>]Í>hMªIdentifierÍ>]Í>_¢meMªIdentifierÍ>`Í>h¨memberIdÂÂW§LiteralÍ>kÍ>o¢me¤'me'Q³ExpressionStatementÍ>zÍ>ŒR´AssignmentExpressionÍ>zÍ>‹¡=S°MemberExpressionÍ>zÍ>…MªIdentifierÍ>zÍ>|¢meMªIdentifierÍ>}Í>…¨nicknameÂÂW§LiteralÍ>ˆÍ>‹£æˆ‘¥'æˆ‘'Q³ExpressionStatementÍ>–Í>³R´AssignmentExpressionÍ>–Í>²¡=S°MemberExpressionÍ>–Í>¡MªIdentifierÍ>–Í>˜¢meMªIdentifierÍ>™Í>¡¨ageGroupÂÂS°MemberExpressionÍ>¤Í>²MªIdentifierÍ>¤Í>¬¨AgeGroupMªIdentifierÍ>­Í>²¥ADULTÂÂQ³ExpressionStatementÍ>½Í>äR´AssignmentExpressionÍ>½Í>ã¡=S°MemberExpressionÍ>½Í>ËMªIdentifierÍ>½Í>¿¢meMªIdentifierÍ>ÀÍ>Ë«healthGoalsÂÂV¯ArrayExpressionÍ>ÎÍ>ã‘S°MemberExpressionÍ>ÏÍ>âMªIdentifierÍ>ÏÍ>ÙªHealthGoalMªIdentifierÍ>ÚÍ>â¨LOSE_FATÂÂQ³ExpressionStatementÍ>îÍ?R´AssignmentExpressionÍ>îÍ?¡=S°MemberExpressionÍ>îÍ>üMªIdentifierÍ>îÍ>ğ¢meMªIdentifierÍ>ñÍ>ü«dailyBudgetÂÂU­NewExpressionÍ>ÿÍ?MªIdentifierÍ?Í?±DailyBudgetConfigQ³ExpressionStatementÍ?!Í?DR´AssignmentExpressionÍ?!Í?C¡=S°MemberExpressionÍ?!Í?<S°MemberExpressionÍ?!Í?/MªIdentifierÍ?!Í?#¢meMªIdentifierÍ?$Í?/«dailyBudgetÂÂMªIdentifierÍ?0Í?<¬sodiumBudgetÂÂW§LiteralÍ??Í?CÍĞ¤2000Q³ExpressionStatementÍ?NÍ?nR´AssignmentExpressionÍ?NÍ?m¡=S°MemberExpressionÍ?NÍ?hS°MemberExpressionÍ?NÍ?\MªIdentifierÍ?NÍ?P¢meMªIdentifierÍ?QÍ?\«dailyBudgetÂÂMªIdentifierÍ?]Í?h«sugarBudgetÂÂW§LiteralÍ?kÍ?m2¢50Q³ExpressionStatementÍ?xÍ?œR´AssignmentExpressionÍ?xÍ?›¡=S°MemberExpressionÍ?xÍ?”S°MemberExpressionÍ?xÍ?†MªIdentifierÍ?xÍ?z¢meMªIdentifierÍ?{Í?†«dailyBudgetÂÂMªIdentifierÍ?‡Í?”­calorieBudgetÂÂW§LiteralÍ?—Í?›ÍÜ¤1500Q³ExpressionStatementÍ?¦Í?ÄR´AssignmentExpressionÍ?¦Í?Ã¡=S°MemberExpressionÍ?¦Í?¾S°MemberExpressionÍ?¦Í?´MªIdentifierÍ?¦Í?¨¢meMªIdentifierÍ?©Í?´«dailyBudgetÂÂMªIdentifierÍ?µÍ?¾©fatBudgetÂÂW§LiteralÍ?ÁÍ?Ã-¢45Q³ExpressionStatementÍ?ÎÍ?áR´AssignmentExpressionÍ?ÎÍ?à¡=S°MemberExpressionÍ?ÎÍ?ÚMªIdentifierÍ?ÎÍ?Ğ¢meMªIdentifierÍ?ÑÍ?Ú©createdAtÂÂMªIdentifierÍ?İÍ?à£nowQ³ExpressionStatementÍ?ëÍ?şR´AssignmentExpressionÍ?ëÍ?ı¡=S°MemberExpressionÍ?ëÍ?÷MªIdentifierÍ?ëÍ?í¢meMªIdentifierÍ?îÍ?÷©updatedAtÂÂMªIdentifierÍ?úÍ?ı£nowQ³ExpressionStatementÍ@Í@\®CallExpressionÍ@Í@S°MemberExpressionÍ@Í@MªIdentifierÍ@Í@§membersMªIdentifierÍ@Í@¤pushÂÂ‘MªIdentifierÍ@Í@¢meÂZ¯ReturnStatementÍ@#Í@2MªIdentifierÍ@*Í@1§membersO°MethodDefinitionÍ@ˆÍ@ÃÂÂMªIdentifierÍ@ˆÍ@–®getCurrentTier¦methodP²FunctionExpressionÍ@–Í@ÃÀÂÂÂN®BlockStatementÍ@™Í@Ã‘Z¯ReturnStatementÍ@¤Í@¼S°MemberExpressionÍ@«Í@»T®ThisExpressionÍ@«Í@¯MªIdentifierÍ@°Í@»«currentTierÂÂO°MethodDefinitionÍ@óÍA+ÂÂMªIdentifierÍ@óÍ@ú§setTier¦methodP²FunctionExpressionÍ@úÍA+ÀÂÂÂ‘MªIdentifierÍ@ûÍ@ÿ¤tierN®BlockStatementÍAÍA+‘Q³ExpressionStatementÍAÍA$R´AssignmentExpressionÍAÍA#¡=S°MemberExpressionÍAÍAT®ThisExpressionÍAÍAMªIdentifierÍAÍA«currentTierÂÂMªIdentifierÍAÍA#¤tierO°MethodDefinitionÍAUÍA¿ÂÂMªIdentifierÍAUÍA^©canAccess¦methodP²FunctionExpressionÍA^ÍA¿ÀÂÂÂ‘MªIdentifierÍA_ÍAk¬requiredTierN®BlockStatementÍAmÍA¿‘Z¯ReturnStatementÍAxÍA¸\®CallExpressionÍAÍA·S°MemberExpressionÍAÍA—MªIdentifierÍAÍA®PricingServiceMªIdentifierÍAÍA—©canAccessÂÂ’S°MemberExpressionÍA˜ÍA¨T®ThisExpressionÍA˜ÍAœMªIdentifierÍAÍA¨«currentTierÂÂMªIdentifierÍAªÍA¶¬requiredTierÂO°MethodDefinitionÍBÍC
+ÂÂMªIdentifierÍBÍB ¬canScanToday¦methodP²FunctionExpressionÍB ÍC
+ÀÂÂÂN®BlockStatementÍB#ÍC
+“Q³ExpressionStatementÍB.ÍBL\®CallExpressionÍB.ÍBKS°MemberExpressionÍB.ÍBIT®ThisExpressionÍB.ÍB2MªIdentifierÍB3ÍBI¶resetScanCountIfNewDayÂÂÂX«IfStatementÍBVÍBâb°BinaryExpressionÍBZÍB„S°MemberExpressionÍBZÍBjT®ThisExpressionÍBZÍB^MªIdentifierÍB_ÍBj«currentTierÂÂ£===S°MemberExpressionÍBoÍB„MªIdentifierÍBoÍB°SubscriptionTierMªIdentifierÍB€ÍB„¤FREEÂÂN®BlockStatementÍB†ÍBâ‘Z¯ReturnStatementÍB•ÍB×b°BinaryExpressionÍBœÍBÖS°MemberExpressionÍBœÍB¯T®ThisExpressionÍBœÍB MªIdentifierÍB¡ÍB¯®todayScanCountÂÂ¡<S°MemberExpressionÍB²ÍBÖMªIdentifierÍB²ÍBÀ®PricingServiceMªIdentifierÍBÁÍBÖµFREE_DAILY_SCAN_LIMITÂÂÀZ¯ReturnStatementÍBìÍBøW§LiteralÍBóÍB÷Ã¤trueO°MethodDefinitionÍC1ÍCÂÂMªIdentifierÍC1ÍC;ªrecordScan¦methodP²FunctionExpressionÍC;ÍCÀÂÂÂN®BlockStatementÍC>ÍC’Q³ExpressionStatementÍCIÍCg\®CallExpressionÍCIÍCfS°MemberExpressionÍCIÍCdT®ThisExpressionÍCIÍCMMªIdentifierÍCNÍCd¶resetScanCountIfNewDayÂÂÂQ³ExpressionStatementÍCqÍC‡Y°UpdateExpressionÍCqÍC†¢++ÂS°MemberExpressionÍCqÍC„T®ThisExpressionÍCqÍCuMªIdentifierÍCvÍC„®todayScanCountÂÂO°MethodDefinitionÍC¹ÍDÃÂÂMªIdentifierÍC¹ÍCÏ¶getRemainingScansToday¦methodP²FunctionExpressionÍCÏÍDÃÀÂÂÂN®BlockStatementÍCÒÍDÃ“Q³ExpressionStatementÍCİÍCû\®CallExpressionÍCİÍCúS°MemberExpressionÍCİÍCøT®ThisExpressionÍCİÍCáMªIdentifierÍCâÍCø¶resetScanCountIfNewDayÂÂÂX«IfStatementÍDÍDb°BinaryExpressionÍD	ÍD3S°MemberExpressionÍD	ÍDT®ThisExpressionÍD	ÍDMªIdentifierÍDÍD«currentTierÂÂ£===S°MemberExpressionÍDÍD3MªIdentifierÍDÍD.°SubscriptionTierMªIdentifierÍD/ÍD3¤FREEÂÂN®BlockStatementÍD5ÍD‘Z¯ReturnStatementÍDDÍD“\®CallExpressionÍDKÍD’S°MemberExpressionÍDKÍDSMªIdentifierÍDKÍDO¤MathMªIdentifierÍDPÍDS£maxÂÂ’W§LiteralÍDTÍDU ¡0b°BinaryExpressionÍDWÍD‘S°MemberExpressionÍDWÍD{MªIdentifierÍDWÍDe®PricingServiceMªIdentifierÍDfÍD{µFREE_DAILY_SCAN_LIMITÂÂ¡-S°MemberExpressionÍD~ÍD‘T®ThisExpressionÍD~ÍD‚MªIdentifierÍDƒÍD‘®todayScanCountÂÂÂÀZ¯ReturnStatementÍD¨ÍD²Y¯UnaryExpressionÍD¯ÍD±¡-ÃW§LiteralÍD°ÍD±¡1O°MethodDefinitionÍDùÍEÇÂÂMªIdentifierÍDùÍE¬canAddMember¦methodP²FunctionExpressionÍEÍEÇÀÂÂÂN®BlockStatementÍEÍEÇ’X«IfStatementÍEÍE b°BinaryExpressionÍEÍEAS°MemberExpressionÍEÍE'T®ThisExpressionÍEÍEMªIdentifierÍEÍE'«currentTierÂÂ£===S°MemberExpressionÍE,ÍEAMªIdentifierÍE,ÍE<°SubscriptionTierMªIdentifierÍE=ÍEA¤FREEÂÂN®BlockStatementÍECÍE ‘Z¯ReturnStatementÍERÍE•b°BinaryExpressionÍEYÍE”S°MemberExpressionÍEYÍEqS°MemberExpressionÍEYÍEjT®ThisExpressionÍEYÍE]MªIdentifierÍE^ÍEj¬membersCacheÂÂMªIdentifierÍEkÍEq¦lengthÂÂ¡<S°MemberExpressionÍEtÍE”MªIdentifierÍEtÍE‚®PricingServiceMªIdentifierÍEƒÍE”±FREE_MEMBER_LIMITÂÂÀZ¯ReturnStatementÍEªÍE¶W§LiteralÍE±ÍEµÃ¤trueO°MethodDefinitionÍE÷ÍF ÂÂMªIdentifierÍE÷ÍF®getMemberLimit¦methodP²FunctionExpressionÍFÍF ÀÂÂÂN®BlockStatementÍFÍF ’X«IfStatementÍFÍF…b°BinaryExpressionÍFÍFAS°MemberExpressionÍFÍF'T®ThisExpressionÍFÍFMªIdentifierÍFÍF'«currentTierÂÂ£===S°MemberExpressionÍF,ÍFAMªIdentifierÍF,ÍF<°SubscriptionTierMªIdentifierÍF=ÍFA¤FREEÂÂN®BlockStatementÍFCÍF…‘Z¯ReturnStatementÍFRÍFzS°MemberExpressionÍFYÍFyMªIdentifierÍFYÍFg®PricingServiceMªIdentifierÍFhÍFy±FREE_MEMBER_LIMITÂÂÀZ¯ReturnStatementÍFÍF™Y¯UnaryExpressionÍF–ÍF˜¡-ÃW§LiteralÍF—ÍF˜¡1O°MethodDefinitionÍF¦ÍGzÂÂMªIdentifierÍF¦ÍF¼¶resetScanCountIfNewDay¦methodP²FunctionExpressionÍF¼ÍGzÀÂÂÂN®BlockStatementÍF¿ÍGz’]³VariableDeclarationÍFÊÍFì‘^²VariableDeclaratorÍFĞÍFëMªIdentifierÍFĞÍFÕ¥today\®CallExpressionÍFØÍFëS°MemberExpressionÍFØÍFéMªIdentifierÍFØÍFà¨DateUtilMªIdentifierÍFáÍFé¨getTodayÂÂÂ¥constX«IfStatementÍFöÍGsb°BinaryExpressionÍFúÍGS°MemberExpressionÍFúÍGT®ThisExpressionÍFúÍFşMªIdentifierÍFÿÍG­todayScanDateÂÂ£!==MªIdentifierÍGÍG¥todayN®BlockStatementÍGÍGs’Q³ExpressionStatementÍG'ÍGBR´AssignmentExpressionÍG'ÍGA¡=S°MemberExpressionÍG'ÍG9T®ThisExpressionÍG'ÍG+MªIdentifierÍG,ÍG9­todayScanDateÂÂMªIdentifierÍG<ÍGA¥todayQ³ExpressionStatementÍGPÍGhR´AssignmentExpressionÍGPÍGg¡=S°MemberExpressionÍGPÍGcT®ThisExpressionÍGPÍGTMªIdentifierÍGUÍGc®todayScanCountÂÂW§LiteralÍGfÍGg ¡0ÀÀÜ Ôri•¤type¥start£endªspecifiers¦source±ImportDeclaration$Ì•Ôrj•¤type¥start£end¨imported¥local¯ImportSpecifier-:MªIdentifier-:­FamilyProfileMªIdentifier-:­FamilyProfilej¯ImportSpecifier<ÌDMªIdentifier<ÌD¨AgeGroupMªIdentifier<ÌD¨AgeGroupj¯ImportSpecifierÌFÌPMªIdentifierÌFÌPªHealthGoalMªIdentifierÌFÌPªHealthGoalj¯ImportSpecifierÌRÌcMªIdentifierÌRÌc±DailyBudgetConfigMªIdentifierÌRÌc±DailyBudgetConfigj¯ImportSpecifierÌeÌnMªIdentifierÌeÌn©MealTimesMªIdentifierÌeÌn©MealTimesW§LiteralÌvÌµ./model/FamilyProfile·'./model/FamilyProfile'i±ImportDeclarationÌÌõ•j¯ImportSpecifierÌ™Ì¥MªIdentifierÌ™Ì¥¬HealthSignalMªIdentifierÌ™Ì¥¬HealthSignalj¯ImportSpecifierÌ§Ì°MªIdentifierÌ§Ì°©StepLevelMªIdentifierÌ§Ì°©StepLevelj¯ImportSpecifierÌ²Ì½MªIdentifierÌ²Ì½«SleepStatusMªIdentifierÌ²Ì½«SleepStatusj¯ImportSpecifierÌ¿ÌÊMªIdentifierÌ¿ÌÊ«WeightTrendMªIdentifierÌ¿ÌÊ«WeightTrendj¯ImportSpecifierÌÌÌÖMªIdentifierÌÌÌÖªDataSourceMªIdentifierÌÌÌÖªDataSourceW§LiteralÌŞÌô´./model/HealthSignal¶'./model/HealthSignal'i±ImportDeclarationÌ÷Í)‘j¯ImportSpecifierÍ ÍMªIdentifierÍ Í«DailyBudgetMªIdentifierÍ Í«DailyBudgetW§LiteralÍÍ(³./model/DailyBudgetµ'./model/DailyBudget'i±ImportDeclarationÍ+Íl‘j¯ImportSpecifierÍ4ÍDMªIdentifierÍ4ÍD°FamilyRepositoryMªIdentifierÍ4ÍD°FamilyRepositoryW§LiteralÍLÍk½./repository/FamilyRepository¿'./repository/FamilyRepository'i±ImportDeclarationÍnÍ«‘j¯ImportSpecifierÍwÍ…MªIdentifierÍwÍ…®FoodRepositoryMªIdentifierÍwÍ…®FoodRepositoryW§LiteralÍÍª»./repository/FoodRepository½'./repository/FoodRepository'i±ImportDeclarationÍ­Íğ‘j¯ImportSpecifierÍ¶ÍÇMªIdentifierÍ¶ÍÇ±HistoryRepositoryMªIdentifierÍ¶ÍÇ±HistoryRepositoryW§LiteralÍÏÍï¾./repository/HistoryRepositoryÙ './repository/HistoryRepository'i±ImportDeclarationÍòÍ/‘j¯ImportSpecifierÍûÍ	MªIdentifierÍûÍ	®RuleRepositoryMªIdentifierÍûÍ	®RuleRepositoryW§LiteralÍÍ.»./repository/RuleRepository½'./repository/RuleRepository'i±ImportDeclarationÍ1Íb‘j¯ImportSpecifierÍ:ÍDMªIdentifierÍ:ÍDªRuleEngineMªIdentifierÍ:ÍDªRuleEngineW§LiteralÍLÍa³./engine/RuleEngineµ'./engine/RuleEngine'i±ImportDeclarationÍdÍœ‘j¯ImportSpecifierÍmÍzMªIdentifierÍmÍz­HealthServiceMªIdentifierÍmÍz­HealthServiceW§LiteralÍ‚Í›·./service/HealthService¹'./service/HealthService'i±ImportDeclarationÍÍã‘j¯ImportSpecifierÍ§Í»MªIdentifierÍ§Í»´RecommendationEngineMªIdentifierÍ§Í»´RecommendationEngineW§LiteralÍÃÍâ½./engine/RecommendationEngine¿'./engine/RecommendationEngine'i±ImportDeclarationÍåÍ$‘j¯ImportSpecifierÍîÍÿMªIdentifierÍîÍÿ±MealBalanceEngineMªIdentifierÍîÍÿ±MealBalanceEngineW§LiteralÍÍ#º./engine/MealBalanceEngine¼'./engine/MealBalanceEngine'i±ImportDeclarationÍ&Ím‘j¯ImportSpecifierÍ/ÍDMªIdentifierÍ/ÍDµChildProtectionEngineMªIdentifierÍ/ÍDµChildProtectionEngineW§LiteralÍLÍl¾./engine/ChildProtectionEngineÙ './engine/ChildProtectionEngine'i±ImportDeclarationÍoÍ®‘j¯ImportSpecifierÍxÍ‰MªIdentifierÍxÍ‰±CredibilityEngineMªIdentifierÍxÍ‰±CredibilityEngineW§LiteralÍ‘Í­º./engine/CredibilityEngine¼'./engine/CredibilityEngine'i±ImportDeclarationÍ°Íï‘j¯ImportSpecifierÍ¹ÍÊMªIdentifierÍ¹ÍÊ±BasketCheckEngineMªIdentifierÍ¹ÍÊ±BasketCheckEngineW§LiteralÍÒÍîº./engine/BasketCheckEngine¼'./engine/BasketCheckEngine'i±ImportDeclarationÍñÍ2‘j¯ImportSpecifierÍúÍMªIdentifierÍúÍ²WeeklyReportEngineMªIdentifierÍúÍ²WeeklyReportEngineW§LiteralÍÍ1»./engine/WeeklyReportEngine½'./engine/WeeklyReportEngine'i±ImportDeclarationÍ4Íw‘j¯ImportSpecifierÍ=ÍPMªIdentifierÍ=ÍP³ElderFriendlyEngineMªIdentifierÍ=ÍP³ElderFriendlyEngineW§LiteralÍXÍv¼./engine/ElderFriendlyEngine¾'./engine/ElderFriendlyEngine'i±ImportDeclarationÍyÍ¾‘j¯ImportSpecifierÍ‚Í–MªIdentifierÍ‚Í–´PositiveAdviceEngineMªIdentifierÍ‚Í–´PositiveAdviceEngineW§LiteralÍÍ½½./engine/PositiveAdviceEngine¿'./engine/PositiveAdviceEngine'i±ImportDeclarationÍÀÍì‘j¯ImportSpecifierÍÉÍÑMªIdentifierÍÉÍÑ¨DateUtilMªIdentifierÍÉÍÑ¨DateUtilW§LiteralÍÙÍë°./utils/DateUtil²'./utils/DateUtil'i±ImportDeclarationÍîÍ6’j¯ImportSpecifierÍ÷ÍMªIdentifierÍ÷Í°SubscriptionTierMªIdentifierÍ÷Í°SubscriptionTierj¯ImportSpecifierÍ	ÍMªIdentifierÍ	Í®PricingServiceMªIdentifierÍ	Í®PricingServiceW§LiteralÍÍ5´./model/PricingModel¶'./model/PricingModel'i±ImportDeclarationÍ8Íq‘Ôrk”¤type¥start£end¥local¶ImportDefaultSpecifierÍ?ÍNMªIdentifierÍ?ÍN¯relationalStoreW§LiteralÍTÍpº@ohos.data.relationalStore¼"@ohos.data.relationalStore"i±ImportDeclarationÍsÍ“‘k¶ImportDefaultSpecifierÍzÍMªIdentifierÍzÍ¥hilogW§LiteralÍ…Í’«@ohos.hilog­"@ohos.hilog"

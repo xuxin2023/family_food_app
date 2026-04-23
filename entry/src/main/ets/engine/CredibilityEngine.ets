@@ -144,30 +144,30 @@ export class CredibilityEngine {
 
     // SC编号查询
     if (foodLabel.hasScNumber()) {
-      entries.push({
-        name: '食品生产许可查询',
-        keyword: foodLabel.scNumber,
-        url: 'https://zwfw.samr.gov.cn/needSearch',
-        description: '复制SC编号到国家市场监管总局政务服务平台查询'
-      });
+      const scEntry = new PublicQueryEntry();
+      scEntry.name = '食品生产许可查询';
+      scEntry.keyword = foodLabel.scNumber;
+      scEntry.url = 'https://zwfw.samr.gov.cn/needSearch';
+      scEntry.description = '复制SC编号到国家市场监管总局政务服务平台查询';
+      entries.push(scEntry);
     }
 
     // 抽检查询
-    entries.push({
-      name: '食品安全抽检查询',
-      keyword: foodLabel.foodName,
-      url: 'https://spcjsac.gsxt.gov.cn/',
-      description: '在国家市场监管总局抽检公布结果查询系统查询'
-    });
+    const cjEntry = new PublicQueryEntry();
+    cjEntry.name = '食品安全抽检查询';
+    cjEntry.keyword = foodLabel.foodName;
+    cjEntry.url = 'https://spcjsac.gsxt.gov.cn/';
+    cjEntry.description = '在国家市场监管总局抽检公布结果查询系统查询';
+    entries.push(cjEntry);
 
     // 生产商查询
     if (foodLabel.hasManufacturer()) {
-      entries.push({
-        name: '生产企业信息查询',
-        keyword: foodLabel.manufacturer,
-        url: '',
-        description: `搜索"${foodLabel.manufacturer}"了解生产企业背景`
-      });
+      const mfrEntry = new PublicQueryEntry();
+      mfrEntry.name = '生产企业信息查询';
+      mfrEntry.keyword = foodLabel.manufacturer;
+      mfrEntry.url = '';
+      mfrEntry.description = `搜索"${foodLabel.manufacturer}"了解生产企业背景`;
+      entries.push(mfrEntry);
     }
 
     return entries;

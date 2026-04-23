@@ -32,6 +32,20 @@ export function getLevelColorValue(color: LevelColor): string {
   }
 }
 
+// Recommendation JSON 输出类
+export class RecommendationJson {
+  memberId: Object = '';
+  foodId: Object = '';
+  level: Object = RecommendLevel.SUITABLE;
+  levelColor: Object = LevelColor.GREEN;
+  maxAmount: Object = 0;
+  maxServings: Object = 0;
+  reasons: Object = [];
+  reminders: Object = [];
+  disclaimer: Object = '';
+  generatedAt: Object = 0;
+}
+
 // 适配结论
 export class Recommendation {
   memberId: string = '';
@@ -55,19 +69,19 @@ export class Recommendation {
     return this.level === RecommendLevel.CAUTIOUS;
   }
 
-  toJson(): Record<string, Object> {
-    return {
-      memberId: this.memberId,
-      foodId: this.foodId,
-      level: this.level,
-      levelColor: this.levelColor,
-      maxAmount: this.maxAmount,
-      maxServings: this.maxServings,
-      reasons: this.reasons,
-      reminders: this.reminders,
-      disclaimer: this.disclaimer,
-      generatedAt: this.generatedAt
-    };
+  toJson(): RecommendationJson {
+    const json = new RecommendationJson();
+    json.memberId = this.memberId;
+    json.foodId = this.foodId;
+    json.level = this.level;
+    json.levelColor = this.levelColor;
+    json.maxAmount = this.maxAmount;
+    json.maxServings = this.maxServings;
+    json.reasons = this.reasons;
+    json.reminders = this.reminders;
+    json.disclaimer = this.disclaimer;
+    json.generatedAt = this.generatedAt;
+    return json;
   }
 
   static fromJson(json: Record<string, Object>): Recommendation {

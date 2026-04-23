@@ -1,0 +1,1472 @@
+Ôr@Ÿªassertions¤code´customTransformCache¬dependencies¢id¤meta±moduleSideEffects¬originalCode±originalSourcemap«resolvedIds®sourcemapChainµsyntheticNamedExportsµtransformDependencies®transformFiles¨cacheAstÔrAÚ“Èif (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
+import router from "@ohos.router";
+import promptAction from "@ohos.promptAction";
+import { FoodLabel } from '../model/FoodLabel';
+import { AppState } from '../AppState';
+import { FoodInputService } from '../service/FoodInputService';
+import { SubscriptionTier } from '../model/PricingModel';
+class ScanPage extends ViewPU {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
+        this.__scanMode = new ObservedPropertySimplePU('camera', this, "scanMode");
+        this.__foodLabel = new ObservedPropertyObjectPU(new FoodLabel(), this, "foodLabel");
+        this.__isRecognizing = new ObservedPropertySimplePU(false, this, "isRecognizing");
+        this.__showEditPanel = new ObservedPropertySimplePU(false, this, "showEditPanel");
+        this.__scanLimitReached = new ObservedPropertySimplePU(false, this, "scanLimitReached");
+        this.__remainingScans = new ObservedPropertySimplePU(3, this, "remainingScans");
+        this.__recognizedText = new ObservedPropertySimplePU('', this, "recognizedText");
+        this.__recognitionHint = new ObservedPropertySimplePU('', this, "recognitionHint");
+        this.__ocrConfidence = new ObservedPropertySimplePU(1, this, "ocrConfidence");
+        this.__editFoodName = new ObservedPropertySimplePU('', this, "editFoodName");
+        this.__editSodium = new ObservedPropertySimplePU('0', this, "editSodium");
+        this.__editSugar = new ObservedPropertySimplePU('0', this, "editSugar");
+        this.__editCalories = new ObservedPropertySimplePU('0', this, "editCalories");
+        this.__editFat = new ObservedPropertySimplePU('0', this, "editFat");
+        this.__editCarbohydrate = new ObservedPropertySimplePU('0', this, "editCarbohydrate");
+        this.__editProtein = new ObservedPropertySimplePU('0', this, "editProtein");
+        this.__editIngredients = new ObservedPropertySimplePU('', this, "editIngredients");
+        this.__editManufacturer = new ObservedPropertySimplePU('', this, "editManufacturer");
+        this.__editScNumber = new ObservedPropertySimplePU('', this, "editScNumber");
+        this.__editPrincipal = new ObservedPropertySimplePU('', this, "editPrincipal");
+        this.__editTrustee = new ObservedPropertySimplePU('', this, "editTrustee");
+        this.memberId = '';
+        this.appState = AppState.getInstance();
+        this.foodInputService = new FoodInputService();
+        this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
+    }
+    setInitiallyProvidedValue(params) {
+        if (params.scanMode !== undefined) {
+            this.scanMode = params.scanMode;
+        }
+        if (params.foodLabel !== undefined) {
+            this.foodLabel = params.foodLabel;
+        }
+        if (params.isRecognizing !== undefined) {
+            this.isRecognizing = params.isRecognizing;
+        }
+        if (params.showEditPanel !== undefined) {
+            this.showEditPanel = params.showEditPanel;
+        }
+        if (params.scanLimitReached !== undefined) {
+            this.scanLimitReached = params.scanLimitReached;
+        }
+        if (params.remainingScans !== undefined) {
+            this.remainingScans = params.remainingScans;
+        }
+        if (params.recognizedText !== undefined) {
+            this.recognizedText = params.recognizedText;
+        }
+        if (params.recognitionHint !== undefined) {
+            this.recognitionHint = params.recognitionHint;
+        }
+        if (params.ocrConfidence !== undefined) {
+            this.ocrConfidence = params.ocrConfidence;
+        }
+        if (params.editFoodName !== undefined) {
+            this.editFoodName = params.editFoodName;
+        }
+        if (params.editSodium !== undefined) {
+            this.editSodium = params.editSodium;
+        }
+        if (params.editSugar !== undefined) {
+            this.editSugar = params.editSugar;
+        }
+        if (params.editCalories !== undefined) {
+            this.editCalories = params.editCalories;
+        }
+        if (params.editFat !== undefined) {
+            this.editFat = params.editFat;
+        }
+        if (params.editCarbohydrate !== undefined) {
+            this.editCarbohydrate = params.editCarbohydrate;
+        }
+        if (params.editProtein !== undefined) {
+            this.editProtein = params.editProtein;
+        }
+        if (params.editIngredients !== undefined) {
+            this.editIngredients = params.editIngredients;
+        }
+        if (params.editManufacturer !== undefined) {
+            this.editManufacturer = params.editManufacturer;
+        }
+        if (params.editScNumber !== undefined) {
+            this.editScNumber = params.editScNumber;
+        }
+        if (params.editPrincipal !== undefined) {
+            this.editPrincipal = params.editPrincipal;
+        }
+        if (params.editTrustee !== undefined) {
+            this.editTrustee = params.editTrustee;
+        }
+        if (params.memberId !== undefined) {
+            this.memberId = params.memberId;
+        }
+        if (params.appState !== undefined) {
+            this.appState = params.appState;
+        }
+        if (params.foodInputService !== undefined) {
+            this.foodInputService = params.foodInputService;
+        }
+    }
+    updateStateVars(params) {
+    }
+    purgeVariableDependenciesOnElmtId(rmElmtId) {
+        this.__scanMode.purgeDependencyOnElmtId(rmElmtId);
+        this.__foodLabel.purgeDependencyOnElmtId(rmElmtId);
+        this.__isRecognizing.purgeDependencyOnElmtId(rmElmtId);
+        this.__showEditPanel.purgeDependencyOnElmtId(rmElmtId);
+        this.__scanLimitReached.purgeDependencyOnElmtId(rmElmtId);
+        this.__remainingScans.purgeDependencyOnElmtId(rmElmtId);
+        this.__recognizedText.purgeDependencyOnElmtId(rmElmtId);
+        this.__recognitionHint.purgeDependencyOnElmtId(rmElmtId);
+        this.__ocrConfidence.purgeDependencyOnElmtId(rmElmtId);
+        this.__editFoodName.purgeDependencyOnElmtId(rmElmtId);
+        this.__editSodium.purgeDependencyOnElmtId(rmElmtId);
+        this.__editSugar.purgeDependencyOnElmtId(rmElmtId);
+        this.__editCalories.purgeDependencyOnElmtId(rmElmtId);
+        this.__editFat.purgeDependencyOnElmtId(rmElmtId);
+        this.__editCarbohydrate.purgeDependencyOnElmtId(rmElmtId);
+        this.__editProtein.purgeDependencyOnElmtId(rmElmtId);
+        this.__editIngredients.purgeDependencyOnElmtId(rmElmtId);
+        this.__editManufacturer.purgeDependencyOnElmtId(rmElmtId);
+        this.__editScNumber.purgeDependencyOnElmtId(rmElmtId);
+        this.__editPrincipal.purgeDependencyOnElmtId(rmElmtId);
+        this.__editTrustee.purgeDependencyOnElmtId(rmElmtId);
+    }
+    aboutToBeDeleted() {
+        this.__scanMode.aboutToBeDeleted();
+        this.__foodLabel.aboutToBeDeleted();
+        this.__isRecognizing.aboutToBeDeleted();
+        this.__showEditPanel.aboutToBeDeleted();
+        this.__scanLimitReached.aboutToBeDeleted();
+        this.__remainingScans.aboutToBeDeleted();
+        this.__recognizedText.aboutToBeDeleted();
+        this.__recognitionHint.aboutToBeDeleted();
+        this.__ocrConfidence.aboutToBeDeleted();
+        this.__editFoodName.aboutToBeDeleted();
+        this.__editSodium.aboutToBeDeleted();
+        this.__editSugar.aboutToBeDeleted();
+        this.__editCalories.aboutToBeDeleted();
+        this.__editFat.aboutToBeDeleted();
+        this.__editCarbohydrate.aboutToBeDeleted();
+        this.__editProtein.aboutToBeDeleted();
+        this.__editIngredients.aboutToBeDeleted();
+        this.__editManufacturer.aboutToBeDeleted();
+        this.__editScNumber.aboutToBeDeleted();
+        this.__editPrincipal.aboutToBeDeleted();
+        this.__editTrustee.aboutToBeDeleted();
+        SubscriberManager.Get().delete(this.id__());
+        this.aboutToBeDeletedInternal();
+    }
+    get scanMode() {
+        return this.__scanMode.get();
+    }
+    set scanMode(newValue) {
+        this.__scanMode.set(newValue);
+    }
+    get foodLabel() {
+        return this.__foodLabel.get();
+    }
+    set foodLabel(newValue) {
+        this.__foodLabel.set(newValue);
+    }
+    get isRecognizing() {
+        return this.__isRecognizing.get();
+    }
+    set isRecognizing(newValue) {
+        this.__isRecognizing.set(newValue);
+    }
+    get showEditPanel() {
+        return this.__showEditPanel.get();
+    }
+    set showEditPanel(newValue) {
+        this.__showEditPanel.set(newValue);
+    }
+    get scanLimitReached() {
+        return this.__scanLimitReached.get();
+    }
+    set scanLimitReached(newValue) {
+        this.__scanLimitReached.set(newValue);
+    }
+    get remainingScans() {
+        return this.__remainingScans.get();
+    }
+    set remainingScans(newValue) {
+        this.__remainingScans.set(newValue);
+    }
+    get recognizedText() {
+        return this.__recognizedText.get();
+    }
+    set recognizedText(newValue) {
+        this.__recognizedText.set(newValue);
+    }
+    get recognitionHint() {
+        return this.__recognitionHint.get();
+    }
+    set recognitionHint(newValue) {
+        this.__recognitionHint.set(newValue);
+    }
+    get ocrConfidence() {
+        return this.__ocrConfidence.get();
+    }
+    set ocrConfidence(newValue) {
+        this.__ocrConfidence.set(newValue);
+    }
+    get editFoodName() {
+        return this.__editFoodName.get();
+    }
+    set editFoodName(newValue) {
+        this.__editFoodName.set(newValue);
+    }
+    get editSodium() {
+        return this.__editSodium.get();
+    }
+    set editSodium(newValue) {
+        this.__editSodium.set(newValue);
+    }
+    get editSugar() {
+        return this.__editSugar.get();
+    }
+    set editSugar(newValue) {
+        this.__editSugar.set(newValue);
+    }
+    get editCalories() {
+        return this.__editCalories.get();
+    }
+    set editCalories(newValue) {
+        this.__editCalories.set(newValue);
+    }
+    get editFat() {
+        return this.__editFat.get();
+    }
+    set editFat(newValue) {
+        this.__editFat.set(newValue);
+    }
+    get editCarbohydrate() {
+        return this.__editCarbohydrate.get();
+    }
+    set editCarbohydrate(newValue) {
+        this.__editCarbohydrate.set(newValue);
+    }
+    get editProtein() {
+        return this.__editProtein.get();
+    }
+    set editProtein(newValue) {
+        this.__editProtein.set(newValue);
+    }
+    get editIngredients() {
+        return this.__editIngredients.get();
+    }
+    set editIngredients(newValue) {
+        this.__editIngredients.set(newValue);
+    }
+    get editManufacturer() {
+        return this.__editManufacturer.get();
+    }
+    set editManufacturer(newValue) {
+        this.__editManufacturer.set(newValue);
+    }
+    get editScNumber() {
+        return this.__editScNumber.get();
+    }
+    set editScNumber(newValue) {
+        this.__editScNumber.set(newValue);
+    }
+    get editPrincipal() {
+        return this.__editPrincipal.get();
+    }
+    set editPrincipal(newValue) {
+        this.__editPrincipal.set(newValue);
+    }
+    get editTrustee() {
+        return this.__editTrustee.get();
+    }
+    set editTrustee(newValue) {
+        this.__editTrustee.set(newValue);
+    }
+    aboutToAppear() {
+        const params = router.getParams();
+        if (params) {
+            this.memberId = params.memberId || '';
+        }
+        this.refreshScanQuota();
+    }
+    initialRender() {
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Scroll.create();
+            Scroll.width('100%');
+            Scroll.height('100%');
+            Scroll.backgroundColor('#FAFAFA');
+        }, Scroll);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Column.create();
+            Column.width('100%');
+            Column.alignItems(HorizontalAlign.Center);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Row.create();
+            Row.width('100%');
+            Row.padding({ left: 16, right: 16, top: 16, bottom: 16 });
+        }, Row);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create('<');
+            Text.fontSize(24);
+            Text.fontColor('#1976D2');
+            Text.onClick(() => { router.back(); });
+        }, Text);
+        Text.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create('è¯†åˆ«é£Ÿå“æ ‡ç­¾');
+            Text.fontSize(20);
+            Text.fontWeight(FontWeight.Bold);
+            Text.margin({ left: 16 });
+        }, Text);
+        Text.pop();
+        Row.pop();
+        this.ModeSelector.bind(this)();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            If.create();
+            if (this.appState.getCurrentTier() === SubscriptionTier.FREE) {
+                this.ifElseBranchUpdateFunction(0, () => {
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Row.create();
+                        Row.width('100%');
+                        Row.padding({ left: 16, right: 16 });
+                        Row.margin({ bottom: 12 });
+                    }, Row);
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Text.create(this.scanLimitReached ? 'ä»Šæ—¥æ‰«ææ¬¡æ•°å·²ç”¨å®Œ' : `ä»Šæ—¥å‰©ä½™æ‰«æï¼š${this.remainingScans} æ¬¡`);
+                        Text.fontSize(12);
+                        Text.fontColor(this.scanLimitReached ? '#D32F2F' : '#F57C00');
+                    }, Text);
+                    Text.pop();
+                    Row.pop();
+                });
+            }
+            else {
+                this.ifElseBranchUpdateFunction(1, () => {
+                });
+            }
+        }, If);
+        If.pop();
+        this.ResultCard.bind(this)();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            If.create();
+            if (this.showEditPanel) {
+                this.ifElseBranchUpdateFunction(0, () => {
+                    this.EditPanel.bind(this)();
+                });
+            }
+            else {
+                this.ifElseBranchUpdateFunction(1, () => {
+                });
+            }
+        }, If);
+        If.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Column.create();
+            Column.width('100%');
+            Column.alignItems(HorizontalAlign.Center);
+            Column.margin({ top: 16, bottom: 24 });
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            If.create();
+            if (this.foodLabel.foodId.length === 0) {
+                this.ifElseBranchUpdateFunction(0, () => {
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Button.createWithLabel(this.scanMode === 'barcode' ? 'æ‰«ç å½•å…¥' : 'æ‹æ ‡ç­¾ / ç”Ÿæˆè‰ç¨¿');
+                        Button.width('90%');
+                        Button.height(52);
+                        Button.backgroundColor('#1976D2');
+                        Button.borderRadius(26);
+                        Button.onClick(() => { this.startRecognition(); });
+                    }, Button);
+                    Button.pop();
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Button.createWithLabel('æ‰‹åŠ¨å½•å…¥');
+                        Button.width('90%');
+                        Button.height(48);
+                        Button.backgroundColor('#E3F2FD');
+                        Button.fontColor('#1976D2');
+                        Button.borderRadius(24);
+                        Button.margin({ top: 10 });
+                        Button.onClick(() => { this.startManualEntry(); });
+                    }, Button);
+                    Button.pop();
+                });
+            }
+            else {
+                this.ifElseBranchUpdateFunction(1, () => {
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Button.createWithLabel('æŸ¥çœ‹é€‚é…æŠ¥å‘Š');
+                        Button.width('90%');
+                        Button.height(52);
+                        Button.backgroundColor('#43A047');
+                        Button.borderRadius(26);
+                        Button.onClick(() => { this.viewReport(); });
+                    }, Button);
+                    Button.pop();
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Row.create();
+                        Row.width('90%');
+                        Row.margin({ top: 10 });
+                    }, Row);
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Button.createWithLabel(this.showEditPanel ? 'æ”¶èµ·ä¿®æ­£é¢æ¿' : 'æ‰‹åŠ¨ä¿®æ­£');
+                        Button.layoutWeight(1);
+                        Button.height(46);
+                        Button.backgroundColor('#E3F2FD');
+                        Button.fontColor('#1976D2');
+                        Button.borderRadius(23);
+                        Button.onClick(() => {
+                            this.showEditPanel = !this.showEditPanel;
+                            if (this.showEditPanel) {
+                                this.loadEditFormFromLabel();
+                            }
+                        });
+                    }, Button);
+                    Button.pop();
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Button.createWithLabel('ä¿å­˜ FoodLabel');
+                        Button.layoutWeight(1);
+                        Button.height(46);
+                        Button.backgroundColor('#FFF3E0');
+                        Button.fontColor('#EF6C00');
+                        Button.borderRadius(23);
+                        Button.margin({ left: 10 });
+                        Button.onClick(() => { this.saveDraft(); });
+                    }, Button);
+                    Button.pop();
+                    Row.pop();
+                });
+            }
+        }, If);
+        If.pop();
+        Column.pop();
+        Column.pop();
+        Scroll.pop();
+    }
+    ModeSelector(parent = null) {
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Row.create();
+            Row.width('100%');
+            Row.padding({ left: 16, right: 16 });
+            Row.margin({ bottom: 12 });
+        }, Row);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create('æ‹æ ‡ç­¾');
+            Text.fontSize(15);
+            Text.padding({ left: 20, right: 20, top: 8, bottom: 8 });
+            Text.borderRadius(20);
+            Text.backgroundColor(this.scanMode === 'camera' ? '#1976D2' : '#FFFFFF');
+            Text.fontColor(this.scanMode === 'camera' ? '#FFFFFF' : '#212121');
+            Text.onClick(() => { this.scanMode = 'camera'; });
+        }, Text);
+        Text.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create('æ‰«ç ');
+            Text.fontSize(15);
+            Text.padding({ left: 20, right: 20, top: 8, bottom: 8 });
+            Text.borderRadius(20);
+            Text.backgroundColor(this.scanMode === 'barcode' ? '#1976D2' : '#FFFFFF');
+            Text.fontColor(this.scanMode === 'barcode' ? '#FFFFFF' : '#212121');
+            Text.margin({ left: 10 });
+            Text.onClick(() => { this.scanMode = 'barcode'; });
+        }, Text);
+        Text.pop();
+        Row.pop();
+    }
+    ResultCard(parent = null) {
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Column.create();
+            Column.width('92%');
+            Column.padding(20);
+            Column.backgroundColor('#FFFFFF');
+            Column.borderRadius(16);
+            Column.alignItems(HorizontalAlign.Center);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            If.create();
+            if (this.isRecognizing) {
+                this.ifElseBranchUpdateFunction(0, () => {
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        LoadingProgress.create();
+                        LoadingProgress.width(40);
+                        LoadingProgress.height(40);
+                        LoadingProgress.color('#1976D2');
+                    }, LoadingProgress);
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Text.create('æ­£åœ¨å¤„ç†ä¸­...');
+                        Text.fontSize(14);
+                        Text.fontColor('#757575');
+                        Text.margin({ top: 12 });
+                    }, Text);
+                    Text.pop();
+                });
+            }
+            else if (this.foodLabel.foodId.length === 0) {
+                this.ifElseBranchUpdateFunction(1, () => {
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Text.create('è¯†åˆ«åä¼šåœ¨è¿™é‡Œç”Ÿæˆä¸€ä¸ªå¯ç¼–è¾‘çš„ FoodLabel è‰ç¨¿');
+                        Text.fontSize(15);
+                        Text.fontColor('#616161');
+                        Text.textAlign(TextAlign.Center);
+                    }, Text);
+                    Text.pop();
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Text.create('P0 ç‰ˆæ”¯æŒæ‰«ç å‘½ä¸­æœ¬åœ°åº“ï¼Œæˆ–å…ˆç”Ÿæˆè‰ç¨¿åæ‰‹åŠ¨ä¿®æ­£');
+                        Text.fontSize(12);
+                        Text.fontColor('#9E9E9E');
+                        Text.textAlign(TextAlign.Center);
+                        Text.margin({ top: 8 });
+                    }, Text);
+                    Text.pop();
+                });
+            }
+            else {
+                this.ifElseBranchUpdateFunction(2, () => {
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Text.create(this.foodLabel.foodName.length > 0 ? this.foodLabel.foodName : 'å¾…è¡¥å……é£Ÿå“åç§°');
+                        Text.fontSize(20);
+                        Text.fontWeight(FontWeight.Bold);
+                        Text.margin({ bottom: 8 });
+                    }, Text);
+                    Text.pop();
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        If.create();
+                        if (this.recognitionHint.length > 0) {
+                            this.ifElseBranchUpdateFunction(0, () => {
+                                this.observeComponentCreation2((elmtId, isInitialRender) => {
+                                    Text.create(this.recognitionHint);
+                                    Text.fontSize(12);
+                                    Text.fontColor('#1976D2');
+                                    Text.textAlign(TextAlign.Center);
+                                    Text.margin({ bottom: 6 });
+                                }, Text);
+                                Text.pop();
+                            });
+                        }
+                        else {
+                            this.ifElseBranchUpdateFunction(1, () => {
+                            });
+                        }
+                    }, If);
+                    If.pop();
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        If.create();
+                        if (this.recognizedText.length > 0) {
+                            this.ifElseBranchUpdateFunction(0, () => {
+                                this.observeComponentCreation2((elmtId, isInitialRender) => {
+                                    Text.create(this.recognizedText);
+                                    Text.fontSize(12);
+                                    Text.fontColor('#757575');
+                                    Text.textAlign(TextAlign.Center);
+                                    Text.margin({ bottom: 8 });
+                                }, Text);
+                                Text.pop();
+                            });
+                        }
+                        else {
+                            this.ifElseBranchUpdateFunction(1, () => {
+                            });
+                        }
+                    }, If);
+                    If.pop();
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Row.create();
+                        Row.width('100%');
+                        Row.justifyContent(FlexAlign.SpaceAround);
+                        Row.margin({ bottom: 8 });
+                    }, Row);
+                    this.MetricChip.bind(this)('é’ ', `${this.foodLabel.nutrition.sodium} mg`);
+                    this.MetricChip.bind(this)('ç³–', `${this.foodLabel.nutrition.sugar} g`);
+                    this.MetricChip.bind(this)('çƒ­é‡', `${this.foodLabel.nutrition.calories} kcal`);
+                    Row.pop();
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        If.create();
+                        if (this.foodLabel.barcode.length > 0) {
+                            this.ifElseBranchUpdateFunction(0, () => {
+                                this.observeComponentCreation2((elmtId, isInitialRender) => {
+                                    Text.create(`æ¡ç ï¼š${this.foodLabel.barcode}`);
+                                    Text.fontSize(12);
+                                    Text.fontColor('#616161');
+                                    Text.margin({ bottom: 6 });
+                                }, Text);
+                                Text.pop();
+                            });
+                        }
+                        else {
+                            this.ifElseBranchUpdateFunction(1, () => {
+                            });
+                        }
+                    }, If);
+                    If.pop();
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Text.create(this.showEditPanel ? 'è¯·æ ¸å¯¹ä¸‹æ–¹å­—æ®µåä¿å­˜æˆ–æŸ¥çœ‹æŠ¥å‘Š' : 'å¦‚ä¿¡æ¯ä¸å®Œæ•´ï¼Œå¯å±•å¼€æ‰‹åŠ¨ä¿®æ­£é¢æ¿è¡¥å…¨');
+                        Text.fontSize(12);
+                        Text.fontColor('#9E9E9E');
+                        Text.textAlign(TextAlign.Center);
+                    }, Text);
+                    Text.pop();
+                });
+            }
+        }, If);
+        If.pop();
+        Column.pop();
+    }
+    MetricChip(label, value, parent = null) {
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Column.create();
+            Column.padding(8);
+            Column.backgroundColor('#F5F5F5');
+            Column.borderRadius(10);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create(label);
+            Text.fontSize(11);
+            Text.fontColor('#9E9E9E');
+        }, Text);
+        Text.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create(value);
+            Text.fontSize(13);
+            Text.fontWeight(FontWeight.Medium);
+            Text.fontColor('#212121');
+            Text.margin({ top: 2 });
+        }, Text);
+        Text.pop();
+        Column.pop();
+    }
+    EditPanel(parent = null) {
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Column.create();
+            Column.width('92%');
+            Column.padding(16);
+            Column.backgroundColor('#FFFFFF');
+            Column.borderRadius(16);
+            Column.margin({ top: 14 });
+            Column.alignItems(HorizontalAlign.Start);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create('æ‰‹åŠ¨ä¿®æ­£');
+            Text.fontSize(17);
+            Text.fontWeight(FontWeight.Bold);
+            Text.margin({ bottom: 12 });
+        }, Text);
+        Text.pop();
+        this.FormInput.bind(this)('é£Ÿå“åç§°', this.editFoodName, 'è¾“å…¥é£Ÿå“åç§°', (value) => { this.editFoodName = value; });
+        this.FormInput.bind(this)('é’ ï¼ˆmg/100gï¼‰', this.editSodium, '0', (value) => { this.editSodium = value; });
+        this.FormInput.bind(this)('ç³–ï¼ˆg/100gï¼‰', this.editSugar, '0', (value) => { this.editSugar = value; });
+        this.FormInput.bind(this)('çƒ­é‡ï¼ˆkcal/100gï¼‰', this.editCalories, '0', (value) => { this.editCalories = value; });
+        this.FormInput.bind(this)('è„‚è‚ªï¼ˆg/100gï¼‰', this.editFat, '0', (value) => { this.editFat = value; });
+        this.FormInput.bind(this)('ç¢³æ°´ï¼ˆg/100gï¼‰', this.editCarbohydrate, '0', (value) => { this.editCarbohydrate = value; });
+        this.FormInput.bind(this)('è›‹ç™½è´¨ï¼ˆg/100gï¼‰', this.editProtein, '0', (value) => { this.editProtein = value; });
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Column.create();
+            Column.width('100%');
+            Column.alignItems(HorizontalAlign.Start);
+            Column.margin({ bottom: 12 });
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create('é…æ–™');
+            Text.fontSize(13);
+            Text.fontColor('#757575');
+            Text.margin({ bottom: 6 });
+        }, Text);
+        Text.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            TextArea.create({ text: this.editIngredients, placeholder: 'ä¸€è¡Œä¸€ä¸ªï¼Œæˆ–ç”¨é€—å·åˆ†éš”' });
+            TextArea.width('100%');
+            TextArea.height(100);
+            TextArea.padding(10);
+            TextArea.backgroundColor('#F7F8FA');
+            TextArea.borderRadius(12);
+            TextArea.onChange((value) => { this.editIngredients = value; });
+        }, TextArea);
+        Column.pop();
+        this.FormInput.bind(this)('ç”Ÿäº§å•†', this.editManufacturer, 'è¾“å…¥ç”Ÿäº§å•†', (value) => { this.editManufacturer = value; });
+        this.FormInput.bind(this)('SC ç¼–å·', this.editScNumber, 'è¾“å…¥ SC ç¼–å·', (value) => { this.editScNumber = value; });
+        this.FormInput.bind(this)('å§”æ‰˜æ–¹', this.editPrincipal, 'è¾“å…¥å§”æ‰˜æ–¹', (value) => { this.editPrincipal = value; });
+        this.FormInput.bind(this)('å—æ‰˜æ–¹', this.editTrustee, 'è¾“å…¥å—æ‰˜æ–¹', (value) => { this.editTrustee = value; });
+        Column.pop();
+    }
+    FormInput(title, value, placeholder, onChange, parent = null) {
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Column.create();
+            Column.width('100%');
+            Column.alignItems(HorizontalAlign.Start);
+            Column.margin({ bottom: 12 });
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create(title);
+            Text.fontSize(13);
+            Text.fontColor('#757575');
+            Text.margin({ bottom: 6 });
+        }, Text);
+        Text.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            TextInput.create({ text: value, placeholder });
+            TextInput.width('100%');
+            TextInput.height(44);
+            TextInput.padding({ left: 12, right: 12 });
+            TextInput.backgroundColor('#F7F8FA');
+            TextInput.borderRadius(12);
+            TextInput.onChange(onChange);
+        }, TextInput);
+        Column.pop();
+    }
+    refreshScanQuota() {
+        this.scanLimitReached = !this.appState.canScanToday();
+        const remaining = this.appState.getRemainingScansToday();
+        this.remainingScans = remaining === -1 ? 999 : remaining;
+    }
+    startManualEntry() {
+        this.applyFoodInputResult(this.foodInputService.createManualDraft());
+    }
+    async startRecognition() {
+        if (!this.appState.canScanToday()) {
+            this.scanLimitReached = true;
+            promptAction.showToast({ message: 'ä»Šæ—¥æ‰«ææ¬¡æ•°å·²ç”¨å®Œ' });
+            return;
+        }
+        this.isRecognizing = true;
+        try {
+            if (this.scanMode === 'barcode') {
+                const context = getContext(this);
+                const result = await this.foodInputService.scanBarcode(context);
+                if (result) {
+                    this.applyFoodInputResult(result);
+                }
+            }
+            else {
+                this.applyFoodInputResult(this.foodInputService.createCameraDraft());
+            }
+            if (this.foodLabel.foodId.length > 0) {
+                this.appState.recordScan();
+            }
+        }
+        catch (error) {
+            promptAction.showToast({ message: 'è¯†åˆ«å¤±è´¥ï¼Œå·²åˆ‡æ¢åˆ°æ‰‹åŠ¨å½•å…¥' });
+            this.startManualEntry();
+        }
+        finally {
+            this.isRecognizing = false;
+            this.refreshScanQuota();
+        }
+    }
+    loadEditFormFromLabel() {
+        this.editFoodName = this.foodLabel.foodName;
+        this.editSodium = `${this.foodLabel.nutrition.sodium}`;
+        this.editSugar = `${this.foodLabel.nutrition.sugar}`;
+        this.editCalories = `${this.foodLabel.nutrition.calories}`;
+        this.editFat = `${this.foodLabel.nutrition.fat}`;
+        this.editCarbohydrate = `${this.foodLabel.nutrition.carbohydrate}`;
+        this.editProtein = `${this.foodLabel.nutrition.protein}`;
+        this.editIngredients = this.foodLabel.ingredients.join('\n');
+        this.editManufacturer = this.foodLabel.manufacturer;
+        this.editScNumber = this.foodLabel.scNumber;
+        this.editPrincipal = this.foodLabel.principal;
+        this.editTrustee = this.foodLabel.trustee;
+    }
+    applyEditFormToLabel() {
+        if (this.foodLabel.foodId.length === 0) {
+            this.foodLabel.foodId = `food_${Date.now()}`;
+        }
+        if (this.foodLabel.identifiedAt <= 0) {
+            this.foodLabel.identifiedAt = Date.now();
+        }
+        this.foodLabel.foodName = this.editFoodName.trim();
+        this.foodLabel.nutrition.sodium = this.parseNumber(this.editSodium);
+        this.foodLabel.nutrition.sugar = this.parseNumber(this.editSugar);
+        this.foodLabel.nutrition.calories = this.parseNumber(this.editCalories);
+        this.foodLabel.nutrition.fat = this.parseNumber(this.editFat);
+        this.foodLabel.nutrition.carbohydrate = this.parseNumber(this.editCarbohydrate);
+        this.foodLabel.nutrition.protein = this.parseNumber(this.editProtein);
+        this.foodLabel.ingredients = this.editIngredients
+            .split(/\r?\n|,|ï¼Œ|ã€/)
+            .map(item => item.trim())
+            .filter(item => item.length > 0);
+        this.foodLabel.manufacturer = this.editManufacturer.trim();
+        this.foodLabel.scNumber = this.editScNumber.trim();
+        this.foodLabel.principal = this.editPrincipal.trim();
+        this.foodLabel.trustee = this.editTrustee.trim();
+    }
+    applyFoodInputResult(result) {
+        this.foodLabel = result.foodLabel;
+        this.recognizedText = result.recognizedText;
+        this.recognitionHint = result.hint;
+        this.ocrConfidence = result.confidence;
+        this.showEditPanel = result.requiresManualReview;
+        if (this.showEditPanel) {
+            this.loadEditFormFromLabel();
+        }
+    }
+    parseNumber(value) {
+        const result = Number.parseFloat(value);
+        return Number.isFinite(result) ? result : 0;
+    }
+    async persistCurrentFoodLabel(showSuccessToast) {
+        if (this.showEditPanel) {
+            this.applyEditFormToLabel();
+        }
+        if (this.foodLabel.foodName.trim().length === 0) {
+            promptAction.showToast({ message: 'è¯·å…ˆè¡¥å…¨é£Ÿå“åç§°' });
+            return false;
+        }
+        await this.appState.saveFoodLabel(this.foodLabel);
+        if (showSuccessToast) {
+            promptAction.showToast({ message: 'FoodLabel å·²ä¿å­˜' });
+        }
+        return true;
+    }
+    async saveDraft() {
+        await this.persistCurrentFoodLabel(true);
+    }
+    async viewReport() {
+        const saved = await this.persistCurrentFoodLabel(false);
+        if (!saved) {
+            return;
+        }
+        router.pushUrl({
+            url: 'pages/ReportPage',
+            params: {
+                memberId: this.memberId,
+                foodId: this.foodLabel.foodId
+            }
+        });
+    }
+    rerender() {
+        this.updateDirtyElements();
+    }
+    static getEntryName() {
+        return "ScanPage";
+    }
+}
+registerNamedRoute(() => new ScanPage(undefined, {}), "", { bundleName: "com.familyfood.helper", moduleName: "entry", pagePath: "pages/ScanPage", pageFullPath: "entry/src/main/ets/pages/ScanPage", integratedHsp: "false", moduleType: "followWithHap" });
+//# sourceMappingURL=ScanPage.js.mapÂ–Ùf hvigor_ignore_E:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.router.d.tsÙl hvigor_ignore_E:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.promptAction.d.tsÙMC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\FoodLabel.etsÙFC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\AppState.etsÙVC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\service\FoodInputService.etsÙPC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\PricingModel.etsÙLC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\pages\ScanPage.etsÔrBšªmoduleName±isLocalDependency¯isNodeEntryFile§pkgPath±belongProjectPath§pkgNameªpkgVersion±dependencyPkgInfo°belongModulePath¬shouldEmitJs¥entryÃÂÙ,C:\Users\A\IDEProjects\family_food_app\entryÙ&C:\Users\A\IDEProjects\family_food_app¥entry¥1.0.0Ô  Ù,C:\Users\A\IDEProjects\family_food_app\entryÃÃÚ;vimport { common } from '@kit.AbilityKit';
+import { router, promptAction } from '@kit.ArkUI';
+import { FoodLabel } from '../model/FoodLabel';
+import { AppState } from '../AppState';
+import { FoodInputResult, FoodInputService } from '../service/FoodInputService';
+import { SubscriptionTier } from '../model/PricingModel';
+
+@Entry
+@Component
+struct ScanPage {
+  @State scanMode: string = 'camera'
+  @State foodLabel: FoodLabel = new FoodLabel()
+  @State isRecognizing: boolean = false
+  @State showEditPanel: boolean = false
+  @State scanLimitReached: boolean = false
+  @State remainingScans: number = 3
+  @State recognizedText: string = ''
+  @State recognitionHint: string = ''
+  @State ocrConfidence: number = 1
+
+  @State editFoodName: string = ''
+  @State editSodium: string = '0'
+  @State editSugar: string = '0'
+  @State editCalories: string = '0'
+  @State editFat: string = '0'
+  @State editCarbohydrate: string = '0'
+  @State editProtein: string = '0'
+  @State editIngredients: string = ''
+  @State editManufacturer: string = ''
+  @State editScNumber: string = ''
+  @State editPrincipal: string = ''
+  @State editTrustee: string = ''
+
+  private memberId: string = ''
+  private appState: AppState = AppState.getInstance()
+  private foodInputService: FoodInputService = new FoodInputService()
+
+  aboutToAppear() {
+    const params = router.getParams() as Record<string, string>
+    if (params) {
+      this.memberId = params.memberId || ''
+    }
+    this.refreshScanQuota()
+  }
+
+  build() {
+    Scroll() {
+      Column() {
+        Row() {
+          Text('<')
+            .fontSize(24)
+            .fontColor('#1976D2')
+            .onClick(() => { router.back() })
+          Text('è¯†åˆ«é£Ÿå“æ ‡ç­¾')
+            .fontSize(20)
+            .fontWeight(FontWeight.Bold)
+            .margin({ left: 16 })
+        }
+        .width('100%')
+        .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+
+        this.ModeSelector()
+
+        if (this.appState.getCurrentTier() === SubscriptionTier.FREE) {
+          Row() {
+            Text(this.scanLimitReached ? 'ä»Šæ—¥æ‰«ææ¬¡æ•°å·²ç”¨å®Œ' : `ä»Šæ—¥å‰©ä½™æ‰«æï¼š${this.remainingScans} æ¬¡`)
+              .fontSize(12)
+              .fontColor(this.scanLimitReached ? '#D32F2F' : '#F57C00')
+          }
+          .width('100%')
+          .padding({ left: 16, right: 16 })
+          .margin({ bottom: 12 })
+        }
+
+        this.ResultCard()
+
+        if (this.showEditPanel) {
+          this.EditPanel()
+        }
+
+        Column() {
+          if (this.foodLabel.foodId.length === 0) {
+            Button(this.scanMode === 'barcode' ? 'æ‰«ç å½•å…¥' : 'æ‹æ ‡ç­¾ / ç”Ÿæˆè‰ç¨¿')
+              .width('90%')
+              .height(52)
+              .backgroundColor('#1976D2')
+              .borderRadius(26)
+              .onClick(() => { this.startRecognition() })
+
+            Button('æ‰‹åŠ¨å½•å…¥')
+              .width('90%')
+              .height(48)
+              .backgroundColor('#E3F2FD')
+              .fontColor('#1976D2')
+              .borderRadius(24)
+              .margin({ top: 10 })
+              .onClick(() => { this.startManualEntry() })
+          } else {
+            Button('æŸ¥çœ‹é€‚é…æŠ¥å‘Š')
+              .width('90%')
+              .height(52)
+              .backgroundColor('#43A047')
+              .borderRadius(26)
+              .onClick(() => { this.viewReport() })
+
+            Row() {
+              Button(this.showEditPanel ? 'æ”¶èµ·ä¿®æ­£é¢æ¿' : 'æ‰‹åŠ¨ä¿®æ­£')
+                .layoutWeight(1)
+                .height(46)
+                .backgroundColor('#E3F2FD')
+                .fontColor('#1976D2')
+                .borderRadius(23)
+                .onClick(() => {
+                  this.showEditPanel = !this.showEditPanel
+                  if (this.showEditPanel) {
+                    this.loadEditFormFromLabel()
+                  }
+                })
+
+              Button('ä¿å­˜ FoodLabel')
+                .layoutWeight(1)
+                .height(46)
+                .backgroundColor('#FFF3E0')
+                .fontColor('#EF6C00')
+                .borderRadius(23)
+                .margin({ left: 10 })
+                .onClick(() => { this.saveDraft() })
+            }
+            .width('90%')
+            .margin({ top: 10 })
+          }
+        }
+        .width('100%')
+        .alignItems(HorizontalAlign.Center)
+        .margin({ top: 16, bottom: 24 })
+      }
+      .width('100%')
+      .alignItems(HorizontalAlign.Center)
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor('#FAFAFA')
+  }
+
+  @Builder
+  ModeSelector() {
+    Row() {
+      Text('æ‹æ ‡ç­¾')
+        .fontSize(15)
+        .padding({ left: 20, right: 20, top: 8, bottom: 8 })
+        .borderRadius(20)
+        .backgroundColor(this.scanMode === 'camera' ? '#1976D2' : '#FFFFFF')
+        .fontColor(this.scanMode === 'camera' ? '#FFFFFF' : '#212121')
+        .onClick(() => { this.scanMode = 'camera' })
+
+      Text('æ‰«ç ')
+        .fontSize(15)
+        .padding({ left: 20, right: 20, top: 8, bottom: 8 })
+        .borderRadius(20)
+        .backgroundColor(this.scanMode === 'barcode' ? '#1976D2' : '#FFFFFF')
+        .fontColor(this.scanMode === 'barcode' ? '#FFFFFF' : '#212121')
+        .margin({ left: 10 })
+        .onClick(() => { this.scanMode = 'barcode' })
+    }
+    .width('100%')
+    .padding({ left: 16, right: 16 })
+    .margin({ bottom: 12 })
+  }
+
+  @Builder
+  ResultCard() {
+    Column() {
+      if (this.isRecognizing) {
+        LoadingProgress()
+          .width(40)
+          .height(40)
+          .color('#1976D2')
+        Text('æ­£åœ¨å¤„ç†ä¸­...')
+          .fontSize(14)
+          .fontColor('#757575')
+          .margin({ top: 12 })
+      } else if (this.foodLabel.foodId.length === 0) {
+        Text('è¯†åˆ«åä¼šåœ¨è¿™é‡Œç”Ÿæˆä¸€ä¸ªå¯ç¼–è¾‘çš„ FoodLabel è‰ç¨¿')
+          .fontSize(15)
+          .fontColor('#616161')
+          .textAlign(TextAlign.Center)
+        Text('P0 ç‰ˆæ”¯æŒæ‰«ç å‘½ä¸­æœ¬åœ°åº“ï¼Œæˆ–å…ˆç”Ÿæˆè‰ç¨¿åæ‰‹åŠ¨ä¿®æ­£')
+          .fontSize(12)
+          .fontColor('#9E9E9E')
+          .textAlign(TextAlign.Center)
+          .margin({ top: 8 })
+      } else {
+        Text(this.foodLabel.foodName.length > 0 ? this.foodLabel.foodName : 'å¾…è¡¥å……é£Ÿå“åç§°')
+          .fontSize(20)
+          .fontWeight(FontWeight.Bold)
+          .margin({ bottom: 8 })
+
+        if (this.recognitionHint.length > 0) {
+          Text(this.recognitionHint)
+            .fontSize(12)
+            .fontColor('#1976D2')
+            .textAlign(TextAlign.Center)
+            .margin({ bottom: 6 })
+        }
+
+        if (this.recognizedText.length > 0) {
+          Text(this.recognizedText)
+            .fontSize(12)
+            .fontColor('#757575')
+            .textAlign(TextAlign.Center)
+            .margin({ bottom: 8 })
+        }
+
+        Row() {
+          this.MetricChip('é’ ', `${this.foodLabel.nutrition.sodium} mg`)
+          this.MetricChip('ç³–', `${this.foodLabel.nutrition.sugar} g`)
+          this.MetricChip('çƒ­é‡', `${this.foodLabel.nutrition.calories} kcal`)
+        }
+        .width('100%')
+        .justifyContent(FlexAlign.SpaceAround)
+        .margin({ bottom: 8 })
+
+        if (this.foodLabel.barcode.length > 0) {
+          Text(`æ¡ç ï¼š${this.foodLabel.barcode}`)
+            .fontSize(12)
+            .fontColor('#616161')
+            .margin({ bottom: 6 })
+        }
+
+        Text(this.showEditPanel ? 'è¯·æ ¸å¯¹ä¸‹æ–¹å­—æ®µåä¿å­˜æˆ–æŸ¥çœ‹æŠ¥å‘Š' : 'å¦‚ä¿¡æ¯ä¸å®Œæ•´ï¼Œå¯å±•å¼€æ‰‹åŠ¨ä¿®æ­£é¢æ¿è¡¥å…¨')
+          .fontSize(12)
+          .fontColor('#9E9E9E')
+          .textAlign(TextAlign.Center)
+      }
+    }
+    .width('92%')
+    .padding(20)
+    .backgroundColor('#FFFFFF')
+    .borderRadius(16)
+    .alignItems(HorizontalAlign.Center)
+  }
+
+  @Builder
+  MetricChip(label: string, value: string) {
+    Column() {
+      Text(label)
+        .fontSize(11)
+        .fontColor('#9E9E9E')
+      Text(value)
+        .fontSize(13)
+        .fontWeight(FontWeight.Medium)
+        .fontColor('#212121')
+        .margin({ top: 2 })
+    }
+    .padding(8)
+    .backgroundColor('#F5F5F5')
+    .borderRadius(10)
+  }
+
+  @Builder
+  EditPanel() {
+    Column() {
+      Text('æ‰‹åŠ¨ä¿®æ­£')
+        .fontSize(17)
+        .fontWeight(FontWeight.Bold)
+        .margin({ bottom: 12 })
+
+      this.FormInput('é£Ÿå“åç§°', this.editFoodName, 'è¾“å…¥é£Ÿå“åç§°', (value: string) => { this.editFoodName = value })
+      this.FormInput('é’ ï¼ˆmg/100gï¼‰', this.editSodium, '0', (value: string) => { this.editSodium = value })
+      this.FormInput('ç³–ï¼ˆg/100gï¼‰', this.editSugar, '0', (value: string) => { this.editSugar = value })
+      this.FormInput('çƒ­é‡ï¼ˆkcal/100gï¼‰', this.editCalories, '0', (value: string) => { this.editCalories = value })
+      this.FormInput('è„‚è‚ªï¼ˆg/100gï¼‰', this.editFat, '0', (value: string) => { this.editFat = value })
+      this.FormInput('ç¢³æ°´ï¼ˆg/100gï¼‰', this.editCarbohydrate, '0', (value: string) => { this.editCarbohydrate = value })
+      this.FormInput('è›‹ç™½è´¨ï¼ˆg/100gï¼‰', this.editProtein, '0', (value: string) => { this.editProtein = value })
+
+      Column() {
+        Text('é…æ–™')
+          .fontSize(13)
+          .fontColor('#757575')
+          .margin({ bottom: 6 })
+        TextArea({ text: this.editIngredients, placeholder: 'ä¸€è¡Œä¸€ä¸ªï¼Œæˆ–ç”¨é€—å·åˆ†éš”' })
+          .width('100%')
+          .height(100)
+          .padding(10)
+          .backgroundColor('#F7F8FA')
+          .borderRadius(12)
+          .onChange((value: string) => { this.editIngredients = value })
+      }
+      .width('100%')
+      .alignItems(HorizontalAlign.Start)
+      .margin({ bottom: 12 })
+
+      this.FormInput('ç”Ÿäº§å•†', this.editManufacturer, 'è¾“å…¥ç”Ÿäº§å•†', (value: string) => { this.editManufacturer = value })
+      this.FormInput('SC ç¼–å·', this.editScNumber, 'è¾“å…¥ SC ç¼–å·', (value: string) => { this.editScNumber = value })
+      this.FormInput('å§”æ‰˜æ–¹', this.editPrincipal, 'è¾“å…¥å§”æ‰˜æ–¹', (value: string) => { this.editPrincipal = value })
+      this.FormInput('å—æ‰˜æ–¹', this.editTrustee, 'è¾“å…¥å—æ‰˜æ–¹', (value: string) => { this.editTrustee = value })
+    }
+    .width('92%')
+    .padding(16)
+    .backgroundColor('#FFFFFF')
+    .borderRadius(16)
+    .margin({ top: 14 })
+    .alignItems(HorizontalAlign.Start)
+  }
+
+  @Builder
+  FormInput(title: string, value: string, placeholder: string, onChange: (value: string) => void) {
+    Column() {
+      Text(title)
+        .fontSize(13)
+        .fontColor('#757575')
+        .margin({ bottom: 6 })
+      TextInput({ text: value, placeholder })
+        .width('100%')
+        .height(44)
+        .padding({ left: 12, right: 12 })
+        .backgroundColor('#F7F8FA')
+        .borderRadius(12)
+        .onChange(onChange)
+    }
+    .width('100%')
+    .alignItems(HorizontalAlign.Start)
+    .margin({ bottom: 12 })
+  }
+
+  private refreshScanQuota() {
+    this.scanLimitReached = !this.appState.canScanToday()
+    const remaining = this.appState.getRemainingScansToday()
+    this.remainingScans = remaining === -1 ? 999 : remaining
+  }
+
+  private startManualEntry() {
+    this.applyFoodInputResult(this.foodInputService.createManualDraft())
+  }
+
+  private async startRecognition() {
+    if (!this.appState.canScanToday()) {
+      this.scanLimitReached = true
+      promptAction.showToast({ message: 'ä»Šæ—¥æ‰«ææ¬¡æ•°å·²ç”¨å®Œ' })
+      return
+    }
+
+    this.isRecognizing = true
+    try {
+      if (this.scanMode === 'barcode') {
+        const context = getContext(this) as common.Context
+        const result = await this.foodInputService.scanBarcode(context)
+        if (result) {
+          this.applyFoodInputResult(result)
+        }
+      } else {
+        this.applyFoodInputResult(this.foodInputService.createCameraDraft())
+      }
+
+      if (this.foodLabel.foodId.length > 0) {
+        this.appState.recordScan()
+      }
+    } catch (error) {
+      promptAction.showToast({ message: 'è¯†åˆ«å¤±è´¥ï¼Œå·²åˆ‡æ¢åˆ°æ‰‹åŠ¨å½•å…¥' })
+      this.startManualEntry()
+    } finally {
+      this.isRecognizing = false
+      this.refreshScanQuota()
+    }
+  }
+
+  private loadEditFormFromLabel() {
+    this.editFoodName = this.foodLabel.foodName
+    this.editSodium = `${this.foodLabel.nutrition.sodium}`
+    this.editSugar = `${this.foodLabel.nutrition.sugar}`
+    this.editCalories = `${this.foodLabel.nutrition.calories}`
+    this.editFat = `${this.foodLabel.nutrition.fat}`
+    this.editCarbohydrate = `${this.foodLabel.nutrition.carbohydrate}`
+    this.editProtein = `${this.foodLabel.nutrition.protein}`
+    this.editIngredients = this.foodLabel.ingredients.join('\n')
+    this.editManufacturer = this.foodLabel.manufacturer
+    this.editScNumber = this.foodLabel.scNumber
+    this.editPrincipal = this.foodLabel.principal
+    this.editTrustee = this.foodLabel.trustee
+  }
+
+  private applyEditFormToLabel() {
+    if (this.foodLabel.foodId.length === 0) {
+      this.foodLabel.foodId = `food_${Date.now()}`
+    }
+    if (this.foodLabel.identifiedAt <= 0) {
+      this.foodLabel.identifiedAt = Date.now()
+    }
+    this.foodLabel.foodName = this.editFoodName.trim()
+    this.foodLabel.nutrition.sodium = this.parseNumber(this.editSodium)
+    this.foodLabel.nutrition.sugar = this.parseNumber(this.editSugar)
+    this.foodLabel.nutrition.calories = this.parseNumber(this.editCalories)
+    this.foodLabel.nutrition.fat = this.parseNumber(this.editFat)
+    this.foodLabel.nutrition.carbohydrate = this.parseNumber(this.editCarbohydrate)
+    this.foodLabel.nutrition.protein = this.parseNumber(this.editProtein)
+    this.foodLabel.ingredients = this.editIngredients
+      .split(/\r?\n|,|ï¼Œ|ã€/)
+      .map(item => item.trim())
+      .filter(item => item.length > 0)
+    this.foodLabel.manufacturer = this.editManufacturer.trim()
+    this.foodLabel.scNumber = this.editScNumber.trim()
+    this.foodLabel.principal = this.editPrincipal.trim()
+    this.foodLabel.trustee = this.editTrustee.trim()
+  }
+
+  private applyFoodInputResult(result: FoodInputResult) {
+    this.foodLabel = result.foodLabel
+    this.recognizedText = result.recognizedText
+    this.recognitionHint = result.hint
+    this.ocrConfidence = result.confidence
+    this.showEditPanel = result.requiresManualReview
+    if (this.showEditPanel) {
+      this.loadEditFormFromLabel()
+    }
+  }
+
+  private parseNumber(value: string): number {
+    const result = Number.parseFloat(value)
+    return Number.isFinite(result) ? result : 0
+  }
+
+  private async persistCurrentFoodLabel(showSuccessToast: boolean): Promise<boolean> {
+    if (this.showEditPanel) {
+      this.applyEditFormToLabel()
+    }
+    if (this.foodLabel.foodName.trim().length === 0) {
+      promptAction.showToast({ message: 'è¯·å…ˆè¡¥å…¨é£Ÿå“åç§°' })
+      return false
+    }
+    await this.appState.saveFoodLabel(this.foodLabel)
+    if (showSuccessToast) {
+      promptAction.showToast({ message: 'FoodLabel å·²ä¿å­˜' })
+    }
+    return true
+  }
+
+  private async saveDraft() {
+    await this.persistCurrentFoodLabel(true)
+  }
+
+  private async viewReport() {
+    const saved = await this.persistCurrentFoodLabel(false)
+    if (!saved) {
+      return
+    }
+    router.pushUrl({
+      url: 'pages/ReportPage',
+      params: {
+        memberId: this.memberId,
+        foodId: this.foodLabel.foodId
+      }
+    })
+  }
+}
+ÀÔrC–¬@ohos.router²@ohos.promptAction«../AppStateµ../model/PricingModel²../model/FoodLabel»../service/FoodInputServiceÔrD—ªassertions¨external¢id¤meta±moduleSideEffectsªresolvedByµsyntheticNamedExportsAÃÙf hvigor_ignore_E:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.router.d.tsAÃªoh-resolveÂDAÃÙl hvigor_ignore_E:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.promptAction.d.tsAÃªoh-resolveÂDAÂÙFC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\AppState.etsAÃªoh-resolveÂDAÂÙPC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\PricingModel.etsAÃªoh-resolveÂDAÂÙMC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\FoodLabel.etsAÃªoh-resolveÂDAÂÙVC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\service\FoodInputService.etsAÃªoh-resolveÂ“ÔrE–§version¤fileªsourceRoot§sources¥names¨mappings«ScanPage.js ‘¬ScanPage.etsÜK–”   ” 	” ” %”! 1”" 2–”   ” ” ” %”- 1”. 2˜”   ” ”	 	” ” ” ”. .”/ /˜”   ” ”	 	” ” ” ”& &”' '˜”   ” ”	 ” *” ,”! 2”> ÌO”? ÌP˜”   ” ”	 	” ” ”! !”8 8”9 9’” 	” 	‘”  ’”7 
+”? 
+$””8  ”< $”ÌE -”ÌG /’”< "”ÌA '’”< "”ÌA '’”? %”ÌD *’”= "”> #’”= "”? $’”> #”Ì@ %’”< !”= "’”;  ”= "’”9 ”< !’”8 ”;  ’”;  ”> #’”6 ”9 ’”? $”ÌB '’”: ”= "’”> #”Ì@ %’”? $”ÌA &’”;  ”= "’”< !”> #’”: ”< !’” !” !•” "”  "'”! "(”, "3”. "5””  #/”$ #3”4 #ÌC”6 #ÌE‘” 9’” 
+	” 
+’” 
+	” 
+’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” %” %™” &” &
+” &” &” &” &”' &#”) &?”* &?”” '” '” '” '›” (” (
+” (” (” (”" (”# (”+ (%”/ ()”1 (+”2 (+‘”	 )–” *” *” *	” *” *”  *’” +” +‘” -’” .” .
+–” .” .
+” Ì‹” Ì‹
+” Ì‹” Ì‹–” .” .
+” ÌŒ” ÌŒ” ÌŒ”  ÌŒ–” .” .
+” Ì”" Ì”# Ì”, Ì’” /” /–” /” /” Ìˆ” Ìˆ” Ìˆ” Ìˆ˜” /” /” Ì‰” Ì‰” Ì‰”- Ì‰!”. Ì‰"”4 Ì‰(’” 0” 0–” 0” 0” :	” :” :” :Ü ” 0” 0” ;	” ;” ;” ;” ;”  ;”" ;”$ ;”) ;"”+ ;$”- ;&”/ ;(”2 ;+”4 ;-”6 ;/”8 ;1”> ;7”Ì@ ;9”ÌB ;;”ÌD ;=”” 1
+” 1” 1” 1–” 1
+” 1” 2” 2” 2” 2–” 1
+” 1” 3” 3” 3”$ 3 Ÿ” 1
+” 1” 4” 4” 4” 4” 4”! 4”' 4#”( 4$”, 4(”. 4*”/ 4*”0 4+”1 4,’” 1
+” 1”” 5
+” 5” 5”  5–” 5
+” 5” 6” 6” 6” 6˜” 5
+” 5” 7” 7” 7”& 7"”' 7#”+ 7'š” 5
+” 5” 8” 8” 8” 8” 8”  8”" 8”$ 8 ’” 5
+” 5’” 0” 0•” =” =” =” =”& =” ?” ?” ?” ?” ?” ?”, ?(”. ?*”3 ?/”ÌC ??”ÌD ?Ì@”ÌH ?ÌD”ÌJ ?ÌF’” Ì@
+” Ì@–” Ì@
+” Ì@” ÌE”! ÌE”" ÌE”( ÌE” Ì@
+” Ì@” ÌF”# ÌF”$ ÌF”& ÌF”* ÌF”, ÌF”. ÌF”0 ÌF”5 ÌF$”7 ÌF&”9 ÌF(”; ÌF*š” Ì@
+” Ì@” ÌG”" ÌG”# ÌG”% ÌG”+ ÌG”- ÌG”/ ÌG”1 ÌG Ü ” ÌA” ÌA”$ ÌA”( ÌA”) ÌA”9 ÌA&”: ÌA'”; ÌA(”< ÌA)”ÌG ÌA4”ÌH ÌA5”ÌI ÌA6”ÌJ ÌA7”ÌT ÌAÌA”ÌX ÌAÌE”ÌY ÌAÌF”Ìg ÌAÌT”Ìk ÌAÌX–” ÌA” ÌA” ÌB”% ÌB”& ÌB”( ÌBÜ ” ÌA” ÌA” ÌC”& ÌC”' ÌC”+ ÌC”, ÌC”< ÌC.”= ÌC/”> ÌC0”? ÌC1”ÌH ÌC:”ÌI ÌC;”ÌJ ÌC<”ÌK ÌC=”ÌT ÌCÌF’” ÌA” ÌA’” Ì@
+” Ì@‘” ÌH	‘” ÌH	•” ÌJ” ÌJ” ÌJ” ÌJ”$ ÌJ–” ÌL” ÌL” ÌL” ÌL”" ÌL”$ ÌL •” ÌM
+” ÌM” ÌM”" ÌM”/ ÌM‘” ÌN	‘” ÌN	’” ÌP” ÌP–” ÌP” ÌP” Ì„	” Ì„” Ì„” Ì„˜” ÌP” ÌP” Ì…	” Ì…” Ì…”- Ì…#”. Ì…$”4 Ì…*” ÌP” ÌP” Ì†	” Ì†” Ì†” Ì†” Ì†”! Ì†”# Ì†”% Ì†”+ Ì†!”- Ì†#”/ Ì†%”1 Ì†'œ” ÌQ
+” ÌQ” ÌQ” ÌQ” ÌQ” ÌQ”% ÌQ#”& ÌQ$”, ÌQ*”1 ÌQ/”2 ÌQ0”4 ÌQ2Ü ” ÌR” ÌR”/ ÌR”3 ÌR”4 ÌR”< ÌR ”ÌA ÌR%”ÌJ ÌR.”ÌK ÌR/”ÌL ÌR0”ÌM ÌR1”ÌS ÌR7”ÌT ÌR8”ÌU ÌR9”ÌV ÌR:”Ìb ÌRÌF–” ÌR” ÌR” ÌS”$ ÌS”% ÌS”* ÌS–” ÌR” ÌR” ÌT”% ÌT”& ÌT”( ÌT–” ÌR” ÌR” ÌU”. ÌU”/ ÌU”8 ÌU(–” ÌR” ÌR” ÌV”+ ÌV”, ÌV”. ÌVŸ” ÌR” ÌR” ÌW”& ÌW”' ÌW”* ÌW”, ÌW”/ ÌW”3 ÌW#”4 ÌW$”ÌD ÌW4”ÌF ÌW6”ÌG ÌW6”ÌH ÌW7”ÌI ÌW8’” ÌR” ÌR”” ÌY” ÌY”/ ÌY”5 ÌY–” ÌY” ÌY” ÌZ”$ ÌZ”% ÌZ”* ÌZ–” ÌY” ÌY” Ì[”% Ì[”& Ì[”( Ì[–” ÌY” ÌY” Ì\”. Ì\”/ Ì\”8 Ì\(–” ÌY” ÌY” Ì]”( Ì]”) Ì]”2 Ì]"–” ÌY” ÌY” Ì^”+ Ì^”, Ì^”. Ì^š” ÌY” ÌY” Ì_”% Ì_”& Ì_”( Ì_”+ Ì_”- Ì_”/ Ì_”1 Ì_!Ÿ” ÌY” ÌY” Ì`”& Ì`”' Ì`”* Ì`”, Ì`”/ Ì`”3 Ì`#”4 Ì`$”ÌD Ì`4”ÌF Ì`6”ÌG Ì`6”ÌH Ì`7”ÌI Ì`8’” ÌY” ÌY‘” Ìa‘” Ìa”” Ìb” Ìb”/ Ìb”7 Ìb–” Ìb” Ìb” Ìc”$ Ìc”% Ìc”* Ìc–” Ìb” Ìb” Ìd”% Ìd”& Ìd”( Ìd–” Ìb” Ìb” Ìe”. Ìe”/ Ìe”8 Ìe(–” Ìb” Ìb” Ìf”+ Ìf”, Ìf”. ÌfŸ” Ìb” Ìb” Ìg”& Ìg”' Ìg”* Ìg”, Ìg”/ Ìg”3 Ìg#”4 Ìg$”> Ìg.”Ì@ Ìg0”ÌA Ìg0”ÌB Ìg1”ÌC Ìg2’” Ìb” Ìb’” Ìi” Ìi–” Ìi” Ìi” Ì€”! Ì€”" Ì€”' Ì€š” Ìi” Ìi” Ì”" Ì”# Ì”% Ì”( Ì”* Ì”, Ì”. Ì” Ìj” Ìj”/ Ìj”3 Ìj”4 Ìj”ÌA Ìj'”ÌB Ìj(”ÌC Ìj)”ÌD Ìj*”ÌL Ìj2”ÌM Ìj3”ÌN Ìj4”ÌO Ìj5”ÌU Ìj;–” Ìj” Ìj” Ìk”+ Ìk”, Ìk”- Ìk–” Ìj” Ìj” Ìl”% Ìl”& Ìl”( Ìl–” Ìj” Ìj” Ìm”. Ìm ”/ Ìm!”8 Ìm*–” Ìj” Ìj” Ìn”( Ìn”) Ìn”2 Ìn$–” Ìj” Ìj” Ìo”+ Ìo”, Ìo”. Ìo —” Ìj” Ìj” Ìp”& Ìp”' Ìp”* Ìp”, Ìpš” Ìq”  Ìq”! Ìq”. Ìq$”1 Ìq'”2 Ìq(”6 Ìq,”7 Ìq-”ÌD Ìq:”ÌE Ìq:–” Ìr”  Ìr”$ Ìr”% Ìr”2 Ìr(”4 Ìr*–”  Ìs”$ Ìs”% Ìs”: Ìs.”< Ìs0”= Ìs0‘” Ìt’” Ìu” Ìu’” Ìj” Ìj”” Ìw” Ìw”/ Ìw”= Ìw#–” Ìw” Ìw” Ìx”+ Ìx”, Ìx”- Ìx–” Ìw” Ìw” Ìy”% Ìy”& Ìy”( Ìy–” Ìw” Ìw” Ìz”. Ìz ”/ Ìz!”8 Ìz*–” Ìw” Ìw” Ì{”( Ì{”) Ì{”2 Ì{$–” Ìw” Ìw” Ì|”+ Ì|”, Ì|”. Ì| š” Ìw” Ìw” Ì}”% Ì}”& Ì}”( Ì}”, Ì}”. Ì} ”0 Ì}"”2 Ì}$Ÿ” Ìw” Ìw” Ì~”& Ì~”' Ì~”* Ì~”, Ì~”/ Ì~!”3 Ì~%”4 Ì~&”= Ì~/”? Ì~1”Ì@ Ì~1”ÌA Ì~2”ÌB Ì~3’” Ìw” Ìw’” Ìi” Ìi‘” Ì‚’” ÌP” ÌP’” /” /’” .” .
+‘” Ì’” Ì‘” Ì‘’” Ì’” Ì’–” Ì’” Ì’” Ì¤” Ì¤
+” Ì¤” Ì¤” Ì’” Ì’” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥”  Ì¥”" Ì¥”$ Ì¥”) Ì¥”+ Ì¥ ”- Ì¥"”/ Ì¥$š” Ì’” Ì’” Ì¦” Ì¦” Ì¦” Ì¦” Ì¦”! Ì¦”# Ì¦”% Ì¦”” Ì“” Ì“
+” Ì“” Ì“–” Ì“” Ì“
+” Ì”	” Ì”” Ì”” Ì”Ü ” Ì“” Ì“
+” Ì•	” Ì•” Ì•” Ì•” Ì•”! Ì•”# Ì•”% Ì•”* Ì•"”, Ì•$”. Ì•&”0 Ì•(”3 Ì•+”5 Ì•-”6 Ì•.”8 Ì•0”> Ì•6”Ì@ Ì•8”ÌA Ì•9”ÌC Ì•;–” Ì“” Ì“
+” Ì–	” Ì–” Ì–”  Ì–Ü ” Ì“” Ì“
+” Ì—	”  Ì—”! Ì—”% Ì—”& Ì—”. Ì—&”3 Ì—+”; Ì—3”< Ì—4”= Ì—5”> Ì—6”ÌG Ì—?”ÌH Ì—Ì@”ÌI Ì—ÌA”ÌJ Ì—ÌB”ÌS Ì—ÌKÜ ” Ì“” Ì“
+” Ì˜	” Ì˜” Ì˜” Ì˜”  Ì˜”( Ì˜ ”- Ì˜%”5 Ì˜-”6 Ì˜.”7 Ì˜/”8 Ì˜0”ÌA Ì˜9”ÌB Ì˜:”ÌC Ì˜;”ÌD Ì˜<”ÌM Ì˜ÌEÜ ” Ì“” Ì“
+” Ì™	” Ì™” Ì™” Ì™” Ì™”! Ì™”% Ì™”& Ì™”. Ì™&”1 Ì™)”9 Ì™1”: Ì™1”; Ì™2”< Ì™3’” Ì“” Ì“
+”” Ì›” Ì›
+” Ì›” Ì›–” Ì›” Ì›
+” Ìœ	” Ìœ” Ìœ” ÌœÜ ” Ì›” Ì›
+” Ì	” Ì” Ì” Ì” Ì”! Ì”# Ì”% Ì”* Ì"”, Ì$”. Ì&”0 Ì(”3 Ì+”5 Ì-”6 Ì.”8 Ì0”> Ì6”Ì@ Ì8”ÌA Ì9”ÌC Ì;–” Ì›” Ì›
+” Ì	” Ì” Ì”  ÌÜ ” Ì›” Ì›
+” ÌŸ	”  ÌŸ”! ÌŸ”% ÌŸ”& ÌŸ”. ÌŸ&”3 ÌŸ+”< ÌŸ4”= ÌŸ5”> ÌŸ6”? ÌŸ7”ÌH ÌŸÌ@”ÌI ÌŸÌA”ÌJ ÌŸÌB”ÌK ÌŸÌC”ÌT ÌŸÌLÜ ” Ì›” Ì›
+” Ì 	” Ì ” Ì ” Ì ”  Ì ”( Ì  ”- Ì %”6 Ì .”7 Ì /”8 Ì 0”9 Ì 1”ÌB Ì :”ÌC Ì ;”ÌD Ì <”ÌE Ì =”ÌN Ì ÌFš” Ì›” Ì›
+” Ì¡	” Ì¡” Ì¡” Ì¡” Ì¡”  Ì¡”" Ì¡”$ Ì¡Ü ” Ì›” Ì›
+” Ì¢	” Ì¢” Ì¢” Ì¢” Ì¢”! Ì¢”% Ì¢”& Ì¢”. Ì¢&”1 Ì¢)”: Ì¢2”; Ì¢2”< Ì¢3”= Ì¢4’” Ì›” Ì›
+’” Ì’” Ì’‘” Ì§’” Ìª” Ìª’” Ì«” Ì«
+–” Ì«” Ì«
+” Ìë” Ìë
+” Ìë” Ìë–” Ì«” Ì«
+” Ìì” Ìì” Ìì” Ìì–” Ì«” Ì«
+” Ìí”" Ìí”# Ìí”, Ìí–” Ì«” Ì«
+” Ìî” Ìî”  Ìî”" Ìî˜” Ì«” Ì«
+” Ìï” Ìï” Ìï”- Ìï”. Ìï ”4 Ìï&–” Ì¬” Ì¬
+” Ì¬” Ì¬”" Ì¬”$ Ì¬’” Ì­”' Ì­–” Ì­”' Ì­”( Ì®”- Ì®”. Ì®”0 Ì®–” Ì­”' Ì­”( Ì¯”. Ì¯”/ Ì¯”1 Ì¯–” Ì­”' Ì­”( Ì°”- Ì°”. Ì°”7 Ì°”” Ì±” Ì±”$ Ì±”. Ì±–” Ì±” Ì±” Ì²”% Ì²”& Ì²”( Ì²–” Ì±” Ì±” Ì³”& Ì³”' Ì³”0 Ì³š” Ì±” Ì±” Ì´”# Ì´”$ Ì´”& Ì´”) Ì´”+ Ì´”- Ì´”/ Ì´’” Ì±” Ì±‘” Ìµœ” Ìµ” Ìµ” Ìµ” Ìµ”# Ìµ”$ Ìµ ”* Ìµ&”+ Ìµ'”1 Ìµ-”6 Ìµ2”7 Ìµ3”9 Ìµ5”” Ì¶” Ì¶”$ Ì¶”ÌB Ì¶+–” Ì¶” Ì¶” Ì·”% Ì·”& Ì·”( Ì·–” Ì¶” Ì¶” Ì¸”& Ì¸”' Ì¸”0 Ì¸˜” Ì¶” Ì¶” Ì¹”& Ì¹”' Ì¹”0 Ì¹”1 Ì¹”7 Ì¹%’” Ì¶” Ì¶”” Ìº” Ìº”$ Ìº”? Ìº(–” Ìº” Ìº” Ì»”% Ì»”& Ì»”( Ì»–” Ìº” Ìº” Ì¼”& Ì¼”' Ì¼”0 Ì¼˜” Ìº” Ìº” Ì½”& Ì½”' Ì½”0 Ì½”1 Ì½”7 Ì½%š” Ìº” Ìº” Ì¾”# Ì¾”$ Ì¾”& Ì¾”) Ì¾”+ Ì¾”, Ì¾”. Ì¾’” Ìº” Ìº‘” Ì¿‘” Ì¿Ü ” ÌÀ” ÌÀ”$ ÌÀ”( ÌÀ”) ÌÀ”2 ÌÀ”3 ÌÀ”; ÌÀ$”< ÌÀ%”ÌB ÌÀ+”ÌE ÌÀ.”ÌF ÌÀ/”ÌG ÌÀ0”ÌH ÌÀ1”ÌI ÌÀ2”ÌM ÌÀ6”ÌN ÌÀ7”ÌW ÌÀÌ@”ÌX ÌÀÌA”Ì` ÌÀÌI”Ìa ÌÀÌJ”Ìb ÌÀÌK”Ìc ÌÀÌL”Ìl ÌÀÌU–” ÌÀ” ÌÀ” ÌÁ”% ÌÁ”& ÌÁ”( ÌÁ˜” ÌÀ” ÌÀ” ÌÂ”' ÌÂ”( ÌÂ”2 ÌÂ ”3 ÌÂ!”7 ÌÂ%š” ÌÀ” ÌÀ” ÌÃ”# ÌÃ”$ ÌÃ”& ÌÃ”, ÌÃ”. ÌÃ”/ ÌÃ”1 ÌÃ’” ÌÀ” ÌÀš” ÌÅ” ÌÅ”  ÌÅ”! ÌÅ”0 ÌÅ ”1 ÌÅ!”7 ÌÅ'”: ÌÅ*”; ÌÅ+”= ÌÅ-–”$ ÌÆ
+”( ÌÆ”0 ÌÆ”4 ÌÆ”5 ÌÆ”ÌD ÌÆ#–”$ ÌÆ
+”( ÌÆ”) ÌÇ”1 ÌÇ”2 ÌÇ”4 ÌÇ–”$ ÌÆ
+”( ÌÆ”) ÌÈ”2 ÌÈ”3 ÌÈ”< ÌÈ ˜”$ ÌÆ
+”( ÌÆ”) ÌÉ”2 ÌÉ”3 ÌÉ”< ÌÉ ”= ÌÉ!”ÌC ÌÉ'š”$ ÌÆ
+”( ÌÆ”) ÌÊ”/ ÌÊ”0 ÌÊ”2 ÌÊ”8 ÌÊ”: ÌÊ”; ÌÊ”= ÌÊ!’”  ÌÆ
+”$ ÌÆ‘” ÌË	‘” ÌË	š” ÌÍ” ÌÍ”  ÌÍ”! ÌÍ”/ ÌÍ”0 ÌÍ ”6 ÌÍ&”9 ÌÍ)”: ÌÍ*”< ÌÍ,–”$ ÌÎ
+”( ÌÎ”0 ÌÎ”4 ÌÎ”5 ÌÎ”ÌC ÌÎ"–”$ ÌÎ
+”( ÌÎ”) ÌÏ”1 ÌÏ”2 ÌÏ”4 ÌÏ–”$ ÌÎ
+”( ÌÎ”) ÌĞ”2 ÌĞ”3 ÌĞ”< ÌĞ ˜”$ ÌÎ
+”( ÌÎ”) ÌÑ”2 ÌÑ”3 ÌÑ”< ÌÑ ”= ÌÑ!”ÌC ÌÑ'š”$ ÌÎ
+”( ÌÎ”) ÌÒ”/ ÌÒ”0 ÌÒ”2 ÌÒ”8 ÌÒ”: ÌÒ”; ÌÒ”= ÌÒ!’”  ÌÎ
+”$ ÌÎ‘” ÌÓ	‘” ÌÓ	’” ÌÕ” ÌÕ–” ÌÕ” ÌÕ” ÌÚ	”! ÌÚ”" ÌÚ”( ÌÚ˜” ÌÕ” ÌÕ” ÌÛ	”* ÌÛ”+ ÌÛ”4 ÌÛ!”5 ÌÛ"”Ì@ ÌÛ-š” ÌÕ” ÌÕ” ÌÜ	”" ÌÜ”# ÌÜ”% ÌÜ”+ ÌÜ”- ÌÜ”. ÌÜ”0 ÌÜÜ ” ÌÖ
+” ÌÖ” ÌÖ”# ÌÖ”/ ÌÖ”2 ÌÖ”4 ÌÖ”7 ÌÖ"”; ÌÖ&”< ÌÖ'”ÌE ÌÖ0”ÌF ÌÖ1”ÌO ÌÖ:”ÌP ÌÖ;”ÌV ÌÖÌA”Ì[ ÌÖÌF”Ì\ ÌÖÌGÜ ” Ì×
+” Ì×” Ì×”# Ì×”/ Ì×”2 Ì×”4 Ì×”7 Ì×"”; Ì×&”< Ì×'”ÌE Ì×0”ÌF Ì×1”ÌO Ì×:”ÌP Ì×;”ÌU Ì×Ì@”ÌY Ì×ÌD”ÌZ Ì×ÌEÜ ” ÌØ
+” ÌØ” ÌØ”# ÌØ”/ ÌØ”3 ÌØ”5 ÌØ ”8 ÌØ#”< ÌØ'”= ÌØ(”ÌF ÌØ1”ÌG ÌØ2”ÌP ÌØ;”ÌQ ÌØ<”ÌY ÌØÌD”Ì` ÌØÌK”Ìa ÌØÌL’” ÌÕ” ÌÕœ” ÌŞ” ÌŞ”  ÌŞ”! ÌŞ”* ÌŞ”+ ÌŞ”2 ÌŞ"”3 ÌŞ#”9 ÌŞ)”< ÌŞ,”= ÌŞ-”? ÌŞ/š”$ Ìß
+”( Ìß”0 Ìß”6 Ìß”: Ìß”; Ìß”ÌD Ìß#”ÌE Ìß$”ÌL Ìß+”ÌN Ìß-–”$ Ìß
+”( Ìß”) Ìà”1 Ìà”2 Ìà”4 Ìà–”$ Ìß
+”( Ìß”) Ìá”2 Ìá”3 Ìá”< Ìá š”$ Ìß
+”( Ìß”) Ìâ”/ Ìâ”0 Ìâ”2 Ìâ”8 Ìâ”: Ìâ”; Ìâ”= Ìâ!’”  Ìß
+”$ Ìß‘” Ìã	‘” Ìã	” Ìå” Ìå”$ Ìå”( Ìå”) Ìå”6 Ìå”7 Ìå ”8 Ìå!”9 Ìå"”ÌJ Ìå3”ÌK Ìå4”ÌL Ìå5”ÌM Ìå6”Ìa ÌåÌJ–” Ìå” Ìå” Ìæ”% Ìæ”& Ìæ”( Ìæ–” Ìå” Ìå” Ìç”& Ìç”' Ìç”0 Ìç˜” Ìå” Ìå” Ìè”& Ìè”' Ìè”0 Ìè”1 Ìè”7 Ìè%’” Ìå” Ìå‘” Ìé’” Ì«” Ì«
+‘” Ìğ–” Ìó” Ìó” Ìó” Ìó” Ìó” Ìó)’” Ìô” Ìô
+–” Ìô” Ìô
+” Ìş” Ìş” Ìş” Ìş–” Ìô” Ìô
+” Ìÿ”" Ìÿ”# Ìÿ”, Ìÿ–” Ìô” Ìô
+” Í ” Í ”  Í ”" Í ”” Ìõ” Ìõ
+” Ìõ” Ìõ–” Ìõ” Ìõ
+” Ìö	” Ìö” Ìö” Ìö–” Ìõ” Ìõ
+” Ì÷	” Ì÷” Ì÷”$ Ì÷’” Ìõ” Ìõ
+”” Ìø” Ìø
+” Ìø” Ìø–” Ìø” Ìø
+” Ìù	” Ìù” Ìù” Ìù˜” Ìø” Ìø
+” Ìú	” Ìú” Ìú”& Ìú”' Ìú”- Ìú%–” Ìø” Ìø
+” Ìû	” Ìû” Ìû”$ Ìûš” Ìø” Ìø
+” Ìü	” Ìü” Ìü” Ìü” Ìü” Ìü”  Ìü”" Ìü’” Ìø” Ìø
+’” Ìô” Ìô
+‘” Í’” Í” Í’” Í” Í
+–” Í” Í
+” Í)” Í)
+” Í)” Í)–” Í” Í
+” Í*” Í*” Í*” Í*–” Í” Í
+” Í+”" Í+”# Í+”, Í+–” Í” Í
+” Í,” Í,”  Í,”" Í,š” Í” Í
+” Í-” Í-” Í-” Í-” Í-”! Í-”# Í-”% Í-˜” Í” Í
+” Í.” Í.” Í.”- Í.”. Í. ”3 Í.%”” Í” Í
+” Í” Í–” Í” Í
+” Í	” Í” Í” Í˜” Í” Í
+” Í	” Í” Í”& Í”' Í”+ Í#š” Í” Í
+” Í		” Í	” Í	” Í	”  Í	”" Í	”$ Í	”& Í	’” Í” Í
+Ü ” Í” Í
+” Í” Í”" Í”( Í”* Í”. Í!”/ Í"”; Í.”= Í0”ÌE Í8”ÌG Í:”ÌH Í;”ÌM ÍÌH”ÌO ÍÌJ”ÌQ ÍÌL”ÌT ÍÌO”ÌX ÍÌS”ÌY ÍÌT”Ìe ÍÌ`”Ìh ÍÌc”Ìm ÍÌh”Ìn ÍÌh”Ìo ÍÌi”Ìp ÍÌj”Ìq ÍÌkÜ ” Í” Í
+” Í” Í”" Í”. Í!”0 Í#”4 Í'”5 Í(”? Í2”ÌA Í4”ÌD Í7”ÌF Í9”ÌG Í:”ÌL ÍÌG”ÌN ÍÌI”ÌP ÍÌK”ÌS ÍÌN”ÌW ÍÌR”ÌX ÍÌS”Ìb ÍÌ]”Ìe ÍÌ`”Ìj ÍÌe”Ìk ÍÌe”Ìl ÍÌf”Ìm ÍÌg”Ìn ÍÌhÜ ” Í” Í
+” Í” Í”" Í”- Í ”/ Í"”3 Í&”4 Í'”= Í0”? Í2”ÌB Í5”ÌD Í7”ÌE Í8”ÌJ ÍÌE”ÌL ÍÌG”ÌN ÍÌI”ÌQ ÍÌL”ÌU ÍÌP”ÌV ÍÌQ”Ì_ ÍÌZ”Ìb ÍÌ]”Ìg ÍÌb”Ìh ÍÌb”Ìi ÍÌc”Ìj ÍÌd”Ìk ÍÌeÜ ” Í” Í
+” Í” Í”" Í”1 Í$”3 Í&”7 Í*”8 Í+”ÌD Í7”ÌF Í9”ÌI Í<”ÌK Í>”ÌL Í?”ÌQ ÍÌL”ÌS ÍÌN”ÌU ÍÌP”ÌX ÍÌS”Ì\ ÍÌW”Ì] ÍÌX”Ìi ÍÌd”Ìl ÍÌg”Ìq ÍÌl”Ìr ÍÌl”Ìs ÍÌm”Ìt ÍÌn”Ìu ÍÌoÜ ” Í” Í
+” Í” Í”" Í”. Í!”0 Í#”4 Í'”5 Í(”< Í/”> Í1”ÌA Í4”ÌC Í6”ÌD Í7”ÌI ÍÌD”ÌK ÍÌF”ÌM ÍÌH”ÌP ÍÌK”ÌT ÍÌO”ÌU ÍÌP”Ì\ ÍÌW”Ì_ ÍÌZ”Ìd ÍÌ_”Ìe ÍÌ_”Ìf ÍÌ`”Ìg ÍÌa”Ìh ÍÌbÜ ” Í” Í
+” Í” Í”" Í”. Í!”0 Í#”4 Í'”5 Í(”ÌE Í8”ÌG Í:”ÌJ Í=”ÌL Í?”ÌM ÍÌ@”ÌR ÍÌM”ÌT ÍÌO”ÌV ÍÌQ”ÌY ÍÌT”Ì] ÍÌX”Ì^ ÍÌY”Ìn ÍÌi”Ìq ÍÌl”Ìv ÍÌq”Ìw ÍÌq”Ìx ÍÌr”Ìy ÍÌs”Ìz ÍÌtÜ ” Í” Í
+” Í” Í”" Í”/ Í"”1 Í$”5 Í(”6 Í)”ÌA Í4”ÌC Í6”ÌF Í9”ÌH Í;”ÌI Í<”ÌN ÍÌI”ÌP ÍÌK”ÌR ÍÌM”ÌU ÍÌP”ÌY ÍÌT”ÌZ ÍÌU”Ìe ÍÌ`”Ìh ÍÌc”Ìm ÍÌh”Ìn ÍÌh”Ìo ÍÌi”Ìp ÍÌj”Ìq ÍÌk’” Í” Í–” Í” Í” Í ” Í ” Í ” Í ˜” Í” Í” Í!” Í!” Í!”- Í!!”. Í!"”3 Í!'š” Í” Í” Í"” Í"” Í"” Í"”" Í"”$ Í"”& Í"”( Í"”” Í” Í” Í” Í–” Í” Í” Í” Í” Í” Í–” Í” Í” Í” Í” Í”$ Íš” Í” Í” Í” Í” Í” Í”  Í”" Í”# Í”% Í’” Í” Í” Í” Í” Í” Í”" Í”$ Í”( Í”) Í”8 Í-”: Í/”ÌE Í:”ÌG Í<”ÌT ÍÌI”ÌV ÍÌK–” Í” Í” Í” Í” Í”! Í–” Í” Í” Í” Í” Í” Í–” Í” Í” Í” Í” Í” Í–” Í” Í” Í”$ Í”% Í”. Í$–” Í” Í” Í”! Í”" Í”$ ÍÜ ” Í” Í” Í” Í” Í” Í”$ Í"”& Í$”( Í&”+ Í)”/ Í-”0 Í.”? Í=”ÌB ÍÌ@”ÌG ÍÌE”ÌH ÍÌE”ÌI ÍÌF”ÌJ ÍÌG’” Í” ÍÜ ” Í$” Í$
+” Í$” Í$”" Í$”' Í$”) Í$”- Í$ ”. Í$!”> Í$1”Ì@ Í$3”ÌG Í$:”ÌI Í$<”ÌJ Í$=”ÌO Í$ÌJ”ÌQ Í$ÌL”ÌS Í$ÌN”ÌV Í$ÌQ”ÌZ Í$ÌU”Ì[ Í$ÌV”Ìk Í$Ìf”Ìn Í$Ìi”Ìs Í$Ìn”Ìt Í$Ìn”Ìu Í$Ìo”Ìv Í$Ìp”Ìw Í$ÌqÜ ” Í%” Í%
+” Í%” Í%”" Í%”) Í%”+ Í%”/ Í%"”0 Í%#”< Í%/”> Í%1”ÌH Í%;”ÌJ Í%=”ÌK Í%>”ÌP Í%ÌK”ÌR Í%ÌM”ÌT Í%ÌO”ÌW Í%ÌR”Ì[ Í%ÌV”Ì\ Í%ÌW”Ìh Í%Ìc”Ìk Í%Ìf”Ìp Í%Ìk”Ìq Í%Ìk”Ìr Í%Ìl”Ìs Í%Ìm”Ìt Í%ÌnÜ ” Í&” Í&
+” Í&” Í&”" Í&”' Í&”) Í&”- Í& ”. Í&!”; Í&.”= Í&0”ÌD Í&7”ÌF Í&9”ÌG Í&:”ÌL Í&ÌG”ÌN Í&ÌI”ÌP Í&ÌK”ÌS Í&ÌN”ÌW Í&ÌR”ÌX Í&ÌS”Ìe Í&Ì`”Ìh Í&Ìc”Ìm Í&Ìh”Ìn Í&Ìh”Ìo Í&Ìi”Ìp Í&Ìj”Ìq Í&ÌkÜ ” Í'” Í'
+” Í'” Í'”" Í'”' Í'”) Í'”- Í' ”. Í'!”9 Í',”; Í'.”ÌB Í'5”ÌD Í'7”ÌE Í'8”ÌJ Í'ÌE”ÌL Í'ÌG”ÌN Í'ÌI”ÌQ Í'ÌL”ÌU Í'ÌP”ÌV Í'ÌQ”Ìa Í'Ì\”Ìd Í'Ì_”Ìi Í'Ìd”Ìj Í'Ìd”Ìk Í'Ìe”Ìl Í'Ìf”Ìm Í'Ìg’” Í” Í
+‘” Í/š” Í2” Í2” Í2” Í2” Í2” Í2(” Í2*”' Í2=”) Í2?”1 Í2Ì`’” Í3” Í3
+–” Í3” Í3
+” Í@” Í@
+” Í@” Í@˜” Í3” Í3
+” ÍA” ÍA” ÍA”- ÍA”. ÍA ”3 ÍA%š” Í3” Í3
+” ÍB” ÍB” ÍB” ÍB”" ÍB”$ ÍB”& ÍB”( ÍB”” Í4” Í4
+” Í4” Í4–” Í4” Í4
+” Í5	” Í5” Í5” Í5–” Í4” Í4
+” Í6	” Í6” Í6”$ Í6š” Í4” Í4
+” Í7	” Í7” Í7” Í7”  Í7”" Í7”# Í7”% Í7’” Í4” Í4
+š” Í8” Í8” Í8” Í8”# Í8”% Í8”* Í8”, Í8”7 Í8*”9 Í8,–” Í8” Í8” Í9	” Í9” Í9”" Í9–” Í8” Í8” Í:	” Í:” Í:” Í:” Í8” Í8” Í;	” Í;” Í;”  Í;”$ Í;”& Í;”( Í;”* Í;”/ Í;"”1 Í;$”3 Í;&”5 Í;(–” Í8” Í8” Í<	”% Í<”& Í<”/ Í<"–” Í8” Í8” Í=	”" Í=”# Í=”% Í=–” Í8” Í8” Í>	” Í>” Í>”' Í>’” Í3” Í3
+‘” ÍC’” ÍE
+” ÍE” ÍF” ÍF” ÍF	” ÍF”  ÍF”! ÍF”% ÍF!”& ÍF"”. ÍF*”/ ÍF+”; ÍF7”= ÍF9”> ÍF9›” ÍG” ÍG
+” ÍG” ÍG” ÍG” ÍG”' ÍG#”( ÍG$”> ÍG:”Ì@ ÍG<”ÌA ÍG<Ü ” ÍH” ÍH” ÍH	” ÍH” ÍH”' ÍH#”, ÍH(”- ÍH)”. ÍH*”/ ÍH+”0 ÍH,”1 ÍH-”4 ÍH0”5 ÍH1”6 ÍH2”7 ÍH3”Ì@ ÍH<”ÌA ÍH<’” ÍI” ÍI’” ÍK
+” ÍK” ÍL” ÍL” ÍL	”! ÍL”" ÍL”& ÍL"”' ÍL#”7 ÍL3”8 ÍL4”ÌI ÍLÌE”ÌK ÍLÌG”ÌL ÍLÌH”ÌM ÍLÌH’” ÍM” ÍM”” ÍO
+”	 ÍO”
+ ÍO” ÍO š” ÍP” ÍP” ÍP	” ÍP” ÍP” ÍP” ÍP”' ÍP#”) ÍP%”+ ÍP'—” ÍQ” ÍQ
+” ÍQ”! ÍQ”$ ÍQ”( ÍQ"”) ÍQ"œ” ÍR” ÍR” ÍR”" ÍR”# ÍR”% ÍR”, ÍR&”. ÍR(”9 ÍR3”; ÍR5”< ÍR6”= ÍR6’” ÍS” ÍS‘”	 ÍT—” ÍV” ÍV” ÍV	” ÍV” ÍV”! ÍV”" ÍV’” ÍW” ÍW˜” ÍX” ÍX
+” ÍX” ÍX” ÍX”" ÍX”+ ÍX%”- ÍX'™” ÍY” ÍY” ÍY”  ÍY”* ÍY"”+ ÍY#”/ ÍY'”0 ÍY:”1 ÍY:” ÍZ” ÍZ” ÍZ” ÍZ”% ÍZ”) ÍZ!”* ÍZ"”: ÍZ2”; ÍZ3”ÌF ÍZ>”ÌG ÍZ?”ÌN ÍZÌF”ÌO ÍZÌG”ÌP ÍZÌG”” Í[” Í[” Í[” Í[˜” Í\
+” Í\” Í\”- Í\#”. Í\$”4 Í\*”5 Í\+”6 Í\+‘” Í]	‘” Í^‘” Í^” Í_” Í_” Í_”) Í_!”* Í_"”. Í_&”/ Í_'”? Í_7”Ì@ Í_8”ÌQ Í_ÌI”ÌS Í_ÌK”ÌT Í_ÌL”ÌU Í_ÌL‘” Í`œ” Íb” Íb
+” Íb” Íb” Íb” Íb”% Íb”& Íb ”, Íb&”/ Íb)”0 Íb*”2 Íb,˜” Íc” Íc” Íc” Íc” Íc”( Íc ”* Íc"”+ Íc"‘” Íd‘”	 Íe”” Íe” Íe” Íe” Íeœ” Íf” Íf” Íf”" Íf”# Íf”% Íf”, Íf&”. Íf(”= Íf7”? Íf9”Ì@ Íf:”ÌA Íf:–” Íg” Íg
+” Íg”! Íg”# Íg”$ Íg‘”	 Íh‘” Íh—” Íi” Íi
+” Íi” Íi”! Íi”& Íi ”' Íi –” Íj” Íj
+” Íj”! Íj”# Íj”$ Íj‘”	 Ík’” Íl” Íl’” Ín
+” Ín›” Ío” Ío” Ío	” Ío” Ío”  Ío”! Ío”* Ío&”+ Ío'”3 Ío/”4 Ío/Ÿ” Íp” Íp” Íp	” Íp” Íp” Íp”! Íp”" Íp”+ Íp'”, Íp(”5 Íp1”6 Íp2”< Íp8”> Íp:”? Íp:Ÿ” Íq” Íq” Íq	” Íq” Íq” Íq”  Íq”! Íq”* Íq&”+ Íq'”4 Íq0”5 Íq1”: Íq6”< Íq8”= Íq8Ÿ” Ír” Ír” Ír	” Ír” Ír” Ír”# Ír”$ Ír ”- Ír)”. Ír*”7 Ír3”8 Ír4”Ì@ Ír<”ÌB Ír>”ÌC Ír>Ÿ” Ís” Ís” Ís	” Ís” Ís” Ís” Ís” Ís”( Ís$”) Ís%”2 Ís.”3 Ís/”6 Ís2”8 Ís4”9 Ís4Ÿ” Ít” Ít” Ít	” Ít”  Ít”# Ít”' Ít#”( Ít$”1 Ít-”2 Ít.”; Ít7”< Ít8”ÌH ÍtÌD”ÌJ ÍtÌF”ÌK ÍtÌFŸ” Íu” Íu” Íu	” Íu” Íu” Íu”" Íu”# Íu”, Íu(”- Íu)”6 Íu2”7 Íu3”> Íu:”Ì@ Íu<”ÌA Íu<Ü ” Ív” Ív” Ív	” Ív” Ív”# Ív”$ Ív ”- Ív)”. Ív*”9 Ív5”: Ív6”> Ív:”? Ív;”ÌC Ív?”ÌD ÍvÌ@”ÌE ÍvÌ@›” Íw” Íw” Íw	” Íw”  Íw”$ Íw ”% Íw!”. Íw*”/ Íw+”; Íw7”< Íw7›” Íx” Íx” Íx	” Íx” Íx”  Íx”! Íx”* Íx&”+ Íx'”3 Íx/”4 Íx/›” Íy” Íy” Íy	” Íy” Íy”! Íy”" Íy”+ Íy'”, Íy(”5 Íy1”6 Íy1›” Íz” Íz” Íz	” Íz” Íz” Íz”  Íz”) Íz%”* Íz&”1 Íz-”2 Íz-’” Í{” Í{’” Í}
+” Í}œ” Í~” Í~” Í~” Í~” Í~” Í~”! Í~”" Í~”( Í~$”- Í~)”. Í~*”0 Í~,” Í” Í
+” Í” Í” Í”! Í”$ Í”, Í&”0 Í*”1 Í+”4 Í.”6 Í0”8 Í2”9 Í2‘”	 Í€š” Í” Í” Í” Í” Í” Í”' Í#”+ Í'”, Í(”. Í*œ” Í‚” Í‚
+” Í‚” Í‚” Í‚”' Í‚!”* Í‚$”. Í‚(”/ Í‚)”2 Í‚,”4 Í‚.”5 Í‚.‘”	 Íƒ” Í„” Í„” Í„	” Í„” Í„” Í„”" Í„”& Í„"”' Í„#”3 Í„/”4 Í„0”8 Í„4”: Í„6”; Í„6Ü ” Í…” Í…” Í…	” Í…” Í…”  Í…”! Í…”' Í…#”* Í…&”. Í…*”/ Í…+”: Í…6”; Í…7”? Í…;”Ì@ Í…<”ÌJ Í…ÌF”ÌK Í…ÌG”ÌL Í…ÌGÜ ” Í†” Í†” Í†	” Í†” Í†”  Í†”! Í†”& Í†"”) Í†%”- Í†)”. Í†*”9 Í†5”: Í†6”> Í†:”? Í†;”ÌH Í†ÌD”ÌI Í†ÌE”ÌJ Í†ÌEÜ ” Í‡” Í‡” Í‡	” Í‡” Í‡”  Í‡”! Í‡”) Í‡%”, Í‡(”0 Í‡,”1 Í‡-”< Í‡8”= Í‡9”ÌA Í‡=”ÌB Í‡>”ÌN Í‡ÌJ”ÌO Í‡ÌK”ÌP Í‡ÌKÜ ” Íˆ” Íˆ” Íˆ	” Íˆ” Íˆ”  Íˆ”! Íˆ”$ Íˆ ”' Íˆ#”+ Íˆ'”, Íˆ(”7 Íˆ3”8 Íˆ4”< Íˆ8”= Íˆ9”ÌD ÍˆÌ@”ÌE ÍˆÌA”ÌF ÍˆÌAÜ ” Í‰” Í‰” Í‰	” Í‰” Í‰”  Í‰”! Í‰”- Í‰)”0 Í‰,”4 Í‰0”5 Í‰1”Ì@ Í‰<”ÌA Í‰=”ÌE Í‰ÌA”ÌF Í‰ÌB”ÌV Í‰ÌR”ÌW Í‰ÌS”ÌX Í‰ÌSÜ ” ÍŠ” ÍŠ” ÍŠ	” ÍŠ” ÍŠ”  ÍŠ”! ÍŠ”( ÍŠ$”+ ÍŠ'”/ ÍŠ+”0 ÍŠ,”; ÍŠ7”< ÍŠ8”Ì@ ÍŠ<”ÌA ÍŠ=”ÌL ÍŠÌH”ÌM ÍŠÌI”ÌN ÍŠÌIš” Í‹” Í‹” Í‹	” Í‹” Í‹”" Í‹”% Í‹!”) Í‹%”* Í‹&”9 Í‹5•” ÍŒ” ÍŒ” ÍŒ”  ÍŒ”! ÍŒœ” Í” Í
+” Í” Í” Í” Í” Í” Í” Í”" Í”$ Í”% Í” Í” Í” Í” Í” Í” Í” Í”  Í”! Í”' Í!”* Í$”+ Í%”, Í&”- Í&” Í” Í” Í	” Í” Í”# Í”& Í"”* Í&”+ Í'”; Í7”< Í8”Ì@ Í<”ÌB Í>”ÌC Í>” Í” Í” Í	” Í” Í” Í”" Í”& Í"”' Í#”3 Í/”4 Í0”8 Í4”: Í6”; Í6” Í‘” Í‘” Í‘	” Í‘” Í‘”  Í‘”# Í‘”' Í‘#”( Í‘$”5 Í‘1”6 Í‘2”: Í‘6”< Í‘8”= Í‘8” Í’” Í’” Í’	” Í’” Í’” Í’”! Í’”% Í’!”& Í’"”1 Í’-”2 Í’.”6 Í’2”8 Í’4”9 Í’4’” Í“” Í“”” Í•
+” Í•” Í•” Í•6™” Í–” Í–” Í–	” Í–” Í–” Í–”  Í–”) Í–%”* Í–%™” Í—” Í—” Í—	” Í—” Í—”$ Í— ”% Í—!”3 Í—/”4 Í—/™” Í˜” Í˜” Í˜	” Í˜” Í˜”% Í˜!”& Í˜"”* Í˜&”+ Í˜&™” Í™” Í™” Í™	” Í™” Í™”# Í™”$ Í™ ”. Í™*”/ Í™*™” Íš” Íš” Íš	” Íš” Íš”# Íš”$ Íš ”8 Íš4”9 Íš4–” Í›” Í›” Í›” Í›” Í›”  Í›–” Íœ” Íœ
+” Íœ”& Íœ ”( Íœ"”) Íœ"‘”	 Í’” Í” Í”” Í 
+” Í ” Í ” Í #›” Í¡” Í¡
+” Í¡” Í¡” Í¡” Í¡”( Í¡$”) Í¡%”. Í¡*”/ Í¡+”0 Í¡+Ü ” Í¢” Í¢” Í¢” Í¢” Í¢” Í¢”% Í¢!”& Í¢"”' Í¢#”( Í¢$”) Í¢%”/ Í¢+”0 Í¢,”1 Í¢-”2 Í¢.”3 Í¢/”4 Í¢/’” Í£” Í£–” Í¥
+”	 Í¥”
+ Í¥”! Í¥'”" Í¥(”2 Í¥ÌA–” Í¦” Í¦” Í¦” Í¦” Í¦”  Í¦–” Í§” Í§
+” Í§”% Í§”' Í§!”( Í§!‘”	 Í¨Ÿ” Í©” Í©” Í©” Í©” Í©” Í©”# Í©”$ Í© ”( Í©$”* Í©&”+ Í©'”1 Í©-”6 Í©2”7 Í©3”9 Í©5œ” Íª” Íª” Íª”" Íª”# Íª”% Íª”, Íª&”. Íª(”8 Íª2”: Íª4”; Íª5”< Íª5”” Í«” Í«” Í«” Í«‘”	 Í¬” Í­” Í­
+” Í­” Í­” Í­” Í­”) Í­%”* Í­&”. Í­*”/ Í­+”8 Í­4”9 Í­5”: Í­5”” Í®” Í®” Í®” Í®œ” Í¯” Í¯” Í¯”" Í¯”# Í¯”% Í¯”, Í¯&”. Í¯(”= Í¯7”? Í¯9”Ì@ Í¯:”ÌA Í¯:‘”	 Í°”” Í±” Í±” Í±” Í±’” Í²” Í²”” Í´
+”	 Í´”
+ Í´” Í´™” Íµ” Íµ
+” Íµ” Íµ”* Íµ&”+ Íµ'”/ Íµ+”0 Íµ,”1 Íµ,’” Í¶” Í¶”” Í¸
+”	 Í¸”
+ Í¸” Í¸œ” Í¹” Í¹
+” Í¹” Í¹” Í¹”  Í¹”! Í¹”8 Í¹4”9 Í¹5”> Í¹:”? Í¹;”Ì@ Í¹;•” Íº” Íº” Íº	” Íº” Íº’” Í»” Í»‘”	 Í¼•” Í½” Í½
+” Í½” Í½” Í½”” Í¾” Í¾	” Í¾”# Í¾“” Í¿” Í¿” Í¿–” ÍÀ” ÍÀ” ÍÀ” ÍÀ” ÍÀ”' ÍÀ˜” ÍÁ” ÍÁ” ÍÁ” ÍÁ” ÍÁ”& ÍÁ”' ÍÁ”- ÍÁ%‘” ÍÂ“”	 ÍÃ”
+ ÍÃ” ÍÃ’” ÍÄ” ÍÄÔrF–§version¤file§sources®sourcesContent¥names¨mappingsÀ‘À‘ÀÜT‘”    ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”  	 ‘”  
+ ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”    ‘”  ! ‘”  " ‘”  # ‘”  $ ‘”  % ‘”  & ‘”  ' ‘”  ( ‘”  ) ‘”  * ‘”  + ‘”  , ‘”  - ‘”  . ‘”  / ‘”  0 ‘”  1 ‘”  2 ‘”  3 ‘”  4 ‘”  5 ‘”  6 ‘”  7 ‘”  8 ‘”  9 ‘”  : ‘”  ; ‘”  < ‘”  = ‘”  > ‘”  ? ‘”  Ì@ ‘”  ÌA ‘”  ÌB ‘”  ÌC ‘”  ÌD ‘”  ÌE ‘”  ÌF ‘”  ÌG ‘”  ÌH ‘”  ÌI ‘”  ÌJ ‘”  ÌK ‘”  ÌL ‘”  ÌM ‘”  ÌN ‘”  ÌO ‘”  ÌP ‘”  ÌQ ‘”  ÌR ‘”  ÌS ‘”  ÌT ‘”  ÌU ‘”  ÌV ‘”  ÌW ‘”  ÌX ‘”  ÌY ‘”  ÌZ ‘”  Ì[ ‘”  Ì\ ‘”  Ì] ‘”  Ì^ ‘”  Ì_ ‘”  Ì` ‘”  Ìa ‘”  Ìb ‘”  Ìc ‘”  Ìd ‘”  Ìe ‘”  Ìf ‘”  Ìg ‘”  Ìh ‘”  Ìi ‘”  Ìj ‘”  Ìk ‘”  Ìl ‘”  Ìm ‘”  Ìn ‘”  Ìo ‘”  Ìp ‘”  Ìq ‘”  Ìr ‘”  Ìs ‘”  Ìt ‘”  Ìu ‘”  Ìv ‘”  Ìw ‘”  Ìx ‘”  Ìy ‘”  Ìz ‘”  Ì{ ‘”  Ì| ‘”  Ì} ‘”  Ì~ ‘”  Ì ‘”  Ì€ ‘”  Ì ‘”  Ì‚ ‘”  Ìƒ ‘”  Ì„ ‘”  Ì… ‘”  Ì† ‘”  Ì‡ ‘”  Ìˆ ‘”  Ì‰ ‘”  ÌŠ ‘”  Ì‹ ‘”  ÌŒ ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì‘ ‘”  Ì’ ‘”  Ì“ ‘”  Ì” ‘”  Ì• ‘”  Ì– ‘”  Ì— ‘”  Ì˜ ‘”  Ì™ ‘”  Ìš ‘”  Ì› ‘”  Ìœ ‘”  Ì ‘”  Ì ‘”  ÌŸ ‘”  Ì  ‘”  Ì¡ ‘”  Ì¢ ‘”  Ì£ ‘”  Ì¤ ‘”  Ì¥ ‘”  Ì¦ ‘”  Ì§ ‘”  Ì¨ ‘”  Ì© ‘”  Ìª ‘”  Ì« ‘”  Ì¬ ‘”  Ì­ ‘”  Ì® ‘”  Ì¯ ‘”  Ì° ‘”  Ì± ‘”  Ì² ‘”  Ì³ ‘”  Ì´ ‘”  Ìµ ‘”  Ì¶ ‘”  Ì· ‘”  Ì¸ ‘”  Ì¹ ‘”  Ìº ‘”  Ì» ‘”  Ì¼ ‘”  Ì½ ‘”  Ì¾ ‘”  Ì¿ ‘”  ÌÀ ‘”  ÌÁ ‘”  ÌÂ ‘”  ÌÃ ‘”  ÌÄ ‘”  ÌÅ ‘”  ÌÆ ‘”  ÌÇ ‘”  ÌÈ ‘”  ÌÉ ‘”  ÌÊ ‘”  ÌË ‘”  ÌÌ ‘”  ÌÍ ‘”  ÌÎ ‘”  ÌÏ ‘”  ÌĞ ‘”  ÌÑ ‘”  ÌÒ ‘”  ÌÓ ‘”  ÌÔ ‘”  ÌÕ ‘”  ÌÖ ‘”  Ì× ‘”  ÌØ ‘”  ÌÙ ‘”  ÌÚ ‘”  ÌÛ ‘”  ÌÜ ‘”  Ìİ ‘”  ÌŞ ‘”  Ìß ‘”  Ìà ‘”  Ìá ‘”  Ìâ ‘”  Ìã ‘”  Ìä ‘”  Ìå ‘”  Ìæ ‘”  Ìç ‘”  Ìè ‘”  Ìé ‘”  Ìê ‘”  Ìë ‘”  Ìì ‘”  Ìí ‘”  Ìî ‘”  Ìï ‘”  Ìğ ‘”  Ìñ ‘”  Ìò ‘”  Ìó ‘”  Ìô ‘”  Ìõ ‘”  Ìö ‘”  Ì÷ ‘”  Ìø ‘”  Ìù ‘”  Ìú ‘”  Ìû ‘”  Ìü ‘”  Ìı ‘”  Ìş ‘”  Ìÿ ‘”  Í  ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í	 ‘”  Í
+ ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í  ‘”  Í! ‘”  Í" ‘”  Í# ‘”  Í$ ‘”  Í% ‘”  Í& ‘”  Í' ‘”  Í( ‘”  Í) ‘”  Í* ‘”  Í+ ‘”  Í, ‘”  Í- ‘”  Í. ‘”  Í/ ‘”  Í0 ‘”  Í1 ‘”  Í2 ‘”  Í3 ‘”  Í4 ‘”  Í5 ‘”  Í6 ‘”  Í7 ‘”  Í8 ‘”  Í9 ‘”  Í: ‘”  Í; ‘”  Í< ‘”  Í= ‘”  Í> ‘”  Í? ‘”  Í@ ‘”  ÍA ‘”  ÍB ‘”  ÍC ‘”  ÍD ‘”  ÍE ‘”  ÍF ‘”  ÍG ‘”  ÍH ‘”  ÍI ‘”  ÍJ ‘”  ÍK ‘”  ÍL ‘”  ÍM ‘”  ÍN ‘”  ÍO ‘”  ÍP ‘”  ÍQ ‘”  ÍR ‘”  ÍS ‘”  ÍT ‘”  ÍU ‘”  ÍV ‘”  ÍW ‘”  ÍX ‘”  ÍY ‘”  ÍZ ‘”  Í[ ‘”  Í\ ‘”  Í] ‘”  Í^ ‘”  Í_ ‘”  Í` ‘”  Ía ‘”  Íb ‘”  Íc ‘”  Íd ‘”  Íe ‘”  Íf ‘”  Íg ‘”  Íh ‘”  Íi ‘”  Íj ‘”  Ík ‘”  Íl ‘”  Ím ‘”  Ín ‘”  Ío ‘”  Íp ‘”  Íq ‘”  Ír ‘”  Ís ‘”  Ít ‘”  Íu ‘”  Ív ‘”  Íw ‘”  Íx ‘”  Íy ‘”  Íz ‘”  Í{ ‘”  Í| ‘”  Í} ‘”  Í~ ‘”  Í ‘”  Í€ ‘”  Í ‘”  Í‚ ‘”  Íƒ ‘”  Í„ ‘”  Í… ‘”  Í† ‘”  Í‡ ‘”  Íˆ ‘”  Í‰ ‘”  ÍŠ ‘”  Í‹ ‘”  ÍŒ ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í‘ ‘”  Í’ ‘”  Í“ ‘”  Í” ‘”  Í• ‘”  Í– ‘”  Í— ‘”  Í˜ ‘”  Í™ ‘”  Íš ‘”  Í› ‘”  Íœ ‘”  Í ‘”  Í ‘”  ÍŸ ‘”  Í  ‘”  Í¡ ‘”  Í¢ ‘”  Í£ ‘”  Í¤ ‘”  Í¥ ‘”  Í¦ ‘”  Í§ ‘”  Í¨ ‘”  Í© ‘”  Íª ‘”  Í« ‘”  Í¬ ‘”  Í­ ‘”  Í® ‘”  Í¯ ‘”  Í° ‘”  Í± ‘”  Í² ‘”  Í³ ‘”  Í´ ‘”  Íµ ‘”  Í¶ ‘”  Í· ‘”  Í¸ ‘”  Í¹ ‘”  Íº ‘”  Í» ‘”  Í¼ ‘”  Í½ ‘”  Í¾ ‘”  Í¿ ‘”  ÍÀ ‘”  ÍÁ ‘”  ÍÂ ‘”  ÍÃ ‘”  ÍÄ ‘”  ÍÅ ‘”  ÍÆ ‘”  ÍÇ ‘”  ÍÈ ‘”  ÍÉ ‘”  ÍÊ ‘”  ÍË ‘”  ÍÌ ‘”  ÍÍ ‘”  ÍÎ ‘”  ÍÏ ‘”  ÍĞ ‘”  ÍÑ ‘”  ÍÒ ‘”  ÍÓ ‘”  ÍÔ ‘”  ÍÕ ‘”  ÍÖ ‘”  Í× ‘”  ÍØ ‘”  ÍÙ ‘”  ÍÚ ‘”  ÍÛ ‘”  ÍÜ ‘”  Íİ ‘”  ÍŞ ‘”  Íß ‘”  Íà ‘”  Íá ‘”  Íâ ‘”  Íã ‘”  Íä ‘”  Íå ‘”  Íæ ‘”  Íç ‘”  Íè ‘”  Íé ‘”  Íê ‘”  Íë ‘”  Íì ‘”  Íí ‘”  Íî ‘”  Íï ‘”  Íğ ‘”  Íñ ‘”  Íò ‘”  Íó ‘”  Íô ‘”  Íõ ‘”  Íö ‘”  Í÷ ‘”  Íø ‘”  Íù ‘”  Íú ‘”  Íû ‘”  Íü ‘”  Íı ‘”  Íş ‘”  Íÿ ‘”  Í  ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í	 ‘”  Í
+ ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í  ‘”  Í! ‘”  Í" ‘”  Í# ‘”  Í$ ‘”  Í% ‘”  Í& ‘”  Í' ‘”  Í( ‘”  Í) ‘”  Í* ‘”  Í+ ‘”  Í, ‘”  Í- ‘”  Í. ‘”  Í/ ‘”  Í0 ‘”  Í1 ‘”  Í2 ‘”  Í3 ‘”  Í4 ‘”  Í5 ‘”  Í6 ‘”  Í7 ‘”  Í8 ‘”  Í9 ‘”  Í: ‘”  Í; ‘”  Í< ‘”  Í= ‘”  Í> ‘”  Í? ‘”  Í@ ‘”  ÍA ‘”  ÍB ‘”  ÍC ‘”  ÍD ‘”  ÍE ‘”  ÍF ‘”  ÍG ‘”  ÍH ‘”  ÍI ‘”  ÍJ ‘”  ÍK ‘”  ÍL ‘”  ÍM ‘”  ÍN ‘”  ÍO ‘”  ÍP ‘”  ÍQ ‘”  ÍR ‘”  ÍS ‘”  ÍT ‘”  ÍU ‘”  ÍV ‘”  ÍW ‘”  ÍX ‘”  ÍY ‘”  ÍZ ‘”  Í[ ‘”  Í\ ‘”  Í] ‘”  Í^ ‘”  Í_ ‘”  Í` ‘”  Ía ‘”  Íb ‘”  Íc ‘”  Íd ‘”  Íe ‘”  Íf ‘”  Íg ‘”  Íh ‘”  Íi ‘”  Íj ‘”  Ík ‘”  Íl ‘”  Ím ‘”  Ín ‘”  Ío ‘”  Íp ‘”  Íq ‘”  Ír ‘”  Ís ‘”  Ít ‘”  Íu ‘”  Ív ‘”  Íw ‘”  Íx ‘”  Íy ‘”  Íz ‘”  Í{ ‘”  Í| ‘”  Í} ‘”  Í~ ‘”  Í ‘”  Í€ ‘”  Í ‘”  Í‚ ‘”  Íƒ ‘”  Í„ ‘”  Í… ‘”  Í† ‘”  Í‡ ‘”  Íˆ ‘”  Í‰ ‘”  ÍŠ ‘”  Í‹ ‘”  ÍŒ ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í‘ ‘”  Í’ ‘”  Í“ ‘”  Í” ‘”  Í• ‘”  Í– ‘”  Í— ‘”  Í˜ ‘”  Í™ ‘”  Íš ‘”  Í› ‘”  Íœ ‘”  Í ‘”  Í ‘”  ÍŸ ‘”  Í  ‘”  Í¡ ‘”  Í¢ ‘”  Í£ ‘”  Í¤ ‘”  Í¥ ‘”  Í¦ ‘”  Í§ ‘”  Í¨ ‘”  Í© ‘”  Íª ‘”  Í« ‘”  Í¬ ‘”  Í­ ‘”  Í® ‘”  Í¯ ‘”  Í° ‘”  Í± ‘”  Í² ‘”  Í³ ‘”  Í´ ‘”  Íµ ‘”  Í¶ ‘”  Í· ‘”  Í¸ ‘”  Í¹ ‘”  Íº ‘”  Í» ‘”  Í¼ ‘”  Í½ ‘”  Í¾ ‘”  Í¿ ‘”  ÍÀ ‘”  ÍÁ ‘”  ÍÂ ‘”  ÍÃ ‘”  ÍÄ ‘”  ÍÅ ‘”  ÍÆ ‘”  ÍÇ ‘”  ÍÈ ‘”  ÍÉ ‘”  ÍÊ ‘”  ÍË ‘”  ÍÌ ‘”  ÍÍ ‘”  ÍÎ ‘”  ÍÏ ‘”  ÍĞ ‘”  ÍÑ ‘”  ÍÒ ‘”  ÍÓ ‘”  ÍÔ ‘”  ÍÕ ‘”  ÍÖ ‘”  Í× ‘”  ÍØ ‘”  ÍÙ ‘”  ÍÚ ‘”  ÍÛ ‘”  ÍÜ ‘”  Íİ ‘”  ÍŞ ‘”  Íß ‘”  Íà ‘”  Íá ‘”  Íâ ‘”  Íã ‘”  Íä ‘”  Íå ‘”  Íæ ‘”  Íç ‘”  Íè ‘”  Íé ‘”  Íê ‘”  Íë ‘”  Íì ‘”  Íí ‘”  Íî ‘”  Íï ‘”  Íğ ‘”  Íñ ‘”  Íò ‘”  Íó ‘”  Íô ‘”  Íõ ‘”  Íö ‘”  Í÷ ‘”  Íø ‘”  Íù ‘”  Íú ‘”  Íû ‘”  Íü ‘”  Íı ‘”  Íş ‘”  Íÿ ‘”  Í  ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í	 ‘”  Í
+ ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í  ‘”  Í! ‘”  Í" ‘”  Í# ‘”  Í$ ‘”  Í% ‘”  Í& ‘”  Í' ‘”  Í( ‘”  Í) ‘”  Í* ‘”  Í+ ‘”  Í, ‘”  Í- ‘”  Í. ‘”  Í/ ‘”  Í0 ‘”  Í1 ‘”  Í2 ‘”  Í3 ‘”  Í4 ‘”  Í5 ‘”  Í6 ‘”  Í7 ‘”  Í8 ‘”  Í9 ‘”  Í: ‘”  Í; ‘”  Í< ‘”  Í= ‘”  Í> ‘”  Í? ‘”  Í@ ‘”  ÍA ‘”  ÍB ‘”  ÍC ‘”  ÍD ‘”  ÍE ‘”  ÍF ‘”  ÍG ‘”  ÍH ‘”  ÍI ‘”  ÍJ ‘”  ÍK ‘”  ÍL ‘”  ÍM ‘”  ÍN ‘”  ÍO ‘”  ÍP ‘”  ÍQ ‘”  ÍR ‘”  ÍS ÔrG’§missing¦pluginÃ¦genAbcÂÔ  ÔrH”²dynamicImportCache¹exportAllDeclarationCache»exportNamedDeclarationCache«importCache–ÔrI•¤type¥start£endªspecifiers¦source±ImportDeclarationÌ€Ì¢‘ÔrJ”¤type¥start£end¥local¶ImportDefaultSpecifierÌ‡ÌÔrK”¤type¥start£end¤nameªIdentifierÌ‡Ì¦routerÔrL•¤type¥start£end¥value£raw§LiteralÌ“Ì¡¬@ohos.router®"@ohos.router"I±ImportDeclarationÌ¤ÌÒ‘J¶ImportDefaultSpecifierÌ«Ì·KªIdentifierÌ«Ì·¬promptActionL§LiteralÌ½ÌÑ²@ohos.promptAction´"@ohos.promptAction"I±ImportDeclarationÌÔÍ‘ÔrM•¤type¥start£end¨imported¥local¯ImportSpecifierÌİÌæKªIdentifierÌİÌæ©FoodLabelKªIdentifierÌİÌæ©FoodLabelL§LiteralÌîÍ²../model/FoodLabel´'../model/FoodLabel'I±ImportDeclarationÍÍ,‘M¯ImportSpecifierÍÍKªIdentifierÍÍ¨AppStateKªIdentifierÍÍ¨AppStateL§LiteralÍÍ+«../AppState­'../AppState'I±ImportDeclarationÍ.Ím‘M¯ImportSpecifierÍ7ÍGKªIdentifierÍ7ÍG°FoodInputServiceKªIdentifierÍ7ÍG°FoodInputServiceL§LiteralÍOÍl»../service/FoodInputService½'../service/FoodInputService'I±ImportDeclarationÍoÍ¨‘M¯ImportSpecifierÍxÍˆKªIdentifierÍxÍˆ°SubscriptionTierKªIdentifierÍxÍˆ°SubscriptionTierL§LiteralÍÍ§µ../model/PricingModel·'../model/PricingModel'

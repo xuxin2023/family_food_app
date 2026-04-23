@@ -1,4 +1,4 @@
-import { hilog } from '@kit.BasicServicesKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 import {
   HealthSignal,
   StepLevel,

@@ -1,0 +1,822 @@
+Ôr@Ÿªassertions¤code´customTransformCache¬dependencies¢id¤meta±moduleSideEffects¬originalCode±originalSourcemap«resolvedIds®sourcemapChainµsyntheticNamedExportsµtransformDependencies®transformFiles¨cacheAstÔrAÚ/Q// å†å²è®°å½•æ•°æ®ä»“åº“ - æ‰«æå†å²ä¸é¥®é£Ÿè®°å½•
+import relationalStore from "@ohos.data.relationalStore";
+import hilog from "@ohos.hilog";
+const TAG = 'HistoryRepository';
+const DOMAIN_ZERO = 0;
+export class ScanHistoryRecord {
+    constructor() {
+        this.id = 0;
+        this.memberId = '';
+        this.foodId = '';
+        this.foodName = '';
+        this.level = '';
+        this.maxAmount = 0;
+        this.reasons = [];
+        this.scannedAt = 0;
+    }
+}
+export class DietRecord {
+    constructor() {
+        this.id = 0;
+        this.memberId = '';
+        this.date = '';
+        this.scenario = '';
+        this.foodId = '';
+        this.amountG = 0;
+        this.sodiumIntake = 0;
+        this.sugarIntake = 0;
+        this.calorieIntake = 0;
+        this.fatIntake = 0;
+        this.recordedAt = 0;
+    }
+}
+// ç”¨äºä¿å­˜æ‰«æå†å²çš„è¾“å…¥æ•°æ®ï¼ˆä¸å«idï¼‰
+export class ScanHistoryInput {
+    constructor() {
+        this.memberId = '';
+        this.foodId = '';
+        this.foodName = '';
+        this.level = '';
+        this.maxAmount = 0;
+        this.reasons = [];
+        this.scannedAt = 0;
+    }
+}
+// ç”¨äºä¿å­˜é¥®é£Ÿè®°å½•çš„è¾“å…¥æ•°æ®ï¼ˆä¸å«idï¼‰
+export class DietRecordInput {
+    constructor() {
+        this.memberId = '';
+        this.date = '';
+        this.scenario = '';
+        this.foodId = '';
+        this.amountG = 0;
+        this.sodiumIntake = 0;
+        this.sugarIntake = 0;
+        this.calorieIntake = 0;
+        this.fatIntake = 0;
+        this.recordedAt = 0;
+    }
+}
+// é£é™©ç»Ÿè®¡ç»“æœ
+export class RiskDaysResult {
+    constructor() {
+        this.highSodiumDays = 0;
+        this.highSugarDays = 0;
+        this.highFatDays = 0;
+        this.totalRecords = 0;
+    }
+}
+export class HistoryRepository {
+    constructor() {
+        this.rdbStore = null;
+    }
+    async init(rdbStore) {
+        this.rdbStore = rdbStore;
+        try {
+            // æ‰«æå†å²è¡¨
+            await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS scan_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        member_id TEXT NOT NULL,
+        food_id TEXT NOT NULL,
+        food_name TEXT NOT NULL,
+        level TEXT NOT NULL,
+        max_amount REAL NOT NULL,
+        reasons TEXT NOT NULL,
+        scanned_at INTEGER NOT NULL
+      )`);
+            // é¥®é£Ÿè®°å½•è¡¨
+            await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS diet_record (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        member_id TEXT NOT NULL,
+        date TEXT NOT NULL,
+        scenario TEXT,
+        food_id TEXT,
+        amount_g REAL,
+        sodium_intake REAL,
+        sugar_intake REAL,
+        calorie_intake REAL,
+        fat_intake REAL,
+        recorded_at INTEGER NOT NULL
+      )`);
+        }
+        catch (error) {
+            hilog.error(DOMAIN_ZERO, TAG, 'Init tables failed: %{public}s', JSON.stringify(error));
+        }
+    }
+    /**
+     * ä¿å­˜æ‰«æå†å²
+     */
+    async saveScanHistory(record) {
+        if (!this.rdbStore)
+            return;
+        const valueBucket = {
+            member_id: record.memberId,
+            food_id: record.foodId,
+            food_name: record.foodName,
+            level: record.level,
+            max_amount: record.maxAmount,
+            reasons: JSON.stringify(record.reasons),
+            scanned_at: record.scannedAt
+        };
+        try {
+            await this.rdbStore.insert('scan_history', valueBucket);
+        }
+        catch (error) {
+            hilog.error(DOMAIN_ZERO, TAG, 'Save scan history failed: %{public}s', JSON.stringify(error));
+        }
+    }
+    /**
+     * ä¿å­˜é¥®é£Ÿè®°å½•
+     */
+    async saveDietRecord(record) {
+        if (!this.rdbStore)
+            return;
+        const valueBucket = {
+            member_id: record.memberId,
+            date: record.date,
+            scenario: record.scenario,
+            food_id: record.foodId,
+            amount_g: record.amountG,
+            sodium_intake: record.sodiumIntake,
+            sugar_intake: record.sugarIntake,
+            calorie_intake: record.calorieIntake,
+            fat_intake: record.fatIntake,
+            recorded_at: record.recordedAt
+        };
+        try {
+            await this.rdbStore.insert('diet_record', valueBucket);
+        }
+        catch (error) {
+            hilog.error(DOMAIN_ZERO, TAG, 'Save diet record failed: %{public}s', JSON.stringify(error));
+        }
+    }
+    /**
+     * æŸ¥è¯¢ä»Šæ—¥é¥®é£Ÿè®°å½•ï¼ˆç”¨äºè®¡ç®—å‰©ä½™é¢„ç®—ï¼‰
+     */
+    async getTodayDietRecords(memberId) {
+        if (!this.rdbStore)
+            return [];
+        const today = this.getTodayDate();
+        try {
+            const predicates = new relationalStore.RdbPredicates('diet_record');
+            predicates.equalTo('member_id', memberId).equalTo('date', today);
+            const resultSet = await this.rdbStore.query(predicates);
+            const records = [];
+            while (resultSet.goToNextRow()) {
+                records.push(this.dietRecordFromResultSet(resultSet));
+            }
+            resultSet.close();
+            return records;
+        }
+        catch (error) {
+            hilog.error(DOMAIN_ZERO, TAG, 'Query diet records failed: %{public}s', JSON.stringify(error));
+            return [];
+        }
+    }
+    /**
+     * æŸ¥è¯¢æœ€è¿‘æ‰«æå†å²ï¼ˆæŒ‰æ—¶é—´å€’åºï¼‰
+     */
+    async getRecentScanHistory(limit = 50) {
+        if (!this.rdbStore)
+            return [];
+        try {
+            const predicates = new relationalStore.RdbPredicates('scan_history');
+            predicates.orderByDesc('scanned_at');
+            predicates.limitAs(limit);
+            const resultSet = await this.rdbStore.query(predicates);
+            const records = [];
+            while (resultSet.goToNextRow()) {
+                records.push(this.scanRecordFromResultSet(resultSet));
+            }
+            resultSet.close();
+            return records;
+        }
+        catch (error) {
+            hilog.error(DOMAIN_ZERO, TAG, 'Query scan history failed: %{public}s', JSON.stringify(error));
+            return [];
+        }
+    }
+    /**
+     * æŸ¥è¯¢æŸæˆå‘˜çš„æ‰«æå†å²
+     */
+    async getScanHistoryByMember(memberId, limit = 20) {
+        if (!this.rdbStore)
+            return [];
+        try {
+            const predicates = new relationalStore.RdbPredicates('scan_history');
+            predicates.equalTo('member_id', memberId);
+            predicates.orderByDesc('scanned_at');
+            predicates.limitAs(limit);
+            const resultSet = await this.rdbStore.query(predicates);
+            const records = [];
+            while (resultSet.goToNextRow()) {
+                records.push(this.scanRecordFromResultSet(resultSet));
+            }
+            resultSet.close();
+            return records;
+        }
+        catch (error) {
+            hilog.error(DOMAIN_ZERO, TAG, 'Query scan history by member failed: %{public}s', JSON.stringify(error));
+            return [];
+        }
+    }
+    /**
+     * æŸ¥è¯¢æ—¥æœŸèŒƒå›´å†…çš„é¥®é£Ÿè®°å½•ï¼ˆç”¨äºå‘¨æŠ¥ï¼‰
+     */
+    async getDietRecordsByDateRange(memberId, startDate, endDate) {
+        if (!this.rdbStore)
+            return [];
+        try {
+            const predicates = new relationalStore.RdbPredicates('diet_record');
+            predicates.equalTo('member_id', memberId);
+            predicates.greaterThanOrEqualTo('date', startDate);
+            predicates.lessThanOrEqualTo('date', endDate);
+            predicates.orderByAsc('date');
+            const resultSet = await this.rdbStore.query(predicates);
+            const records = [];
+            while (resultSet.goToNextRow()) {
+                records.push(this.dietRecordFromResultSet(resultSet));
+            }
+            resultSet.close();
+            return records;
+        }
+        catch (error) {
+            hilog.error(DOMAIN_ZERO, TAG, 'Query diet records by range failed: %{public}s', JSON.stringify(error));
+            return [];
+        }
+    }
+    /**
+     * ç»Ÿè®¡æŸæˆå‘˜æŸæ—¥çš„é«˜ç›/é«˜ç³–/é«˜è„‚è®°å½•æ•°ï¼ˆç”¨äºå‘¨æŠ¥ï¼‰
+     */
+    async countRiskDays(memberId, startDate, endDate) {
+        const records = await this.getDietRecordsByDateRange(memberId, startDate, endDate);
+        const sodiumDays = new Set();
+        const sugarDays = new Set();
+        const fatDays = new Set();
+        for (const r of records) {
+            // é«˜ç›ï¼šé’ æ‘„å…¥>800mg/é¤
+            if (r.sodiumIntake > 800)
+                sodiumDays.add(r.date);
+            // é«˜ç³–ï¼šç³–æ‘„å…¥>15g/é¤
+            if (r.sugarIntake > 15)
+                sugarDays.add(r.date);
+            // é«˜è„‚ï¼šè„‚è‚ªæ‘„å…¥>20g/é¤
+            if (r.fatIntake > 20)
+                fatDays.add(r.date);
+        }
+        const result = new RiskDaysResult();
+        result.highSodiumDays = sodiumDays.size;
+        result.highSugarDays = sugarDays.size;
+        result.highFatDays = fatDays.size;
+        result.totalRecords = records.length;
+        return result;
+    }
+    /**
+     * åˆ é™¤æ‰«æå†å²ï¼ˆæ¸…ç†æ—§æ•°æ®ï¼‰
+     */
+    async deleteScanHistoryBefore(timestamp) {
+        if (!this.rdbStore)
+            return 0;
+        try {
+            const predicates = new relationalStore.RdbPredicates('scan_history');
+            predicates.lessThan('scanned_at', timestamp);
+            return await this.rdbStore.delete(predicates);
+        }
+        catch (error) {
+            hilog.error(DOMAIN_ZERO, TAG, 'Delete old scan history failed: %{public}s', JSON.stringify(error));
+            return 0;
+        }
+    }
+    // ========== å†…éƒ¨æ–¹æ³• ==========
+    scanRecordFromResultSet(resultSet) {
+        let reasons = [];
+        try {
+            reasons = JSON.parse(resultSet.getString(resultSet.getColumnIndex('reasons')) || '[]');
+        }
+        catch (e) {
+            reasons = [];
+        }
+        const record = new ScanHistoryRecord();
+        record.id = resultSet.getLong(resultSet.getColumnIndex('id'));
+        record.memberId = resultSet.getString(resultSet.getColumnIndex('member_id'));
+        record.foodId = resultSet.getString(resultSet.getColumnIndex('food_id'));
+        record.foodName = resultSet.getString(resultSet.getColumnIndex('food_name'));
+        record.level = resultSet.getString(resultSet.getColumnIndex('level'));
+        record.maxAmount = resultSet.getDouble(resultSet.getColumnIndex('max_amount'));
+        record.reasons = reasons;
+        record.scannedAt = resultSet.getLong(resultSet.getColumnIndex('scanned_at'));
+        return record;
+    }
+    dietRecordFromResultSet(resultSet) {
+        const record = new DietRecord();
+        record.id = resultSet.getLong(resultSet.getColumnIndex('id'));
+        record.memberId = resultSet.getString(resultSet.getColumnIndex('member_id'));
+        record.date = resultSet.getString(resultSet.getColumnIndex('date'));
+        record.scenario = resultSet.getString(resultSet.getColumnIndex('scenario'));
+        record.foodId = resultSet.getString(resultSet.getColumnIndex('food_id'));
+        record.amountG = resultSet.getDouble(resultSet.getColumnIndex('amount_g'));
+        record.sodiumIntake = resultSet.getDouble(resultSet.getColumnIndex('sodium_intake'));
+        record.sugarIntake = resultSet.getDouble(resultSet.getColumnIndex('sugar_intake'));
+        record.calorieIntake = resultSet.getDouble(resultSet.getColumnIndex('calorie_intake'));
+        record.fatIntake = resultSet.getDouble(resultSet.getColumnIndex('fat_intake'));
+        record.recordedAt = resultSet.getLong(resultSet.getColumnIndex('recorded_at'));
+        return record;
+    }
+    getTodayDate() {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    }
+}
+//# sourceMappingURL=HistoryRepository.js.mapÂ’Ùt hvigor_ignore_E:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.data.relationalStore.d.tsÙe hvigor_ignore_E:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.hilog.d.tsÙZC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\repository\HistoryRepository.etsÔrB›ªmoduleName±isLocalDependency¯isNodeEntryFile§pkgPath±belongProjectPath§pkgNameªpkgVersion±dependencyPkgInfo¯hostModulesInfo°belongModulePath¬shouldEmitJs¥entryÃÂÙ,C:\Users\A\IDEProjects\family_food_app\entryÙ&C:\Users\A\IDEProjects\family_food_app¥entry¥1.0.0Ô  ‘ÔrC’²hostDependencyName®hostModuleName¾./repository/HistoryRepository¥entryÙ,C:\Users\A\IDEProjects\family_food_app\entryÃÃÚ+)// å†å²è®°å½•æ•°æ®ä»“åº“ - æ‰«æå†å²ä¸é¥®é£Ÿè®°å½•
+
+import { relationalStore } from '@kit.ArkData';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+
+const TAG = 'HistoryRepository';
+const DOMAIN_ZERO = 0;
+
+export class ScanHistoryRecord {
+  id: number = 0;
+  memberId: string = '';
+  foodId: string = '';
+  foodName: string = '';
+  level: string = '';
+  maxAmount: number = 0;
+  reasons: string[] = [];
+  scannedAt: number = 0;
+}
+
+export class DietRecord {
+  id: number = 0;
+  memberId: string = '';
+  date: string = '';
+  scenario: string = '';
+  foodId: string = '';
+  amountG: number = 0;
+  sodiumIntake: number = 0;
+  sugarIntake: number = 0;
+  calorieIntake: number = 0;
+  fatIntake: number = 0;
+  recordedAt: number = 0;
+}
+
+// ç”¨äºä¿å­˜æ‰«æå†å²çš„è¾“å…¥æ•°æ®ï¼ˆä¸å«idï¼‰
+export class ScanHistoryInput {
+  memberId: string = '';
+  foodId: string = '';
+  foodName: string = '';
+  level: string = '';
+  maxAmount: number = 0;
+  reasons: string[] = [];
+  scannedAt: number = 0;
+}
+
+// ç”¨äºä¿å­˜é¥®é£Ÿè®°å½•çš„è¾“å…¥æ•°æ®ï¼ˆä¸å«idï¼‰
+export class DietRecordInput {
+  memberId: string = '';
+  date: string = '';
+  scenario: string = '';
+  foodId: string = '';
+  amountG: number = 0;
+  sodiumIntake: number = 0;
+  sugarIntake: number = 0;
+  calorieIntake: number = 0;
+  fatIntake: number = 0;
+  recordedAt: number = 0;
+}
+
+// é£é™©ç»Ÿè®¡ç»“æœ
+export class RiskDaysResult {
+  highSodiumDays: number = 0;
+  highSugarDays: number = 0;
+  highFatDays: number = 0;
+  totalRecords: number = 0;
+}
+
+export class HistoryRepository {
+  private rdbStore: relationalStore.RdbStore | null = null;
+
+  async init(rdbStore: relationalStore.RdbStore): Promise<void> {
+    this.rdbStore = rdbStore;
+
+    try {
+      // æ‰«æå†å²è¡¨
+      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS scan_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        member_id TEXT NOT NULL,
+        food_id TEXT NOT NULL,
+        food_name TEXT NOT NULL,
+        level TEXT NOT NULL,
+        max_amount REAL NOT NULL,
+        reasons TEXT NOT NULL,
+        scanned_at INTEGER NOT NULL
+      )`);
+
+      // é¥®é£Ÿè®°å½•è¡¨
+      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS diet_record (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        member_id TEXT NOT NULL,
+        date TEXT NOT NULL,
+        scenario TEXT,
+        food_id TEXT,
+        amount_g REAL,
+        sodium_intake REAL,
+        sugar_intake REAL,
+        calorie_intake REAL,
+        fat_intake REAL,
+        recorded_at INTEGER NOT NULL
+      )`);
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'Init tables failed: %{public}s', JSON.stringify(error));
+    }
+  }
+
+  /**
+   * ä¿å­˜æ‰«æå†å²
+   */
+  async saveScanHistory(record: ScanHistoryInput): Promise<void> {
+    if (!this.rdbStore) return;
+
+    const valueBucket: relationalStore.ValuesBucket = {
+      member_id: record.memberId,
+      food_id: record.foodId,
+      food_name: record.foodName,
+      level: record.level,
+      max_amount: record.maxAmount,
+      reasons: JSON.stringify(record.reasons),
+      scanned_at: record.scannedAt
+    };
+
+    try {
+      await this.rdbStore.insert('scan_history', valueBucket);
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'Save scan history failed: %{public}s', JSON.stringify(error));
+    }
+  }
+
+  /**
+   * ä¿å­˜é¥®é£Ÿè®°å½•
+   */
+  async saveDietRecord(record: DietRecordInput): Promise<void> {
+    if (!this.rdbStore) return;
+
+    const valueBucket: relationalStore.ValuesBucket = {
+      member_id: record.memberId,
+      date: record.date,
+      scenario: record.scenario,
+      food_id: record.foodId,
+      amount_g: record.amountG,
+      sodium_intake: record.sodiumIntake,
+      sugar_intake: record.sugarIntake,
+      calorie_intake: record.calorieIntake,
+      fat_intake: record.fatIntake,
+      recorded_at: record.recordedAt
+    };
+
+    try {
+      await this.rdbStore.insert('diet_record', valueBucket);
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'Save diet record failed: %{public}s', JSON.stringify(error));
+    }
+  }
+
+  /**
+   * æŸ¥è¯¢ä»Šæ—¥é¥®é£Ÿè®°å½•ï¼ˆç”¨äºè®¡ç®—å‰©ä½™é¢„ç®—ï¼‰
+   */
+  async getTodayDietRecords(memberId: string): Promise<DietRecord[]> {
+    if (!this.rdbStore) return [];
+
+    const today = this.getTodayDate();
+    try {
+      const predicates = new relationalStore.RdbPredicates('diet_record');
+      predicates.equalTo('member_id', memberId).equalTo('date', today);
+      const resultSet = await this.rdbStore.query(predicates);
+      const records: DietRecord[] = [];
+
+      while (resultSet.goToNextRow()) {
+        records.push(this.dietRecordFromResultSet(resultSet));
+      }
+
+      resultSet.close();
+      return records;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'Query diet records failed: %{public}s', JSON.stringify(error));
+      return [];
+    }
+  }
+
+  /**
+   * æŸ¥è¯¢æœ€è¿‘æ‰«æå†å²ï¼ˆæŒ‰æ—¶é—´å€’åºï¼‰
+   */
+  async getRecentScanHistory(limit: number = 50): Promise<ScanHistoryRecord[]> {
+    if (!this.rdbStore) return [];
+
+    try {
+      const predicates = new relationalStore.RdbPredicates('scan_history');
+      predicates.orderByDesc('scanned_at');
+      predicates.limitAs(limit);
+      const resultSet = await this.rdbStore.query(predicates);
+      const records: ScanHistoryRecord[] = [];
+
+      while (resultSet.goToNextRow()) {
+        records.push(this.scanRecordFromResultSet(resultSet));
+      }
+
+      resultSet.close();
+      return records;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'Query scan history failed: %{public}s', JSON.stringify(error));
+      return [];
+    }
+  }
+
+  /**
+   * æŸ¥è¯¢æŸæˆå‘˜çš„æ‰«æå†å²
+   */
+  async getScanHistoryByMember(memberId: string, limit: number = 20): Promise<ScanHistoryRecord[]> {
+    if (!this.rdbStore) return [];
+
+    try {
+      const predicates = new relationalStore.RdbPredicates('scan_history');
+      predicates.equalTo('member_id', memberId);
+      predicates.orderByDesc('scanned_at');
+      predicates.limitAs(limit);
+      const resultSet = await this.rdbStore.query(predicates);
+      const records: ScanHistoryRecord[] = [];
+
+      while (resultSet.goToNextRow()) {
+        records.push(this.scanRecordFromResultSet(resultSet));
+      }
+
+      resultSet.close();
+      return records;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'Query scan history by member failed: %{public}s', JSON.stringify(error));
+      return [];
+    }
+  }
+
+  /**
+   * æŸ¥è¯¢æ—¥æœŸèŒƒå›´å†…çš„é¥®é£Ÿè®°å½•ï¼ˆç”¨äºå‘¨æŠ¥ï¼‰
+   */
+  async getDietRecordsByDateRange(memberId: string, startDate: string, endDate: string): Promise<DietRecord[]> {
+    if (!this.rdbStore) return [];
+
+    try {
+      const predicates = new relationalStore.RdbPredicates('diet_record');
+      predicates.equalTo('member_id', memberId);
+      predicates.greaterThanOrEqualTo('date', startDate);
+      predicates.lessThanOrEqualTo('date', endDate);
+      predicates.orderByAsc('date');
+      const resultSet = await this.rdbStore.query(predicates);
+      const records: DietRecord[] = [];
+
+      while (resultSet.goToNextRow()) {
+        records.push(this.dietRecordFromResultSet(resultSet));
+      }
+
+      resultSet.close();
+      return records;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'Query diet records by range failed: %{public}s', JSON.stringify(error));
+      return [];
+    }
+  }
+
+  /**
+   * ç»Ÿè®¡æŸæˆå‘˜æŸæ—¥çš„é«˜ç›/é«˜ç³–/é«˜è„‚è®°å½•æ•°ï¼ˆç”¨äºå‘¨æŠ¥ï¼‰
+   */
+  async countRiskDays(memberId: string, startDate: string, endDate: string): Promise<RiskDaysResult> {
+    const records = await this.getDietRecordsByDateRange(memberId, startDate, endDate);
+    const sodiumDays = new Set<string>();
+    const sugarDays = new Set<string>();
+    const fatDays = new Set<string>();
+
+    for (const r of records) {
+      // é«˜ç›ï¼šé’ æ‘„å…¥>800mg/é¤
+      if (r.sodiumIntake > 800) sodiumDays.add(r.date);
+      // é«˜ç³–ï¼šç³–æ‘„å…¥>15g/é¤
+      if (r.sugarIntake > 15) sugarDays.add(r.date);
+      // é«˜è„‚ï¼šè„‚è‚ªæ‘„å…¥>20g/é¤
+      if (r.fatIntake > 20) fatDays.add(r.date);
+    }
+
+    const result = new RiskDaysResult();
+    result.highSodiumDays = sodiumDays.size;
+    result.highSugarDays = sugarDays.size;
+    result.highFatDays = fatDays.size;
+    result.totalRecords = records.length;
+    return result;
+  }
+
+  /**
+   * åˆ é™¤æ‰«æå†å²ï¼ˆæ¸…ç†æ—§æ•°æ®ï¼‰
+   */
+  async deleteScanHistoryBefore(timestamp: number): Promise<number> {
+    if (!this.rdbStore) return 0;
+
+    try {
+      const predicates = new relationalStore.RdbPredicates('scan_history');
+      predicates.lessThan('scanned_at', timestamp);
+      return await this.rdbStore.delete(predicates);
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'Delete old scan history failed: %{public}s', JSON.stringify(error));
+      return 0;
+    }
+  }
+
+  // ========== å†…éƒ¨æ–¹æ³• ==========
+
+  private scanRecordFromResultSet(resultSet: relationalStore.ResultSet): ScanHistoryRecord {
+    let reasons: string[] = [];
+    try {
+      reasons = JSON.parse(resultSet.getString(resultSet.getColumnIndex('reasons')) || '[]') as string[];
+    } catch (e) {
+      reasons = [];
+    }
+    const record = new ScanHistoryRecord();
+    record.id = resultSet.getLong(resultSet.getColumnIndex('id'));
+    record.memberId = resultSet.getString(resultSet.getColumnIndex('member_id'));
+    record.foodId = resultSet.getString(resultSet.getColumnIndex('food_id'));
+    record.foodName = resultSet.getString(resultSet.getColumnIndex('food_name'));
+    record.level = resultSet.getString(resultSet.getColumnIndex('level'));
+    record.maxAmount = resultSet.getDouble(resultSet.getColumnIndex('max_amount'));
+    record.reasons = reasons;
+    record.scannedAt = resultSet.getLong(resultSet.getColumnIndex('scanned_at'));
+    return record;
+  }
+
+  private dietRecordFromResultSet(resultSet: relationalStore.ResultSet): DietRecord {
+    const record = new DietRecord();
+    record.id = resultSet.getLong(resultSet.getColumnIndex('id'));
+    record.memberId = resultSet.getString(resultSet.getColumnIndex('member_id'));
+    record.date = resultSet.getString(resultSet.getColumnIndex('date'));
+    record.scenario = resultSet.getString(resultSet.getColumnIndex('scenario'));
+    record.foodId = resultSet.getString(resultSet.getColumnIndex('food_id'));
+    record.amountG = resultSet.getDouble(resultSet.getColumnIndex('amount_g'));
+    record.sodiumIntake = resultSet.getDouble(resultSet.getColumnIndex('sodium_intake'));
+    record.sugarIntake = resultSet.getDouble(resultSet.getColumnIndex('sugar_intake'));
+    record.calorieIntake = resultSet.getDouble(resultSet.getColumnIndex('calorie_intake'));
+    record.fatIntake = resultSet.getDouble(resultSet.getColumnIndex('fat_intake'));
+    record.recordedAt = resultSet.getLong(resultSet.getColumnIndex('recorded_at'));
+    return record;
+  }
+
+  private getTodayDate(): string {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  }
+}
+ÀÔrD’º@ohos.data.relationalStore«@ohos.hilogÔrE—ªassertions¨external¢id¤meta±moduleSideEffectsªresolvedByµsyntheticNamedExportsAÃÙt hvigor_ignore_E:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.data.relationalStore.d.tsAÃªoh-resolveÂEAÃÙe hvigor_ignore_E:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.hilog.d.tsAÃªoh-resolveÂ“ÔrF–§version¤fileªsourceRoot§sources¥names¨mappings´HistoryRepository.js ‘µHistoryRepository.etsÜI’”    ”  –”   ” 	” ”  ”8 .”9 /–”   ” 	” ” ” 3”  4–”   ” ”	 	” ” ”   –”   ” ” ” ” ” ””   ” ” ” ‘”  •” 	” 	” 	” 	” 	•” 
+” 
+
+” 
+” 
+” 
+•” ” ” ” ” •” ” 
+” ” ” •” ” ” ” ” •” ” ” ” ” •” ” 	” ” ” •” ” ” ” ” ’”  ” ‘” ””   ” ” ” ‘”  •” ” ” ” ” •” ” 
+” ” ” •” ” ” ” ” •” ” 
+” ” ” •” ” ” ” ” •” ” 	” ” ” •” ” ” ” ” •” ” ” ” ” •” ” ” ” ” •” ” ” ” ” •” ” ” ” ” ’”  ” ‘” ’”  ! ” !””  " ” "” "” "‘” " •” #” #
+” #” #” #•” $” $” $” $” $•” %” %
+” %” %” %•” &” &” &” &” &•” '” '” '” '” '•” (” (	” (” (” (•” )” )” )” )” )’” * ” *‘” *’”  , ” ,””  - ” -” -” -‘” - •” .” .
+” .” .” .•” /” /” /” /” /•” 0” 0
+” 0” 0” 0•” 1” 1” 1” 1” 1•” 2” 2	” 2” 2” 2•” 3” 3” 3” 3” 3•” 4” 4” 4” 4” 4•” 5” 5” 5” 5” 5•” 6” 6” 6” 6” 6•” 7” 7” 7” 7” 7’” 8 ” 8‘” 8’”  : ”	 :	””  ; ” ;” ;” ;‘” ; •” <” <” <” <”  <•” =” =” =” =” =•” >” >” >” >” >•” ?” ?” ?” ?” ?’” Ì@ ” Ì@‘” Ì@””  ÌB ” ÌB” ÌB” ÌB‘” ÌB •” ÌC
+” ÌC” ÌC6” ÌC:” ÌC;’” ÍS ” ÍS–” ÌE”	 ÌE”
+ ÌE” ÌE” ÌE” ÌE/—” ÌF” ÌF” ÌF	” ÌF” ÌF”  ÌF”! ÌF’” ÌH” ÌH’” ÌI” ÌI˜” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ”  ÌJ”* ÌJ$”+ ÌJ%“” ÌS”	 ÌS	”
+ ÌS
+’” ÌU” ÌU˜” ÌV” ÌV” ÌV” ÌV” ÌV”  ÌV”* ÌV$”+ ÌV%“” Ìb”	 Ìb	”
+ Ìb
+‘”	 Ìc”” Ìc” Ìc” Ìc” ÌcÜ ” Ìd” Ìd” Ìd” Ìd” Ìd”# Ìd”% Ìd”( Ìd"”* Ìd$”ÌJ ÌdÌD”ÌL ÌdÌF”ÌP ÌdÌJ”ÌQ ÌdÌK”ÌZ ÌdÌT”Ì[ ÌdÌU”Ì` ÌdÌZ”Ìa ÌdÌ[”Ìb ÌdÌ\”Ìc ÌdÌ]‘”	 Ìe’” Ìf” Ìf‘” Ìh‘” Ìj–” Ìk”	 Ìk”
+ Ìk” Ìk” Ìk”  Ìk0–” Ìl” Ìl” Ìl	” Ìl” Ìl” Ìl’” Ìl” Ìl”” Ìn” Ìn
+” Ìn” Ìn6–” Ìo” Ìo” Ìo” Ìo” Ìo”& Ìo –” Ìp” Ìp” Ìp” Ìp” Ìp”" Ìp–” Ìq” Ìq” Ìq” Ìq” Ìq”& Ìq –” Ìr” Ìr” Ìr” Ìr” Ìr” Ìr–” Ìs” Ìs” Ìs” Ìs” Ìs”( Ìs"›” Ìt” Ìt” Ìt” Ìt” Ìt”# Ìt”$ Ìt”* Ìt$”+ Ìt%”2 Ìt,”3 Ìt-–” Ìu” Ìu” Ìu” Ìu” Ìu”( Ìu"’”	 Ìv”
+ Ìv’” Ìx” Ìx” Ìy” Ìy” Ìy” Ìy” Ìy”  Ìy”& Ìy ”' Ìy!”5 Ìy/”7 Ìy1”ÌB Ìy<”ÌC Ìy=”ÌD Ìy>‘”	 Ìz”” Ìz” Ìz” Ìz” ÌzÜ ” Ì{” Ì{” Ì{” Ì{” Ì{”# Ì{”% Ì{”( Ì{"”* Ì{$”ÌP Ì{ÌJ”ÌR Ì{ÌL”ÌV Ì{ÌP”ÌW Ì{ÌQ”Ì` Ì{ÌZ”Ìa Ì{Ì[”Ìf Ì{Ì`”Ìg Ì{Ìa”Ìh Ì{Ìb”Ìi Ì{Ìc‘”	 Ì|’” Ì}” Ì}‘” Ì‘” Ì–” Ì‚”	 Ì‚”
+ Ì‚” Ì‚” Ì‚” Ì‚.–” Ìƒ” Ìƒ” Ìƒ	” Ìƒ” Ìƒ” Ìƒ’” Ìƒ” Ìƒ”” Ì…” Ì…
+” Ì…” Ì…6–” Ì†” Ì†” Ì†” Ì†” Ì†”& Ì† –” Ì‡” Ì‡
+” Ì‡” Ì‡” Ì‡” Ì‡–” Ìˆ” Ìˆ” Ìˆ” Ìˆ” Ìˆ”% Ìˆ–” Ì‰” Ì‰” Ì‰” Ì‰” Ì‰”" Ì‰–” ÌŠ” ÌŠ” ÌŠ” ÌŠ” ÌŠ”$ ÌŠ–” Ì‹” Ì‹” Ì‹”! Ì‹”" Ì‹”. Ì‹(–” ÌŒ” ÌŒ” ÌŒ”  ÌŒ”! ÌŒ”, ÌŒ&–” Ì” Ì” Ì”" Ì”# Ì”0 Ì*–” Ì” Ì” Ì” Ì” Ì”( Ì"–” Ì” Ì” Ì” Ì”  Ì”* Ì$’”	 Ì”
+ Ì’” Ì’” Ì’” Ì“” Ì“” Ì“” Ì“” Ì“”  Ì“”& Ì“ ”' Ì“!”4 Ì“.”6 Ì“0”ÌA Ì“;”ÌB Ì“<”ÌC Ì“=‘”	 Ì””” Ì”” Ì”” Ì”” Ì”Ü ” Ì•” Ì•” Ì•” Ì•” Ì•”# Ì•”% Ì•”( Ì•"”* Ì•$”ÌO Ì•ÌI”ÌQ Ì•ÌK”ÌU Ì•ÌO”ÌV Ì•ÌP”Ì_ Ì•ÌY”Ì` Ì•ÌZ”Ìe Ì•Ì_”Ìf Ì•Ì`”Ìg Ì•Ìa”Ìh Ì•Ìb‘”	 Ì–’” Ì—” Ì—‘” Ì™‘” Ì›–” Ìœ”	 Ìœ”
+ Ìœ” Ìœ” Ìœ”& Ìœ,–” Ì” Ì” Ì	” Ì” Ì” Ì”” Ì” Ì” Ì!” Ì"™” ÌŸ” ÌŸ
+” ÌŸ” ÌŸ” ÌŸ” ÌŸ”' ÌŸ#”) ÌŸ%”* ÌŸ&’” Ì ” Ì œ” Ì¡” Ì¡” Ì¡” Ì¡”# Ì¡”2 Ì¡,”3 Ì¡-”Ì@ Ì¡:”ÌA Ì¡;”ÌN Ì¡ÌH”ÌO Ì¡ÌI”ÌP Ì¡ÌJÜ ” Ì¢” Ì¢” Ì¢” Ì¢” Ì¢”* Ì¢$”, Ì¢&”4 Ì¢.”5 Ì¢/”6 Ì¢0”= Ì¢7”> Ì¢8”ÌD Ì¢>”ÌF Ì¢Ì@”ÌK Ì¢ÌE”ÌL Ì¢ÌF”ÌM Ì¢ÌG” Ì£” Ì£” Ì£” Ì£”$ Ì£”( Ì£"”) Ì£#”1 Ì£+”2 Ì£,”7 Ì£1”8 Ì£2”ÌB Ì£<”ÌC Ì£=”ÌD Ì£>–” Ì¤” Ì¤” Ì¤” Ì¤$” Ì¤&” Ì¤'—” Ì¦” Ì¦” Ì¦” Ì¦”( Ì¦"”* Ì¦$”, Ì¦&” Ì§” Ì§” Ì§” Ì§” Ì§”! Ì§”" Ì§”9 Ì§1”: Ì§2”ÌC Ì§;”ÌD Ì§<”ÌE Ì§=”ÌF Ì§>‘” Ì¨–” Ìª” Ìª” Ìª” Ìª” Ìª” Ìª”” Ì«” Ì«” Ì«” Ì«‘”	 Ì¬”” Ì¬” Ì¬” Ì¬” Ì¬Ü ” Ì­” Ì­” Ì­” Ì­” Ì­”# Ì­”% Ì­”( Ì­"”* Ì­$”ÌQ Ì­ÌK”ÌS Ì­ÌM”ÌW Ì­ÌQ”ÌX Ì­ÌR”Ìa Ì­Ì[”Ìb Ì­Ì\”Ìg Ì­Ìa”Ìh Ì­Ìb”Ìi Ì­Ìc”Ìj Ì­Ìd”” Ì®” Ì®” Ì®” Ì®‘”	 Ì¯’” Ì°” Ì°‘” Ì²‘” Ì´—” Ìµ”	 Ìµ”
+ Ìµ” Ìµ” Ìµ”' Ìµ-”) Ìµ/–” Ì¶” Ì¶” Ì¶	” Ì¶” Ì¶” Ì¶”” Ì¶” Ì¶” Ì¶!” Ì¶"’” Ì¸” Ì¸œ” Ì¹” Ì¹” Ì¹” Ì¹”# Ì¹”2 Ì¹,”3 Ì¹-”Ì@ Ì¹:”ÌA Ì¹;”ÌO Ì¹ÌI”ÌP Ì¹ÌJ”ÌQ Ì¹ÌK˜” Ìº” Ìº” Ìº”" Ìº”# Ìº”/ Ìº)”0 Ìº*”1 Ìº+˜” Ì»” Ì»” Ì»” Ì»” Ì»”$ Ì»”% Ì»”& Ì» ” Ì¼” Ì¼” Ì¼” Ì¼”$ Ì¼”( Ì¼"”) Ì¼#”1 Ì¼+”2 Ì¼,”7 Ì¼1”8 Ì¼2”ÌB Ì¼<”ÌC Ì¼=”ÌD Ì¼>–” Ì½” Ì½” Ì½” Ì½+” Ì½-” Ì½.—” Ì¿” Ì¿” Ì¿” Ì¿”( Ì¿"”* Ì¿$”, Ì¿&” ÌÀ” ÌÀ” ÌÀ” ÌÀ” ÌÀ”! ÌÀ”" ÌÀ”9 ÌÀ1”: ÌÀ2”ÌC ÌÀ;”ÌD ÌÀ<”ÌE ÌÀ=”ÌF ÌÀ>‘” ÌÁ–” ÌÃ” ÌÃ” ÌÃ” ÌÃ” ÌÃ” ÌÃ”” ÌÄ” ÌÄ” ÌÄ” ÌÄ‘”	 ÌÅ”” ÌÅ” ÌÅ” ÌÅ” ÌÅÜ ” ÌÆ” ÌÆ” ÌÆ” ÌÆ” ÌÆ”# ÌÆ”% ÌÆ”( ÌÆ"”* ÌÆ$”ÌQ ÌÆÌK”ÌS ÌÆÌM”ÌW ÌÆÌQ”ÌX ÌÆÌR”Ìa ÌÆÌ[”Ìb ÌÆÌ\”Ìg ÌÆÌa”Ìh ÌÆÌb”Ìi ÌÆÌc”Ìj ÌÆÌd”” ÌÇ” ÌÇ” ÌÇ” ÌÇ‘”	 ÌÈ’” ÌÉ” ÌÉ‘” ÌË‘” ÌÍ™” ÌÎ”	 ÌÎ”
+ ÌÎ”  ÌÎ”! ÌÎ”) ÌÎ/”+ ÌÎ1”3 ÌÎÌA”5 ÌÎÌC–” ÌÏ” ÌÏ” ÌÏ	” ÌÏ” ÌÏ” ÌÏ”” ÌÏ” ÌÏ” ÌÏ!” ÌÏ"’” ÌÑ” ÌÑœ” ÌÒ” ÌÒ” ÌÒ” ÌÒ”# ÌÒ”2 ÌÒ,”3 ÌÒ-”Ì@ ÌÒ:”ÌA ÌÒ;”ÌO ÌÒÌI”ÌP ÌÒÌJ”ÌQ ÌÒÌKš” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ”* ÌÓ$”, ÌÓ&”4 ÌÓ.”5 ÌÓ/”6 ÌÓ0˜” ÌÔ” ÌÔ” ÌÔ”" ÌÔ”# ÌÔ”/ ÌÔ)”0 ÌÔ*”1 ÌÔ+˜” ÌÕ” ÌÕ” ÌÕ” ÌÕ” ÌÕ”$ ÌÕ”% ÌÕ”& ÌÕ ” ÌÖ” ÌÖ” ÌÖ” ÌÖ”$ ÌÖ”( ÌÖ"”) ÌÖ#”1 ÌÖ+”2 ÌÖ,”7 ÌÖ1”8 ÌÖ2”ÌB ÌÖ<”ÌC ÌÖ=”ÌD ÌÖ>–” Ì×” Ì×” Ì×” Ì×+” Ì×-” Ì×.—” ÌÙ” ÌÙ” ÌÙ” ÌÙ”( ÌÙ"”* ÌÙ$”, ÌÙ&” ÌÚ” ÌÚ” ÌÚ” ÌÚ” ÌÚ”! ÌÚ”" ÌÚ”9 ÌÚ1”: ÌÚ2”ÌC ÌÚ;”ÌD ÌÚ<”ÌE ÌÚ=”ÌF ÌÚ>‘” ÌÛ–” Ìİ” Ìİ” Ìİ” Ìİ” Ìİ” Ìİ”” ÌŞ” ÌŞ” ÌŞ” ÌŞ‘”	 Ìß”” Ìß” Ìß” Ìß” ÌßÜ ” Ìà” Ìà” Ìà” Ìà” Ìà”# Ìà”% Ìà”( Ìà"”* Ìà$”Ì[ ÌàÌU”Ì] ÌàÌW”Ìa ÌàÌ[”Ìb ÌàÌ\”Ìk ÌàÌe”Ìl ÌàÌf”Ìq ÌàÌk”Ìr ÌàÌl”Ìs ÌàÌm”Ìt ÌàÌn”” Ìá” Ìá” Ìá” Ìá‘”	 Ìâ’” Ìã” Ìã‘” Ìå‘” Ìçš” Ìè”	 Ìè”
+ Ìè”# Ìè!”$ Ìè"”, Ìè2”. Ìè4”7 ÌèÌE”9 ÌèÌG”Ì@ ÌèÌV–” Ìé” Ìé” Ìé	” Ìé” Ìé” Ìé”” Ìé” Ìé” Ìé!” Ìé"’” Ìë” Ìëœ” Ìì” Ìì” Ìì” Ìì”# Ìì”2 Ìì,”3 Ìì-”Ì@ Ìì:”ÌA Ìì;”ÌN ÌìÌH”ÌO ÌìÌI”ÌP ÌìÌJš” Ìí” Ìí” Ìí” Ìí” Ìí”* Ìí$”, Ìí&”4 Ìí.”5 Ìí/”6 Ìí0š” Ìî” Ìî” Ìî”+ Ìî%”, Ìî&”2 Ìî,”4 Ìî.”= Ìî7”> Ìî8”? Ìî9š” Ìï” Ìï” Ìï”( Ìï"”) Ìï#”/ Ìï)”1 Ìï+”8 Ìï2”9 Ìï3”: Ìï4˜” Ìğ” Ìğ” Ìğ”! Ìğ”" Ìğ”( Ìğ"”) Ìğ#”* Ìğ$” Ìñ” Ìñ” Ìñ” Ìñ”$ Ìñ”( Ìñ"”) Ìñ#”1 Ìñ+”2 Ìñ,”7 Ìñ1”8 Ìñ2”ÌB Ìñ<”ÌC Ìñ=”ÌD Ìñ>–” Ìò” Ìò” Ìò” Ìò$” Ìò&” Ìò'—” Ìô” Ìô” Ìô” Ìô”( Ìô"”* Ìô$”, Ìô&” Ìõ” Ìõ” Ìõ” Ìõ” Ìõ”! Ìõ”" Ìõ”9 Ìõ1”: Ìõ2”ÌC Ìõ;”ÌD Ìõ<”ÌE Ìõ=”ÌF Ìõ>‘” Ìö–” Ìø” Ìø” Ìø” Ìø” Ìø” Ìø”” Ìù” Ìù” Ìù” Ìù‘”	 Ìú”” Ìú” Ìú” Ìú” ÌúÜ ” Ìû” Ìû” Ìû” Ìû” Ìû”# Ìû”% Ìû”( Ìû"”* Ìû$”ÌZ ÌûÌT”Ì\ ÌûÌV”Ì` ÌûÌZ”Ìa ÌûÌ[”Ìj ÌûÌd”Ìk ÌûÌe”Ìp ÌûÌj”Ìq ÌûÌk”Ìr ÌûÌl”Ìs ÌûÌm”” Ìü” Ìü” Ìü” Ìü‘”	 Ìı’” Ìş” Ìş‘” Í ‘” Íš” Í”	 Í”
+ Í” Í” Í”  Í&”" Í(”+ Í9”- Í;”4 ÍÌJÜ ” Í” Í
+” Í” Í” Í”" Í”# Í”< Í8”= Í9”ÌE ÍÌA”ÌG ÍÌC”ÌP ÍÌL”ÌR ÍÌN”ÌY ÍÌU”ÌZ ÍÌV”Ì[ ÍÌW˜” Í” Í
+” Í” Í” Í”" Í”$ Í(”% Í)˜” Í” Í
+” Í” Í” Í”! Í”# Í'”$ Í(˜” Í” Í
+” Í” Í” Í” Í”! Í%”" Í&—” Í	” Í		” Í	” Í	” Í	” Í	”! Í	’” Í
+” Í
+—” Í” Í
+” Í” Í” Í”! Í”$ Íš” Í ” Í*” Í+” Í.” Í/”  Í0”! Í1”% Í5”& Í6”' Í7’” Í” Í—” Í” Í
+” Í” Í” Í”  Í”" Íš” Í” Í'” Í(” Í+” Í,” Í-”  Í.”$ Í2”% Í3”& Í4’” Í” Í—” Í” Í
+” Í” Í” Í” Í”  Íš” Í” Í#” Í$” Í'” Í(” Í)” Í*”" Í.”# Í/”$ Í0‘”	 Í˜” Í” Í
+” Í” Í” Í”) Í%”+ Í'”, Í(™” Í” Í
+” Í” Í”  Í”* Í&”+ Í'”/ Í+”0 Í,™” Í” Í
+” Í” Í” Í”( Í$”) Í%”- Í)”. Í*™” Í” Í
+” Í” Í” Í”$ Í ”% Í!”) Í%”* Í&™” Í” Í
+” Í” Í” Í”% Í!”& Í"”, Í(”- Í)”” Í” Í” Í” Í’” Í” Í‘” Í‘” Í–” Í”	 Í”
+ Í”! Í”" Í ”+ Í1–” Í” Í” Í	” Í” Í” Í”” Í” Í” Í ” Í!’” Í ” Í œ” Í!” Í!” Í!” Í!”# Í!”2 Í!,”3 Í!-”Ì@ Í!:”ÌA Í!;”ÌO Í!ÌI”ÌP Í!ÌJ”ÌQ Í!ÌKš” Í"” Í"” Í"” Í"”  Í"”, Í"&”. Í"(”7 Í"1”8 Í"2”9 Í"3œ” Í#” Í#” Í#” Í#” Í#”& Í# ”' Í#!”- Í#'”. Í#(”8 Í#2”9 Í#3”: Í#4‘”	 Í$”” Í$” Í$” Í$” Í$Ü ” Í%” Í%” Í%” Í%” Í%”# Í%”% Í%”( Í%"”* Í%$”ÌV Í%ÌP”ÌX Í%ÌR”Ì\ Í%ÌV”Ì] Í%ÌW”Ìf Í%Ì`”Ìg Í%Ìa”Ìl Í%Ìf”Ìm Í%Ìg”Ìn Í%Ìh”Ìo Í%Ìi”” Í&” Í&” Í&” Í&‘”	 Í'’” Í(” Í(’” Í*”! Í*”” Í,
+” Í,!” Í,"”% Í,ÌF–” Í-” Í-” Í-” Í-” Í-” Í-’” Í.” Í.Ü ” Í/” Í/” Í/” Í/” Í/”  Í/”! Í/”* Í/$”+ Í/%”4 Í/.”5 Í//”> Í/8”? Í/9”ÌM Í/ÌG”ÌN Í/ÌH”ÌW Í/ÌQ”ÌX Í/ÌR”ÌY Í/ÌS”Ì] Í/ÌW”Ìa Í/Ì[”Ìb Í/Ìh”Ìc Í/Ìi‘”	 Í0”” Í0” Í0” Í0” Í0•” Í1” Í1” Í1” Í1” Í1‘”	 Í2˜” Í3” Í3
+” Í3” Í3” Í3”, Í3(”. Í3*”/ Í3+Ü ” Í4” Í4
+” Í4” Í4” Í4” Í4” Í4”% Í4!”& Í4"”/ Í4+”0 Í4,”> Í4:”? Í4;”ÌC Í4?”ÌD Í4Ì@”ÌE Í4ÌA”ÌF Í4ÌBÜ ” Í5” Í5
+” Í5” Í5” Í5”# Í5”$ Í5 ”- Í5)”. Í5*”7 Í53”8 Í54”ÌF Í5ÌB”ÌG Í5ÌC”ÌR Í5ÌN”ÌS Í5ÌO”ÌT Í5ÌP”ÌU Í5ÌQÜ ” Í6” Í6
+” Í6” Í6” Í6”! Í6”" Í6”+ Í6'”, Í6(”5 Í61”6 Í62”ÌD Í6Ì@”ÌE Í6ÌA”ÌN Í6ÌJ”ÌO Í6ÌK”ÌP Í6ÌL”ÌQ Í6ÌMÜ ” Í7” Í7
+” Í7” Í7” Í7”# Í7”$ Í7 ”- Í7)”. Í7*”7 Í73”8 Í74”ÌF Í7ÌB”ÌG Í7ÌC”ÌR Í7ÌN”ÌS Í7ÌO”ÌT Í7ÌP”ÌU Í7ÌQÜ ” Í8” Í8
+” Í8” Í8” Í8”  Í8”! Í8”* Í8&”+ Í8'”4 Í80”5 Í81”ÌC Í8?”ÌD Í8Ì@”ÌK Í8ÌG”ÌL Í8ÌH”ÌM Í8ÌI”ÌN Í8ÌJÜ ” Í9” Í9
+” Í9” Í9” Í9”$ Í9 ”% Í9!”. Í9*”/ Í9+”8 Í94”9 Í95”ÌG Í9ÌC”ÌH Í9ÌD”ÌT Í9ÌP”ÌU Í9ÌQ”ÌV Í9ÌR”ÌW Í9ÌS—” Í:” Í:
+” Í:” Í:” Í:”  Í:”! Í:Ü ” Í;” Í;
+” Í;” Í;” Í;”$ Í; ”% Í;!”, Í;(”- Í;)”6 Í;2”7 Í;3”ÌE Í;ÌA”ÌF Í;ÌB”ÌR Í;ÌN”ÌS Í;ÌO”ÌT Í;ÌP”ÌU Í;ÌQ”” Í<” Í<” Í<” Í<’” Í=” Í=”” Í?
+” Í?!” Í?"”% Í?ÌF˜” Í@” Í@
+” Í@” Í@” Í@”% Í@!”' Í@#”( Í@$Ü ” ÍA” ÍA
+” ÍA” ÍA” ÍA” ÍA” ÍA”% ÍA!”& ÍA"”/ ÍA+”0 ÍA,”> ÍA:”? ÍA;”ÌC ÍA?”ÌD ÍAÌ@”ÌE ÍAÌA”ÌF ÍAÌBÜ ” ÍB” ÍB
+” ÍB” ÍB” ÍB”# ÍB”$ ÍB ”- ÍB)”. ÍB*”7 ÍB3”8 ÍB4”ÌF ÍBÌB”ÌG ÍBÌC”ÌR ÍBÌN”ÌS ÍBÌO”ÌT ÍBÌP”ÌU ÍBÌQÜ ” ÍC” ÍC
+” ÍC” ÍC” ÍC” ÍC”  ÍC”) ÍC%”* ÍC&”3 ÍC/”4 ÍC0”ÌB ÍC>”ÌC ÍC?”ÌI ÍCÌE”ÌJ ÍCÌF”ÌK ÍCÌG”ÌL ÍCÌHÜ ” ÍD” ÍD
+” ÍD” ÍD” ÍD”# ÍD”$ ÍD ”- ÍD)”. ÍD*”7 ÍD3”8 ÍD4”ÌF ÍDÌB”ÌG ÍDÌC”ÌQ ÍDÌM”ÌR ÍDÌN”ÌS ÍDÌO”ÌT ÍDÌPÜ ” ÍE” ÍE
+” ÍE” ÍE” ÍE”! ÍE”" ÍE”+ ÍE'”, ÍE(”5 ÍE1”6 ÍE2”ÌD ÍEÌ@”ÌE ÍEÌA”ÌN ÍEÌJ”ÌO ÍEÌK”ÌP ÍEÌL”ÌQ ÍEÌMÜ ” ÍF” ÍF
+” ÍF” ÍF” ÍF”" ÍF”# ÍF”, ÍF(”- ÍF)”6 ÍF2”7 ÍF3”ÌE ÍFÌA”ÌF ÍFÌB”ÌP ÍFÌL”ÌQ ÍFÌM”ÌR ÍFÌN”ÌS ÍFÌOÜ ” ÍG” ÍG
+” ÍG” ÍG” ÍG”' ÍG#”( ÍG$”1 ÍG-”2 ÍG.”; ÍG7”< ÍG8”ÌJ ÍGÌF”ÌK ÍGÌG”ÌZ ÍGÌV”Ì[ ÍGÌW”Ì\ ÍGÌX”Ì] ÍGÌYÜ ” ÍH” ÍH
+” ÍH” ÍH” ÍH”& ÍH"”' ÍH#”0 ÍH,”1 ÍH-”: ÍH6”; ÍH7”ÌI ÍHÌE”ÌJ ÍHÌF”ÌX ÍHÌT”ÌY ÍHÌU”ÌZ ÍHÌV”Ì[ ÍHÌWÜ ” ÍI” ÍI
+” ÍI” ÍI” ÍI”( ÍI$”) ÍI%”2 ÍI.”3 ÍI/”< ÍI8”= ÍI9”ÌK ÍIÌG”ÌL ÍIÌH”Ì\ ÍIÌX”Ì] ÍIÌY”Ì^ ÍIÌZ”Ì_ ÍIÌ[Ü ” ÍJ” ÍJ
+” ÍJ” ÍJ” ÍJ”$ ÍJ ”% ÍJ!”. ÍJ*”/ ÍJ+”8 ÍJ4”9 ÍJ5”ÌG ÍJÌC”ÌH ÍJÌD”ÌT ÍJÌP”ÌU ÍJÌQ”ÌV ÍJÌR”ÌW ÍJÌSÜ ” ÍK” ÍK
+” ÍK” ÍK” ÍK”% ÍK!”& ÍK"”- ÍK)”. ÍK*”7 ÍK3”8 ÍK4”ÌF ÍKÌB”ÌG ÍKÌC”ÌT ÍKÌP”ÌU ÍKÌQ”ÌV ÍKÌR”ÌW ÍKÌS”” ÍL” ÍL” ÍL” ÍL’” ÍM” ÍM’” ÍO
+” ÍO˜” ÍP” ÍP
+” ÍP” ÍP” ÍP” ÍP” ÍP” ÍPÜ )” ÍQ” ÍQ” ÍQ” ÍQ” ÍQ”! ÍQ”# ÍQ”' ÍQ#”- ÍQ)”. ÍQ*”1 ÍQ-”2 ÍQ.”: ÍQ6”< ÍQ8”? ÍQ;”Ì@ ÍQ<”ÌA ÍQ=”ÌB ÍQ>”ÌJ ÍQÌF”ÌK ÍQÌG”ÌL ÍQÌH”ÌN ÍQÌJ”ÌQ ÍQÌM”ÌR ÍQÌN”ÌV ÍQÌR”Ì\ ÍQÌX”Ì] ÍQÌY”Ì` ÍQÌ\”Ìa ÍQÌ]”Ìh ÍQÌd”Ìj ÍQÌf”Ìk ÍQÌg”Ìl ÍQÌh”Ìt ÍQÌp”Ìu ÍQÌq”Ìv ÍQÌr”Ìx ÍQÌt”Ì{ ÍQÌw”Ì| ÍQÌx”Ì~ ÍQÌz”Ì ÍQÌ{’” ÍR” ÍR‘” ÍSÔrG–§version¤file§sources®sourcesContent¥names¨mappingsÀ‘À‘ÀÜJ‘”    ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”  	 ‘”  
+ ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”    ‘”  ! ‘”  " ‘”  # ‘”  $ ‘”  % ‘”  & ‘”  ' ‘”  ( ‘”  ) ‘”  * ‘”  + ‘”  , ‘”  - ‘”  . ‘”  / ‘”  0 ‘”  1 ‘”  2 ‘”  3 ‘”  4 ‘”  5 ‘”  6 ‘”  7 ‘”  8 ‘”  9 ‘”  : ‘”  ; ‘”  < ‘”  = ‘”  > ‘”  ? ‘”  Ì@ ‘”  ÌA ‘”  ÌB ‘”  ÌC ‘”  ÌD ‘”  ÌE ‘”  ÌF ‘”  ÌG ‘”  ÌH ‘”  ÌI ‘”  ÌJ ‘”  ÌK ‘”  ÌL ‘”  ÌM ‘”  ÌN ‘”  ÌO ‘”  ÌP ‘”  ÌQ ‘”  ÌR ‘”  ÌS ‘”  ÌT ‘”  ÌU ‘”  ÌV ‘”  ÌW ‘”  ÌX ‘”  ÌY ‘”  ÌZ ‘”  Ì[ ‘”  Ì\ ‘”  Ì] ‘”  Ì^ ‘”  Ì_ ‘”  Ì` ‘”  Ìa ‘”  Ìb ‘”  Ìc ‘”  Ìd ‘”  Ìe ‘”  Ìf ‘”  Ìg ‘”  Ìh ‘”  Ìi ‘”  Ìj ‘”  Ìk ‘”  Ìl ‘”  Ìm ‘”  Ìn ‘”  Ìo ‘”  Ìp ‘”  Ìq ‘”  Ìr ‘”  Ìs ‘”  Ìt ‘”  Ìu ‘”  Ìv ‘”  Ìw ‘”  Ìx ‘”  Ìy ‘”  Ìz ‘”  Ì{ ‘”  Ì| ‘”  Ì} ‘”  Ì~ ‘”  Ì ‘”  Ì€ ‘”  Ì ‘”  Ì‚ ‘”  Ìƒ ‘”  Ì„ ‘”  Ì… ‘”  Ì† ‘”  Ì‡ ‘”  Ìˆ ‘”  Ì‰ ‘”  ÌŠ ‘”  Ì‹ ‘”  ÌŒ ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì‘ ‘”  Ì’ ‘”  Ì“ ‘”  Ì” ‘”  Ì• ‘”  Ì– ‘”  Ì— ‘”  Ì˜ ‘”  Ì™ ‘”  Ìš ‘”  Ì› ‘”  Ìœ ‘”  Ì ‘”  Ì ‘”  ÌŸ ‘”  Ì  ‘”  Ì¡ ‘”  Ì¢ ‘”  Ì£ ‘”  Ì¤ ‘”  Ì¥ ‘”  Ì¦ ‘”  Ì§ ‘”  Ì¨ ‘”  Ì© ‘”  Ìª ‘”  Ì« ‘”  Ì¬ ‘”  Ì­ ‘”  Ì® ‘”  Ì¯ ‘”  Ì° ‘”  Ì± ‘”  Ì² ‘”  Ì³ ‘”  Ì´ ‘”  Ìµ ‘”  Ì¶ ‘”  Ì· ‘”  Ì¸ ‘”  Ì¹ ‘”  Ìº ‘”  Ì» ‘”  Ì¼ ‘”  Ì½ ‘”  Ì¾ ‘”  Ì¿ ‘”  ÌÀ ‘”  ÌÁ ‘”  ÌÂ ‘”  ÌÃ ‘”  ÌÄ ‘”  ÌÅ ‘”  ÌÆ ‘”  ÌÇ ‘”  ÌÈ ‘”  ÌÉ ‘”  ÌÊ ‘”  ÌË ‘”  ÌÌ ‘”  ÌÍ ‘”  ÌÎ ‘”  ÌÏ ‘”  ÌĞ ‘”  ÌÑ ‘”  ÌÒ ‘”  ÌÓ ‘”  ÌÔ ‘”  ÌÕ ‘”  ÌÖ ‘”  Ì× ‘”  ÌØ ‘”  ÌÙ ‘”  ÌÚ ‘”  ÌÛ ‘”  ÌÜ ‘”  Ìİ ‘”  ÌŞ ‘”  Ìß ‘”  Ìà ‘”  Ìá ‘”  Ìâ ‘”  Ìã ‘”  Ìä ‘”  Ìå ‘”  Ìæ ‘”  Ìç ‘”  Ìè ‘”  Ìé ‘”  Ìê ‘”  Ìë ‘”  Ìì ‘”  Ìí ‘”  Ìî ‘”  Ìï ‘”  Ìğ ‘”  Ìñ ‘”  Ìò ‘”  Ìó ‘”  Ìô ‘”  Ìõ ‘”  Ìö ‘”  Ì÷ ‘”  Ìø ‘”  Ìù ‘”  Ìú ‘”  Ìû ‘”  Ìü ‘”  Ìı ‘”  Ìş ‘”  Ìÿ ‘”  Í  ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í	 ‘”  Í
+ ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í  ‘”  Í! ‘”  Í" ‘”  Í# ‘”  Í$ ‘”  Í% ‘”  Í& ‘”  Í' ‘”  Í( ‘”  Í) ‘”  Í* ‘”  Í+ ‘”  Í, ‘”  Í- ‘”  Í. ‘”  Í/ ‘”  Í0 ‘”  Í1 ‘”  Í2 ‘”  Í3 ‘”  Í4 ‘”  Í5 ‘”  Í6 ‘”  Í7 ‘”  Í8 ‘”  Í9 ‘”  Í: ‘”  Í; ‘”  Í< ‘”  Í= ‘”  Í> ‘”  Í? ‘”  Í@ ‘”  ÍA ‘”  ÍB ‘”  ÍC ‘”  ÍD ‘”  ÍE ‘”  ÍF ‘”  ÍG ‘”  ÍH ‘”  ÍI ÔrH’§missing¦pluginÃ¦genAbcÂÔ  ÔrI”²dynamicImportCache¹exportAllDeclarationCache»exportNamedDeclarationCache«importCache–ÔrJ–¤type¥start£end«declarationªspecifiers¦source¶ExportNamedDeclarationÌ°ÍÊÔrK–¤type¥start£end¢idªsuperClass¤body°ClassDeclarationÌ·ÍÊÔrL”¤type¥start£end¤nameªIdentifierÌ½ÌÎ±ScanHistoryRecordÀÔrM”¤type¥start£end¤body©ClassBodyÌÏÍÊ‘ÔrN˜¤type¥start£end¦static¨computed£key¤kind¥value°MethodDefinitionÌÖÍÇÂÂLªIdentifierÌÖÌá«constructor«constructorÔrO™¤type¥start£end¢idªexpression©generator¥async¦params¤body²FunctionExpressionÌáÍÇÀÂÂÂM®BlockStatementÌäÍÇ˜ÔrP”¤type¥start£endªexpression³ExpressionStatementÌïÌûÔrQ–¤type¥start£end¨operator¤left¥right´AssignmentExpressionÌïÌú¡=ÔrR—¤type¥start£end¦object¨property¨computed¨optional°MemberExpressionÌïÌöÔrS“¤type¥start£end®ThisExpressionÌïÌóLªIdentifierÌôÌö¢idÂÂÔrT•¤type¥start£end¥value£raw§LiteralÌùÌú ¡0P³ExpressionStatementÍÍQ´AssignmentExpressionÍÍ¡=R°MemberExpressionÍÍS®ThisExpressionÍÍ	LªIdentifierÍ
+Í¨memberIdÂÂT§LiteralÍÍ ¢''P³ExpressionStatementÍ"Í3Q´AssignmentExpressionÍ"Í2¡=R°MemberExpressionÍ"Í-S®ThisExpressionÍ"Í&LªIdentifierÍ'Í-¦foodIdÂÂT§LiteralÍ0Í2 ¢''P³ExpressionStatementÍ=ÍPQ´AssignmentExpressionÍ=ÍO¡=R°MemberExpressionÍ=ÍJS®ThisExpressionÍ=ÍALªIdentifierÍBÍJ¨foodNameÂÂT§LiteralÍMÍO ¢''P³ExpressionStatementÍZÍjQ´AssignmentExpressionÍZÍi¡=R°MemberExpressionÍZÍdS®ThisExpressionÍZÍ^LªIdentifierÍ_Íd¥levelÂÂT§LiteralÍgÍi ¢''P³ExpressionStatementÍtÍ‡Q´AssignmentExpressionÍtÍ†¡=R°MemberExpressionÍtÍ‚S®ThisExpressionÍtÍxLªIdentifierÍyÍ‚©maxAmountÂÂT§LiteralÍ…Í† ¡0P³ExpressionStatementÍ‘Í£Q´AssignmentExpressionÍ‘Í¢¡=R°MemberExpressionÍ‘ÍS®ThisExpressionÍ‘Í•LªIdentifierÍ–Í§reasonsÂÂÔrU”¤type¥start£end¨elements¯ArrayExpressionÍ Í¢P³ExpressionStatementÍ­ÍÀQ´AssignmentExpressionÍ­Í¿¡=R°MemberExpressionÍ­Í»S®ThisExpressionÍ­Í±LªIdentifierÍ²Í»©scannedAtÂÂT§LiteralÍ¾Í¿ ¡0ÀJ¶ExportNamedDeclarationÍÌÍ>K°ClassDeclarationÍÓÍ>LªIdentifierÍÙÍãªDietRecordÀM©ClassBodyÍäÍ>‘N°MethodDefinitionÍëÍ;ÂÂLªIdentifierÍëÍö«constructor«constructorO²FunctionExpressionÍöÍ;ÀÂÂÂM®BlockStatementÍùÍ;›P³ExpressionStatementÍÍQ´AssignmentExpressionÍÍ¡=R°MemberExpressionÍÍS®ThisExpressionÍÍLªIdentifierÍ	Í¢idÂÂT§LiteralÍÍ ¡0P³ExpressionStatementÍÍ-Q´AssignmentExpressionÍÍ,¡=R°MemberExpressionÍÍ'S®ThisExpressionÍÍLªIdentifierÍÍ'¨memberIdÂÂT§LiteralÍ*Í, ¢''P³ExpressionStatementÍ7ÍFQ´AssignmentExpressionÍ7ÍE¡=R°MemberExpressionÍ7Í@S®ThisExpressionÍ7Í;LªIdentifierÍ<Í@¤dateÂÂT§LiteralÍCÍE ¢''P³ExpressionStatementÍPÍcQ´AssignmentExpressionÍPÍb¡=R°MemberExpressionÍPÍ]S®ThisExpressionÍPÍTLªIdentifierÍUÍ]¨scenarioÂÂT§LiteralÍ`Íb ¢''P³ExpressionStatementÍmÍ~Q´AssignmentExpressionÍmÍ}¡=R°MemberExpressionÍmÍxS®ThisExpressionÍmÍqLªIdentifierÍrÍx¦foodIdÂÂT§LiteralÍ{Í} ¢''P³ExpressionStatementÍˆÍ™Q´AssignmentExpressionÍˆÍ˜¡=R°MemberExpressionÍˆÍ”S®ThisExpressionÍˆÍŒLªIdentifierÍÍ”§amountGÂÂT§LiteralÍ—Í˜ ¡0P³ExpressionStatementÍ£Í¹Q´AssignmentExpressionÍ£Í¸¡=R°MemberExpressionÍ£Í´S®ThisExpressionÍ£Í§LªIdentifierÍ¨Í´¬sodiumIntakeÂÂT§LiteralÍ·Í¸ ¡0P³ExpressionStatementÍÃÍØQ´AssignmentExpressionÍÃÍ×¡=R°MemberExpressionÍÃÍÓS®ThisExpressionÍÃÍÇLªIdentifierÍÈÍÓ«sugarIntakeÂÂT§LiteralÍÖÍ× ¡0P³ExpressionStatementÍâÍùQ´AssignmentExpressionÍâÍø¡=R°MemberExpressionÍâÍôS®ThisExpressionÍâÍæLªIdentifierÍçÍô­calorieIntakeÂÂT§LiteralÍ÷Íø ¡0P³ExpressionStatementÍÍQ´AssignmentExpressionÍÍ¡=R°MemberExpressionÍÍS®ThisExpressionÍÍLªIdentifierÍÍ©fatIntakeÂÂT§LiteralÍÍ ¡0P³ExpressionStatementÍ Í4Q´AssignmentExpressionÍ Í3¡=R°MemberExpressionÍ Í/S®ThisExpressionÍ Í$LªIdentifierÍ%Í/ªrecordedAtÂÂT§LiteralÍ2Í3 ¡0ÀJ¶ExportNamedDeclarationÍXÍ[K°ClassDeclarationÍ_Í[LªIdentifierÍeÍu°ScanHistoryInputÀM©ClassBodyÍvÍ[‘N°MethodDefinitionÍ}ÍXÂÂLªIdentifierÍ}Íˆ«constructor«constructorO²FunctionExpressionÍˆÍXÀÂÂÂM®BlockStatementÍ‹ÍX—P³ExpressionStatementÍ–Í©Q´AssignmentExpressionÍ–Í¨¡=R°MemberExpressionÍ–Í£S®ThisExpressionÍ–ÍšLªIdentifierÍ›Í£¨memberIdÂÂT§LiteralÍ¦Í¨ ¢''P³ExpressionStatementÍ³ÍÄQ´AssignmentExpressionÍ³ÍÃ¡=R°MemberExpressionÍ³Í¾S®ThisExpressionÍ³Í·LªIdentifierÍ¸Í¾¦foodIdÂÂT§LiteralÍÁÍÃ ¢''P³ExpressionStatementÍÎÍáQ´AssignmentExpressionÍÎÍà¡=R°MemberExpressionÍÎÍÛS®ThisExpressionÍÎÍÒLªIdentifierÍÓÍÛ¨foodNameÂÂT§LiteralÍŞÍà ¢''P³ExpressionStatementÍëÍûQ´AssignmentExpressionÍëÍú¡=R°MemberExpressionÍëÍõS®ThisExpressionÍëÍïLªIdentifierÍğÍõ¥levelÂÂT§LiteralÍøÍú ¢''P³ExpressionStatementÍÍQ´AssignmentExpressionÍÍ¡=R°MemberExpressionÍÍS®ThisExpressionÍÍ	LªIdentifierÍ
+Í©maxAmountÂÂT§LiteralÍÍ ¡0P³ExpressionStatementÍ"Í4Q´AssignmentExpressionÍ"Í3¡=R°MemberExpressionÍ"Í.S®ThisExpressionÍ"Í&LªIdentifierÍ'Í.§reasonsÂÂU¯ArrayExpressionÍ1Í3P³ExpressionStatementÍ>ÍQQ´AssignmentExpressionÍ>ÍP¡=R°MemberExpressionÍ>ÍLS®ThisExpressionÍ>ÍBLªIdentifierÍCÍL©scannedAtÂÂT§LiteralÍOÍP ¡0ÀJ¶ExportNamedDeclarationÍuÍÖK°ClassDeclarationÍ|ÍÖLªIdentifierÍ‚Í‘¯DietRecordInputÀM©ClassBodyÍ’ÍÖ‘N°MethodDefinitionÍ™ÍÓÂÂLªIdentifierÍ™Í¤«constructor«constructorO²FunctionExpressionÍ¤ÍÓÀÂÂÂM®BlockStatementÍ§ÍÓšP³ExpressionStatementÍ²ÍÅQ´AssignmentExpressionÍ²ÍÄ¡=R°MemberExpressionÍ²Í¿S®ThisExpressionÍ²Í¶LªIdentifierÍ·Í¿¨memberIdÂÂT§LiteralÍÂÍÄ ¢''P³ExpressionStatementÍÏÍŞQ´AssignmentExpressionÍÏÍİ¡=R°MemberExpressionÍÏÍØS®ThisExpressionÍÏÍÓLªIdentifierÍÔÍØ¤dateÂÂT§LiteralÍÛÍİ ¢''P³ExpressionStatementÍèÍûQ´AssignmentExpressionÍèÍú¡=R°MemberExpressionÍèÍõS®ThisExpressionÍèÍìLªIdentifierÍíÍõ¨scenarioÂÂT§LiteralÍøÍú ¢''P³ExpressionStatementÍÍQ´AssignmentExpressionÍÍ¡=R°MemberExpressionÍÍS®ThisExpressionÍÍ	LªIdentifierÍ
+Í¦foodIdÂÂT§LiteralÍÍ ¢''P³ExpressionStatementÍ Í1Q´AssignmentExpressionÍ Í0¡=R°MemberExpressionÍ Í,S®ThisExpressionÍ Í$LªIdentifierÍ%Í,§amountGÂÂT§LiteralÍ/Í0 ¡0P³ExpressionStatementÍ;ÍQQ´AssignmentExpressionÍ;ÍP¡=R°MemberExpressionÍ;ÍLS®ThisExpressionÍ;Í?LªIdentifierÍ@ÍL¬sodiumIntakeÂÂT§LiteralÍOÍP ¡0P³ExpressionStatementÍ[ÍpQ´AssignmentExpressionÍ[Ío¡=R°MemberExpressionÍ[ÍkS®ThisExpressionÍ[Í_LªIdentifierÍ`Ík«sugarIntakeÂÂT§LiteralÍnÍo ¡0P³ExpressionStatementÍzÍ‘Q´AssignmentExpressionÍzÍ¡=R°MemberExpressionÍzÍŒS®ThisExpressionÍzÍ~LªIdentifierÍÍŒ­calorieIntakeÂÂT§LiteralÍÍ ¡0P³ExpressionStatementÍ›Í®Q´AssignmentExpressionÍ›Í­¡=R°MemberExpressionÍ›Í©S®ThisExpressionÍ›ÍŸLªIdentifierÍ Í©©fatIntakeÂÂT§LiteralÍ¬Í­ ¡0P³ExpressionStatementÍ¸ÍÌQ´AssignmentExpressionÍ¸ÍË¡=R°MemberExpressionÍ¸ÍÇS®ThisExpressionÍ¸Í¼LªIdentifierÍ½ÍÇªrecordedAtÂÂT§LiteralÍÊÍË ¡0ÀJ¶ExportNamedDeclarationÍãÍ¡K°ClassDeclarationÍêÍ¡LªIdentifierÍğÍş®RiskDaysResultÀM©ClassBodyÍÿÍ¡‘N°MethodDefinitionÍÍÂÂLªIdentifierÍÍ«constructor«constructorO²FunctionExpressionÍÍÀÂÂÂM®BlockStatementÍÍ”P³ExpressionStatementÍÍ7Q´AssignmentExpressionÍÍ6¡=R°MemberExpressionÍÍ2S®ThisExpressionÍÍ#LªIdentifierÍ$Í2®highSodiumDaysÂÂT§LiteralÍ5Í6 ¡0P³ExpressionStatementÍAÍXQ´AssignmentExpressionÍAÍW¡=R°MemberExpressionÍAÍSS®ThisExpressionÍAÍELªIdentifierÍFÍS­highSugarDaysÂÂT§LiteralÍVÍW ¡0P³ExpressionStatementÍbÍwQ´AssignmentExpressionÍbÍv¡=R°MemberExpressionÍbÍrS®ThisExpressionÍbÍfLªIdentifierÍgÍr«highFatDaysÂÂT§LiteralÍuÍv ¡0P³ExpressionStatementÍÍ—Q´AssignmentExpressionÍÍ–¡=R°MemberExpressionÍÍ’S®ThisExpressionÍÍ…LªIdentifierÍ†Í’¬totalRecordsÂÂT§LiteralÍ•Í– ¡0ÀJ¶ExportNamedDeclarationÍ£Í-K°ClassDeclarationÍªÍ-LªIdentifierÍ°ÍÁ±HistoryRepositoryÀM©ClassBodyÍÂÍ-N°MethodDefinitionÍÉÍşÂÂLªIdentifierÍÉÍÔ«constructor«constructorO²FunctionExpressionÍÔÍşÀÂÂÂM®BlockStatementÍ×Íş‘P³ExpressionStatementÍâÍ÷Q´AssignmentExpressionÍâÍö¡=R°MemberExpressionÍâÍïS®ThisExpressionÍâÍæLªIdentifierÍçÍï¨rdbStoreÂÂT§LiteralÍòÍöÀ¤nullN°MethodDefinitionÍÍ(ÂÂLªIdentifierÍ
+Í¤init¦methodO²FunctionExpressionÍÍ(ÀÂÂÃ‘LªIdentifierÍÍ¨rdbStoreM®BlockStatementÍÍ(’P³ExpressionStatementÍ$Í=Q´AssignmentExpressionÍ$Í<¡=R°MemberExpressionÍ$Í1S®ThisExpressionÍ$Í(LªIdentifierÍ)Í1¨rdbStoreÂÂLªIdentifierÍ4Í<¨rdbStoreÔrV–¤type¥start£end¥block§handler©finalizer¬TryStatementÍGÍ!M®BlockStatementÍKÍ
+˜’P³ExpressionStatementÍpÍÕÔrW”¤type¥start£end¨argument¯AwaitExpressionÍpÍÔÔrX–¤type¥start£end¦callee©arguments¨optional®CallExpressionÍvÍÔR°MemberExpressionÍvÍR°MemberExpressionÍvÍƒS®ThisExpressionÍvÍzLªIdentifierÍ{Íƒ¨rdbStoreÂÂLªIdentifierÍ„ÍªexecuteSqlÂÂ‘ÔrY•¤type¥start£end«expressions¦quasis¯TemplateLiteralÍÍÓ‘ÔrZ•¤type¥start£end¥value¤tail¯TemplateElementÍÍÒÔr[’£raw¦cookedÚBCREATE TABLE IF NOT EXISTS scan_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        member_id TEXT NOT NULL,
+        food_id TEXT NOT NULL,
+        food_name TEXT NOT NULL,
+        level TEXT NOT NULL,
+        max_amount REAL NOT NULL,
+        reasons TEXT NOT NULL,
+        scanned_at INTEGER NOT NULL
+      )ÚBCREATE TABLE IF NOT EXISTS scan_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        member_id TEXT NOT NULL,
+        food_id TEXT NOT NULL,
+        food_name TEXT NOT NULL,
+        level TEXT NOT NULL,
+        max_amount REAL NOT NULL,
+        reasons TEXT NOT NULL,
+        scanned_at INTEGER NOT NULL
+      )ÃÂP³ExpressionStatementÍùÍ
+W¯AwaitExpressionÍùÍ
+ŒX®CallExpressionÍÿÍ
+ŒR°MemberExpressionÍÿÍ	R°MemberExpressionÍÿÍ	S®ThisExpressionÍÿÍ	LªIdentifierÍ	Í	¨rdbStoreÂÂLªIdentifierÍ	Í	ªexecuteSqlÂÂ‘Y¯TemplateLiteralÍ	Í
+‹‘Z¯TemplateElementÍ	Í
+Š[ÚqCREATE TABLE IF NOT EXISTS diet_record (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        member_id TEXT NOT NULL,
+        date TEXT NOT NULL,
+        scenario TEXT,
+        food_id TEXT,
+        amount_g REAL,
+        sodium_intake REAL,
+        sugar_intake REAL,
+        calorie_intake REAL,
+        fat_intake REAL,
+        recorded_at INTEGER NOT NULL
+      )ÚqCREATE TABLE IF NOT EXISTS diet_record (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        member_id TEXT NOT NULL,
+        date TEXT NOT NULL,
+        scenario TEXT,
+        food_id TEXT,
+        amount_g REAL,
+        sodium_intake REAL,
+        sugar_intake REAL,
+        calorie_intake REAL,
+        fat_intake REAL,
+        recorded_at INTEGER NOT NULL
+      )ÃÂÔr\•¤type¥start£end¥param¤body«CatchClauseÍ
+¢Í!LªIdentifierÍ
+©Í
+®¥errorM®BlockStatementÍ
+°Í!‘P³ExpressionStatementÍ
+¿ÍX®CallExpressionÍ
+¿ÍR°MemberExpressionÍ
+¿Í
+ÊLªIdentifierÍ
+¿Í
+Ä¥hilogLªIdentifierÍ
+ÅÍ
+Ê¥errorÂÂ”LªIdentifierÍ
+ËÍ
+Ö«DOMAIN_ZEROLªIdentifierÍ
+ØÍ
+Û£TAGT§LiteralÍ
+İÍ
+ı¾Init tables failed: %{public}sÙ 'Init tables failed: %{public}s'X®CallExpressionÍ
+ÿÍR°MemberExpressionÍ
+ÿÍLªIdentifierÍ
+ÿÍ¤JSONLªIdentifierÍÍ©stringifyÂÂ‘LªIdentifierÍÍ¥errorÂÂÀN°MethodDefinitionÍOÍåÂÂLªIdentifierÍUÍd¯saveScanHistory¦methodO²FunctionExpressionÍdÍåÀÂÂÃ‘LªIdentifierÍeÍk¦recordM®BlockStatementÍmÍå“Ôr]–¤type¥start£end¤testªconsequent©alternate«IfStatementÍxÍ Ôr^–¤type¥start£end¨operator¦prefix¨argument¯UnaryExpressionÍ|ÍŠ¡!ÃR°MemberExpressionÍ}ÍŠS®ThisExpressionÍ}ÍLªIdentifierÍ‚ÍŠ¨rdbStoreÂÂW¯ReturnStatementÍ™Í ÀÀÔr_•¤type¥start£end¬declarations¤kind³VariableDeclarationÍªÍï‘Ôr`•¤type¥start£end¢id¤init²VariableDeclaratorÍ°ÍîLªIdentifierÍ°Í»«valueBucketÔra”¤type¥start£endªproperties°ObjectExpressionÍ¾Íî—Ôrb™¤type¥start£end¦method©shorthand¨computed£key¥value¤kind¨PropertyÍÍÍçÂÂÂLªIdentifierÍÍÍÖ©member_idR°MemberExpressionÍØÍçLªIdentifierÍØÍŞ¦recordLªIdentifierÍßÍç¨memberIdÂÂ¤initb¨PropertyÍöÍÂÂÂLªIdentifierÍöÍı§food_idR°MemberExpressionÍÿÍLªIdentifierÍÿÍ¦recordLªIdentifierÍÍ¦foodIdÂÂ¤initb¨PropertyÍÍ5ÂÂÂLªIdentifierÍÍ$©food_nameR°MemberExpressionÍ&Í5LªIdentifierÍ&Í,¦recordLªIdentifierÍ-Í5¨foodNameÂÂ¤initb¨PropertyÍDÍWÂÂÂLªIdentifierÍDÍI¥levelR°MemberExpressionÍKÍWLªIdentifierÍKÍQ¦recordLªIdentifierÍRÍW¥levelÂÂ¤initb¨PropertyÍfÍ‚ÂÂÂLªIdentifierÍfÍpªmax_amountR°MemberExpressionÍrÍ‚LªIdentifierÍrÍx¦recordLªIdentifierÍyÍ‚©maxAmountÂÂ¤initb¨PropertyÍ‘Í¸ÂÂÂLªIdentifierÍ‘Í˜§reasonsX®CallExpressionÍšÍ¸R°MemberExpressionÍšÍ¨LªIdentifierÍšÍ¤JSONLªIdentifierÍŸÍ¨©stringifyÂÂ‘R°MemberExpressionÍ©Í·LªIdentifierÍ©Í¯¦recordLªIdentifierÍ°Í·§reasonsÂÂÂ¤initb¨PropertyÍÇÍãÂÂÂLªIdentifierÍÇÍÑªscanned_atR°MemberExpressionÍÓÍãLªIdentifierÍÓÍÙ¦recordLªIdentifierÍÚÍã©scannedAtÂÂ¤init¥constV¬TryStatementÍùÍŞM®BlockStatementÍıÍO‘P³ExpressionStatementÍÍDW¯AwaitExpressionÍÍCX®CallExpressionÍÍCR°MemberExpressionÍÍ&R°MemberExpressionÍÍS®ThisExpressionÍÍLªIdentifierÍÍ¨rdbStoreÂÂLªIdentifierÍ Í&¦insertÂÂ’T§LiteralÍ'Í5¬scan_history®'scan_history'LªIdentifierÍ7ÍB«valueBucketÂ\«CatchClauseÍYÍŞLªIdentifierÍ`Íe¥errorM®BlockStatementÍgÍŞ‘P³ExpressionStatementÍvÍÓX®CallExpressionÍvÍÒR°MemberExpressionÍvÍLªIdentifierÍvÍ{¥hilogLªIdentifierÍ|Í¥errorÂÂ”LªIdentifierÍ‚Í«DOMAIN_ZEROLªIdentifierÍÍ’£TAGT§LiteralÍ”ÍºÙ$Save scan history failed: %{public}sÙ&'Save scan history failed: %{public}s'X®CallExpressionÍ¼ÍÑR°MemberExpressionÍ¼ÍÊLªIdentifierÍ¼ÍÀ¤JSONLªIdentifierÍÁÍÊ©stringifyÂÂ‘LªIdentifierÍËÍĞ¥errorÂÂÀN°MethodDefinitionÍÍ"ÂÂLªIdentifierÍÍ ®saveDietRecord¦methodO²FunctionExpressionÍ Í"ÀÂÂÃ‘LªIdentifierÍ!Í'¦recordM®BlockStatementÍ)Í"“]«IfStatementÍ4Í\^¯UnaryExpressionÍ8ÍF¡!ÃR°MemberExpressionÍ9ÍFS®ThisExpressionÍ9Í=LªIdentifierÍ>ÍF¨rdbStoreÂÂW¯ReturnStatementÍUÍ\ÀÀ_³VariableDeclarationÍfÍ.‘`²VariableDeclaratorÍlÍ-LªIdentifierÍlÍw«valueBucketa°ObjectExpressionÍzÍ-šb¨PropertyÍ‰Í£ÂÂÂLªIdentifierÍ‰Í’©member_idR°MemberExpressionÍ”Í£LªIdentifierÍ”Íš¦recordLªIdentifierÍ›Í£¨memberIdÂÂ¤initb¨PropertyÍ²ÍÃÂÂÂLªIdentifierÍ²Í¶¤dateR°MemberExpressionÍ¸ÍÃLªIdentifierÍ¸Í¾¦recordLªIdentifierÍ¿ÍÃ¤dateÂÂ¤initb¨PropertyÍÒÍëÂÂÂLªIdentifierÍÒÍÚ¨scenarioR°MemberExpressionÍÜÍëLªIdentifierÍÜÍâ¦recordLªIdentifierÍãÍë¨scenarioÂÂ¤initb¨PropertyÍúÍÂÂÂLªIdentifierÍúÍ§food_idR°MemberExpressionÍÍLªIdentifierÍÍ	¦recordLªIdentifierÍ
+Í¦foodIdÂÂ¤initb¨PropertyÍÍ7ÂÂÂLªIdentifierÍÍ'¨amount_gR°MemberExpressionÍ)Í7LªIdentifierÍ)Í/¦recordLªIdentifierÍ0Í7§amountGÂÂ¤initb¨PropertyÍFÍhÂÂÂLªIdentifierÍFÍS­sodium_intakeR°MemberExpressionÍUÍhLªIdentifierÍUÍ[¦recordLªIdentifierÍ\Íh¬sodiumIntakeÂÂ¤initb¨PropertyÍwÍ—ÂÂÂLªIdentifierÍwÍƒ¬sugar_intakeR°MemberExpressionÍ…Í—LªIdentifierÍ…Í‹¦recordLªIdentifierÍŒÍ—«sugarIntakeÂÂ¤initb¨PropertyÍ¦ÍÊÂÂÂLªIdentifierÍ¦Í´®calorie_intakeR°MemberExpressionÍ¶ÍÊLªIdentifierÍ¶Í¼¦recordLªIdentifierÍ½ÍÊ­calorieIntakeÂÂ¤initb¨PropertyÍÙÍõÂÂÂLªIdentifierÍÙÍãªfat_intakeR°MemberExpressionÍåÍõLªIdentifierÍåÍë¦recordLªIdentifierÍìÍõ©fatIntakeÂÂ¤initb¨PropertyÍÍ"ÂÂÂLªIdentifierÍÍ«recorded_atR°MemberExpressionÍÍ"LªIdentifierÍÍ¦recordLªIdentifierÍÍ"ªrecordedAtÂÂ¤init¥constV¬TryStatementÍ8ÍM®BlockStatementÍ<Í‘P³ExpressionStatementÍKÍ‚W¯AwaitExpressionÍKÍX®CallExpressionÍQÍR°MemberExpressionÍQÍeR°MemberExpressionÍQÍ^S®ThisExpressionÍQÍULªIdentifierÍVÍ^¨rdbStoreÂÂLªIdentifierÍ_Íe¦insertÂÂ’T§LiteralÍfÍs«diet_record­'diet_record'LªIdentifierÍuÍ€«valueBucketÂ\«CatchClauseÍ—ÍLªIdentifierÍÍ£¥errorM®BlockStatementÍ¥Í‘P³ExpressionStatementÍ´ÍX®CallExpressionÍ´ÍR°MemberExpressionÍ´Í¿LªIdentifierÍ´Í¹¥hilogLªIdentifierÍºÍ¿¥errorÂÂ”LªIdentifierÍÀÍË«DOMAIN_ZEROLªIdentifierÍÍÍĞ£TAGT§LiteralÍÒÍ÷Ù#Save diet record failed: %{public}sÙ%'Save diet record failed: %{public}s'X®CallExpressionÍùÍR°MemberExpressionÍùÍLªIdentifierÍùÍı¤JSONLªIdentifierÍşÍ©stringifyÂÂ‘LªIdentifierÍÍ¥errorÂÂÀN°MethodDefinitionÍUÍoÂÂLªIdentifierÍ[Ín³getTodayDietRecords¦methodO²FunctionExpressionÍnÍoÀÂÂÃ‘LªIdentifierÍoÍw¨memberIdM®BlockStatementÍyÍo“]«IfStatementÍ„Í¯^¯UnaryExpressionÍˆÍ–¡!ÃR°MemberExpressionÍ‰Í–S®ThisExpressionÍ‰ÍLªIdentifierÍÍ–¨rdbStoreÂÂW¯ReturnStatementÍ¥Í¯U¯ArrayExpressionÍ¬Í®À_³VariableDeclarationÍ¹ÍÛ‘`²VariableDeclaratorÍ¿ÍÚLªIdentifierÍ¿ÍÄ¥todayX®CallExpressionÍÇÍÚR°MemberExpressionÍÇÍØS®ThisExpressionÍÇÍËLªIdentifierÍÌÍØ¬getTodayDateÂÂÂ¥constV¬TryStatementÍåÍhM®BlockStatementÍéÍÀ—_³VariableDeclarationÍøÍ<‘`²VariableDeclaratorÍşÍ;LªIdentifierÍşÍªpredicatesÔrc•¤type¥start£end¦callee©arguments­NewExpressionÍÍ;R°MemberExpressionÍÍ,LªIdentifierÍÍ¯relationalStoreLªIdentifierÍÍ,­RdbPredicatesÂÂ‘T§LiteralÍ-Í:«diet_record­'diet_record'¥constP³ExpressionStatementÍJÍ‹X®CallExpressionÍJÍŠR°MemberExpressionÍJÍ{X®CallExpressionÍJÍsR°MemberExpressionÍJÍ\LªIdentifierÍJÍTªpredicatesLªIdentifierÍUÍ\§equalToÂÂ’T§LiteralÍ]Íh©member_id«'member_id'LªIdentifierÍjÍr¨memberIdÂLªIdentifierÍtÍ{§equalToÂÂ’T§LiteralÍ|Í‚¤date¦'date'LªIdentifierÍ„Í‰¥todayÂ_³VariableDeclarationÍ™ÍÑ‘`²VariableDeclaratorÍŸÍĞLªIdentifierÍŸÍ¨©resultSetW¯AwaitExpressionÍ«ÍĞX®CallExpressionÍ±ÍĞR°MemberExpressionÍ±ÍÄR°MemberExpressionÍ±Í¾S®ThisExpressionÍ±ÍµLªIdentifierÍ¶Í¾¨rdbStoreÂÂLªIdentifierÍ¿ÍÄ¥queryÂÂ‘LªIdentifierÍÅÍÏªpredicatesÂ¥const_³VariableDeclarationÍßÍò‘`²VariableDeclaratorÍåÍñLªIdentifierÍåÍì§recordsU¯ArrayExpressionÍïÍñ¥constÔrd•¤type¥start£end¤test¤body®WhileStatementÍ ÍxX®CallExpressionÍÍR°MemberExpressionÍÍLªIdentifierÍÍ©resultSetLªIdentifierÍÍ«goToNextRowÂÂÂM®BlockStatementÍ Íx‘P³ExpressionStatementÍ3ÍiX®CallExpressionÍ3ÍhR°MemberExpressionÍ3Í?LªIdentifierÍ3Í:§recordsLªIdentifierÍ;Í?¤pushÂÂ‘X®CallExpressionÍ@ÍgR°MemberExpressionÍ@Í\S®ThisExpressionÍ@ÍDLªIdentifierÍEÍ\·dietRecordFromResultSetÂÂ‘LªIdentifierÍ]Íf©resultSetÂÂP³ExpressionStatementÍ†Í˜X®CallExpressionÍ†Í—R°MemberExpressionÍ†Í•LªIdentifierÍ†Í©resultSetLªIdentifierÍÍ•¥closeÂÂÂW¯ReturnStatementÍ¦ÍµLªIdentifierÍ­Í´§records\«CatchClauseÍÊÍhLªIdentifierÍÑÍÖ¥errorM®BlockStatementÍØÍh’P³ExpressionStatementÍçÍEX®CallExpressionÍçÍDR°MemberExpressionÍçÍòLªIdentifierÍçÍì¥hilogLªIdentifierÍíÍò¥errorÂÂ”LªIdentifierÍóÍş«DOMAIN_ZEROLªIdentifierÍ Í£TAGT§LiteralÍÍ,Ù%Query diet records failed: %{public}sÙ''Query diet records failed: %{public}s'X®CallExpressionÍ.ÍCR°MemberExpressionÍ.Í<LªIdentifierÍ.Í2¤JSONLªIdentifierÍ3Í<©stringifyÂÂ‘LªIdentifierÍ=ÍB¥errorÂÂW¯ReturnStatementÍSÍ]U¯ArrayExpressionÍZÍ\ÀN°MethodDefinitionÍŸÍÂÂLªIdentifierÍ¥Í¹´getRecentScanHistory¦methodO²FunctionExpressionÍ¹ÍÀÂÂÃ‘Ôre•¤type¥start£end¤left¥right±AssignmentPatternÍºÍÄLªIdentifierÍºÍ¿¥limitT§LiteralÍÂÍÄ2¢50M®BlockStatementÍÆÍ’]«IfStatementÍÑÍü^¯UnaryExpressionÍÕÍã¡!ÃR°MemberExpressionÍÖÍãS®ThisExpressionÍÖÍÚLªIdentifierÍÛÍã¨rdbStoreÂÂW¯ReturnStatementÍòÍüU¯ArrayExpressionÍùÍûÀV¬TryStatementÍÍ–M®BlockStatementÍ
+Íî˜_³VariableDeclarationÍÍ^‘`²VariableDeclaratorÍÍ]LªIdentifierÍÍ)ªpredicatesc­NewExpressionÍ,Í]R°MemberExpressionÍ0ÍMLªIdentifierÍ0Í?¯relationalStoreLªIdentifierÍ@ÍM­RdbPredicatesÂÂ‘T§LiteralÍNÍ\¬scan_history®'scan_history'¥constP³ExpressionStatementÍlÍ‘X®CallExpressionÍlÍR°MemberExpressionÍlÍ‚LªIdentifierÍlÍvªpredicatesLªIdentifierÍwÍ‚«orderByDescÂÂ‘T§LiteralÍƒÍªscanned_at¬'scanned_at'ÂP³ExpressionStatementÍŸÍ¹X®CallExpressionÍŸÍ¸R°MemberExpressionÍŸÍ±LªIdentifierÍŸÍ©ªpredicatesLªIdentifierÍªÍ±§limitAsÂÂ‘LªIdentifierÍ²Í·¥limitÂ_³VariableDeclarationÍÇÍÿ‘`²VariableDeclaratorÍÍÍşLªIdentifierÍÍÍÖ©resultSetW¯AwaitExpressionÍÙÍşX®CallExpressionÍßÍşR°MemberExpressionÍßÍòR°MemberExpressionÍßÍìS®ThisExpressionÍßÍãLªIdentifierÍäÍì¨rdbStoreÂÂLªIdentifierÍíÍò¥queryÂÂ‘LªIdentifierÍóÍıªpredicatesÂ¥const_³VariableDeclarationÍÍ ‘`²VariableDeclaratorÍÍLªIdentifierÍÍ§recordsU¯ArrayExpressionÍÍ¥constd®WhileStatementÍ.Í¦X®CallExpressionÍ5ÍLR°MemberExpressionÍ5ÍJLªIdentifierÍ5Í>©resultSetLªIdentifierÍ?ÍJ«goToNextRowÂÂÂM®BlockStatementÍNÍ¦‘P³ExpressionStatementÍaÍ—X®CallExpressionÍaÍ–R°MemberExpressionÍaÍmLªIdentifierÍaÍh§recordsLªIdentifierÍiÍm¤pushÂÂ‘X®CallExpressionÍnÍ•R°MemberExpressionÍnÍŠS®ThisExpressionÍnÍrLªIdentifierÍsÍŠ·scanRecordFromResultSetÂÂ‘LªIdentifierÍ‹Í”©resultSetÂÂP³ExpressionStatementÍ´ÍÆX®CallExpressionÍ´ÍÅR°MemberExpressionÍ´ÍÃLªIdentifierÍ´Í½©resultSetLªIdentifierÍ¾ÍÃ¥closeÂÂÂW¯ReturnStatementÍÔÍãLªIdentifierÍÛÍâ§records\«CatchClauseÍøÍ–LªIdentifierÍÿÍ¥errorM®BlockStatementÍÍ–’P³ExpressionStatementÍÍsX®CallExpressionÍÍrR°MemberExpressionÍÍ LªIdentifierÍÍ¥hilogLªIdentifierÍÍ ¥errorÂÂ”LªIdentifierÍ!Í,«DOMAIN_ZEROLªIdentifierÍ.Í1£TAGT§LiteralÍ3ÍZÙ%Query scan history failed: %{public}sÙ''Query scan history failed: %{public}s'X®CallExpressionÍ\ÍqR°MemberExpressionÍ\ÍjLªIdentifierÍ\Í`¤JSONLªIdentifierÍaÍj©stringifyÂÂ‘LªIdentifierÍkÍp¥errorÂÂW¯ReturnStatementÍÍ‹U¯ArrayExpressionÍˆÍŠÀN°MethodDefinitionÍÈÍÂÂLªIdentifierÍÎÍä¶getScanHistoryByMember¦methodO²FunctionExpressionÍäÍÀÂÂÃ’LªIdentifierÍåÍí¨memberIde±AssignmentPatternÍïÍùLªIdentifierÍïÍô¥limitT§LiteralÍ÷Íù¢20M®BlockStatementÍûÍ’]«IfStatementÍÍ1^¯UnaryExpressionÍ
+Í¡!ÃR°MemberExpressionÍÍS®ThisExpressionÍÍLªIdentifierÍÍ¨rdbStoreÂÂW¯ReturnStatementÍ'Í1U¯ArrayExpressionÍ.Í0ÀV¬TryStatementÍ;ÍM®BlockStatementÍ?Í[™_³VariableDeclarationÍNÍ“‘`²VariableDeclaratorÍTÍ’LªIdentifierÍTÍ^ªpredicatesc­NewExpressionÍaÍ’R°MemberExpressionÍeÍ‚LªIdentifierÍeÍt¯relationalStoreLªIdentifierÍuÍ‚­RdbPredicatesÂÂ‘T§LiteralÍƒÍ‘¬scan_history®'scan_history'¥constP³ExpressionStatementÍ¡ÍËX®CallExpressionÍ¡ÍÊR°MemberExpressionÍ¡Í³LªIdentifierÍ¡Í«ªpredicatesLªIdentifierÍ¬Í³§equalToÂÂ’T§LiteralÍ´Í¿©member_id«'member_id'LªIdentifierÍÁÍÉ¨memberIdÂP³ExpressionStatementÍÙÍşX®CallExpressionÍÙÍıR°MemberExpressionÍÙÍïLªIdentifierÍÙÍãªpredicatesLªIdentifierÍäÍï«orderByDescÂÂ‘T§LiteralÍğÍüªscanned_at¬'scanned_at'ÂP³ExpressionStatementÍÍ&X®CallExpressionÍÍ%R°MemberExpressionÍÍLªIdentifierÍÍªpredicatesLªIdentifierÍÍ§limitAsÂÂ‘LªIdentifierÍÍ$¥limitÂ_³VariableDeclarationÍ4Íl‘`²VariableDeclaratorÍ:ÍkLªIdentifierÍ:ÍC©resultSetW¯AwaitExpressionÍFÍkX®CallExpressionÍLÍkR°MemberExpressionÍLÍ_R°MemberExpressionÍLÍYS®ThisExpressionÍLÍPLªIdentifierÍQÍY¨rdbStoreÂÂLªIdentifierÍZÍ_¥queryÂÂ‘LªIdentifierÍ`ÍjªpredicatesÂ¥const_³VariableDeclarationÍzÍ‘`²VariableDeclaratorÍ€ÍŒLªIdentifierÍ€Í‡§recordsU¯ArrayExpressionÍŠÍŒ¥constd®WhileStatementÍ›ÍX®CallExpressionÍ¢Í¹R°MemberExpressionÍ¢Í·LªIdentifierÍ¢Í«©resultSetLªIdentifierÍ¬Í·«goToNextRowÂÂÂM®BlockStatementÍ»Í‘P³ExpressionStatementÍÎÍX®CallExpressionÍÎÍR°MemberExpressionÍÎÍÚLªIdentifierÍÎÍÕ§recordsLªIdentifierÍÖÍÚ¤pushÂÂ‘X®CallExpressionÍÛÍR°MemberExpressionÍÛÍ÷S®ThisExpressionÍÛÍßLªIdentifierÍàÍ÷·scanRecordFromResultSetÂÂ‘LªIdentifierÍøÍ©resultSetÂÂP³ExpressionStatementÍ!Í3X®CallExpressionÍ!Í2R°MemberExpressionÍ!Í0LªIdentifierÍ!Í*©resultSetLªIdentifierÍ+Í0¥closeÂÂÂW¯ReturnStatementÍAÍPLªIdentifierÍHÍO§records\«CatchClauseÍeÍLªIdentifierÍlÍq¥errorM®BlockStatementÍsÍ’P³ExpressionStatementÍ‚ÍêX®CallExpressionÍ‚ÍéR°MemberExpressionÍ‚ÍLªIdentifierÍ‚Í‡¥hilogLªIdentifierÍˆÍ¥errorÂÂ”LªIdentifierÍÍ™«DOMAIN_ZEROLªIdentifierÍ›Í£TAGT§LiteralÍ ÍÑÙ/Query scan history by member failed: %{public}sÙ1'Query scan history by member failed: %{public}s'X®CallExpressionÍÓÍèR°MemberExpressionÍÓÍáLªIdentifierÍÓÍ×¤JSONLªIdentifierÍØÍá©stringifyÂÂ‘LªIdentifierÍâÍç¥errorÂÂW¯ReturnStatementÍøÍU¯ArrayExpressionÍÿÍÀN°MethodDefinitionÍGÍêÂÂLªIdentifierÍMÍf¹getDietRecordsByDateRange¦methodO²FunctionExpressionÍfÍêÀÂÂÃ“LªIdentifierÍgÍo¨memberIdLªIdentifierÍqÍz©startDateLªIdentifierÍ|Íƒ§endDateM®BlockStatementÍ…Íê’]«IfStatementÍÍ»^¯UnaryExpressionÍ”Í¢¡!ÃR°MemberExpressionÍ•Í¢S®ThisExpressionÍ•Í™LªIdentifierÍšÍ¢¨rdbStoreÂÂW¯ReturnStatementÍ±Í»U¯ArrayExpressionÍ¸ÍºÀV¬TryStatementÍÅÍãM®BlockStatementÍÉÍ2š_³VariableDeclarationÍØÍ‘`²VariableDeclaratorÍŞÍLªIdentifierÍŞÍèªpredicatesc­NewExpressionÍëÍR°MemberExpressionÍïÍLªIdentifierÍïÍş¯relationalStoreLªIdentifierÍÿÍ­RdbPredicatesÂÂ‘T§LiteralÍÍ«diet_record­'diet_record'¥constP³ExpressionStatementÍ*ÍTX®CallExpressionÍ*ÍSR°MemberExpressionÍ*Í<LªIdentifierÍ*Í4ªpredicatesLªIdentifierÍ5Í<§equalToÂÂ’T§LiteralÍ=ÍH©member_id«'member_id'LªIdentifierÍJÍR¨memberIdÂP³ExpressionStatementÍbÍ•X®CallExpressionÍbÍ”R°MemberExpressionÍbÍLªIdentifierÍbÍlªpredicatesLªIdentifierÍmÍ´greaterThanOrEqualToÂÂ’T§LiteralÍ‚Íˆ¤date¦'date'LªIdentifierÍŠÍ“©startDateÂP³ExpressionStatementÍ£ÍÑX®CallExpressionÍ£ÍĞR°MemberExpressionÍ£Í¿LªIdentifierÍ£Í­ªpredicatesLªIdentifierÍ®Í¿±lessThanOrEqualToÂÂ’T§LiteralÍÀÍÆ¤date¦'date'LªIdentifierÍÈÍÏ§endDateÂP³ExpressionStatementÍßÍıX®CallExpressionÍßÍüR°MemberExpressionÍßÍôLªIdentifierÍßÍéªpredicatesLªIdentifierÍêÍôªorderByAscÂÂ‘T§LiteralÍõÍû¤date¦'date'Â_³VariableDeclarationÍÍC‘`²VariableDeclaratorÍÍBLªIdentifierÍÍ©resultSetW¯AwaitExpressionÍÍBX®CallExpressionÍ#ÍBR°MemberExpressionÍ#Í6R°MemberExpressionÍ#Í0S®ThisExpressionÍ#Í'LªIdentifierÍ(Í0¨rdbStoreÂÂLªIdentifierÍ1Í6¥queryÂÂ‘LªIdentifierÍ7ÍAªpredicatesÂ¥const_³VariableDeclarationÍQÍd‘`²VariableDeclaratorÍWÍcLªIdentifierÍWÍ^§recordsU¯ArrayExpressionÍaÍc¥constd®WhileStatementÍrÍêX®CallExpressionÍyÍR°MemberExpressionÍyÍLªIdentifierÍyÍ‚©resultSetLªIdentifierÍƒÍ«goToNextRowÂÂÂM®BlockStatementÍ’Íê‘P³ExpressionStatementÍ¥ÍÛX®CallExpressionÍ¥ÍÚR°MemberExpressionÍ¥Í±LªIdentifierÍ¥Í¬§recordsLªIdentifierÍ­Í±¤pushÂÂ‘X®CallExpressionÍ²ÍÙR°MemberExpressionÍ²ÍÎS®ThisExpressionÍ²Í¶LªIdentifierÍ·ÍÎ·dietRecordFromResultSetÂÂ‘LªIdentifierÍÏÍØ©resultSetÂÂP³ExpressionStatementÍøÍ
+X®CallExpressionÍøÍ	R°MemberExpressionÍøÍLªIdentifierÍøÍ©resultSetLªIdentifierÍÍ¥closeÂÂÂW¯ReturnStatementÍÍ'LªIdentifierÍÍ&§records\«CatchClauseÍ<ÍãLªIdentifierÍCÍH¥errorM®BlockStatementÍJÍã’P³ExpressionStatementÍYÍÀX®CallExpressionÍYÍ¿R°MemberExpressionÍYÍdLªIdentifierÍYÍ^¥hilogLªIdentifierÍ_Íd¥errorÂÂ”LªIdentifierÍeÍp«DOMAIN_ZEROLªIdentifierÍrÍu£TAGT§LiteralÍwÍ§Ù.Query diet records by range failed: %{public}sÙ0'Query diet records by range failed: %{public}s'X®CallExpressionÍ©Í¾R°MemberExpressionÍ©Í·LªIdentifierÍ©Í­¤JSONLªIdentifierÍ®Í·©stringifyÂÂ‘LªIdentifierÍ¸Í½¥errorÂÂW¯ReturnStatementÍÎÍØU¯ArrayExpressionÍÕÍ×ÀN°MethodDefinitionÍ$Í"ÂÂLªIdentifierÍ*Í7­countRiskDays¦methodO²FunctionExpressionÍ7Í"ÀÂÂÃ“LªIdentifierÍ8Í@¨memberIdLªIdentifierÍBÍK©startDateLªIdentifierÍMÍT§endDateM®BlockStatementÍVÍ"›_³VariableDeclarationÍaÍ´‘`²VariableDeclaratorÍgÍ³LªIdentifierÍgÍn§recordsW¯AwaitExpressionÍqÍ³X®CallExpressionÍwÍ³R°MemberExpressionÍwÍ•S®ThisExpressionÍwÍ{LªIdentifierÍ|Í•¹getDietRecordsByDateRangeÂÂ“LªIdentifierÍ–Í¨memberIdLªIdentifierÍ Í©©startDateLªIdentifierÍ«Í²§endDateÂ¥const_³VariableDeclarationÍ¾ÍÛ‘`²VariableDeclaratorÍÄÍÚLªIdentifierÍÄÍÎªsodiumDaysc­NewExpressionÍÑÍÚLªIdentifierÍÕÍØ£Set¥const_³VariableDeclarationÍåÍ ‘`²VariableDeclaratorÍëÍ  LªIdentifierÍëÍô©sugarDaysc­NewExpressionÍ÷Í  LªIdentifierÍûÍş£Set¥const_³VariableDeclarationÍ Í %‘`²VariableDeclaratorÍ Í $LªIdentifierÍ Í §fatDaysc­NewExpressionÍ Í $LªIdentifierÍ Í "£Set¥constÔrf—¤type¥start£end¥await¤left¥right¤body®ForOfStatementÍ /Í!”Â_³VariableDeclarationÍ 4Í ;‘`²VariableDeclaratorÍ :Í ;LªIdentifierÍ :Í ;¡rÀ¥constLªIdentifierÍ ?Í F§recordsM®BlockStatementÍ HÍ!”“]«IfStatementÍ vÍ ¸Ôrg–¤type¥start£end¤left¨operator¥right°BinaryExpressionÍ zÍ R°MemberExpressionÍ zÍ ˆLªIdentifierÍ zÍ {¡rLªIdentifierÍ |Í ˆ¬sodiumIntakeÂÂ¡>T§LiteralÍ ‹Í Í £800P³ExpressionStatementÍ ¡Í ¸X®CallExpressionÍ ¡Í ·R°MemberExpressionÍ ¡Í ¯LªIdentifierÍ ¡Í «ªsodiumDaysLªIdentifierÍ ¬Í ¯£addÂÂ‘R°MemberExpressionÍ °Í ¶LªIdentifierÍ °Í ±¡rLªIdentifierÍ ²Í ¶¤dateÂÂÂÀ]«IfStatementÍ ãÍ!"g°BinaryExpressionÍ çÍ ùR°MemberExpressionÍ çÍ ôLªIdentifierÍ çÍ è¡rLªIdentifierÍ éÍ ô«sugarIntakeÂÂ¡>T§LiteralÍ ÷Í ù¢15P³ExpressionStatementÍ!Í!"X®CallExpressionÍ!Í!!R°MemberExpressionÍ!Í!LªIdentifierÍ!Í!©sugarDaysLªIdentifierÍ!Í!£addÂÂ‘R°MemberExpressionÍ!Í! LªIdentifierÍ!Í!¡rLªIdentifierÍ!Í! ¤dateÂÂÂÀ]«IfStatementÍ!NÍ!‰g°BinaryExpressionÍ!RÍ!bR°MemberExpressionÍ!RÍ!]LªIdentifierÍ!RÍ!S¡rLªIdentifierÍ!TÍ!]©fatIntakeÂÂ¡>T§LiteralÍ!`Í!b¢20P³ExpressionStatementÍ!uÍ!‰X®CallExpressionÍ!uÍ!ˆR°MemberExpressionÍ!uÍ!€LªIdentifierÍ!uÍ!|§fatDaysLªIdentifierÍ!}Í!€£addÂÂ‘R°MemberExpressionÍ!Í!‡LªIdentifierÍ!Í!‚¡rLªIdentifierÍ!ƒÍ!‡¤dateÂÂÂÀ_³VariableDeclarationÍ!Í!Â‘`²VariableDeclaratorÍ!¤Í!ÁLªIdentifierÍ!¤Í!ª¦resultc­NewExpressionÍ!­Í!ÁLªIdentifierÍ!±Í!¿®RiskDaysResult¥constP³ExpressionStatementÍ!ÌÍ!ôQ´AssignmentExpressionÍ!ÌÍ!ó¡=R°MemberExpressionÍ!ÌÍ!áLªIdentifierÍ!ÌÍ!Ò¦resultLªIdentifierÍ!ÓÍ!á®highSodiumDaysÂÂR°MemberExpressionÍ!äÍ!óLªIdentifierÍ!äÍ!îªsodiumDaysLªIdentifierÍ!ïÍ!ó¤sizeÂÂP³ExpressionStatementÍ!şÍ"$Q´AssignmentExpressionÍ!şÍ"#¡=R°MemberExpressionÍ!şÍ"LªIdentifierÍ!şÍ"¦resultLªIdentifierÍ"Í"­highSugarDaysÂÂR°MemberExpressionÍ"Í"#LªIdentifierÍ"Í"©sugarDaysLªIdentifierÍ"Í"#¤sizeÂÂP³ExpressionStatementÍ".Í"PQ´AssignmentExpressionÍ".Í"O¡=R°MemberExpressionÍ".Í"@LªIdentifierÍ".Í"4¦resultLªIdentifierÍ"5Í"@«highFatDaysÂÂR°MemberExpressionÍ"CÍ"OLªIdentifierÍ"CÍ"J§fatDaysLªIdentifierÍ"KÍ"O¤sizeÂÂP³ExpressionStatementÍ"ZÍ"Q´AssignmentExpressionÍ"ZÍ"~¡=R°MemberExpressionÍ"ZÍ"mLªIdentifierÍ"ZÍ"`¦resultLªIdentifierÍ"aÍ"m¬totalRecordsÂÂR°MemberExpressionÍ"pÍ"~LªIdentifierÍ"pÍ"w§recordsLªIdentifierÍ"xÍ"~¦lengthÂÂW¯ReturnStatementÍ"‰Í"—LªIdentifierÍ"Í"–¦resultN°MethodDefinitionÍ"ÌÍ$ÁÂÂLªIdentifierÍ"ÒÍ"é·deleteScanHistoryBefore¦methodO²FunctionExpressionÍ"éÍ$ÁÀÂÂÃ‘LªIdentifierÍ"êÍ"ó©timestampM®BlockStatementÍ"õÍ$Á’]«IfStatementÍ# Í#*^¯UnaryExpressionÍ#Í#¡!ÃR°MemberExpressionÍ#Í#S®ThisExpressionÍ#Í#	LªIdentifierÍ#
+Í#¨rdbStoreÂÂW¯ReturnStatementÍ#!Í#*T§LiteralÍ#(Í#) ¡0ÀV¬TryStatementÍ#4Í$ºM®BlockStatementÍ#8Í$“_³VariableDeclarationÍ#GÍ#Œ‘`²VariableDeclaratorÍ#MÍ#‹LªIdentifierÍ#MÍ#Wªpredicatesc­NewExpressionÍ#ZÍ#‹R°MemberExpressionÍ#^Í#{LªIdentifierÍ#^Í#m¯relationalStoreLªIdentifierÍ#nÍ#{­RdbPredicatesÂÂ‘T§LiteralÍ#|Í#Š¬scan_history®'scan_history'¥constP³ExpressionStatementÍ#šÍ#ÇX®CallExpressionÍ#šÍ#ÆR°MemberExpressionÍ#šÍ#­LªIdentifierÍ#šÍ#¤ªpredicatesLªIdentifierÍ#¥Í#­¨lessThanÂÂ’T§LiteralÍ#®Í#ºªscanned_at¬'scanned_at'LªIdentifierÍ#¼Í#Å©timestampÂW¯ReturnStatementÍ#ÕÍ$W¯AwaitExpressionÍ#ÜÍ$X®CallExpressionÍ#âÍ$R°MemberExpressionÍ#âÍ#öR°MemberExpressionÍ#âÍ#ïS®ThisExpressionÍ#âÍ#æLªIdentifierÍ#çÍ#ï¨rdbStoreÂÂLªIdentifierÍ#ğÍ#ö¦deleteÂÂ‘LªIdentifierÍ#÷Í$ªpredicatesÂ\«CatchClauseÍ$Í$ºLªIdentifierÍ$Í$$¥errorM®BlockStatementÍ$&Í$º’P³ExpressionStatementÍ$5Í$˜X®CallExpressionÍ$5Í$—R°MemberExpressionÍ$5Í$@LªIdentifierÍ$5Í$:¥hilogLªIdentifierÍ$;Í$@¥errorÂÂ”LªIdentifierÍ$AÍ$L«DOMAIN_ZEROLªIdentifierÍ$NÍ$Q£TAGT§LiteralÍ$SÍ$Ù*Delete old scan history failed: %{public}sÙ,'Delete old scan history failed: %{public}s'X®CallExpressionÍ$Í$–R°MemberExpressionÍ$Í$LªIdentifierÍ$Í$…¤JSONLªIdentifierÍ$†Í$©stringifyÂÂ‘LªIdentifierÍ$Í$•¥errorÂÂW¯ReturnStatementÍ$¦Í$¯T§LiteralÍ$­Í$® ¡0ÀN°MethodDefinitionÍ$êÍ(ŸÂÂLªIdentifierÍ$êÍ%·scanRecordFromResultSet¦methodO²FunctionExpressionÍ%Í(ŸÀÂÂÂ‘LªIdentifierÍ%Í%©resultSetM®BlockStatementÍ%Í(Ÿœ_³VariableDeclarationÍ%Í%)‘`²VariableDeclaratorÍ%Í%(LªIdentifierÍ%Í%#§reasonsU¯ArrayExpressionÍ%&Í%(£letV¬TryStatementÍ%3Í%ãM®BlockStatementÍ%7Í%¨‘P³ExpressionStatementÍ%FÍ%Q´AssignmentExpressionÍ%FÍ%œ¡=LªIdentifierÍ%FÍ%M§reasonsX®CallExpressionÍ%PÍ%œR°MemberExpressionÍ%PÍ%ZLªIdentifierÍ%PÍ%T¤JSONLªIdentifierÍ%UÍ%Z¥parseÂÂ‘g±LogicalExpressionÍ%[Í%›X®CallExpressionÍ%[Í%“R°MemberExpressionÍ%[Í%nLªIdentifierÍ%[Í%d©resultSetLªIdentifierÍ%eÍ%n©getStringÂÂ‘X®CallExpressionÍ%oÍ%’R°MemberExpressionÍ%oÍ%‡LªIdentifierÍ%oÍ%x©resultSetLªIdentifierÍ%yÍ%‡®getColumnIndexÂÂ‘T§LiteralÍ%ˆÍ%‘§reasons©'reasons'ÂÂ¢||T§LiteralÍ%—Í%›¢[]¤'[]'Â\«CatchClauseÍ%²Í%ãLªIdentifierÍ%¹Í%º¡eM®BlockStatementÍ%¼Í%ã‘P³ExpressionStatementÍ%ËÍ%ØQ´AssignmentExpressionÍ%ËÍ%×¡=LªIdentifierÍ%ËÍ%Ò§reasonsU¯ArrayExpressionÍ%ÕÍ%×À_³VariableDeclarationÍ%íÍ&‘`²VariableDeclaratorÍ%óÍ&LªIdentifierÍ%óÍ%ù¦recordc­NewExpressionÍ%üÍ&LªIdentifierÍ& Í&±ScanHistoryRecord¥constP³ExpressionStatementÍ&Í&\Q´AssignmentExpressionÍ&Í&[¡=R°MemberExpressionÍ&Í&'LªIdentifierÍ&Í&$¦recordLªIdentifierÍ&%Í&'¢idÂÂX®CallExpressionÍ&*Í&[R°MemberExpressionÍ&*Í&;LªIdentifierÍ&*Í&3©resultSetLªIdentifierÍ&4Í&;§getLongÂÂ‘X®CallExpressionÍ&<Í&ZR°MemberExpressionÍ&<Í&TLªIdentifierÍ&<Í&E©resultSetLªIdentifierÍ&FÍ&T®getColumnIndexÂÂ‘T§LiteralÍ&UÍ&Y¢id¤'id'ÂÂP³ExpressionStatementÍ&fÍ&³Q´AssignmentExpressionÍ&fÍ&²¡=R°MemberExpressionÍ&fÍ&uLªIdentifierÍ&fÍ&l¦recordLªIdentifierÍ&mÍ&u¨memberIdÂÂX®CallExpressionÍ&xÍ&²R°MemberExpressionÍ&xÍ&‹LªIdentifierÍ&xÍ&©resultSetLªIdentifierÍ&‚Í&‹©getStringÂÂ‘X®CallExpressionÍ&ŒÍ&±R°MemberExpressionÍ&ŒÍ&¤LªIdentifierÍ&ŒÍ&•©resultSetLªIdentifierÍ&–Í&¤®getColumnIndexÂÂ‘T§LiteralÍ&¥Í&°©member_id«'member_id'ÂÂP³ExpressionStatementÍ&½Í'Q´AssignmentExpressionÍ&½Í'¡=R°MemberExpressionÍ&½Í&ÊLªIdentifierÍ&½Í&Ã¦recordLªIdentifierÍ&ÄÍ&Ê¦foodIdÂÂX®CallExpressionÍ&ÍÍ'R°MemberExpressionÍ&ÍÍ&àLªIdentifierÍ&ÍÍ&Ö©resultSetLªIdentifierÍ&×Í&à©getStringÂÂ‘X®CallExpressionÍ&áÍ'R°MemberExpressionÍ&áÍ&ùLªIdentifierÍ&áÍ&ê©resultSetLªIdentifierÍ&ëÍ&ù®getColumnIndexÂÂ‘T§LiteralÍ&úÍ'§food_id©'food_id'ÂÂP³ExpressionStatementÍ'Í']Q´AssignmentExpressionÍ'Í'\¡=R°MemberExpressionÍ'Í'LªIdentifierÍ'Í'¦recordLªIdentifierÍ'Í'¨foodNameÂÂX®CallExpressionÍ'"Í'\R°MemberExpressionÍ'"Í'5LªIdentifierÍ'"Í'+©resultSetLªIdentifierÍ',Í'5©getStringÂÂ‘X®CallExpressionÍ'6Í'[R°MemberExpressionÍ'6Í'NLªIdentifierÍ'6Í'?©resultSetLªIdentifierÍ'@Í'N®getColumnIndexÂÂ‘T§LiteralÍ'OÍ'Z©food_name«'food_name'ÂÂP³ExpressionStatementÍ'gÍ'­Q´AssignmentExpressionÍ'gÍ'¬¡=R°MemberExpressionÍ'gÍ'sLªIdentifierÍ'gÍ'm¦recordLªIdentifierÍ'nÍ's¥levelÂÂX®CallExpressionÍ'vÍ'¬R°MemberExpressionÍ'vÍ'‰LªIdentifierÍ'vÍ'©resultSetLªIdentifierÍ'€Í'‰©getStringÂÂ‘X®CallExpressionÍ'ŠÍ'«R°MemberExpressionÍ'ŠÍ'¢LªIdentifierÍ'ŠÍ'“©resultSetLªIdentifierÍ'”Í'¢®getColumnIndexÂÂ‘T§LiteralÍ'£Í'ª¥level§'level'ÂÂP³ExpressionStatementÍ'·Í(Q´AssignmentExpressionÍ'·Í(¡=R°MemberExpressionÍ'·Í'ÇLªIdentifierÍ'·Í'½¦recordLªIdentifierÍ'¾Í'Ç©maxAmountÂÂX®CallExpressionÍ'ÊÍ(R°MemberExpressionÍ'ÊÍ'İLªIdentifierÍ'ÊÍ'Ó©resultSetLªIdentifierÍ'ÔÍ'İ©getDoubleÂÂ‘X®CallExpressionÍ'ŞÍ(R°MemberExpressionÍ'ŞÍ'öLªIdentifierÍ'ŞÍ'ç©resultSetLªIdentifierÍ'èÍ'ö®getColumnIndexÂÂ‘T§LiteralÍ'÷Í(ªmax_amount¬'max_amount'ÂÂP³ExpressionStatementÍ(Í()Q´AssignmentExpressionÍ(Í((¡=R°MemberExpressionÍ(Í(LªIdentifierÍ(Í(¦recordLªIdentifierÍ(Í(§reasonsÂÂLªIdentifierÍ(!Í((§reasonsP³ExpressionStatementÍ(3Í(€Q´AssignmentExpressionÍ(3Í(¡=R°MemberExpressionÍ(3Í(CLªIdentifierÍ(3Í(9¦recordLªIdentifierÍ(:Í(C©scannedAtÂÂX®CallExpressionÍ(FÍ(R°MemberExpressionÍ(FÍ(WLªIdentifierÍ(FÍ(O©resultSetLªIdentifierÍ(PÍ(W§getLongÂÂ‘X®CallExpressionÍ(XÍ(~R°MemberExpressionÍ(XÍ(pLªIdentifierÍ(XÍ(a©resultSetLªIdentifierÍ(bÍ(p®getColumnIndexÂÂ‘T§LiteralÍ(qÍ(}ªscanned_at¬'scanned_at'ÂÂW¯ReturnStatementÍ(ŠÍ(˜LªIdentifierÍ(‘Í(—¦recordN°MethodDefinitionÍ(¥Í,ÌÂÂLªIdentifierÍ(¥Í(¼·dietRecordFromResultSet¦methodO²FunctionExpressionÍ(¼Í,ÌÀÂÂÂ‘LªIdentifierÍ(½Í(Æ©resultSetM®BlockStatementÍ(ÈÍ,Ì_³VariableDeclarationÍ(ÓÍ(ó‘`²VariableDeclaratorÍ(ÙÍ(òLªIdentifierÍ(ÙÍ(ß¦recordc­NewExpressionÍ(âÍ(òLªIdentifierÍ(æÍ(ğªDietRecord¥constP³ExpressionStatementÍ(ıÍ);Q´AssignmentExpressionÍ(ıÍ):¡=R°MemberExpressionÍ(ıÍ)LªIdentifierÍ(ıÍ)¦recordLªIdentifierÍ)Í)¢idÂÂX®CallExpressionÍ)	Í):R°MemberExpressionÍ)	Í)LªIdentifierÍ)	Í)©resultSetLªIdentifierÍ)Í)§getLongÂÂ‘X®CallExpressionÍ)Í)9R°MemberExpressionÍ)Í)3LªIdentifierÍ)Í)$©resultSetLªIdentifierÍ)%Í)3®getColumnIndexÂÂ‘T§LiteralÍ)4Í)8¢id¤'id'ÂÂP³ExpressionStatementÍ)EÍ)’Q´AssignmentExpressionÍ)EÍ)‘¡=R°MemberExpressionÍ)EÍ)TLªIdentifierÍ)EÍ)K¦recordLªIdentifierÍ)LÍ)T¨memberIdÂÂX®CallExpressionÍ)WÍ)‘R°MemberExpressionÍ)WÍ)jLªIdentifierÍ)WÍ)`©resultSetLªIdentifierÍ)aÍ)j©getStringÂÂ‘X®CallExpressionÍ)kÍ)R°MemberExpressionÍ)kÍ)ƒLªIdentifierÍ)kÍ)t©resultSetLªIdentifierÍ)uÍ)ƒ®getColumnIndexÂÂ‘T§LiteralÍ)„Í)©member_id«'member_id'ÂÂP³ExpressionStatementÍ)œÍ)àQ´AssignmentExpressionÍ)œÍ)ß¡=R°MemberExpressionÍ)œÍ)§LªIdentifierÍ)œÍ)¢¦recordLªIdentifierÍ)£Í)§¤dateÂÂX®CallExpressionÍ)ªÍ)ßR°MemberExpressionÍ)ªÍ)½LªIdentifierÍ)ªÍ)³©resultSetLªIdentifierÍ)´Í)½©getStringÂÂ‘X®CallExpressionÍ)¾Í)ŞR°MemberExpressionÍ)¾Í)ÖLªIdentifierÍ)¾Í)Ç©resultSetLªIdentifierÍ)ÈÍ)Ö®getColumnIndexÂÂ‘T§LiteralÍ)×Í)İ¤date¦'date'ÂÂP³ExpressionStatementÍ)êÍ*6Q´AssignmentExpressionÍ)êÍ*5¡=R°MemberExpressionÍ)êÍ)ùLªIdentifierÍ)êÍ)ğ¦recordLªIdentifierÍ)ñÍ)ù¨scenarioÂÂX®CallExpressionÍ)üÍ*5R°MemberExpressionÍ)üÍ*LªIdentifierÍ)üÍ*©resultSetLªIdentifierÍ*Í*©getStringÂÂ‘X®CallExpressionÍ*Í*4R°MemberExpressionÍ*Í*(LªIdentifierÍ*Í*©resultSetLªIdentifierÍ*Í*(®getColumnIndexÂÂ‘T§LiteralÍ*)Í*3¨scenarioª'scenario'ÂÂP³ExpressionStatementÍ*@Í*‰Q´AssignmentExpressionÍ*@Í*ˆ¡=R°MemberExpressionÍ*@Í*MLªIdentifierÍ*@Í*F¦recordLªIdentifierÍ*GÍ*M¦foodIdÂÂX®CallExpressionÍ*PÍ*ˆR°MemberExpressionÍ*PÍ*cLªIdentifierÍ*PÍ*Y©resultSetLªIdentifierÍ*ZÍ*c©getStringÂÂ‘X®CallExpressionÍ*dÍ*‡R°MemberExpressionÍ*dÍ*|LªIdentifierÍ*dÍ*m©resultSetLªIdentifierÍ*nÍ*|®getColumnIndexÂÂ‘T§LiteralÍ*}Í*†§food_id©'food_id'ÂÂP³ExpressionStatementÍ*“Í*ŞQ´AssignmentExpressionÍ*“Í*İ¡=R°MemberExpressionÍ*“Í*¡LªIdentifierÍ*“Í*™¦recordLªIdentifierÍ*šÍ*¡§amountGÂÂX®CallExpressionÍ*¤Í*İR°MemberExpressionÍ*¤Í*·LªIdentifierÍ*¤Í*­©resultSetLªIdentifierÍ*®Í*·©getDoubleÂÂ‘X®CallExpressionÍ*¸Í*ÜR°MemberExpressionÍ*¸Í*ĞLªIdentifierÍ*¸Í*Á©resultSetLªIdentifierÍ*ÂÍ*Ğ®getColumnIndexÂÂ‘T§LiteralÍ*ÑÍ*Û¨amount_gª'amount_g'ÂÂP³ExpressionStatementÍ*èÍ+=Q´AssignmentExpressionÍ*èÍ+<¡=R°MemberExpressionÍ*èÍ*ûLªIdentifierÍ*èÍ*î¦recordLªIdentifierÍ*ïÍ*û¬sodiumIntakeÂÂX®CallExpressionÍ*şÍ+<R°MemberExpressionÍ*şÍ+LªIdentifierÍ*şÍ+©resultSetLªIdentifierÍ+Í+©getDoubleÂÂ‘X®CallExpressionÍ+Í+;R°MemberExpressionÍ+Í+*LªIdentifierÍ+Í+©resultSetLªIdentifierÍ+Í+*®getColumnIndexÂÂ‘T§LiteralÍ++Í+:­sodium_intake¯'sodium_intake'ÂÂP³ExpressionStatementÍ+GÍ+šQ´AssignmentExpressionÍ+GÍ+™¡=R°MemberExpressionÍ+GÍ+YLªIdentifierÍ+GÍ+M¦recordLªIdentifierÍ+NÍ+Y«sugarIntakeÂÂX®CallExpressionÍ+\Í+™R°MemberExpressionÍ+\Í+oLªIdentifierÍ+\Í+e©resultSetLªIdentifierÍ+fÍ+o©getDoubleÂÂ‘X®CallExpressionÍ+pÍ+˜R°MemberExpressionÍ+pÍ+ˆLªIdentifierÍ+pÍ+y©resultSetLªIdentifierÍ+zÍ+ˆ®getColumnIndexÂÂ‘T§LiteralÍ+‰Í+—¬sugar_intake®'sugar_intake'ÂÂP³ExpressionStatementÍ+¤Í+ûQ´AssignmentExpressionÍ+¤Í+ú¡=R°MemberExpressionÍ+¤Í+¸LªIdentifierÍ+¤Í+ª¦recordLªIdentifierÍ+«Í+¸­calorieIntakeÂÂX®CallExpressionÍ+»Í+úR°MemberExpressionÍ+»Í+ÎLªIdentifierÍ+»Í+Ä©resultSetLªIdentifierÍ+ÅÍ+Î©getDoubleÂÂ‘X®CallExpressionÍ+ÏÍ+ùR°MemberExpressionÍ+ÏÍ+çLªIdentifierÍ+ÏÍ+Ø©resultSetLªIdentifierÍ+ÙÍ+ç®getColumnIndexÂÂ‘T§LiteralÍ+èÍ+ø®calorie_intake°'calorie_intake'ÂÂP³ExpressionStatementÍ,Í,TQ´AssignmentExpressionÍ,Í,S¡=R°MemberExpressionÍ,Í,LªIdentifierÍ,Í,¦recordLªIdentifierÍ,Í,©fatIntakeÂÂX®CallExpressionÍ,Í,SR°MemberExpressionÍ,Í,+LªIdentifierÍ,Í,!©resultSetLªIdentifierÍ,"Í,+©getDoubleÂÂ‘X®CallExpressionÍ,,Í,RR°MemberExpressionÍ,,Í,DLªIdentifierÍ,,Í,5©resultSetLªIdentifierÍ,6Í,D®getColumnIndexÂÂ‘T§LiteralÍ,EÍ,Qªfat_intake¬'fat_intake'ÂÂP³ExpressionStatementÍ,^Í,­Q´AssignmentExpressionÍ,^Í,¬¡=R°MemberExpressionÍ,^Í,oLªIdentifierÍ,^Í,d¦recordLªIdentifierÍ,eÍ,oªrecordedAtÂÂX®CallExpressionÍ,rÍ,¬R°MemberExpressionÍ,rÍ,ƒLªIdentifierÍ,rÍ,{©resultSetLªIdentifierÍ,|Í,ƒ§getLongÂÂ‘X®CallExpressionÍ,„Í,«R°MemberExpressionÍ,„Í,œLªIdentifierÍ,„Í,©resultSetLªIdentifierÍ,Í,œ®getColumnIndexÂÂ‘T§LiteralÍ,Í,ª«recorded_at­'recorded_at'ÂÂW¯ReturnStatementÍ,·Í,ÅLªIdentifierÍ,¾Í,Ä¦recordN°MethodDefinitionÍ,ÒÍ-‹ÂÂLªIdentifierÍ,ÒÍ,Ş¬getTodayDate¦methodO²FunctionExpressionÍ,ŞÍ-‹ÀÂÂÂM®BlockStatementÍ,áÍ-‹’_³VariableDeclarationÍ,ìÍ-‘`²VariableDeclaratorÍ,òÍ-LªIdentifierÍ,òÍ,õ£nowc­NewExpressionÍ,øÍ-LªIdentifierÍ,üÍ- ¤Date¥constW¯ReturnStatementÍ-Í-„Y¯TemplateLiteralÍ-Í-ƒ“X®CallExpressionÍ-Í-(R°MemberExpressionÍ-Í-&LªIdentifierÍ-Í-£nowLªIdentifierÍ-Í-&«getFullYearÂÂÂX®CallExpressionÍ-,Í-WR°MemberExpressionÍ-,Í-OX®CallExpressionÍ-,Í-FLªIdentifierÍ-,Í-2¦String‘g°BinaryExpressionÍ-3Í-EX®CallExpressionÍ-3Í-AR°MemberExpressionÍ-3Í-?LªIdentifierÍ-3Í-6£nowLªIdentifierÍ-7Í-?¨getMonthÂÂÂ¡+T§LiteralÍ-DÍ-E¡1ÂLªIdentifierÍ-GÍ-O¨padStartÂÂ’T§LiteralÍ-PÍ-Q¡2T§LiteralÍ-SÍ-V¡0£'0'ÂX®CallExpressionÍ-[Í-R°MemberExpressionÍ-[Í-yX®CallExpressionÍ-[Í-pLªIdentifierÍ-[Í-a¦String‘X®CallExpressionÍ-bÍ-oR°MemberExpressionÍ-bÍ-mLªIdentifierÍ-bÍ-e£nowLªIdentifierÍ-fÍ-m§getDateÂÂÂÂLªIdentifierÍ-qÍ-y¨padStartÂÂ’T§LiteralÍ-zÍ-{¡2T§LiteralÍ-}Í-€¡0£'0'Â”Z¯TemplateElementÍ-Í-[  ÂZ¯TemplateElementÍ-)Í-*[¡-¡-ÂZ¯TemplateElementÍ-XÍ-Y[¡-¡-ÂZ¯TemplateElementÍ-‚Í-‚[  ÃÀ’Ôrh•¤type¥start£endªspecifiers¦source±ImportDeclarationÌR‘Ôri”¤type¥start£end¥local¶ImportDefaultSpecifier /LªIdentifier /¯relationalStoreT§Literal5ÌQº@ohos.data.relationalStore¼"@ohos.data.relationalStore"h±ImportDeclarationÌTÌt‘i¶ImportDefaultSpecifierÌ[Ì`LªIdentifierÌ[Ì`¥hilogT§LiteralÌfÌs«@ohos.hilog­"@ohos.hilog"

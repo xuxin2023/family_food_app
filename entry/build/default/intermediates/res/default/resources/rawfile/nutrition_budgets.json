@@ -1,0 +1,36 @@
+{
+  "defaultBudgets": {
+    "CHILD": { "sodium": 1200, "sugar": 25, "calorie": 1500, "fat": 50 },
+    "TEEN": { "sodium": 1800, "sugar": 40, "calorie": 2000, "fat": 60 },
+    "ADULT": { "sodium": 2000, "sugar": 50, "calorie": 2000, "fat": 65 },
+    "MIDDLE_OLD": { "sodium": 1500, "sugar": 40, "calorie": 1800, "fat": 55 },
+    "OLD": { "sodium": 1500, "sugar": 35, "calorie": 1700, "fat": 50 }
+  },
+  "goalAdjustments": {
+    "控压": { "sodium": 1500 },
+    "控糖": { "sugar": 25 },
+    "控脂": { "fat": 50 },
+    "减脂": { "calorie": 1500, "fat": 45 }
+  },
+  "dynamicModifiers": {
+    "lowActivity": {
+      "highCalorie": 0.7,
+      "highFat": 0.7
+    },
+    "highActivity": {
+      "calorie": 1.2,
+      "carbohydrate": 1.2
+    },
+    "poorSleep": {
+      "caffeine": 0.5,
+      "highSugar": 0.8
+    },
+    "weightUp": {
+      "highCalorie": 0.8,
+      "highFat": 0.8
+    },
+    "highBp": {
+      "sodiumBudgetFactor": 0.8
+    }
+  }
+}

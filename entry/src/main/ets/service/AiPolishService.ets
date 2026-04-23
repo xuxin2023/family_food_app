@@ -7,7 +7,7 @@
 // 3. 免费额度200万tokens，超出后自动降级为规则引擎原始输出
 // 4. 网络不可用时自动降级，不影响核心功能
 
-import { hilog } from '@kit.BasicServicesKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 import { http } from '@kit.NetworkKit';
 
 const TAG = 'AiPolishService';

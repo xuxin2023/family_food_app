@@ -32,8 +32,12 @@ export class DateUtil {
    * 计算两个时间字符串(HH:mm)之间的分钟差
    */
   static minutesBetween(time1: string, time2: string): number {
-    const [h1, m1] = time1.split(':').map(Number);
-    const [h2, m2] = time2.split(':').map(Number);
+    const parts1 = time1.split(':');
+    const parts2 = time2.split(':');
+    const h1 = Number(parts1[0]);
+    const m1 = Number(parts1[1]);
+    const h2 = Number(parts2[0]);
+    const m2 = Number(parts2[1]);
     return (h2 * 60 + m2) - (h1 * 60 + m1);
   }
 

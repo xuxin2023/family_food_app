@@ -1,4 +1,4 @@
-import { hilog } from '@kit.BasicServicesKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 import { ShareActionResult, ShareProvider, ShareTarget } from './ShareProvider';
 
 const TAG = 'CopyTextProvider';

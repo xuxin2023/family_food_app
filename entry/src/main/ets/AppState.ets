@@ -1,6 +1,6 @@
 // 全局应用状态管理器 - 统一数据访问入口，替代各页面的模拟数据
 
-import { FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig } from './model/FamilyProfile';
+import { FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig, MealTimes } from './model/FamilyProfile';
 import { HealthSignal, StepLevel, SleepStatus, WeightTrend, BpStatus, BsStatus, DataSource } from './model/HealthSignal';
 import { FoodLabel, FoodSource, NutritionPer100g } from './model/FoodLabel';
 import { DailyBudget } from './model/DailyBudget';
@@ -26,7 +26,7 @@ import { DateUtil } from './utils/DateUtil';
 import { SubscriptionTier, PricingService } from './model/PricingModel';
 import { common } from '@kit.AbilityKit';
 import { relationalStore } from '@kit.ArkData';
-import { hilog } from '@kit.BasicServicesKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'AppState';
 const DOMAIN_ZERO = 0;
@@ -484,7 +484,10 @@ export class AppState {
     child.dailyBudget = new DailyBudgetConfig();
     child.dailyBudget.sodiumBudget = 1200; child.dailyBudget.sugarBudget = 25;
     child.dailyBudget.calorieBudget = 1500; child.dailyBudget.fatBudget = 50;
-    child.mealTimes = { breakfast: '07:30', lunch: '12:00', dinner: '18:00' };
+    child.mealTimes = new MealTimes();
+    child.mealTimes.breakfast = '07:30';
+    child.mealTimes.lunch = '12:00';
+    child.mealTimes.dinner = '18:00';
     child.bedtime = '22:00';
     child.createdAt = now; child.updatedAt = now;
     members.push(child);

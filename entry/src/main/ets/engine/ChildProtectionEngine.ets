@@ -11,13 +11,26 @@ const HIGH_FAT_SNACKS = ['薯片', '炸鸡', '油炸', '膨化'];
 // 含咖啡因饮品
 const CAFFEINE_DRINKS = ['咖啡', '奶茶', '茶饮', '功能饮料', '可乐'];
 
+// 正餐时间参数
+class MealTimeParams {
+  breakfast: string = '07:30';
+  lunch: string = '12:00';
+  dinner: string = '18:00';
+}
+
+// 正餐信息
+class MealInfo {
+  name: string = '';
+  time: string = '';
+}
+
 export class ChildProtectionEngine {
   // 计算儿童保护建议
   calculate(
     profile: FamilyProfile,
     foodLabel: FoodLabel,
     currentTime: Date,
-    mealTimes: { breakfast: string; lunch: string; dinner: string },
+    mealTimes: MealTimeParams,
     bedtime: string
   ): ChildProtection {
     const result = new ChildProtection();
@@ -56,7 +69,7 @@ export class ChildProtectionEngine {
     foodLabel: FoodLabel,
     currentHour: number,
     currentMin: number,
-    mealTimes: { breakfast: string; lunch: string; dinner: string }
+    mealTimes: MealTimeParams
   ): string {
     const isHighSugarSnack = HIGH_SUGAR_SNACKS.some(s => foodName.includes(s)) || foodLabel.isHighSugar();
     const isHighFatSnack = HIGH_FAT_SNACKS.some(s => foodName.includes(s)) || foodLabel.isHighFat();
@@ -68,14 +81,26 @@ export class ChildProtectionEngine {
     const currentMinutes = currentHour * 60 + currentMin;
 
     // 检查距离各正餐的时间
-    const meals = [
-      { name: '早餐', time: mealTimes.breakfast },
-      { name: '午餐', time: mealTimes.lunch },
-      { name: '晚餐', time: mealTimes.dinner }
-    ];
+    const meals: MealInfo[] = [];
+    const breakfastMeal = new MealInfo();
+    breakfastMeal.name = '早餐';
+    breakfastMeal.time = mealTimes.breakfast;
+    meals.push(breakfastMeal);
+
+    const lunchMeal = new MealInfo();
+    lunchMeal.name = '午餐';
+    lunchMeal.time = mealTimes.lunch;
+    meals.push(lunchMeal);
+
+    const dinnerMeal = new MealInfo();
+    dinnerMeal.name = '晚餐';
+    dinnerMeal.time = mealTimes.dinner;
+    meals.push(dinnerMeal);
 
     for (const meal of meals) {
-      const [mealH, mealM] = meal.time.split(':').map(Number);
+      const parts = meal.time.split(':');
+      const mealH = Number(parts[0]);
+      const mealM = Number(parts[1]);
       const mealMinutes = mealH * 60 + mealM;
       const diffMin = mealMinutes - currentMinutes;
 
@@ -100,7 +125,9 @@ export class ChildProtectionEngine {
     currentMin: number,
     bedtime: string
   ): string {
-    const [bedH, bedM] = bedtime.split(':').map(Number);
+    const parts = bedtime.split(':');
+    const bedH = Number(parts[0]);
+    const bedM = Number(parts[1]);
     const currentMinutes = currentHour * 60 + currentMin;
     const bedMinutes = bedH * 60 + bedM;
     const diffMin = bedMinutes - currentMinutes;

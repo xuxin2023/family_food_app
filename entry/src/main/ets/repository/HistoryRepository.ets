@@ -1,34 +1,67 @@
 // 历史记录数据仓库 - 扫描历史与饮食记录
 
 import { relationalStore } from '@kit.ArkData';
-import { hilog } from '@kit.BasicServicesKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'HistoryRepository';
 const DOMAIN_ZERO = 0;
 
-export interface ScanHistoryRecord {
-  id: number;
-  memberId: string;
-  foodId: string;
-  foodName: string;
-  level: string;
-  maxAmount: number;
-  reasons: string[];
-  scannedAt: number;
+export class ScanHistoryRecord {
+  id: number = 0;
+  memberId: string = '';
+  foodId: string = '';
+  foodName: string = '';
+  level: string = '';
+  maxAmount: number = 0;
+  reasons: string[] = [];
+  scannedAt: number = 0;
 }
 
-export interface DietRecord {
-  id: number;
-  memberId: string;
-  date: string;
-  scenario: string;
-  foodId: string;
-  amountG: number;
-  sodiumIntake: number;
-  sugarIntake: number;
-  calorieIntake: number;
-  fatIntake: number;
-  recordedAt: number;
+export class DietRecord {
+  id: number = 0;
+  memberId: string = '';
+  date: string = '';
+  scenario: string = '';
+  foodId: string = '';
+  amountG: number = 0;
+  sodiumIntake: number = 0;
+  sugarIntake: number = 0;
+  calorieIntake: number = 0;
+  fatIntake: number = 0;
+  recordedAt: number = 0;
+}
+
+// 用于保存扫描历史的输入数据（不含id）
+export class ScanHistoryInput {
+  memberId: string = '';
+  foodId: string = '';
+  foodName: string = '';
+  level: string = '';
+  maxAmount: number = 0;
+  reasons: string[] = [];
+  scannedAt: number = 0;
+}
+
+// 用于保存饮食记录的输入数据（不含id）
+export class DietRecordInput {
+  memberId: string = '';
+  date: string = '';
+  scenario: string = '';
+  foodId: string = '';
+  amountG: number = 0;
+  sodiumIntake: number = 0;
+  sugarIntake: number = 0;
+  calorieIntake: number = 0;
+  fatIntake: number = 0;
+  recordedAt: number = 0;
+}
+
+// 风险统计结果
+export class RiskDaysResult {
+  highSodiumDays: number = 0;
+  highSugarDays: number = 0;
+  highFatDays: number = 0;
+  totalRecords: number = 0;
 }
 
 export class HistoryRepository {
@@ -37,38 +70,42 @@ export class HistoryRepository {
   async init(rdbStore: relationalStore.RdbStore): Promise<void> {
     this.rdbStore = rdbStore;
 
-    // 扫描历史表
-    await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS scan_history (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      member_id TEXT NOT NULL,
-      food_id TEXT NOT NULL,
-      food_name TEXT NOT NULL,
-      level TEXT NOT NULL,
-      max_amount REAL NOT NULL,
-      reasons TEXT NOT NULL,
-      scanned_at INTEGER NOT NULL
-    )`);
+    try {
+      // 扫描历史表
+      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS scan_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        member_id TEXT NOT NULL,
+        food_id TEXT NOT NULL,
+        food_name TEXT NOT NULL,
+        level TEXT NOT NULL,
+        max_amount REAL NOT NULL,
+        reasons TEXT NOT NULL,
+        scanned_at INTEGER NOT NULL
+      )`);
 
-    // 饮食记录表
-    await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS diet_record (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      member_id TEXT NOT NULL,
-      date TEXT NOT NULL,
-      scenario TEXT,
-      food_id TEXT,
-      amount_g REAL,
-      sodium_intake REAL,
-      sugar_intake REAL,
-      calorie_intake REAL,
-      fat_intake REAL,
-      recorded_at INTEGER NOT NULL
-    )`);
+      // 饮食记录表
+      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS diet_record (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        member_id TEXT NOT NULL,
+        date TEXT NOT NULL,
+        scenario TEXT,
+        food_id TEXT,
+        amount_g REAL,
+        sodium_intake REAL,
+        sugar_intake REAL,
+        calorie_intake REAL,
+        fat_intake REAL,
+        recorded_at INTEGER NOT NULL
+      )`);
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'Init tables failed: %{public}s', JSON.stringify(error));
+    }
   }
 
   /**
    * 保存扫描历史
    */
-  async saveScanHistory(record: Omit<ScanHistoryRecord, 'id'>): Promise<void> {
+  async saveScanHistory(record: ScanHistoryInput): Promise<void> {
     if (!this.rdbStore) return;
 
     const valueBucket: relationalStore.ValuesBucket = {
@@ -91,7 +128,7 @@ export class HistoryRepository {
   /**
    * 保存饮食记录
    */
-  async saveDietRecord(record: Omit<DietRecord, 'id'>): Promise<void> {
+  async saveDietRecord(record: DietRecordInput): Promise<void> {
     if (!this.rdbStore) return;
 
     const valueBucket: relationalStore.ValuesBucket = {
@@ -148,7 +185,7 @@ export class HistoryRepository {
     try {
       const predicates = new relationalStore.RdbPredicates('scan_history');
       predicates.orderByDesc('scanned_at');
-      predicates.limit(limit);
+      predicates.limitAs(limit);
       const resultSet = await this.rdbStore.query(predicates);
       const records: ScanHistoryRecord[] = [];
 
@@ -174,7 +211,7 @@ export class HistoryRepository {
       const predicates = new relationalStore.RdbPredicates('scan_history');
       predicates.equalTo('member_id', memberId);
       predicates.orderByDesc('scanned_at');
-      predicates.limit(limit);
+      predicates.limitAs(limit);
       const resultSet = await this.rdbStore.query(predicates);
       const records: ScanHistoryRecord[] = [];
 
@@ -220,9 +257,7 @@ export class HistoryRepository {
   /**
    * 统计某成员某日的高盐/高糖/高脂记录数（用于周报）
    */
-  async countRiskDays(memberId: string, startDate: string, endDate: string): Promise<{
-    highSodiumDays: number; highSugarDays: number; highFatDays: number; totalRecords: number;
-  }> {
+  async countRiskDays(memberId: string, startDate: string, endDate: string): Promise<RiskDaysResult> {
     const records = await this.getDietRecordsByDateRange(memberId, startDate, endDate);
     const sodiumDays = new Set<string>();
     const sugarDays = new Set<string>();
@@ -237,12 +272,12 @@ export class HistoryRepository {
       if (r.fatIntake > 20) fatDays.add(r.date);
     }
 
-    return {
-      highSodiumDays: sodiumDays.size,
-      highSugarDays: sugarDays.size,
-      highFatDays: fatDays.size,
-      totalRecords: records.length
-    };
+    const result = new RiskDaysResult();
+    result.highSodiumDays = sodiumDays.size;
+    result.highSugarDays = sugarDays.size;
+    result.highFatDays = fatDays.size;
+    result.totalRecords = records.length;
+    return result;
   }
 
   /**
@@ -264,32 +299,38 @@ export class HistoryRepository {
   // ========== 内部方法 ==========
 
   private scanRecordFromResultSet(resultSet: relationalStore.ResultSet): ScanHistoryRecord {
-    return {
-      id: resultSet.getLong(resultSet.getColumnIndex('id')),
-      memberId: resultSet.getString(resultSet.getColumnIndex('member_id')),
-      foodId: resultSet.getString(resultSet.getColumnIndex('food_id')),
-      foodName: resultSet.getString(resultSet.getColumnIndex('food_name')),
-      level: resultSet.getString(resultSet.getColumnIndex('level')),
-      maxAmount: resultSet.getDouble(resultSet.getColumnIndex('max_amount')),
-      reasons: JSON.parse(resultSet.getString(resultSet.getColumnIndex('reasons')) || '[]') as string[],
-      scannedAt: resultSet.getLong(resultSet.getColumnIndex('scanned_at'))
-    };
+    let reasons: string[] = [];
+    try {
+      reasons = JSON.parse(resultSet.getString(resultSet.getColumnIndex('reasons')) || '[]') as string[];
+    } catch (e) {
+      reasons = [];
+    }
+    const record = new ScanHistoryRecord();
+    record.id = resultSet.getLong(resultSet.getColumnIndex('id'));
+    record.memberId = resultSet.getString(resultSet.getColumnIndex('member_id'));
+    record.foodId = resultSet.getString(resultSet.getColumnIndex('food_id'));
+    record.foodName = resultSet.getString(resultSet.getColumnIndex('food_name'));
+    record.level = resultSet.getString(resultSet.getColumnIndex('level'));
+    record.maxAmount = resultSet.getDouble(resultSet.getColumnIndex('max_amount'));
+    record.reasons = reasons;
+    record.scannedAt = resultSet.getLong(resultSet.getColumnIndex('scanned_at'));
+    return record;
   }
 
   private dietRecordFromResultSet(resultSet: relationalStore.ResultSet): DietRecord {
-    return {
-      id: resultSet.getLong(resultSet.getColumnIndex('id')),
-      memberId: resultSet.getString(resultSet.getColumnIndex('member_id')),
-      date: resultSet.getString(resultSet.getColumnIndex('date')),
-      scenario: resultSet.getString(resultSet.getColumnIndex('scenario')),
-      foodId: resultSet.getString(resultSet.getColumnIndex('food_id')),
-      amountG: resultSet.getDouble(resultSet.getColumnIndex('amount_g')),
-      sodiumIntake: resultSet.getDouble(resultSet.getColumnIndex('sodium_intake')),
-      sugarIntake: resultSet.getDouble(resultSet.getColumnIndex('sugar_intake')),
-      calorieIntake: resultSet.getDouble(resultSet.getColumnIndex('calorie_intake')),
-      fatIntake: resultSet.getDouble(resultSet.getColumnIndex('fat_intake')),
-      recordedAt: resultSet.getLong(resultSet.getColumnIndex('recorded_at'))
-    };
+    const record = new DietRecord();
+    record.id = resultSet.getLong(resultSet.getColumnIndex('id'));
+    record.memberId = resultSet.getString(resultSet.getColumnIndex('member_id'));
+    record.date = resultSet.getString(resultSet.getColumnIndex('date'));
+    record.scenario = resultSet.getString(resultSet.getColumnIndex('scenario'));
+    record.foodId = resultSet.getString(resultSet.getColumnIndex('food_id'));
+    record.amountG = resultSet.getDouble(resultSet.getColumnIndex('amount_g'));
+    record.sodiumIntake = resultSet.getDouble(resultSet.getColumnIndex('sodium_intake'));
+    record.sugarIntake = resultSet.getDouble(resultSet.getColumnIndex('sugar_intake'));
+    record.calorieIntake = resultSet.getDouble(resultSet.getColumnIndex('calorie_intake'));
+    record.fatIntake = resultSet.getDouble(resultSet.getColumnIndex('fat_intake'));
+    record.recordedAt = resultSet.getLong(resultSet.getColumnIndex('recorded_at'));
+    return record;
   }
 
   private getTodayDate(): string {

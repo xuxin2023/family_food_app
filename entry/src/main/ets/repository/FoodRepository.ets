@@ -2,7 +2,7 @@
 
 import { relationalStore } from '@kit.ArkData';
 import { FoodLabel, FoodSource, NutritionPer100g } from '../model/FoodLabel';
-import { hilog } from '@kit.BasicServicesKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'FoodRepository';
 const DOMAIN_ZERO = 0;
@@ -31,7 +31,11 @@ export class FoodRepository {
       source TEXT NOT NULL,
       identified_at INTEGER NOT NULL
     )`;
-    await this.rdbStore.executeSql(sql);
+    try {
+      await this.rdbStore.executeSql(sql);
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'Init table failed: %{public}s', JSON.stringify(error));
+    }
   }
 
   /**
@@ -123,7 +127,7 @@ export class FoodRepository {
     try {
       const predicates = new relationalStore.RdbPredicates(TABLE_NAME);
       predicates.orderByDesc('identified_at');
-      predicates.limit(limit);
+      predicates.limitAs(limit);
       const resultSet = await this.rdbStore.query(predicates);
       const labels: FoodLabel[] = [];
 
@@ -162,9 +166,21 @@ export class FoodRepository {
     label.foodId = resultSet.getString(resultSet.getColumnIndex('food_id'));
     label.foodName = resultSet.getString(resultSet.getColumnIndex('food_name'));
     label.barcode = resultSet.getString(resultSet.getColumnIndex('barcode'));
-    label.ingredients = JSON.parse(resultSet.getString(resultSet.getColumnIndex('ingredients'))) as string[];
-    label.nutrition = JSON.parse(resultSet.getString(resultSet.getColumnIndex('nutrition'))) as NutritionPer100g;
-    label.allergenHints = JSON.parse(resultSet.getString(resultSet.getColumnIndex('allergen_hints')) || '[]') as string[];
+    try {
+      label.ingredients = JSON.parse(resultSet.getString(resultSet.getColumnIndex('ingredients'))) as string[];
+    } catch (e) {
+      label.ingredients = [];
+    }
+    try {
+      label.nutrition = JSON.parse(resultSet.getString(resultSet.getColumnIndex('nutrition'))) as NutritionPer100g;
+    } catch (e) {
+      label.nutrition = new NutritionPer100g();
+    }
+    try {
+      label.allergenHints = JSON.parse(resultSet.getString(resultSet.getColumnIndex('allergen_hints')) || '[]') as string[];
+    } catch (e) {
+      label.allergenHints = [];
+    }
     label.manufacturer = resultSet.getString(resultSet.getColumnIndex('manufacturer'));
     label.scNumber = resultSet.getString(resultSet.getColumnIndex('sc_number'));
     label.principal = resultSet.getString(resultSet.getColumnIndex('principal'));

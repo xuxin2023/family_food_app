@@ -2,10 +2,35 @@
 
 import { common } from '@kit.AbilityKit';
 import { resourceManager } from '@kit.LocalizationKit';
-import { hilog, util } from '@kit.BasicServicesKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+import { util } from '@kit.ArkTS';
 
 const TAG = 'RuleRepository';
 const DOMAIN_ZERO = 0;
+
+// 目标调整因子
+export class GoalAdjustment {
+  sodium: number = 0;
+  sugar: number = 0;
+  calorie: number = 0;
+  fat: number = 0;
+}
+
+// 动态修正因子
+export class DynamicFactor {
+  sodiumFactor: number = 1;
+  calorieFactor: number = 1;
+  sugarFactor: number = 1;
+  fatFactor: number = 1;
+}
+
+// 动态修正配置
+export class DynamicModifiers {
+  lowStep: DynamicFactor = new DynamicFactor();
+  poorSleep: DynamicFactor = new DynamicFactor();
+  highBp: DynamicFactor = new DynamicFactor();
+  highBs: DynamicFactor = new DynamicFactor();
+}
 
 // 营养预算规则类型
 export interface NutritionBudgetRule {
@@ -14,13 +39,8 @@ export interface NutritionBudgetRule {
   sugarBudget: number;
   calorieBudget: number;
   fatBudget: number;
-  goalAdjustments?: Record<string, { sodium?: number; sugar?: number; calorie?: number; fat?: number }>;
-  dynamicModifiers?: {
-    lowStep?: { sodiumFactor: number; calorieFactor: number };
-    poorSleep?: { sugarFactor: number; fatFactor: number };
-    highBp?: { sodiumFactor: number };
-    highBs?: { sugarFactor: number };
-  };
+  goalAdjustments?: Record<string, GoalAdjustment>;
+  dynamicModifiers?: DynamicModifiers;
 }
 
 // 美食平衡模板类型

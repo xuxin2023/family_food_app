@@ -10,11 +10,34 @@ export enum DataGrade {
 }
 
 // 雷达维度
-export interface RadarDimension {
-  name: string;           // 维度名称
-  status: string;         // 清晰/部分清晰/未识别
-  grade: DataGrade;       // 数据等级
-  detail: string;         // 详细说明
+export class RadarDimension {
+  name: string = '';           // 维度名称
+  status: string = '';         // 清晰/部分清晰/未识别
+  grade: DataGrade = DataGrade.D;       // 数据等级
+  detail: string = '';         // 详细说明
+}
+
+// 公开查询入口
+export class PublicQueryEntry {
+  name: string = '';        // 查询系统名称
+  keyword: string = '';     // 查询关键词（可复制）
+  url: string = '';         // 查询URL（可选）
+  description: string = ''; // 使用说明
+}
+
+// CredibilityResult JSON 输出类
+export class CredibilityResultJson {
+  score: Object = 0;
+  manufacturerClear: Object = false;
+  scNumberClear: Object = false;
+  oemRelationClear: Object = false;
+  hasTraceCode: Object = false;
+  manufacturerMissing: Object = false;
+  oemTrusteeMissing: Object = false;
+  tips: Object = [];
+  radarDimensions: Object = [];
+  overallGrade: Object = DataGrade.D;
+  publicQueryEntries: Object = [];
 }
 
 export class CredibilityResult {
@@ -56,27 +79,19 @@ export class CredibilityResult {
     }
   }
 
-  toJson(): Record<string, Object> {
-    return {
-      score: this.score,
-      manufacturerClear: this.manufacturerClear,
-      scNumberClear: this.scNumberClear,
-      oemRelationClear: this.oemRelationClear,
-      hasTraceCode: this.hasTraceCode,
-      manufacturerMissing: this.manufacturerMissing,
-      oemTrusteeMissing: this.oemTrusteeMissing,
-      tips: this.tips,
-      radarDimensions: this.radarDimensions,
-      overallGrade: this.overallGrade,
-      publicQueryEntries: this.publicQueryEntries
-    };
+  toJson(): CredibilityResultJson {
+    const json = new CredibilityResultJson();
+    json.score = this.score;
+    json.manufacturerClear = this.manufacturerClear;
+    json.scNumberClear = this.scNumberClear;
+    json.oemRelationClear = this.oemRelationClear;
+    json.hasTraceCode = this.hasTraceCode;
+    json.manufacturerMissing = this.manufacturerMissing;
+    json.oemTrusteeMissing = this.oemTrusteeMissing;
+    json.tips = this.tips;
+    json.radarDimensions = this.radarDimensions;
+    json.overallGrade = this.overallGrade;
+    json.publicQueryEntries = this.publicQueryEntries;
+    return json;
   }
-}
-
-// 公开查询入口
-export interface PublicQueryEntry {
-  name: string;        // 查询系统名称
-  keyword: string;     // 查询关键词（可复制）
-  url: string;         // 查询URL（可选）
-  description: string; // 使用说明
 }

@@ -6,6 +6,9 @@ import { HealthSignal, StepLevel, SleepStatus, BpStatus, BsStatus } from '../mod
 import { AppState } from '../AppState';
 import { DateUtil } from '../utils/DateUtil';
 
+// AgeGroup 枚举值数组
+const AGE_GROUP_VALUES: AgeGroup[] = [AgeGroup.CHILD, AgeGroup.TEEN, AgeGroup.ADULT, AgeGroup.MIDDLE_OLD, AgeGroup.OLD];
+
 @Entry
 @Component
 struct MemberEditPage {
@@ -29,6 +32,24 @@ struct MemberEditPage {
   private bsStatuses: string[] = ['正常', '偏高', '高']
   private commonAllergens: string[] = ['坚果', '乳制品', '麸质', '鸡蛋', '海鲜', '大豆', '芝麻', '花生']
   @State selectedAllergens: boolean[] = [false, false, false, false, false, false, false, false]
+
+  // 将 AgeGroup 转换为索引
+  private ageGroupToIndex(ageGroup: AgeGroup): number {
+    for (let i = 0; i < AGE_GROUP_VALUES.length; i++) {
+      if (AGE_GROUP_VALUES[i] === ageGroup) {
+        return i;
+      }
+    }
+    return 2; // 默认成人
+  }
+
+  // 将索引转换为 AgeGroup
+  private indexToAgeGroup(index: number): AgeGroup {
+    if (index >= 0 && index < AGE_GROUP_VALUES.length) {
+      return AGE_GROUP_VALUES[index];
+    }
+    return AgeGroup.ADULT; // 默认成人
+  }
 
   build() {
     Scroll() {
@@ -231,7 +252,7 @@ struct MemberEditPage {
       const member = members.find(m => m.memberId === this.editingMemberId)
       if (member) {
         this.nickname = member.nickname
-        this.selectedAgeGroup = member.ageGroup as number
+        this.selectedAgeGroup = this.ageGroupToIndex(member.ageGroup)
         // 回填健康目标
         const goalValues = [HealthGoal.CONTROL_BP, HealthGoal.CONTROL_SUGAR, HealthGoal.CONTROL_FAT,
           HealthGoal.LOSE_FAT, HealthGoal.CHILD, HealthGoal.NONE]
@@ -250,7 +271,7 @@ struct MemberEditPage {
     const profile = new FamilyProfile()
     profile.memberId = this.editingMemberId.length > 0 ? this.editingMemberId : `member_${Date.now()}`
     profile.nickname = this.nickname
-    profile.ageGroup = this.selectedAgeGroup as AgeGroup
+    profile.ageGroup = this.indexToAgeGroup(this.selectedAgeGroup)
     profile.createdAt = this.editingMemberId.length > 0 ? Date.now() : Date.now()
     profile.updatedAt = Date.now()
 

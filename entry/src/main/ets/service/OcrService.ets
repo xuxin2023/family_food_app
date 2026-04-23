@@ -3,58 +3,53 @@
 
 import { textRecognition } from '@kit.CoreVisionKit';
 import { image } from '@kit.ImageKit';
-import { hilog } from '@kit.BasicServicesKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FoodLabel, FoodSource, NutritionPer100g } from '../model/FoodLabel';
 
 const TAG = 'OcrService';
 const DOMAIN_ZERO = 0;
 
-// OCR识别结果
-export interface OcrResult {
-  text: string;
-  confidence: number;
-  blocks: OcrBlock[];
+// OCR边界框
+export class OcrBounds {
+  left: number = 0;
+  top: number = 0;
+  right: number = 0;
+  bottom: number = 0;
 }
 
-export interface OcrBlock {
-  text: string;
-  confidence: number;
-  bounds: { left: number; top: number; right: number; bottom: number };
+// OCR识别块
+export class OcrBlock {
+  text: string = '';
+  confidence: number = 0;
+  bounds: OcrBounds = new OcrBounds();
+}
+
+// OCR识别结果
+export class OcrResult {
+  text: string = '';
+  confidence: number = 0;
+  blocks: OcrBlock[] = [];
+}
+
+// OEM信息
+export class OemInfo {
+  principal: string = '';
+  trustee: string = '';
 }
 
 export class OcrService {
-  private textRecognizer: textRecognition.TextRecognition | null = null;
-
   /**
-   * 初始化OCR引擎（端侧优先，无需网络）
-   * 应在应用启动时调用一次
+   * 初始化OCR引擎（兼容旧调用点，当前无需创建识别实例）
    */
   async init(): Promise<void> {
-    try {
-      const textConfiguration: textRecognition.TextRecognitionConfiguration = {
-        isOnline: false  // 端侧优先，离线可用
-      };
-      this.textRecognizer = await textRecognition.TextRecognition.create(textConfiguration);
-      hilog.info(DOMAIN_ZERO, TAG, 'OCR engine initialized');
-    } catch (error) {
-      hilog.error(DOMAIN_ZERO, TAG, 'OCR init failed: %{public}s', JSON.stringify(error));
-      this.textRecognizer = null;
-    }
+    hilog.info(DOMAIN_ZERO, TAG, 'OCR service ready with function-based Core Vision Kit API');
   }
 
   /**
-   * 释放OCR引擎资源
+   * 释放OCR资源（兼容旧调用点，当前无需释放识别实例）
    */
   async release(): Promise<void> {
-    if (this.textRecognizer) {
-      try {
-        await this.textRecognizer.release();
-        this.textRecognizer = null;
-        hilog.info(DOMAIN_ZERO, TAG, 'OCR engine released');
-      } catch (error) {
-        hilog.error(DOMAIN_ZERO, TAG, 'OCR release failed: %{public}s', JSON.stringify(error));
-      }
-    }
+    hilog.info(DOMAIN_ZERO, TAG, 'OCR service release skipped for function-based Core Vision Kit API');
   }
 
   /**
@@ -63,35 +58,24 @@ export class OcrService {
    * @returns OCR识别结果
    */
   async recognizeText(imageUri: string): Promise<OcrResult> {
-    if (!this.textRecognizer) {
-      await this.init();
-    }
-    if (!this.textRecognizer) {
-      hilog.error(DOMAIN_ZERO, TAG, 'OCR engine not available');
-      return { text: '', confidence: 0, blocks: [] };
-    }
-
+    let pixelMap: image.PixelMap | null = null;
     try {
-      // 1. 从URI创建ImageSource
       const imageSource = image.createImageSource(imageUri);
-
-      // 2. 解码为PixelMap
-      const pixelMap = await imageSource.createPixelMap();
-
-      // 3. 调用Core Vision Kit识别
-      const textResult = await this.textRecognizer.recognize(pixelMap);
-
-      // 4. 解析结果
-      const result = this.parseOcrResult(textResult);
-
-      // 5. 释放PixelMap
-      pixelMap.release();
-
+      pixelMap = await imageSource.createPixelMap();
+      const result = await this.recognizeFromPixelMap(pixelMap);
       hilog.info(DOMAIN_ZERO, TAG, 'OCR recognized %{public}d blocks', result.blocks.length);
       return result;
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'OCR recognize failed: %{public}s', JSON.stringify(error));
       return { text: '', confidence: 0, blocks: [] };
+    } finally {
+      if (pixelMap) {
+        try {
+          pixelMap.release();
+        } catch (releaseError) {
+          hilog.warn(DOMAIN_ZERO, TAG, 'OCR pixelMap release failed: %{public}s', JSON.stringify(releaseError));
+        }
+      }
     }
   }
 
@@ -101,15 +85,12 @@ export class OcrService {
    * @returns OCR识别结果
    */
   async recognizeFromPixelMap(pixelMap: image.PixelMap): Promise<OcrResult> {
-    if (!this.textRecognizer) {
-      await this.init();
-    }
-    if (!this.textRecognizer) {
-      return { text: '', confidence: 0, blocks: [] };
-    }
-
     try {
-      const textResult = await this.textRecognizer.recognize(pixelMap);
+      const visionInfo: textRecognition.VisionInfo = { pixelMap };
+      const config: textRecognition.TextRecognitionConfiguration = {
+        isDirectionDetectionSupported: false
+      };
+      const textResult = await textRecognition.recognizeText(visionInfo, config);
       return this.parseOcrResult(textResult);
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'OCR recognize from PixelMap failed: %{public}s', JSON.stringify(error));
@@ -183,51 +164,80 @@ export class OcrService {
    */
   private parseOcrResult(textResult: textRecognition.TextRecognitionResult): OcrResult {
     const blocks: OcrBlock[] = [];
-    let fullText = '';
-    let totalConfidence = 0;
-    let blockCount = 0;
+    let fullText = textResult.value ? textResult.value.trim() : '';
 
-    // 遍历文本块
-    if (textResult && textResult.textBlocks) {
-      for (const block of textResult.textBlocks) {
-        let blockText = '';
-        // 遍历文本行
-        if (block.textLines) {
-          for (const line of block.textLines) {
-            // 遍历文字单元
-            if (line.words) {
-              for (const word of line.words) {
-                blockText += word.value + ' ';
-              }
-            }
-            blockText += '\n';
+    for (const block of textResult.blocks) {
+      const lines: string[] = [];
+      for (const line of block.lines) {
+        if (line.words.length > 0) {
+          const words = line.words.map((word) => word.value).join(' ').trim();
+          if (words.length > 0) {
+            lines.push(words);
+            continue;
           }
         }
 
-        blockText = blockText.trim();
-        if (blockText.length > 0) {
-          blocks.push({
-            text: blockText,
-            confidence: block.confidence || 0,
-            bounds: block.cornerPoints ? {
-              left: Math.min(block.cornerPoints[0].x, block.cornerPoints[3].x),
-              top: Math.min(block.cornerPoints[0].y, block.cornerPoints[1].y),
-              right: Math.max(block.cornerPoints[1].x, block.cornerPoints[2].x),
-              bottom: Math.max(block.cornerPoints[2].y, block.cornerPoints[3].y)
-            } : { left: 0, top: 0, right: 0, bottom: 0 }
-          });
-          fullText += blockText + '\n';
-          totalConfidence += (block.confidence || 0);
-          blockCount++;
+        const lineValue = line.value.trim();
+        if (lineValue.length > 0) {
+          lines.push(lineValue);
         }
       }
+
+      const blockValue = block.value.trim();
+      const blockText = blockValue.length > 0 ? blockValue : lines.join('\n').trim();
+      if (blockText.length === 0) {
+        continue;
+      }
+
+      blocks.push({
+        text: blockText,
+        confidence: 0,
+        bounds: this.buildBounds(this.resolveCornerPoints(block))
+      });
+    }
+
+    if (fullText.length === 0 && blocks.length > 0) {
+      fullText = blocks.map((block) => block.text).join('\n').trim();
     }
 
     return {
-      text: fullText.trim(),
-      confidence: blockCount > 0 ? totalConfidence / blockCount : 0,
+      text: fullText,
+      confidence: 0,
       blocks
     };
+  }
+
+  private resolveCornerPoints(block: textRecognition.TextBlock): Array<textRecognition.PixelPoint> {
+    for (const line of block.lines) {
+      if (line.cornerPoints.length > 0) {
+        return line.cornerPoints;
+      }
+    }
+
+    // 尝试从block本身获取cornerPoints（使用反射方式）
+    // 由于 TextBlock 可能没有直接的 cornerPoints 属性，这里返回空数组
+    return [];
+  }
+
+  private buildBounds(cornerPoints: Array<textRecognition.PixelPoint>): OcrBounds {
+    const bounds = new OcrBounds();
+    if (cornerPoints.length === 0) {
+      return bounds;
+    }
+
+    bounds.left = cornerPoints[0].x;
+    bounds.top = cornerPoints[0].y;
+    bounds.right = cornerPoints[0].x;
+    bounds.bottom = cornerPoints[0].y;
+
+    for (const point of cornerPoints) {
+      bounds.left = Math.min(bounds.left, point.x);
+      bounds.top = Math.min(bounds.top, point.y);
+      bounds.right = Math.max(bounds.right, point.x);
+      bounds.bottom = Math.max(bounds.bottom, point.y);
+    }
+
+    return bounds;
   }
 
   // 提取食品名称
@@ -247,10 +257,7 @@ export class OcrService {
 
   // 提取营养成分
   private extractNutrition(text: string): NutritionPer100g {
-    const nutrition: NutritionPer100g = {
-      sodium: 0, sugar: 0, calories: 0, fat: 0,
-      saturatedFat: 0, carbohydrate: 0, protein: 0
-    };
+    const nutrition = new NutritionPer100g();
 
     // 钠（支持"钠"和"钠/Na"两种写法）
     const sodiumMatch = text.match(/(?:钠|Na)[^\d]*(\d+\.?\d*)\s*mg/);
@@ -307,13 +314,13 @@ export class OcrService {
   }
 
   // 提取委托方/受托方
-  private extractOemInfo(text: string): { principal: string; trustee: string } {
+  private extractOemInfo(text: string): OemInfo {
+    const result = new OemInfo();
     const principalMatch = text.match(/(?:委托方|委托生产企业|委托单位)[：:]\s*(.*?)(?:\n|$)/);
     const trusteeMatch = text.match(/(?:受托方|受托生产企业|受托单位|实际生产企业)[：:]\s*(.*?)(?:\n|$)/);
-    return {
-      principal: principalMatch ? principalMatch[1].trim() : '',
-      trustee: trusteeMatch ? trusteeMatch[1].trim() : ''
-    };
+    result.principal = principalMatch ? principalMatch[1].trim() : '';
+    result.trustee = trusteeMatch ? trusteeMatch[1].trim() : '';
+    return result;
   }
 
   // 提取条码（OCR可能扫到条码数字）

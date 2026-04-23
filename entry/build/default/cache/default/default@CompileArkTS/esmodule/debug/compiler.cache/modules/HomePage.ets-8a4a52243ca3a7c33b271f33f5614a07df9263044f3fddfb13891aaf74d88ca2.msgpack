@@ -1,0 +1,703 @@
+Ôr@Ÿªassertions¤code´customTransformCache¬dependencies¢id¤meta±moduleSideEffects¬originalCode±originalSourcemap«resolvedIds®sourcemapChainµsyntheticNamedExportsµtransformDependencies®transformFiles¨cacheAstÔrAÚH2if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
+// é¦–é¡µ - å®¶åº­é¥®é£Ÿå¹³è¡¡åŠ©æ‰‹ V4
+import router from "@ohos.router";
+import { MemberCard } from '../components/MemberCard';
+import { AppState } from '../AppState';
+import { SubscriptionTier } from '../model/PricingModel';
+class HomePage extends ViewPU {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
+        this.__familyMembers = new ObservedPropertyObjectPU([], this, "familyMembers");
+        this.__selectedMemberId = new ObservedPropertySimplePU('', this, "selectedMemberId");
+        this.__currentSloganIndex = new ObservedPropertySimplePU(0, this, "currentSloganIndex");
+        this.appState = AppState.getInstance();
+        this.slogans = [
+            'ç»™çˆ¸å¦ˆä¹°é£Ÿå“å‰ï¼Œå…ˆæ‹ä¸€ä¸‹ã€‚',
+            'å­©å­é›¶é£Ÿä¼šä¸ä¼šå½±å“æ­£é¤ï¼Œä¸€æ‹å°±çŸ¥é“ã€‚',
+            'åƒå®Œçƒ§çƒ¤ç«é”…ï¼Œä¸‹ä¸€é¤æ€Žä¹ˆæ­ã€‚',
+            'åŒä¸€æ¬¾é£Ÿå“ï¼Œçˆ¸çˆ¸ã€å¦ˆå¦ˆã€å­©å­å»ºè®®éƒ½ä¸åŒã€‚',
+            'ä¸æ˜¯ä¸è®©ä½ åƒï¼Œè€Œæ˜¯å¸®ä½ åƒå¾—æ›´æœ‰æ•°ã€‚'
+        ];
+        this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
+    }
+    setInitiallyProvidedValue(params) {
+        if (params.familyMembers !== undefined) {
+            this.familyMembers = params.familyMembers;
+        }
+        if (params.selectedMemberId !== undefined) {
+            this.selectedMemberId = params.selectedMemberId;
+        }
+        if (params.currentSloganIndex !== undefined) {
+            this.currentSloganIndex = params.currentSloganIndex;
+        }
+        if (params.appState !== undefined) {
+            this.appState = params.appState;
+        }
+        if (params.slogans !== undefined) {
+            this.slogans = params.slogans;
+        }
+    }
+    updateStateVars(params) {
+    }
+    purgeVariableDependenciesOnElmtId(rmElmtId) {
+        this.__familyMembers.purgeDependencyOnElmtId(rmElmtId);
+        this.__selectedMemberId.purgeDependencyOnElmtId(rmElmtId);
+        this.__currentSloganIndex.purgeDependencyOnElmtId(rmElmtId);
+    }
+    aboutToBeDeleted() {
+        this.__familyMembers.aboutToBeDeleted();
+        this.__selectedMemberId.aboutToBeDeleted();
+        this.__currentSloganIndex.aboutToBeDeleted();
+        SubscriberManager.Get().delete(this.id__());
+        this.aboutToBeDeletedInternal();
+    }
+    get familyMembers() {
+        return this.__familyMembers.get();
+    }
+    set familyMembers(newValue) {
+        this.__familyMembers.set(newValue);
+    }
+    get selectedMemberId() {
+        return this.__selectedMemberId.get();
+    }
+    set selectedMemberId(newValue) {
+        this.__selectedMemberId.set(newValue);
+    }
+    get currentSloganIndex() {
+        return this.__currentSloganIndex.get();
+    }
+    set currentSloganIndex(newValue) {
+        this.__currentSloganIndex.set(newValue);
+    }
+    async aboutToAppear() {
+        this.currentSloganIndex = Math.floor(Math.random() * this.slogans.length);
+        await this.loadFamilyMembers();
+    }
+    async loadFamilyMembers() {
+        this.familyMembers = await this.appState.getAllMembers();
+        if (this.familyMembers.length > 0 && this.selectedMemberId.length === 0) {
+            this.selectedMemberId = this.familyMembers[0].memberId;
+        }
+    }
+    initialRender() {
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Column.create();
+            Column.width('100%');
+            Column.height('100%');
+            Column.backgroundColor('#FAFAFA');
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            // é¡¶éƒ¨å“ç‰ŒåŒº
+            Column.create();
+            // é¡¶éƒ¨å“ç‰ŒåŒº
+            Column.width('100%');
+            // é¡¶éƒ¨å“ç‰ŒåŒº
+            Column.alignItems(HorizontalAlign.Center);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create('å®¶åº­é¥®é£Ÿå¹³è¡¡åŠ©æ‰‹');
+            Text.fontSize(22);
+            Text.fontWeight(FontWeight.Bold);
+            Text.fontColor('#1976D2');
+            Text.margin({ top: 20, bottom: 4 });
+        }, Text);
+        Text.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            // V4ç”Ÿæ´»åŒ–æ–‡æ¡ˆï¼ˆè½®æ’­ï¼‰
+            Text.create(this.slogans[this.currentSloganIndex]);
+            // V4ç”Ÿæ´»åŒ–æ–‡æ¡ˆï¼ˆè½®æ’­ï¼‰
+            Text.fontSize(14);
+            // V4ç”Ÿæ´»åŒ–æ–‡æ¡ˆï¼ˆè½®æ’­ï¼‰
+            Text.fontColor('#757575');
+            // V4ç”Ÿæ´»åŒ–æ–‡æ¡ˆï¼ˆè½®æ’­ï¼‰
+            Text.margin({ bottom: 16 });
+            // V4ç”Ÿæ´»åŒ–æ–‡æ¡ˆï¼ˆè½®æ’­ï¼‰
+            Text.textAlign(TextAlign.Center);
+            // V4ç”Ÿæ´»åŒ–æ–‡æ¡ˆï¼ˆè½®æ’­ï¼‰
+            Text.maxLines(2);
+        }, Text);
+        // V4ç”Ÿæ´»åŒ–æ–‡æ¡ˆï¼ˆè½®æ’­ï¼‰
+        Text.pop();
+        // é¡¶éƒ¨å“ç‰ŒåŒº
+        Column.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            // å®¶åº­æˆå‘˜é€‰æ‹©
+            Text.create('ä»Šå¤©ç»™è°çœ‹ï¼Ÿ');
+            // å®¶åº­æˆå‘˜é€‰æ‹©
+            Text.fontSize(18);
+            // å®¶åº­æˆå‘˜é€‰æ‹©
+            Text.fontWeight(FontWeight.Medium);
+            // å®¶åº­æˆå‘˜é€‰æ‹©
+            Text.fontColor('#212121');
+            // å®¶åº­æˆå‘˜é€‰æ‹©
+            Text.margin({ left: 16, bottom: 8 });
+        }, Text);
+        // å®¶åº­æˆå‘˜é€‰æ‹©
+        Text.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            // æˆå‘˜å¡ç‰‡ï¼ˆä½¿ç”¨MemberCardç»„ä»¶ï¼‰
+            Scroll.create();
+            // æˆå‘˜å¡ç‰‡ï¼ˆä½¿ç”¨MemberCardç»„ä»¶ï¼‰
+            Scroll.scrollable(ScrollDirection.Vertical);
+            // æˆå‘˜å¡ç‰‡ï¼ˆä½¿ç”¨MemberCardç»„ä»¶ï¼‰
+            Scroll.layoutWeight(1);
+        }, Scroll);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Flex.create({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start, alignItems: ItemAlign.Start });
+            Flex.width('100%');
+            Flex.padding({ left: 16, right: 16 });
+        }, Flex);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            ForEach.create();
+            const forEachItemGenFunction = _item => {
+                const member = _item;
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
+                    Column.create();
+                    Column.width('45%');
+                    Column.margin(8);
+                }, Column);
+                {
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        if (isInitialRender) {
+                            let componentCall = new MemberCard(this, {
+                                member: member,
+                                isSelected: this.selectedMemberId === member.memberId,
+                                onSelect: (id) => { this.selectedMemberId = id; }
+                            }, undefined, elmtId, () => { }, { page: "entry/src/main/ets/pages/HomePage.ets", line: 72, col: 15 });
+                            ViewPU.create(componentCall);
+                            let paramsLambda = () => {
+                                return {
+                                    member: member,
+                                    isSelected: this.selectedMemberId === member.memberId,
+                                    onSelect: (id) => { this.selectedMemberId = id; }
+                                };
+                            };
+                            componentCall.paramsGenerator_ = paramsLambda;
+                        }
+                        else {
+                            this.updateStateVarsOfChildByElmtId(elmtId, {
+                                member: member,
+                                isSelected: this.selectedMemberId === member.memberId
+                            });
+                        }
+                    }, { name: "MemberCard" });
+                }
+                Column.pop();
+            };
+            this.forEachUpdateFunction(elmtId, this.familyMembers, forEachItemGenFunction, (member) => member.memberId, false, false);
+        }, ForEach);
+        ForEach.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            // æ·»åŠ æˆå‘˜æŒ‰é’®ï¼ˆå¸¦é—¨æŽ§ï¼‰
+            Column.create();
+            // æ·»åŠ æˆå‘˜æŒ‰é’®ï¼ˆå¸¦é—¨æŽ§ï¼‰
+            Column.width('45%');
+            // æ·»åŠ æˆå‘˜æŒ‰é’®ï¼ˆå¸¦é—¨æŽ§ï¼‰
+            Column.height(100);
+            // æ·»åŠ æˆå‘˜æŒ‰é’®ï¼ˆå¸¦é—¨æŽ§ï¼‰
+            Column.margin(8);
+            // æ·»åŠ æˆå‘˜æŒ‰é’®ï¼ˆå¸¦é—¨æŽ§ï¼‰
+            Column.borderRadius(16);
+            // æ·»åŠ æˆå‘˜æŒ‰é’®ï¼ˆå¸¦é—¨æŽ§ï¼‰
+            Column.justifyContent(FlexAlign.Center);
+            // æ·»åŠ æˆå‘˜æŒ‰é’®ï¼ˆå¸¦é—¨æŽ§ï¼‰
+            Column.alignItems(HorizontalAlign.Center);
+            // æ·»åŠ æˆå‘˜æŒ‰é’®ï¼ˆå¸¦é—¨æŽ§ï¼‰
+            Column.border({ width: 1, color: '#E0E0E0', style: BorderStyle.Dashed, radius: 16 });
+            // æ·»åŠ æˆå‘˜æŒ‰é’®ï¼ˆå¸¦é—¨æŽ§ï¼‰
+            Column.onClick(() => {
+                if (this.appState.canAddMember()) {
+                    router.pushUrl({ url: 'pages/MemberEditPage' });
+                }
+                else {
+                    router.pushUrl({ url: 'pages/SettingsPage' });
+                }
+            });
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create('+');
+            Text.fontSize(28);
+            Text.fontColor('#1976D2');
+        }, Text);
+        Text.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create(this.appState.canAddMember() ? 'æ·»åŠ æˆå‘˜' : 'å‡çº§è§£é”');
+            Text.fontSize(12);
+            Text.fontColor(this.appState.canAddMember() ? '#1976D2' : '#FF9800');
+            Text.margin({ top: 4 });
+        }, Text);
+        Text.pop();
+        // æ·»åŠ æˆå‘˜æŒ‰é’®ï¼ˆå¸¦é—¨æŽ§ï¼‰
+        Column.pop();
+        Flex.pop();
+        // æˆå‘˜å¡ç‰‡ï¼ˆä½¿ç”¨MemberCardç»„ä»¶ï¼‰
+        Scroll.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            // åº•éƒ¨æ“ä½œåŒº
+            Column.create();
+            // åº•éƒ¨æ“ä½œåŒº
+            Column.width('100%');
+            // åº•éƒ¨æ“ä½œåŒº
+            Column.alignItems(HorizontalAlign.Center);
+            // åº•éƒ¨æ“ä½œåŒº
+            Column.padding({ left: 16, right: 16 });
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            // æ‹é£Ÿå“æ ‡ç­¾æŒ‰é’®
+            Button.createWithChild();
+            // æ‹é£Ÿå“æ ‡ç­¾æŒ‰é’®
+            Button.width('90%');
+            // æ‹é£Ÿå“æ ‡ç­¾æŒ‰é’®
+            Button.height(56);
+            // æ‹é£Ÿå“æ ‡ç­¾æŒ‰é’®
+            Button.backgroundColor('#1976D2');
+            // æ‹é£Ÿå“æ ‡ç­¾æŒ‰é’®
+            Button.borderRadius(28);
+            // æ‹é£Ÿå“æ ‡ç­¾æŒ‰é’®
+            Button.margin({ bottom: 12 });
+            // æ‹é£Ÿå“æ ‡ç­¾æŒ‰é’®
+            Button.onClick(() => {
+                router.pushUrl({
+                    url: 'pages/ScanPage',
+                    params: { memberId: this.selectedMemberId }
+                });
+            });
+        }, Button);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Row.create();
+        }, Row);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create('ðŸ“·');
+            Text.fontSize(20);
+        }, Text);
+        Text.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create('æ‹é£Ÿå“æ ‡ç­¾');
+            Text.fontSize(18);
+            Text.fontColor('#FFFFFF');
+            Text.margin({ left: 8 });
+        }, Text);
+        Text.pop();
+        Row.pop();
+        // æ‹é£Ÿå“æ ‡ç­¾æŒ‰é’®
+        Button.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            // è®°å½•ç¾Žé£ŸæŒ‰é’®
+            Button.createWithChild();
+            // è®°å½•ç¾Žé£ŸæŒ‰é’®
+            Button.width('90%');
+            // è®°å½•ç¾Žé£ŸæŒ‰é’®
+            Button.height(56);
+            // è®°å½•ç¾Žé£ŸæŒ‰é’®
+            Button.backgroundColor('#E3F2FD');
+            // è®°å½•ç¾Žé£ŸæŒ‰é’®
+            Button.borderRadius(28);
+            // è®°å½•ç¾Žé£ŸæŒ‰é’®
+            Button.margin({ bottom: 12 });
+            // è®°å½•ç¾Žé£ŸæŒ‰é’®
+            Button.onClick(() => {
+                router.pushUrl({
+                    url: 'pages/BalancePage',
+                    params: { memberId: this.selectedMemberId }
+                });
+            });
+        }, Button);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Row.create();
+        }, Row);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create('ðŸ½');
+            Text.fontSize(20);
+        }, Text);
+        Text.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create('è®°å½•ç¾Žé£Ÿ');
+            Text.fontSize(18);
+            Text.fontColor('#1976D2');
+            Text.margin({ left: 8 });
+        }, Text);
+        Text.pop();
+        Row.pop();
+        // è®°å½•ç¾Žé£ŸæŒ‰é’®
+        Button.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            If.create();
+            // è´­ç‰©ç¯®æ£€æŸ¥å…¥å£ï¼ˆå®¶åº­æ—©é¸ŸåŠä»¥ä¸Šï¼‰
+            if (this.appState.canAccess(SubscriptionTier.FAMILY_EARLY)) {
+                this.ifElseBranchUpdateFunction(0, () => {
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Button.createWithChild();
+                        Button.width('90%');
+                        Button.height(48);
+                        Button.backgroundColor('#FFF3E0');
+                        Button.borderRadius(24);
+                        Button.margin({ bottom: 12 });
+                        Button.onClick(() => {
+                            router.pushUrl({ url: 'pages/BasketCheckPage' });
+                        });
+                    }, Button);
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Row.create();
+                    }, Row);
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Text.create('ðŸ›’');
+                        Text.fontSize(20);
+                    }, Text);
+                    Text.pop();
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Text.create('è´­ç‰©ç¯®æ£€æŸ¥');
+                        Text.fontSize(18);
+                        Text.fontColor('#FF9800');
+                        Text.margin({ left: 8 });
+                    }, Text);
+                    Text.pop();
+                    Row.pop();
+                    Button.pop();
+                });
+            }
+            // åº•éƒ¨å¿«æ·å…¥å£
+            else {
+                this.ifElseBranchUpdateFunction(1, () => {
+                });
+            }
+        }, If);
+        If.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            // åº•éƒ¨å¿«æ·å…¥å£
+            Row.create();
+            // åº•éƒ¨å¿«æ·å…¥å£
+            Row.margin({ bottom: 16 });
+        }, Row);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create('åŽ†å²');
+            Text.fontSize(13);
+            Text.fontColor('#757575');
+            Text.onClick(() => { router.pushUrl({ url: 'pages/HistoryPage' }); });
+        }, Text);
+        Text.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create('  |  ');
+            Text.fontSize(13);
+            Text.fontColor('#E0E0E0');
+        }, Text);
+        Text.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            If.create();
+            if (this.appState.canAccess(SubscriptionTier.FAMILY_EARLY)) {
+                this.ifElseBranchUpdateFunction(0, () => {
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Text.create('å‘¨æŠ¥');
+                        Text.fontSize(13);
+                        Text.fontColor('#757575');
+                        Text.onClick(() => { router.pushUrl({ url: 'pages/WeeklyReportPage' }); });
+                    }, Text);
+                    Text.pop();
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Text.create('  |  ');
+                        Text.fontSize(13);
+                        Text.fontColor('#E0E0E0');
+                    }, Text);
+                    Text.pop();
+                });
+            }
+            else {
+                this.ifElseBranchUpdateFunction(1, () => {
+                });
+            }
+        }, If);
+        If.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create('è®¾ç½®');
+            Text.fontSize(13);
+            Text.fontColor('#757575');
+            Text.onClick(() => { router.pushUrl({ url: 'pages/SettingsPage' }); });
+        }, Text);
+        Text.pop();
+        // åº•éƒ¨å¿«æ·å…¥å£
+        Row.pop();
+        // åº•éƒ¨æ“ä½œåŒº
+        Column.pop();
+        Column.pop();
+    }
+    rerender() {
+        this.updateDirtyElements();
+    }
+    static getEntryName() {
+        return "HomePage";
+    }
+}
+registerNamedRoute(() => new HomePage(undefined, {}), "", { bundleName: "com.familyfood.helper", moduleName: "entry", pagePath: "pages/HomePage", pageFullPath: "entry/src/main/ets/pages/HomePage", integratedHsp: "false", moduleType: "followWithHap" });
+//# sourceMappingURL=HomePage.js.mapÂ”Ùf hvigor_ignore_E:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.router.d.tsÙSC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\components\MemberCard.etsÙFC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\AppState.etsÙPC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\PricingModel.etsÙLC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\pages\HomePage.etsÔrBšªmoduleName±isLocalDependency¯isNodeEntryFile§pkgPath±belongProjectPath§pkgNameªpkgVersion±dependencyPkgInfo°belongModulePath¬shouldEmitJs¥entryÃÂÙ,C:\Users\A\IDEProjects\family_food_app\entryÙ&C:\Users\A\IDEProjects\family_food_app¥entry¥1.0.0Ô  Ù,C:\Users\A\IDEProjects\family_food_app\entryÃÃÚD// é¦–é¡µ - å®¶åº­é¥®é£Ÿå¹³è¡¡åŠ©æ‰‹ V4
+
+import { router } from '@kit.ArkUI';
+import { FamilyProfile } from '../model/FamilyProfile';
+import { MemberCard } from '../components/MemberCard';
+import { AppState } from '../AppState';
+import { SubscriptionTier } from '../model/PricingModel';
+
+@Entry
+@Component
+struct HomePage {
+  @State familyMembers: FamilyProfile[] = []
+  @State selectedMemberId: string = ''
+  @State currentSloganIndex: number = 0
+
+  private appState: AppState = AppState.getInstance()
+
+  // V4é¦–é¡µæ–‡æ¡ˆ - æ›´ç”Ÿæ´»åŒ–
+  private slogans: string[] = [
+    'ç»™çˆ¸å¦ˆä¹°é£Ÿå“å‰ï¼Œå…ˆæ‹ä¸€ä¸‹ã€‚',
+    'å­©å­é›¶é£Ÿä¼šä¸ä¼šå½±å“æ­£é¤ï¼Œä¸€æ‹å°±çŸ¥é“ã€‚',
+    'åƒå®Œçƒ§çƒ¤ç«é”…ï¼Œä¸‹ä¸€é¤æ€Žä¹ˆæ­ã€‚',
+    'åŒä¸€æ¬¾é£Ÿå“ï¼Œçˆ¸çˆ¸ã€å¦ˆå¦ˆã€å­©å­å»ºè®®éƒ½ä¸åŒã€‚',
+    'ä¸æ˜¯ä¸è®©ä½ åƒï¼Œè€Œæ˜¯å¸®ä½ åƒå¾—æ›´æœ‰æ•°ã€‚'
+  ]
+
+  async aboutToAppear() {
+    this.currentSloganIndex = Math.floor(Math.random() * this.slogans.length)
+    await this.loadFamilyMembers()
+  }
+
+  async loadFamilyMembers() {
+    this.familyMembers = await this.appState.getAllMembers()
+    if (this.familyMembers.length > 0 && this.selectedMemberId.length === 0) {
+      this.selectedMemberId = this.familyMembers[0].memberId
+    }
+  }
+
+  build() {
+    Column() {
+      // é¡¶éƒ¨å“ç‰ŒåŒº
+      Column() {
+        Text('å®¶åº­é¥®é£Ÿå¹³è¡¡åŠ©æ‰‹')
+          .fontSize(22)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#1976D2')
+          .margin({ top: 20, bottom: 4 })
+
+        // V4ç”Ÿæ´»åŒ–æ–‡æ¡ˆï¼ˆè½®æ’­ï¼‰
+        Text(this.slogans[this.currentSloganIndex])
+          .fontSize(14)
+          .fontColor('#757575')
+          .margin({ bottom: 16 })
+          .textAlign(TextAlign.Center)
+          .maxLines(2)
+      }
+      .width('100%')
+      .alignItems(HorizontalAlign.Center)
+
+      // å®¶åº­æˆå‘˜é€‰æ‹©
+      Text('ä»Šå¤©ç»™è°çœ‹ï¼Ÿ')
+        .fontSize(18)
+        .fontWeight(FontWeight.Medium)
+        .fontColor('#212121')
+        .margin({ left: 16, bottom: 8 })
+
+      // æˆå‘˜å¡ç‰‡ï¼ˆä½¿ç”¨MemberCardç»„ä»¶ï¼‰
+      Scroll() {
+        Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start, alignItems: ItemAlign.Start }) {
+          ForEach(this.familyMembers, (member: FamilyProfile) => {
+            Column() {
+              MemberCard({
+                member: member,
+                isSelected: this.selectedMemberId === member.memberId,
+                onSelect: (id: string) => { this.selectedMemberId = id }
+              })
+            }
+            .width('45%')
+            .margin(8)
+          }, (member: FamilyProfile) => member.memberId)
+
+          // æ·»åŠ æˆå‘˜æŒ‰é’®ï¼ˆå¸¦é—¨æŽ§ï¼‰
+          Column() {
+            Text('+').fontSize(28).fontColor('#1976D2')
+            Text(this.appState.canAddMember() ? 'æ·»åŠ æˆå‘˜' : 'å‡çº§è§£é”')
+              .fontSize(12)
+              .fontColor(this.appState.canAddMember() ? '#1976D2' : '#FF9800')
+              .margin({ top: 4 })
+          }
+          .width('45%')
+          .height(100)
+          .margin(8)
+          .borderRadius(16)
+          .justifyContent(FlexAlign.Center)
+          .alignItems(HorizontalAlign.Center)
+          .border({ width: 1, color: '#E0E0E0', style: BorderStyle.Dashed, radius: 16 })
+          .onClick(() => {
+            if (this.appState.canAddMember()) {
+              router.pushUrl({ url: 'pages/MemberEditPage' })
+            } else {
+              router.pushUrl({ url: 'pages/SettingsPage' })
+            }
+          })
+        }
+        .width('100%')
+        .padding({ left: 16, right: 16 })
+      }
+      .scrollable(ScrollDirection.Vertical)
+      .layoutWeight(1)
+
+      // åº•éƒ¨æ“ä½œåŒº
+      Column() {
+        // æ‹é£Ÿå“æ ‡ç­¾æŒ‰é’®
+        Button() {
+          Row() {
+            Text('ðŸ“·').fontSize(20)
+            Text('æ‹é£Ÿå“æ ‡ç­¾').fontSize(18).fontColor('#FFFFFF').margin({ left: 8 })
+          }
+        }
+        .width('90%')
+        .height(56)
+        .backgroundColor('#1976D2')
+        .borderRadius(28)
+        .margin({ bottom: 12 })
+        .onClick(() => {
+          router.pushUrl({
+            url: 'pages/ScanPage',
+            params: { memberId: this.selectedMemberId }
+          })
+        })
+
+        // è®°å½•ç¾Žé£ŸæŒ‰é’®
+        Button() {
+          Row() {
+            Text('ðŸ½').fontSize(20)
+            Text('è®°å½•ç¾Žé£Ÿ').fontSize(18).fontColor('#1976D2').margin({ left: 8 })
+          }
+        }
+        .width('90%')
+        .height(56)
+        .backgroundColor('#E3F2FD')
+        .borderRadius(28)
+        .margin({ bottom: 12 })
+        .onClick(() => {
+          router.pushUrl({
+            url: 'pages/BalancePage',
+            params: { memberId: this.selectedMemberId }
+          })
+        })
+
+        // è´­ç‰©ç¯®æ£€æŸ¥å…¥å£ï¼ˆå®¶åº­æ—©é¸ŸåŠä»¥ä¸Šï¼‰
+        if (this.appState.canAccess(SubscriptionTier.FAMILY_EARLY)) {
+          Button() {
+            Row() {
+              Text('ðŸ›’').fontSize(20)
+              Text('è´­ç‰©ç¯®æ£€æŸ¥').fontSize(18).fontColor('#FF9800').margin({ left: 8 })
+            }
+          }
+          .width('90%')
+          .height(48)
+          .backgroundColor('#FFF3E0')
+          .borderRadius(24)
+          .margin({ bottom: 12 })
+          .onClick(() => {
+            router.pushUrl({ url: 'pages/BasketCheckPage' })
+          })
+        }
+
+        // åº•éƒ¨å¿«æ·å…¥å£
+        Row() {
+          Text('åŽ†å²').fontSize(13).fontColor('#757575')
+            .onClick(() => { router.pushUrl({ url: 'pages/HistoryPage' }) })
+          Text('  |  ').fontSize(13).fontColor('#E0E0E0')
+          if (this.appState.canAccess(SubscriptionTier.FAMILY_EARLY)) {
+            Text('å‘¨æŠ¥').fontSize(13).fontColor('#757575')
+              .onClick(() => { router.pushUrl({ url: 'pages/WeeklyReportPage' }) })
+            Text('  |  ').fontSize(13).fontColor('#E0E0E0')
+          }
+          Text('è®¾ç½®').fontSize(13).fontColor('#757575')
+            .onClick(() => { router.pushUrl({ url: 'pages/SettingsPage' }) })
+        }
+        .margin({ bottom: 16 })
+      }
+      .width('100%')
+      .alignItems(HorizontalAlign.Center)
+      .padding({ left: 16, right: 16 })
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor('#FAFAFA')
+  }
+
+}
+ÀÔrC”¬@ohos.router«../AppStateµ../model/PricingModel¸../components/MemberCardÔrD—ªassertions¨external¢id¤meta±moduleSideEffectsªresolvedByµsyntheticNamedExportsAÃÙf hvigor_ignore_E:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.router.d.tsAÃªoh-resolveÂDAÂÙFC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\AppState.etsAÃªoh-resolveÂDAÂÙPC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\PricingModel.etsAÃªoh-resolveÂDAÂÙSC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\components\MemberCard.etsAÃªoh-resolveÂ“ÔrE–§version¤fileªsourceRoot§sources¥names¨mappings«HomePage.js ‘¬HomePage.etsÜ«’”    ”  –”   ” 	” ” ”! #”" $˜”   ” ”	 	” ” ” ”5 5”6 6˜”   ” ”	 	” ” ” ”& &”' '˜”   ” ”	 	” ” ”! !”8 8”9 9’” 
+” 
+‘”  ’”< *”> ,’”? $”ÌA &’”ÌA &”ÌB '•” ”  '”! (”, 3”. 5‘” ’” ” ’” ”  ’” ” ’” ”" ’” ” ‘”	 ‘” 9’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ”” ”	 ”
+ ” Ü ” ” ” 	” ”" ”& "”' #”, (”- )”1 -”2 .”8 4”: 6”= 9”ÌA =”ÌB >”ÌI ÌE”ÌJ ÌF”ÌP ÌL”ÌQ ÌM”ÌR ÌM—” ” 
+” ” ”$  ”& "”' "’” ” ”” ”	 ”
+ ” ”  ”  ”  	”  ”  ”#  ”'  #”(  $”0  ,”1  -”>  :”Ì@  <”ÌA  <Ü ” !” !” !” !” !” !”% !!”( !$”) !%”- !)”1 !-”2 !.”ÌB !>”ÌC !?”ÌI !ÌE”ÌN !ÌJ”ÌO !ÌK”ÌQ !ÌMž” "” "
+” "”! "”$ "”( ""”) "#”6 "0”7 "1”8 "2”9 "3”: "4”ÌB "<”ÌC "<‘”	 #’” $” $‘” &’” '” '
+–” '” '
+” Ì»” Ì»
+” Ì»” Ì»–” '” '
+” Ì¼” Ì¼” Ì¼”  Ì¼–” '” '
+” Ì½”" Ì½”# Ì½”, Ì½’” (” (’” )” )’” (” (–” )” )” 8” 8” 8” 8’” (” (˜” )” )” 9” 9” 9”- 9!”. 9"”4 9(”” *” *” *”" *–” *” *” +” +” +” +˜” *” *” ,” ,” ,”& , ”' ,!”+ ,%–” *” *” -” -” -”$ -ž” *” *” .” .” .” .” .” .”! .”# .”) .#”+ .%”, .&”. .(’” *” *’” 0” 0›” 1” 1” 1” 1” 1”$ 1”% 1”) 1”* 1”< 11”= 12’” 0” 0–” 1” 1” 2” 2” 2” 2’” 0” 0–” 1” 1” 3” 3” 3”$ 3’” 0” 0š” 1” 1” 4” 4” 4” 4”  4”" 4”$ 4”& 4 ’” 0” 0˜” 1” 1” 5” 5” 5”$ 5”% 5”+ 5%’” 0” 0–” 1” 1” 6” 6” 6” 6’” 0” 0’” 1” 1’” (” (’” )” )’” ;” ;”” <” <
+” <”  <’” ;” ;–” <” <
+” =	” =” =” =’” ;” ;˜” <” <
+” >	” >” >”& >”' >”- >%’” ;” ;–” <” <
+” ?	” ?” ?”$ ?’” ;” ;ž” <” <
+” Ì@	” Ì@” Ì@” Ì@” Ì@”  Ì@”" Ì@”$ Ì@”* Ì@"”, Ì@$”- Ì@%”/ Ì@'’” ;” ;’” <” <
+’” ÌB”# ÌB’” ÌC” ÌC’” ÌB”# ÌB˜” ÌC” ÌC” Ìk” Ìk” Ìk”- Ìk!”. Ìk"”6 Ìk*’” ÌB”# ÌB–” ÌC” ÌC” Ìl” Ìl”  Ìl”! ÌlÜ ” ÌD” ÌD” ÌD” ÌD” ÌD”  ÌD”( ÌD”) ÌD”- ÌD"”/ ÌD$”= ÌD2”? ÌD4”ÌH ÌD=”ÌI ÌD>”ÌN ÌDÌC”ÌP ÌDÌE”ÌZ ÌDÌO”Ì\ ÌDÌQ”Ìe ÌDÌZ”Ìf ÌDÌ[”Ìk ÌDÌ`”Ìm ÌDÌb–” ÌD” ÌD” Ìh	” Ìh” Ìh” Ìhž” ÌD” ÌD” Ìi	” Ìi” Ìi” Ìi” Ìi”! Ìi”# Ìi”% Ìi”* Ìi"”, Ìi$”. Ìi&”0 Ìi(’” ÌE
+” ÌE’” ÌF” ÌF–” ÌF” ÌF” ÌM”  ÌM”! ÌM”& ÌM–” ÌF” ÌF” ÌN”! ÌN”" ÌN”# ÌN“”4 ÌG”> ÌG”ÌE ÌG””  ÌH”& ÌH”( ÌH”. ÌHš”  ÌI”* ÌI”, ÌI”0 ÌI ”1 ÌI!”ÌA ÌI1”ÌF ÌI6”ÌL ÌI<”ÌM ÌI=”ÌU ÌIÌEÜ ”  ÌJ”( ÌJ”* ÌJ”+ ÌJ”- ÌJ%”/ ÌJ'”1 ÌJ)”4 ÌJ,”8 ÌJ0”9 ÌJ1”ÌI ÌJÌA”ÌL ÌJÌD”ÌN ÌJÌF”ÌO ÌJÌF”ÌP ÌJÌG”ÌQ ÌJÌH‘” ÌK””$ ÌH”* ÌH”, ÌH”2 ÌHš”$ ÌI”. ÌI”0 ÌI”4 ÌI ”5 ÌI!”ÌE ÌI1”ÌJ ÌI6”ÌP ÌI<”ÌQ ÌI=”ÌY ÌIÌEÜ ”$ ÌJ”, ÌJ”. ÌJ”/ ÌJ”1 ÌJ%”3 ÌJ'”5 ÌJ)”8 ÌJ,”< ÌJ0”= ÌJ1”ÌM ÌJÌA”ÌP ÌJÌD”ÌR ÌJÌF”ÌS ÌJÌF”ÌT ÌJÌG”ÌU ÌJÌH””  ÌH”& ÌH”( ÌH”. ÌHš”  ÌI”* ÌI”, ÌI”0 ÌI ”1 ÌI!”ÌA ÌI1”ÌF ÌI6”ÌL ÌI<”ÌM ÌI=”ÌU ÌIÌE’” ÌF” ÌF”/ ÌE”3 ÌE”4 ÌE”ÌA ÌE$”Ì[ ÌO”Ì\ ÌO”Ìb ÌO#”Ìd ÌO%”Ìf ÌO'”Ìg ÌO(”Ìm ÌO.”Ìn ÌO/”Ìv ÌO7’” ÌE
+” ÌE’” ÌQ
+” ÌQ’” ÌR
+” ÌR’” ÌQ
+” ÌQ–” ÌR
+” ÌR” ÌY” ÌY” ÌY” ÌY’” ÌQ
+” ÌQ–” ÌR
+” ÌR” ÌZ” ÌZ” ÌZ” ÌZ’” ÌQ
+” ÌQ–” ÌR
+” ÌR” Ì[” Ì[” Ì[” Ì[’” ÌQ
+” ÌQ–” ÌR
+” ÌR” Ì\” Ì\”  Ì\”" Ì\’” ÌQ
+” ÌQ˜” ÌR
+” ÌR” Ì]”! Ì]”" Ì]”+ Ì]#”, Ì]$”2 Ì]*’” ÌQ
+” ÌQ˜” ÌR
+” ÌR” Ì^” Ì^” Ì^”- Ì^%”. Ì^&”4 Ì^,’” ÌQ
+” ÌQÜ ” ÌR
+” ÌR” Ì_” Ì_” Ì_” Ì_”! Ì_”# Ì_”$ Ì_”& Ì_”+ Ì_#”- Ì_%”6 Ì_.”8 Ì_0”= Ì_5”? Ì_7”ÌJ Ì_ÌB”ÌK Ì_ÌC”ÌQ Ì_ÌI”ÌS Ì_ÌK”ÌY Ì_ÌQ”Ì[ Ì_ÌS”Ì] Ì_ÌU”Ì_ Ì_ÌW’” ÌQ
+” ÌQ—” ÌR
+” ÌR” Ì`” Ì`” Ì`” Ì`”  Ì`™” Ìa” Ìa” Ìa” Ìa”! Ìa”" Ìa”. Ìa*”0 Ìa,”2 Ìa.œ” Ìb” Ìb” Ìb”" Ìb”# Ìb”% Ìb”( Ìb"”* Ìb$”Ì@ Ìb:”ÌB Ìb<”ÌC Ìb=”ÌD Ìb=‘” Ìc‘” Ìcœ” Ìd” Ìd” Ìd”" Ìd”# Ìd”% Ìd”( Ìd"”* Ìd$”> Ìd8”Ì@ Ìd:”ÌA Ìd;”ÌB Ìd;‘” Ìe’” Ìf
+” Ìf”” ÌS” ÌS” ÌS” ÌS–” ÌS” ÌS” ÌS” ÌS” ÌS” ÌS!–” ÌS” ÌS” ÌS#” ÌS,” ÌS-”$ ÌS6’” ÌS” ÌSÜ ” ÌT” ÌT” ÌT” ÌT” ÌT”% ÌT”& ÌT”2 ÌT+”4 ÌT-”5 ÌT.”6 ÌT/”7 ÌT0”= ÌT6”> ÌT7”? ÌT8”Ì@ ÌT9”ÌF ÌT?–” ÌT” ÌT” ÌU” ÌU” ÌU” ÌUÜ ” ÌT” ÌT” ÌV” ÌV” ÌV” ÌV”  ÌV”( ÌV&”) ÌV'”5 ÌV3”7 ÌV5”8 ÌV6”9 ÌV7”: ÌV8”ÌC ÌVÌA”ÌD ÌVÌB”ÌE ÌVÌC”ÌF ÌVÌD”ÌO ÌVÌMš” ÌT” ÌT” ÌW” ÌW” ÌW” ÌW” ÌW” ÌW”  ÌW”" ÌW ’” ÌT” ÌT’” ÌQ
+” ÌQ’” ÌR
+” ÌR’” ÌD” ÌD’” ÌB” ÌB’” ÌC” ÌC’” Ìn” Ìn’” Ìo” Ìo’” Ìn” Ìn–” Ìo” Ìo” Ì·” Ì·” Ì·” Ì·’” Ìn” Ìn˜” Ìo” Ìo” Ì¸” Ì¸” Ì¸”- Ì¸!”. Ì¸"”4 Ì¸(’” Ìn” Ìnž” Ìo” Ìo” Ì¹” Ì¹” Ì¹” Ì¹”! Ì¹”# Ì¹”% Ì¹”' Ì¹”, Ì¹ ”. Ì¹"”0 Ì¹$”2 Ì¹&’” Ìp” Ìp’” Ìq” Ìq’” Ìp” Ìp–” Ìq” Ìq” Ìw	” Ìw” Ìw” Ìw’” Ìp” Ìp–” Ìq” Ìq” Ìx	” Ìx” Ìx” Ìx’” Ìp” Ìp–” Ìq” Ìq” Ìy	”" Ìy”# Ìy”, Ìy"’” Ìp” Ìp–” Ìq” Ìq” Ìz	” Ìz”  Ìz”" Ìz’” Ìp” Ìpš” Ìq” Ìq” Ì{	” Ì{” Ì{” Ì{”" Ì{”$ Ì{”& Ì{”( Ì{’” Ìp” Ìp—” Ìq” Ìq” Ì|	” Ì|” Ì|” Ì|”  Ì|•” Ì}
+” Ì}” Ì}” Ì}” Ì}”” Ì~” Ì~” Ì~”) Ì~!š” Ì” Ì” Ì” Ì”& Ì”( Ì ”, Ì$”- Ì%”= Ì5”? Ì7“” Ì€” Ì€” Ì€’” Ì” Ì	’” Ìr
+” Ìr”” Ìs” Ìs” Ìs” Ìs–” Ìs” Ìs” Ìs” Ìs” Ìs ” Ìs"’” Ìs” Ìs”” Ìt” Ìt” Ìt” Ìt–” Ìt” Ìt” Ìt” Ìt"” Ìt#” Ìt%–” Ìt” Ìt” Ìt'” Ìt0” Ìt1”$ Ìt:š” Ìt” Ìt” Ìt<” ÌtÌB” ÌtÌC” ÌtÌE” ÌtÌI”  ÌtÌK”! ÌtÌL”# ÌtÌN’” Ìt” Ìt’” Ìr
+” Ìr’” Ìp” Ìp’” Ìq” Ìq’” Ìƒ” Ìƒ’” Ì„” Ì„’” Ìƒ” Ìƒ–” Ì„” Ì„” ÌŠ	” ÌŠ” ÌŠ” ÌŠ’” Ìƒ” Ìƒ–” Ì„” Ì„” Ì‹	” Ì‹” Ì‹” Ì‹’” Ìƒ” Ìƒ–” Ì„” Ì„” ÌŒ	”" ÌŒ”# ÌŒ”, ÌŒ"’” Ìƒ” Ìƒ–” Ì„” Ì„” Ì	” Ì”  Ì”" Ì’” Ìƒ” Ìƒš” Ì„” Ì„” ÌŽ	” ÌŽ” ÌŽ” ÌŽ”" ÌŽ”$ ÌŽ”& ÌŽ”( ÌŽ’” Ìƒ” Ìƒ—” Ì„” Ì„” Ì	” Ì” Ì” Ì”  Ì•” Ì
+” Ì” Ì” Ì” Ì”” Ì‘” Ì‘” Ì‘”, Ì‘$š” Ì’” Ì’” Ì’” Ì’”& Ì’”( Ì’ ”, Ì’$”- Ì’%”= Ì’5”? Ì’7“” Ì“” Ì“” Ì“’” Ì”” Ì”	’” Ì…
+” Ì…”” Ì†” Ì†” Ì†” Ì†–” Ì†” Ì†” Ì†” Ì†” Ì† ” Ì†"’” Ì†” Ì†”” Ì‡” Ì‡” Ì‡” Ì‡–” Ì‡” Ì‡” Ì‡” Ì‡!” Ì‡"” Ì‡$–” Ì‡” Ì‡” Ì‡&” Ì‡/” Ì‡0”$ Ì‡9š” Ì‡” Ì‡” Ì‡;” Ì‡ÌA” Ì‡ÌB” Ì‡ÌD” Ì‡ÌH”  Ì‡ÌJ”! Ì‡ÌK”# Ì‡ÌM’” Ì‡” Ì‡’” Ì…
+” Ì…’” Ìƒ” Ìƒ’” Ì„” Ì„’” Ì–” Ì–” Ì—” Ì—” Ì—” Ì—” Ì—” Ì—”' Ì—#”( Ì—$”8 Ì—4”9 Ì—5”ÌE Ì—ÌA”ÌF Ì—ÌB”ÌH Ì—ÌD’” Ì˜
+” Ì˜–” Ì˜
+” Ì˜” Ìž”$ Ìž”% Ìž”* Ìž–” Ì˜
+” Ì˜” ÌŸ”% ÌŸ”& ÌŸ”( ÌŸ–” Ì˜
+” Ì˜” Ì ”. Ì ”/ Ì ”8 Ì $–” Ì˜
+” Ì˜” Ì¡”+ Ì¡”, Ì¡”. Ì¡š” Ì˜
+” Ì˜” Ì¢”% Ì¢”& Ì¢”( Ì¢”. Ì¢”0 Ì¢”2 Ì¢”4 Ì¢ —” Ì˜
+” Ì˜” Ì£”& Ì£”' Ì£”* Ì£”, Ì£œ” Ì¤”" Ì¤”# Ì¤”* Ì¤”+ Ì¤”- Ì¤”0 Ì¤ ”2 Ì¤"”ÌI Ì¤9”ÌK Ì¤;”ÌL Ì¤<”ÌM Ì¤<’” Ì¥
+” Ì¥’” Ì™” Ì™”” Ìš” Ìš”$ Ìš”( Ìš–” Ìš” Ìš” Ìš”% Ìš!”& Ìš"”( Ìš$’” Ìš” Ìš”” Ì›” Ì›”$ Ì›”+ Ì›–” Ì›” Ì›” Ì›”% Ì›$”& Ì›%”( Ì›'–” Ì›” Ì›” Ì›)”& Ì›2”' Ì›3”0 Ì›<š” Ì›” Ì›” Ì›>”# Ì›ÌD”$ Ì›ÌE”& Ì›ÌG”* Ì›ÌK”, Ì›ÌM”- Ì›ÌN”/ Ì›ÌP’” Ì›” Ì›’” Ì™” Ì™’” Ì˜
+” Ì˜‘” Ì¦	’” Ì¨” Ì¨‘” Ì¦	’” Ì¨” Ì¨’” Ì©” Ì©’” Ì¨” Ì¨š” Ì©” Ì©” Ìµ	” Ìµ” Ìµ” Ìµ” Ìµ”! Ìµ”# Ìµ”% Ìµ”” Ìª
+” Ìª” Ìª” Ìª–” Ìª
+” Ìª” Ìª” Ìª” Ìª” Ìª –” Ìª
+” Ìª” Ìª"” Ìª+” Ìª,”$ Ìª5Ü ” Ìª
+” Ìª” Ì«” Ì«” Ì«” Ì«” Ì«”! Ì«”' Ì«#”( Ì«$”/ Ì«+”0 Ì«,”2 Ì«.”5 Ì«1”7 Ì«3”ÌJ Ì«ÌF”ÌL Ì«ÌH”ÌM Ì«ÌI”ÌN Ì«ÌI”ÌO Ì«ÌJ”ÌP Ì«ÌK’” Ìª
+” Ìª”” Ì¬
+” Ì¬” Ì¬” Ì¬–” Ì¬
+” Ì¬” Ì¬” Ì¬ ” Ì¬!” Ì¬#–” Ì¬
+” Ì¬” Ì¬%” Ì¬.” Ì¬/”$ Ì¬8’” Ì¬
+” Ì¬” Ì­
+” Ì­” Ì­” Ì­” Ì­” Ì­”' Ì­%”( Ì­&”8 Ì­6”9 Ì­7”ÌE Ì­ÌC”ÌF Ì­ÌD”ÌH Ì­ÌF”” Ì®” Ì®”$ Ì®”( Ì®–” Ì®” Ì®” Ì®”% Ì®”& Ì® ”( Ì®"–” Ì®” Ì®” Ì®$”& Ì®-”' Ì®.”0 Ì®7Ü ” Ì®” Ì®” Ì¯”$ Ì¯”% Ì¯”( Ì¯”* Ì¯”- Ì¯”3 Ì¯%”4 Ì¯&”; Ì¯-”< Ì¯.”> Ì¯0”ÌA Ì¯3”ÌC Ì¯5”Ì[ Ì¯ÌM”Ì] Ì¯ÌO”Ì^ Ì¯ÌP”Ì_ Ì¯ÌP”Ì` Ì¯ÌQ”Ìa Ì¯ÌR’” Ì®” Ì®”” Ì°” Ì°”$ Ì°”+ Ì°–” Ì°” Ì°” Ì°”% Ì°"”& Ì°#”( Ì°%–” Ì°” Ì°” Ì°'”& Ì°0”' Ì°1”0 Ì°:’” Ì°” Ì°‘” Ì±‘” Ì±”” Ì²
+” Ì²” Ì²” Ì²–” Ì²
+” Ì²” Ì²” Ì²” Ì²” Ì² –” Ì²
+” Ì²” Ì²"” Ì²+” Ì²,”$ Ì²5Ü ” Ì²
+” Ì²” Ì³” Ì³” Ì³” Ì³” Ì³”! Ì³”' Ì³#”( Ì³$”/ Ì³+”0 Ì³,”2 Ì³.”5 Ì³1”7 Ì³3”ÌK Ì³ÌG”ÌM Ì³ÌI”ÌN Ì³ÌJ”ÌO Ì³ÌJ”ÌP Ì³ÌK”ÌQ Ì³ÌL’” Ì²
+” Ì²’” Ì¨” Ì¨’” Ì©” Ì©’” Ìn” Ìn’” Ìo” Ìo’” '” '
+‘” Ì¾ÔrF–§version¤file§sources®sourcesContent¥names¨mappingsÀ‘À‘ÀÜ´‘”    ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”  	 ‘”  
+ ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”    ‘”  ! ‘”  " ‘”  # ‘”  $ ‘”  % ‘”  & ‘”  ' ‘”  ( ‘”  ) ‘”  * ‘”  + ‘”  , ‘”  - ‘”  . ‘”  / ‘”  0 ‘”  1 ‘”  2 ‘”  3 ‘”  4 ‘”  5 ‘”  6 ‘”  7 ‘”  8 ‘”  9 ‘”  : ‘”  ; ‘”  < ‘”  = ‘”  > ‘”  ? ‘”  Ì@ ‘”  ÌA ‘”  ÌB ‘”  ÌC ‘”  ÌD ‘”  ÌE ‘”  ÌF ‘”  ÌG ‘”  ÌH ‘”  ÌI ‘”  ÌJ ‘”  ÌK ‘”  ÌL ‘”  ÌM ‘”  ÌN ‘”  ÌO ‘”  ÌP ‘”  ÌQ ‘”  ÌR ‘”  ÌS ‘”  ÌT ‘”  ÌU ‘”  ÌV ‘”  ÌW ‘”  ÌX ‘”  ÌY ‘”  ÌZ ‘”  Ì[ ‘”  Ì\ ‘”  Ì] ‘”  Ì^ ‘”  Ì_ ‘”  Ì` ‘”  Ìa ‘”  Ìb ‘”  Ìc ‘”  Ìd ‘”  Ìe ‘”  Ìf ‘”  Ìg ‘”  Ìh ‘”  Ìi ‘”  Ìj ‘”  Ìk ‘”  Ìl ‘”  Ìm ‘”  Ìn ‘”  Ìo ‘”  Ìp ‘”  Ìq ‘”  Ìr ‘”  Ìs ‘”  Ìt ‘”  Ìu ‘”  Ìv ‘”  Ìw ‘”  Ìx ‘”  Ìy ‘”  Ìz ‘”  Ì{ ‘”  Ì| ‘”  Ì} ‘”  Ì~ ‘”  Ì ‘”  Ì€ ‘”  Ì ‘”  Ì‚ ‘”  Ìƒ ‘”  Ì„ ‘”  Ì… ‘”  Ì† ‘”  Ì‡ ‘”  Ìˆ ‘”  Ì‰ ‘”  ÌŠ ‘”  Ì‹ ‘”  ÌŒ ‘”  Ì ‘”  ÌŽ ‘”  Ì ‘”  Ì ‘”  Ì‘ ‘”  Ì’ ‘”  Ì“ ‘”  Ì” ‘”  Ì• ‘”  Ì– ‘”  Ì— ‘”  Ì˜ ‘”  Ì™ ‘”  Ìš ‘”  Ì› ‘”  Ìœ ‘”  Ì ‘”  Ìž ‘”  ÌŸ ‘”  Ì  ‘”  Ì¡ ‘”  Ì¢ ‘”  Ì£ ‘”  Ì¤ ‘”  Ì¥ ‘”  Ì¦ ‘”  Ì§ ‘”  Ì¨ ‘”  Ì© ‘”  Ìª ‘”  Ì« ‘”  Ì¬ ‘”  Ì­ ‘”  Ì® ‘”  Ì¯ ‘”  Ì° ‘”  Ì± ‘”  Ì² ‘”  Ì³ ‘”  Ì´ ‘”  Ìµ ‘”  Ì¶ ‘”  Ì· ‘”  Ì¸ ‘”  Ì¹ ‘”  Ìº ‘”  Ì» ‘”  Ì¼ ‘”  Ì½ ‘”  Ì¾ ‘”  Ì¿ ‘”  ÌÀ ‘”  ÌÁ ‘”  ÌÂ ‘”  ÌÃ ‘”  ÌÄ ‘”  ÌÅ ‘”  ÌÆ ‘”  ÌÇ ‘”  ÌÈ ‘”  ÌÉ ‘”  ÌÊ ‘”  ÌË ‘”  ÌÌ ‘”  ÌÍ ‘”  ÌÎ ‘”  ÌÏ ‘”  ÌÐ ‘”  ÌÑ ‘”  ÌÒ ‘”  ÌÓ ‘”  ÌÔ ‘”  ÌÕ ‘”  ÌÖ ‘”  Ì× ‘”  ÌØ ‘”  ÌÙ ‘”  ÌÚ ‘”  ÌÛ ‘”  ÌÜ ‘”  ÌÝ ‘”  ÌÞ ‘”  Ìß ‘”  Ìà ‘”  Ìá ‘”  Ìâ ‘”  Ìã ‘”  Ìä ‘”  Ìå ‘”  Ìæ ‘”  Ìç ‘”  Ìè ‘”  Ìé ‘”  Ìê ‘”  Ìë ‘”  Ìì ‘”  Ìí ‘”  Ìî ‘”  Ìï ‘”  Ìð ‘”  Ìñ ‘”  Ìò ‘”  Ìó ‘”  Ìô ‘”  Ìõ ‘”  Ìö ‘”  Ì÷ ‘”  Ìø ‘”  Ìù ‘”  Ìú ‘”  Ìû ‘”  Ìü ‘”  Ìý ‘”  Ìþ ‘”  Ìÿ ‘”  Í  ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í	 ‘”  Í
+ ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í  ‘”  Í! ‘”  Í" ‘”  Í# ‘”  Í$ ‘”  Í% ‘”  Í& ‘”  Í' ‘”  Í( ‘”  Í) ‘”  Í* ‘”  Í+ ‘”  Í, ‘”  Í- ‘”  Í. ‘”  Í/ ‘”  Í0 ‘”  Í1 ‘”  Í2 ‘”  Í3 ‘”  Í4 ‘”  Í5 ‘”  Í6 ‘”  Í7 ‘”  Í8 ‘”  Í9 ‘”  Í: ‘”  Í; ‘”  Í< ‘”  Í= ‘”  Í> ‘”  Í? ‘”  Í@ ‘”  ÍA ‘”  ÍB ‘”  ÍC ‘”  ÍD ‘”  ÍE ‘”  ÍF ‘”  ÍG ‘”  ÍH ‘”  ÍI ‘”  ÍJ ‘”  ÍK ‘”  ÍL ‘”  ÍM ‘”  ÍN ‘”  ÍO ‘”  ÍP ‘”  ÍQ ‘”  ÍR ‘”  ÍS ‘”  ÍT ‘”  ÍU ‘”  ÍV ‘”  ÍW ‘”  ÍX ‘”  ÍY ‘”  ÍZ ‘”  Í[ ‘”  Í\ ‘”  Í] ‘”  Í^ ‘”  Í_ ‘”  Í` ‘”  Ía ‘”  Íb ‘”  Íc ‘”  Íd ‘”  Íe ‘”  Íf ‘”  Íg ‘”  Íh ‘”  Íi ‘”  Íj ‘”  Ík ‘”  Íl ‘”  Ím ‘”  Ín ‘”  Ío ‘”  Íp ‘”  Íq ‘”  Ír ‘”  Ís ‘”  Ít ‘”  Íu ‘”  Ív ‘”  Íw ‘”  Íx ‘”  Íy ‘”  Íz ‘”  Í{ ‘”  Í| ‘”  Í} ‘”  Í~ ‘”  Í ‘”  Í€ ‘”  Í ‘”  Í‚ ‘”  Íƒ ‘”  Í„ ‘”  Í… ‘”  Í† ‘”  Í‡ ‘”  Íˆ ‘”  Í‰ ‘”  ÍŠ ‘”  Í‹ ‘”  ÍŒ ‘”  Í ‘”  ÍŽ ‘”  Í ‘”  Í ‘”  Í‘ ‘”  Í’ ‘”  Í“ ‘”  Í” ‘”  Í• ‘”  Í– ‘”  Í— ‘”  Í˜ ‘”  Í™ ‘”  Íš ‘”  Í› ‘”  Íœ ‘”  Í ‘”  Íž ‘”  ÍŸ ‘”  Í  ‘”  Í¡ ‘”  Í¢ ‘”  Í£ ‘”  Í¤ ‘”  Í¥ ‘”  Í¦ ‘”  Í§ ‘”  Í¨ ‘”  Í© ‘”  Íª ‘”  Í« ‘”  Í¬ ‘”  Í­ ‘”  Í® ‘”  Í¯ ‘”  Í° ‘”  Í± ‘”  Í² ‘”  Í³ ÔrG’§missing¦pluginÃ¦genAbcÂÔ  ÔrH”²dynamicImportCache¹exportAllDeclarationCache»exportNamedDeclarationCache«importCache”ÔrI•¤type¥start£endªspecifiers¦source±ImportDeclarationÌ•Ì·‘ÔrJ”¤type¥start£end¥local¶ImportDefaultSpecifierÌœÌ¢ÔrK”¤type¥start£end¤nameªIdentifierÌœÌ¢¦routerÔrL•¤type¥start£end¥value£raw§LiteralÌ¨Ì¶¬@ohos.router®"@ohos.router"I±ImportDeclarationÌ¹Ìï‘ÔrM•¤type¥start£end¨imported¥local¯ImportSpecifierÌÂÌÌKªIdentifierÌÂÌÌªMemberCardKªIdentifierÌÂÌÌªMemberCardL§LiteralÌÔÌî¸../components/MemberCardº'../components/MemberCard'I±ImportDeclarationÌñÍ‘M¯ImportSpecifierÌúÍKªIdentifierÌúÍ¨AppStateKªIdentifierÌúÍ¨AppStateL§LiteralÍ
+Í«../AppState­'../AppState'I±ImportDeclarationÍÍS‘M¯ImportSpecifierÍ#Í3KªIdentifierÍ#Í3°SubscriptionTierKªIdentifierÍ#Í3°SubscriptionTierL§LiteralÍ;ÍRµ../model/PricingModel·'../model/PricingModel'

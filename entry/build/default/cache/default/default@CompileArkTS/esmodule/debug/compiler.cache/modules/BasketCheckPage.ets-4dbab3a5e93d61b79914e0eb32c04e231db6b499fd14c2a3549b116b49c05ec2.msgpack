@@ -1,0 +1,737 @@
+Ôr@Ÿªassertions¤code´customTransformCache¬dependencies¢id¤meta±moduleSideEffects¬originalCode±originalSourcemap«resolvedIds®sourcemapChainµsyntheticNamedExportsµtransformDependencies®transformFiles¨cacheAstÔrAÚNif (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
+// è´­ç‰©ç¯®æ£€æŸ¥é¡µ - è¿ç»­æ‰«æåæ£€æŸ¥ä¸€ç¯®å­é£Ÿå“
+import router from "@ohos.router";
+import { FoodLabel, FoodSource, NutritionPer100g } from '../model/FoodLabel';
+import { AppState } from '../AppState';
+class BasketCheckPage extends ViewPU {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
+        this.__basketItems = new ObservedPropertyObjectPU([], this, "basketItems");
+        this.__checkResult = new ObservedPropertyObjectPU(null, this, "checkResult");
+        this.appState = AppState.getInstance();
+        this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
+    }
+    setInitiallyProvidedValue(params) {
+        if (params.basketItems !== undefined) {
+            this.basketItems = params.basketItems;
+        }
+        if (params.checkResult !== undefined) {
+            this.checkResult = params.checkResult;
+        }
+        if (params.appState !== undefined) {
+            this.appState = params.appState;
+        }
+    }
+    updateStateVars(params) {
+    }
+    purgeVariableDependenciesOnElmtId(rmElmtId) {
+        this.__basketItems.purgeDependencyOnElmtId(rmElmtId);
+        this.__checkResult.purgeDependencyOnElmtId(rmElmtId);
+    }
+    aboutToBeDeleted() {
+        this.__basketItems.aboutToBeDeleted();
+        this.__checkResult.aboutToBeDeleted();
+        SubscriberManager.Get().delete(this.id__());
+        this.aboutToBeDeletedInternal();
+    }
+    get basketItems() {
+        return this.__basketItems.get();
+    }
+    set basketItems(newValue) {
+        this.__basketItems.set(newValue);
+    }
+    get checkResult() {
+        return this.__checkResult.get();
+    }
+    set checkResult(newValue) {
+        this.__checkResult.set(newValue);
+    }
+    async aboutToAppear() {
+        // ä»AppStateè·å–è´­ç‰©ç¯®æ•°æ®
+        this.basketItems = this.appState.getBasketItems();
+        if (this.basketItems.length === 0) {
+            // æ— æ•°æ®æ—¶ä½¿ç”¨ç¤ºä¾‹
+            this.basketItems = this.createFallbackBasket();
+        }
+        this.checkResult = this.appState.checkBasket();
+    }
+    initialRender() {
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Scroll.create();
+            Scroll.width('100%');
+            Scroll.height('100%');
+            Scroll.backgroundColor('#FAFAFA');
+            Scroll.scrollable(ScrollDirection.Vertical);
+        }, Scroll);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Column.create();
+            Column.width('100%');
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            // é¡¶éƒ¨å¯¼èˆª
+            Row.create();
+            // é¡¶éƒ¨å¯¼èˆª
+            Row.width('100%');
+            // é¡¶éƒ¨å¯¼èˆª
+            Row.padding({ left: 16, right: 16, top: 16, bottom: 16 });
+        }, Row);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create('â†');
+            Text.fontSize(24);
+            Text.fontColor('#1976D2');
+            Text.onClick(() => { router.back(); });
+        }, Text);
+        Text.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create('è´­ç‰©ç¯®æ£€æŸ¥');
+            Text.fontSize(20);
+            Text.fontWeight(FontWeight.Bold);
+            Text.margin({ left: 16 });
+        }, Text);
+        Text.pop();
+        // é¡¶éƒ¨å¯¼èˆª
+        Row.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            // ç¯®å­æ¦‚è§ˆ
+            Row.create();
+            // ç¯®å­æ¦‚è§ˆ
+            Row.width('100%');
+            // ç¯®å­æ¦‚è§ˆ
+            Row.padding({ left: 16, right: 16 });
+            // ç¯®å­æ¦‚è§ˆ
+            Row.margin({ bottom: 12 });
+        }, Row);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create(`ğŸ›’ ${this.basketItems.length}æ¬¾é£Ÿå“`);
+            Text.fontSize(16);
+            Text.fontWeight(FontWeight.Medium);
+        }, Text);
+        Text.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Blank.create();
+        }, Blank);
+        Blank.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            If.create();
+            if (this.checkResult && this.checkResult.hasRisk()) {
+                this.ifElseBranchUpdateFunction(0, () => {
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Text.create('éœ€è¦æ³¨æ„');
+                        Text.fontSize(14);
+                        Text.fontColor('#FF5722');
+                        Text.fontWeight(FontWeight.Medium);
+                    }, Text);
+                    Text.pop();
+                });
+            }
+            else {
+                this.ifElseBranchUpdateFunction(1, () => {
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Text.create('æ•´ä½“å°šå¯');
+                        Text.fontSize(14);
+                        Text.fontColor('#4CAF50');
+                    }, Text);
+                    Text.pop();
+                });
+            }
+        }, If);
+        If.pop();
+        // ç¯®å­æ¦‚è§ˆ
+        Row.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            If.create();
+            // è­¦å‘Šåˆ—è¡¨
+            if (this.checkResult && this.checkResult.warnings.length > 0) {
+                this.ifElseBranchUpdateFunction(0, () => {
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Column.create();
+                        Column.width('100%');
+                        Column.padding(16);
+                        Column.backgroundColor('#FFF3E0');
+                        Column.borderRadius(12);
+                        Column.margin({ left: 16, right: 16, bottom: 12 });
+                        Column.alignItems(HorizontalAlign.Start);
+                    }, Column);
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Text.create('âš  è´­ç‰©ç¯®æé†’');
+                        Text.fontSize(16);
+                        Text.fontWeight(FontWeight.Medium);
+                        Text.margin({ bottom: 8 });
+                    }, Text);
+                    Text.pop();
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        ForEach.create();
+                        const forEachItemGenFunction = _item => {
+                            const warning = _item;
+                            this.observeComponentCreation2((elmtId, isInitialRender) => {
+                                Row.create();
+                                Row.margin({ bottom: 6 });
+                                Row.width('100%');
+                            }, Row);
+                            this.observeComponentCreation2((elmtId, isInitialRender) => {
+                                Text.create('â€¢');
+                                Text.fontSize(14);
+                                Text.fontColor('#FF5722');
+                                Text.margin({ right: 6 });
+                            }, Text);
+                            Text.pop();
+                            this.observeComponentCreation2((elmtId, isInitialRender) => {
+                                Text.create(warning);
+                                Text.fontSize(14);
+                                Text.fontColor('#212121');
+                            }, Text);
+                            Text.pop();
+                            Row.pop();
+                        };
+                        this.forEachUpdateFunction(elmtId, this.checkResult.warnings, forEachItemGenFunction, (warning, index) => `${index}`, false, true);
+                    }, ForEach);
+                    ForEach.pop();
+                    Column.pop();
+                });
+            }
+            // é‡‡è´­å»ºè®®
+            else {
+                this.ifElseBranchUpdateFunction(1, () => {
+                });
+            }
+        }, If);
+        If.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            If.create();
+            // é‡‡è´­å»ºè®®
+            if (this.checkResult && this.checkResult.suggestions.length > 0) {
+                this.ifElseBranchUpdateFunction(0, () => {
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Column.create();
+                        Column.width('100%');
+                        Column.padding(16);
+                        Column.backgroundColor('#E8F5E9');
+                        Column.borderRadius(12);
+                        Column.margin({ left: 16, right: 16, bottom: 12 });
+                        Column.alignItems(HorizontalAlign.Start);
+                    }, Column);
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Text.create('ğŸ’¡ é‡‡è´­å»ºè®®');
+                        Text.fontSize(16);
+                        Text.fontWeight(FontWeight.Medium);
+                        Text.margin({ bottom: 8 });
+                    }, Text);
+                    Text.pop();
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        ForEach.create();
+                        const forEachItemGenFunction = _item => {
+                            const suggestion = _item;
+                            this.observeComponentCreation2((elmtId, isInitialRender) => {
+                                Row.create();
+                                Row.margin({ bottom: 6 });
+                                Row.width('100%');
+                            }, Row);
+                            this.observeComponentCreation2((elmtId, isInitialRender) => {
+                                Text.create('â€¢');
+                                Text.fontSize(14);
+                                Text.fontColor('#4CAF50');
+                                Text.margin({ right: 6 });
+                            }, Text);
+                            Text.pop();
+                            this.observeComponentCreation2((elmtId, isInitialRender) => {
+                                Text.create(suggestion);
+                                Text.fontSize(14);
+                                Text.fontColor('#212121');
+                            }, Text);
+                            Text.pop();
+                            Row.pop();
+                        };
+                        this.forEachUpdateFunction(elmtId, this.checkResult.suggestions, forEachItemGenFunction, (suggestion, index) => `${index}`, false, true);
+                    }, ForEach);
+                    ForEach.pop();
+                    Column.pop();
+                });
+            }
+            // é£Ÿå“åˆ—è¡¨
+            else {
+                this.ifElseBranchUpdateFunction(1, () => {
+                });
+            }
+        }, If);
+        If.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            // é£Ÿå“åˆ—è¡¨
+            Text.create('ç¯®å†…é£Ÿå“');
+            // é£Ÿå“åˆ—è¡¨
+            Text.fontSize(14);
+            // é£Ÿå“åˆ—è¡¨
+            Text.fontColor('#757575');
+            // é£Ÿå“åˆ—è¡¨
+            Text.margin({ left: 16, top: 8, bottom: 8 });
+        }, Text);
+        // é£Ÿå“åˆ—è¡¨
+        Text.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            ForEach.create();
+            const forEachItemGenFunction = _item => {
+                const item = _item;
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
+                    Row.create();
+                    Row.width('100%');
+                    Row.padding(12);
+                    Row.backgroundColor('#FFFFFF');
+                    Row.borderRadius(8);
+                    Row.margin({ left: 16, right: 16, bottom: 4 });
+                }, Row);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
+                    Column.create();
+                    Column.alignItems(HorizontalAlign.Start);
+                    Column.layoutWeight(1);
+                }, Column);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
+                    Text.create(item.foodName);
+                    Text.fontSize(14);
+                    Text.fontWeight(FontWeight.Medium);
+                }, Text);
+                Text.pop();
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
+                    Row.create();
+                    Row.margin({ top: 4 });
+                }, Row);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
+                    If.create();
+                    if (item.isHighSodium()) {
+                        this.ifElseBranchUpdateFunction(0, () => {
+                            this.observeComponentCreation2((elmtId, isInitialRender) => {
+                                Text.create('é«˜ç›');
+                                Text.fontSize(11);
+                                Text.fontColor('#FFFFFF');
+                                Text.backgroundColor('#FF5722');
+                                Text.padding({ left: 6, right: 6, top: 2, bottom: 2 });
+                                Text.borderRadius(8);
+                                Text.margin({ right: 4 });
+                            }, Text);
+                            Text.pop();
+                        });
+                    }
+                    else {
+                        this.ifElseBranchUpdateFunction(1, () => {
+                        });
+                    }
+                }, If);
+                If.pop();
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
+                    If.create();
+                    if (item.isHighSugar()) {
+                        this.ifElseBranchUpdateFunction(0, () => {
+                            this.observeComponentCreation2((elmtId, isInitialRender) => {
+                                Text.create('é«˜ç³–');
+                                Text.fontSize(11);
+                                Text.fontColor('#FFFFFF');
+                                Text.backgroundColor('#FF9800');
+                                Text.padding({ left: 6, right: 6, top: 2, bottom: 2 });
+                                Text.borderRadius(8);
+                                Text.margin({ right: 4 });
+                            }, Text);
+                            Text.pop();
+                        });
+                    }
+                    else {
+                        this.ifElseBranchUpdateFunction(1, () => {
+                        });
+                    }
+                }, If);
+                If.pop();
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
+                    If.create();
+                    if (item.isHighFat()) {
+                        this.ifElseBranchUpdateFunction(0, () => {
+                            this.observeComponentCreation2((elmtId, isInitialRender) => {
+                                Text.create('é«˜è„‚');
+                                Text.fontSize(11);
+                                Text.fontColor('#FFFFFF');
+                                Text.backgroundColor('#F44336');
+                                Text.padding({ left: 6, right: 6, top: 2, bottom: 2 });
+                                Text.borderRadius(8);
+                            }, Text);
+                            Text.pop();
+                        });
+                    }
+                    else {
+                        this.ifElseBranchUpdateFunction(1, () => {
+                        });
+                    }
+                }, If);
+                If.pop();
+                Row.pop();
+                Column.pop();
+                Row.pop();
+            };
+            this.forEachUpdateFunction(elmtId, this.basketItems, forEachItemGenFunction, (item) => item.foodId, false, false);
+        }, ForEach);
+        ForEach.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            // ç»§ç»­æ‰«ææŒ‰é’®
+            Button.createWithLabel('ç»§ç»­æ‰«ææ·»åŠ ');
+            // ç»§ç»­æ‰«ææŒ‰é’®
+            Button.width('90%');
+            // ç»§ç»­æ‰«ææŒ‰é’®
+            Button.height(48);
+            // ç»§ç»­æ‰«ææŒ‰é’®
+            Button.backgroundColor('#1976D2');
+            // ç»§ç»­æ‰«ææŒ‰é’®
+            Button.borderRadius(24);
+            // ç»§ç»­æ‰«ææŒ‰é’®
+            Button.margin({ top: 16, bottom: 32 });
+            // ç»§ç»­æ‰«ææŒ‰é’®
+            Button.onClick(() => {
+                router.pushUrl({ url: 'pages/ScanPage' });
+            });
+        }, Button);
+        // ç»§ç»­æ‰«ææŒ‰é’®
+        Button.pop();
+        Column.pop();
+        Scroll.pop();
+    }
+    createFallbackBasket() {
+        const items = [];
+        const now = Date.now();
+        const item1 = new FoodLabel();
+        item1.foodId = 'b1';
+        item1.foodName = 'å³é£Ÿé¸¡çˆªï¼ˆé¦™è¾£å‘³ï¼‰';
+        item1.nutrition = new NutritionPer100g();
+        item1.nutrition.sodium = 1200;
+        item1.nutrition.sugar = 3;
+        item1.nutrition.calories = 230;
+        item1.nutrition.fat = 12;
+        item1.nutrition.saturatedFat = 3;
+        item1.nutrition.carbohydrate = 8;
+        item1.nutrition.protein = 15;
+        item1.ingredients = ['é¸¡çˆª', 'é£Ÿç”¨ç›', 'é…±æ²¹'];
+        item1.source = FoodSource.USER_UPLOAD;
+        item1.identifiedAt = now;
+        items.push(item1);
+        const item2 = new FoodLabel();
+        item2.foodId = 'b2';
+        item2.foodName = 'å„¿ç«¥é…¸å¥¶';
+        item2.nutrition = new NutritionPer100g();
+        item2.nutrition.sodium = 80;
+        item2.nutrition.sugar = 18;
+        item2.nutrition.calories = 90;
+        item2.nutrition.fat = 3;
+        item2.nutrition.saturatedFat = 1.5;
+        item2.nutrition.carbohydrate = 15;
+        item2.nutrition.protein = 3;
+        item2.ingredients = ['ç”Ÿç‰›ä¹³', 'ç™½ç ‚ç³–', 'æœèƒ¶'];
+        item2.source = FoodSource.USER_UPLOAD;
+        item2.identifiedAt = now;
+        items.push(item2);
+        const item3 = new FoodLabel();
+        item3.foodId = 'b3';
+        item3.foodName = 'ç«é”…åº•æ–™ï¼ˆç‰›æ²¹éº»è¾£ï¼‰';
+        item3.nutrition = new NutritionPer100g();
+        item3.nutrition.sodium = 3500;
+        item3.nutrition.sugar = 5;
+        item3.nutrition.calories = 450;
+        item3.nutrition.fat = 35;
+        item3.nutrition.saturatedFat = 18;
+        item3.nutrition.carbohydrate = 10;
+        item3.nutrition.protein = 5;
+        item3.ingredients = ['ç‰›æ²¹', 'è¾£æ¤’', 'é£Ÿç”¨ç›', 'èŠ±æ¤’'];
+        item3.source = FoodSource.USER_UPLOAD;
+        item3.identifiedAt = now;
+        items.push(item3);
+        return items;
+    }
+    rerender() {
+        this.updateDirtyElements();
+    }
+    static getEntryName() {
+        return "BasketCheckPage";
+    }
+}
+registerNamedRoute(() => new BasketCheckPage(undefined, {}), "", { bundleName: "com.familyfood.helper", moduleName: "entry", pagePath: "pages/BasketCheckPage", pageFullPath: "entry/src/main/ets/pages/BasketCheckPage", integratedHsp: "false", moduleType: "followWithHap" });
+//# sourceMappingURL=BasketCheckPage.js.mapÂ“Ùf hvigor_ignore_E:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.router.d.tsÙMC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\FoodLabel.etsÙFC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\AppState.etsÙSC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\pages\BasketCheckPage.etsÔrBšªmoduleName±isLocalDependency¯isNodeEntryFile§pkgPath±belongProjectPath§pkgNameªpkgVersion±dependencyPkgInfo°belongModulePath¬shouldEmitJs¥entryÃÂÙ,C:\Users\A\IDEProjects\family_food_app\entryÙ&C:\Users\A\IDEProjects\family_food_app¥entry¥1.0.0Ô  Ù,C:\Users\A\IDEProjects\family_food_app\entryÃÃÚ// è´­ç‰©ç¯®æ£€æŸ¥é¡µ - è¿ç»­æ‰«æåæ£€æŸ¥ä¸€ç¯®å­é£Ÿå“
+
+import { router } from '@kit.ArkUI';
+import { FoodLabel, FoodSource, NutritionPer100g } from '../model/FoodLabel';
+import { BasketCheckResult } from '../engine/BasketCheckEngine';
+import { AppState } from '../AppState';
+
+@Entry
+@Component
+struct BasketCheckPage {
+  @State basketItems: FoodLabel[] = []
+  @State checkResult: BasketCheckResult | null = null
+
+  private appState: AppState = AppState.getInstance()
+
+  async aboutToAppear() {
+    // ä»AppStateè·å–è´­ç‰©ç¯®æ•°æ®
+    this.basketItems = this.appState.getBasketItems()
+    if (this.basketItems.length === 0) {
+      // æ— æ•°æ®æ—¶ä½¿ç”¨ç¤ºä¾‹
+      this.basketItems = this.createFallbackBasket()
+    }
+    this.checkResult = this.appState.checkBasket()
+  }
+
+  build() {
+    Scroll() {
+      Column() {
+        // é¡¶éƒ¨å¯¼èˆª
+        Row() {
+          Text('â†').fontSize(24).fontColor('#1976D2')
+            .onClick(() => { router.back() })
+          Text('è´­ç‰©ç¯®æ£€æŸ¥').fontSize(20).fontWeight(FontWeight.Bold)
+            .margin({ left: 16 })
+        }
+        .width('100%')
+        .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+
+        // ç¯®å­æ¦‚è§ˆ
+        Row() {
+          Text(`ğŸ›’ ${this.basketItems.length}æ¬¾é£Ÿå“`).fontSize(16).fontWeight(FontWeight.Medium)
+          Blank()
+          if (this.checkResult && this.checkResult.hasRisk()) {
+            Text('éœ€è¦æ³¨æ„').fontSize(14).fontColor('#FF5722').fontWeight(FontWeight.Medium)
+          } else {
+            Text('æ•´ä½“å°šå¯').fontSize(14).fontColor('#4CAF50')
+          }
+        }
+        .width('100%')
+        .padding({ left: 16, right: 16 })
+        .margin({ bottom: 12 })
+
+        // è­¦å‘Šåˆ—è¡¨
+        if (this.checkResult && this.checkResult.warnings.length > 0) {
+          Column() {
+            Text('âš  è´­ç‰©ç¯®æé†’').fontSize(16).fontWeight(FontWeight.Medium).margin({ bottom: 8 })
+            ForEach(this.checkResult.warnings, (warning: string) => {
+              Row() {
+                Text('â€¢').fontSize(14).fontColor('#FF5722').margin({ right: 6 })
+                Text(warning).fontSize(14).fontColor('#212121')
+              }
+              .margin({ bottom: 6 })
+              .width('100%')
+            }, (warning: string, index: number) => `${index}`)
+          }
+          .width('100%')
+          .padding(16)
+          .backgroundColor('#FFF3E0')
+          .borderRadius(12)
+          .margin({ left: 16, right: 16, bottom: 12 })
+          .alignItems(HorizontalAlign.Start)
+        }
+
+        // é‡‡è´­å»ºè®®
+        if (this.checkResult && this.checkResult.suggestions.length > 0) {
+          Column() {
+            Text('ğŸ’¡ é‡‡è´­å»ºè®®').fontSize(16).fontWeight(FontWeight.Medium).margin({ bottom: 8 })
+            ForEach(this.checkResult.suggestions, (suggestion: string) => {
+              Row() {
+                Text('â€¢').fontSize(14).fontColor('#4CAF50').margin({ right: 6 })
+                Text(suggestion).fontSize(14).fontColor('#212121')
+              }
+              .margin({ bottom: 6 })
+              .width('100%')
+            }, (suggestion: string, index: number) => `${index}`)
+          }
+          .width('100%')
+          .padding(16)
+          .backgroundColor('#E8F5E9')
+          .borderRadius(12)
+          .margin({ left: 16, right: 16, bottom: 12 })
+          .alignItems(HorizontalAlign.Start)
+        }
+
+        // é£Ÿå“åˆ—è¡¨
+        Text('ç¯®å†…é£Ÿå“').fontSize(14).fontColor('#757575')
+          .margin({ left: 16, top: 8, bottom: 8 })
+
+        ForEach(this.basketItems, (item: FoodLabel) => {
+          Row() {
+            Column() {
+              Text(item.foodName).fontSize(14).fontWeight(FontWeight.Medium)
+              Row() {
+                if (item.isHighSodium()) { Text('é«˜ç›').fontSize(11).fontColor('#FFFFFF').backgroundColor('#FF5722').padding({ left: 6, right: 6, top: 2, bottom: 2 }).borderRadius(8).margin({ right: 4 }) }
+                if (item.isHighSugar()) { Text('é«˜ç³–').fontSize(11).fontColor('#FFFFFF').backgroundColor('#FF9800').padding({ left: 6, right: 6, top: 2, bottom: 2 }).borderRadius(8).margin({ right: 4 }) }
+                if (item.isHighFat()) { Text('é«˜è„‚').fontSize(11).fontColor('#FFFFFF').backgroundColor('#F44336').padding({ left: 6, right: 6, top: 2, bottom: 2 }).borderRadius(8) }
+              }
+              .margin({ top: 4 })
+            }
+            .alignItems(HorizontalAlign.Start)
+            .layoutWeight(1)
+          }
+          .width('100%')
+          .padding(12)
+          .backgroundColor('#FFFFFF')
+          .borderRadius(8)
+          .margin({ left: 16, right: 16, bottom: 4 })
+        }, (item: FoodLabel) => item.foodId)
+
+        // ç»§ç»­æ‰«ææŒ‰é’®
+        Button('ç»§ç»­æ‰«ææ·»åŠ ')
+          .width('90%')
+          .height(48)
+          .backgroundColor('#1976D2')
+          .borderRadius(24)
+          .margin({ top: 16, bottom: 32 })
+          .onClick(() => {
+            router.pushUrl({ url: 'pages/ScanPage' })
+          })
+      }
+      .width('100%')
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor('#FAFAFA')
+    .scrollable(ScrollDirection.Vertical)
+  }
+
+  private createFallbackBasket(): FoodLabel[] {
+    const items: FoodLabel[] = []
+    const now = Date.now()
+
+    const item1 = new FoodLabel()
+    item1.foodId = 'b1'; item1.foodName = 'å³é£Ÿé¸¡çˆªï¼ˆé¦™è¾£å‘³ï¼‰'
+    item1.nutrition = new NutritionPer100g();
+    item1.nutrition.sodium = 1200;
+    item1.nutrition.sugar = 3;
+    item1.nutrition.calories = 230;
+    item1.nutrition.fat = 12;
+    item1.nutrition.saturatedFat = 3;
+    item1.nutrition.carbohydrate = 8;
+    item1.nutrition.protein = 15;
+    item1.ingredients = ['é¸¡çˆª', 'é£Ÿç”¨ç›', 'é…±æ²¹']; item1.source = FoodSource.USER_UPLOAD; item1.identifiedAt = now
+    items.push(item1)
+
+    const item2 = new FoodLabel()
+    item2.foodId = 'b2'; item2.foodName = 'å„¿ç«¥é…¸å¥¶'
+    item2.nutrition = new NutritionPer100g();
+    item2.nutrition.sodium = 80;
+    item2.nutrition.sugar = 18;
+    item2.nutrition.calories = 90;
+    item2.nutrition.fat = 3;
+    item2.nutrition.saturatedFat = 1.5;
+    item2.nutrition.carbohydrate = 15;
+    item2.nutrition.protein = 3;
+    item2.ingredients = ['ç”Ÿç‰›ä¹³', 'ç™½ç ‚ç³–', 'æœèƒ¶']; item2.source = FoodSource.USER_UPLOAD; item2.identifiedAt = now
+    items.push(item2)
+
+    const item3 = new FoodLabel()
+    item3.foodId = 'b3'; item3.foodName = 'ç«é”…åº•æ–™ï¼ˆç‰›æ²¹éº»è¾£ï¼‰'
+    item3.nutrition = new NutritionPer100g();
+    item3.nutrition.sodium = 3500;
+    item3.nutrition.sugar = 5;
+    item3.nutrition.calories = 450;
+    item3.nutrition.fat = 35;
+    item3.nutrition.saturatedFat = 18;
+    item3.nutrition.carbohydrate = 10;
+    item3.nutrition.protein = 5;
+    item3.ingredients = ['ç‰›æ²¹', 'è¾£æ¤’', 'é£Ÿç”¨ç›', 'èŠ±æ¤’']; item3.source = FoodSource.USER_UPLOAD; item3.identifiedAt = now
+    items.push(item3)
+
+    return items
+  }
+}
+ÀÔrC“¬@ohos.router²../model/FoodLabel«../AppStateÔrD—ªassertions¨external¢id¤meta±moduleSideEffectsªresolvedByµsyntheticNamedExportsAÃÙf hvigor_ignore_E:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.router.d.tsAÃªoh-resolveÂDAÂÙMC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\FoodLabel.etsAÃªoh-resolveÂDAÂÙFC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\AppState.etsAÃªoh-resolveÂ“ÔrE–§version¤fileªsourceRoot§sources¥names¨mappings²BasketCheckPage.js ‘³BasketCheckPage.etsÜ¾’”    ”  –”   ” 	” ” ”! #”" $œ”   ” ”	 	” ” ” ”   ”0 0”2 2”8 8”ÌL ÌL”ÌM ÌM˜”   ” ”	 	” ” ” ”& &”' '’” 	” 	‘”  ’”: 
+$”< 
+&’”: 1”> 5•” ”  '”! (”, 3”. 5‘” '’” 
+	” 
+’” 
+	” 
+’” 	” ’” 	” ”” ”	 ”
+ ” ’” ” œ” ” ” 	” ” ” ”  ”( $”) %”7 3”9 5”: 5š” ” ” ” ” ” ”# ”( $”) %”+ '’” ” š” ” 
+” ” ” ”# ”$ ”8 2”: 4”; 4‘”	 œ” ” ” 	” ” ” ”  ”( $”) %”4 0”6 2”7 2’” ” ‘” ’” ” 
+–” ” 
+” Ì„” Ì„
+” Ì„” Ì„–” ” 
+” Ì…” Ì…” Ì…”  Ì…–” ” 
+” Ì†”" Ì†”# Ì†”, Ì†˜” ” 
+” Ì‡” Ì‡” Ì‡”- Ì‡”. Ì‡ ”6 Ì‡(’” ” –” ” ” Ì‚” Ì‚” Ì‚” Ì‚’” ” ’” ” ’” ” –” ” ” #	” #” #” #’” ” Ü ” ” ” $	” $” $” $” $”  $”" $”$ $”) $"”+ $$”- $&”/ $(”2 $+”4 $-”6 $/”8 $1”> $7”Ì@ $9”ÌB $;”ÌD $=”” 
+” ” ” –” 
+” ” ” ” ” –” 
+” ” !” *” +”$ 4Ÿ” 
+” ” ” ” ” ” ”! ”' #”( $”, (”. *”/ *”0 +”1 ,’” 
+” ””  
+”  ”  ”  –”  
+”  ”  ”   ”  !”  #˜”  
+”  ”  %”  /”  0”&  :”'  ;”+  ?š”  
+”  ” !” !” !” !” !”  !”" !”$ ! ’”  
+”  ’” ” ’” ” ’” &” &’” '” '’” &” &–” '” '” 0	” 0” 0” 0’” &” &” '” '” 1	” 1” 1” 1” 1”  1”" 1”$ 1”) 1"”+ 1$”- 1&”/ 1(’” &” &š” '” '” 2	” 2” 2” 2” 2”! 2”# 2”% 2š” (
+” (” (” (”" (”# (”. (%”/ (&”5 (,”: (1–” (
+” (” (3” (;” (<” (>˜” (
+” (” (Ì@” (ÌJ” (ÌK”& (ÌU”' (ÌV”- (Ì\’” (
+” (’” )
+” )’” )
+” )” *
+” *” *” *”  *”$ *"”( *&”) *'”4 *2”5 *3”< *:”> *<”Ì@ *>”” +” +”$ +”* +–” +” +” +”% +!”& +"”( +$–” +” +” +&”& +/”' +0”0 +9˜” +” +” +;”' +ÌE”( +ÌF”2 +ÌP”3 +ÌQ”9 +ÌW’” +” +‘” ,‘” ,”” -” -”$ -”* -–” -” -” -”% -!”& -"”( -$–” -” -” -&”& -/”' -0”0 -9’” -” -‘” .’” &” &’” '” '’” 4” 4Ü ” 5” 5” 5” 5”  5”$ 5 ”( 5$”) 5%”4 50”5 51”= 59”> 5:”ÌD 5Ì@”ÌG 5ÌC”ÌH 5ÌD”ÌJ 5ÌF’” 6
+” 6–” 6
+” 6” ÌA”$ ÌA”% ÌA”+ ÌA–” 6
+” 6” ÌB”& ÌB”' ÌB”) ÌB–” 6
+” 6” ÌC”. ÌC”/ ÌC”8 ÌC$–” 6
+” 6” ÌD”+ ÌD”, ÌD”. ÌDÜ ” 6
+” 6” ÌE”% ÌE”& ÌE”( ÌE”, ÌE”. ÌE”0 ÌE”2 ÌE”7 ÌE#”9 ÌE%”; ÌE'”= ÌE)”ÌC ÌE/”ÌE ÌE1”ÌG ÌE3”ÌI ÌE5˜” 6
+” 6” ÌF”) ÌF”* ÌF”9 ÌF%”: ÌF&”? ÌF+”” 7” 7”$ 7”- 7–” 7” 7” 7”% 7$”& 7%”( 7'˜” 7” 7” 7)”' 73”( 74”2 7>”3 7?”9 7ÌEš” 7” 7” 7ÌG”# 7ÌM”$ 7ÌN”& 7ÌP”, 7ÌV”. 7ÌX”/ 7ÌY”1 7Ì[’” 7” 7’” 8” 8’”  9”# 9š”  9”# 9”$ =”* =”+ =”- =”3 =”5 = ”6 =!”8 =#–”  9”# 9”$ >”) >”* >”0 >””  :”$ :”, :”/ :–”  :”$ :”% :”- :"”. :#”0 :%–”  :”$ :”% :'”. :0”/ :1”8 ::š”  :”$ :”% :<”+ :ÌB”, :ÌC”. :ÌE”3 :ÌJ”5 :ÌL”6 :ÌM”8 :ÌO’” :”  :””  ;”$ ;”, ;”3 ;–”  ;”$ ;”% ;”- ;&”. ;'”0 ;)–”  ;”$ ;”% ;+”. ;4”/ ;5”8 ;>’” ;”  ;’” 9” 9Ü ”; 8”? 8”Ì@ 8”ÌK 8$”ÌL 8%”ÌT 8-”Ìn ?”Ìo ?”Ìv ?”Ìx ?!”Ì} ?.”Ì ?0”Ì ?2”Ì‚ ?3”Ì… ?6”ÌŠ ?;”ÌŒ ?=’” 8” 8’” 6
+” 6‘” ÌG	’” ÌI” ÌI‘” ÌG	’” ÌI” ÌIÜ ” ÌJ” ÌJ” ÌJ” ÌJ”  ÌJ”$ ÌJ ”( ÌJ$”) ÌJ%”4 ÌJ0”5 ÌJ1”Ì@ ÌJ<”ÌA ÌJ=”ÌG ÌJÌC”ÌJ ÌJÌF”ÌK ÌJÌG”ÌM ÌJÌI’” ÌK
+” ÌK–” ÌK
+” ÌK” ÌV”$ ÌV”% ÌV”+ ÌV–” ÌK
+” ÌK” ÌW”& ÌW”' ÌW”) ÌW–” ÌK
+” ÌK” ÌX”. ÌX”/ ÌX”8 ÌX$–” ÌK
+” ÌK” ÌY”+ ÌY”, ÌY”. ÌYÜ ” ÌK
+” ÌK” ÌZ”% ÌZ”& ÌZ”( ÌZ”, ÌZ”. ÌZ”0 ÌZ”2 ÌZ”7 ÌZ#”9 ÌZ%”; ÌZ'”= ÌZ)”ÌC ÌZ/”ÌE ÌZ1”ÌG ÌZ3”ÌI ÌZ5˜” ÌK
+” ÌK” Ì[”) Ì[”* Ì[”9 Ì[%”: Ì[&”? Ì[+”” ÌL” ÌL”$ ÌL”- ÌL–” ÌL” ÌL” ÌL”% ÌL$”& ÌL%”( ÌL'˜” ÌL” ÌL” ÌL)”' ÌL3”( ÌL4”2 ÌL>”3 ÌL?”9 ÌLÌEš” ÌL” ÌL” ÌLÌG”# ÌLÌM”$ ÌLÌN”& ÌLÌP”, ÌLÌV”. ÌLÌX”/ ÌLÌY”1 ÌLÌ[’” ÌL” ÌL’” ÌM” ÌM’”  ÌN”# ÌNš”  ÌN”# ÌN”$ ÌR”* ÌR”+ ÌR”- ÌR”3 ÌR”5 ÌR ”6 ÌR!”8 ÌR#–”  ÌN”# ÌN”$ ÌS”) ÌS”* ÌS”0 ÌS””  ÌO”$ ÌO”, ÌO”/ ÌO–”  ÌO”$ ÌO”% ÌO”- ÌO"”. ÌO#”0 ÌO%–”  ÌO”$ ÌO”% ÌO'”. ÌO0”/ ÌO1”8 ÌO:š”  ÌO”$ ÌO”% ÌO<”+ ÌOÌB”, ÌOÌC”. ÌOÌE”3 ÌOÌJ”5 ÌOÌL”6 ÌOÌM”8 ÌOÌO’” ÌO”  ÌO””  ÌP”$ ÌP”, ÌP”6 ÌP–”  ÌP”$ ÌP”% ÌP!”- ÌP)”. ÌP*”0 ÌP,–”  ÌP”$ ÌP”% ÌP.”. ÌP7”/ ÌP8”8 ÌPÌA’” ÌP”  ÌP’” ÌN” ÌNÜ ”; ÌM”? ÌM”Ì@ ÌM”ÌK ÌM$”ÌL ÌM%”ÌW ÌM0”Ìq ÌT”Ìr ÌT”Ì| ÌT"”Ì~ ÌT$”Ìƒ ÌT1”Ì… ÌT3”Ì‡ ÌT5”Ìˆ ÌT6”Ì‹ ÌT9”Ì ÌT>”Ì’ ÌTÌ@’” ÌM” ÌM’” ÌK
+” ÌK‘” Ì\	’” Ì^” Ì^‘” Ì\	’” Ì^” Ì^”” Ì_” Ì_” Ì_” Ì_’” Ì^” Ì^–” Ì_” Ì_” Ì_” Ì_” Ì_” Ì_ ’” Ì^” Ì^–” Ì_” Ì_” Ì_"” Ì_+” Ì_,”$ Ì_5’” Ì^” Ì^Ü ” Ì_” Ì_” Ì`” Ì`” Ì`” Ì`” Ì`”  Ì`”" Ì`”$ Ì`”' Ì`!”) Ì`#”* Ì`$”, Ì`&”2 Ì`,”4 Ì`.”5 Ì`/”7 Ì`1’” Ì^” Ì^’” Ì_” Ì_’” Ìb” Ìb’” Ìc
+” Ìc–” Ìc
+” Ìc” Ìp” Ìp” Ìp”$ Ìp–” Ìc
+” Ìc” Ìq” Ìq”  Ìq”" Ìq–” Ìc
+” Ìc” Ìr”' Ìr”( Ìr”1 Ìr$–” Ìc
+” Ìc” Ìs”$ Ìs”% Ìs”& ÌsÜ ” Ìc
+” Ìc” Ìt” Ìt” Ìt”! Ìt”% Ìt”' Ìt”) Ìt”+ Ìt”0 Ìt#”2 Ìt%”4 Ìt'”6 Ìt)”< Ìt/”> Ìt1”? Ìt2”ÌA Ìt4’” Ìd” Ìd˜” Ìd” Ìd” Ìm”% Ìm”& Ìm”5 Ìm'”6 Ìm(”; Ìm-–” Ìd” Ìd” Ìn”' Ìn”( Ìn”) Ìn–” Ìe” Ìe”  Ìe”$ Ìe”% Ìe”- Ìe –” Ìe” Ìe” Ìe"”! Ìe*”" Ìe+”$ Ìe-˜” Ìe” Ìe” Ìe/”# Ìe9”$ Ìe:”. ÌeÌD”/ ÌeÌE”5 ÌeÌK’” Ìe” Ìe’” Ìf” Ìfš” Ìf” Ìf” Ìk” Ìk” Ìk”! Ìk”$ Ìk”& Ìk”' Ìk”) Ìk —” Ìg” Ìg” Ìg” Ìg”) Ìg%”+ Ìg'”- Ìg)””  Ìg+”$ Ìg/”, Ìg0”0 Ìg4–”  Ìg+”$ Ìg/”% Ìg6”- Ìg>”. Ìg?”0 ÌgÌA–”  Ìg+”$ Ìg/”% ÌgÌC”. ÌgÌL”/ ÌgÌM”8 ÌgÌV–”  Ìg+”$ Ìg/”% ÌgÌX”4 ÌgÌg”5 ÌgÌh”> ÌgÌqÜ ”  Ìg+”$ Ìg/”% ÌgÌs”, ÌgÌz”- ÌgÌ{”/ ÌgÌ}”3 ÌgÌ”5 ÌgÌƒ”6 ÌgÌ„”8 ÌgÌ†”= ÌgÌ‹”? ÌgÌ”Ì@ ÌgÌ”ÌB ÌgÌ”ÌE ÌgÌ“”ÌG ÌgÌ•”ÌH ÌgÌ–”ÌJ ÌgÌ˜”ÌP ÌgÌ”ÌR ÌgÌ ”ÌS ÌgÌ¡”ÌU ÌgÌ£–”  Ìg+”$ Ìg/”% ÌgÌ¥”1 ÌgÌ±”2 ÌgÌ²”3 ÌgÌ³š”  Ìg+”$ Ìg/”% ÌgÌµ”+ ÌgÌ»”, ÌgÌ¼”. ÌgÌ¾”3 ÌgÌÃ”5 ÌgÌÅ”6 ÌgÌÆ”8 ÌgÌÈ’” Ìg+”  Ìg/‘” ÌgÌË‘” ÌgÌË—” Ìh” Ìh” Ìh” Ìh”( Ìh$”* Ìh&”, Ìh(””  Ìh*”$ Ìh.”, Ìh/”0 Ìh3–”  Ìh*”$ Ìh.”% Ìh5”- Ìh=”. Ìh>”0 ÌhÌ@–”  Ìh*”$ Ìh.”% ÌhÌB”. ÌhÌK”/ ÌhÌL”8 ÌhÌU–”  Ìh*”$ Ìh.”% ÌhÌW”4 ÌhÌf”5 ÌhÌg”> ÌhÌpÜ ”  Ìh*”$ Ìh.”% ÌhÌr”, ÌhÌy”- ÌhÌz”/ ÌhÌ|”3 ÌhÌ€”5 ÌhÌ‚”6 ÌhÌƒ”8 ÌhÌ…”= ÌhÌŠ”? ÌhÌŒ”Ì@ ÌhÌ”ÌB ÌhÌ”ÌE ÌhÌ’”ÌG ÌhÌ””ÌH ÌhÌ•”ÌJ ÌhÌ—”ÌP ÌhÌ”ÌR ÌhÌŸ”ÌS ÌhÌ ”ÌU ÌhÌ¢–”  Ìh*”$ Ìh.”% ÌhÌ¤”1 ÌhÌ°”2 ÌhÌ±”3 ÌhÌ²š”  Ìh*”$ Ìh.”% ÌhÌ´”+ ÌhÌº”, ÌhÌ»”. ÌhÌ½”3 ÌhÌÂ”5 ÌhÌÄ”6 ÌhÌÅ”8 ÌhÌÇ’” Ìh*”  Ìh.‘” ÌhÌÊ‘” ÌhÌÊ—” Ìi” Ìi” Ìi” Ìi”& Ìi"”( Ìi$”* Ìi&””  Ìi(”$ Ìi,”, Ìi-”0 Ìi1–”  Ìi(”$ Ìi,”% Ìi3”- Ìi;”. Ìi<”0 Ìi>–”  Ìi(”$ Ìi,”% ÌiÌ@”. ÌiÌI”/ ÌiÌJ”8 ÌiÌS–”  Ìi(”$ Ìi,”% ÌiÌU”4 ÌiÌd”5 ÌiÌe”> ÌiÌnÜ ”  Ìi(”$ Ìi,”% ÌiÌp”, ÌiÌw”- ÌiÌx”/ ÌiÌz”3 ÌiÌ~”5 ÌiÌ€”6 ÌiÌ”8 ÌiÌƒ”= ÌiÌˆ”? ÌiÌŠ”Ì@ ÌiÌ‹”ÌB ÌiÌ”ÌE ÌiÌ”ÌG ÌiÌ’”ÌH ÌiÌ“”ÌJ ÌiÌ•”ÌP ÌiÌ›”ÌR ÌiÌ”ÌS ÌiÌ”ÌU ÌiÌ –”  Ìi(”$ Ìi,”% ÌiÌ¢”1 ÌiÌ®”2 ÌiÌ¯”3 ÌiÌ°’” Ìi(”  Ìi,‘” ÌiÌ³‘” ÌiÌ³’” Ìf” Ìf’” Ìd” Ìd’” Ìc
+” Ìc”/ Ìb”3 Ìb”4 Ìb”? Ìb ”ÌY Ìu”ÌZ Ìu”Ì^ Ìu”Ì` Ìu”Ìb Ìu”Ìc Ìu ”Ìg Ìu$”Ìh Ìu%”Ìn Ìu+’” Ìb” Ìb’” Ìw” Ìw”” Ìx” Ìx”# Ìx”+ Ìx’” Ìw” Ìw–” Ìx” Ìx” Ìy” Ìy” Ìy” Ìy’” Ìw” Ìw–” Ìx” Ìx” Ìz” Ìz” Ìz” Ìz’” Ìw” Ìw–” Ìx” Ìx” Ì{”" Ì{”# Ì{”, Ì{$’” Ìw” Ìw–” Ìx” Ìx” Ì|” Ì|”  Ì|”" Ì|’” Ìw” Ìw” Ìx” Ìx” Ì}” Ì}” Ì}” Ì}” Ì}”! Ì}”# Ì}”% Ì}”+ Ì}#”- Ì}%”/ Ì}'”1 Ì})’” Ìw” Ìw—” Ìx” Ìx” Ì~” Ì~” Ì~” Ì~”  Ì~œ” Ì” Ì” Ì” Ì” Ì”! Ì”$ Ì ”& Ì"”6 Ì2”8 Ì4”9 Ì5”: Ì5’” Ì€
+” Ì€’” Ìw” Ìw’” Ìx” Ìx’” ” ’” ” 
+‘” Ìˆ’” ÌŠ
+” ÌŠ–” Ì‹” Ì‹
+” Ì‹” Ì‹” Ì‹!” Ì‹!™” ÌŒ” ÌŒ
+” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ˜” Ì” Ì
+” Ì” Ì” Ì”# Ì”% Ì!”& Ì!—” Ì” Ì	” Ì
+” Ì” Ì” Ì” Ì—” Ì” Ì” Ì” Ì'” Ì*”$ Ì5”% Ì5™” Ì” Ì	” Ì
+” Ì” Ì” Ì”. Ì*”0 Ì,”1 Ì-™” Ì‘” Ì‘	” Ì‘
+” Ì‘” Ì‘” Ì‘”! Ì‘”% Ì‘!”& Ì‘"™” Ì’” Ì’	” Ì’
+” Ì’” Ì’” Ì’”  Ì’”! Ì’”" Ì’™” Ì“” Ì“	” Ì“
+” Ì“” Ì“”  Ì“”# Ì“”& Ì“"”' Ì“#™” Ì”” Ì”	” Ì”
+” Ì”” Ì”” Ì”” Ì””  Ì””! Ì”™” Ì•” Ì•	” Ì•
+” Ì•” Ì•”$ Ì• ”' Ì•#”( Ì•$”) Ì•%™” Ì–” Ì–	” Ì–
+” Ì–” Ì–”$ Ì– ”' Ì–#”( Ì–$”) Ì–%™” Ì—” Ì—	” Ì—
+” Ì—” Ì—” Ì—”" Ì—”$ Ì— ”% Ì—!” Ì˜” Ì˜	” Ì˜
+” Ì˜” Ì˜” Ì˜”! Ì˜”# Ì˜”( Ì˜$”* Ì˜&”. Ì˜*”/ Ì˜+”0 Ì˜,™” Ì˜-” Ì˜2” Ì˜3” Ì˜9” Ì˜<”! Ì˜ÌF”" Ì˜ÌG”- Ì˜ÌR”. Ì˜ÌS—” Ì˜ÌT” Ì˜ÌY” Ì˜ÌZ” Ì˜Ìf” Ì˜Ìi”  Ì˜Ìl”! Ì˜Ìl˜” Ì™” Ì™	” Ì™
+” Ì™” Ì™” Ì™” Ì™” Ì™˜” Ì›” Ì›
+” Ì›” Ì›” Ì›”# Ì›”% Ì›!”& Ì›!—” Ìœ” Ìœ	” Ìœ
+” Ìœ” Ìœ” Ìœ” Ìœ—” Ìœ” Ìœ” Ìœ” Ìœ'” Ìœ*” Ìœ0”  Ìœ0™” Ì” Ì	” Ì
+” Ì” Ì” Ì”. Ì*”0 Ì,”1 Ì-™” Ì” Ì	” Ì
+” Ì” Ì” Ì”! Ì”# Ì”$ Ì ™” ÌŸ” ÌŸ	” ÌŸ
+” ÌŸ” ÌŸ” ÌŸ”  ÌŸ”" ÌŸ”# ÌŸ™” Ì ” Ì 	” Ì 
+” Ì ” Ì ”  Ì ”# Ì ”% Ì !”& Ì "™” Ì¡” Ì¡	” Ì¡
+” Ì¡” Ì¡” Ì¡” Ì¡” Ì¡”  Ì¡™” Ì¢” Ì¢	” Ì¢
+” Ì¢” Ì¢”$ Ì¢ ”' Ì¢#”* Ì¢&”+ Ì¢'™” Ì£” Ì£	” Ì£
+” Ì£” Ì£”$ Ì£ ”' Ì£#”) Ì£%”* Ì£&™” Ì¤” Ì¤	” Ì¤
+” Ì¤” Ì¤” Ì¤”" Ì¤”# Ì¤”$ Ì¤ ” Ì¥” Ì¥	” Ì¥
+” Ì¥” Ì¥” Ì¥”" Ì¥”$ Ì¥ ”) Ì¥%”+ Ì¥'”/ Ì¥+”0 Ì¥,”1 Ì¥-™” Ì¥.” Ì¥3” Ì¥4” Ì¥:” Ì¥=”! Ì¥ÌG”" Ì¥ÌH”- Ì¥ÌS”. Ì¥ÌT—” Ì¥ÌU” Ì¥ÌZ” Ì¥Ì[” Ì¥Ìg” Ì¥Ìj”  Ì¥Ìm”! Ì¥Ìm˜” Ì¦” Ì¦	” Ì¦
+” Ì¦” Ì¦” Ì¦” Ì¦” Ì¦˜” Ì¨” Ì¨
+” Ì¨” Ì¨” Ì¨”# Ì¨”% Ì¨!”& Ì¨!—” Ì©” Ì©	” Ì©
+” Ì©” Ì©” Ì©” Ì©—” Ì©” Ì©” Ì©” Ì©'” Ì©*”% Ì©6”& Ì©6™” Ìª” Ìª	” Ìª
+” Ìª” Ìª” Ìª”. Ìª*”0 Ìª,”1 Ìª-™” Ì«” Ì«	” Ì«
+” Ì«” Ì«” Ì«”! Ì«”% Ì«!”& Ì«"™” Ì¬” Ì¬	” Ì¬
+” Ì¬” Ì¬” Ì¬”  Ì¬”! Ì¬”" Ì¬™” Ì­” Ì­	” Ì­
+” Ì­” Ì­”  Ì­”# Ì­”& Ì­"”' Ì­#™” Ì®” Ì®	” Ì®
+” Ì®” Ì®” Ì®” Ì®”  Ì®”! Ì®™” Ì¯” Ì¯	” Ì¯
+” Ì¯” Ì¯”$ Ì¯ ”' Ì¯#”) Ì¯%”* Ì¯&™” Ì°” Ì°	” Ì°
+” Ì°” Ì°”$ Ì° ”' Ì°#”) Ì°%”* Ì°&™” Ì±” Ì±	” Ì±
+” Ì±” Ì±” Ì±”" Ì±”# Ì±”$ Ì± Ÿ” Ì²” Ì²	” Ì²
+” Ì²” Ì²” Ì²”! Ì²”# Ì²”' Ì²#”) Ì²%”. Ì²*”0 Ì²,”4 Ì²0”5 Ì²1”6 Ì²2™” Ì²3” Ì²8” Ì²9” Ì²?” Ì²ÌB”! Ì²ÌL”" Ì²ÌM”- Ì²ÌX”. Ì²ÌY—” Ì²ÌZ” Ì²Ì_” Ì²Ì`” Ì²Ìl” Ì²Ìo”  Ì²Ìr”! Ì²Ìr˜” Ì³” Ì³	” Ì³
+” Ì³” Ì³” Ì³” Ì³” Ì³”” Ìµ” Ìµ” Ìµ” Ìµ’” Ì¶” Ì¶ÔrF–§version¤file§sources®sourcesContent¥names¨mappingsÀ‘À‘ÀÜÇ‘”    ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”  	 ‘”  
+ ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”    ‘”  ! ‘”  " ‘”  # ‘”  $ ‘”  % ‘”  & ‘”  ' ‘”  ( ‘”  ) ‘”  * ‘”  + ‘”  , ‘”  - ‘”  . ‘”  / ‘”  0 ‘”  1 ‘”  2 ‘”  3 ‘”  4 ‘”  5 ‘”  6 ‘”  7 ‘”  8 ‘”  9 ‘”  : ‘”  ; ‘”  < ‘”  = ‘”  > ‘”  ? ‘”  Ì@ ‘”  ÌA ‘”  ÌB ‘”  ÌC ‘”  ÌD ‘”  ÌE ‘”  ÌF ‘”  ÌG ‘”  ÌH ‘”  ÌI ‘”  ÌJ ‘”  ÌK ‘”  ÌL ‘”  ÌM ‘”  ÌN ‘”  ÌO ‘”  ÌP ‘”  ÌQ ‘”  ÌR ‘”  ÌS ‘”  ÌT ‘”  ÌU ‘”  ÌV ‘”  ÌW ‘”  ÌX ‘”  ÌY ‘”  ÌZ ‘”  Ì[ ‘”  Ì\ ‘”  Ì] ‘”  Ì^ ‘”  Ì_ ‘”  Ì` ‘”  Ìa ‘”  Ìb ‘”  Ìc ‘”  Ìd ‘”  Ìe ‘”  Ìf ‘”  Ìg ‘”  Ìh ‘”  Ìi ‘”  Ìj ‘”  Ìk ‘”  Ìl ‘”  Ìm ‘”  Ìn ‘”  Ìo ‘”  Ìp ‘”  Ìq ‘”  Ìr ‘”  Ìs ‘”  Ìt ‘”  Ìu ‘”  Ìv ‘”  Ìw ‘”  Ìx ‘”  Ìy ‘”  Ìz ‘”  Ì{ ‘”  Ì| ‘”  Ì} ‘”  Ì~ ‘”  Ì ‘”  Ì€ ‘”  Ì ‘”  Ì‚ ‘”  Ìƒ ‘”  Ì„ ‘”  Ì… ‘”  Ì† ‘”  Ì‡ ‘”  Ìˆ ‘”  Ì‰ ‘”  ÌŠ ‘”  Ì‹ ‘”  ÌŒ ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì‘ ‘”  Ì’ ‘”  Ì“ ‘”  Ì” ‘”  Ì• ‘”  Ì– ‘”  Ì— ‘”  Ì˜ ‘”  Ì™ ‘”  Ìš ‘”  Ì› ‘”  Ìœ ‘”  Ì ‘”  Ì ‘”  ÌŸ ‘”  Ì  ‘”  Ì¡ ‘”  Ì¢ ‘”  Ì£ ‘”  Ì¤ ‘”  Ì¥ ‘”  Ì¦ ‘”  Ì§ ‘”  Ì¨ ‘”  Ì© ‘”  Ìª ‘”  Ì« ‘”  Ì¬ ‘”  Ì­ ‘”  Ì® ‘”  Ì¯ ‘”  Ì° ‘”  Ì± ‘”  Ì² ‘”  Ì³ ‘”  Ì´ ‘”  Ìµ ‘”  Ì¶ ‘”  Ì· ‘”  Ì¸ ‘”  Ì¹ ‘”  Ìº ‘”  Ì» ‘”  Ì¼ ‘”  Ì½ ‘”  Ì¾ ‘”  Ì¿ ‘”  ÌÀ ‘”  ÌÁ ‘”  ÌÂ ‘”  ÌÃ ‘”  ÌÄ ‘”  ÌÅ ‘”  ÌÆ ‘”  ÌÇ ‘”  ÌÈ ‘”  ÌÉ ‘”  ÌÊ ‘”  ÌË ‘”  ÌÌ ‘”  ÌÍ ‘”  ÌÎ ‘”  ÌÏ ‘”  ÌĞ ‘”  ÌÑ ‘”  ÌÒ ‘”  ÌÓ ‘”  ÌÔ ‘”  ÌÕ ‘”  ÌÖ ‘”  Ì× ‘”  ÌØ ‘”  ÌÙ ‘”  ÌÚ ‘”  ÌÛ ‘”  ÌÜ ‘”  Ìİ ‘”  ÌŞ ‘”  Ìß ‘”  Ìà ‘”  Ìá ‘”  Ìâ ‘”  Ìã ‘”  Ìä ‘”  Ìå ‘”  Ìæ ‘”  Ìç ‘”  Ìè ‘”  Ìé ‘”  Ìê ‘”  Ìë ‘”  Ìì ‘”  Ìí ‘”  Ìî ‘”  Ìï ‘”  Ìğ ‘”  Ìñ ‘”  Ìò ‘”  Ìó ‘”  Ìô ‘”  Ìõ ‘”  Ìö ‘”  Ì÷ ‘”  Ìø ‘”  Ìù ‘”  Ìú ‘”  Ìû ‘”  Ìü ‘”  Ìı ‘”  Ìş ‘”  Ìÿ ‘”  Í  ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í	 ‘”  Í
+ ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í  ‘”  Í! ‘”  Í" ‘”  Í# ‘”  Í$ ‘”  Í% ‘”  Í& ‘”  Í' ‘”  Í( ‘”  Í) ‘”  Í* ‘”  Í+ ‘”  Í, ‘”  Í- ‘”  Í. ‘”  Í/ ‘”  Í0 ‘”  Í1 ‘”  Í2 ‘”  Í3 ‘”  Í4 ‘”  Í5 ‘”  Í6 ‘”  Í7 ‘”  Í8 ‘”  Í9 ‘”  Í: ‘”  Í; ‘”  Í< ‘”  Í= ‘”  Í> ‘”  Í? ‘”  Í@ ‘”  ÍA ‘”  ÍB ‘”  ÍC ‘”  ÍD ‘”  ÍE ‘”  ÍF ‘”  ÍG ‘”  ÍH ‘”  ÍI ‘”  ÍJ ‘”  ÍK ‘”  ÍL ‘”  ÍM ‘”  ÍN ‘”  ÍO ‘”  ÍP ‘”  ÍQ ‘”  ÍR ‘”  ÍS ‘”  ÍT ‘”  ÍU ‘”  ÍV ‘”  ÍW ‘”  ÍX ‘”  ÍY ‘”  ÍZ ‘”  Í[ ‘”  Í\ ‘”  Í] ‘”  Í^ ‘”  Í_ ‘”  Í` ‘”  Ía ‘”  Íb ‘”  Íc ‘”  Íd ‘”  Íe ‘”  Íf ‘”  Íg ‘”  Íh ‘”  Íi ‘”  Íj ‘”  Ík ‘”  Íl ‘”  Ím ‘”  Ín ‘”  Ío ‘”  Íp ‘”  Íq ‘”  Ír ‘”  Ís ‘”  Ít ‘”  Íu ‘”  Ív ‘”  Íw ‘”  Íx ‘”  Íy ‘”  Íz ‘”  Í{ ‘”  Í| ‘”  Í} ‘”  Í~ ‘”  Í ‘”  Í€ ‘”  Í ‘”  Í‚ ‘”  Íƒ ‘”  Í„ ‘”  Í… ‘”  Í† ‘”  Í‡ ‘”  Íˆ ‘”  Í‰ ‘”  ÍŠ ‘”  Í‹ ‘”  ÍŒ ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í‘ ‘”  Í’ ‘”  Í“ ‘”  Í” ‘”  Í• ‘”  Í– ‘”  Í— ‘”  Í˜ ‘”  Í™ ‘”  Íš ‘”  Í› ‘”  Íœ ‘”  Í ‘”  Í ‘”  ÍŸ ‘”  Í  ‘”  Í¡ ‘”  Í¢ ‘”  Í£ ‘”  Í¤ ‘”  Í¥ ‘”  Í¦ ‘”  Í§ ‘”  Í¨ ‘”  Í© ‘”  Íª ‘”  Í« ‘”  Í¬ ‘”  Í­ ‘”  Í® ‘”  Í¯ ‘”  Í° ‘”  Í± ‘”  Í² ‘”  Í³ ‘”  Í´ ‘”  Íµ ‘”  Í¶ ‘”  Í· ‘”  Í¸ ‘”  Í¹ ‘”  Íº ‘”  Í» ‘”  Í¼ ‘”  Í½ ‘”  Í¾ ‘”  Í¿ ‘”  ÍÀ ‘”  ÍÁ ‘”  ÍÂ ‘”  ÍÃ ‘”  ÍÄ ‘”  ÍÅ ‘”  ÍÆ ÔrG’§missing¦pluginÃ¦genAbcÂÔ  ÔrH”²dynamicImportCache¹exportAllDeclarationCache»exportNamedDeclarationCache«importCache“ÔrI•¤type¥start£endªspecifiers¦source±ImportDeclarationÌšÌ¼‘ÔrJ”¤type¥start£end¥local¶ImportDefaultSpecifierÌ¡Ì§ÔrK”¤type¥start£end¤nameªIdentifierÌ¡Ì§¦routerÔrL•¤type¥start£end¥value£raw§LiteralÌ­Ì»¬@ohos.router®"@ohos.router"I±ImportDeclarationÌ¾Í“ÔrM•¤type¥start£end¨imported¥local¯ImportSpecifierÌÇÌĞKªIdentifierÌÇÌĞ©FoodLabelKªIdentifierÌÇÌĞ©FoodLabelM¯ImportSpecifierÌÒÌÜKªIdentifierÌÒÌÜªFoodSourceKªIdentifierÌÒÌÜªFoodSourceM¯ImportSpecifierÌŞÌîKªIdentifierÌŞÌî°NutritionPer100gKªIdentifierÌŞÌî°NutritionPer100gL§LiteralÌöÍ
+²../model/FoodLabel´'../model/FoodLabel'I±ImportDeclarationÍÍ4‘M¯ImportSpecifierÍÍKªIdentifierÍÍ¨AppStateKªIdentifierÍÍ¨AppStateL§LiteralÍ&Í3«../AppState­'../AppState'

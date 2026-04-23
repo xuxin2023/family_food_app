@@ -1,0 +1,121 @@
+// 食品标签数据模型
+// 每100g营养成分
+export class NutritionPer100g {
+    sodium: number = 0; // 钠 mg
+    sugar: number = 0; // 糖 g
+    calories: number = 0; // 热量 kcal
+    fat: number = 0; // 脂肪 g
+    saturatedFat: number = 0; // 饱和脂肪 g
+    carbohydrate: number = 0; // 碳水化合物 g
+    protein: number = 0; // 蛋白质 g
+}
+// 食品数据来源
+export enum FoodSource {
+    USER_UPLOAD = "\u7528\u6237\u4E0A\u4F20",
+    LOCAL_CACHE = "\u672C\u5730\u7F13\u5B58",
+    BARCODE_HIT = "\u626B\u7801\u547D\u4E2D",
+    BARCODE_SCAN = "\u626B\u7801\u672A\u547D\u4E2D",
+    OCR_RECOGNIZE = "OCR\u8BC6\u522B"
+}
+// FoodLabel JSON 输出类
+export class FoodLabelJson {
+    foodId: Object = '';
+    foodName: Object = '';
+    barcode: Object = '';
+    ingredients: Object = [];
+    nutrition: Object = new NutritionPer100g();
+    allergenHints: Object = [];
+    manufacturer: Object = '';
+    scNumber: Object = '';
+    principal: Object = '';
+    trustee: Object = '';
+    traceCode: Object = '';
+    source: Object = FoodSource.USER_UPLOAD;
+    identifiedAt: Object = 0;
+}
+// 食品标签
+export class FoodLabel {
+    foodId: string = '';
+    foodName: string = '';
+    barcode: string = '';
+    ingredients: string[] = [];
+    nutrition: NutritionPer100g = new NutritionPer100g();
+    allergenHints: string[] = [];
+    manufacturer: string = '';
+    scNumber: string = '';
+    principal: string = ''; // 委托方
+    trustee: string = ''; // 受托方
+    traceCode: string = '';
+    source: FoodSource = FoodSource.USER_UPLOAD;
+    identifiedAt: number = 0;
+    // 是否为委托生产
+    isOem(): boolean {
+        return this.principal.length > 0;
+    }
+    // 是否有生产商信息
+    hasManufacturer(): boolean {
+        return this.manufacturer.length > 0;
+    }
+    // 是否有SC编号
+    hasScNumber(): boolean {
+        return this.scNumber.length > 0;
+    }
+    // 是否有追溯码
+    hasTraceCode(): boolean {
+        return this.traceCode.length > 0;
+    }
+    // 是否高钠 (>= 500mg/100g)
+    isHighSodium(): boolean {
+        return this.nutrition.sodium >= 500;
+    }
+    // 是否高糖 (>= 15g/100g)
+    isHighSugar(): boolean {
+        return this.nutrition.sugar >= 15;
+    }
+    // 是否高脂 (>= 20g/100g)
+    isHighFat(): boolean {
+        return this.nutrition.fat >= 20;
+    }
+    // 是否高热量 (>= 400kcal/100g)
+    isHighCalorie(): boolean {
+        return this.nutrition.calories >= 400;
+    }
+    // 配料文本（用于过敏原匹配）
+    ingredientsText(): string {
+        return this.ingredients.join(',');
+    }
+    toJson(): FoodLabelJson {
+        const json = new FoodLabelJson();
+        json.foodId = this.foodId;
+        json.foodName = this.foodName;
+        json.barcode = this.barcode;
+        json.ingredients = this.ingredients;
+        json.nutrition = this.nutrition;
+        json.allergenHints = this.allergenHints;
+        json.manufacturer = this.manufacturer;
+        json.scNumber = this.scNumber;
+        json.principal = this.principal;
+        json.trustee = this.trustee;
+        json.traceCode = this.traceCode;
+        json.source = this.source;
+        json.identifiedAt = this.identifiedAt;
+        return json;
+    }
+    static fromJson(json: Record<string, Object>): FoodLabel {
+        const label = new FoodLabel();
+        label.foodId = json.foodId as string;
+        label.foodName = json.foodName as string;
+        label.barcode = json.barcode as string;
+        label.ingredients = json.ingredients as string[];
+        label.nutrition = json.nutrition as NutritionPer100g;
+        label.allergenHints = json.allergenHints as string[];
+        label.manufacturer = json.manufacturer as string;
+        label.scNumber = json.scNumber as string;
+        label.principal = json.principal as string;
+        label.trustee = json.trustee as string;
+        label.traceCode = json.traceCode as string;
+        label.source = json.source as FoodSource;
+        label.identifiedAt = json.identifiedAt as number;
+        return label;
+    }
+}

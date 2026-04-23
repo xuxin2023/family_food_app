@@ -1,7 +1,7 @@
 // 购物篮检查页 - 连续扫描后检查一篮子食品
 
 import { router } from '@kit.ArkUI';
-import { FoodLabel, FoodSource } from '../model/FoodLabel';
+import { FoodLabel, FoodSource, NutritionPer100g } from '../model/FoodLabel';
 import { BasketCheckResult } from '../engine/BasketCheckEngine';
 import { AppState } from '../AppState';
 
@@ -142,19 +142,40 @@ struct BasketCheckPage {
 
     const item1 = new FoodLabel()
     item1.foodId = 'b1'; item1.foodName = '即食鸡爪（香辣味）'
-    item1.nutrition = { sodium: 1200, sugar: 3, calories: 230, fat: 12, saturatedFat: 3, carbohydrate: 8, protein: 15 }
+    item1.nutrition = new NutritionPer100g();
+    item1.nutrition.sodium = 1200;
+    item1.nutrition.sugar = 3;
+    item1.nutrition.calories = 230;
+    item1.nutrition.fat = 12;
+    item1.nutrition.saturatedFat = 3;
+    item1.nutrition.carbohydrate = 8;
+    item1.nutrition.protein = 15;
     item1.ingredients = ['鸡爪', '食用盐', '酱油']; item1.source = FoodSource.USER_UPLOAD; item1.identifiedAt = now
     items.push(item1)
 
     const item2 = new FoodLabel()
     item2.foodId = 'b2'; item2.foodName = '儿童酸奶'
-    item2.nutrition = { sodium: 80, sugar: 18, calories: 90, fat: 3, saturatedFat: 1.5, carbohydrate: 15, protein: 3 }
+    item2.nutrition = new NutritionPer100g();
+    item2.nutrition.sodium = 80;
+    item2.nutrition.sugar = 18;
+    item2.nutrition.calories = 90;
+    item2.nutrition.fat = 3;
+    item2.nutrition.saturatedFat = 1.5;
+    item2.nutrition.carbohydrate = 15;
+    item2.nutrition.protein = 3;
     item2.ingredients = ['生牛乳', '白砂糖', '果胶']; item2.source = FoodSource.USER_UPLOAD; item2.identifiedAt = now
     items.push(item2)
 
     const item3 = new FoodLabel()
     item3.foodId = 'b3'; item3.foodName = '火锅底料（牛油麻辣）'
-    item3.nutrition = { sodium: 3500, sugar: 5, calories: 450, fat: 35, saturatedFat: 18, carbohydrate: 10, protein: 5 }
+    item3.nutrition = new NutritionPer100g();
+    item3.nutrition.sodium = 3500;
+    item3.nutrition.sugar = 5;
+    item3.nutrition.calories = 450;
+    item3.nutrition.fat = 35;
+    item3.nutrition.saturatedFat = 18;
+    item3.nutrition.carbohydrate = 10;
+    item3.nutrition.protein = 5;
     item3.ingredients = ['牛油', '辣椒', '食用盐', '花椒']; item3.source = FoodSource.USER_UPLOAD; item3.identifiedAt = now
     items.push(item3)
 

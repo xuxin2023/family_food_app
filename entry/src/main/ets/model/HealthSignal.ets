@@ -37,6 +37,21 @@ export enum DataSource {
   HUAWEI_HEALTH = '华为健康'
 }
 
+// HealthSignal JSON 输出类
+export class HealthSignalJson {
+  memberId: Object = '';
+  date: Object = '';
+  stepLevel: Object = StepLevel.NORMAL;
+  sleepStatus: Object = SleepStatus.GOOD;
+  weightTrend: Object = WeightTrend.STABLE;
+  activityCaloriesLevel: Object = StepLevel.NORMAL;
+  manualBpStatus: Object = BpStatus.NORMAL;
+  manualBsStatus: Object = BsStatus.NORMAL;
+  hadHighSodiumToday: Object = false;
+  hadHighSugarToday: Object = false;
+  source: Object = DataSource.MANUAL;
+}
+
 export class HealthSignal {
   memberId: string = '';
   date: string = '';
@@ -86,20 +101,20 @@ export class HealthSignal {
     return this.hadHighSugarToday;
   }
 
-  toJson(): Record<string, Object> {
-    return {
-      memberId: this.memberId,
-      date: this.date,
-      stepLevel: this.stepLevel,
-      sleepStatus: this.sleepStatus,
-      weightTrend: this.weightTrend,
-      activityCaloriesLevel: this.activityCaloriesLevel,
-      manualBpStatus: this.manualBpStatus,
-      manualBsStatus: this.manualBsStatus,
-      hadHighSodiumToday: this.hadHighSodiumToday,
-      hadHighSugarToday: this.hadHighSugarToday,
-      source: this.source
-    };
+  toJson(): HealthSignalJson {
+    const json = new HealthSignalJson();
+    json.memberId = this.memberId;
+    json.date = this.date;
+    json.stepLevel = this.stepLevel;
+    json.sleepStatus = this.sleepStatus;
+    json.weightTrend = this.weightTrend;
+    json.activityCaloriesLevel = this.activityCaloriesLevel;
+    json.manualBpStatus = this.manualBpStatus;
+    json.manualBsStatus = this.manualBsStatus;
+    json.hadHighSodiumToday = this.hadHighSodiumToday;
+    json.hadHighSugarToday = this.hadHighSugarToday;
+    json.source = this.source;
+    return json;
   }
 
   static fromJson(json: Record<string, Object>): HealthSignal {

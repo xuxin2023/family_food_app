@@ -1,0 +1,902 @@
+Ôr@Ÿªassertions¤code´customTransformCache¬dependencies¢id¤meta±moduleSideEffects¬originalCode±originalSourcemap«resolvedIds®sourcemapChainµsyntheticNamedExportsµtransformDependencies®transformFiles¨cacheAstÔrAÚeif (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
+import router from "@ohos.router";
+import { AppState } from '../AppState';
+import { FoodLabel } from '../model/FoodLabel';
+import { getLevelColorValue } from '../model/Recommendation';
+import { CredibilityResult } from '../model/CredibilityResult';
+import { FoodLabelCard } from '../components/FoodLabelCard';
+import { FamilyCompareView } from '../components/FamilyCompareView';
+import { ChildProtectionCard } from '../components/ChildProtectionCard';
+import { CredibilityCard } from '../components/CredibilityCard';
+class ReportPage extends ViewPU {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
+        this.__foodLabel = new ObservedPropertyObjectPU(new FoodLabel(), this, "foodLabel");
+        this.__familyMembers = new ObservedPropertyObjectPU([], this, "familyMembers");
+        this.__recommendations = new ObservedPropertyObjectPU([], this, "recommendations");
+        this.__selectedMemberId = new ObservedPropertySimplePU('', this, "selectedMemberId");
+        this.__selectedRecommendation = new ObservedPropertyObjectPU(null, this, "selectedRecommendation");
+        this.__childProtection = new ObservedPropertyObjectPU(null, this, "childProtection");
+        this.__credibilityResult = new ObservedPropertyObjectPU(new CredibilityResult(), this, "credibilityResult");
+        this.appState = AppState.getInstance();
+        this.foodId = '';
+        this.historySaved = false;
+        this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
+    }
+    setInitiallyProvidedValue(params) {
+        if (params.foodLabel !== undefined) {
+            this.foodLabel = params.foodLabel;
+        }
+        if (params.familyMembers !== undefined) {
+            this.familyMembers = params.familyMembers;
+        }
+        if (params.recommendations !== undefined) {
+            this.recommendations = params.recommendations;
+        }
+        if (params.selectedMemberId !== undefined) {
+            this.selectedMemberId = params.selectedMemberId;
+        }
+        if (params.selectedRecommendation !== undefined) {
+            this.selectedRecommendation = params.selectedRecommendation;
+        }
+        if (params.childProtection !== undefined) {
+            this.childProtection = params.childProtection;
+        }
+        if (params.credibilityResult !== undefined) {
+            this.credibilityResult = params.credibilityResult;
+        }
+        if (params.appState !== undefined) {
+            this.appState = params.appState;
+        }
+        if (params.foodId !== undefined) {
+            this.foodId = params.foodId;
+        }
+        if (params.historySaved !== undefined) {
+            this.historySaved = params.historySaved;
+        }
+    }
+    updateStateVars(params) {
+    }
+    purgeVariableDependenciesOnElmtId(rmElmtId) {
+        this.__foodLabel.purgeDependencyOnElmtId(rmElmtId);
+        this.__familyMembers.purgeDependencyOnElmtId(rmElmtId);
+        this.__recommendations.purgeDependencyOnElmtId(rmElmtId);
+        this.__selectedMemberId.purgeDependencyOnElmtId(rmElmtId);
+        this.__selectedRecommendation.purgeDependencyOnElmtId(rmElmtId);
+        this.__childProtection.purgeDependencyOnElmtId(rmElmtId);
+        this.__credibilityResult.purgeDependencyOnElmtId(rmElmtId);
+    }
+    aboutToBeDeleted() {
+        this.__foodLabel.aboutToBeDeleted();
+        this.__familyMembers.aboutToBeDeleted();
+        this.__recommendations.aboutToBeDeleted();
+        this.__selectedMemberId.aboutToBeDeleted();
+        this.__selectedRecommendation.aboutToBeDeleted();
+        this.__childProtection.aboutToBeDeleted();
+        this.__credibilityResult.aboutToBeDeleted();
+        SubscriberManager.Get().delete(this.id__());
+        this.aboutToBeDeletedInternal();
+    }
+    get foodLabel() {
+        return this.__foodLabel.get();
+    }
+    set foodLabel(newValue) {
+        this.__foodLabel.set(newValue);
+    }
+    get familyMembers() {
+        return this.__familyMembers.get();
+    }
+    set familyMembers(newValue) {
+        this.__familyMembers.set(newValue);
+    }
+    get recommendations() {
+        return this.__recommendations.get();
+    }
+    set recommendations(newValue) {
+        this.__recommendations.set(newValue);
+    }
+    get selectedMemberId() {
+        return this.__selectedMemberId.get();
+    }
+    set selectedMemberId(newValue) {
+        this.__selectedMemberId.set(newValue);
+    }
+    get selectedRecommendation() {
+        return this.__selectedRecommendation.get();
+    }
+    set selectedRecommendation(newValue) {
+        this.__selectedRecommendation.set(newValue);
+    }
+    get childProtection() {
+        return this.__childProtection.get();
+    }
+    set childProtection(newValue) {
+        this.__childProtection.set(newValue);
+    }
+    get credibilityResult() {
+        return this.__credibilityResult.get();
+    }
+    set credibilityResult(newValue) {
+        this.__credibilityResult.set(newValue);
+    }
+    async aboutToAppear() {
+        const params = router.getParams();
+        if (params) {
+            this.foodId = params.foodId || '';
+            this.selectedMemberId = params.memberId || '';
+        }
+        await this.loadReportData();
+    }
+    initialRender() {
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Scroll.create();
+            Scroll.width('100%');
+            Scroll.height('100%');
+            Scroll.backgroundColor('#FAFAFA');
+        }, Scroll);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Column.create();
+            Column.width('100%');
+            Column.alignItems(HorizontalAlign.Center);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Row.create();
+            Row.width('100%');
+            Row.padding({ left: 16, right: 16, top: 16, bottom: 16 });
+        }, Row);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create('<');
+            Text.fontSize(24);
+            Text.fontColor('#1976D2');
+            Text.onClick(() => { router.back(); });
+        }, Text);
+        Text.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create('\u5BB6\u5EAD\u9002\u914D\u62A5\u544A');
+            Text.fontSize(20);
+            Text.fontWeight(FontWeight.Bold);
+            Text.margin({ left: 16 });
+        }, Text);
+        Text.pop();
+        Row.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Column.create();
+            Column.width('92%');
+            Column.margin({ bottom: 14 });
+        }, Column);
+        {
+            this.observeComponentCreation2((elmtId, isInitialRender) => {
+                if (isInitialRender) {
+                    let componentCall = new FoodLabelCard(this, { foodLabel: this.foodLabel }, undefined, elmtId, () => { }, { page: "entry/src/main/ets/pages/ReportPage.ets", line: 54, col: 11 });
+                    ViewPU.create(componentCall);
+                    let paramsLambda = () => {
+                        return {
+                            foodLabel: this.foodLabel
+                        };
+                    };
+                    componentCall.paramsGenerator_ = paramsLambda;
+                }
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {
+                        foodLabel: this.foodLabel
+                    });
+                }
+            }, { name: "FoodLabelCard" });
+        }
+        Column.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            If.create();
+            if (this.familyMembers.length > 0) {
+                this.ifElseBranchUpdateFunction(0, () => {
+                    this.MemberSelector.bind(this)();
+                });
+            }
+            else {
+                this.ifElseBranchUpdateFunction(1, () => {
+                });
+            }
+        }, If);
+        If.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            If.create();
+            if (this.recommendations.length > 0) {
+                this.ifElseBranchUpdateFunction(0, () => {
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Column.create();
+                        Column.width('92%');
+                        Column.margin({ bottom: 14 });
+                    }, Column);
+                    {
+                        this.observeComponentCreation2((elmtId, isInitialRender) => {
+                            if (isInitialRender) {
+                                let componentCall = new FamilyCompareView(this, { recommendations: this.recommendations, members: this.familyMembers }, undefined, elmtId, () => { }, { page: "entry/src/main/ets/pages/ReportPage.ets", line: 65, col: 13 });
+                                ViewPU.create(componentCall);
+                                let paramsLambda = () => {
+                                    return {
+                                        recommendations: this.recommendations,
+                                        members: this.familyMembers
+                                    };
+                                };
+                                componentCall.paramsGenerator_ = paramsLambda;
+                            }
+                            else {
+                                this.updateStateVarsOfChildByElmtId(elmtId, {
+                                    recommendations: this.recommendations, members: this.familyMembers
+                                });
+                            }
+                        }, { name: "FamilyCompareView" });
+                    }
+                    Column.pop();
+                });
+            }
+            else {
+                this.ifElseBranchUpdateFunction(1, () => {
+                });
+            }
+        }, If);
+        If.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            If.create();
+            if (this.selectedRecommendation !== null) {
+                this.ifElseBranchUpdateFunction(0, () => {
+                    this.SelectedMemberSummary.bind(this)();
+                });
+            }
+            else {
+                this.ifElseBranchUpdateFunction(1, () => {
+                });
+            }
+        }, If);
+        If.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            If.create();
+            if (this.childProtection !== null && this.childProtection.hasAnyAdvice()) {
+                this.ifElseBranchUpdateFunction(0, () => {
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Column.create();
+                        Column.width('92%');
+                        Column.margin({ bottom: 14 });
+                    }, Column);
+                    {
+                        this.observeComponentCreation2((elmtId, isInitialRender) => {
+                            if (isInitialRender) {
+                                let componentCall = new ChildProtectionCard(this, { protection: this.childProtection }, undefined, elmtId, () => { }, { page: "entry/src/main/ets/pages/ReportPage.ets", line: 77, col: 13 });
+                                ViewPU.create(componentCall);
+                                let paramsLambda = () => {
+                                    return {
+                                        protection: this.childProtection
+                                    };
+                                };
+                                componentCall.paramsGenerator_ = paramsLambda;
+                            }
+                            else {
+                                this.updateStateVarsOfChildByElmtId(elmtId, {
+                                    protection: this.childProtection
+                                });
+                            }
+                        }, { name: "ChildProtectionCard" });
+                    }
+                    Column.pop();
+                });
+            }
+            else {
+                this.ifElseBranchUpdateFunction(1, () => {
+                });
+            }
+        }, If);
+        If.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Column.create();
+            Column.width('92%');
+            Column.margin({ bottom: 20 });
+        }, Column);
+        {
+            this.observeComponentCreation2((elmtId, isInitialRender) => {
+                if (isInitialRender) {
+                    let componentCall = new CredibilityCard(this, { result: this.credibilityResult }, undefined, elmtId, () => { }, { page: "entry/src/main/ets/pages/ReportPage.ets", line: 84, col: 11 });
+                    ViewPU.create(componentCall);
+                    let paramsLambda = () => {
+                        return {
+                            result: this.credibilityResult
+                        };
+                    };
+                    componentCall.paramsGenerator_ = paramsLambda;
+                }
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {
+                        result: this.credibilityResult
+                    });
+                }
+            }, { name: "CredibilityCard" });
+        }
+        Column.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Button.createWithLabel('\u751F\u6210\u5206\u4EAB\u6587\u6848');
+            Button.width('90%');
+            Button.height(50);
+            Button.backgroundColor('#1976D2');
+            Button.borderRadius(25);
+            Button.margin({ bottom: 24 });
+            Button.onClick(() => {
+                router.pushUrl({
+                    url: 'pages/SharePage',
+                    params: {
+                        foodName: this.foodLabel.foodName,
+                        recommendations: this.recommendations,
+                        members: this.familyMembers
+                    }
+                });
+            });
+        }, Button);
+        Button.pop();
+        Column.pop();
+        Scroll.pop();
+    }
+    MemberSelector(parent = null) {
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Column.create();
+            Column.width('92%');
+            Column.padding(16);
+            Column.backgroundColor('#FFFFFF');
+            Column.borderRadius(16);
+            Column.alignItems(HorizontalAlign.Start);
+            Column.margin({ bottom: 14 });
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create('\u67E5\u770B\u8C01\u7684\u7ED3\u8BBA');
+            Text.fontSize(14);
+            Text.fontColor('#757575');
+            Text.margin({ bottom: 8 });
+        }, Text);
+        Text.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Row.create();
+            Row.width('100%');
+        }, Row);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            ForEach.create();
+            const forEachItemGenFunction = _item => {
+                const member = _item;
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
+                    Text.create(member.nickname);
+                    Text.fontSize(13);
+                    Text.padding({ left: 12, right: 12, top: 6, bottom: 6 });
+                    Text.borderRadius(16);
+                    Text.backgroundColor(this.selectedMemberId === member.memberId ? '#1976D2' : '#FFFFFF');
+                    Text.fontColor(this.selectedMemberId === member.memberId ? '#FFFFFF' : '#212121');
+                    Text.margin({ right: 8 });
+                    Text.onClick(() => { this.selectMember(member.memberId); });
+                }, Text);
+                Text.pop();
+            };
+            this.forEachUpdateFunction(elmtId, this.familyMembers, forEachItemGenFunction, (member) => member.memberId, false, false);
+        }, ForEach);
+        ForEach.pop();
+        Row.pop();
+        Column.pop();
+    }
+    SelectedMemberSummary(parent = null) {
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            If.create();
+            if (this.selectedRecommendation !== null) {
+                this.ifElseBranchUpdateFunction(0, () => {
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Column.create();
+                        Column.width('92%');
+                        Column.padding(16);
+                        Column.backgroundColor('#FFFFFF');
+                        Column.borderRadius(16);
+                        Column.alignItems(HorizontalAlign.Start);
+                        Column.margin({ bottom: 14 });
+                    }, Column);
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Row.create();
+                        Row.width('100%');
+                        Row.margin({ bottom: 10 });
+                    }, Row);
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Text.create(`${this.familyMembers.find(item => item.memberId === this.selectedMemberId)?.nickname || ''} \u7684\u7ED3\u8BBA`);
+                        Text.fontSize(17);
+                        Text.fontWeight(FontWeight.Bold);
+                        Text.layoutWeight(1);
+                    }, Text);
+                    Text.pop();
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Text.create(this.selectedRecommendation.level);
+                        Text.fontSize(12);
+                        Text.fontColor('#FFFFFF');
+                        Text.padding({ left: 10, right: 10, top: 4, bottom: 4 });
+                        Text.borderRadius(12);
+                        Text.backgroundColor(getLevelColorValue(this.selectedRecommendation.levelColor));
+                    }, Text);
+                    Text.pop();
+                    Row.pop();
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Text.create(this.selectedRecommendation.maxAmount > 0 ? `\u5EFA\u8BAE\u4E0A\u9650\uFF1A${this.selectedRecommendation.maxAmount} g` : '\u5EFA\u8BAE\u907F\u514D\u98DF\u7528');
+                        Text.fontSize(14);
+                        Text.fontColor('#212121');
+                        Text.margin({ bottom: 10 });
+                    }, Text);
+                    Text.pop();
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        If.create();
+                        if (this.selectedRecommendation.reasons.length > 0) {
+                            this.ifElseBranchUpdateFunction(0, () => {
+                                this.observeComponentCreation2((elmtId, isInitialRender) => {
+                                    Text.create('\u539F\u56E0');
+                                    Text.fontSize(13);
+                                    Text.fontColor('#757575');
+                                    Text.margin({ bottom: 6 });
+                                }, Text);
+                                Text.pop();
+                                this.observeComponentCreation2((elmtId, isInitialRender) => {
+                                    ForEach.create();
+                                    const forEachItemGenFunction = _item => {
+                                        const reason = _item;
+                                        this.observeComponentCreation2((elmtId, isInitialRender) => {
+                                            Text.create(`\u2022 ${reason}`);
+                                            Text.fontSize(13);
+                                            Text.fontColor('#212121');
+                                            Text.margin({ bottom: 4 });
+                                        }, Text);
+                                        Text.pop();
+                                    };
+                                    this.forEachUpdateFunction(elmtId, this.selectedRecommendation.reasons, forEachItemGenFunction, (reason, index) => `${index}`, false, true);
+                                }, ForEach);
+                                ForEach.pop();
+                            });
+                        }
+                        else {
+                            this.ifElseBranchUpdateFunction(1, () => {
+                            });
+                        }
+                    }, If);
+                    If.pop();
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        If.create();
+                        if (this.selectedRecommendation.reminders.length > 0) {
+                            this.ifElseBranchUpdateFunction(0, () => {
+                                this.observeComponentCreation2((elmtId, isInitialRender) => {
+                                    Text.create('\u63D0\u9192');
+                                    Text.fontSize(13);
+                                    Text.fontColor('#757575');
+                                    Text.margin({ top: 10, bottom: 6 });
+                                }, Text);
+                                Text.pop();
+                                this.observeComponentCreation2((elmtId, isInitialRender) => {
+                                    ForEach.create();
+                                    const forEachItemGenFunction = _item => {
+                                        const reminder = _item;
+                                        this.observeComponentCreation2((elmtId, isInitialRender) => {
+                                            Text.create(`\u2022 ${reminder}`);
+                                            Text.fontSize(13);
+                                            Text.fontColor('#616161');
+                                            Text.margin({ bottom: 4 });
+                                        }, Text);
+                                        Text.pop();
+                                    };
+                                    this.forEachUpdateFunction(elmtId, this.selectedRecommendation.reminders, forEachItemGenFunction, (reminder, index) => `${index}`, false, true);
+                                }, ForEach);
+                                ForEach.pop();
+                            });
+                        }
+                        else {
+                            this.ifElseBranchUpdateFunction(1, () => {
+                            });
+                        }
+                    }, If);
+                    If.pop();
+                    Column.pop();
+                });
+            }
+            else {
+                this.ifElseBranchUpdateFunction(1, () => {
+                });
+            }
+        }, If);
+        If.pop();
+    }
+    async loadReportData() {
+        this.familyMembers = await this.appState.getAllMembers();
+        if (this.foodId.length > 0) {
+            const savedFood = await this.appState.findFoodById(this.foodId);
+            if (savedFood) {
+                this.foodLabel = savedFood;
+            }
+        }
+        if (this.foodLabel.foodId.length === 0) {
+            this.foodLabel = new FoodLabel();
+            this.foodLabel.foodId = 'food_missing';
+            this.foodLabel.foodName = '\u672A\u627E\u5230\u5BF9\u5E94 FoodLabel';
+        }
+        if (this.selectedMemberId.length === 0 && this.familyMembers.length > 0) {
+            this.selectedMemberId = this.familyMembers[0].memberId;
+        }
+        this.recommendations = this.appState.calculateFamilyComparison(this.foodLabel);
+        this.credibilityResult = this.appState.calculateCredibility(this.foodLabel);
+        this.selectMember(this.selectedMemberId);
+        if (!this.historySaved) {
+            for (const recommendation of this.recommendations) {
+                await this.appState.saveScanHistory(recommendation.memberId, this.foodLabel, recommendation);
+            }
+            this.historySaved = true;
+        }
+    }
+    selectMember(memberId) {
+        this.selectedMemberId = memberId;
+        this.selectedRecommendation = this.recommendations.find(item => item.memberId === memberId) || null;
+        const member = this.familyMembers.find(item => item.memberId === memberId) || null;
+        if (member && member.isChild()) {
+            this.childProtection = this.appState.calculateChildProtection(memberId, this.foodLabel);
+        }
+        else {
+            this.childProtection = null;
+        }
+    }
+    rerender() {
+        this.updateDirtyElements();
+    }
+    static getEntryName() {
+        return "ReportPage";
+    }
+}
+registerNamedRoute(() => new ReportPage(undefined, {}), "", { bundleName: "com.familyfood.helper", moduleName: "entry", pagePath: "pages/ReportPage", pageFullPath: "entry/src/main/ets/pages/ReportPage", integratedHsp: "false", moduleType: "followWithHap" });
+//# sourceMappingURL=ReportPage.js.mapÂ™Ùf hvigor_ignore_E:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.router.d.tsÙFC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\AppState.etsÙMC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\FoodLabel.etsÙRC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\Recommendation.etsÙUC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\CredibilityResult.etsÙVC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\components\FoodLabelCard.etsÙZC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\components\FamilyCompareView.etsÙ\C:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\components\ChildProtectionCard.etsÙXC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\components\CredibilityCard.etsÙNC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\pages\ReportPage.etsÔrBšªmoduleName±isLocalDependency¯isNodeEntryFile§pkgPath±belongProjectPath§pkgNameªpkgVersion±dependencyPkgInfo°belongModulePath¬shouldEmitJs¥entryÃÂÙ,C:\Users\A\IDEProjects\family_food_app\entryÙ&C:\Users\A\IDEProjects\family_food_app¥entry¥1.0.0Ô  Ù,C:\Users\A\IDEProjects\family_food_app\entryÃÃÚÇimport { router } from '@kit.ArkUI';
+import { AppState } from '../AppState';
+import { FoodLabel } from '../model/FoodLabel';
+import { FamilyProfile } from '../model/FamilyProfile';
+import { Recommendation, getLevelColorValue } from '../model/Recommendation';
+import { ChildProtection } from '../model/ChildProtection';
+import { CredibilityResult } from '../model/CredibilityResult';
+import { FoodLabelCard } from '../components/FoodLabelCard';
+import { FamilyCompareView } from '../components/FamilyCompareView';
+import { ChildProtectionCard } from '../components/ChildProtectionCard';
+import { CredibilityCard } from '../components/CredibilityCard';
+
+@Entry
+@Component
+struct ReportPage {
+  @State foodLabel: FoodLabel = new FoodLabel()
+  @State familyMembers: FamilyProfile[] = []
+  @State recommendations: Recommendation[] = []
+  @State selectedMemberId: string = ''
+  @State selectedRecommendation: Recommendation | null = null
+  @State childProtection: ChildProtection | null = null
+  @State credibilityResult: CredibilityResult = new CredibilityResult()
+
+  private appState: AppState = AppState.getInstance()
+  private foodId: string = ''
+  private historySaved: boolean = false
+
+  async aboutToAppear() {
+    const params = router.getParams() as Record<string, string>
+    if (params) {
+      this.foodId = params.foodId || ''
+      this.selectedMemberId = params.memberId || ''
+    }
+    await this.loadReportData()
+  }
+
+  build() {
+    Scroll() {
+      Column() {
+        Row() {
+          Text('<')
+            .fontSize(24)
+            .fontColor('#1976D2')
+            .onClick(() => { router.back() })
+          Text('\u5BB6\u5EAD\u9002\u914D\u62A5\u544A')
+            .fontSize(20)
+            .fontWeight(FontWeight.Bold)
+            .margin({ left: 16 })
+        }
+        .width('100%')
+        .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+
+        Column() {
+          FoodLabelCard({ foodLabel: this.foodLabel })
+        }
+        .width('92%')
+        .margin({ bottom: 14 })
+
+        if (this.familyMembers.length > 0) {
+          this.MemberSelector()
+        }
+
+        if (this.recommendations.length > 0) {
+          Column() {
+            FamilyCompareView({ recommendations: this.recommendations, members: this.familyMembers })
+          }
+          .width('92%')
+          .margin({ bottom: 14 })
+        }
+
+        if (this.selectedRecommendation !== null) {
+          this.SelectedMemberSummary()
+        }
+
+        if (this.childProtection !== null && this.childProtection.hasAnyAdvice()) {
+          Column() {
+            ChildProtectionCard({ protection: this.childProtection })
+          }
+          .width('92%')
+          .margin({ bottom: 14 })
+        }
+
+        Column() {
+          CredibilityCard({ result: this.credibilityResult })
+        }
+        .width('92%')
+        .margin({ bottom: 20 })
+
+        Button('\u751F\u6210\u5206\u4EAB\u6587\u6848')
+          .width('90%')
+          .height(50)
+          .backgroundColor('#1976D2')
+          .borderRadius(25)
+          .margin({ bottom: 24 })
+          .onClick(() => {
+            router.pushUrl({
+              url: 'pages/SharePage',
+              params: {
+                foodName: this.foodLabel.foodName,
+                recommendations: this.recommendations,
+                members: this.familyMembers
+              }
+            })
+          })
+      }
+      .width('100%')
+      .alignItems(HorizontalAlign.Center)
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor('#FAFAFA')
+  }
+
+  @Builder
+  MemberSelector() {
+    Column() {
+      Text('\u67E5\u770B\u8C01\u7684\u7ED3\u8BBA')
+        .fontSize(14)
+        .fontColor('#757575')
+        .margin({ bottom: 8 })
+
+      Row() {
+        ForEach(this.familyMembers, (member: FamilyProfile) => {
+          Text(member.nickname)
+            .fontSize(13)
+            .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+            .borderRadius(16)
+            .backgroundColor(this.selectedMemberId === member.memberId ? '#1976D2' : '#FFFFFF')
+            .fontColor(this.selectedMemberId === member.memberId ? '#FFFFFF' : '#212121')
+            .margin({ right: 8 })
+            .onClick(() => { this.selectMember(member.memberId) })
+        }, (member: FamilyProfile) => member.memberId)
+      }
+      .width('100%')
+    }
+    .width('92%')
+    .padding(16)
+    .backgroundColor('#FFFFFF')
+    .borderRadius(16)
+    .alignItems(HorizontalAlign.Start)
+    .margin({ bottom: 14 })
+  }
+
+  @Builder
+  SelectedMemberSummary() {
+    if (this.selectedRecommendation !== null) {
+      Column() {
+        Row() {
+          Text(`${this.familyMembers.find(item => item.memberId === this.selectedMemberId)?.nickname || ''} \u7684\u7ED3\u8BBA`)
+            .fontSize(17)
+            .fontWeight(FontWeight.Bold)
+            .layoutWeight(1)
+          Text(this.selectedRecommendation.level)
+            .fontSize(12)
+            .fontColor('#FFFFFF')
+            .padding({ left: 10, right: 10, top: 4, bottom: 4 })
+            .borderRadius(12)
+            .backgroundColor(getLevelColorValue(this.selectedRecommendation.levelColor))
+        }
+        .width('100%')
+        .margin({ bottom: 10 })
+
+        Text(this.selectedRecommendation.maxAmount > 0 ? `\u5EFA\u8BAE\u4E0A\u9650\uFF1A${this.selectedRecommendation.maxAmount} g` : '\u5EFA\u8BAE\u907F\u514D\u98DF\u7528')
+          .fontSize(14)
+          .fontColor('#212121')
+          .margin({ bottom: 10 })
+
+        if (this.selectedRecommendation.reasons.length > 0) {
+          Text('\u539F\u56E0')
+            .fontSize(13)
+            .fontColor('#757575')
+            .margin({ bottom: 6 })
+          ForEach(this.selectedRecommendation.reasons, (reason: string) => {
+            Text(`\u2022 ${reason}`)
+              .fontSize(13)
+              .fontColor('#212121')
+              .margin({ bottom: 4 })
+          }, (reason: string, index: number) => `${index}`)
+        }
+
+        if (this.selectedRecommendation.reminders.length > 0) {
+          Text('\u63D0\u9192')
+            .fontSize(13)
+            .fontColor('#757575')
+            .margin({ top: 10, bottom: 6 })
+          ForEach(this.selectedRecommendation.reminders, (reminder: string) => {
+            Text(`\u2022 ${reminder}`)
+              .fontSize(13)
+              .fontColor('#616161')
+              .margin({ bottom: 4 })
+          }, (reminder: string, index: number) => `${index}`)
+        }
+      }
+      .width('92%')
+      .padding(16)
+      .backgroundColor('#FFFFFF')
+      .borderRadius(16)
+      .alignItems(HorizontalAlign.Start)
+      .margin({ bottom: 14 })
+    }
+  }
+
+  private async loadReportData() {
+    this.familyMembers = await this.appState.getAllMembers()
+    if (this.foodId.length > 0) {
+      const savedFood = await this.appState.findFoodById(this.foodId)
+      if (savedFood) {
+        this.foodLabel = savedFood
+      }
+    }
+
+    if (this.foodLabel.foodId.length === 0) {
+      this.foodLabel = new FoodLabel()
+      this.foodLabel.foodId = 'food_missing'
+      this.foodLabel.foodName = '\u672A\u627E\u5230\u5BF9\u5E94 FoodLabel'
+    }
+
+    if (this.selectedMemberId.length === 0 && this.familyMembers.length > 0) {
+      this.selectedMemberId = this.familyMembers[0].memberId
+    }
+
+    this.recommendations = this.appState.calculateFamilyComparison(this.foodLabel)
+    this.credibilityResult = this.appState.calculateCredibility(this.foodLabel)
+    this.selectMember(this.selectedMemberId)
+
+    if (!this.historySaved) {
+      for (const recommendation of this.recommendations) {
+        await this.appState.saveScanHistory(recommendation.memberId, this.foodLabel, recommendation)
+      }
+      this.historySaved = true
+    }
+  }
+
+  private selectMember(memberId: string) {
+    this.selectedMemberId = memberId
+    this.selectedRecommendation = this.recommendations.find(item => item.memberId === memberId) || null
+
+    const member = this.familyMembers.find(item => item.memberId === memberId) || null
+    if (member && member.isChild()) {
+      this.childProtection = this.appState.calculateChildProtection(memberId, this.foodLabel)
+    } else {
+      this.childProtection = null
+    }
+  }
+}
+ÀÔrC™¬@ohos.router«../AppState²../model/FoodLabel·../model/Recommendation»../components/FoodLabelCardº../model/CredibilityResultÙ!../components/ChildProtectionCard¿../components/FamilyCompareView½../components/CredibilityCardÔrD—ªassertions¨external¢id¤meta±moduleSideEffectsªresolvedByµsyntheticNamedExportsAÃÙf hvigor_ignore_E:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.router.d.tsAÃªoh-resolveÂDAÂÙFC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\AppState.etsAÃªoh-resolveÂDAÂÙMC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\FoodLabel.etsAÃªoh-resolveÂDAÂÙRC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\Recommendation.etsAÃªoh-resolveÂDAÂÙVC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\components\FoodLabelCard.etsAÃªoh-resolveÂDAÂÙUC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\CredibilityResult.etsAÃªoh-resolveÂDAÂÙ\C:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\components\ChildProtectionCard.etsAÃªoh-resolveÂDAÂÙZC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\components\FamilyCompareView.etsAÃªoh-resolveÂDAÂÙXC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\components\CredibilityCard.etsAÃªoh-resolveÂ“ÔrE–§version¤fileªsourceRoot§sources¥names¨mappings­ReportPage.js ‘®ReportPage.etsÜ–”    ”  	”  ”  ”!  #”"  $˜”   ” ”	 	” ” ” ”& &”' '˜”   ” ”	 	” ” ” ”. .”/ /˜”   ” ”	 ” +” -”# 3”< ÌL”= ÌM˜”   ” ”	 	” ” ”" "”> >”? ?˜”   ” ”	 	” ” ” ”; ;”< <˜”   ” ”	 	” ” ”" "”ÌC ÌC”ÌD ÌD˜”  	 ” 	”	 		” 	” 	”$ 	$”ÌG 	ÌG”ÌH 	ÌH˜”  
+ ” 
+”	 
+	” 
+” 
+”  
+ ”? 
+?”Ì@ 
+Ì@’” ” ‘”  ””8  ”< $”ÌE -”ÌG /’”< *”> ,’”> -”Ì@ /’”? $”ÌA &’”ÌE 9”ÌI =’”> 3”ÌB 7””Ì@ 0”ÌD 4”ÌU ÌE”ÌW ÌG•” ”  '”! (”, 3”. 5’” ” ’” "”! '‘” 
+Ì@’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ”” ”	 ”
+ ” ™” ” 
+” ” ” ” ”' #”) ?”* ?”” ” ” ” ›” ” 
+” ” ” ”  ”! ”' !”+ %”- '”. '›” ” 
+” ”! ”$ ”* $”+ %”3 -”7 1”9 3”: 3‘”	  —” !” !
+” !” !”! !”# !”$ !’” "” "‘” $’” %” %
+–” %” %
+” Ìl” Ìl
+” Ìl” Ìl–” %” %
+” Ìm” Ìm” Ìm”  Ìm–” %” %
+” Ìn”" Ìn”# Ìn”, Ìn’” &” &–” &” &” Ìi” Ìi” Ìi” Ìi˜” &” &” Ìj” Ìj” Ìj”- Ìj!”. Ìj"”4 Ìj(’” '” '–” '” '” 1	” 1” 1” 1Ü ” '” '” 2	” 2” 2” 2” 2”  2”" 2”$ 2”) 2"”+ 2$”- 2&”/ 2(”2 2+”4 2-”6 2/”8 21”> 27”Ì@ 29”ÌB 2;”ÌD 2=”” (
+” (” (” (–” (
+” (” )” )” )” )–” (
+” (” *” *” *”$ * Ÿ” (
+” (” +” +” +” +” +”! +”' +#”( +$”, +(”. +*”/ +*”0 ++”1 +,’” (
+” (”” ,
+” ,” ,”> ,5–” ,
+” ,” -” -” -” -˜” ,
+” ,” .” .” .”& ."”' .#”+ .'š” ,
+” ,” /” /” /” /” /”  /”" /”$ / ’” ,
+” ,’” '” '’” 4” 4–” 4” 4” 7	” 7” 7” 7š” 4” 4” 8	” 8” 8” 8”" 8”$ 8”& 8”( 8š”, 5
+”9 5”Ì@ 5”ÌB 5”ÌK 5#”ÌM 5%”ÌQ 5)”ÌR 5*”Ì[ 53”Ì] 55–” 5”% 5#”' 5%”+ 5)”, 5*”5 53–” 5”! 5#”# 5%”' 5)”( 5*”1 53’” 4” 4š” :” :” :” :”" :”# :”) :%”, :(”- :)”/ :+•” ;
+” ;” ;”' ;”4 ;‘” <	‘” <	š” >” >” >” >”$ > ”% >!”+ >'”. >*”/ >+”1 >-’” ?
+” ?–” ?
+” ?” ÌB”$ ÌB”% ÌB”* ÌBš” ?
+” ?” ÌC”% ÌC”& ÌC”( ÌC”. ÌC”0 ÌC”2 ÌC”4 ÌC Ü ”8 Ì@”ÌI Ì@”ÌP Ì@”ÌR Ì@ ”Ìa Ì@/”Ìc Ì@1”Ìg Ì@5”Ìh Ì@6”Ìw Ì@ÌE”Ìy Ì@ÌG”Ì€ Ì@ÌN”Ì‚ Ì@ÌP”Ì† Ì@ÌT”Ì‡ Ì@ÌU”Ì” Ì@Ìb”Ì– Ì@Ìd–”( Ì@ ”7 Ì@/”9 Ì@1”= Ì@5”> Ì@6”ÌM Ì@ÌE–”( Ì@ÌG”/ Ì@ÌN”1 Ì@ÌP”5 Ì@ÌT”6 Ì@ÌU”ÌC Ì@Ìbœ”$ Ì@ ”3 Ì@/”5 Ì@1”9 Ì@5”: Ì@6”ÌI Ì@ÌE”ÌK Ì@ÌG”ÌR Ì@ÌN”ÌT Ì@ÌP”ÌX Ì@ÌT”ÌY Ì@ÌU”Ìf Ì@Ìb’” ?
+” ?‘” ÌD	‘” ÌD	˜” ÌF” ÌF” ÌF” ÌF”+ ÌF'”0 ÌF,”4 ÌF0”6 ÌF2•” ÌG
+” ÌG” ÌG”. ÌG$”; ÌG&‘” ÌH	‘” ÌH	Ÿ” ÌJ” ÌJ” ÌJ” ÌJ”$ ÌJ ”) ÌJ%”- ÌJ)”1 ÌJ-”5 ÌJ1”6 ÌJ2”ÌE ÌJÌA”ÌF ÌJÌB”ÌR ÌJÌN”ÌT ÌJÌP”ÌV ÌJÌR’” ÌK
+” ÌK–” ÌK
+” ÌK” ÌN”$ ÌN”% ÌN”* ÌNš” ÌK
+” ÌK” ÌO”% ÌO”& ÌO”( ÌO”. ÌO”0 ÌO”2 ÌO”4 ÌO š”8 ÌL”ÌK ÌL”ÌR ÌL ”ÌT ÌL"”Ì^ ÌL,”Ì` ÌL.”Ìd ÌL2”Ìe ÌL3”Ìt ÌLÌB”Ìv ÌLÌD–”( ÌL"”2 ÌL,”4 ÌL.”8 ÌL2”9 ÌL3”ÌH ÌLÌB–”$ ÌL"”. ÌL,”0 ÌL.”4 ÌL2”5 ÌL3”ÌD ÌLÌB’” ÌK
+” ÌK‘” ÌP	‘” ÌP	’” ÌR” ÌR–” ÌR” ÌR” ÌU	” ÌU” ÌU” ÌUš” ÌR” ÌR” ÌV	” ÌV” ÌV” ÌV”" ÌV”$ ÌV”& ÌV”( ÌVš”, ÌS
+”; ÌS”ÌB ÌS”ÌD ÌS”ÌJ ÌS"”ÌL ÌS$”ÌP ÌS(”ÌQ ÌS)”Ìb ÌS:”Ìd ÌS<–” ÌS”" ÌS"”$ ÌS$”( ÌS(”) ÌS)”: ÌS:–” ÌS” ÌS"”  ÌS$”$ ÌS(”% ÌS)”6 ÌS:’” ÌR” ÌR”” ÌX” ÌX”# ÌX”ÌI ÌX5–” ÌX” ÌX” ÌY” ÌY” ÌY” ÌY–” ÌX” ÌX” ÌZ” ÌZ” ÌZ” ÌZ–” ÌX” ÌX” Ì[”" Ì[”# Ì[”, Ì[$–” ÌX” ÌX” Ì\” Ì\”  Ì\”" Ì\š” ÌX” ÌX” Ì]” Ì]” Ì]” Ì]”" Ì]”$ Ì]”& Ì]”( Ì] —” ÌX” ÌX” Ì^” Ì^” Ì^” Ì^”  Ì^•” Ì_” Ì_” Ì_” Ì_” Ì_”” Ì`” Ì`” Ì`”* Ì`$“” Ìa” Ìa” Ìa˜” Ìb”  Ìb”" Ìb”& Ìb”' Ìb”0 Ìb(”1 Ìb)”9 Ìb1–” Ìc”' Ìc”) Ìc!”- Ìc%”. Ìc&”= Ìc5–” Ìd” Ìd”! Ìd”% Ìd”& Ìd”3 Ìd+‘” Ìe“” Ìf” Ìf” Ìf’” Ìg
+” Ìg’” ÌX” ÌX’” &” &’” %” %
+‘” Ìo’” Ìr” Ìr’” Ìs” Ìs
+–” Ìs” Ìs
+” Ì‡” Ì‡
+” Ì‡” Ì‡–” Ìs” Ìs
+” Ìˆ” Ìˆ” Ìˆ” Ìˆ–” Ìs” Ìs
+” Ì‰”" Ì‰”# Ì‰”, Ì‰–” Ìs” Ìs
+” ÌŠ” ÌŠ”  ÌŠ”" ÌŠ˜” Ìs” Ìs
+” Ì‹” Ì‹” Ì‹”- Ì‹”. Ì‹ ”3 Ì‹%š” Ìs” Ìs
+” ÌŒ” ÌŒ” ÌŒ” ÌŒ”" ÌŒ”$ ÌŒ”& ÌŒ”( ÌŒ”” Ìt” Ìt
+” Ìt”> Ìt1–” Ìt” Ìt
+” Ìu	” Ìu” Ìu” Ìu–” Ìt” Ìt
+” Ìv	” Ìv” Ìv”$ Ìvš” Ìt” Ìt
+” Ìw	” Ìw” Ìw” Ìw”  Ìw”" Ìw”# Ìw”% Ìw’” Ìt” Ìt
+’” Ìy” Ìy	–” Ìy” Ìy	” Ì…” Ì…” Ì…” Ì…’” Ìz” Ìz–” Ì{
+” Ì{”  Ì{”& Ì{”' Ì{”/ Ì{–” Ì{
+” Ì{” Ì|”! Ì|”" Ì|”$ Ì|Ü ” Ì{
+” Ì{” Ì}”  Ì}”! Ì}”# Ì}”' Ì}”) Ì}”+ Ì}”- Ì}!”2 Ì}&”4 Ì}(”6 Ì}*”8 Ì},”; Ì}/”= Ì}1”> Ì}2”Ì@ Ì}4”ÌF Ì}:”ÌH Ì}<”ÌI Ì}=”ÌK Ì}?–” Ì{
+” Ì{” Ì~”% Ì~”& Ì~”( Ì~Ü ” Ì{
+” Ì{” Ì”( Ì”) Ì”- Ì!”. Ì"”> Ì2”ÌC Ì7”ÌI Ì=”ÌJ Ì>”ÌR ÌÌF”ÌS ÌÌG”ÌT ÌÌH”ÌU ÌÌI”Ì^ ÌÌR”Ì_ ÌÌS”Ì` ÌÌT”Ìa ÌÌU”Ìj ÌÌ^Ü ” Ì{
+” Ì{” Ì€”" Ì€”# Ì€”' Ì€”( Ì€”8 Ì€,”= Ì€1”ÌC Ì€7”ÌD Ì€8”ÌL Ì€Ì@”ÌM Ì€ÌA”ÌN Ì€ÌB”ÌO Ì€ÌC”ÌX Ì€ÌL”ÌY Ì€ÌM”ÌZ Ì€ÌN”Ì[ Ì€ÌO”Ìd Ì€ÌXš” Ì{
+” Ì{” Ì” Ì”  Ì”" Ì”' Ì”) Ì”* Ì”, Ì Ü ” Ì{
+” Ì{” Ì‚”  Ì‚”! Ì‚”$ Ì‚”& Ì‚”) Ì‚”- Ì‚!”. Ì‚"”: Ì‚.”; Ì‚/”ÌA Ì‚5”ÌB Ì‚6”ÌJ Ì‚>”ÌK Ì‚?”ÌL Ì‚?”ÌM Ì‚Ì@”ÌN Ì‚ÌA’” Ì{
+” Ì{”/ Ìz”3 Ìz”4 Ìz”ÌA Ìz"”Ì[ Ìƒ”Ì\ Ìƒ”Ìb Ìƒ!”Ìd Ìƒ#”Ìf Ìƒ%”Ìg Ìƒ&”Ìm Ìƒ,”Ìn Ìƒ-”Ìv Ìƒ5’” Ìz” Ìz’” Ìy” Ìy	’” Ìs” Ìs
+‘” Ì’” Ì” Ì˜” Ì‘” Ì‘” Ì‘” Ì‘”+ Ì‘#”0 Ì‘(”4 Ì‘,”6 Ì‘.’” Ì’” Ì’–” Ì’” Ì’” ÌÁ”$ ÌÁ”% ÌÁ”* ÌÁ–” Ì’” Ì’” ÌÂ”& ÌÂ”' ÌÂ”) ÌÂ–” Ì’” Ì’” ÌÃ”. ÌÃ”/ ÌÃ”8 ÌÃ –” Ì’” Ì’” ÌÄ”+ ÌÄ”, ÌÄ”. ÌÄ˜” Ì’” Ì’” ÌÅ”) ÌÅ”* ÌÅ”9 ÌÅ!”: ÌÅ"”? ÌÅ'š” Ì’” Ì’” ÌÆ”% ÌÆ”& ÌÆ”( ÌÆ”. ÌÆ”0 ÌÆ”2 ÌÆ”4 ÌÆ’” Ì“” Ì“–” Ì“” Ì“” ÌŸ	”! ÌŸ”" ÌŸ”( ÌŸš” Ì“” Ì“” Ì 	”" Ì ”# Ì ”% Ì ”+ Ì ”- Ì ”/ Ì ”1 Ì Ü ” Ì”
+” Ì””$ Ì””' Ì””+ Ì””, Ì””9 Ì”$”: Ì”%”> Ì”)”? Ì”*”ÌC Ì”.”ÌD Ì”/”ÌF Ì”1”ÌG Ì”2”ÌK Ì”6”ÌL Ì”7”ÌT Ì”?”ÌY Ì”ÌD”Ì] Ì”ÌH”Ì^ Ì”ÌI”Ìn Ì”ÌY”Ìo Ì”ÌZ”Ìq Ì”Ì\”Ìy Ì”Ìd”Ì} Ì”Ìh”Ì Ì”Ìj”Ì” Ì”Ì–” Ì”
+” Ì”” Ì•”% Ì•”& Ì•”( Ì•˜” Ì”
+” Ì”” Ì–”' Ì–”( Ì–”2 Ì–"”3 Ì–#”7 Ì–'–” Ì”
+” Ì”” Ì—”) Ì—”* Ì—”+ Ì—’” Ì”
+” Ì”˜” Ì˜
+” Ì˜”$ Ì˜”( Ì˜”) Ì˜”? Ì˜*”Ì@ Ì˜+”ÌE Ì˜0–” Ì˜
+” Ì˜” Ì™”% Ì™”& Ì™”( Ì™–” Ì˜
+” Ì˜” Ìš”& Ìš”' Ìš”0 Ìš Ü ” Ì˜
+” Ì˜” Ì›”$ Ì›”% Ì›”' Ì›”+ Ì›”- Ì›”/ Ì›”1 Ì›!”6 Ì›&”8 Ì›(”: Ì›*”< Ì›,”? Ì›/”ÌA Ì›1”ÌB Ì›2”ÌD Ì›4”ÌJ Ì›:”ÌL Ì›<”ÌM Ì›=”ÌO Ì›?–” Ì˜
+” Ì˜” Ìœ”) Ìœ”* Ìœ”, Ìœ” Ì˜
+” Ì˜” Ì”, Ì”- Ì”? Ì/”Ì@ Ì0”ÌD Ì4”ÌE Ì5”Ì[ ÌÌK”Ì\ ÌÌL”Ìf ÌÌV”Ìg ÌÌW’” Ì˜
+” Ì˜’” Ì“” Ì“Ü ” Ì¢” Ì¢”$ Ì¢”( Ì¢”) Ì¢”? Ì¢(”Ì@ Ì¢)”ÌI Ì¢2”ÌL Ì¢5”ÌM Ì¢6”ÌN Ì¢7”ÌO Ì¢8”ÌP Ì¢9”Ìq Ì¢ÌZ”Ìu Ì¢Ì^”Ìv Ì¢Ì_”ÌŒ Ì¢Ìu”Ì Ì¢Ìv”Ì– Ì¢Ì”Ìš Ì¢Ìƒ”Ì› Ì¢Ì„”Ìœ Ì¢Ì…”Ì Ì¢Ì†”ÌÃ Ì¢Ì¬–” Ì¢” Ì¢” Ì£”% Ì£”& Ì£”( Ì£–” Ì¢” Ì¢” Ì¤”& Ì¤”' Ì¤”0 Ì¤š” Ì¢” Ì¢” Ì¥”# Ì¥”$ Ì¥”& Ì¥”, Ì¥”. Ì¥”0 Ì¥”2 Ì¥ ’” Ì¢” Ì¢œ” Ì§” Ì§”  Ì§”! Ì§”7 Ì§'”8 Ì§(”? Ì§/”Ì@ Ì§0”ÌF Ì§6”ÌI Ì§9”ÌJ Ì§:”ÌL Ì§<””$ Ì¨
+”( Ì¨”0 Ì¨”> Ì¨–”$ Ì¨
+”( Ì¨”) Ì©”1 Ì©”2 Ì©”4 Ì©–”$ Ì¨
+”( Ì¨”) Ìª”2 Ìª”3 Ìª”< Ìª š”$ Ì¨
+”( Ì¨”) Ì«”/ Ì«”0 Ì«”2 Ì«”8 Ì«”: Ì«”; Ì«”= Ì«!’”  Ì¨
+”$ Ì¨’”$ Ì¬
+”+ Ì¬–”, Ì­”0 Ì­”8 Ì­”ÌB Ì­”ÌH Ì­!”ÌJ Ì­#–”, Ì­”0 Ì­”1 Ì®”9 Ì®”: Ì®”< Ì®–”, Ì­”0 Ì­”1 Ì¯”: Ì¯”; Ì¯”ÌD Ì¯"š”, Ì­”0 Ì­”1 Ì°”7 Ì°”8 Ì°”: Ì°”Ì@ Ì°”ÌB Ì° ”ÌC Ì°!”ÌE Ì°#’”( Ì­”, Ì­Ü ”ÌG Ì¬”ÌK Ì¬”ÌL Ì¬”Ìb Ì¬-”Ìc Ì¬.”Ìj Ì¬5”Ì„ Ì±”Ì… Ì±”Ì‹ Ì±”Ì Ì±”Ì’ Ì±+”Ì” Ì±-”Ì– Ì±/”Ì— Ì±0”Ìš Ì±3”ÌŸ Ì±8”Ì¡ Ì±:’”  Ì¬
+”' Ì¬‘” Ì²	‘” Ì²	œ” Ì´” Ì´”  Ì´”! Ì´”7 Ì´'”8 Ì´(”ÌA Ì´1”ÌB Ì´2”ÌH Ì´8”ÌK Ì´;”ÌL Ì´<”ÌN Ì´>””$ Ìµ
+”( Ìµ”0 Ìµ”> Ìµ–”$ Ìµ
+”( Ìµ”) Ì¶”1 Ì¶”2 Ì¶”4 Ì¶–”$ Ìµ
+”( Ìµ”) Ì·”2 Ì·”3 Ì·”< Ì· ”$ Ìµ
+”( Ìµ”) Ì¸”/ Ì¸”0 Ì¸”2 Ì¸”5 Ì¸”7 Ì¸”9 Ì¸”; Ì¸”ÌA Ì¸%”ÌC Ì¸'”ÌD Ì¸(”ÌF Ì¸*’”  Ìµ
+”$ Ìµ’”$ Ì¹
+”+ Ì¹–”, Ìº”0 Ìº”8 Ìº”ÌB Ìº”ÌJ Ìº#”ÌL Ìº%–”, Ìº”0 Ìº”1 Ì»”9 Ì»”: Ì»”< Ì»–”, Ìº”0 Ìº”1 Ì¼”: Ì¼”; Ì¼”ÌD Ì¼"š”, Ìº”0 Ìº”1 Ì½”7 Ì½”8 Ì½”: Ì½”Ì@ Ì½”ÌB Ì½ ”ÌC Ì½!”ÌE Ì½#’”( Ìº”, ÌºÜ ”ÌG Ì¹”ÌK Ì¹”ÌL Ì¹”Ìb Ì¹-”Ìc Ì¹.”Ìl Ì¹7”Ì† Ì¾”Ì‡ Ì¾”Ì Ì¾”Ì‘ Ì¾ ”Ì– Ì¾-”Ì˜ Ì¾/”Ìš Ì¾1”Ì› Ì¾2”Ì Ì¾5”Ì£ Ì¾:”Ì¥ Ì¾<’”  Ì¹
+”' Ì¹‘” Ì¿	‘” Ì¿	’” Ì’” Ì’‘” ÌÇ‘” ÌÇ‘” ÌÈ”” ÌÊ
+”	 ÌÊ”
+ ÌÊ” ÌÊ” ÌË” ÌË” ÌË	” ÌË” ÌË”# ÌË”' ÌË#”( ÌË$”0 ÌË,”1 ÌË-”> ÌË:”Ì@ ÌË<”ÌA ÌË<š” ÌÌ” ÌÌ” ÌÌ” ÌÌ” ÌÌ” ÌÌ” ÌÌ”! ÌÌ”" ÌÌ”$ ÌÌ Ü ” ÌÍ” ÌÍ” ÌÍ” ÌÍ”$ ÌÍ”( ÌÍ"”) ÌÍ#”1 ÌÍ+”2 ÌÍ,”> ÌÍ8”? ÌÍ9”ÌC ÌÍ=”ÌD ÌÍ>”ÌJ ÌÍÌD”ÌK ÌÍÌE”ÌL ÌÍÌE”” ÌÎ” ÌÎ
+” ÌÎ” ÌÎ—” ÌÏ” ÌÏ” ÌÏ” ÌÏ”! ÌÏ”* ÌÏ"”+ ÌÏ"‘” ÌĞ‘”	 ÌÑœ” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ”! ÌÓ”" ÌÓ”( ÌÓ$”- ÌÓ)”. ÌÓ*”0 ÌÓ,™” ÌÔ” ÌÔ
+” ÌÔ” ÌÔ” ÌÔ”! ÌÔ”* ÌÔ$”, ÌÔ&”- ÌÔ&™” ÌÕ” ÌÕ
+” ÌÕ” ÌÕ” ÌÕ”! ÌÕ”$ ÌÕ”2 ÌÕ,”3 ÌÕ,™” ÌÖ” ÌÖ
+” ÌÖ” ÌÖ” ÌÖ”# ÌÖ”& ÌÖ ”ÌP ÌÖÌJ”ÌQ ÌÖÌJ‘”	 Ì×Ü ” ÌÙ” ÌÙ” ÌÙ” ÌÙ”! ÌÙ”" ÌÙ”( ÌÙ$”- ÌÙ)”. ÌÙ*”2 ÌÙ.”6 ÌÙ2”7 ÌÙ3”ÌD ÌÙÌ@”ÌE ÌÙÌA”ÌK ÌÙÌG”ÌN ÌÙÌJ”ÌO ÌÙÌK”ÌQ ÌÙÌM” ÌÚ” ÌÚ
+” ÌÚ”! ÌÚ”$ ÌÚ”( ÌÚ"”) ÌÚ#”6 ÌÚ0”7 ÌÚ1”8 ÌÚ2”9 ÌÚ3”: ÌÚ4”ÌB ÌÚ<”ÌC ÌÚ<‘”	 ÌÛÜ ” Ìİ” Ìİ” Ìİ	” Ìİ” Ìİ”# Ìİ”$ Ìİ ”, Ìİ(”- Ìİ)”ÌF ÌİÌB”ÌG ÌİÌC”ÌK ÌİÌG”ÌL ÌİÌH”ÌU ÌİÌQ”ÌV ÌİÌR”ÌW ÌİÌRÜ ” ÌŞ” ÌŞ” ÌŞ	” ÌŞ”! ÌŞ”% ÌŞ!”& ÌŞ"”. ÌŞ*”/ ÌŞ+”ÌC ÌŞ?”ÌD ÌŞÌ@”ÌH ÌŞÌD”ÌI ÌŞÌE”ÌR ÌŞÌN”ÌS ÌŞÌO”ÌT ÌŞÌOš” Ìß” Ìß” Ìß	” Ìß” Ìß” Ìß” Ìß”/ Ìß+”0 Ìß,”1 Ìß,—” Ìá” Ìá” Ìá	” Ìá” Ìá” Ìá”  Ìá™” Ìâ” Ìâ” Ìâ”% Ìâ”) Ìâ#”- Ìâ'”. Ìâ(”= Ìâ7”? Ìâ9Ü ” Ìã” Ìã” Ìã” Ìã”# Ìã”$ Ìã”3 Ìã+”4 Ìã,”ÌB Ìã:”ÌC Ìã;”ÌK ÌãÌC”ÌM ÌãÌE”ÌQ ÌãÌI”ÌR ÌãÌJ”Ì[ ÌãÌS”Ì] ÌãÌU”Ìk ÌãÌc”Ìl ÌãÌd”Ìm ÌãÌd‘” Ìä—” Ìå” Ìå
+” Ìå” Ìå”  Ìå”$ Ìå”% Ìå‘”	 Ìæ’” Ìç” Ìç”” Ìé
+” Ìé” Ìé” Ìé'—” Ìê” Ìê” Ìê	” Ìê”  Ìê”( Ìê$”) Ìê$Ü ” Ìë” Ìë” Ìë	”# Ìë”& Ìë"”* Ìë&”+ Ìë'”: Ìë6”; Ìë7”? Ìë;”Ì@ Ìë<”ÌD ÌëÌ@”ÌE ÌëÌA”ÌG ÌëÌC”ÌH ÌëÌD”ÌL ÌëÌH”ÌM ÌëÌI”ÌU ÌëÌQ”ÌZ ÌëÌV”Ìb ÌëÌ^”Ìc ÌëÌ_”Ìg ÌëÌc”Ìk ÌëÌg”Ìl ÌëÌgÜ ” Ìí” Ìí
+” Ìí” Ìí” Ìí” Ìí”) Ìí%”* Ìí&”. Ìí*”/ Ìí+”3 Ìí/”4 Ìí0”6 Ìí2”7 Ìí3”; Ìí7”< Ìí8”ÌD ÌíÌ@”ÌI ÌíÌE”ÌQ ÌíÌM”ÌR ÌíÌN”ÌV ÌíÌR”ÌZ ÌíÌV”Ì[ ÌíÌV™” Ìî” Ìî” Ìî” Ìî” Ìî” Ìî”$ Ìî ”& Ìî"”( Ìî$Ü ” Ìï” Ìï
+” Ìï”  Ìï”# Ìï”' Ìï!”( Ìï"”0 Ìï*”1 Ìï+”ÌI ÌïÌC”ÌJ ÌïÌD”ÌR ÌïÌL”ÌT ÌïÌN”ÌX ÌïÌR”ÌY ÌïÌS”Ìb ÌïÌ\”Ìc ÌïÌ]”Ìd ÌïÌ]‘”	 Ìğ‘” Ìğ—” Ìñ” Ìñ
+” Ìñ”  Ìñ”# Ìñ”' Ìñ!”( Ìñ!‘”	 Ìò’” Ìó” ÌóÔrF–§version¤file§sources®sourcesContent¥names¨mappingsÀ‘À‘ÀÜ&‘”    ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”  	 ‘”  
+ ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”    ‘”  ! ‘”  " ‘”  # ‘”  $ ‘”  % ‘”  & ‘”  ' ‘”  ( ‘”  ) ‘”  * ‘”  + ‘”  , ‘”  - ‘”  . ‘”  / ‘”  0 ‘”  1 ‘”  2 ‘”  3 ‘”  4 ‘”  5 ‘”  6 ‘”  7 ‘”  8 ‘”  9 ‘”  : ‘”  ; ‘”  < ‘”  = ‘”  > ‘”  ? ‘”  Ì@ ‘”  ÌA ‘”  ÌB ‘”  ÌC ‘”  ÌD ‘”  ÌE ‘”  ÌF ‘”  ÌG ‘”  ÌH ‘”  ÌI ‘”  ÌJ ‘”  ÌK ‘”  ÌL ‘”  ÌM ‘”  ÌN ‘”  ÌO ‘”  ÌP ‘”  ÌQ ‘”  ÌR ‘”  ÌS ‘”  ÌT ‘”  ÌU ‘”  ÌV ‘”  ÌW ‘”  ÌX ‘”  ÌY ‘”  ÌZ ‘”  Ì[ ‘”  Ì\ ‘”  Ì] ‘”  Ì^ ‘”  Ì_ ‘”  Ì` ‘”  Ìa ‘”  Ìb ‘”  Ìc ‘”  Ìd ‘”  Ìe ‘”  Ìf ‘”  Ìg ‘”  Ìh ‘”  Ìi ‘”  Ìj ‘”  Ìk ‘”  Ìl ‘”  Ìm ‘”  Ìn ‘”  Ìo ‘”  Ìp ‘”  Ìq ‘”  Ìr ‘”  Ìs ‘”  Ìt ‘”  Ìu ‘”  Ìv ‘”  Ìw ‘”  Ìx ‘”  Ìy ‘”  Ìz ‘”  Ì{ ‘”  Ì| ‘”  Ì} ‘”  Ì~ ‘”  Ì ‘”  Ì€ ‘”  Ì ‘”  Ì‚ ‘”  Ìƒ ‘”  Ì„ ‘”  Ì… ‘”  Ì† ‘”  Ì‡ ‘”  Ìˆ ‘”  Ì‰ ‘”  ÌŠ ‘”  Ì‹ ‘”  ÌŒ ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì‘ ‘”  Ì’ ‘”  Ì“ ‘”  Ì” ‘”  Ì• ‘”  Ì– ‘”  Ì— ‘”  Ì˜ ‘”  Ì™ ‘”  Ìš ‘”  Ì› ‘”  Ìœ ‘”  Ì ‘”  Ì ‘”  ÌŸ ‘”  Ì  ‘”  Ì¡ ‘”  Ì¢ ‘”  Ì£ ‘”  Ì¤ ‘”  Ì¥ ‘”  Ì¦ ‘”  Ì§ ‘”  Ì¨ ‘”  Ì© ‘”  Ìª ‘”  Ì« ‘”  Ì¬ ‘”  Ì­ ‘”  Ì® ‘”  Ì¯ ‘”  Ì° ‘”  Ì± ‘”  Ì² ‘”  Ì³ ‘”  Ì´ ‘”  Ìµ ‘”  Ì¶ ‘”  Ì· ‘”  Ì¸ ‘”  Ì¹ ‘”  Ìº ‘”  Ì» ‘”  Ì¼ ‘”  Ì½ ‘”  Ì¾ ‘”  Ì¿ ‘”  ÌÀ ‘”  ÌÁ ‘”  ÌÂ ‘”  ÌÃ ‘”  ÌÄ ‘”  ÌÅ ‘”  ÌÆ ‘”  ÌÇ ‘”  ÌÈ ‘”  ÌÉ ‘”  ÌÊ ‘”  ÌË ‘”  ÌÌ ‘”  ÌÍ ‘”  ÌÎ ‘”  ÌÏ ‘”  ÌĞ ‘”  ÌÑ ‘”  ÌÒ ‘”  ÌÓ ‘”  ÌÔ ‘”  ÌÕ ‘”  ÌÖ ‘”  Ì× ‘”  ÌØ ‘”  ÌÙ ‘”  ÌÚ ‘”  ÌÛ ‘”  ÌÜ ‘”  Ìİ ‘”  ÌŞ ‘”  Ìß ‘”  Ìà ‘”  Ìá ‘”  Ìâ ‘”  Ìã ‘”  Ìä ‘”  Ìå ‘”  Ìæ ‘”  Ìç ‘”  Ìè ‘”  Ìé ‘”  Ìê ‘”  Ìë ‘”  Ìì ‘”  Ìí ‘”  Ìî ‘”  Ìï ‘”  Ìğ ‘”  Ìñ ‘”  Ìò ‘”  Ìó ‘”  Ìô ‘”  Ìõ ‘”  Ìö ‘”  Ì÷ ‘”  Ìø ‘”  Ìù ‘”  Ìú ‘”  Ìû ‘”  Ìü ‘”  Ìı ‘”  Ìş ‘”  Ìÿ ‘”  Í  ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í	 ‘”  Í
+ ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í  ‘”  Í! ‘”  Í" ‘”  Í# ‘”  Í$ ‘”  Í% ‘”  Í& ‘”  Í' ‘”  Í( ‘”  Í) ‘”  Í* ‘”  Í+ ‘”  Í, ‘”  Í- ‘”  Í. ‘”  Í/ ‘”  Í0 ‘”  Í1 ‘”  Í2 ‘”  Í3 ‘”  Í4 ‘”  Í5 ‘”  Í6 ‘”  Í7 ‘”  Í8 ‘”  Í9 ‘”  Í: ‘”  Í; ‘”  Í< ‘”  Í= ‘”  Í> ‘”  Í? ‘”  Í@ ‘”  ÍA ‘”  ÍB ‘”  ÍC ‘”  ÍD ‘”  ÍE ‘”  ÍF ‘”  ÍG ‘”  ÍH ‘”  ÍI ‘”  ÍJ ‘”  ÍK ‘”  ÍL ‘”  ÍM ‘”  ÍN ‘”  ÍO ‘”  ÍP ‘”  ÍQ ‘”  ÍR ‘”  ÍS ‘”  ÍT ‘”  ÍU ‘”  ÍV ‘”  ÍW ‘”  ÍX ‘”  ÍY ‘”  ÍZ ‘”  Í[ ‘”  Í\ ‘”  Í] ‘”  Í^ ‘”  Í_ ‘”  Í` ‘”  Ía ‘”  Íb ‘”  Íc ‘”  Íd ‘”  Íe ‘”  Íf ‘”  Íg ‘”  Íh ‘”  Íi ‘”  Íj ‘”  Ík ‘”  Íl ‘”  Ím ‘”  Ín ‘”  Ío ‘”  Íp ‘”  Íq ‘”  Ír ‘”  Ís ‘”  Ít ‘”  Íu ‘”  Ív ‘”  Íw ‘”  Íx ‘”  Íy ‘”  Íz ‘”  Í{ ‘”  Í| ‘”  Í} ‘”  Í~ ‘”  Í ‘”  Í€ ‘”  Í ‘”  Í‚ ‘”  Íƒ ‘”  Í„ ‘”  Í… ‘”  Í† ‘”  Í‡ ‘”  Íˆ ‘”  Í‰ ‘”  ÍŠ ‘”  Í‹ ‘”  ÍŒ ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í‘ ‘”  Í’ ‘”  Í“ ‘”  Í” ‘”  Í• ‘”  Í– ‘”  Í— ‘”  Í˜ ‘”  Í™ ‘”  Íš ‘”  Í› ‘”  Íœ ‘”  Í ‘”  Í ‘”  ÍŸ ‘”  Í  ‘”  Í¡ ‘”  Í¢ ‘”  Í£ ‘”  Í¤ ‘”  Í¥ ‘”  Í¦ ‘”  Í§ ‘”  Í¨ ‘”  Í© ‘”  Íª ‘”  Í« ‘”  Í¬ ‘”  Í­ ‘”  Í® ‘”  Í¯ ‘”  Í° ‘”  Í± ‘”  Í² ‘”  Í³ ‘”  Í´ ‘”  Íµ ‘”  Í¶ ‘”  Í· ‘”  Í¸ ‘”  Í¹ ‘”  Íº ‘”  Í» ‘”  Í¼ ‘”  Í½ ‘”  Í¾ ‘”  Í¿ ‘”  ÍÀ ‘”  ÍÁ ‘”  ÍÂ ‘”  ÍÃ ‘”  ÍÄ ‘”  ÍÅ ‘”  ÍÆ ‘”  ÍÇ ‘”  ÍÈ ‘”  ÍÉ ‘”  ÍÊ ‘”  ÍË ‘”  ÍÌ ‘”  ÍÍ ‘”  ÍÎ ‘”  ÍÏ ‘”  ÍĞ ‘”  ÍÑ ‘”  ÍÒ ‘”  ÍÓ ‘”  ÍÔ ‘”  ÍÕ ‘”  ÍÖ ‘”  Í× ‘”  ÍØ ‘”  ÍÙ ‘”  ÍÚ ‘”  ÍÛ ‘”  ÍÜ ‘”  Íİ ‘”  ÍŞ ‘”  Íß ‘”  Íà ‘”  Íá ‘”  Íâ ‘”  Íã ‘”  Íä ‘”  Íå ‘”  Íæ ‘”  Íç ‘”  Íè ‘”  Íé ‘”  Íê ‘”  Íë ‘”  Íì ‘”  Íí ‘”  Íî ‘”  Íï ‘”  Íğ ‘”  Íñ ‘”  Íò ‘”  Íó ‘”  Íô ‘”  Íõ ‘”  Íö ‘”  Í÷ ‘”  Íø ‘”  Íù ‘”  Íú ‘”  Íû ‘”  Íü ‘”  Íı ‘”  Íş ‘”  Íÿ ‘”  Í  ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í	 ‘”  Í
+ ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í  ‘”  Í! ‘”  Í" ‘”  Í# ‘”  Í$ ‘”  Í% ÔrG’§missing¦pluginÃ¦genAbcÂÔ  ÔrH”²dynamicImportCache¹exportAllDeclarationCache»exportNamedDeclarationCache«importCache™ÔrI•¤type¥start£endªspecifiers¦source±ImportDeclarationÌ€Ì¢‘ÔrJ”¤type¥start£end¥local¶ImportDefaultSpecifierÌ‡ÌÔrK”¤type¥start£end¤nameªIdentifierÌ‡Ì¦routerÔrL•¤type¥start£end¥value£raw§LiteralÌ“Ì¡¬@ohos.router®"@ohos.router"I±ImportDeclarationÌ¤ÌË‘ÔrM•¤type¥start£end¨imported¥local¯ImportSpecifierÌ­ÌµKªIdentifierÌ­Ìµ¨AppStateKªIdentifierÌ­Ìµ¨AppStateL§LiteralÌ½ÌÊ«../AppState­'../AppState'I±ImportDeclarationÌÍÌü‘M¯ImportSpecifierÌÖÌßKªIdentifierÌÖÌß©FoodLabelKªIdentifierÌÖÌß©FoodLabelL§LiteralÌçÌû²../model/FoodLabel´'../model/FoodLabel'I±ImportDeclarationÌşÍ;‘M¯ImportSpecifierÍÍKªIdentifierÍÍ²getLevelColorValueKªIdentifierÍÍ²getLevelColorValueL§LiteralÍ!Í:·../model/Recommendation¹'../model/Recommendation'I±ImportDeclarationÍ=Í|‘M¯ImportSpecifierÍFÍWKªIdentifierÍFÍW±CredibilityResultKªIdentifierÍFÍW±CredibilityResultL§LiteralÍ_Í{º../model/CredibilityResult¼'../model/CredibilityResult'I±ImportDeclarationÍ~Íº‘M¯ImportSpecifierÍ‡Í”KªIdentifierÍ‡Í”­FoodLabelCardKªIdentifierÍ‡Í”­FoodLabelCardL§LiteralÍœÍ¹»../components/FoodLabelCard½'../components/FoodLabelCard'I±ImportDeclarationÍ¼Í ‘M¯ImportSpecifierÍÅÍÖKªIdentifierÍÅÍÖ±FamilyCompareViewKªIdentifierÍÅÍÖ±FamilyCompareViewL§LiteralÍŞÍÿ¿../components/FamilyCompareViewÙ!'../components/FamilyCompareView'I±ImportDeclarationÍÍJ‘M¯ImportSpecifierÍÍKªIdentifierÍÍ³ChildProtectionCardKªIdentifierÍÍ³ChildProtectionCardL§LiteralÍ&ÍIÙ!../components/ChildProtectionCardÙ#'../components/ChildProtectionCard'I±ImportDeclarationÍLÍŒ‘M¯ImportSpecifierÍUÍdKªIdentifierÍUÍd¯CredibilityCardKªIdentifierÍUÍd¯CredibilityCardL§LiteralÍlÍ‹½../components/CredibilityCard¿'../components/CredibilityCard'

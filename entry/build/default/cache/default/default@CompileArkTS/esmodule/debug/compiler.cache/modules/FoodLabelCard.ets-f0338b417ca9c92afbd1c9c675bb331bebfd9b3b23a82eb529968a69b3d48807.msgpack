@@ -1,0 +1,420 @@
+Ôr@Ÿªassertions¤code´customTransformCache¬dependencies¢id¤meta±moduleSideEffects¬originalCode±originalSourcemap«resolvedIds®sourcemapChainµsyntheticNamedExportsµtransformDependencies®transformFiles¨cacheAstÔrAÚ "if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
+// é£Ÿå“æ ‡ç­¾ä¿¡æ¯å¡ç»„ä»¶
+import { FoodLabel } from '../model/FoodLabel';
+export class FoodLabelCard extends ViewPU {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
+        this.__foodLabel = new SynchedPropertyObjectOneWayPU(params.foodLabel, this, "foodLabel");
+        this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
+    }
+    setInitiallyProvidedValue(params) {
+        if (params.foodLabel === undefined) {
+            this.__foodLabel.set(new FoodLabel());
+        }
+    }
+    updateStateVars(params) {
+        this.__foodLabel.reset(params.foodLabel);
+    }
+    purgeVariableDependenciesOnElmtId(rmElmtId) {
+        this.__foodLabel.purgeDependencyOnElmtId(rmElmtId);
+    }
+    aboutToBeDeleted() {
+        this.__foodLabel.aboutToBeDeleted();
+        SubscriberManager.Get().delete(this.id__());
+        this.aboutToBeDeletedInternal();
+    }
+    get foodLabel() {
+        return this.__foodLabel.get();
+    }
+    set foodLabel(newValue) {
+        this.__foodLabel.set(newValue);
+    }
+    initialRender() {
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Column.create();
+            Column.width('100%');
+            Column.padding(16);
+            Column.backgroundColor('#FFFFFF');
+            Column.borderRadius(12);
+            Column.alignItems(HorizontalAlign.Start);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            // é£Ÿå“åç§°
+            Text.create(this.foodLabel.foodName);
+            // é£Ÿå“åç§°
+            Text.fontSize(18);
+            // é£Ÿå“åç§°
+            Text.fontWeight(FontWeight.Bold);
+            // é£Ÿå“åç§°
+            Text.fontColor('#212121');
+            // é£Ÿå“åç§°
+            Text.margin({ bottom: 12 });
+        }, Text);
+        // é£Ÿå“åç§°
+        Text.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            // è¥å…»æˆåˆ†ç½‘æ ¼
+            Text.create('è¥å…»æˆåˆ†ï¼ˆæ¯100gï¼‰');
+            // è¥å…»æˆåˆ†ç½‘æ ¼
+            Text.fontSize(13);
+            // è¥å…»æˆåˆ†ç½‘æ ¼
+            Text.fontColor('#757575');
+            // è¥å…»æˆåˆ†ç½‘æ ¼
+            Text.margin({ bottom: 6 });
+        }, Text);
+        // è¥å…»æˆåˆ†ç½‘æ ¼
+        Text.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Grid.create();
+            Grid.columnsTemplate('1fr 1fr 1fr');
+            Grid.rowsGap(6);
+            Grid.columnsGap(6);
+            Grid.width('100%');
+            Grid.margin({ bottom: 12 });
+        }, Grid);
+        {
+            const itemCreation2 = (elmtId, isInitialRender) => {
+                GridItem.create(() => { }, false);
+            };
+            const observedDeepRender = () => {
+                this.observeComponentCreation2(itemCreation2, GridItem);
+                this.NutritionItem.bind(this)('é’ ', `${this.foodLabel.nutrition.sodium}mg`, this.foodLabel.isHighSodium());
+                GridItem.pop();
+            };
+            observedDeepRender();
+        }
+        {
+            const itemCreation2 = (elmtId, isInitialRender) => {
+                GridItem.create(() => { }, false);
+            };
+            const observedDeepRender = () => {
+                this.observeComponentCreation2(itemCreation2, GridItem);
+                this.NutritionItem.bind(this)('ç³–', `${this.foodLabel.nutrition.sugar}g`, this.foodLabel.isHighSugar());
+                GridItem.pop();
+            };
+            observedDeepRender();
+        }
+        {
+            const itemCreation2 = (elmtId, isInitialRender) => {
+                GridItem.create(() => { }, false);
+            };
+            const observedDeepRender = () => {
+                this.observeComponentCreation2(itemCreation2, GridItem);
+                this.NutritionItem.bind(this)('çƒ­é‡', `${this.foodLabel.nutrition.calories}kcal`, this.foodLabel.isHighCalorie());
+                GridItem.pop();
+            };
+            observedDeepRender();
+        }
+        {
+            const itemCreation2 = (elmtId, isInitialRender) => {
+                GridItem.create(() => { }, false);
+            };
+            const observedDeepRender = () => {
+                this.observeComponentCreation2(itemCreation2, GridItem);
+                this.NutritionItem.bind(this)('è„‚è‚ª', `${this.foodLabel.nutrition.fat}g`, this.foodLabel.isHighFat());
+                GridItem.pop();
+            };
+            observedDeepRender();
+        }
+        {
+            const itemCreation2 = (elmtId, isInitialRender) => {
+                GridItem.create(() => { }, false);
+            };
+            const observedDeepRender = () => {
+                this.observeComponentCreation2(itemCreation2, GridItem);
+                this.NutritionItem.bind(this)('ç¢³æ°´', `${this.foodLabel.nutrition.carbohydrate}g`, false);
+                GridItem.pop();
+            };
+            observedDeepRender();
+        }
+        {
+            const itemCreation2 = (elmtId, isInitialRender) => {
+                GridItem.create(() => { }, false);
+            };
+            const observedDeepRender = () => {
+                this.observeComponentCreation2(itemCreation2, GridItem);
+                this.NutritionItem.bind(this)('è›‹ç™½è´¨', `${this.foodLabel.nutrition.protein}g`, false);
+                GridItem.pop();
+            };
+            observedDeepRender();
+        }
+        Grid.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            If.create();
+            // é…æ–™è¡¨
+            if (this.foodLabel.ingredients.length > 0) {
+                this.ifElseBranchUpdateFunction(0, () => {
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Text.create('é…æ–™');
+                        Text.fontSize(13);
+                        Text.fontColor('#757575');
+                        Text.margin({ bottom: 4 });
+                    }, Text);
+                    Text.pop();
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
+                        Text.create(this.foodLabel.ingredients.join('ã€'));
+                        Text.fontSize(12);
+                        Text.fontColor('#616161');
+                        Text.maxLines(3);
+                        Text.textOverflow({ overflow: TextOverflow.Ellipsis });
+                    }, Text);
+                    Text.pop();
+                });
+            }
+            else {
+                this.ifElseBranchUpdateFunction(1, () => {
+                });
+            }
+        }, If);
+        If.pop();
+        Column.pop();
+    }
+    NutritionItem(name, value, isHigh, parent = null) {
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Column.create();
+            Column.padding(8);
+            Column.backgroundColor(isHigh ? '#FFF3E0' : '#F5F5F5');
+            Column.borderRadius(8);
+            Column.alignItems(HorizontalAlign.Center);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create(name);
+            Text.fontSize(11);
+            Text.fontColor('#9E9E9E');
+        }, Text);
+        Text.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create(value);
+            Text.fontSize(14);
+            Text.fontWeight(FontWeight.Medium);
+            Text.fontColor(isHigh ? '#FF5722' : '#212121');
+            Text.margin({ top: 2 });
+        }, Text);
+        Text.pop();
+        Column.pop();
+    }
+    rerender() {
+        this.updateDirtyElements();
+    }
+}
+//# sourceMappingURL=FoodLabelCard.js.mapÂ‘ÙMC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\FoodLabel.etsÙVC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\components\FoodLabelCard.etsÔrB›ªmoduleName±isLocalDependency¯isNodeEntryFile§pkgPath±belongProjectPath§pkgNameªpkgVersion±dependencyPkgInfo¯hostModulesInfo°belongModulePath¬shouldEmitJs¥entryÃÂÙ,C:\Users\A\IDEProjects\family_food_app\entryÙ&C:\Users\A\IDEProjects\family_food_app¥entry¥1.0.0Ô  ‘ÔrC’²hostDependencyName®hostModuleName»../components/FoodLabelCard¥entryÙ,C:\Users\A\IDEProjects\family_food_app\entryÃÃÚà// é£Ÿå“æ ‡ç­¾ä¿¡æ¯å¡ç»„ä»¶
+
+import { FoodLabel } from '../model/FoodLabel';
+
+@Component
+export struct FoodLabelCard {
+  @Prop foodLabel: FoodLabel = new FoodLabel();
+
+  build() {
+    Column() {
+      // é£Ÿå“åç§°
+      Text(this.foodLabel.foodName)
+        .fontSize(18)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('#212121')
+        .margin({ bottom: 12 })
+
+      // è¥å…»æˆåˆ†ç½‘æ ¼
+      Text('è¥å…»æˆåˆ†ï¼ˆæ¯100gï¼‰').fontSize(13).fontColor('#757575').margin({ bottom: 6 })
+      Grid() {
+        GridItem() { this.NutritionItem('é’ ', `${this.foodLabel.nutrition.sodium}mg`, this.foodLabel.isHighSodium()) }
+        GridItem() { this.NutritionItem('ç³–', `${this.foodLabel.nutrition.sugar}g`, this.foodLabel.isHighSugar()) }
+        GridItem() { this.NutritionItem('çƒ­é‡', `${this.foodLabel.nutrition.calories}kcal`, this.foodLabel.isHighCalorie()) }
+        GridItem() { this.NutritionItem('è„‚è‚ª', `${this.foodLabel.nutrition.fat}g`, this.foodLabel.isHighFat()) }
+        GridItem() { this.NutritionItem('ç¢³æ°´', `${this.foodLabel.nutrition.carbohydrate}g`, false) }
+        GridItem() { this.NutritionItem('è›‹ç™½è´¨', `${this.foodLabel.nutrition.protein}g`, false) }
+      }
+      .columnsTemplate('1fr 1fr 1fr')
+      .rowsGap(6)
+      .columnsGap(6)
+      .width('100%')
+      .margin({ bottom: 12 })
+
+      // é…æ–™è¡¨
+      if (this.foodLabel.ingredients.length > 0) {
+        Text('é…æ–™').fontSize(13).fontColor('#757575').margin({ bottom: 4 })
+        Text(this.foodLabel.ingredients.join('ã€'))
+          .fontSize(12)
+          .fontColor('#616161')
+          .maxLines(3)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+      }
+    }
+    .width('100%')
+    .padding(16)
+    .backgroundColor('#FFFFFF')
+    .borderRadius(12)
+    .alignItems(HorizontalAlign.Start)
+  }
+
+  @Builder
+  NutritionItem(name: string, value: string, isHigh: boolean) {
+    Column() {
+      Text(name).fontSize(11).fontColor('#9E9E9E')
+      Text(value)
+        .fontSize(14)
+        .fontWeight(FontWeight.Medium)
+        .fontColor(isHigh ? '#FF5722' : '#212121')
+        .margin({ top: 2 })
+    }
+    .padding(8)
+    .backgroundColor(isHigh ? '#FFF3E0' : '#F5F5F5')
+    .borderRadius(8)
+    .alignItems(HorizontalAlign.Center)
+  }
+}
+ÀÔrD‘²../model/FoodLabelÔrE—ªassertions¨external¢id¤meta±moduleSideEffectsªresolvedByµsyntheticNamedExportsAÂÙMC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\FoodLabel.etsAÃªoh-resolveÂ“ÔrF–§version¤fileªsourceRoot§sources¥names¨mappings°FoodLabelCard.js ‘±FoodLabelCard.etsÜ É’”    ”  ˜”   ” ”	 	” ” ” ”. .”/ /””   ” ” ” ‘”  ‘” /””! ”% #”. ,”0 .’”& ”/ ’” ” ’” ” ‘” ’” 	” 	
+–” 	” 	
+” +” +
+” +” +–” 	” 	
+” ,” ,” ,” ,–” 	” 	
+” -”" -”# -”, -–” 	” 	
+” .” .”  .”" .˜” 	” 	
+” /” /” /”- /”. / ”3 /%’” 
+” 
+˜” ” 
+” ” ” ”& ”' ”/ "’” 
+” 
+–” ” 
+” 	” ” ” ’” 
+” 
+˜” ” 
+” 	” ” ”& ”' ”+ #’” 
+” 
+–” ” 
+” 	” ” ”$ ’” 
+” 
+š” ” 
+” 	” ” ” ”  ”" ”$ ”& ’” 
+” 
+’” ” 
+’” ” ”” ” 
+” ”% ’” ” –” ” 
+” ” "” #” %’” ” –” ” 
+” '” 0” 1”$ :’” ” š” ” 
+” <” ÌB” ÌC” ÌE”  ÌK”" ÌM”# ÌN”% ÌP’” ” ’” ” 
+’” ” 
+–” ” 
+” ”  ”! ”. $–” ” 
+” ” ” ” –” ” 
+” ” ” ” –” ” 
+” ” ” ” š” ” 
+” ” ” ” ”  ”" ”$ ”& Ü ” ” ” ”" '”. (”1 +”3 -”6 0”: 4”; 5”ÌD >”ÌE ?”ÌN ÌH”ÌO ÌI”ÌU ÌO”ÌY ÌS”Ì[ ÌU”Ì_ ÌY”Ì` ÌZ”Ìi Ìc”Ìj Ìd”Ìv Ìp”Ìx Ìr”Ìy Ìs’” ” Ü ” ” ” ”" '”. (”1 +”3 -”6 0”: 4”; 5”ÌD >”ÌE ?”ÌN ÌH”ÌO ÌI”ÌT ÌN”ÌW ÌQ”ÌY ÌS”Ì] ÌW”Ì^ ÌX”Ìg Ìa”Ìh Ìb”Ìs Ìm”Ìu Ìo”Ìv Ìp’” ” Ü ” ” ” ”" '”. (”2 ,”4 .”7 1”; 5”< 6”ÌE ?”ÌF Ì@”ÌO ÌI”ÌP ÌJ”ÌX ÌR”Ì^ ÌX”Ì` ÌZ”Ìd Ì^”Ìe Ì_”Ìn Ìh”Ìo Ìi”Ì| Ìv”Ì~ Ìx”Ì Ìy’” ” Ü ” ” ” ”" '”. (”2 ,”4 .”7 1”; 5”< 6”ÌE ?”ÌF Ì@”ÌO ÌI”ÌP ÌJ”ÌS ÌM”ÌV ÌP”ÌX ÌR”Ì\ ÌV”Ì] ÌW”Ìf Ì`”Ìg Ìa”Ìp Ìj”Ìr Ìl”Ìs Ìm’” ” Ü ” ” ” ”" '”. (”2 ,”4 .”7 1”; 5”< 6”ÌE ?”ÌF Ì@”ÌO ÌI”ÌP ÌJ”Ì\ ÌV”Ì_ ÌY”Ìa Ì[”Ìf Ì`”Ìg Ìa’” ” Ü ” ” ” ”" '”. (”3 -”5 /”8 2”< 6”= 7”ÌF Ì@”ÌG ÌA”ÌP ÌJ”ÌQ ÌK”ÌX ÌR”Ì[ ÌU”Ì] ÌW”Ìb Ì\”Ìc Ì]’” ” ’” ” 
+’” !” !œ” "” "
+” "” "” "” "”* "$”+ "%”1 "+”4 ".”5 "/”7 "1”” #” #”$ #”( #–” #” #” #”% #”& #”( #–” #” #” # ”& #)”' #*”0 #3š” #” #” #5”# #;”$ #<”& #>”, #ÌD”. #ÌF”/ #ÌG”1 #ÌI’” #” #” $” $”$ $”( $”) $”2 $”3 $”> $'”? $(”ÌC $,”ÌD $-”ÌG $0”ÌH $1–” $” $” %”% %”& %”( %–” $” $” &”& &”' &”0 &–” $” $” '”% '”& '”' 'œ” $” $” (”) (”* (”, (”4 ("”6 ($”ÌB (0”ÌC (1”ÌK (9”ÌM (;’” $” $‘” )‘” )’” 	” 	
+‘” 0˜” 3” 3” 3” 3” 3” 3+” 3-”% 3<’” 4” 4
+–” 4” 4
+” <” <” <” <” 4” 4
+” =”" =”# =”) =”* =”+ =”, =”5 ='”6 =(”7 =)”8 =*”ÌA =3–” 4” 4
+” >” >”  >”! >˜” 4” 4
+” ?” ?” ?”- ?”. ? ”4 ?&”” 5” 5
+” 5” 5–” 5” 5
+” 5” 5” 5” 5–” 5” 5
+” 5” 5'” 5(”$ 51’” 5” 5
+”” 6” 6
+” 6” 6–” 6” 6
+” 7	” 7” 7” 7˜” 6” 6
+” 8	” 8” 8”& 8”' 8”- 8%” 6” 6
+” 9	” 9” 9”! 9”" 9”# 9”$ 9”- 9%”. 9&”/ 9'”0 9(”9 91š” 6” 6
+” :	” :” :” :” :” :”  :”" :’” 6” 6
+’” 4” 4
+‘” Ì@ÔrG–§version¤file§sources®sourcesContent¥names¨mappingsÀ‘À‘ÀÜ Î‘”    ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”  	 ‘”  
+ ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”    ‘”  ! ‘”  " ‘”  # ‘”  $ ‘”  % ‘”  & ‘”  ' ‘”  ( ‘”  ) ‘”  * ‘”  + ‘”  , ‘”  - ‘”  . ‘”  / ‘”  0 ‘”  1 ‘”  2 ‘”  3 ‘”  4 ‘”  5 ‘”  6 ‘”  7 ‘”  8 ‘”  9 ‘”  : ‘”  ; ‘”  < ‘”  = ‘”  > ‘”  ? ‘”  Ì@ ‘”  ÌA ‘”  ÌB ‘”  ÌC ‘”  ÌD ‘”  ÌE ‘”  ÌF ‘”  ÌG ‘”  ÌH ‘”  ÌI ‘”  ÌJ ‘”  ÌK ‘”  ÌL ‘”  ÌM ‘”  ÌN ‘”  ÌO ‘”  ÌP ‘”  ÌQ ‘”  ÌR ‘”  ÌS ‘”  ÌT ‘”  ÌU ‘”  ÌV ‘”  ÌW ‘”  ÌX ‘”  ÌY ‘”  ÌZ ‘”  Ì[ ‘”  Ì\ ‘”  Ì] ‘”  Ì^ ‘”  Ì_ ‘”  Ì` ‘”  Ìa ‘”  Ìb ‘”  Ìc ‘”  Ìd ‘”  Ìe ‘”  Ìf ‘”  Ìg ‘”  Ìh ‘”  Ìi ‘”  Ìj ‘”  Ìk ‘”  Ìl ‘”  Ìm ‘”  Ìn ‘”  Ìo ‘”  Ìp ‘”  Ìq ‘”  Ìr ‘”  Ìs ‘”  Ìt ‘”  Ìu ‘”  Ìv ‘”  Ìw ‘”  Ìx ‘”  Ìy ‘”  Ìz ‘”  Ì{ ‘”  Ì| ‘”  Ì} ‘”  Ì~ ‘”  Ì ‘”  Ì€ ‘”  Ì ‘”  Ì‚ ‘”  Ìƒ ‘”  Ì„ ‘”  Ì… ‘”  Ì† ‘”  Ì‡ ‘”  Ìˆ ‘”  Ì‰ ‘”  ÌŠ ‘”  Ì‹ ‘”  ÌŒ ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì‘ ‘”  Ì’ ‘”  Ì“ ‘”  Ì” ‘”  Ì• ‘”  Ì– ‘”  Ì— ‘”  Ì˜ ‘”  Ì™ ‘”  Ìš ‘”  Ì› ‘”  Ìœ ‘”  Ì ‘”  Ì ‘”  ÌŸ ‘”  Ì  ‘”  Ì¡ ‘”  Ì¢ ‘”  Ì£ ‘”  Ì¤ ‘”  Ì¥ ‘”  Ì¦ ‘”  Ì§ ‘”  Ì¨ ‘”  Ì© ‘”  Ìª ‘”  Ì« ‘”  Ì¬ ‘”  Ì­ ‘”  Ì® ‘”  Ì¯ ‘”  Ì° ‘”  Ì± ‘”  Ì² ‘”  Ì³ ‘”  Ì´ ‘”  Ìµ ‘”  Ì¶ ‘”  Ì· ‘”  Ì¸ ‘”  Ì¹ ‘”  Ìº ‘”  Ì» ‘”  Ì¼ ‘”  Ì½ ‘”  Ì¾ ‘”  Ì¿ ‘”  ÌÀ ‘”  ÌÁ ‘”  ÌÂ ‘”  ÌÃ ‘”  ÌÄ ‘”  ÌÅ ‘”  ÌÆ ‘”  ÌÇ ‘”  ÌÈ ‘”  ÌÉ ‘”  ÌÊ ‘”  ÌË ‘”  ÌÌ ‘”  ÌÍ ÔrH’§missing¦pluginÃ¦genAbcÂÔ  ÔrI”²dynamicImportCache¹exportAllDeclarationCache»exportNamedDeclarationCache«importCache‘ÔrJ–¤type¥start£end«declarationªspecifiers¦source¶ExportNamedDeclarationÌ¿ÍIÔrK–¤type¥start£end¢idªsuperClass¤body°ClassDeclarationÌÆÍIÔrL”¤type¥start£end¤nameªIdentifierÌÌÌÙ­FoodLabelCardLªIdentifierÌâÌè¦ViewPUÔrM”¤type¥start£end¤body©ClassBodyÌéÍIšÔrN˜¤type¥start£end¦static¨computed£key¤kind¥value°MethodDefinitionÌğÍ½ÂÂLªIdentifierÌğÌû«constructor«constructorÔrO™¤type¥start£end¢idªexpression©generator¥async¦params¤body²FunctionExpressionÌûÍ½ÀÂÂÂ–LªIdentifierÌüÍ¦parentLªIdentifierÍÍ
+¦paramsLªIdentifierÍÍ®__localStorageÔrP•¤type¥start£end¤left¥right±AssignmentPatternÍÍ'LªIdentifierÍÍ"¦elmtIdÔrQ–¤type¥start£end¨operator¦prefix¨argument¯UnaryExpressionÍ%Í'¡-ÃÔrR•¤type¥start£end¥value£raw§LiteralÍ&Í'¡1P±AssignmentPatternÍ)ÍALªIdentifierÍ)Í5¬paramsLambdaLªIdentifierÍ8ÍA©undefinedLªIdentifierÍCÍL©extraInfoM®BlockStatementÍNÍ½•ÔrS”¤type¥start£endªexpression³ExpressionStatementÍYÍŠÔrT–¤type¥start£end¦callee©arguments¨optional®CallExpressionÍYÍ‰ÔrU“¤type¥start£end¥SuperÍYÍ^”LªIdentifierÍ_Íe¦parentLªIdentifierÍgÍu®__localStorageLªIdentifierÍwÍ}¦elmtIdLªIdentifierÍÍˆ©extraInfoÂÔrV–¤type¥start£end¤testªconsequent©alternate«IfStatementÍ”ÍûÔrW–¤type¥start£end¤left¨operator¥right°BinaryExpressionÍ˜ÍºQ¯UnaryExpressionÍ˜Í«¦typeofÃLªIdentifierÍŸÍ«¬paramsLambda£===R§LiteralÍ°Íº¨functionª"function"M®BlockStatementÍ¼Íû‘S³ExpressionStatementÍËÍğÔrX–¤type¥start£end¨operator¤left¥right´AssignmentExpressionÍËÍï¡=ÔrY—¤type¥start£end¦object¨property¨computed¨optional°MemberExpressionÍËÍàU®ThisExpressionÍËÍÏLªIdentifierÍĞÍà°paramsGenerator_ÂÂLªIdentifierÍãÍï¬paramsLambdaÀS³ExpressionStatementÍÍ_X´AssignmentExpressionÍÍ^¡=Y°MemberExpressionÍÍU®ThisExpressionÍÍ	LªIdentifierÍ
+Í«__foodLabelÂÂÔrZ•¤type¥start£end¦callee©arguments­NewExpressionÍÍ^LªIdentifierÍÍ9½SynchedPropertyObjectOneWayPU“Y°MemberExpressionÍ:ÍJLªIdentifierÍ:Í@¦paramsLªIdentifierÍAÍJ©foodLabelÂÂU®ThisExpressionÍLÍPR§LiteralÍRÍ]©foodLabel«"foodLabel"S³ExpressionStatementÍiÍT®CallExpressionÍiÍY°MemberExpressionÍiÍ‡U®ThisExpressionÍiÍmLªIdentifierÍnÍ‡¹setInitiallyProvidedValueÂÂ‘LªIdentifierÍˆÍ¦paramsÂS³ExpressionStatementÍšÍ¶T®CallExpressionÍšÍµY°MemberExpressionÍšÍ³U®ThisExpressionÍšÍLªIdentifierÍŸÍ³´finalizeConstructionÂÂÂN°MethodDefinitionÍÃÍ[ÂÂLªIdentifierÍÃÍÜ¹setInitiallyProvidedValue¦methodO²FunctionExpressionÍÜÍ[ÀÂÂÂ‘LªIdentifierÍİÍã¦paramsM®BlockStatementÍåÍ[‘V«IfStatementÍğÍTW°BinaryExpressionÍôÍY°MemberExpressionÍôÍLªIdentifierÍôÍú¦paramsLªIdentifierÍûÍ©foodLabelÂÂ£===LªIdentifierÍ	Í©undefinedM®BlockStatementÍÍT‘S³ExpressionStatementÍ#ÍIT®CallExpressionÍ#ÍHY°MemberExpressionÍ#Í7Y°MemberExpressionÍ#Í3U®ThisExpressionÍ#Í'LªIdentifierÍ(Í3«__foodLabelÂÂLªIdentifierÍ4Í7£setÂÂ‘Z­NewExpressionÍ8ÍGLªIdentifierÍ<ÍE©FoodLabelÂÀN°MethodDefinitionÍaÍ´ÂÂLªIdentifierÍaÍp¯updateStateVars¦methodO²FunctionExpressionÍpÍ´ÀÂÂÂ‘LªIdentifierÍqÍw¦paramsM®BlockStatementÍyÍ´‘S³ExpressionStatementÍ„Í­T®CallExpressionÍ„Í¬Y°MemberExpressionÍ„ÍšY°MemberExpressionÍ„Í”U®ThisExpressionÍ„ÍˆLªIdentifierÍ‰Í”«__foodLabelÂÂLªIdentifierÍ•Íš¥resetÂÂ‘Y°MemberExpressionÍ›Í«LªIdentifierÍ›Í¡¦paramsLªIdentifierÍ¢Í«©foodLabelÂÂÂN°MethodDefinitionÍºÍ+ÂÂLªIdentifierÍºÍÛÙ!purgeVariableDependenciesOnElmtId¦methodO²FunctionExpressionÍÛÍ+ÀÂÂÂ‘LªIdentifierÍÜÍä¨rmElmtIdM®BlockStatementÍæÍ+‘S³ExpressionStatementÍñÍ$T®CallExpressionÍñÍ#Y°MemberExpressionÍñÍY°MemberExpressionÍñÍU®ThisExpressionÍñÍõLªIdentifierÍöÍ«__foodLabelÂÂLªIdentifierÍÍ·purgeDependencyOnElmtIdÂÂ‘LªIdentifierÍÍ"¨rmElmtIdÂN°MethodDefinitionÍ1ÍÚÂÂLªIdentifierÍ1ÍA°aboutToBeDeleted¦methodO²FunctionExpressionÍAÍÚÀÂÂÂM®BlockStatementÍDÍÚ“S³ExpressionStatementÍOÍsT®CallExpressionÍOÍrY°MemberExpressionÍOÍpY°MemberExpressionÍOÍ_U®ThisExpressionÍOÍSLªIdentifierÍTÍ_«__foodLabelÂÂLªIdentifierÍ`Íp°aboutToBeDeletedÂÂÂS³ExpressionStatementÍ}Í©T®CallExpressionÍ}Í¨Y°MemberExpressionÍ}Í›T®CallExpressionÍ}Í”Y°MemberExpressionÍ}Í’LªIdentifierÍ}Í±SubscriberManagerLªIdentifierÍÍ’£GetÂÂÂLªIdentifierÍ•Í›¦deleteÂÂ‘T®CallExpressionÍœÍ§Y°MemberExpressionÍœÍ¥U®ThisExpressionÍœÍ LªIdentifierÍ¡Í¥¤id__ÂÂÂÂS³ExpressionStatementÍ³ÍÓT®CallExpressionÍ³ÍÒY°MemberExpressionÍ³ÍĞU®ThisExpressionÍ³Í·LªIdentifierÍ¸ÍĞ¸aboutToBeDeletedInternalÂÂÂN°MethodDefinitionÍàÍ ÂÂLªIdentifierÍäÍí©foodLabel£getO²FunctionExpressionÍíÍ ÀÂÂÂM®BlockStatementÍğÍ ‘Ôr[”¤type¥start£end¨argument¯ReturnStatementÍûÍT®CallExpressionÍÍY°MemberExpressionÍÍY°MemberExpressionÍÍU®ThisExpressionÍÍLªIdentifierÍÍ«__foodLabelÂÂLªIdentifierÍÍ£getÂÂÂN°MethodDefinitionÍ&ÍoÂÂLªIdentifierÍ*Í3©foodLabel£setO²FunctionExpressionÍ3ÍoÀÂÂÂ‘LªIdentifierÍ4Í<¨newValueM®BlockStatementÍ>Ío‘S³ExpressionStatementÍIÍhT®CallExpressionÍIÍgY°MemberExpressionÍIÍ]Y°MemberExpressionÍIÍYU®ThisExpressionÍIÍMLªIdentifierÍNÍY«__foodLabelÂÂLªIdentifierÍZÍ]£setÂÂ‘LªIdentifierÍ^Íf¨newValueÂN°MethodDefinitionÍuÍZÂÂLªIdentifierÍuÍ‚­initialRender¦methodO²FunctionExpressionÍ‚ÍZÀÂÂÂM®BlockStatementÍ…ÍZÜ S³ExpressionStatementÍÍÑT®CallExpressionÍÍĞY°MemberExpressionÍÍ®U®ThisExpressionÍÍ”LªIdentifierÍ•Í®¹observeComponentCreation2ÂÂ’O·ArrowFunctionExpressionÍ¯ÍÇÀÂÂÂ’LªIdentifierÍ°Í¶¦elmtIdLªIdentifierÍ¸ÍÇ¯isInitialRenderM®BlockStatementÍÌÍÇ–S³ExpressionStatementÍÛÍëT®CallExpressionÍÛÍêY°MemberExpressionÍÛÍèLªIdentifierÍÛÍá¦ColumnLªIdentifierÍâÍè¦createÂÂÂS³ExpressionStatementÍùÍT®CallExpressionÍùÍY°MemberExpressionÍùÍLªIdentifierÍùÍÿ¦ColumnLªIdentifierÍ Í¥widthÂÂ‘R§LiteralÍÍ¤100%¦'100%'ÂS³ExpressionStatementÍÍ/T®CallExpressionÍÍ.Y°MemberExpressionÍÍ*LªIdentifierÍÍ"¦ColumnLªIdentifierÍ#Í*§paddingÂÂ‘R§LiteralÍ+Í-¢16ÂS³ExpressionStatementÍ=Í_T®CallExpressionÍ=Í^Y°MemberExpressionÍ=ÍSLªIdentifierÍ=ÍC¦ColumnLªIdentifierÍDÍS¯backgroundColorÂÂ‘R§LiteralÍTÍ]§#FFFFFF©'#FFFFFF'ÂS³ExpressionStatementÍmÍ…T®CallExpressionÍmÍ„Y°MemberExpressionÍmÍ€LªIdentifierÍmÍs¦ColumnLªIdentifierÍtÍ€¬borderRadiusÂÂ‘R§LiteralÍÍƒ¢12ÂS³ExpressionStatementÍ“Í¼T®CallExpressionÍ“Í»Y°MemberExpressionÍ“Í¤LªIdentifierÍ“Í™¦ColumnLªIdentifierÍšÍ¤ªalignItemsÂÂ‘Y°MemberExpressionÍ¥ÍºLªIdentifierÍ¥Í´¯HorizontalAlignLªIdentifierÍµÍº¥StartÂÂÂLªIdentifierÍÉÍÏ¦ColumnÂS³ExpressionStatementÍÛÍhT®CallExpressionÍÛÍgY°MemberExpressionÍÛÍùU®ThisExpressionÍÛÍßLªIdentifierÍàÍù¹observeComponentCreation2ÂÂ’O·ArrowFunctionExpressionÍúÍ`ÀÂÂÂ’LªIdentifierÍûÍ¦elmtIdLªIdentifierÍÍ¯isInitialRenderM®BlockStatementÍÍ`•S³ExpressionStatementÍ;Í`T®CallExpressionÍ;Í_Y°MemberExpressionÍ;ÍFLªIdentifierÍ;Í?¤TextLªIdentifierÍ@ÍF¦createÂÂ‘Y°MemberExpressionÍGÍ^Y°MemberExpressionÍGÍUU®ThisExpressionÍGÍKLªIdentifierÍLÍU©foodLabelÂÂLªIdentifierÍVÍ^¨foodNameÂÂÂS³ExpressionStatementÍƒÍ•T®CallExpressionÍƒÍ”Y°MemberExpressionÍƒÍLªIdentifierÍƒÍ‡¤TextLªIdentifierÍˆÍ¨fontSizeÂÂ‘R§LiteralÍ‘Í“¢18ÂS³ExpressionStatementÍ¸ÍÙT®CallExpressionÍ¸ÍØY°MemberExpressionÍ¸ÍÇLªIdentifierÍ¸Í¼¤TextLªIdentifierÍ½ÍÇªfontWeightÂÂ‘Y°MemberExpressionÍÈÍ×LªIdentifierÍÈÍÒªFontWeightLªIdentifierÍÓÍ×¤BoldÂÂÂS³ExpressionStatementÍüÍT®CallExpressionÍüÍY°MemberExpressionÍüÍ
+LªIdentifierÍüÍ ¤TextLªIdentifierÍÍ
+©fontColorÂÂ‘R§LiteralÍÍ§#212121©'#212121'ÂS³ExpressionStatementÍ9ÍUT®CallExpressionÍ9ÍTY°MemberExpressionÍ9ÍDLªIdentifierÍ9Í=¤TextLªIdentifierÍ>ÍD¦marginÂÂ‘Ôr\”¤type¥start£endªproperties°ObjectExpressionÍEÍS‘Ôr]™¤type¥start£end¦method©shorthand¨computed£key¥value¤kind¨PropertyÍGÍQÂÂÂLªIdentifierÍGÍM¦bottomR§LiteralÍOÍQ¢12¤initÂLªIdentifierÍbÍf¤TextÂS³ExpressionStatementÍƒÍT®CallExpressionÍƒÍY°MemberExpressionÍƒÍ‹LªIdentifierÍƒÍ‡¤TextLªIdentifierÍˆÍ‹£popÂÂÂS³ExpressionStatementÍ˜Í	ŞT®CallExpressionÍ˜Í	İY°MemberExpressionÍ˜Í¶U®ThisExpressionÍ˜ÍœLªIdentifierÍÍ¶¹observeComponentCreation2ÂÂ’O·ArrowFunctionExpressionÍ·Í	ÖÀÂÂÂ’LªIdentifierÍ¸Í¾¦elmtIdLªIdentifierÍÀÍÏ¯isInitialRenderM®BlockStatementÍÔÍ	Ö”S³ExpressionStatementÍúÍ	T®CallExpressionÍúÍ	Y°MemberExpressionÍúÍ	LªIdentifierÍúÍş¤TextLªIdentifierÍÿÍ	¦createÂÂ‘R§LiteralÍ	Í	¹è¥å…»æˆåˆ†ï¼ˆæ¯100gï¼‰»'è¥å…»æˆåˆ†ï¼ˆæ¯100gï¼‰'ÂS³ExpressionStatementÍ	:Í	LT®CallExpressionÍ	:Í	KY°MemberExpressionÍ	:Í	GLªIdentifierÍ	:Í	>¤TextLªIdentifierÍ	?Í	G¨fontSizeÂÂ‘R§LiteralÍ	HÍ	J¢13ÂS³ExpressionStatementÍ	qÍ	‹T®CallExpressionÍ	qÍ	ŠY°MemberExpressionÍ	qÍ	LªIdentifierÍ	qÍ	u¤TextLªIdentifierÍ	vÍ	©fontColorÂÂ‘R§LiteralÍ	€Í	‰§#757575©'#757575'ÂS³ExpressionStatementÍ	°Í	ËT®CallExpressionÍ	°Í	ÊY°MemberExpressionÍ	°Í	»LªIdentifierÍ	°Í	´¤TextLªIdentifierÍ	µÍ	»¦marginÂÂ‘\°ObjectExpressionÍ	¼Í	É‘]¨PropertyÍ	¾Í	ÇÂÂÂLªIdentifierÍ	¾Í	Ä¦bottomR§LiteralÍ	ÆÍ	Ç¡6¤initÂLªIdentifierÍ	ØÍ	Ü¤TextÂS³ExpressionStatementÍ	ûÍ
+T®CallExpressionÍ	ûÍ
+Y°MemberExpressionÍ	ûÍ
+LªIdentifierÍ	ûÍ	ÿ¤TextLªIdentifierÍ
+ Í
+£popÂÂÂS³ExpressionStatementÍ
+Í8T®CallExpressionÍ
+Í7Y°MemberExpressionÍ
+Í
+.U®ThisExpressionÍ
+Í
+LªIdentifierÍ
+Í
+.¹observeComponentCreation2ÂÂ’O·ArrowFunctionExpressionÍ
+/Í0ÀÂÂÂ’LªIdentifierÍ
+0Í
+6¦elmtIdLªIdentifierÍ
+8Í
+G¯isInitialRenderM®BlockStatementÍ
+LÍ0–S³ExpressionStatementÍ
+[Í
+iT®CallExpressionÍ
+[Í
+hY°MemberExpressionÍ
+[Í
+fLªIdentifierÍ
+[Í
+_¤GridLªIdentifierÍ
+`Í
+f¦createÂÂÂS³ExpressionStatementÍ
+wÍ
+›T®CallExpressionÍ
+wÍ
+šY°MemberExpressionÍ
+wÍ
+‹LªIdentifierÍ
+wÍ
+{¤GridLªIdentifierÍ
+|Í
+‹¯columnsTemplateÂÂ‘R§LiteralÍ
+ŒÍ
+™«1fr 1fr 1fr­'1fr 1fr 1fr'ÂS³ExpressionStatementÍ
+©Í
+¹T®CallExpressionÍ
+©Í
+¸Y°MemberExpressionÍ
+©Í
+µLªIdentifierÍ
+©Í
+­¤GridLªIdentifierÍ
+®Í
+µ§rowsGapÂÂ‘R§LiteralÍ
+¶Í
+·¡6ÂS³ExpressionStatementÍ
+ÇÍ
+ÚT®CallExpressionÍ
+ÇÍ
+ÙY°MemberExpressionÍ
+ÇÍ
+ÖLªIdentifierÍ
+ÇÍ
+Ë¤GridLªIdentifierÍ
+ÌÍ
+ÖªcolumnsGapÂÂ‘R§LiteralÍ
+×Í
+Ø¡6ÂS³ExpressionStatementÍ
+èÍ
+ûT®CallExpressionÍ
+èÍ
+úY°MemberExpressionÍ
+èÍ
+òLªIdentifierÍ
+èÍ
+ì¤GridLªIdentifierÍ
+íÍ
+ò¥widthÂÂ‘R§LiteralÍ
+óÍ
+ù¤100%¦'100%'ÂS³ExpressionStatementÍ	Í%T®CallExpressionÍ	Í$Y°MemberExpressionÍ	ÍLªIdentifierÍ	Í¤GridLªIdentifierÍÍ¦marginÂÂ‘\°ObjectExpressionÍÍ#‘]¨PropertyÍÍ!ÂÂÂLªIdentifierÍÍ¦bottomR§LiteralÍÍ!¢12¤initÂLªIdentifierÍ2Í6¤GridÂM®BlockStatementÍBÍ“Ôr^•¤type¥start£end¬declarations¤kind³VariableDeclarationÍQÍÉ‘Ôr_•¤type¥start£end¢id¤init²VariableDeclaratorÍWÍÈLªIdentifierÍWÍd­itemCreation2O·ArrowFunctionExpressionÍgÍÈÀÂÂÂ’LªIdentifierÍhÍn¦elmtIdLªIdentifierÍpÍ¯isInitialRenderM®BlockStatementÍ„ÍÈ‘S³ExpressionStatementÍ—Í¹T®CallExpressionÍ—Í¸Y°MemberExpressionÍ—Í¦LªIdentifierÍ—ÍŸ¨GridItemLªIdentifierÍ Í¦¦createÂÂ’O·ArrowFunctionExpressionÍ§Í°ÀÂÂÂM®BlockStatementÍ­Í°R§LiteralÍ²Í·Â¥falseÂ¥const^³VariableDeclarationÍ×Íğ‘_²VariableDeclaratorÍİÍïLªIdentifierÍİÍï²observedDeepRenderO·ArrowFunctionExpressionÍòÍïÀÂÂÂM®BlockStatementÍøÍï“S³ExpressionStatementÍÍCT®CallExpressionÍÍBY°MemberExpressionÍÍ)U®ThisExpressionÍÍLªIdentifierÍÍ)¹observeComponentCreation2ÂÂ’LªIdentifierÍ*Í7­itemCreation2LªIdentifierÍ9ÍA¨GridItemÂS³ExpressionStatementÍUÍ¿T®CallExpressionÍUÍ¾T®CallExpressionÍUÍrY°MemberExpressionÍUÍlY°MemberExpressionÍUÍgU®ThisExpressionÍUÍYLªIdentifierÍZÍg­NutritionItemÂÂLªIdentifierÍhÍl¤bindÂÂ‘U®ThisExpressionÍmÍqÂ“R§LiteralÍsÍv£é’ ¥'é’ 'Ôr`•¤type¥start£end«expressions¦quasis¯TemplateLiteralÍxÍ‘Y°MemberExpressionÍ{ÍšY°MemberExpressionÍ{Í“Y°MemberExpressionÍ{Í‰U®ThisExpressionÍ{ÍLªIdentifierÍ€Í‰©foodLabelÂÂLªIdentifierÍŠÍ“©nutritionÂÂLªIdentifierÍ”Íš¦sodiumÂÂ’Ôra•¤type¥start£end¥value¤tail¯TemplateElementÍyÍyÔrb’£raw¦cooked  Âa¯TemplateElementÍ›Íb¢mg¢mgÃT®CallExpressionÍ Í½Y°MemberExpressionÍ Í»Y°MemberExpressionÍ Í®U®ThisExpressionÍ Í¤LªIdentifierÍ¥Í®©foodLabelÂÂLªIdentifierÍ¯Í»¬isHighSodiumÂÂÂÂS³ExpressionStatementÍÑÍàT®CallExpressionÍÑÍßY°MemberExpressionÍÑÍİLªIdentifierÍÑÍÙ¨GridItemLªIdentifierÍÚÍİ£popÂÂÂ¥constS³ExpressionStatementÍşÍT®CallExpressionÍşÍLªIdentifierÍşÍ²observedDeepRenderÂM®BlockStatementÍ(Í“^³VariableDeclarationÍ7Í¯‘_²VariableDeclaratorÍ=Í®LªIdentifierÍ=ÍJ­itemCreation2O·ArrowFunctionExpressionÍMÍ®ÀÂÂÂ’LªIdentifierÍNÍT¦elmtIdLªIdentifierÍVÍe¯isInitialRenderM®BlockStatementÍjÍ®‘S³ExpressionStatementÍ}ÍŸT®CallExpressionÍ}ÍY°MemberExpressionÍ}ÍŒLªIdentifierÍ}Í…¨GridItemLªIdentifierÍ†ÍŒ¦createÂÂ’O·ArrowFunctionExpressionÍÍ–ÀÂÂÂM®BlockStatementÍ“Í–R§LiteralÍ˜ÍÂ¥falseÂ¥const^³VariableDeclarationÍ½ÍÓ‘_²VariableDeclaratorÍÃÍÒLªIdentifierÍÃÍÕ²observedDeepRenderO·ArrowFunctionExpressionÍØÍÒÀÂÂÂM®BlockStatementÍŞÍÒ“S³ExpressionStatementÍñÍ)T®CallExpressionÍñÍ(Y°MemberExpressionÍñÍU®ThisExpressionÍñÍõLªIdentifierÍöÍ¹observeComponentCreation2ÂÂ’LªIdentifierÍÍ­itemCreation2LªIdentifierÍÍ'¨GridItemÂS³ExpressionStatementÍ;Í¢T®CallExpressionÍ;Í¡T®CallExpressionÍ;ÍXY°MemberExpressionÍ;ÍRY°MemberExpressionÍ;ÍMU®ThisExpressionÍ;Í?LªIdentifierÍ@ÍM­NutritionItemÂÂLªIdentifierÍNÍR¤bindÂÂ‘U®ThisExpressionÍSÍWÂ“R§LiteralÍYÍ\£ç³–¥'ç³–'`¯TemplateLiteralÍ^Í‚‘Y°MemberExpressionÍaÍY°MemberExpressionÍaÍyY°MemberExpressionÍaÍoU®ThisExpressionÍaÍeLªIdentifierÍfÍo©foodLabelÂÂLªIdentifierÍpÍy©nutritionÂÂLªIdentifierÍzÍ¥sugarÂÂ’a¯TemplateElementÍ_Í_b  Âa¯TemplateElementÍ€Íb¡g¡gÃT®CallExpressionÍ„Í Y°MemberExpressionÍ„ÍY°MemberExpressionÍ„Í’U®ThisExpressionÍ„ÍˆLªIdentifierÍ‰Í’©foodLabelÂÂLªIdentifierÍ“Í«isHighSugarÂÂÂÂS³ExpressionStatementÍ´ÍÃT®CallExpressionÍ´ÍÂY°MemberExpressionÍ´ÍÀLªIdentifierÍ´Í¼¨GridItemLªIdentifierÍ½ÍÀ£popÂÂÂ¥constS³ExpressionStatementÍáÍöT®CallExpressionÍáÍõLªIdentifierÍáÍó²observedDeepRenderÂM®BlockStatementÍÍí“^³VariableDeclarationÍÍ’‘_²VariableDeclaratorÍ Í‘LªIdentifierÍ Í-­itemCreation2O·ArrowFunctionExpressionÍ0Í‘ÀÂÂÂ’LªIdentifierÍ1Í7¦elmtIdLªIdentifierÍ9ÍH¯isInitialRenderM®BlockStatementÍMÍ‘‘S³ExpressionStatementÍ`Í‚T®CallExpressionÍ`ÍY°MemberExpressionÍ`ÍoLªIdentifierÍ`Íh¨GridItemLªIdentifierÍiÍo¦createÂÂ’O·ArrowFunctionExpressionÍpÍyÀÂÂÂM®BlockStatementÍvÍyR§LiteralÍ{Í€Â¥falseÂ¥const^³VariableDeclarationÍ Í¿‘_²VariableDeclaratorÍ¦Í¾LªIdentifierÍ¦Í¸²observedDeepRenderO·ArrowFunctionExpressionÍ»Í¾ÀÂÂÂM®BlockStatementÍÁÍ¾“S³ExpressionStatementÍÔÍT®CallExpressionÍÔÍY°MemberExpressionÍÔÍòU®ThisExpressionÍÔÍØLªIdentifierÍÙÍò¹observeComponentCreation2ÂÂ’LªIdentifierÍóÍ ­itemCreation2LªIdentifierÍÍ
+¨GridItemÂS³ExpressionStatementÍÍT®CallExpressionÍÍT®CallExpressionÍÍ;Y°MemberExpressionÍÍ5Y°MemberExpressionÍÍ0U®ThisExpressionÍÍ"LªIdentifierÍ#Í0­NutritionItemÂÂLªIdentifierÍ1Í5¤bindÂÂ‘U®ThisExpressionÍ6Í:Â“R§LiteralÍ<Í@¦çƒ­é‡¨'çƒ­é‡'`¯TemplateLiteralÍBÍl‘Y°MemberExpressionÍEÍfY°MemberExpressionÍEÍ]Y°MemberExpressionÍEÍSU®ThisExpressionÍEÍILªIdentifierÍJÍS©foodLabelÂÂLªIdentifierÍTÍ]©nutritionÂÂLªIdentifierÍ^Íf¨caloriesÂÂ’a¯TemplateElementÍCÍCb  Âa¯TemplateElementÍgÍkb¤kcal¤kcalÃT®CallExpressionÍnÍŒY°MemberExpressionÍnÍŠY°MemberExpressionÍnÍ|U®ThisExpressionÍnÍrLªIdentifierÍsÍ|©foodLabelÂÂLªIdentifierÍ}ÍŠ­isHighCalorieÂÂÂÂS³ExpressionStatementÍ Í¯T®CallExpressionÍ Í®Y°MemberExpressionÍ Í¬LªIdentifierÍ Í¨¨GridItemLªIdentifierÍ©Í¬£popÂÂÂ¥constS³ExpressionStatementÍÍÍâT®CallExpressionÍÍÍáLªIdentifierÍÍÍß²observedDeepRenderÂM®BlockStatementÍ÷ÍÍ“^³VariableDeclarationÍÍ~‘_²VariableDeclaratorÍÍ}LªIdentifierÍÍ­itemCreation2O·ArrowFunctionExpressionÍÍ}ÀÂÂÂ’LªIdentifierÍÍ#¦elmtIdLªIdentifierÍ%Í4¯isInitialRenderM®BlockStatementÍ9Í}‘S³ExpressionStatementÍLÍnT®CallExpressionÍLÍmY°MemberExpressionÍLÍ[LªIdentifierÍLÍT¨GridItemLªIdentifierÍUÍ[¦createÂÂ’O·ArrowFunctionExpressionÍ\ÍeÀÂÂÂM®BlockStatementÍbÍeR§LiteralÍgÍlÂ¥falseÂ¥const^³VariableDeclarationÍŒÍŸ‘_²VariableDeclaratorÍ’ÍLªIdentifierÍ’Í¤²observedDeepRenderO·ArrowFunctionExpressionÍ§ÍÀÂÂÂM®BlockStatementÍ­Í“S³ExpressionStatementÍÀÍøT®CallExpressionÍÀÍ÷Y°MemberExpressionÍÀÍŞU®ThisExpressionÍÀÍÄLªIdentifierÍÅÍŞ¹observeComponentCreation2ÂÂ’LªIdentifierÍßÍì­itemCreation2LªIdentifierÍîÍö¨GridItemÂS³ExpressionStatementÍ
+ÍnT®CallExpressionÍ
+ÍmT®CallExpressionÍ
+Í'Y°MemberExpressionÍ
+Í!Y°MemberExpressionÍ
+ÍU®ThisExpressionÍ
+ÍLªIdentifierÍÍ­NutritionItemÂÂLªIdentifierÍÍ!¤bindÂÂ‘U®ThisExpressionÍ"Í&Â“R§LiteralÍ(Í,¦è„‚è‚ª¨'è„‚è‚ª'`¯TemplateLiteralÍ.ÍP‘Y°MemberExpressionÍ1ÍMY°MemberExpressionÍ1ÍIY°MemberExpressionÍ1Í?U®ThisExpressionÍ1Í5LªIdentifierÍ6Í?©foodLabelÂÂLªIdentifierÍ@ÍI©nutritionÂÂLªIdentifierÍJÍM£fatÂÂ’a¯TemplateElementÍ/Í/b  Âa¯TemplateElementÍNÍOb¡g¡gÃT®CallExpressionÍRÍlY°MemberExpressionÍRÍjY°MemberExpressionÍRÍ`U®ThisExpressionÍRÍVLªIdentifierÍWÍ`©foodLabelÂÂLªIdentifierÍaÍj©isHighFatÂÂÂÂS³ExpressionStatementÍ€ÍT®CallExpressionÍ€ÍY°MemberExpressionÍ€ÍŒLªIdentifierÍ€Íˆ¨GridItemLªIdentifierÍ‰ÍŒ£popÂÂÂ¥constS³ExpressionStatementÍ­ÍÂT®CallExpressionÍ­ÍÁLªIdentifierÍ­Í¿²observedDeepRenderÂM®BlockStatementÍ×Í¡“^³VariableDeclarationÍæÍ^‘_²VariableDeclaratorÍìÍ]LªIdentifierÍìÍù­itemCreation2O·ArrowFunctionExpressionÍüÍ]ÀÂÂÂ’LªIdentifierÍıÍ¦elmtIdLªIdentifierÍÍ¯isInitialRenderM®BlockStatementÍÍ]‘S³ExpressionStatementÍ,ÍNT®CallExpressionÍ,ÍMY°MemberExpressionÍ,Í;LªIdentifierÍ,Í4¨GridItemLªIdentifierÍ5Í;¦createÂÂ’O·ArrowFunctionExpressionÍ<ÍEÀÂÂÂM®BlockStatementÍBÍER§LiteralÍGÍLÂ¥falseÂ¥const^³VariableDeclarationÍlÍs‘_²VariableDeclaratorÍrÍrLªIdentifierÍrÍ„²observedDeepRenderO·ArrowFunctionExpressionÍ‡ÍrÀÂÂÂM®BlockStatementÍÍr“S³ExpressionStatementÍ ÍØT®CallExpressionÍ Í×Y°MemberExpressionÍ Í¾U®ThisExpressionÍ Í¤LªIdentifierÍ¥Í¾¹observeComponentCreation2ÂÂ’LªIdentifierÍ¿ÍÌ­itemCreation2LªIdentifierÍÎÍÖ¨GridItemÂS³ExpressionStatementÍêÍBT®CallExpressionÍêÍAT®CallExpressionÍêÍY°MemberExpressionÍêÍY°MemberExpressionÍêÍüU®ThisExpressionÍêÍîLªIdentifierÍïÍü­NutritionItemÂÂLªIdentifierÍıÍ¤bindÂÂ‘U®ThisExpressionÍÍÂ“R§LiteralÍÍ¦ç¢³æ°´¨'ç¢³æ°´'`¯TemplateLiteralÍÍ9‘Y°MemberExpressionÍÍ6Y°MemberExpressionÍÍ)Y°MemberExpressionÍÍU®ThisExpressionÍÍLªIdentifierÍÍ©foodLabelÂÂLªIdentifierÍ Í)©nutritionÂÂLªIdentifierÍ*Í6¬carbohydrateÂÂ’a¯TemplateElementÍÍb  Âa¯TemplateElementÍ7Í8b¡g¡gÃR§LiteralÍ;Í@Â¥falseÂS³ExpressionStatementÍTÍcT®CallExpressionÍTÍbY°MemberExpressionÍTÍ`LªIdentifierÍTÍ\¨GridItemLªIdentifierÍ]Í`£popÂÂÂ¥constS³ExpressionStatementÍÍ–T®CallExpressionÍÍ•LªIdentifierÍÍ“²observedDeepRenderÂM®BlockStatementÍ«Íq“^³VariableDeclarationÍºÍ2‘_²VariableDeclaratorÍÀÍ1LªIdentifierÍÀÍÍ­itemCreation2O·ArrowFunctionExpressionÍĞÍ1ÀÂÂÂ’LªIdentifierÍÑÍ×¦elmtIdLªIdentifierÍÙÍè¯isInitialRenderM®BlockStatementÍíÍ1‘S³ExpressionStatementÍ Í"T®CallExpressionÍ Í!Y°MemberExpressionÍ ÍLªIdentifierÍ Í¨GridItemLªIdentifierÍ	Í¦createÂÂ’O·ArrowFunctionExpressionÍÍÀÂÂÂM®BlockStatementÍÍR§LiteralÍÍ Â¥falseÂ¥const^³VariableDeclarationÍ@ÍC‘_²VariableDeclaratorÍFÍBLªIdentifierÍFÍX²observedDeepRenderO·ArrowFunctionExpressionÍ[ÍBÀÂÂÂM®BlockStatementÍaÍB“S³ExpressionStatementÍtÍ¬T®CallExpressionÍtÍ«Y°MemberExpressionÍtÍ’U®ThisExpressionÍtÍxLªIdentifierÍyÍ’¹observeComponentCreation2ÂÂ’LªIdentifierÍ“Í ­itemCreation2LªIdentifierÍ¢Íª¨GridItemÂS³ExpressionStatementÍ¾ÍT®CallExpressionÍ¾ÍT®CallExpressionÍ¾ÍÛY°MemberExpressionÍ¾ÍÕY°MemberExpressionÍ¾ÍĞU®ThisExpressionÍ¾ÍÂLªIdentifierÍÃÍĞ­NutritionItemÂÂLªIdentifierÍÑÍÕ¤bindÂÂ‘U®ThisExpressionÍÖÍÚÂ“R§LiteralÍÜÍá©è›‹ç™½è´¨«'è›‹ç™½è´¨'`¯TemplateLiteralÍãÍ	‘Y°MemberExpressionÍæÍY°MemberExpressionÍæÍşY°MemberExpressionÍæÍôU®ThisExpressionÍæÍêLªIdentifierÍëÍô©foodLabelÂÂLªIdentifierÍõÍş©nutritionÂÂLªIdentifierÍÿÍ§proteinÂÂ’a¯TemplateElementÍäÍäb  Âa¯TemplateElementÍÍb¡g¡gÃR§LiteralÍÍÂ¥falseÂS³ExpressionStatementÍ$Í3T®CallExpressionÍ$Í2Y°MemberExpressionÍ$Í0LªIdentifierÍ$Í,¨GridItemLªIdentifierÍ-Í0£popÂÂÂ¥constS³ExpressionStatementÍQÍfT®CallExpressionÍQÍeLªIdentifierÍQÍc²observedDeepRenderÂS³ExpressionStatementÍ{Í†T®CallExpressionÍ{Í…Y°MemberExpressionÍ{ÍƒLªIdentifierÍ{Í¤GridLªIdentifierÍ€Íƒ£popÂÂÂS³ExpressionStatementÍÍ)T®CallExpressionÍÍ(Y°MemberExpressionÍÍ®U®ThisExpressionÍÍ”LªIdentifierÍ•Í®¹observeComponentCreation2ÂÂ’O·ArrowFunctionExpressionÍ¯Í#ÀÂÂÂ’LªIdentifierÍ°Í¶¦elmtIdLªIdentifierÍ¸ÍÇ¯isInitialRenderM®BlockStatementÍÌÍ#’S³ExpressionStatementÍÛÍçT®CallExpressionÍÛÍæY°MemberExpressionÍÛÍäLªIdentifierÍÛÍİ¢IfLªIdentifierÍŞÍä¦createÂÂÂV«IfStatementÍ	ÍW°BinaryExpressionÍÍ2Y°MemberExpressionÍÍ.Y°MemberExpressionÍÍ'Y°MemberExpressionÍÍU®ThisExpressionÍÍLªIdentifierÍÍ©foodLabelÂÂLªIdentifierÍÍ'«ingredientsÂÂLªIdentifierÍ(Í.¦lengthÂÂ¡>R§LiteralÍ1Í2 ¡0M®BlockStatementÍ4Í¤‘S³ExpressionStatementÍGÍ•T®CallExpressionÍGÍ”Y°MemberExpressionÍGÍfU®ThisExpressionÍGÍKLªIdentifierÍLÍfºifElseBranchUpdateFunctionÂÂ’R§LiteralÍgÍh ¡0O·ArrowFunctionExpressionÍjÍ“ÀÂÂÂM®BlockStatementÍpÍ“”S³ExpressionStatementÍ‡Í¤T®CallExpressionÍ‡Í£Y°MemberExpressionÍ‡Í¥U®ThisExpressionÍ‡Í‹LªIdentifierÍŒÍ¥¹observeComponentCreation2ÂÂ’O·ArrowFunctionExpressionÍ¦ÍœÀÂÂÂ’LªIdentifierÍ§Í­¦elmtIdLªIdentifierÍ¯Í¾¯isInitialRenderM®BlockStatementÍÃÍœ”S³ExpressionStatementÍŞÍğT®CallExpressionÍŞÍïY°MemberExpressionÍŞÍéLªIdentifierÍŞÍâ¤TextLªIdentifierÍãÍé¦createÂÂ‘R§LiteralÍêÍî¦é…æ–™¨'é…æ–™'ÂS³ExpressionStatementÍ
+ÍT®CallExpressionÍ
+ÍY°MemberExpressionÍ
+ÍLªIdentifierÍ
+Í¤TextLªIdentifierÍÍ¨fontSizeÂÂ‘R§LiteralÍÍ¢13ÂS³ExpressionStatementÍ6ÍPT®CallExpressionÍ6ÍOY°MemberExpressionÍ6ÍDLªIdentifierÍ6Í:¤TextLªIdentifierÍ;ÍD©fontColorÂÂ‘R§LiteralÍEÍN§#757575©'#757575'ÂS³ExpressionStatementÍjÍ…T®CallExpressionÍjÍ„Y°MemberExpressionÍjÍuLªIdentifierÍjÍn¤TextLªIdentifierÍoÍu¦marginÂÂ‘\°ObjectExpressionÍvÍƒ‘]¨PropertyÍxÍÂÂÂLªIdentifierÍxÍ~¦bottomR§LiteralÍ€Í¡4¤initÂLªIdentifierÍÍ¢¤TextÂS³ExpressionStatementÍºÍÅT®CallExpressionÍºÍÄY°MemberExpressionÍºÍÂLªIdentifierÍºÍ¾¤TextLªIdentifierÍ¿ÍÂ£popÂÂÂS³ExpressionStatementÍÛÍ_T®CallExpressionÍÛÍ^Y°MemberExpressionÍÛÍùU®ThisExpressionÍÛÍßLªIdentifierÍàÍù¹observeComponentCreation2ÂÂ’O·ArrowFunctionExpressionÍúÍWÀÂÂÂ’LªIdentifierÍûÍ¦elmtIdLªIdentifierÍÍ¯isInitialRenderM®BlockStatementÍÍW•S³ExpressionStatementÍ2ÍdT®CallExpressionÍ2ÍcY°MemberExpressionÍ2Í=LªIdentifierÍ2Í6¤TextLªIdentifierÍ7Í=¦createÂÂ‘T®CallExpressionÍ>ÍbY°MemberExpressionÍ>Í]Y°MemberExpressionÍ>ÍXY°MemberExpressionÍ>ÍLU®ThisExpressionÍ>ÍBLªIdentifierÍCÍL©foodLabelÂÂLªIdentifierÍMÍX«ingredientsÂÂLªIdentifierÍYÍ]¤joinÂÂ‘R§LiteralÍ^Ía£ã€¥'ã€'ÂÂS³ExpressionStatementÍ~ÍT®CallExpressionÍ~ÍY°MemberExpressionÍ~Í‹LªIdentifierÍ~Í‚¤TextLªIdentifierÍƒÍ‹¨fontSizeÂÂ‘R§LiteralÍŒÍ¢12ÂS³ExpressionStatementÍªÍÄT®CallExpressionÍªÍÃY°MemberExpressionÍªÍ¸LªIdentifierÍªÍ®¤TextLªIdentifierÍ¯Í¸©fontColorÂÂ‘R§LiteralÍ¹ÍÂ§#616161©'#616161'ÂS³ExpressionStatementÍŞÍïT®CallExpressionÍŞÍîY°MemberExpressionÍŞÍëLªIdentifierÍŞÍâ¤TextLªIdentifierÍãÍë¨maxLinesÂÂ‘R§LiteralÍìÍí¡3ÂS³ExpressionStatementÍ	Í@T®CallExpressionÍ	Í?Y°MemberExpressionÍ	ÍLªIdentifierÍ	Í¤TextLªIdentifierÍÍ¬textOverflowÂÂ‘\°ObjectExpressionÍÍ>‘]¨PropertyÍÍ<ÂÂÂLªIdentifierÍÍ%¨overflowY°MemberExpressionÍ'Í<LªIdentifierÍ'Í3¬TextOverflowLªIdentifierÍ4Í<¨EllipsisÂÂ¤initÂLªIdentifierÍYÍ]¤TextÂS³ExpressionStatementÍuÍ€T®CallExpressionÍuÍY°MemberExpressionÍuÍ}LªIdentifierÍuÍy¤TextLªIdentifierÍzÍ}£popÂÂÂÂM®BlockStatementÍ·Í‘S³ExpressionStatementÍÊÍ	T®CallExpressionÍÊÍY°MemberExpressionÍÊÍéU®ThisExpressionÍÊÍÎLªIdentifierÍÏÍéºifElseBranchUpdateFunctionÂÂ’R§LiteralÍêÍë¡1O·ArrowFunctionExpressionÍíÍÀÂÂÂM®BlockStatementÍóÍÂLªIdentifierÍ%Í'¢IfÂS³ExpressionStatementÍ3Í<T®CallExpressionÍ3Í;Y°MemberExpressionÍ3Í9LªIdentifierÍ3Í5¢IfLªIdentifierÍ6Í9£popÂÂÂS³ExpressionStatementÍFÍST®CallExpressionÍFÍRY°MemberExpressionÍFÍPLªIdentifierÍFÍL¦ColumnLªIdentifierÍMÍP£popÂÂÂN°MethodDefinitionÍ`ÍÂÂLªIdentifierÍ`Ím­NutritionItem¦methodO²FunctionExpressionÍmÍÀÂÂÂ”LªIdentifierÍnÍr¤nameLªIdentifierÍtÍy¥valueLªIdentifierÍ{Í¦isHighP±AssignmentPatternÍƒÍLªIdentifierÍƒÍ‰¦parentR§LiteralÍŒÍÀ¤nullM®BlockStatementÍ’Í–S³ExpressionStatementÍÍÏT®CallExpressionÍÍÎY°MemberExpressionÍÍ»U®ThisExpressionÍÍ¡LªIdentifierÍ¢Í»¹observeComponentCreation2ÂÂ’O·ArrowFunctionExpressionÍ¼ÍÅÀÂÂÂ’LªIdentifierÍ½ÍÃ¦elmtIdLªIdentifierÍÅÍÔ¯isInitialRenderM®BlockStatementÍÙÍÅ•S³ExpressionStatementÍèÍøT®CallExpressionÍèÍ÷Y°MemberExpressionÍèÍõLªIdentifierÍèÍî¦ColumnLªIdentifierÍïÍõ¦createÂÂÂS³ExpressionStatementÍÍT®CallExpressionÍÍY°MemberExpressionÍÍLªIdentifierÍÍ¦ColumnLªIdentifierÍÍ§paddingÂÂ‘R§LiteralÍÍ¡8ÂS³ExpressionStatementÍ&Í]T®CallExpressionÍ&Í\Y°MemberExpressionÍ&Í<LªIdentifierÍ&Í,¦ColumnLªIdentifierÍ-Í<¯backgroundColorÂÂ‘VµConditionalExpressionÍ=Í[LªIdentifierÍ=ÍC¦isHighR§LiteralÍFÍO§#FFF3E0©'#FFF3E0'R§LiteralÍRÍ[§#F5F5F5©'#F5F5F5'ÂS³ExpressionStatementÍkÍ‚T®CallExpressionÍkÍY°MemberExpressionÍkÍ~LªIdentifierÍkÍq¦ColumnLªIdentifierÍrÍ~¬borderRadiusÂÂ‘R§LiteralÍÍ€¡8ÂS³ExpressionStatementÍÍºT®CallExpressionÍÍ¹Y°MemberExpressionÍÍ¡LªIdentifierÍÍ–¦ColumnLªIdentifierÍ—Í¡ªalignItemsÂÂ‘Y°MemberExpressionÍ¢Í¸LªIdentifierÍ¢Í±¯HorizontalAlignLªIdentifierÍ²Í¸¦CenterÂÂÂLªIdentifierÍÇÍÍ¦ColumnÂS³ExpressionStatementÍÙÍ‘T®CallExpressionÍÙÍY°MemberExpressionÍÙÍ÷U®ThisExpressionÍÙÍİLªIdentifierÍŞÍ÷¹observeComponentCreation2ÂÂ’O·ArrowFunctionExpressionÍøÍ‰ÀÂÂÂ’LªIdentifierÍùÍÿ¦elmtIdLªIdentifierÍÍ¯isInitialRenderM®BlockStatementÍÍ‰“S³ExpressionStatementÍ$Í6T®CallExpressionÍ$Í5Y°MemberExpressionÍ$Í/LªIdentifierÍ$Í(¤TextLªIdentifierÍ)Í/¦createÂÂ‘LªIdentifierÍ0Í4¤nameÂS³ExpressionStatementÍDÍVT®CallExpressionÍDÍUY°MemberExpressionÍDÍQLªIdentifierÍDÍH¤TextLªIdentifierÍIÍQ¨fontSizeÂÂ‘R§LiteralÍRÍT¢11ÂS³ExpressionStatementÍdÍ~T®CallExpressionÍdÍ}Y°MemberExpressionÍdÍrLªIdentifierÍdÍh¤TextLªIdentifierÍiÍr©fontColorÂÂ‘R§LiteralÍsÍ|§#9E9E9E©'#9E9E9E'ÂLªIdentifierÍ‹Í¤TextÂS³ExpressionStatementÍ›Í¦T®CallExpressionÍ›Í¥Y°MemberExpressionÍ›Í£LªIdentifierÍ›ÍŸ¤TextLªIdentifierÍ Í££popÂÂÂS³ExpressionStatementÍ°ÍÕT®CallExpressionÍ°ÍÔY°MemberExpressionÍ°ÍÎU®ThisExpressionÍ°Í´LªIdentifierÍµÍÎ¹observeComponentCreation2ÂÂ’O·ArrowFunctionExpressionÍÏÍÍÀÂÂÂ’LªIdentifierÍĞÍÖ¦elmtIdLªIdentifierÍØÍç¯isInitialRenderM®BlockStatementÍìÍÍ•S³ExpressionStatementÍûÍT®CallExpressionÍûÍY°MemberExpressionÍûÍLªIdentifierÍûÍÿ¤TextLªIdentifierÍ Í¦createÂÂ‘LªIdentifierÍÍ¥valueÂS³ExpressionStatementÍÍ.T®CallExpressionÍÍ-Y°MemberExpressionÍÍ)LªIdentifierÍÍ ¤TextLªIdentifierÍ!Í)¨fontSizeÂÂ‘R§LiteralÍ*Í,¢14ÂS³ExpressionStatementÍ<Í_T®CallExpressionÍ<Í^Y°MemberExpressionÍ<ÍKLªIdentifierÍ<Í@¤TextLªIdentifierÍAÍKªfontWeightÂÂ‘Y°MemberExpressionÍLÍ]LªIdentifierÍLÍVªFontWeightLªIdentifierÍWÍ]¦MediumÂÂÂS³ExpressionStatementÍmÍœT®CallExpressionÍmÍ›Y°MemberExpressionÍmÍ{LªIdentifierÍmÍq¤TextLªIdentifierÍrÍ{©fontColorÂÂ‘VµConditionalExpressionÍ|ÍšLªIdentifierÍ|Í‚¦isHighR§LiteralÍ…Í§#FF5722©'#FF5722'R§LiteralÍ‘Íš§#212121©'#212121'ÂS³ExpressionStatementÍªÍÂT®CallExpressionÍªÍÁY°MemberExpressionÍªÍµLªIdentifierÍªÍ®¤TextLªIdentifierÍ¯Íµ¦marginÂÂ‘\°ObjectExpressionÍ¶ÍÀ‘]¨PropertyÍ¸Í¾ÂÂÂLªIdentifierÍ¸Í»£topR§LiteralÍ½Í¾¡2¤initÂLªIdentifierÍÏÍÓ¤TextÂS³ExpressionStatementÍßÍêT®CallExpressionÍßÍéY°MemberExpressionÍßÍçLªIdentifierÍßÍã¤TextLªIdentifierÍäÍç£popÂÂÂS³ExpressionStatementÍôÍT®CallExpressionÍôÍ Y°MemberExpressionÍôÍşLªIdentifierÍôÍú¦ColumnLªIdentifierÍûÍş£popÂÂÂN°MethodDefinitionÍÍFÂÂLªIdentifierÍÍ¨rerender¦methodO²FunctionExpressionÍÍFÀÂÂÂM®BlockStatementÍÍF‘S³ExpressionStatementÍ$Í?T®CallExpressionÍ$Í>Y°MemberExpressionÍ$Í<U®ThisExpressionÍ$Í(LªIdentifierÍ)Í<³updateDirtyElementsÂÂÂÀ‘Ôrc•¤type¥start£endªspecifiers¦source±ImportDeclarationÌÌ½‘Ôrd•¤type¥start£end¨imported¥local¯ImportSpecifierÌ—Ì LªIdentifierÌ—Ì ©FoodLabelLªIdentifierÌ—Ì ©FoodLabelR§LiteralÌ¨Ì¼²../model/FoodLabel´'../model/FoodLabel'

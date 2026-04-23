@@ -107,7 +107,10 @@ export class RuleEngine {
 
   // 计算适配结论
   calculate(params: RuleEngineParams): Recommendation {
-    const { profile, healthSignal, foodLabel, dailyBudget } = params;
+    const profile = params.profile;
+    const healthSignal = params.healthSignal;
+    const foodLabel = params.foodLabel;
+    const dailyBudget = params.dailyBudget;
     const rec = new Recommendation();
     rec.memberId = profile.memberId;
     rec.foodId = foodLabel.foodId;

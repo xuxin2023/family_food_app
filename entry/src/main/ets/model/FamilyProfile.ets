@@ -20,10 +20,32 @@ export enum HealthGoal {
 }
 
 // 正餐时间
-export interface MealTimes {
-  breakfast: string;  // HH:mm
-  lunch: string;      // HH:mm
-  dinner: string;     // HH:mm
+export class MealTimes {
+  breakfast: string = '07:30';  // HH:mm
+  lunch: string = '12:00';      // HH:mm
+  dinner: string = '18:00';     // HH:mm
+}
+
+// FamilyProfile JSON 输出类
+export class FamilyProfileJson {
+  memberId: Object = '';
+  nickname: Object = '';
+  ageGroup: Object = AgeGroup.ADULT;
+  healthGoals: Object = [];
+  allergens: Object = [];
+  dailyBudget: Object = new DailyBudgetConfigJson();
+  mealTimes: Object = new MealTimes();
+  bedtime: Object = '';
+  createdAt: Object = 0;
+  updatedAt: Object = 0;
+}
+
+// DailyBudgetConfig JSON 输出类
+export class DailyBudgetConfigJson {
+  sodiumBudget: number = 0;
+  sugarBudget: number = 0;
+  calorieBudget: number = 0;
+  fatBudget: number = 0;
 }
 
 // 家庭成员画像
@@ -34,7 +56,7 @@ export class FamilyProfile {
   healthGoals: HealthGoal[] = [HealthGoal.NONE];
   allergens: string[] = [];
   dailyBudget: DailyBudgetConfig = new DailyBudgetConfig();
-  mealTimes: MealTimes = { breakfast: '07:30', lunch: '12:00', dinner: '18:00' };
+  mealTimes: MealTimes = new MealTimes();
   bedtime: string = '22:00';
   createdAt: number = 0;
   updatedAt: number = 0;
@@ -65,19 +87,19 @@ export class FamilyProfile {
   }
 
   // 序列化为JSON
-  toJson(): Record<string, Object> {
-    return {
-      memberId: this.memberId,
-      nickname: this.nickname,
-      ageGroup: this.ageGroup,
-      healthGoals: this.healthGoals,
-      allergens: this.allergens,
-      dailyBudget: this.dailyBudget.toJson(),
-      mealTimes: this.mealTimes,
-      bedtime: this.bedtime,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt
-    };
+  toJson(): FamilyProfileJson {
+    const json = new FamilyProfileJson();
+    json.memberId = this.memberId;
+    json.nickname = this.nickname;
+    json.ageGroup = this.ageGroup;
+    json.healthGoals = this.healthGoals;
+    json.allergens = this.allergens;
+    json.dailyBudget = this.dailyBudget.toJson();
+    json.mealTimes = this.mealTimes;
+    json.bedtime = this.bedtime;
+    json.createdAt = this.createdAt;
+    json.updatedAt = this.updatedAt;
+    return json;
   }
 
   // 从JSON反序列化
@@ -104,21 +126,21 @@ export class DailyBudgetConfig {
   calorieBudget: number = 2000;  // kcal
   fatBudget: number = 65;        // g
 
-  toJson(): Record<string, number> {
-    return {
-      sodiumBudget: this.sodiumBudget,
-      sugarBudget: this.sugarBudget,
-      calorieBudget: this.calorieBudget,
-      fatBudget: this.fatBudget
-    };
+  toJson(): DailyBudgetConfigJson {
+    const json = new DailyBudgetConfigJson();
+    json.sodiumBudget = this.sodiumBudget;
+    json.sugarBudget = this.sugarBudget;
+    json.calorieBudget = this.calorieBudget;
+    json.fatBudget = this.fatBudget;
+    return json;
   }
 
-  static fromJson(json: Record<string, number>): DailyBudgetConfig {
+  static fromJson(json: Record<string, Object>): DailyBudgetConfig {
     const config = new DailyBudgetConfig();
-    config.sodiumBudget = json.sodiumBudget;
-    config.sugarBudget = json.sugarBudget;
-    config.calorieBudget = json.calorieBudget;
-    config.fatBudget = json.fatBudget;
+    config.sodiumBudget = json.sodiumBudget as number;
+    config.sugarBudget = json.sugarBudget as number;
+    config.calorieBudget = json.calorieBudget as number;
+    config.fatBudget = json.fatBudget as number;
     return config;
   }
 }

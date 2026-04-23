@@ -1,0 +1,15 @@
+{
+  "src": [
+    "pages/HomePage",
+    "pages/MemberPage",
+    "pages/MemberEditPage",
+    "pages/ScanPage",
+    "pages/ReportPage",
+    "pages/SharePage",
+    "pages/HistoryPage",
+    "pages/BalancePage",
+    "pages/BasketCheckPage",
+    "pages/WeeklyReportPage",
+    "pages/SettingsPage"
+  ]
+}

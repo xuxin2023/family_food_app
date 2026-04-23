@@ -23,6 +23,17 @@ export enum RiskTag {
   TOO_MUCH_MEAT = '肉类偏多'
 }
 
+// MealBalance JSON 输出类
+export class MealBalanceJson {
+  memberId: Object = '';
+  scenario: Object = MealScenario.BBQ;
+  riskTags: Object = [];
+  nextMealAdvice: Object = '';
+  avoidStacking: Object = [];
+  hydrationReminder: Object = false;
+  memberSpecificAdvice: Object = '';
+}
+
 // 美食平衡建议
 export class MealBalance {
   memberId: string = '';
@@ -33,15 +44,15 @@ export class MealBalance {
   hydrationReminder: boolean = false;
   memberSpecificAdvice: string = '';
 
-  toJson(): Record<string, Object> {
-    return {
-      memberId: this.memberId,
-      scenario: this.scenario,
-      riskTags: this.riskTags,
-      nextMealAdvice: this.nextMealAdvice,
-      avoidStacking: this.avoidStacking,
-      hydrationReminder: this.hydrationReminder,
-      memberSpecificAdvice: this.memberSpecificAdvice
-    };
+  toJson(): MealBalanceJson {
+    const json = new MealBalanceJson();
+    json.memberId = this.memberId;
+    json.scenario = this.scenario;
+    json.riskTags = this.riskTags;
+    json.nextMealAdvice = this.nextMealAdvice;
+    json.avoidStacking = this.avoidStacking;
+    json.hydrationReminder = this.hydrationReminder;
+    json.memberSpecificAdvice = this.memberSpecificAdvice;
+    return json;
   }
 }

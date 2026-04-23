@@ -42,7 +42,7 @@ struct ReportPage {
             .fontSize(24)
             .fontColor('#1976D2')
             .onClick(() => { router.back() })
-          Text('家庭适配报告')
+          Text('\u5BB6\u5EAD\u9002\u914D\u62A5\u544A')
             .fontSize(20)
             .fontWeight(FontWeight.Bold)
             .margin({ left: 16 })
@@ -74,7 +74,7 @@ struct ReportPage {
 
         if (this.childProtection !== null && this.childProtection.hasAnyAdvice()) {
           Column() {
-            ChildProtectionCard({ protection: this.childProtection! })
+            ChildProtectionCard({ protection: this.childProtection })
           }
           .width('92%')
           .margin({ bottom: 14 })
@@ -86,7 +86,7 @@ struct ReportPage {
         .width('92%')
         .margin({ bottom: 20 })
 
-        Button('生成分享文案')
+        Button('\u751F\u6210\u5206\u4EAB\u6587\u6848')
           .width('90%')
           .height(50)
           .backgroundColor('#1976D2')
@@ -114,7 +114,7 @@ struct ReportPage {
   @Builder
   MemberSelector() {
     Column() {
-      Text('查看谁的结论')
+      Text('\u67E5\u770B\u8C01\u7684\u7ED3\u8BBA')
         .fontSize(14)
         .fontColor('#757575')
         .margin({ bottom: 8 })
@@ -143,62 +143,61 @@ struct ReportPage {
 
   @Builder
   SelectedMemberSummary() {
-    const member = this.familyMembers.find(item => item.memberId === this.selectedMemberId) || new FamilyProfile()
-    const recommendation = this.selectedRecommendation!
-
-    Column() {
-      Row() {
-        Text(`${member.nickname} 的结论`)
-          .fontSize(17)
-          .fontWeight(FontWeight.Bold)
-          .layoutWeight(1)
-        Text(recommendation.level)
-          .fontSize(12)
-          .fontColor('#FFFFFF')
-          .padding({ left: 10, right: 10, top: 4, bottom: 4 })
-          .borderRadius(12)
-          .backgroundColor(getLevelColorValue(recommendation.levelColor))
-      }
-      .width('100%')
-      .margin({ bottom: 10 })
-
-      Text(recommendation.maxAmount > 0 ? `建议上限：${recommendation.maxAmount} g` : '建议避免食用')
-        .fontSize(14)
-        .fontColor('#212121')
+    if (this.selectedRecommendation !== null) {
+      Column() {
+        Row() {
+          Text(`${this.familyMembers.find(item => item.memberId === this.selectedMemberId)?.nickname || ''} \u7684\u7ED3\u8BBA`)
+            .fontSize(17)
+            .fontWeight(FontWeight.Bold)
+            .layoutWeight(1)
+          Text(this.selectedRecommendation.level)
+            .fontSize(12)
+            .fontColor('#FFFFFF')
+            .padding({ left: 10, right: 10, top: 4, bottom: 4 })
+            .borderRadius(12)
+            .backgroundColor(getLevelColorValue(this.selectedRecommendation.levelColor))
+        }
+        .width('100%')
         .margin({ bottom: 10 })
 
-      if (recommendation.reasons.length > 0) {
-        Text('原因')
-          .fontSize(13)
-          .fontColor('#757575')
-          .margin({ bottom: 6 })
-        ForEach(recommendation.reasons, (reason: string) => {
-          Text(`• ${reason}`)
-            .fontSize(13)
-            .fontColor('#212121')
-            .margin({ bottom: 4 })
-        }, (reason: string, index: number) => `${index}`)
-      }
+        Text(this.selectedRecommendation.maxAmount > 0 ? `\u5EFA\u8BAE\u4E0A\u9650\uFF1A${this.selectedRecommendation.maxAmount} g` : '\u5EFA\u8BAE\u907F\u514D\u98DF\u7528')
+          .fontSize(14)
+          .fontColor('#212121')
+          .margin({ bottom: 10 })
 
-      if (recommendation.reminders.length > 0) {
-        Text('提醒')
-          .fontSize(13)
-          .fontColor('#757575')
-          .margin({ top: 10, bottom: 6 })
-        ForEach(recommendation.reminders, (reminder: string) => {
-          Text(`• ${reminder}`)
+        if (this.selectedRecommendation.reasons.length > 0) {
+          Text('\u539F\u56E0')
             .fontSize(13)
-            .fontColor('#616161')
-            .margin({ bottom: 4 })
-        }, (reminder: string, index: number) => `${index}`)
+            .fontColor('#757575')
+            .margin({ bottom: 6 })
+          ForEach(this.selectedRecommendation.reasons, (reason: string) => {
+            Text(`\u2022 ${reason}`)
+              .fontSize(13)
+              .fontColor('#212121')
+              .margin({ bottom: 4 })
+          }, (reason: string, index: number) => `${index}`)
+        }
+
+        if (this.selectedRecommendation.reminders.length > 0) {
+          Text('\u63D0\u9192')
+            .fontSize(13)
+            .fontColor('#757575')
+            .margin({ top: 10, bottom: 6 })
+          ForEach(this.selectedRecommendation.reminders, (reminder: string) => {
+            Text(`\u2022 ${reminder}`)
+              .fontSize(13)
+              .fontColor('#616161')
+              .margin({ bottom: 4 })
+          }, (reminder: string, index: number) => `${index}`)
+        }
       }
+      .width('92%')
+      .padding(16)
+      .backgroundColor('#FFFFFF')
+      .borderRadius(16)
+      .alignItems(HorizontalAlign.Start)
+      .margin({ bottom: 14 })
     }
-    .width('92%')
-    .padding(16)
-    .backgroundColor('#FFFFFF')
-    .borderRadius(16)
-    .alignItems(HorizontalAlign.Start)
-    .margin({ bottom: 14 })
   }
 
   private async loadReportData() {
@@ -213,7 +212,7 @@ struct ReportPage {
     if (this.foodLabel.foodId.length === 0) {
       this.foodLabel = new FoodLabel()
       this.foodLabel.foodId = 'food_missing'
-      this.foodLabel.foodName = '未找到对应 FoodLabel'
+      this.foodLabel.foodName = '\u672A\u627E\u5230\u5BF9\u5E94 FoodLabel'
     }
 
     if (this.selectedMemberId.length === 0 && this.familyMembers.length > 0) {

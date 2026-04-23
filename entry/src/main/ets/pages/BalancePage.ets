@@ -9,6 +9,13 @@ import { PositiveAdvice } from '../engine/PositiveAdviceEngine';
 import { BalanceAdviceCard } from '../components/BalanceAdviceCard';
 import { ChildProtectionCard } from '../components/ChildProtectionCard';
 
+// 美食场景选项
+class ScenarioOption {
+  emoji: string = '';
+  label: string = '';
+  value: MealScenario = MealScenario.BBQ;
+}
+
 @Entry
 @Component
 struct BalancePage {
@@ -22,18 +29,62 @@ struct BalancePage {
 
   private appState: AppState = AppState.getInstance()
 
-  private scenarios: { emoji: string; label: string; value: MealScenario }[] = [
-    { emoji: '🍖', label: '烧烤', value: MealScenario.BBQ },
-    { emoji: '🍲', label: '火锅', value: MealScenario.HOTPOT },
-    { emoji: '🍗', label: '炸鸡', value: MealScenario.FRIED_CHICKEN },
-    { emoji: '🧋', label: '奶茶', value: MealScenario.MILK_TEA },
-    { emoji: '🍰', label: '甜品', value: MealScenario.DESSERT },
-    { emoji: '🥘', label: '卤味', value: MealScenario.LUWEI },
-    { emoji: '🍜', label: '方便面', value: MealScenario.INSTANT_NOODLE },
-    { emoji: '🌙', label: '夜宵', value: MealScenario.LATE_NIGHT }
-  ]
+  private scenarios: ScenarioOption[] = []
 
-  async aboutToAppear() {
+  aboutToAppear() {
+    // 初始化场景选项
+    const bbq = new ScenarioOption();
+    bbq.emoji = '🍖';
+    bbq.label = '烧烤';
+    bbq.value = MealScenario.BBQ;
+    this.scenarios.push(bbq);
+
+    const hotpot = new ScenarioOption();
+    hotpot.emoji = '🍲';
+    hotpot.label = '火锅';
+    hotpot.value = MealScenario.HOTPOT;
+    this.scenarios.push(hotpot);
+
+    const friedChicken = new ScenarioOption();
+    friedChicken.emoji = '🍗';
+    friedChicken.label = '炸鸡';
+    friedChicken.value = MealScenario.FRIED_CHICKEN;
+    this.scenarios.push(friedChicken);
+
+    const milkTea = new ScenarioOption();
+    milkTea.emoji = '🧋';
+    milkTea.label = '奶茶';
+    milkTea.value = MealScenario.MILK_TEA;
+    this.scenarios.push(milkTea);
+
+    const dessert = new ScenarioOption();
+    dessert.emoji = '🍰';
+    dessert.label = '甜品';
+    dessert.value = MealScenario.DESSERT;
+    this.scenarios.push(dessert);
+
+    const luwei = new ScenarioOption();
+    luwei.emoji = '🥘';
+    luwei.label = '卤味';
+    luwei.value = MealScenario.LUWEI;
+    this.scenarios.push(luwei);
+
+    const instantNoodle = new ScenarioOption();
+    instantNoodle.emoji = '🍜';
+    instantNoodle.label = '方便面';
+    instantNoodle.value = MealScenario.INSTANT_NOODLE;
+    this.scenarios.push(instantNoodle);
+
+    const lateNight = new ScenarioOption();
+    lateNight.emoji = '🌙';
+    lateNight.label = '夜宵';
+    lateNight.value = MealScenario.LATE_NIGHT;
+    this.scenarios.push(lateNight);
+
+    this.loadData();
+  }
+
+  async loadData() {
     this.familyMembers = await this.appState.getAllMembers()
     if (this.familyMembers.length > 0) {
       this.selectedMemberId = this.familyMembers[0].memberId
@@ -68,7 +119,7 @@ struct BalancePage {
           .textAlign(TextAlign.Start)
 
         Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start }) {
-          ForEach(this.scenarios, (scenario: { emoji: string; label: string; value: MealScenario }) => {
+          ForEach(this.scenarios, (scenario: ScenarioOption) => {
             Column() {
               Text(scenario.emoji)
                 .fontSize(28)
@@ -91,14 +142,14 @@ struct BalancePage {
             })
             .margin({ right: 8, bottom: 10 })
             .onClick(() => { this.handleScenarioSelection(scenario.value) })
-          }, (scenario: { emoji: string; label: string; value: MealScenario }) => scenario.value)
+          }, (scenario: ScenarioOption) => scenario.value)
         }
         .width('92%')
         .margin({ bottom: 12 })
 
         if (this.balanceResult !== null) {
           Column() {
-            BalanceAdviceCard({ balance: this.balanceResult! })
+            BalanceAdviceCard({ balance: this.balanceResult })
           }
           .width('92%')
           .margin({ bottom: 12 })
@@ -106,14 +157,14 @@ struct BalancePage {
 
         if (this.childProtection !== null && this.childProtection.hasAnyAdvice()) {
           Column() {
-            ChildProtectionCard({ protection: this.childProtection! })
+            ChildProtectionCard({ protection: this.childProtection })
           }
           .width('92%')
           .margin({ bottom: 12 })
         }
 
         if (this.positiveAdvice !== null) {
-          this.PositiveAdviceCard()
+          this.PositiveAdviceCard(this.positiveAdvice)
         }
       }
       .width('100%')
@@ -206,40 +257,42 @@ struct BalancePage {
   }
 
   @Builder
-  PositiveAdviceCard() {
-    Column() {
-      Text('建议补什么')
-        .fontSize(16)
-        .fontWeight(FontWeight.Bold)
-        .fontColor('#2E7D32')
-        .margin({ bottom: 8 })
+  PositiveAdviceCard(advice: PositiveAdvice | null) {
+    if (advice !== null) {
+      Column() {
+        Text('建议补什么')
+          .fontSize(16)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#2E7D32')
+          .margin({ bottom: 8 })
 
-      ForEach(this.positiveAdvice!.whatToSupplement, (item: string) => {
-        Text(`• ${item}`)
-          .fontSize(13)
-          .fontColor('#212121')
-          .margin({ bottom: 4 })
-      }, (item: string, index: number) => `${index}`)
-
-      if (this.positiveAdvice!.howToSupplement.length > 0) {
-        Text('下一餐建议')
-          .fontSize(13)
-          .fontColor('#757575')
-          .margin({ top: 8, bottom: 6 })
-        ForEach(this.positiveAdvice!.howToSupplement, (item: string) => {
+        ForEach(advice.whatToSupplement, (item: string) => {
           Text(`• ${item}`)
             .fontSize(13)
-            .fontColor('#616161')
+            .fontColor('#212121')
             .margin({ bottom: 4 })
         }, (item: string, index: number) => `${index}`)
+
+        if (advice.howToSupplement.length > 0) {
+          Text('下一餐建议')
+            .fontSize(13)
+            .fontColor('#757575')
+            .margin({ top: 8, bottom: 6 })
+          ForEach(advice.howToSupplement, (item: string) => {
+            Text(`• ${item}`)
+              .fontSize(13)
+              .fontColor('#616161')
+              .margin({ bottom: 4 })
+          }, (item: string, index: number) => `${index}`)
+        }
       }
+      .width('92%')
+      .padding(16)
+      .backgroundColor('#FFFFFF')
+      .borderRadius(16)
+      .alignItems(HorizontalAlign.Start)
+      .margin({ bottom: 24 })
     }
-    .width('92%')
-    .padding(16)
-    .backgroundColor('#FFFFFF')
-    .borderRadius(16)
-    .alignItems(HorizontalAlign.Start)
-    .margin({ bottom: 24 })
   }
 
   private refreshBudget() {

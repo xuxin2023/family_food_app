@@ -1,0 +1,45 @@
+import type { FamilyProfile } from '../model/FamilyProfile';
+import type { HealthSignal } from '../model/HealthSignal';
+import type { FoodLabel } from '../model/FoodLabel';
+import type { DailyBudget } from '../model/DailyBudget';
+import type { Recommendation } from '../model/Recommendation';
+import { RuleEngine } from "@bundle:com.familyfood.helper/entry/ets/engine/RuleEngine";
+import type { RuleEngineParams } from "@bundle:com.familyfood.helper/entry/ets/engine/RuleEngine";
+export class RecommendationEngine {
+    private ruleEngine: RuleEngine = new RuleEngine();
+    // 计算单个成员适配结论
+    calculateForMember(profile: FamilyProfile, healthSignal: HealthSignal, foodLabel: FoodLabel, dailyBudget: DailyBudget): Recommendation {
+        const params: RuleEngineParams = {
+            profile,
+            healthSignal,
+            foodLabel,
+            dailyBudget
+        };
+        return this.ruleEngine.calculate(params);
+    }
+    // 计算家庭对比（同一食品对多成员）
+    calculateFamilyComparison(profiles: FamilyProfile[], healthSignals: HealthSignal[], foodLabel: FoodLabel, dailyBudgets: DailyBudget[]): Recommendation[] {
+        const results: Recommendation[] = [];
+        for (let i = 0; i < profiles.length; i++) {
+            const params: RuleEngineParams = {
+                profile: profiles[i],
+                healthSignal: healthSignals[i],
+                foodLabel,
+                dailyBudget: dailyBudgets[i]
+            };
+            results.push(this.ruleEngine.calculate(params));
+        }
+        return results;
+    }
+    // 生成家庭对比摘要文本
+    generateFamilySummary(recommendations: Recommendation[], profiles: FamilyProfile[]): string {
+        const lines: string[] = [];
+        for (let i = 0; i < recommendations.length; i++) {
+            const rec = recommendations[i];
+            const profile = profiles[i];
+            const amountText = rec.maxAmount > 0 ? `最多${rec.maxAmount}g` : '建议避免';
+            lines.push(`${profile.nickname}：${rec.level}，${amountText}`);
+        }
+        return lines.join('；');
+    }
+}

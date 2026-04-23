@@ -1,5 +1,14 @@
 // 儿童保护建议数据模型
 
+// ChildProtection JSON 输出类
+export class ChildProtectionJson {
+  memberId: Object = '';
+  mealProtection: Object = '';
+  bedtimeProtection: Object = '';
+  tasteProtection: Object = '';
+  counteractReminder: Object = false;
+}
+
 export class ChildProtection {
   memberId: string = '';
   mealProtection: string = '';       // 正餐保护建议
@@ -14,13 +23,13 @@ export class ChildProtection {
            this.tasteProtection.length > 0;
   }
 
-  toJson(): Record<string, Object> {
-    return {
-      memberId: this.memberId,
-      mealProtection: this.mealProtection,
-      bedtimeProtection: this.bedtimeProtection,
-      tasteProtection: this.tasteProtection,
-      counteractReminder: this.counteractReminder
-    };
+  toJson(): ChildProtectionJson {
+    const json = new ChildProtectionJson();
+    json.memberId = this.memberId;
+    json.mealProtection = this.mealProtection;
+    json.bedtimeProtection = this.bedtimeProtection;
+    json.tasteProtection = this.tasteProtection;
+    json.counteractReminder = this.counteractReminder;
+    return json;
   }
 }

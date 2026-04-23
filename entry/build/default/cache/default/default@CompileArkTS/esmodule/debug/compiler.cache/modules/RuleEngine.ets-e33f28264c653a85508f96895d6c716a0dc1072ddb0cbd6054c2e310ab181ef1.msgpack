@@ -1,0 +1,612 @@
+Ôr@Ÿªassertions¤code´customTransformCache¬dependencies¢id¤meta±moduleSideEffects¬originalCode±originalSourcemap«resolvedIds®sourcemapChainµsyntheticNamedExportsµtransformDependencies®transformFiles¨cacheAstÔrAÚ%Ìimport { Recommendation, RecommendLevel, LevelColor } from '../model/Recommendation';
+// è¿‡æ•åŸå…³é”®è¯æ˜ å°„ï¼ˆå†…ç½®é»˜è®¤ï¼Œå¯ä»JSONåŠ è½½æ‰©å±•ï¼‰
+const ALLERGEN_KEYWORDS = {
+    'åšæœ': ['èŠ±ç”Ÿ', 'æ ¸æ¡ƒ', 'æä»', 'è…°æœ', 'å¼€å¿ƒæœ', 'åšæœ', 'å·´æ—¦æœ¨', 'æ¦›å­', 'æ¾å­'],
+    'ä¹³åˆ¶å“': ['ç‰›å¥¶', 'ä¹³ç²‰', 'å¥¶ç²‰', 'å¥¶æ²¹', 'é»„æ²¹', 'èŠå£«', 'å¥¶é…ª', 'ä¹³æ¸…', 'ç‚¼ä¹³'],
+    'éº¸è´¨': ['å°éº¦', 'å¤§éº¦', 'é¢ç²‰', 'é¢ç­‹', 'éº¦éº¸'],
+    'é¸¡è›‹': ['é¸¡è›‹', 'è›‹æ¸…', 'è›‹é»„', 'è›‹ç²‰'],
+    'æµ·é²œ': ['è™¾', 'èŸ¹', 'è´', 'ç‰¡è›', 'é±¿é±¼', 'ä¸‰æ–‡é±¼', 'é‡‘æªé±¼', 'é³•é±¼'],
+    'å¤§è±†': ['å¤§è±†', 'é»„è±†', 'è±†ç²•', 'å¤§è±†è›‹ç™½', 'é…±æ²¹'],
+    'èŠéº»': ['èŠéº»', 'èŠéº»é…±'],
+    'èŠ±ç”Ÿ': ['èŠ±ç”Ÿ', 'èŠ±ç”Ÿé…±', 'èŠ±ç”Ÿæ²¹']
+};
+export class RuleEngine {
+    // æ£€æŸ¥è¿‡æ•åŸçº¢çº¿
+    checkAllergenRedline(profile, food) {
+        const hits = [];
+        const ingredientsText = food.ingredientsText().toLowerCase();
+        for (const allergen of profile.allergens) {
+            const keywords = ALLERGEN_KEYWORDS[allergen] || [allergen];
+            for (const keyword of keywords) {
+                if (ingredientsText.includes(keyword.toLowerCase())) {
+                    hits.push(allergen);
+                    break;
+                }
+            }
+        }
+        // ä¹Ÿæ£€æŸ¥é£Ÿå“è‡ªå¸¦çš„è‡´æ•åŸæç¤º
+        for (const hint of food.allergenHints) {
+            for (const allergen of profile.allergens) {
+                if (hint.includes(allergen) && !hits.includes(allergen)) {
+                    hits.push(allergen);
+                }
+            }
+        }
+        return hits;
+    }
+    // è®¡ç®—ä»Šæ—¥å¯åƒé‡
+    calculateMaxAmount(remainingBudget, nutritionPer100g) {
+        if (nutritionPer100g <= 0) {
+            return Infinity; // æ— è¯¥è¥å…»ç´ æ•°æ®ï¼Œä¸é™åˆ¶
+        }
+        return Math.max(0, (remainingBudget / nutritionPer100g) * 100);
+    }
+    // è®¡ç®—åŠ¨æ€ä¿®æ­£å› å­
+    calculateDynamicModifiers(signal) {
+        const modifiers = {
+            highCalorieFactor: 1.0,
+            highFatFactor: 1.0,
+            highSodiumFactor: 1.0,
+            highSugarFactor: 1.0,
+            sodiumBudgetFactor: 1.0
+        };
+        // æ­¥æ•°ä½/æ´»åŠ¨çƒ­é‡ä½ â†’ é«˜çƒ­é‡ã€é«˜è„‚æ›´ä¸¥æ ¼
+        if (signal.isLowActivity()) {
+            modifiers.highCalorieFactor *= 0.7;
+            modifiers.highFatFactor *= 0.7;
+        }
+        // è¿åŠ¨è¾ƒå¤š â†’ èƒ½é‡/ç¢³æ°´å¯ç•¥æ”¾å®½
+        if (signal.isHighActivity()) {
+            modifiers.highCalorieFactor *= 1.2;
+        }
+        // ç¡çœ å·® â†’ é«˜ç³–æ›´ä¸¥æ ¼
+        if (signal.isPoorSleep()) {
+            modifiers.highSugarFactor *= 0.8;
+        }
+        // ä½“é‡è¶‹åŠ¿ä¸Šå‡ â†’ é«˜çƒ­é‡é«˜è„‚æ›´ä¸¥æ ¼
+        if (signal.isWeightUp()) {
+            modifiers.highCalorieFactor *= 0.8;
+            modifiers.highFatFactor *= 0.8;
+        }
+        // æ‰‹åŠ¨è¡€å‹åé«˜ â†’ é’ é¢„ç®—ä¸‹è°ƒ
+        if (signal.isHighBp()) {
+            modifiers.sodiumBudgetFactor *= 0.8;
+        }
+        // ä»Šå¤©å·²ç»åƒè¿‡åå’¸é£Ÿç‰© â†’ é«˜é’ å†åƒæ›´ä¸¥æ ¼
+        if (signal.isHighSodiumToday()) {
+            modifiers.sodiumBudgetFactor *= 0.7;
+            modifiers.highSodiumFactor *= 0.85;
+        }
+        // ä»Šå¤©å·²ç»åƒè¿‡åç”œé£Ÿç‰© â†’ é«˜ç³–å†åƒæ›´ä¸¥æ ¼
+        if (signal.isHighSugarToday()) {
+            modifiers.highSugarFactor *= 0.75;
+        }
+        return modifiers;
+    }
+    // è®¡ç®—é€‚é…ç»“è®º
+    calculate(params) {
+        const profile = params.profile;
+        const healthSignal = params.healthSignal;
+        const foodLabel = params.foodLabel;
+        const dailyBudget = params.dailyBudget;
+        const rec = new Recommendation();
+        rec.memberId = profile.memberId;
+        rec.foodId = foodLabel.foodId;
+        rec.generatedAt = Date.now();
+        const reasons = [];
+        const reminders = [];
+        // 1. è¿‡æ•åŸçº¢çº¿æ£€æŸ¥
+        const allergenHits = this.checkAllergenRedline(profile, foodLabel);
+        if (allergenHits.length > 0) {
+            rec.level = RecommendLevel.AVOID;
+            rec.levelColor = LevelColor.RED;
+            rec.maxAmount = 0;
+            reasons.push(`å«è¿‡æ•åŸï¼š${allergenHits.join('ã€')}ï¼Œå»ºè®®é¿å…`);
+            rec.reasons = reasons;
+            rec.reminders = reminders;
+            return rec; // è¿‡æ•åŸç›´æ¥è¿”å›ï¼Œä¸å†è®¡ç®—
+        }
+        // 2. åŠ¨æ€ä¿®æ­£
+        const modifiers = this.calculateDynamicModifiers(healthSignal);
+        // 3. è®¡ç®—å„è¥å…»ç´ å¯åƒé‡
+        const adjustedSodiumRemaining = dailyBudget.sodiumRemaining * modifiers.sodiumBudgetFactor;
+        const maxBySodium = this.calculateMaxAmount(adjustedSodiumRemaining, foodLabel.nutrition.sodium);
+        const maxBySugar = this.calculateMaxAmount(dailyBudget.sugarRemaining, foodLabel.nutrition.sugar);
+        const maxByCalorie = this.calculateMaxAmount(dailyBudget.calorieRemaining, foodLabel.nutrition.calories);
+        const maxByFat = this.calculateMaxAmount(dailyBudget.fatRemaining, foodLabel.nutrition.fat);
+        // å–æœ€å°å€¼ä½œä¸ºå»ºè®®æœ€å¤§é£Ÿç”¨é‡
+        let maxAmount = Math.min(maxBySodium, maxBySugar, maxByCalorie, maxByFat);
+        if (maxAmount === Infinity) {
+            maxAmount = 100; // æ— è¥å…»æ•°æ®æ—¶é»˜è®¤100g
+        }
+        maxAmount = Math.round(maxAmount);
+        // 4. åº”ç”¨åŠ¨æ€ä¿®æ­£
+        if (foodLabel.isHighCalorie()) {
+            maxAmount *= modifiers.highCalorieFactor;
+        }
+        if (foodLabel.isHighFat()) {
+            maxAmount *= modifiers.highFatFactor;
+        }
+        if (foodLabel.isHighSodium()) {
+            maxAmount *= modifiers.highSodiumFactor;
+        }
+        if (foodLabel.isHighSugar()) {
+            maxAmount *= modifiers.highSugarFactor;
+        }
+        maxAmount = Math.round(Math.max(0, maxAmount));
+        rec.maxAmount = maxAmount;
+        // 5. ç”ŸæˆåŸå› 
+        if (profile.isControlBp() && foodLabel.isHighSodium()) {
+            reasons.push('æ§å‹æ¨¡å¼ä¸‹é’ å«é‡è¾ƒé«˜');
+            if (healthSignal.isLowActivity()) {
+                reasons.push('ä»Šæ—¥æ´»åŠ¨é‡åä½ï¼Œé’ é¢„ç®—å‰©ä½™è¾ƒå°‘');
+            }
+        }
+        if (profile.isControlSugar() && foodLabel.isHighSugar()) {
+            reasons.push('æ§ç³–æ¨¡å¼ä¸‹ç³–å«é‡è¾ƒé«˜');
+        }
+        if (healthSignal.isHighSodiumToday() && foodLabel.isHighSodium()) {
+            reasons.push('ä»Šå¤©å·²ç»åƒè¿‡åå’¸é£Ÿç‰©ï¼Œå†åƒé«˜é’ æ›´å®¹æ˜“è¶…é¢');
+        }
+        if (healthSignal.isHighSugarToday() && foodLabel.isHighSugar()) {
+            reasons.push('ä»Šå¤©å·²ç»åƒè¿‡åç”œé£Ÿç‰©ï¼Œå†åƒé«˜ç³–æ›´å®¹æ˜“è¶…é¢');
+        }
+        if (profile.isLoseFat() && foodLabel.isHighCalorie()) {
+            reasons.push('å‡è„‚æ¨¡å¼ä¸‹çƒ­é‡è¾ƒé«˜');
+            if (healthSignal.isWeightUp()) {
+                reasons.push('ä½“é‡è¶‹åŠ¿ä¸Šå‡ï¼Œå»ºè®®æ›´ä¸¥æ ¼æ§åˆ¶');
+            }
+        }
+        if (profile.isControlFat() && foodLabel.isHighFat()) {
+            reasons.push('æ§è„‚æ¨¡å¼ä¸‹è„‚è‚ªå«é‡è¾ƒé«˜');
+        }
+        if (profile.isChild()) {
+            if (foodLabel.isHighSugar()) {
+                reasons.push('å„¿ç«¥æ¨¡å¼ä¸‹ç³–å«é‡åé«˜');
+            }
+            if (foodLabel.isHighSodium()) {
+                reasons.push('å„¿ç«¥æ¨¡å¼ä¸‹é’ å«é‡åé«˜');
+            }
+        }
+        // 6. ç”Ÿæˆæé†’
+        if (healthSignal.isLowActivity() && (foodLabel.isHighCalorie() || foodLabel.isHighFat())) {
+            reminders.push('ä»Šæ—¥æ´»åŠ¨é‡åä½ï¼Œé«˜çƒ­é‡/é«˜è„‚é£Ÿå“å»ºè®®å‡å°‘');
+        }
+        if (healthSignal.isPoorSleep() && foodLabel.isHighSugar()) {
+            reminders.push('ç¡çœ è¾ƒå·®ï¼Œé«˜ç³–é£Ÿå“å¯èƒ½å½±å“ç¡çœ è´¨é‡');
+        }
+        if (healthSignal.isHighSodiumToday()) {
+            reminders.push('ä»Šå¤©ç›åˆ†å·²ç»åå¤šï¼Œåç»­å°½é‡é€‰æ‹©æ¸…æ·¡æ­é…');
+        }
+        if (healthSignal.isHighSugarToday()) {
+            reminders.push('ä»Šå¤©ç”œé£Ÿå·²ç»åå¤šï¼Œåç»­å°½é‡å‡å°‘å«ç³–é¥®æ–™å’Œç”œç‚¹');
+        }
+        if (dailyBudget.isSodiumExhausted()) {
+            reminders.push('ä»Šæ—¥é’ é¢„ç®—å·²ç”¨å®Œï¼Œå»ºè®®ä¸å†æ‘„å…¥é«˜é’ é£Ÿå“');
+        }
+        if (dailyBudget.isSugarExhausted()) {
+            reminders.push('ä»Šæ—¥ç³–é¢„ç®—å·²ç”¨å®Œï¼Œå»ºè®®ä¸å†æ‘„å…¥é«˜ç³–é£Ÿå“');
+        }
+        // 7. å››çº§æ˜ å°„
+        if (maxAmount === 0) {
+            rec.level = RecommendLevel.AVOID;
+            rec.levelColor = LevelColor.RED;
+        }
+        else if (maxAmount <= 15) {
+            rec.level = RecommendLevel.CAUTIOUS;
+            rec.levelColor = LevelColor.ORANGE;
+            reasons.length === 0 && reasons.push('ä»Šæ—¥é¢„ç®—å‰©ä½™è¾ƒå°‘ï¼Œå»ºè®®è°¨æ…');
+        }
+        else if (maxAmount <= 50) {
+            rec.level = RecommendLevel.SMALL_OK;
+            rec.levelColor = LevelColor.YELLOW;
+            reasons.length === 0 && reasons.push('å°‘é‡å¯ä»¥ï¼Œæ³¨æ„æ§åˆ¶ä»½é‡');
+        }
+        else {
+            rec.level = RecommendLevel.SUITABLE;
+            rec.levelColor = LevelColor.GREEN;
+        }
+        rec.reasons = reasons.length > 0 ? reasons : ['å½“å‰æƒ…å†µä¸‹å¯ä»¥é€‚é‡é£Ÿç”¨'];
+        rec.reminders = reminders;
+        return rec;
+    }
+    // æ‰¹é‡è®¡ç®—å®¶åº­å¯¹æ¯”
+    calculateFamily(paramsList) {
+        return paramsList.map(params => this.calculate(params));
+    }
+}
+//# sourceMappingURL=RuleEngine.js.mapÂ‘ÙRC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\Recommendation.etsÙOC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\engine\RuleEngine.etsÔrB›ªmoduleName±isLocalDependency¯isNodeEntryFile§pkgPath±belongProjectPath§pkgNameªpkgVersion±dependencyPkgInfo¯hostModulesInfo°belongModulePath¬shouldEmitJs¥entryÃÂÙ,C:\Users\A\IDEProjects\family_food_app\entryÙ&C:\Users\A\IDEProjects\family_food_app¥entry¥1.0.0Ô  ’ÔrC’²hostDependencyName®hostModuleName³./engine/RuleEngine¥entryC¬./RuleEngine¥entryÙ,C:\Users\A\IDEProjects\family_food_app\entryÃÃÚ$y// è§„åˆ™å¼•æ“ - æ ¸å¿ƒé€‚é…åˆ¤æ–­é€»è¾‘
+
+import { FamilyProfile, HealthGoal } from '../model/FamilyProfile';
+import { HealthSignal } from '../model/HealthSignal';
+import { FoodLabel } from '../model/FoodLabel';
+import { DailyBudget } from '../model/DailyBudget';
+import { Recommendation, RecommendLevel, LevelColor } from '../model/Recommendation';
+
+// è¿‡æ•åŸå…³é”®è¯æ˜ å°„ï¼ˆå†…ç½®é»˜è®¤ï¼Œå¯ä»JSONåŠ è½½æ‰©å±•ï¼‰
+const ALLERGEN_KEYWORDS: Record<string, string[]> = {
+  'åšæœ': ['èŠ±ç”Ÿ', 'æ ¸æ¡ƒ', 'æä»', 'è…°æœ', 'å¼€å¿ƒæœ', 'åšæœ', 'å·´æ—¦æœ¨', 'æ¦›å­', 'æ¾å­'],
+  'ä¹³åˆ¶å“': ['ç‰›å¥¶', 'ä¹³ç²‰', 'å¥¶ç²‰', 'å¥¶æ²¹', 'é»„æ²¹', 'èŠå£«', 'å¥¶é…ª', 'ä¹³æ¸…', 'ç‚¼ä¹³'],
+  'éº¸è´¨': ['å°éº¦', 'å¤§éº¦', 'é¢ç²‰', 'é¢ç­‹', 'éº¦éº¸'],
+  'é¸¡è›‹': ['é¸¡è›‹', 'è›‹æ¸…', 'è›‹é»„', 'è›‹ç²‰'],
+  'æµ·é²œ': ['è™¾', 'èŸ¹', 'è´', 'ç‰¡è›', 'é±¿é±¼', 'ä¸‰æ–‡é±¼', 'é‡‘æªé±¼', 'é³•é±¼'],
+  'å¤§è±†': ['å¤§è±†', 'é»„è±†', 'è±†ç²•', 'å¤§è±†è›‹ç™½', 'é…±æ²¹'],
+  'èŠéº»': ['èŠéº»', 'èŠéº»é…±'],
+  'èŠ±ç”Ÿ': ['èŠ±ç”Ÿ', 'èŠ±ç”Ÿé…±', 'èŠ±ç”Ÿæ²¹']
+};
+
+export class RuleEngine {
+  // æ£€æŸ¥è¿‡æ•åŸçº¢çº¿
+  checkAllergenRedline(profile: FamilyProfile, food: FoodLabel): string[] {
+    const hits: string[] = [];
+    const ingredientsText = food.ingredientsText().toLowerCase();
+
+    for (const allergen of profile.allergens) {
+      const keywords = ALLERGEN_KEYWORDS[allergen] || [allergen];
+      for (const keyword of keywords) {
+        if (ingredientsText.includes(keyword.toLowerCase())) {
+          hits.push(allergen);
+          break;
+        }
+      }
+    }
+
+    // ä¹Ÿæ£€æŸ¥é£Ÿå“è‡ªå¸¦çš„è‡´æ•åŸæç¤º
+    for (const hint of food.allergenHints) {
+      for (const allergen of profile.allergens) {
+        if (hint.includes(allergen) && !hits.includes(allergen)) {
+          hits.push(allergen);
+        }
+      }
+    }
+
+    return hits;
+  }
+
+  // è®¡ç®—ä»Šæ—¥å¯åƒé‡
+  calculateMaxAmount(remainingBudget: number, nutritionPer100g: number): number {
+    if (nutritionPer100g <= 0) {
+      return Infinity; // æ— è¯¥è¥å…»ç´ æ•°æ®ï¼Œä¸é™åˆ¶
+    }
+    return Math.max(0, (remainingBudget / nutritionPer100g) * 100);
+  }
+
+  // è®¡ç®—åŠ¨æ€ä¿®æ­£å› å­
+  calculateDynamicModifiers(signal: HealthSignal): DynamicModifiers {
+    const modifiers: DynamicModifiers = {
+      highCalorieFactor: 1.0,
+      highFatFactor: 1.0,
+      highSodiumFactor: 1.0,
+      highSugarFactor: 1.0,
+      sodiumBudgetFactor: 1.0
+    };
+
+    // æ­¥æ•°ä½/æ´»åŠ¨çƒ­é‡ä½ â†’ é«˜çƒ­é‡ã€é«˜è„‚æ›´ä¸¥æ ¼
+    if (signal.isLowActivity()) {
+      modifiers.highCalorieFactor *= 0.7;
+      modifiers.highFatFactor *= 0.7;
+    }
+
+    // è¿åŠ¨è¾ƒå¤š â†’ èƒ½é‡/ç¢³æ°´å¯ç•¥æ”¾å®½
+    if (signal.isHighActivity()) {
+      modifiers.highCalorieFactor *= 1.2;
+    }
+
+    // ç¡çœ å·® â†’ é«˜ç³–æ›´ä¸¥æ ¼
+    if (signal.isPoorSleep()) {
+      modifiers.highSugarFactor *= 0.8;
+    }
+
+    // ä½“é‡è¶‹åŠ¿ä¸Šå‡ â†’ é«˜çƒ­é‡é«˜è„‚æ›´ä¸¥æ ¼
+    if (signal.isWeightUp()) {
+      modifiers.highCalorieFactor *= 0.8;
+      modifiers.highFatFactor *= 0.8;
+    }
+
+    // æ‰‹åŠ¨è¡€å‹åé«˜ â†’ é’ é¢„ç®—ä¸‹è°ƒ
+    if (signal.isHighBp()) {
+      modifiers.sodiumBudgetFactor *= 0.8;
+    }
+
+    // ä»Šå¤©å·²ç»åƒè¿‡åå’¸é£Ÿç‰© â†’ é«˜é’ å†åƒæ›´ä¸¥æ ¼
+    if (signal.isHighSodiumToday()) {
+      modifiers.sodiumBudgetFactor *= 0.7;
+      modifiers.highSodiumFactor *= 0.85;
+    }
+
+    // ä»Šå¤©å·²ç»åƒè¿‡åç”œé£Ÿç‰© â†’ é«˜ç³–å†åƒæ›´ä¸¥æ ¼
+    if (signal.isHighSugarToday()) {
+      modifiers.highSugarFactor *= 0.75;
+    }
+
+    return modifiers;
+  }
+
+  // è®¡ç®—é€‚é…ç»“è®º
+  calculate(params: RuleEngineParams): Recommendation {
+    const profile = params.profile;
+    const healthSignal = params.healthSignal;
+    const foodLabel = params.foodLabel;
+    const dailyBudget = params.dailyBudget;
+    const rec = new Recommendation();
+    rec.memberId = profile.memberId;
+    rec.foodId = foodLabel.foodId;
+    rec.generatedAt = Date.now();
+
+    const reasons: string[] = [];
+    const reminders: string[] = [];
+
+    // 1. è¿‡æ•åŸçº¢çº¿æ£€æŸ¥
+    const allergenHits = this.checkAllergenRedline(profile, foodLabel);
+    if (allergenHits.length > 0) {
+      rec.level = RecommendLevel.AVOID;
+      rec.levelColor = LevelColor.RED;
+      rec.maxAmount = 0;
+      reasons.push(`å«è¿‡æ•åŸï¼š${allergenHits.join('ã€')}ï¼Œå»ºè®®é¿å…`);
+      rec.reasons = reasons;
+      rec.reminders = reminders;
+      return rec; // è¿‡æ•åŸç›´æ¥è¿”å›ï¼Œä¸å†è®¡ç®—
+    }
+
+    // 2. åŠ¨æ€ä¿®æ­£
+    const modifiers = this.calculateDynamicModifiers(healthSignal);
+
+    // 3. è®¡ç®—å„è¥å…»ç´ å¯åƒé‡
+    const adjustedSodiumRemaining = dailyBudget.sodiumRemaining * modifiers.sodiumBudgetFactor;
+    const maxBySodium = this.calculateMaxAmount(adjustedSodiumRemaining, foodLabel.nutrition.sodium);
+    const maxBySugar = this.calculateMaxAmount(dailyBudget.sugarRemaining, foodLabel.nutrition.sugar);
+    const maxByCalorie = this.calculateMaxAmount(dailyBudget.calorieRemaining, foodLabel.nutrition.calories);
+    const maxByFat = this.calculateMaxAmount(dailyBudget.fatRemaining, foodLabel.nutrition.fat);
+
+    // å–æœ€å°å€¼ä½œä¸ºå»ºè®®æœ€å¤§é£Ÿç”¨é‡
+    let maxAmount = Math.min(maxBySodium, maxBySugar, maxByCalorie, maxByFat);
+    if (maxAmount === Infinity) {
+      maxAmount = 100; // æ— è¥å…»æ•°æ®æ—¶é»˜è®¤100g
+    }
+    maxAmount = Math.round(maxAmount);
+
+    // 4. åº”ç”¨åŠ¨æ€ä¿®æ­£
+    if (foodLabel.isHighCalorie()) {
+      maxAmount *= modifiers.highCalorieFactor;
+    }
+    if (foodLabel.isHighFat()) {
+      maxAmount *= modifiers.highFatFactor;
+    }
+    if (foodLabel.isHighSodium()) {
+      maxAmount *= modifiers.highSodiumFactor;
+    }
+    if (foodLabel.isHighSugar()) {
+      maxAmount *= modifiers.highSugarFactor;
+    }
+    maxAmount = Math.round(Math.max(0, maxAmount));
+
+    rec.maxAmount = maxAmount;
+
+    // 5. ç”ŸæˆåŸå› 
+    if (profile.isControlBp() && foodLabel.isHighSodium()) {
+      reasons.push('æ§å‹æ¨¡å¼ä¸‹é’ å«é‡è¾ƒé«˜');
+      if (healthSignal.isLowActivity()) {
+        reasons.push('ä»Šæ—¥æ´»åŠ¨é‡åä½ï¼Œé’ é¢„ç®—å‰©ä½™è¾ƒå°‘');
+      }
+    }
+    if (profile.isControlSugar() && foodLabel.isHighSugar()) {
+      reasons.push('æ§ç³–æ¨¡å¼ä¸‹ç³–å«é‡è¾ƒé«˜');
+    }
+    if (healthSignal.isHighSodiumToday() && foodLabel.isHighSodium()) {
+      reasons.push('ä»Šå¤©å·²ç»åƒè¿‡åå’¸é£Ÿç‰©ï¼Œå†åƒé«˜é’ æ›´å®¹æ˜“è¶…é¢');
+    }
+    if (healthSignal.isHighSugarToday() && foodLabel.isHighSugar()) {
+      reasons.push('ä»Šå¤©å·²ç»åƒè¿‡åç”œé£Ÿç‰©ï¼Œå†åƒé«˜ç³–æ›´å®¹æ˜“è¶…é¢');
+    }
+    if (profile.isLoseFat() && foodLabel.isHighCalorie()) {
+      reasons.push('å‡è„‚æ¨¡å¼ä¸‹çƒ­é‡è¾ƒé«˜');
+      if (healthSignal.isWeightUp()) {
+        reasons.push('ä½“é‡è¶‹åŠ¿ä¸Šå‡ï¼Œå»ºè®®æ›´ä¸¥æ ¼æ§åˆ¶');
+      }
+    }
+    if (profile.isControlFat() && foodLabel.isHighFat()) {
+      reasons.push('æ§è„‚æ¨¡å¼ä¸‹è„‚è‚ªå«é‡è¾ƒé«˜');
+    }
+    if (profile.isChild()) {
+      if (foodLabel.isHighSugar()) {
+        reasons.push('å„¿ç«¥æ¨¡å¼ä¸‹ç³–å«é‡åé«˜');
+      }
+      if (foodLabel.isHighSodium()) {
+        reasons.push('å„¿ç«¥æ¨¡å¼ä¸‹é’ å«é‡åé«˜');
+      }
+    }
+
+    // 6. ç”Ÿæˆæé†’
+    if (healthSignal.isLowActivity() && (foodLabel.isHighCalorie() || foodLabel.isHighFat())) {
+      reminders.push('ä»Šæ—¥æ´»åŠ¨é‡åä½ï¼Œé«˜çƒ­é‡/é«˜è„‚é£Ÿå“å»ºè®®å‡å°‘');
+    }
+    if (healthSignal.isPoorSleep() && foodLabel.isHighSugar()) {
+      reminders.push('ç¡çœ è¾ƒå·®ï¼Œé«˜ç³–é£Ÿå“å¯èƒ½å½±å“ç¡çœ è´¨é‡');
+    }
+    if (healthSignal.isHighSodiumToday()) {
+      reminders.push('ä»Šå¤©ç›åˆ†å·²ç»åå¤šï¼Œåç»­å°½é‡é€‰æ‹©æ¸…æ·¡æ­é…');
+    }
+    if (healthSignal.isHighSugarToday()) {
+      reminders.push('ä»Šå¤©ç”œé£Ÿå·²ç»åå¤šï¼Œåç»­å°½é‡å‡å°‘å«ç³–é¥®æ–™å’Œç”œç‚¹');
+    }
+    if (dailyBudget.isSodiumExhausted()) {
+      reminders.push('ä»Šæ—¥é’ é¢„ç®—å·²ç”¨å®Œï¼Œå»ºè®®ä¸å†æ‘„å…¥é«˜é’ é£Ÿå“');
+    }
+    if (dailyBudget.isSugarExhausted()) {
+      reminders.push('ä»Šæ—¥ç³–é¢„ç®—å·²ç”¨å®Œï¼Œå»ºè®®ä¸å†æ‘„å…¥é«˜ç³–é£Ÿå“');
+    }
+
+    // 7. å››çº§æ˜ å°„
+    if (maxAmount === 0) {
+      rec.level = RecommendLevel.AVOID;
+      rec.levelColor = LevelColor.RED;
+    } else if (maxAmount <= 15) {
+      rec.level = RecommendLevel.CAUTIOUS;
+      rec.levelColor = LevelColor.ORANGE;
+      reasons.length === 0 && reasons.push('ä»Šæ—¥é¢„ç®—å‰©ä½™è¾ƒå°‘ï¼Œå»ºè®®è°¨æ…');
+    } else if (maxAmount <= 50) {
+      rec.level = RecommendLevel.SMALL_OK;
+      rec.levelColor = LevelColor.YELLOW;
+      reasons.length === 0 && reasons.push('å°‘é‡å¯ä»¥ï¼Œæ³¨æ„æ§åˆ¶ä»½é‡');
+    } else {
+      rec.level = RecommendLevel.SUITABLE;
+      rec.levelColor = LevelColor.GREEN;
+    }
+
+    rec.reasons = reasons.length > 0 ? reasons : ['å½“å‰æƒ…å†µä¸‹å¯ä»¥é€‚é‡é£Ÿç”¨'];
+    rec.reminders = reminders;
+
+    return rec;
+  }
+
+  // æ‰¹é‡è®¡ç®—å®¶åº­å¯¹æ¯”
+  calculateFamily(paramsList: RuleEngineParams[]): Recommendation[] {
+    return paramsList.map(params => this.calculate(params));
+  }
+}
+
+// è§„åˆ™å¼•æ“å‚æ•°
+export interface RuleEngineParams {
+  profile: FamilyProfile;
+  healthSignal: HealthSignal;
+  foodLabel: FoodLabel;
+  dailyBudget: DailyBudget;
+}
+
+// åŠ¨æ€ä¿®æ­£å› å­
+export interface DynamicModifiers {
+  highCalorieFactor: number;
+  highFatFactor: number;
+  highSodiumFactor: number;
+  highSugarFactor: number;
+  sodiumBudgetFactor: number;
+}
+ÀÔrD‘·../model/RecommendationÔrE—ªassertions¨external¢id¤meta±moduleSideEffectsªresolvedByµsyntheticNamedExportsAÂÙRC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\Recommendation.etsAÃªoh-resolveÂ“ÔrF–§version¤fileªsourceRoot§sources¥names¨mappings­RuleEngine.js ‘®RuleEngine.etsÜ Ùœ”   ” ”	 	” ” ”' '”) )”3 3”5 5”; ;”ÌT ÌT”ÌU ÌU’”   ” ””  	 ” 	” 	” 	4Ü ” 
+” 
+”
+ 
+” 
+	” 
+” 
+” 
+” 
+” 
+” 
+”! 
+”# 
+!”( 
+&”* 
+(”. 
+,”0 
+.”5 
+3”7 
+5”; 
+9”= 
+;”ÌA 
+?”ÌB 
+Ì@Ü ” ”	 ” 	” 
+” ” ” ” ” ” ”"  ”$ "”( &”* (”. ,”0 .”4 2”6 4”: 8”< :”Ì@ >”ÌA ?” ” ”
+ ” 	” ” ” ” ” ” ”! ”# !”' %”( &œ” ” ”
+ ” 	” ” ” ” ” ” ”! ”"  Ü ” ” ”
+ ” 	” ” ” ” ” ” ” ”  ”$ "”& $”+ )”- +”2 0”4 2”8 6”9 7” ” ”
+ ” 	” ” ” ” ” ” ”# !”% #”) '”* (˜” ” ”
+ ” 	” ” ” ” š” ” ”
+ ” 	” ” ” ” ” ” ’” ” ””   ” ” ” ’” ” –” ” ” ”  -”" /”& >–” ” 
+” ” ” ” œ” ” 
+” ”  ”$  ”% !”4 0”6 2”7 3”ÌB >”ÌD Ì@”ÌE ÌA™” ” 	” ” ” ”& "”' #”0 ,”2 .” ” ” ” ”. (”/ )”7 1”8 2”< 6”= 7”ÌE ?”ÌF Ì@”ÌG ÌA—” ” ” ” ”" ”* $”, &œ” ” ”# ”$ ”, $”- %”4 ,”5 -”Ì@ 8”ÌB :”ÌC ;”ÌE =˜” 
+” ” ” ” ”& ”' ”( ’” 
+” ‘”  	‘” !‘”	 "’” $” $™” %” %	” %” %” %” %”  %”- %)”/ %+™” &” &” &” &”# &”* &$”+ &%”4 &.”6 &0Ü ” '” '” '” '”! '”" '”* '"”+ '#”/ ''”0 '(”4 ',”5 '-”= '5”> '6”ÌF '>”ÌG '?”ÌI 'ÌA˜” (
+” (” (” (” (”& (”' (”( (‘” )	‘” *‘”	 +”” -” -” -” -’” .” .’” 0” 0–” 1” 1” 1”& 1,”( 1.”8 1ÌF–” 2” 2” 2”  2”! 2”# 2–” 3” 3” 3” 3” 3”+ 3%‘”	 4Ü ” 5” 5” 5” 5” 5” 5” 5” 5” 5”+ 5'”. 5*”> 5:”? 5;”ÌB 5>”ÌE 5ÌA”ÌF 5ÌB”ÌG 5ÌC’” 6” 6’” 8” 8”” 9” 9” 9”$ 90”” :” :
+” :” :(”” ;” ;” ;”" ;”” <” <” <” <”” =” =” =”! =”” >” >” >”  >”” ?” ?”  ?”# ?’”	 Ì@”
+ Ì@’” ÌB”  ÌB—” ÌC” ÌC” ÌC” ÌC”  ÌC”" ÌC”$ ÌC —” ÌD” ÌD” ÌD”' ÌD!”+ ÌD%”. ÌD(”/ ÌD)—” ÌE” ÌE” ÌE”# ÌE”' ÌE!”* ÌE$”+ ÌE%‘”	 ÌF’” ÌH” ÌH—” ÌI” ÌI” ÌI” ÌI”! ÌI”# ÌI”% ÌI!—” ÌJ” ÌJ” ÌJ”' ÌJ!”+ ÌJ%”. ÌJ(”/ ÌJ)‘”	 ÌK’” ÌM” ÌM—” ÌN” ÌN” ÌN” ÌN” ÌN”  ÌN”" ÌN—” ÌO” ÌO” ÌO”% ÌO”) ÌO#”, ÌO&”- ÌO'‘”	 ÌP’” ÌR” ÌR—” ÌS” ÌS” ÌS” ÌS” ÌS” ÌS”! ÌS—” ÌT” ÌT” ÌT”' ÌT!”+ ÌT%”. ÌT(”/ ÌT)—” ÌU” ÌU” ÌU”# ÌU”' ÌU!”* ÌU$”+ ÌU%‘”	 ÌV’” ÌX” ÌX—” ÌY” ÌY” ÌY” ÌY” ÌY” ÌY” ÌY—” ÌZ” ÌZ” ÌZ”( ÌZ"”, ÌZ&”/ ÌZ)”0 ÌZ*‘”	 Ì[’” Ì]” Ì]—” Ì^” Ì^” Ì^” Ì^”$ Ì^ ”& Ì^"”( Ì^$—” Ì_” Ì_” Ì_”( Ì_"”, Ì_&”/ Ì_)”0 Ì_*—” Ì`” Ì`” Ì`”& Ì` ”* Ì`$”. Ì`(”/ Ì`)‘”	 Ìa’” Ìc” Ìc—” Ìd” Ìd” Ìd” Ìd”# Ìd”% Ìd!”' Ìd#—” Ìe” Ìe” Ìe”% Ìe”) Ìe#”- Ìe'”. Ìe(‘”	 Ìf”” Ìh” Ìh” Ìh” Ìh’” Ìi” Ìi’” Ìk” Ìk”” Ìl” Ìl” Ìl” Ìl$˜” Ìm” Ìm
+” Ìm” Ìm” Ìm” Ìm”& Ìm"”' Ìm#˜” Ìn” Ìn
+” Ìn” Ìn”# Ìn”$ Ìn ”0 Ìn,”1 Ìn-˜” Ìo” Ìo
+” Ìo” Ìo”  Ìo”! Ìo”* Ìo&”+ Ìo'˜” Ìp” Ìp
+” Ìp” Ìp”" Ìp”# Ìp”. Ìp*”/ Ìp+˜” Ìq” Ìq
+” Ìq” Ìq” Ìq”& Ìq"”( Ìq$”) Ìq%™” Ìr” Ìr” Ìr” Ìr” Ìr” Ìr” Ìr”' Ìr#”( Ìr$™” Ìs” Ìs” Ìs” Ìs” Ìs” Ìs” Ìs”% Ìs!”& Ìs"š” Ìt” Ìt” Ìt” Ìt” Ìt” Ìt” Ìt”" Ìt”$ Ìt ”% Ìt!–” Ìv” Ìv
+” Ìv” Ìv” Ìv ” Ìv!–” Ìw” Ìw
+” Ìw” Ìw ” Ìw"” Ìw#’” Ìy” Ìy” Ìz” Ìz
+” Ìz” Ìz”! Ìz”" Ìz”6 Ìz2”7 Ìz3”> Ìz:”Ì@ Ìz<”ÌI ÌzÌE”ÌJ ÌzÌF”ÌK ÌzÌG˜” Ì{” Ì{” Ì{” Ì{” Ì{”" Ì{”# Ì{”% Ì{!™” Ì|” Ì|	” Ì|
+” Ì|” Ì|”& Ì| ”' Ì|!”, Ì|&”- Ì|'™” Ì}” Ì}	” Ì}
+” Ì}” Ì}”' Ì}!”( Ì}"”+ Ì}%”, Ì}&—” Ì~” Ì~	” Ì~
+” Ì~” Ì~” Ì~” Ì~Ÿ” Ì” Ì” Ì” Ì” Ì”! Ì”- Ì'”. Ì(”2 Ì,”3 Ì-”6 Ì0”7 Ì1”> Ì8”? Ì9”Ì@ Ì:—” Ì€” Ì€	” Ì€
+” Ì€” Ì€”! Ì€”" Ì€—” Ì” Ì	” Ì
+” Ì” Ì”% Ì”& Ì –” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚”' Ì‚!‘”	 Ìƒ’” Ì…” Ì…›” Ì†” Ì†
+” Ì†” Ì†” Ì†” Ì†”8 Ì†4”9 Ì†5”ÌE Ì†ÌA”ÌF Ì†ÌB”ÌG Ì†ÌC’” Ìˆ” Ìˆœ” Ì‰” Ì‰
+”% Ì‰!”( Ì‰$”3 Ì‰/”4 Ì‰0”ÌC Ì‰?”ÌF Ì‰ÌB”ÌO Ì‰ÌK”ÌP Ì‰ÌL”Ìb Ì‰Ì^”Ìc Ì‰Ì_Ü ” ÌŠ” ÌŠ
+” ÌŠ” ÌŠ”  ÌŠ”! ÌŠ”3 ÌŠ/”4 ÌŠ0”ÌK ÌŠÌG”ÌM ÌŠÌI”ÌV ÌŠÌR”ÌW ÌŠÌS”Ì` ÌŠÌ\”Ìa ÌŠÌ]”Ìg ÌŠÌc”Ìh ÌŠÌd”Ìi ÌŠÌeÜ ” Ì‹” Ì‹
+” Ì‹” Ì‹” Ì‹”  Ì‹”2 Ì‹.”3 Ì‹/”> Ì‹:”? Ì‹;”ÌM Ì‹ÌI”ÌO Ì‹ÌK”ÌX Ì‹ÌT”ÌY Ì‹ÌU”Ìb Ì‹Ì^”Ìc Ì‹Ì_”Ìh Ì‹Ìd”Ìi Ì‹Ìe”Ìj Ì‹ÌfÜ ” ÌŒ” ÌŒ
+” ÌŒ” ÌŒ”! ÌŒ”" ÌŒ”4 ÌŒ0”5 ÌŒ1”Ì@ ÌŒ<”ÌA ÌŒ=”ÌQ ÌŒÌM”ÌS ÌŒÌO”Ì\ ÌŒÌX”Ì] ÌŒÌY”Ìf ÌŒÌb”Ìg ÌŒÌc”Ìo ÌŒÌk”Ìp ÌŒÌl”Ìq ÌŒÌmÜ ” Ì” Ì
+” Ì” Ì” Ì” Ì”0 Ì,”1 Ì-”< Ì8”= Ì9”ÌI ÌÌE”ÌK ÌÌG”ÌT ÌÌP”ÌU ÌÌQ”Ì^ ÌÌZ”Ì_ ÌÌ[”Ìb ÌÌ^”Ìc ÌÌ_”Ìd ÌÌ`’” Ì” ÌÜ ” Ì” Ì” Ì” Ì” Ì” Ì”  Ì”! Ì”, Ì(”. Ì*”8 Ì4”: Ì6”ÌF ÌÌB”ÌH ÌÌD”ÌP ÌÌL”ÌQ ÌÌM”ÌR ÌÌN–” Ì‘” Ì‘” Ì‘” Ì‘”" Ì‘”$ Ì‘ —” Ì’” Ì’” Ì’” Ì’” Ì’” Ì’”, Ì’&‘”	 Ì“š” Ì”” Ì”” Ì”” Ì”” Ì”” Ì”” Ì””( Ì”$”) Ì”%”* Ì”&’” Ì–” Ì–—” Ì—” Ì—” Ì—” Ì—”# Ì—”% Ì—!”' Ì—#—” Ì˜” Ì˜” Ì˜”" Ì˜”# Ì˜”4 Ì˜.”5 Ì˜/‘”	 Ì™—” Ìš” Ìš” Ìš” Ìš” Ìš”! Ìš”# Ìš—” Ì›” Ì›” Ì›”" Ì›”# Ì›”0 Ì›*”1 Ì›+‘”	 Ìœ—” Ì” Ì” Ì” Ì”" Ì”$ Ì ”& Ì"—” Ì” Ì” Ì”" Ì”# Ì”3 Ì-”4 Ì.‘”	 ÌŸ—” Ì ” Ì ” Ì ” Ì ”! Ì ”# Ì ”% Ì !—” Ì¡” Ì¡” Ì¡”" Ì¡”# Ì¡”2 Ì¡,”3 Ì¡-‘”	 Ì¢Ü ” Ì£” Ì£” Ì£” Ì£” Ì£” Ì£” Ì£”# Ì£”$ Ì£ ”' Ì£#”( Ì£$”) Ì£%”+ Ì£'”4 Ì£0”5 Ì£1”6 Ì£2”7 Ì£3—” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥”! Ì¥”" Ì¥’” Ì§” Ì§œ” Ì¨” Ì¨” Ì¨” Ì¨” Ì¨”! Ì¨”% Ì¨!”. Ì¨*”/ Ì¨+”; Ì¨7”= Ì¨9”? Ì¨;˜” Ì©” Ì©” Ì©” Ì©” Ì©”% Ì©”& Ì© ”' Ì©!—” Ìª” Ìª
+” Ìª” Ìª”* Ìª$”, Ìª&”. Ìª(˜” Ì«” Ì«” Ì«” Ì«” Ì«”. Ì«&”/ Ì«'”0 Ì«(‘” Ì¬‘”	 Ì­œ” Ì®” Ì®” Ì®” Ì®”" Ì®”$ Ì® ”( Ì®$”1 Ì®-”2 Ì®.”= Ì®9”? Ì®;”ÌA Ì®=˜” Ì¯” Ì¯” Ì¯” Ì¯” Ì¯”% Ì¯”& Ì¯ ”' Ì¯!‘”	 Ì°œ” Ì±” Ì±” Ì±” Ì±”* Ì±&”, Ì±(”0 Ì±,”9 Ì±5”: Ì±6”ÌF Ì±ÌB”ÌH Ì±ÌD”ÌJ Ì±ÌF˜” Ì²” Ì²” Ì²” Ì²” Ì²”/ Ì²)”0 Ì²*”1 Ì²+‘”	 Ì³œ” Ì´” Ì´” Ì´” Ì´”) Ì´%”+ Ì´'”/ Ì´+”8 Ì´4”9 Ì´5”ÌD Ì´Ì@”ÌF Ì´ÌB”ÌH Ì´ÌD˜” Ìµ” Ìµ” Ìµ” Ìµ” Ìµ”/ Ìµ)”0 Ìµ*”1 Ìµ+‘”	 Ì¶œ” Ì·” Ì·” Ì·” Ì·” Ì·” Ì·”# Ì·”, Ì·(”- Ì·)”: Ì·6”< Ì·8”> Ì·:˜” Ì¸” Ì¸” Ì¸” Ì¸” Ì¸”$ Ì¸”% Ì¸”& Ì¸ —” Ì¹” Ì¹
+” Ì¹” Ì¹”' Ì¹!”) Ì¹#”+ Ì¹%˜” Ìº” Ìº” Ìº” Ìº” Ìº”- Ìº%”. Ìº&”/ Ìº'‘” Ì»‘”	 Ì¼œ” Ì½” Ì½” Ì½” Ì½”  Ì½”" Ì½”& Ì½"”/ Ì½+”0 Ì½,”9 Ì½5”; Ì½7”= Ì½9˜” Ì¾” Ì¾” Ì¾” Ì¾” Ì¾”& Ì¾ ”' Ì¾!”( Ì¾"‘”	 Ì¿—” ÌÀ” ÌÀ” ÌÀ” ÌÀ” ÌÀ” ÌÀ” ÌÀ—” ÌÁ” ÌÁ
+” ÌÁ” ÌÁ”% ÌÁ”' ÌÁ!”) ÌÁ#˜” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ”) ÌÂ!”* ÌÂ"”+ ÌÂ#‘” ÌÃ—” ÌÄ” ÌÄ
+” ÌÄ” ÌÄ”& ÌÄ ”( ÌÄ"”* ÌÄ$˜” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅ”) ÌÅ!”* ÌÅ"”+ ÌÅ#‘” ÌÆ‘”	 ÌÇ’” ÌÉ” ÌÉÜ ” ÌÊ” ÌÊ” ÌÊ” ÌÊ”& ÌÊ"”( ÌÊ$”, ÌÊ(”- ÌÊ)”6 ÌÊ2”7 ÌÊ3”ÌD ÌÊÌ@”ÌF ÌÊÌB”ÌJ ÌÊÌF”ÌS ÌÊÌO”ÌT ÌÊÌP”Ì] ÌÊÌY”Ì_ ÌÊÌ[”Ì` ÌÊÌ\”Ìb ÌÊÌ^˜” ÌË” ÌË” ÌË” ÌË” ÌË”1 ÌË+”2 ÌË,”3 ÌË-‘”	 ÌÌœ” ÌÍ” ÌÍ” ÌÍ” ÌÍ”$ ÌÍ ”& ÌÍ"”* ÌÍ&”3 ÌÍ/”4 ÌÍ0”? ÌÍ;”ÌA ÌÍ=”ÌC ÌÍ?˜” ÌÎ” ÌÎ” ÌÎ” ÌÎ” ÌÎ”. ÌÎ(”/ ÌÎ)”0 ÌÎ*‘”	 ÌÏ—” ÌĞ” ÌĞ” ÌĞ” ÌĞ”* ÌĞ&”, ÌĞ(”. ÌĞ*˜” ÌÑ” ÌÑ” ÌÑ” ÌÑ” ÌÑ”0 ÌÑ*”1 ÌÑ+”2 ÌÑ,‘”	 ÌÒ—” ÌÓ” ÌÓ” ÌÓ” ÌÓ”) ÌÓ%”+ ÌÓ'”- ÌÓ)˜” ÌÔ” ÌÔ” ÌÔ” ÌÔ” ÌÔ”3 ÌÔ-”4 ÌÔ.”5 ÌÔ/‘”	 ÌÕ—” ÌÖ” ÌÖ” ÌÖ” ÌÖ”) ÌÖ%”+ ÌÖ'”- ÌÖ)˜” Ì×” Ì×” Ì×” Ì×” Ì×”0 Ì×*”1 Ì×+”2 Ì×,‘”	 ÌØ—” ÌÙ” ÌÙ” ÌÙ” ÌÙ”( ÌÙ$”* ÌÙ&”, ÌÙ(˜” ÌÚ” ÌÚ” ÌÚ” ÌÚ” ÌÚ”0 ÌÚ*”1 ÌÚ+”2 ÌÚ,‘”	 ÌÛ’” Ìİ” Ìİ–” ÌŞ” ÌŞ” ÌŞ” ÌŞ” ÌŞ” ÌŞ™” Ìß” Ìß	” Ìß
+” Ìß” Ìß”& Ìß ”' Ìß!”, Ìß&”- Ìß'™” Ìà” Ìà	” Ìà
+” Ìà” Ìà”' Ìà!”( Ìà"”+ Ìà%”, Ìà&‘”	 Ìá–” Ìá” Ìá” Ìá” Ìá”  Ìá”" Ìá ™” Ìâ” Ìâ	” Ìâ
+” Ìâ” Ìâ”& Ìâ ”' Ìâ!”/ Ìâ)”0 Ìâ*™” Ìã” Ìã	” Ìã
+” Ìã” Ìã”' Ìã!”( Ìã"”. Ìã(”/ Ìã)” Ìä” Ìä” Ìä” Ìä” Ìä”  Ìä”$ Ìä”+ Ìä%”, Ìä&”0 Ìä*”1 Ìä+”Ì@ Ìä:”ÌA Ìä;”ÌB Ìä<‘”	 Ìå–” Ìå” Ìå” Ìå” Ìå”  Ìå”" Ìå ™” Ìæ” Ìæ	” Ìæ
+” Ìæ” Ìæ”& Ìæ ”' Ìæ!”/ Ìæ)”0 Ìæ*™” Ìç” Ìç	” Ìç
+” Ìç” Ìç”' Ìç!”( Ìç"”. Ìç(”/ Ìç)” Ìè” Ìè” Ìè” Ìè” Ìè”  Ìè”$ Ìè”+ Ìè%”, Ìè&”0 Ìè*”1 Ìè+”> Ìè8”? Ìè9”Ì@ Ìè:‘”	 Ìé‘” Ìé™” Ìê” Ìê	” Ìê
+” Ìê” Ìê”& Ìê ”' Ìê!”/ Ìê)”0 Ìê*™” Ìë” Ìë	” Ìë
+” Ìë” Ìë”' Ìë!”( Ìë"”- Ìë'”. Ìë(‘”	 ÌìÜ ” Ìî” Ìî” Ìî” Ìî” Ìî” Ìî” Ìî”$ Ìî ”' Ìî#”( Ìî$”) Ìî%”* Ìî&”+ Ìî'”2 Ìî.”3 Ìî/”4 Ìî0”5 Ìî1”6 Ìî2”ÌC Ìî?”ÌD ÌîÌ@”ÌE ÌîÌA—” Ìï” Ìï” Ìï” Ìï” Ìï”! Ìï”" Ìï”” Ìñ” Ìñ” Ìñ” Ìñ’” Ìò” Ìò’” Ìô” Ìô”” Ìõ” Ìõ” Ìõ” Ìõ0Ü ” Ìö” Ìö” Ìö” Ìö” Ìö” Ìö”$ Ìö ”% Ìö!”' Ìö#”( Ìö$”, Ìö(”- Ìö)”6 Ìö2”7 Ìö3”= Ìö9”> Ìö:”? Ìö;”Ì@ Ìö<’” Ì÷” Ì÷‘” ÌøÔrG–§version¤file§sources®sourcesContent¥names¨mappingsÀ‘À‘ÀÜ Ú‘”    ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”  	 ‘”  
+ ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”    ‘”  ! ‘”  " ‘”  # ‘”  $ ‘”  % ‘”  & ‘”  ' ‘”  ( ‘”  ) ‘”  * ‘”  + ‘”  , ‘”  - ‘”  . ‘”  / ‘”  0 ‘”  1 ‘”  2 ‘”  3 ‘”  4 ‘”  5 ‘”  6 ‘”  7 ‘”  8 ‘”  9 ‘”  : ‘”  ; ‘”  < ‘”  = ‘”  > ‘”  ? ‘”  Ì@ ‘”  ÌA ‘”  ÌB ‘”  ÌC ‘”  ÌD ‘”  ÌE ‘”  ÌF ‘”  ÌG ‘”  ÌH ‘”  ÌI ‘”  ÌJ ‘”  ÌK ‘”  ÌL ‘”  ÌM ‘”  ÌN ‘”  ÌO ‘”  ÌP ‘”  ÌQ ‘”  ÌR ‘”  ÌS ‘”  ÌT ‘”  ÌU ‘”  ÌV ‘”  ÌW ‘”  ÌX ‘”  ÌY ‘”  ÌZ ‘”  Ì[ ‘”  Ì\ ‘”  Ì] ‘”  Ì^ ‘”  Ì_ ‘”  Ì` ‘”  Ìa ‘”  Ìb ‘”  Ìc ‘”  Ìd ‘”  Ìe ‘”  Ìf ‘”  Ìg ‘”  Ìh ‘”  Ìi ‘”  Ìj ‘”  Ìk ‘”  Ìl ‘”  Ìm ‘”  Ìn ‘”  Ìo ‘”  Ìp ‘”  Ìq ‘”  Ìr ‘”  Ìs ‘”  Ìt ‘”  Ìu ‘”  Ìv ‘”  Ìw ‘”  Ìx ‘”  Ìy ‘”  Ìz ‘”  Ì{ ‘”  Ì| ‘”  Ì} ‘”  Ì~ ‘”  Ì ‘”  Ì€ ‘”  Ì ‘”  Ì‚ ‘”  Ìƒ ‘”  Ì„ ‘”  Ì… ‘”  Ì† ‘”  Ì‡ ‘”  Ìˆ ‘”  Ì‰ ‘”  ÌŠ ‘”  Ì‹ ‘”  ÌŒ ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì‘ ‘”  Ì’ ‘”  Ì“ ‘”  Ì” ‘”  Ì• ‘”  Ì– ‘”  Ì— ‘”  Ì˜ ‘”  Ì™ ‘”  Ìš ‘”  Ì› ‘”  Ìœ ‘”  Ì ‘”  Ì ‘”  ÌŸ ‘”  Ì  ‘”  Ì¡ ‘”  Ì¢ ‘”  Ì£ ‘”  Ì¤ ‘”  Ì¥ ‘”  Ì¦ ‘”  Ì§ ‘”  Ì¨ ‘”  Ì© ‘”  Ìª ‘”  Ì« ‘”  Ì¬ ‘”  Ì­ ‘”  Ì® ‘”  Ì¯ ‘”  Ì° ‘”  Ì± ‘”  Ì² ‘”  Ì³ ‘”  Ì´ ‘”  Ìµ ‘”  Ì¶ ‘”  Ì· ‘”  Ì¸ ‘”  Ì¹ ‘”  Ìº ‘”  Ì» ‘”  Ì¼ ‘”  Ì½ ‘”  Ì¾ ‘”  Ì¿ ‘”  ÌÀ ‘”  ÌÁ ‘”  ÌÂ ‘”  ÌÃ ‘”  ÌÄ ‘”  ÌÅ ‘”  ÌÆ ‘”  ÌÇ ‘”  ÌÈ ‘”  ÌÉ ‘”  ÌÊ ‘”  ÌË ‘”  ÌÌ ‘”  ÌÍ ‘”  ÌÎ ‘”  ÌÏ ‘”  ÌĞ ‘”  ÌÑ ‘”  ÌÒ ‘”  ÌÓ ‘”  ÌÔ ‘”  ÌÕ ‘”  ÌÖ ‘”  Ì× ‘”  ÌØ ‘”  ÌÙ ÔrH’§missing¦pluginÃ¦genAbcÂÔ  ÔrI”²dynamicImportCache¹exportAllDeclarationCache»exportNamedDeclarationCache«importCache‘ÔrJ–¤type¥start£end«declarationªspecifiers¦source¶ExportNamedDeclarationÍÍ €ÔrK–¤type¥start£end¢idªsuperClass¤body°ClassDeclarationÍÍ €ÔrL”¤type¥start£end¤nameªIdentifierÍÍ)ªRuleEngineÀÔrM”¤type¥start£end¤body©ClassBodyÍ*Í €•ÔrN˜¤type¥start£end¦static¨computed£key¤kind¥value°MethodDefinitionÍAÍtÂÂLªIdentifierÍAÍU´checkAllergenRedline¦methodÔrO™¤type¥start£end¢idªexpression©generator¥async¦params¤body²FunctionExpressionÍUÍtÀÂÂÂ’LªIdentifierÍVÍ]§profileLªIdentifierÍ_Íc¤foodM®BlockStatementÍeÍt•ÔrP•¤type¥start£end¬declarations¤kind³VariableDeclarationÍpÍ€‘ÔrQ•¤type¥start£end¢id¤init²VariableDeclaratorÍvÍLªIdentifierÍvÍz¤hitsÔrR”¤type¥start£end¨elements¯ArrayExpressionÍ}Í¥constP³VariableDeclarationÍŠÍÇ‘Q²VariableDeclaratorÍÍÆLªIdentifierÍÍŸ¯ingredientsTextÔrS–¤type¥start£end¦callee©arguments¨optional®CallExpressionÍ¢ÍÆÔrT—¤type¥start£end¦object¨property¨computed¨optional°MemberExpressionÍ¢ÍÄS®CallExpressionÍ¢Í¸T°MemberExpressionÍ¢Í¶LªIdentifierÍ¢Í¦¤foodLªIdentifierÍ§Í¶¯ingredientsTextÂÂÂLªIdentifierÍ¹ÍÄ«toLowerCaseÂÂÂ¥constÔrU—¤type¥start£end¥await¤left¥right¤body®ForOfStatementÍÑÍ/ÂP³VariableDeclarationÍÖÍä‘Q²VariableDeclaratorÍÜÍäLªIdentifierÍÜÍä¨allergenÀ¥constT°MemberExpressionÍèÍùLªIdentifierÍèÍï§profileLªIdentifierÍğÍù©allergensÂÂM®BlockStatementÍûÍ/’P³VariableDeclarationÍ
+ÍE‘Q²VariableDeclaratorÍÍDLªIdentifierÍÍ¨keywordsÔrV–¤type¥start£end¤left¨operator¥right±LogicalExpressionÍÍDT°MemberExpressionÍÍ6LªIdentifierÍÍ,±ALLERGEN_KEYWORDSLªIdentifierÍ-Í5¨allergenÃÂ¢||R¯ArrayExpressionÍ:ÍD‘LªIdentifierÍ;ÍC¨allergen¥constU®ForOfStatementÍSÍ$ÂP³VariableDeclarationÍXÍe‘Q²VariableDeclaratorÍ^ÍeLªIdentifierÍ^Íe§keywordÀ¥constLªIdentifierÍiÍq¨keywordsM®BlockStatementÍsÍ$‘ÔrW–¤type¥start£end¤testªconsequent©alternate«IfStatementÍ†ÍS®CallExpressionÍŠÍ¹T°MemberExpressionÍŠÍ¢LªIdentifierÍŠÍ™¯ingredientsTextLªIdentifierÍšÍ¢¨includesÂÂ‘S®CallExpressionÍ£Í¸T°MemberExpressionÍ£Í¶LªIdentifierÍ£Íª§keywordLªIdentifierÍ«Í¶«toLowerCaseÂÂÂÂM®BlockStatementÍ»Í’ÔrX”¤type¥start£endªexpression³ExpressionStatementÍÒÍæS®CallExpressionÍÒÍåT°MemberExpressionÍÒÍÛLªIdentifierÍÒÍÖ¤hitsLªIdentifierÍ×ÍÛ¤pushÂÂ‘LªIdentifierÍÜÍä¨allergenÂÔrY”¤type¥start£end¥label®BreakStatementÍüÍÀÀU®ForOfStatementÍSÍWÂP³VariableDeclarationÍXÍb‘Q²VariableDeclaratorÍ^ÍbLªIdentifierÍ^Íb¤hintÀ¥constT°MemberExpressionÍfÍxLªIdentifierÍfÍj¤foodLªIdentifierÍkÍx­allergenHintsÂÂM®BlockStatementÍzÍW‘U®ForOfStatementÍ‰ÍLÂP³VariableDeclarationÍÍœ‘Q²VariableDeclaratorÍ”ÍœLªIdentifierÍ”Íœ¨allergenÀ¥constT°MemberExpressionÍ Í±LªIdentifierÍ Í§§profileLªIdentifierÍ¨Í±©allergensÂÂM®BlockStatementÍ³ÍL‘W«IfStatementÍÆÍ=V±LogicalExpressionÍÊÍıS®CallExpressionÍÊÍáT°MemberExpressionÍÊÍ×LªIdentifierÍÊÍÎ¤hintLªIdentifierÍÏÍ×¨includesÂÂ‘LªIdentifierÍØÍà¨allergenÂ¢&&ÔrZ–¤type¥start£end¨operator¦prefix¨argument¯UnaryExpressionÍåÍı¡!ÃS®CallExpressionÍæÍıT°MemberExpressionÍæÍóLªIdentifierÍæÍê¤hitsLªIdentifierÍëÍó¨includesÂÂ‘LªIdentifierÍôÍü¨allergenÂM®BlockStatementÍÿÍ=‘X³ExpressionStatementÍÍ*S®CallExpressionÍÍ)T°MemberExpressionÍÍLªIdentifierÍÍ¤hitsLªIdentifierÍÍ¤pushÂÂ‘LªIdentifierÍ Í(¨allergenÂÀÔr[”¤type¥start£end¨argument¯ReturnStatementÍaÍmLªIdentifierÍhÍl¤hitsN°MethodDefinitionÍŠÍoÂÂLªIdentifierÍŠÍœ²calculateMaxAmount¦methodO²FunctionExpressionÍœÍoÀÂÂÂ’LªIdentifierÍÍ¬¯remainingBudgetLªIdentifierÍ®Í¾°nutritionPer100gM®BlockStatementÍÀÍo’W«IfStatementÍËÍV°BinaryExpressionÍÏÍäLªIdentifierÍÏÍß°nutritionPer100g¢<=Ôr\•¤type¥start£end¥value£raw§LiteralÍãÍä ¡0M®BlockStatementÍæÍ‘[¯ReturnStatementÍõÍLªIdentifierÍüÍ¨InfinityÀ[¯ReturnStatementÍ)ÍhS®CallExpressionÍ0ÍgT°MemberExpressionÍ0Í8LªIdentifierÍ0Í4¤MathLªIdentifierÍ5Í8£maxÂÂ’\§LiteralÍ9Í: ¡0V°BinaryExpressionÍ<ÍfV°BinaryExpressionÍ=Í_LªIdentifierÍ=ÍL¯remainingBudget¡/LªIdentifierÍOÍ_°nutritionPer100g¡*\§LiteralÍcÍfÌd£100ÂN°MethodDefinitionÍ†ÍµÂÂLªIdentifierÍ†ÍŸ¹calculateDynamicModifiers¦methodO²FunctionExpressionÍŸÍµÀÂÂÂ‘LªIdentifierÍ Í¦¦signalM®BlockStatementÍ¨Íµ™P³VariableDeclarationÍ³Í„‘Q²VariableDeclaratorÍ¹ÍƒLªIdentifierÍ¹ÍÂ©modifiersÔr]”¤type¥start£endªproperties°ObjectExpressionÍÅÍƒ•Ôr^™¤type¥start£end¦method©shorthand¨computed£key¥value¤kind¨PropertyÍÔÍêÂÂÂLªIdentifierÍÔÍå±highCalorieFactor\§LiteralÍçÍê£1.0¤init^¨PropertyÍùÍÂÂÂLªIdentifierÍùÍ­highFatFactor\§LiteralÍÍ£1.0¤init^¨PropertyÍÍ/ÂÂÂLªIdentifierÍÍ*°highSodiumFactor\§LiteralÍ,Í/£1.0¤init^¨PropertyÍ>ÍRÂÂÂLªIdentifierÍ>ÍM¯highSugarFactor\§LiteralÍOÍR£1.0¤init^¨PropertyÍaÍxÂÂÂLªIdentifierÍaÍs²sodiumBudgetFactor\§LiteralÍuÍx£1.0¤init¥constW«IfStatementÍ°Í6S®CallExpressionÍ´ÍÊT°MemberExpressionÍ´ÍÈLªIdentifierÍ´Íº¦signalLªIdentifierÍ»ÍÈ­isLowActivityÂÂÂM®BlockStatementÍÌÍ6’X³ExpressionStatementÍÛÍşÔr_–¤type¥start£end¨operator¤left¥right´AssignmentExpressionÍÛÍı¢*=T°MemberExpressionÍÛÍöLªIdentifierÍÛÍä©modifiersLªIdentifierÍåÍö±highCalorieFactorÂÂ\§LiteralÍúÍıË?æffffff£0.7X³ExpressionStatementÍÍ+_´AssignmentExpressionÍÍ*¢*=T°MemberExpressionÍÍ#LªIdentifierÍÍ©modifiersLªIdentifierÍÍ#­highFatFactorÂÂ\§LiteralÍ'Í*Ë?æffffff£0.7ÀW«IfStatementÍ]Í·S®CallExpressionÍaÍxT°MemberExpressionÍaÍvLªIdentifierÍaÍg¦signalLªIdentifierÍhÍv®isHighActivityÂÂÂM®BlockStatementÍzÍ·‘X³ExpressionStatementÍ‰Í¬_´AssignmentExpressionÍ‰Í«¢*=T°MemberExpressionÍ‰Í¤LªIdentifierÍ‰Í’©modifiersLªIdentifierÍ“Í¤±highCalorieFactorÂÂ\§LiteralÍ¨Í«Ë?ó333333£1.2ÀW«IfStatementÍÙÍ	.S®CallExpressionÍİÍñT°MemberExpressionÍİÍïLªIdentifierÍİÍã¦signalLªIdentifierÍäÍï«isPoorSleepÂÂÂM®BlockStatementÍóÍ	.‘X³ExpressionStatementÍ	Í	#_´AssignmentExpressionÍ	Í	"¢*=T°MemberExpressionÍ	Í	LªIdentifierÍ	Í	©modifiersLªIdentifierÍ	Í	¯highSugarFactorÂÂ\§LiteralÍ	Í	"Ë?é™™™™™š£0.8ÀW«IfStatementÍ	VÍ	ÙS®CallExpressionÍ	ZÍ	mT°MemberExpressionÍ	ZÍ	kLªIdentifierÍ	ZÍ	`¦signalLªIdentifierÍ	aÍ	kªisWeightUpÂÂÂM®BlockStatementÍ	oÍ	Ù’X³ExpressionStatementÍ	~Í	¡_´AssignmentExpressionÍ	~Í	 ¢*=T°MemberExpressionÍ	~Í	™LªIdentifierÍ	~Í	‡©modifiersLªIdentifierÍ	ˆÍ	™±highCalorieFactorÂÂ\§LiteralÍ	Í	 Ë?é™™™™™š£0.8X³ExpressionStatementÍ	¯Í	Î_´AssignmentExpressionÍ	¯Í	Í¢*=T°MemberExpressionÍ	¯Í	ÆLªIdentifierÍ	¯Í	¸©modifiersLªIdentifierÍ	¹Í	Æ­highFatFactorÂÂ\§LiteralÍ	ÊÍ	ÍË?é™™™™™š£0.8ÀW«IfStatementÍ	şÍ
+SS®CallExpressionÍ
+Í
+T°MemberExpressionÍ
+Í
+LªIdentifierÍ
+Í
+¦signalLªIdentifierÍ
+	Í
+¨isHighBpÂÂÂM®BlockStatementÍ
+Í
+S‘X³ExpressionStatementÍ
+$Í
+H_´AssignmentExpressionÍ
+$Í
+G¢*=T°MemberExpressionÍ
+$Í
+@LªIdentifierÍ
+$Í
+-©modifiersLªIdentifierÍ
+.Í
+@²sodiumBudgetFactorÂÂ\§LiteralÍ
+DÍ
+GË?é™™™™™š£0.8ÀW«IfStatementÍ
+~ÍS®CallExpressionÍ
+‚Í
+œT°MemberExpressionÍ
+‚Í
+šLªIdentifierÍ
+‚Í
+ˆ¦signalLªIdentifierÍ
+‰Í
+š±isHighSodiumTodayÂÂÂM®BlockStatementÍ
+Í’X³ExpressionStatementÍ
+­Í
+Ñ_´AssignmentExpressionÍ
+­Í
+Ğ¢*=T°MemberExpressionÍ
+­Í
+ÉLªIdentifierÍ
+­Í
+¶©modifiersLªIdentifierÍ
+·Í
+É²sodiumBudgetFactorÂÂ\§LiteralÍ
+ÍÍ
+ĞË?æffffff£0.7X³ExpressionStatementÍ
+ßÍ_´AssignmentExpressionÍ
+ßÍ¢*=T°MemberExpressionÍ
+ßÍ
+ùLªIdentifierÍ
+ßÍ
+è©modifiersLªIdentifierÍ
+éÍ
+ù°highSodiumFactorÂÂ\§LiteralÍ
+ıÍË?ë333333¤0.85ÀW«IfStatementÍ8Í“S®CallExpressionÍ<ÍUT°MemberExpressionÍ<ÍSLªIdentifierÍ<ÍB¦signalLªIdentifierÍCÍS°isHighSugarTodayÂÂÂM®BlockStatementÍWÍ“‘X³ExpressionStatementÍfÍˆ_´AssignmentExpressionÍfÍ‡¢*=T°MemberExpressionÍfÍLªIdentifierÍfÍo©modifiersLªIdentifierÍpÍ¯highSugarFactorÂÂ\§LiteralÍƒÍ‡Ë?è      ¤0.75À[¯ReturnStatementÍÍ®LªIdentifierÍ¤Í­©modifiersN°MethodDefinitionÍÊÍ  ÂÂLªIdentifierÍÊÍÓ©calculate¦methodO²FunctionExpressionÍÓÍ  ÀÂÂÂ‘LªIdentifierÍÔÍÚ¦paramsM®BlockStatementÍÜÍ  Ü ,P³VariableDeclarationÍçÍ‘Q²VariableDeclaratorÍíÍLªIdentifierÍíÍô§profileT°MemberExpressionÍ÷ÍLªIdentifierÍ÷Íı¦paramsLªIdentifierÍşÍ§profileÂÂ¥constP³VariableDeclarationÍÍ9‘Q²VariableDeclaratorÍÍ8LªIdentifierÍÍ"¬healthSignalT°MemberExpressionÍ%Í8LªIdentifierÍ%Í+¦paramsLªIdentifierÍ,Í8¬healthSignalÂÂ¥constP³VariableDeclarationÍCÍf‘Q²VariableDeclaratorÍIÍeLªIdentifierÍIÍR©foodLabelT°MemberExpressionÍUÍeLªIdentifierÍUÍ[¦paramsLªIdentifierÍ\Íe©foodLabelÂÂ¥constP³VariableDeclarationÍpÍ—‘Q²VariableDeclaratorÍvÍ–LªIdentifierÍvÍ«dailyBudgetT°MemberExpressionÍ„Í–LªIdentifierÍ„ÍŠ¦paramsLªIdentifierÍ‹Í–«dailyBudgetÂÂ¥constP³VariableDeclarationÍ¡ÍÂ‘Q²VariableDeclaratorÍ§ÍÁLªIdentifierÍ§Íª£recÔr`•¤type¥start£end¦callee©arguments­NewExpressionÍ­ÍÁLªIdentifierÍ±Í¿®Recommendation¥constX³ExpressionStatementÍÌÍì_´AssignmentExpressionÍÌÍë¡=T°MemberExpressionÍÌÍØLªIdentifierÍÌÍÏ£recLªIdentifierÍĞÍØ¨memberIdÂÂT°MemberExpressionÍÛÍëLªIdentifierÍÛÍâ§profileLªIdentifierÍãÍë¨memberIdÂÂX³ExpressionStatementÍöÍ_´AssignmentExpressionÍöÍ¡=T°MemberExpressionÍöÍ LªIdentifierÍöÍù£recLªIdentifierÍúÍ ¦foodIdÂÂT°MemberExpressionÍÍLªIdentifierÍÍ©foodLabelLªIdentifierÍÍ¦foodIdÂÂX³ExpressionStatementÍÍ;_´AssignmentExpressionÍÍ:¡=T°MemberExpressionÍÍ-LªIdentifierÍÍ!£recLªIdentifierÍ"Í-«generatedAtÂÂS®CallExpressionÍ0Í:T°MemberExpressionÍ0Í8LªIdentifierÍ0Í4¤DateLªIdentifierÍ5Í8£nowÂÂÂP³VariableDeclarationÍEÍX‘Q²VariableDeclaratorÍKÍWLªIdentifierÍKÍR§reasonsR¯ArrayExpressionÍUÍW¥constP³VariableDeclarationÍbÍw‘Q²VariableDeclaratorÍhÍvLªIdentifierÍhÍq©remindersR¯ArrayExpressionÍtÍv¥constP³VariableDeclarationÍ˜ÍÛ‘Q²VariableDeclaratorÍÍÚLªIdentifierÍÍª¬allergenHitsS®CallExpressionÍ­ÍÚT°MemberExpressionÍ­ÍÆÔra“¤type¥start£end®ThisExpressionÍ­Í±LªIdentifierÍ²ÍÆ´checkAllergenRedlineÂÂ’LªIdentifierÍÇÍÎ§profileLªIdentifierÍĞÍÙ©foodLabelÂ¥constW«IfStatementÍåÍBV°BinaryExpressionÍéÍ T°MemberExpressionÍéÍüLªIdentifierÍéÍõ¬allergenHitsLªIdentifierÍöÍü¦lengthÂÂ¡>\§LiteralÍÿÍ  ¡0M®BlockStatementÍÍB—X³ExpressionStatementÍÍ2_´AssignmentExpressionÍÍ1¡=T°MemberExpressionÍÍLªIdentifierÍÍ£recLªIdentifierÍÍ¥levelÂÂT°MemberExpressionÍÍ1LªIdentifierÍÍ+®RecommendLevelLªIdentifierÍ,Í1¥AVOIDÂÂX³ExpressionStatementÍ@Í`_´AssignmentExpressionÍ@Í_¡=T°MemberExpressionÍ@ÍNLªIdentifierÍ@ÍC£recLªIdentifierÍDÍNªlevelColorÂÂT°MemberExpressionÍQÍ_LªIdentifierÍQÍ[ªLevelColorLªIdentifierÍ\Í_£REDÂÂX³ExpressionStatementÍnÍ€_´AssignmentExpressionÍnÍ¡=T°MemberExpressionÍnÍ{LªIdentifierÍnÍq£recLªIdentifierÍrÍ{©maxAmountÂÂ\§LiteralÍ~Í ¡0X³ExpressionStatementÍÍÂS®CallExpressionÍÍÁT°MemberExpressionÍÍšLªIdentifierÍÍ•§reasonsLªIdentifierÍ–Íš¤pushÂÂ‘Ôrb•¤type¥start£end«expressions¦quasis¯TemplateLiteralÍ›ÍÀ‘S®CallExpressionÍ£Í¹T°MemberExpressionÍ£Í´LªIdentifierÍ£Í¯¬allergenHitsLªIdentifierÍ°Í´¤joinÂÂ‘\§LiteralÍµÍ¸£ã€¥'ã€'Â’Ôrc•¤type¥start£end¥value¤tail¯TemplateElementÍœÍ¡Ôrd’£raw¦cooked¯å«è¿‡æ•åŸï¼š¯å«è¿‡æ•åŸï¼šÂc¯TemplateElementÍºÍ¿d¯ï¼Œå»ºè®®é¿å…¯ï¼Œå»ºè®®é¿å…ÃÂX³ExpressionStatementÍĞÍæ_´AssignmentExpressionÍĞÍå¡=T°MemberExpressionÍĞÍÛLªIdentifierÍĞÍÓ£recLªIdentifierÍÔÍÛ§reasonsÂÂLªIdentifierÍŞÍå§reasonsX³ExpressionStatementÍôÍ_´AssignmentExpressionÍôÍ¡=T°MemberExpressionÍôÍLªIdentifierÍôÍ÷£recLªIdentifierÍøÍ©remindersÂÂLªIdentifierÍÍ©reminders[¯ReturnStatementÍÍ'LªIdentifierÍ#Í&£recÀP³VariableDeclarationÍ`ÍŸ‘Q²VariableDeclaratorÍfÍLªIdentifierÍfÍo©modifiersS®CallExpressionÍrÍT°MemberExpressionÍrÍa®ThisExpressionÍrÍvLªIdentifierÍwÍ¹calculateDynamicModifiersÂÂ‘LªIdentifierÍ‘Í¬healthSignalÂ¥constP³VariableDeclarationÍÂÍ‘Q²VariableDeclaratorÍÈÍLªIdentifierÍÈÍß·adjustedSodiumRemainingV°BinaryExpressionÍâÍT°MemberExpressionÍâÍıLªIdentifierÍâÍí«dailyBudgetLªIdentifierÍîÍı¯sodiumRemainingÂÂ¡*T°MemberExpressionÍ ÍLªIdentifierÍ Í	©modifiersLªIdentifierÍ
+Í²sodiumBudgetFactorÂÂ¥constP³VariableDeclarationÍ'Íˆ‘Q²VariableDeclaratorÍ-Í‡LªIdentifierÍ-Í8«maxBySodiumS®CallExpressionÍ;Í‡T°MemberExpressionÍ;ÍRa®ThisExpressionÍ;Í?LªIdentifierÍ@ÍR²calculateMaxAmountÂÂ’LªIdentifierÍSÍj·adjustedSodiumRemainingT°MemberExpressionÍlÍ†T°MemberExpressionÍlÍLªIdentifierÍlÍu©foodLabelLªIdentifierÍvÍ©nutritionÂÂLªIdentifierÍ€Í†¦sodiumÂÂÂ¥constP³VariableDeclarationÍ’Íô‘Q²VariableDeclaratorÍ˜ÍóLªIdentifierÍ˜Í¢ªmaxBySugarS®CallExpressionÍ¥ÍóT°MemberExpressionÍ¥Í¼a®ThisExpressionÍ¥Í©LªIdentifierÍªÍ¼²calculateMaxAmountÂÂ’T°MemberExpressionÍ½Í×LªIdentifierÍ½ÍÈ«dailyBudgetLªIdentifierÍÉÍ×®sugarRemainingÂÂT°MemberExpressionÍÙÍòT°MemberExpressionÍÙÍìLªIdentifierÍÙÍâ©foodLabelLªIdentifierÍãÍì©nutritionÂÂLªIdentifierÍíÍò¥sugarÂÂÂ¥constP³VariableDeclarationÍşÍg‘Q²VariableDeclaratorÍÍfLªIdentifierÍÍ¬maxByCalorieS®CallExpressionÍÍfT°MemberExpressionÍÍ*a®ThisExpressionÍÍLªIdentifierÍÍ*²calculateMaxAmountÂÂ’T°MemberExpressionÍ+ÍGLªIdentifierÍ+Í6«dailyBudgetLªIdentifierÍ7ÍG°calorieRemainingÂÂT°MemberExpressionÍIÍeT°MemberExpressionÍIÍ\LªIdentifierÍIÍR©foodLabelLªIdentifierÍSÍ\©nutritionÂÂLªIdentifierÍ]Íe¨caloriesÂÂÂ¥constP³VariableDeclarationÍqÍÍ‘Q²VariableDeclaratorÍwÍÌLªIdentifierÍwÍ¨maxByFatS®CallExpressionÍ‚ÍÌT°MemberExpressionÍ‚Í™a®ThisExpressionÍ‚Í†LªIdentifierÍ‡Í™²calculateMaxAmountÂÂ’T°MemberExpressionÍšÍ²LªIdentifierÍšÍ¥«dailyBudgetLªIdentifierÍ¦Í²¬fatRemainingÂÂT°MemberExpressionÍ´ÍËT°MemberExpressionÍ´ÍÇLªIdentifierÍ´Í½©foodLabelLªIdentifierÍ¾ÍÇ©nutritionÂÂLªIdentifierÍÈÍË£fatÂÂÂ¥constP³VariableDeclarationÍñÍ;‘Q²VariableDeclaratorÍõÍ:LªIdentifierÍõÍş©maxAmountS®CallExpressionÍÍ:T°MemberExpressionÍÍ	LªIdentifierÍÍ¤MathLªIdentifierÍÍ	£minÂÂ”LªIdentifierÍ
+Í«maxBySodiumLªIdentifierÍÍ!ªmaxBySugarLªIdentifierÍ#Í/¬maxByCalorieLªIdentifierÍ1Í9¨maxByFatÂ£letW«IfStatementÍEÍ›V°BinaryExpressionÍIÍ_LªIdentifierÍIÍR©maxAmount£===LªIdentifierÍWÍ_¨InfinityM®BlockStatementÍaÍ›‘X³ExpressionStatementÍpÍ€_´AssignmentExpressionÍpÍ¡=LªIdentifierÍpÍy©maxAmount\§LiteralÍ|ÍÌd£100ÀX³ExpressionStatementÍ¥ÍÇ_´AssignmentExpressionÍ¥ÍÆ¡=LªIdentifierÍ¥Í®©maxAmountS®CallExpressionÍ±ÍÆT°MemberExpressionÍ±Í»LªIdentifierÍ±Íµ¤MathLªIdentifierÍ¶Í»¥roundÂÂ‘LªIdentifierÍ¼ÍÅ©maxAmountÂW«IfStatementÍçÍIS®CallExpressionÍëÍT°MemberExpressionÍëÍLªIdentifierÍëÍô©foodLabelLªIdentifierÍõÍ­isHighCalorieÂÂÂM®BlockStatementÍÍI‘X³ExpressionStatementÍÍ>_´AssignmentExpressionÍÍ=¢*=LªIdentifierÍÍ©maxAmountT°MemberExpressionÍ"Í=LªIdentifierÍ"Í+©modifiersLªIdentifierÍ,Í=±highCalorieFactorÂÂÀW«IfStatementÍSÍ­S®CallExpressionÍWÍlT°MemberExpressionÍWÍjLªIdentifierÍWÍ`©foodLabelLªIdentifierÍaÍj©isHighFatÂÂÂM®BlockStatementÍnÍ­‘X³ExpressionStatementÍ}Í¢_´AssignmentExpressionÍ}Í¡¢*=LªIdentifierÍ}Í†©maxAmountT°MemberExpressionÍŠÍ¡LªIdentifierÍŠÍ“©modifiersLªIdentifierÍ”Í¡­highFatFactorÂÂÀW«IfStatementÍ·ÍS®CallExpressionÍ»ÍÓT°MemberExpressionÍ»ÍÑLªIdentifierÍ»ÍÄ©foodLabelLªIdentifierÍÅÍÑ¬isHighSodiumÂÂÂM®BlockStatementÍÕÍ‘X³ExpressionStatementÍäÍ_´AssignmentExpressionÍäÍ¢*=LªIdentifierÍäÍí©maxAmountT°MemberExpressionÍñÍLªIdentifierÍñÍú©modifiersLªIdentifierÍûÍ°highSodiumFactorÂÂÀW«IfStatementÍ!ÍS®CallExpressionÍ%Í<T°MemberExpressionÍ%Í:LªIdentifierÍ%Í.©foodLabelLªIdentifierÍ/Í:«isHighSugarÂÂÂM®BlockStatementÍ>Í‘X³ExpressionStatementÍMÍt_´AssignmentExpressionÍMÍs¢*=LªIdentifierÍMÍV©maxAmountT°MemberExpressionÍZÍsLªIdentifierÍZÍc©modifiersLªIdentifierÍdÍs¯highSugarFactorÂÂÀX³ExpressionStatementÍ‰Í¸_´AssignmentExpressionÍ‰Í·¡=LªIdentifierÍ‰Í’©maxAmountS®CallExpressionÍ•Í·T°MemberExpressionÍ•ÍŸLªIdentifierÍ•Í™¤MathLªIdentifierÍšÍŸ¥roundÂÂ‘S®CallExpressionÍ Í¶T°MemberExpressionÍ Í¨LªIdentifierÍ Í¤¤MathLªIdentifierÍ¥Í¨£maxÂÂ’\§LiteralÍ©Íª ¡0LªIdentifierÍ¬Íµ©maxAmountÂÂX³ExpressionStatementÍÂÍÜ_´AssignmentExpressionÍÂÍÛ¡=T°MemberExpressionÍÂÍÏLªIdentifierÍÂÍÅ£recLªIdentifierÍÆÍÏ©maxAmountÂÂLªIdentifierÍÒÍÛ©maxAmountW«IfStatementÍúÍØV±LogicalExpressionÍşÍ/S®CallExpressionÍşÍT°MemberExpressionÍşÍLªIdentifierÍşÍ§profileLªIdentifierÍÍ«isControlBpÂÂÂ¢&&S®CallExpressionÍÍ/T°MemberExpressionÍÍ-LªIdentifierÍÍ ©foodLabelLªIdentifierÍ!Í-¬isHighSodiumÂÂÂM®BlockStatementÍ1ÍØ’X³ExpressionStatementÍ@Í[S®CallExpressionÍ@ÍZT°MemberExpressionÍ@ÍLLªIdentifierÍ@ÍG§reasonsLªIdentifierÍHÍL¤pushÂÂ‘\§LiteralÍMÍY¾æ§å‹æ¨¡å¼ä¸‹é’ å«é‡è¾ƒé«˜Ù 'æ§å‹æ¨¡å¼ä¸‹é’ å«é‡è¾ƒé«˜'ÂW«IfStatementÍiÍÍS®CallExpressionÍmÍ‰T°MemberExpressionÍmÍ‡LªIdentifierÍmÍy¬healthSignalLªIdentifierÍzÍ‡­isLowActivityÂÂÂM®BlockStatementÍ‹ÍÍ‘X³ExpressionStatementÍÍ¾S®CallExpressionÍÍ½T°MemberExpressionÍÍªLªIdentifierÍÍ¥§reasonsLªIdentifierÍ¦Íª¤pushÂÂ‘\§LiteralÍ«Í¼Ù-ä»Šæ—¥æ´»åŠ¨é‡åä½ï¼Œé’ é¢„ç®—å‰©ä½™è¾ƒå°‘Ù/'ä»Šæ—¥æ´»åŠ¨é‡åä½ï¼Œé’ é¢„ç®—å‰©ä½™è¾ƒå°‘'ÂÀÀW«IfStatementÍâÍPV±LogicalExpressionÍæÍS®CallExpressionÍæÍşT°MemberExpressionÍæÍüLªIdentifierÍæÍí§profileLªIdentifierÍîÍü®isControlSugarÂÂÂ¢&&S®CallExpressionÍÍT°MemberExpressionÍÍLªIdentifierÍÍ©foodLabelLªIdentifierÍÍ«isHighSugarÂÂÂM®BlockStatementÍÍP‘X³ExpressionStatementÍ*ÍES®CallExpressionÍ*ÍDT°MemberExpressionÍ*Í6LªIdentifierÍ*Í1§reasonsLªIdentifierÍ2Í6¤pushÂÂ‘\§LiteralÍ7ÍC¾æ§ç³–æ¨¡å¼ä¸‹ç³–å«é‡è¾ƒé«˜Ù 'æ§ç³–æ¨¡å¼ä¸‹ç³–å«é‡è¾ƒé«˜'ÂÀW«IfStatementÍZÍÛV±LogicalExpressionÍ^ÍšS®CallExpressionÍ^Í~T°MemberExpressionÍ^Í|LªIdentifierÍ^Íj¬healthSignalLªIdentifierÍkÍ|±isHighSodiumTodayÂÂÂ¢&&S®CallExpressionÍ‚ÍšT°MemberExpressionÍ‚Í˜LªIdentifierÍ‚Í‹©foodLabelLªIdentifierÍŒÍ˜¬isHighSodiumÂÂÂM®BlockStatementÍœÍÛ‘X³ExpressionStatementÍ«ÍĞS®CallExpressionÍ«ÍÏT°MemberExpressionÍ«Í·LªIdentifierÍ«Í²§reasonsLªIdentifierÍ³Í·¤pushÂÂ‘\§LiteralÍ¸ÍÎÙ<ä»Šå¤©å·²ç»åƒè¿‡åå’¸é£Ÿç‰©ï¼Œå†åƒé«˜é’ æ›´å®¹æ˜“è¶…é¢Ù>'ä»Šå¤©å·²ç»åƒè¿‡åå’¸é£Ÿç‰©ï¼Œå†åƒé«˜é’ æ›´å®¹æ˜“è¶…é¢'ÂÀW«IfStatementÍåÍdV±LogicalExpressionÍéÍ#S®CallExpressionÍéÍT°MemberExpressionÍéÍLªIdentifierÍéÍõ¬healthSignalLªIdentifierÍöÍ°isHighSugarTodayÂÂÂ¢&&S®CallExpressionÍÍ#T°MemberExpressionÍÍ!LªIdentifierÍÍ©foodLabelLªIdentifierÍÍ!«isHighSugarÂÂÂM®BlockStatementÍ%Íd‘X³ExpressionStatementÍ4ÍYS®CallExpressionÍ4ÍXT°MemberExpressionÍ4Í@LªIdentifierÍ4Í;§reasonsLªIdentifierÍ<Í@¤pushÂÂ‘\§LiteralÍAÍWÙ<ä»Šå¤©å·²ç»åƒè¿‡åç”œé£Ÿç‰©ï¼Œå†åƒé«˜ç³–æ›´å®¹æ˜“è¶…é¢Ù>'ä»Šå¤©å·²ç»åƒè¿‡åç”œé£Ÿç‰©ï¼Œå†åƒé«˜ç³–æ›´å®¹æ˜“è¶…é¢'ÂÀW«IfStatementÍnÍFV±LogicalExpressionÍrÍ¢S®CallExpressionÍrÍ…T°MemberExpressionÍrÍƒLªIdentifierÍrÍy§profileLªIdentifierÍzÍƒ©isLoseFatÂÂÂ¢&&S®CallExpressionÍ‰Í¢T°MemberExpressionÍ‰Í LªIdentifierÍ‰Í’©foodLabelLªIdentifierÍ“Í ­isHighCalorieÂÂÂM®BlockStatementÍ¤ÍF’X³ExpressionStatementÍ³ÍÍS®CallExpressionÍ³ÍÌT°MemberExpressionÍ³Í¿LªIdentifierÍ³Íº§reasonsLªIdentifierÍ»Í¿¤pushÂÂ‘\§LiteralÍÀÍË»å‡è„‚æ¨¡å¼ä¸‹çƒ­é‡è¾ƒé«˜½'å‡è„‚æ¨¡å¼ä¸‹çƒ­é‡è¾ƒé«˜'ÂW«IfStatementÍÛÍ;S®CallExpressionÍßÍøT°MemberExpressionÍßÍöLªIdentifierÍßÍë¬healthSignalLªIdentifierÍìÍöªisWeightUpÂÂÂM®BlockStatementÍúÍ;‘X³ExpressionStatementÍÍ,S®CallExpressionÍÍ+T°MemberExpressionÍÍLªIdentifierÍÍ§reasonsLªIdentifierÍÍ¤pushÂÂ‘\§LiteralÍÍ*Ù*ä½“é‡è¶‹åŠ¿ä¸Šå‡ï¼Œå»ºè®®æ›´ä¸¥æ ¼æ§åˆ¶Ù,'ä½“é‡è¶‹åŠ¿ä¸Šå‡ï¼Œå»ºè®®æ›´ä¸¥æ ¼æ§åˆ¶'ÂÀÀW«IfStatementÍPÍ»V±LogicalExpressionÍTÍƒS®CallExpressionÍTÍjT°MemberExpressionÍTÍhLªIdentifierÍTÍ[§profileLªIdentifierÍ\Íh¬isControlFatÂÂÂ¢&&S®CallExpressionÍnÍƒT°MemberExpressionÍnÍLªIdentifierÍnÍw©foodLabelLªIdentifierÍxÍ©isHighFatÂÂÂM®BlockStatementÍ…Í»‘X³ExpressionStatementÍ”Í°S®CallExpressionÍ”Í¯T°MemberExpressionÍ”Í LªIdentifierÍ”Í›§reasonsLªIdentifierÍœÍ ¤pushÂÂ‘\§LiteralÍ¡Í®Ù!æ§è„‚æ¨¡å¼ä¸‹è„‚è‚ªå«é‡è¾ƒé«˜Ù#'æ§è„‚æ¨¡å¼ä¸‹è„‚è‚ªå«é‡è¾ƒé«˜'ÂÀW«IfStatementÍÅÍ¹S®CallExpressionÍÉÍÚT°MemberExpressionÍÉÍØLªIdentifierÍÉÍĞ§profileLªIdentifierÍÑÍØ§isChildÂÂÂM®BlockStatementÍÜÍ¹’W«IfStatementÍëÍES®CallExpressionÍïÍT°MemberExpressionÍïÍLªIdentifierÍïÍø©foodLabelLªIdentifierÍùÍ«isHighSugarÂÂÂM®BlockStatementÍÍE‘X³ExpressionStatementÍÍ6S®CallExpressionÍÍ5T°MemberExpressionÍÍ'LªIdentifierÍÍ"§reasonsLªIdentifierÍ#Í'¤pushÂÂ‘\§LiteralÍ(Í4¾å„¿ç«¥æ¨¡å¼ä¸‹ç³–å«é‡åé«˜Ù 'å„¿ç«¥æ¨¡å¼ä¸‹ç³–å«é‡åé«˜'ÂÀW«IfStatementÍSÍ®S®CallExpressionÍWÍoT°MemberExpressionÍWÍmLªIdentifierÍWÍ`©foodLabelLªIdentifierÍaÍm¬isHighSodiumÂÂÂM®BlockStatementÍqÍ®‘X³ExpressionStatementÍ„ÍŸS®CallExpressionÍ„ÍT°MemberExpressionÍ„ÍLªIdentifierÍ„Í‹§reasonsLªIdentifierÍŒÍ¤pushÂÂ‘\§LiteralÍ‘Í¾å„¿ç«¥æ¨¡å¼ä¸‹é’ å«é‡åé«˜Ù 'å„¿ç«¥æ¨¡å¼ä¸‹é’ å«é‡åé«˜'ÂÀÀW«IfStatementÍ×ÍrV±LogicalExpressionÍÛÍ/S®CallExpressionÍÛÍ÷T°MemberExpressionÍÛÍõLªIdentifierÍÛÍç¬healthSignalLªIdentifierÍèÍõ­isLowActivityÂÂÂ¢&&V±LogicalExpressionÍüÍ.S®CallExpressionÍüÍT°MemberExpressionÍüÍLªIdentifierÍüÍ©foodLabelLªIdentifierÍÍ­isHighCalorieÂÂÂ¢||S®CallExpressionÍÍ.T°MemberExpressionÍÍ,LªIdentifierÍÍ"©foodLabelLªIdentifierÍ#Í,©isHighFatÂÂÂM®BlockStatementÍ1Ír‘X³ExpressionStatementÍ@ÍgS®CallExpressionÍ@ÍfT°MemberExpressionÍ@ÍNLªIdentifierÍ@ÍI©remindersLªIdentifierÍJÍN¤pushÂÂ‘\§LiteralÍOÍeÙ:ä»Šæ—¥æ´»åŠ¨é‡åä½ï¼Œé«˜çƒ­é‡/é«˜è„‚é£Ÿå“å»ºè®®å‡å°‘Ù<'ä»Šæ—¥æ´»åŠ¨é‡åä½ï¼Œé«˜çƒ­é‡/é«˜è„‚é£Ÿå“å»ºè®®å‡å°‘'ÂÀW«IfStatementÍ|ÍõV±LogicalExpressionÍ€ÍµS®CallExpressionÍ€ÍšT°MemberExpressionÍ€Í˜LªIdentifierÍ€ÍŒ¬healthSignalLªIdentifierÍÍ˜«isPoorSleepÂÂÂ¢&&S®CallExpressionÍÍµT°MemberExpressionÍÍ³LªIdentifierÍÍ§©foodLabelLªIdentifierÍ¨Í³«isHighSugarÂÂÂM®BlockStatementÍ·Íõ‘X³ExpressionStatementÍÆÍêS®CallExpressionÍÆÍéT°MemberExpressionÍÆÍÔLªIdentifierÍÆÍÏ©remindersLªIdentifierÍĞÍÔ¤pushÂÂ‘\§LiteralÍÕÍèÙ3ç¡çœ è¾ƒå·®ï¼Œé«˜ç³–é£Ÿå“å¯èƒ½å½±å“ç¡çœ è´¨é‡Ù5'ç¡çœ è¾ƒå·®ï¼Œé«˜ç³–é£Ÿå“å¯èƒ½å½±å“ç¡çœ è´¨é‡'ÂÀW«IfStatementÍÿÍeS®CallExpressionÍÍ#T°MemberExpressionÍÍ!LªIdentifierÍÍ¬healthSignalLªIdentifierÍÍ!±isHighSodiumTodayÂÂÂM®BlockStatementÍ%Íe‘X³ExpressionStatementÍ4ÍZS®CallExpressionÍ4ÍYT°MemberExpressionÍ4ÍBLªIdentifierÍ4Í=©remindersLªIdentifierÍ>ÍB¤pushÂÂ‘\§LiteralÍCÍXÙ9ä»Šå¤©ç›åˆ†å·²ç»åå¤šï¼Œåç»­å°½é‡é€‰æ‹©æ¸…æ·¡æ­é…Ù;'ä»Šå¤©ç›åˆ†å·²ç»åå¤šï¼Œåç»­å°½é‡é€‰æ‹©æ¸…æ·¡æ­é…'ÂÀW«IfStatementÍoÍ×S®CallExpressionÍsÍ’T°MemberExpressionÍsÍLªIdentifierÍsÍ¬healthSignalLªIdentifierÍ€Í°isHighSugarTodayÂÂÂM®BlockStatementÍ”Í×‘X³ExpressionStatementÍ£ÍÌS®CallExpressionÍ£ÍËT°MemberExpressionÍ£Í±LªIdentifierÍ£Í¬©remindersLªIdentifierÍ­Í±¤pushÂÂ‘\§LiteralÍ²ÍÊÙBä»Šå¤©ç”œé£Ÿå·²ç»åå¤šï¼Œåç»­å°½é‡å‡å°‘å«ç³–é¥®æ–™å’Œç”œç‚¹ÙD'ä»Šå¤©ç”œé£Ÿå·²ç»åå¤šï¼Œåç»­å°½é‡å‡å°‘å«ç³–é¥®æ–™å’Œç”œç‚¹'ÂÀW«IfStatementÍáÍFS®CallExpressionÍåÍT°MemberExpressionÍåÍLªIdentifierÍåÍğ«dailyBudgetLªIdentifierÍñÍ±isSodiumExhaustedÂÂÂM®BlockStatementÍÍF‘X³ExpressionStatementÍÍ;S®CallExpressionÍÍ:T°MemberExpressionÍÍ#LªIdentifierÍÍ©remindersLªIdentifierÍÍ#¤pushÂÂ‘\§LiteralÍ$Í9Ù9ä»Šæ—¥é’ é¢„ç®—å·²ç”¨å®Œï¼Œå»ºè®®ä¸å†æ‘„å…¥é«˜é’ é£Ÿå“Ù;'ä»Šæ—¥é’ é¢„ç®—å·²ç”¨å®Œï¼Œå»ºè®®ä¸å†æ‘„å…¥é«˜é’ é£Ÿå“'ÂÀW«IfStatementÍPÍ´S®CallExpressionÍTÍrT°MemberExpressionÍTÍpLªIdentifierÍTÍ_«dailyBudgetLªIdentifierÍ`Íp°isSugarExhaustedÂÂÂM®BlockStatementÍtÍ´‘X³ExpressionStatementÍƒÍ©S®CallExpressionÍƒÍ¨T°MemberExpressionÍƒÍ‘LªIdentifierÍƒÍŒ©remindersLªIdentifierÍÍ‘¤pushÂÂ‘\§LiteralÍ’Í§Ù9ä»Šæ—¥ç³–é¢„ç®—å·²ç”¨å®Œï¼Œå»ºè®®ä¸å†æ‘„å…¥é«˜ç³–é£Ÿå“Ù;'ä»Šæ—¥ç³–é¢„ç®—å·²ç”¨å®Œï¼Œå»ºè®®ä¸å†æ‘„å…¥é«˜ç³–é£Ÿå“'ÂÀW«IfStatementÍÒÍyV°BinaryExpressionÍÖÍåLªIdentifierÍÖÍß©maxAmount£===\§LiteralÍäÍå ¡0M®BlockStatementÍçÍP’X³ExpressionStatementÍöÍ_´AssignmentExpressionÍöÍ¡=T°MemberExpressionÍöÍÿLªIdentifierÍöÍù£recLªIdentifierÍúÍÿ¥levelÂÂT°MemberExpressionÍÍLªIdentifierÍÍ®RecommendLevelLªIdentifierÍÍ¥AVOIDÂÂX³ExpressionStatementÍ%ÍE_´AssignmentExpressionÍ%ÍD¡=T°MemberExpressionÍ%Í3LªIdentifierÍ%Í(£recLªIdentifierÍ)Í3ªlevelColorÂÂT°MemberExpressionÍ6ÍDLªIdentifierÍ6Í@ªLevelColorLªIdentifierÍAÍD£REDÂÂW«IfStatementÍ_ÍyV°BinaryExpressionÍcÍrLªIdentifierÍcÍl©maxAmount¢<=\§LiteralÍpÍr¢15M®BlockStatementÍtÍ'“X³ExpressionStatementÍƒÍ§_´AssignmentExpressionÍƒÍ¦¡=T°MemberExpressionÍƒÍŒLªIdentifierÍƒÍ†£recLªIdentifierÍ‡ÍŒ¥levelÂÂT°MemberExpressionÍÍ¦LªIdentifierÍÍ®RecommendLevelLªIdentifierÍÍ¦¨CAUTIOUSÂÂX³ExpressionStatementÍµÍØ_´AssignmentExpressionÍµÍ×¡=T°MemberExpressionÍµÍÃLªIdentifierÍµÍ¸£recLªIdentifierÍ¹ÍÃªlevelColorÂÂT°MemberExpressionÍÆÍ×LªIdentifierÍÆÍĞªLevelColorLªIdentifierÍÑÍ×¦ORANGEÂÂX³ExpressionStatementÍæÍV±LogicalExpressionÍæÍV°BinaryExpressionÍæÍúT°MemberExpressionÍæÍôLªIdentifierÍæÍí§reasonsLªIdentifierÍîÍô¦lengthÂÂ£===\§LiteralÍùÍú ¡0¢&&S®CallExpressionÍşÍT°MemberExpressionÍşÍ
+LªIdentifierÍşÍ§reasonsLªIdentifierÍÍ
+¤pushÂÂ‘\§LiteralÍÍÙ'ä»Šæ—¥é¢„ç®—å‰©ä½™è¾ƒå°‘ï¼Œå»ºè®®è°¨æ…Ù)'ä»Šæ—¥é¢„ç®—å‰©ä½™è¾ƒå°‘ï¼Œå»ºè®®è°¨æ…'ÂW«IfStatementÍ6ÍyV°BinaryExpressionÍ:ÍILªIdentifierÍ:ÍC©maxAmount¢<=\§LiteralÍGÍI2¢50M®BlockStatementÍKÍü“X³ExpressionStatementÍZÍ~_´AssignmentExpressionÍZÍ}¡=T°MemberExpressionÍZÍcLªIdentifierÍZÍ]£recLªIdentifierÍ^Íc¥levelÂÂT°MemberExpressionÍfÍ}LªIdentifierÍfÍt®RecommendLevelLªIdentifierÍuÍ}¨SMALL_OKÂÂX³ExpressionStatementÍŒÍ¯_´AssignmentExpressionÍŒÍ®¡=T°MemberExpressionÍŒÍšLªIdentifierÍŒÍ£recLªIdentifierÍÍšªlevelColorÂÂT°MemberExpressionÍÍ®LªIdentifierÍÍ§ªLevelColorLªIdentifierÍ¨Í®¦YELLOWÂÂX³ExpressionStatementÍ½ÍñV±LogicalExpressionÍ½ÍğV°BinaryExpressionÍ½ÍÑT°MemberExpressionÍ½ÍËLªIdentifierÍ½ÍÄ§reasonsLªIdentifierÍÅÍË¦lengthÂÂ£===\§LiteralÍĞÍÑ ¡0¢&&S®CallExpressionÍÕÍğT°MemberExpressionÍÕÍáLªIdentifierÍÕÍÜ§reasonsLªIdentifierÍİÍá¤pushÂÂ‘\§LiteralÍâÍïÙ!å°‘é‡å¯ä»¥ï¼Œæ³¨æ„æ§åˆ¶ä»½é‡Ù#'å°‘é‡å¯ä»¥ï¼Œæ³¨æ„æ§åˆ¶ä»½é‡'ÂM®BlockStatementÍÍy’X³ExpressionStatementÍÍ>_´AssignmentExpressionÍÍ=¡=T°MemberExpressionÍÍ#LªIdentifierÍÍ£recLªIdentifierÍÍ#¥levelÂÂT°MemberExpressionÍ&Í=LªIdentifierÍ&Í4®RecommendLevelLªIdentifierÍ5Í=¨SUITABLEÂÂX³ExpressionStatementÍLÍn_´AssignmentExpressionÍLÍm¡=T°MemberExpressionÍLÍZLªIdentifierÍLÍO£recLªIdentifierÍPÍZªlevelColorÂÂT°MemberExpressionÍ]ÍmLªIdentifierÍ]ÍgªLevelColorLªIdentifierÍhÍm¥GREENÂÂX³ExpressionStatementÍƒÍÀ_´AssignmentExpressionÍƒÍ¿¡=T°MemberExpressionÍƒÍLªIdentifierÍƒÍ†£recLªIdentifierÍ‡Í§reasonsÂÂWµConditionalExpressionÍ‘Í¿V°BinaryExpressionÍ‘Í£T°MemberExpressionÍ‘ÍŸLªIdentifierÍ‘Í˜§reasonsLªIdentifierÍ™ÍŸ¦lengthÂÂ¡>\§LiteralÍ¢Í£ ¡0LªIdentifierÍ¦Í­§reasonsR¯ArrayExpressionÍ°Í¿‘\§LiteralÍ±Í¾Ù!å½“å‰æƒ…å†µä¸‹å¯ä»¥é€‚é‡é£Ÿç”¨Ù#'å½“å‰æƒ…å†µä¸‹å¯ä»¥é€‚é‡é£Ÿç”¨'X³ExpressionStatementÍÊÍä_´AssignmentExpressionÍÊÍã¡=T°MemberExpressionÍÊÍ×LªIdentifierÍÊÍÍ£recLªIdentifierÍÎÍ×©remindersÂÂLªIdentifierÍÚÍã©reminders[¯ReturnStatementÍîÍùLªIdentifierÍõÍø£recN°MethodDefinitionÍ Í }ÂÂLªIdentifierÍ Í &¯calculateFamily¦methodO²FunctionExpressionÍ &Í }ÀÂÂÂ‘LªIdentifierÍ 'Í 1ªparamsListM®BlockStatementÍ 3Í }‘[¯ReturnStatementÍ >Í vS®CallExpressionÍ EÍ uT°MemberExpressionÍ EÍ SLªIdentifierÍ EÍ OªparamsListLªIdentifierÍ PÍ S£mapÂÂ‘O·ArrowFunctionExpressionÍ TÍ tÀÃÂÂ‘LªIdentifierÍ TÍ Z¦paramsS®CallExpressionÍ ^Í tT°MemberExpressionÍ ^Í la®ThisExpressionÍ ^Í bLªIdentifierÍ cÍ l©calculateÂÂ‘LªIdentifierÍ mÍ s¦paramsÂÂÀ‘Ôre•¤type¥start£endªspecifiers¦source±ImportDeclaration ÌU“Ôrf•¤type¥start£end¨imported¥local¯ImportSpecifier	LªIdentifier	®RecommendationLªIdentifier	®Recommendationf¯ImportSpecifier'LªIdentifier'®RecommendLevelLªIdentifier'®RecommendLevelf¯ImportSpecifier)3LªIdentifier)3ªLevelColorLªIdentifier)3ªLevelColor\§Literal;ÌT·../model/Recommendation¹'../model/Recommendation'

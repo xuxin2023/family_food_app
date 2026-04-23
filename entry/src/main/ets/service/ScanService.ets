@@ -2,8 +2,8 @@
 // API参考：https://developer.huawei.com/consumer/cn/doc/harmonyos-references-V5/scanbarcode-V5
 
 import { common } from '@kit.AbilityKit';
-import { scanBarcode, ScanType } from '@kit.ScanKit';
-import { hilog } from '@kit.BasicServicesKit';
+import { scanBarcode, scanCore } from '@kit.ScanKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FoodLabel } from '../model/FoodLabel';
 import { AppState } from '../AppState';
 
@@ -21,7 +21,7 @@ export class ScanService {
   async scanBarcode(context: common.Context): Promise<string> {
     try {
       const options: scanBarcode.ScanOptions = {
-        scanTypes: [ScanType.ALL],
+        scanTypes: [scanCore.ScanType.ALL],
         enableMultiMode: false,
         enableAlbum: true  // 允许从相册选择
       };
@@ -45,7 +45,7 @@ export class ScanService {
   async scanFoodBarcode(context: common.Context): Promise<string> {
     try {
       const options: scanBarcode.ScanOptions = {
-        scanTypes: [ScanType.EAN_13, ScanType.QR_CODE],
+        scanTypes: [scanCore.ScanType.ALL],  // 使用 ALL 因为 EAN_13 可能不存在
         enableMultiMode: false,
         enableAlbum: true
       };
@@ -87,13 +87,24 @@ export class ScanService {
    * 先扫码获取条码，再查本地缓存
    * @returns FoodLabel（缓存命中）或条码字符串（缓存未命中，需OCR补充）
    */
-  async scanAndLookup(context: common.Context): Promise<{ foodLabel: FoodLabel | null; barcode: string }> {
+  async scanAndLookup(context: common.Context): Promise<ScanLookupResult> {
     const barcode = await this.scanFoodBarcode(context);
     if (barcode.length === 0) {
-      return { foodLabel: null, barcode: '' };
+      const result = new ScanLookupResult();
+      result.foodLabel = null;
+      result.barcode = '';
+      return result;
     }
 
     const foodLabel = await this.lookupLocalCache(barcode);
-    return { foodLabel, barcode };
+    const result = new ScanLookupResult();
+    result.foodLabel = foodLabel;
+    result.barcode = barcode;
+    return result;
   }
+}
+
+export class ScanLookupResult {
+  foodLabel: FoodLabel | null = null;
+  barcode: string = '';
 }

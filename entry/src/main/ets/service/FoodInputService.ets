@@ -45,7 +45,9 @@ export class FoodInputService {
   }
 
   async scanBarcode(context: common.Context): Promise<FoodInputResult | null> {
-    const { foodLabel, barcode } = await this.scanService.scanAndLookup(context);
+    const scanResult = await this.scanService.scanAndLookup(context);
+    const foodLabel = scanResult.foodLabel;
+    const barcode = scanResult.barcode;
     if (foodLabel) {
       return {
         foodLabel,

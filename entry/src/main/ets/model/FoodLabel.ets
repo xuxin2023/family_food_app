@@ -1,14 +1,14 @@
 // 食品标签数据模型
 
 // 每100g营养成分
-export interface NutritionPer100g {
-  sodium: number;       // 钠 mg
-  sugar: number;        // 糖 g
-  calories: number;     // 热量 kcal
-  fat: number;          // 脂肪 g
-  saturatedFat: number; // 饱和脂肪 g
-  carbohydrate: number; // 碳水化合物 g
-  protein: number;      // 蛋白质 g
+export class NutritionPer100g {
+  sodium: number = 0;       // 钠 mg
+  sugar: number = 0;        // 糖 g
+  calories: number = 0;     // 热量 kcal
+  fat: number = 0;          // 脂肪 g
+  saturatedFat: number = 0; // 饱和脂肪 g
+  carbohydrate: number = 0; // 碳水化合物 g
+  protein: number = 0;      // 蛋白质 g
 }
 
 // 食品数据来源
@@ -20,21 +20,30 @@ export enum FoodSource {
   OCR_RECOGNIZE = 'OCR识别'
 }
 
+// FoodLabel JSON 输出类
+export class FoodLabelJson {
+  foodId: Object = '';
+  foodName: Object = '';
+  barcode: Object = '';
+  ingredients: Object = [];
+  nutrition: Object = new NutritionPer100g();
+  allergenHints: Object = [];
+  manufacturer: Object = '';
+  scNumber: Object = '';
+  principal: Object = '';
+  trustee: Object = '';
+  traceCode: Object = '';
+  source: Object = FoodSource.USER_UPLOAD;
+  identifiedAt: Object = 0;
+}
+
 // 食品标签
 export class FoodLabel {
   foodId: string = '';
   foodName: string = '';
   barcode: string = '';
   ingredients: string[] = [];
-  nutrition: NutritionPer100g = {
-    sodium: 0,
-    sugar: 0,
-    calories: 0,
-    fat: 0,
-    saturatedFat: 0,
-    carbohydrate: 0,
-    protein: 0
-  };
+  nutrition: NutritionPer100g = new NutritionPer100g();
   allergenHints: string[] = [];
   manufacturer: string = '';
   scNumber: string = '';
@@ -89,22 +98,22 @@ export class FoodLabel {
     return this.ingredients.join(',');
   }
 
-  toJson(): Record<string, Object> {
-    return {
-      foodId: this.foodId,
-      foodName: this.foodName,
-      barcode: this.barcode,
-      ingredients: this.ingredients,
-      nutrition: this.nutrition,
-      allergenHints: this.allergenHints,
-      manufacturer: this.manufacturer,
-      scNumber: this.scNumber,
-      principal: this.principal,
-      trustee: this.trustee,
-      traceCode: this.traceCode,
-      source: this.source,
-      identifiedAt: this.identifiedAt
-    };
+  toJson(): FoodLabelJson {
+    const json = new FoodLabelJson();
+    json.foodId = this.foodId;
+    json.foodName = this.foodName;
+    json.barcode = this.barcode;
+    json.ingredients = this.ingredients;
+    json.nutrition = this.nutrition;
+    json.allergenHints = this.allergenHints;
+    json.manufacturer = this.manufacturer;
+    json.scNumber = this.scNumber;
+    json.principal = this.principal;
+    json.trustee = this.trustee;
+    json.traceCode = this.traceCode;
+    json.source = this.source;
+    json.identifiedAt = this.identifiedAt;
+    return json;
   }
 
   static fromJson(json: Record<string, Object>): FoodLabel {

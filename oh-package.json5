@@ -1,0 +1,10 @@
+{
+  "modelVersion": "6.1.0",
+  "name": "family_food_app",
+  "version": "1.0.0",
+  "description": "家庭食品适配助手 - 根据每个家庭成员的身体画像、健康目标、今日状态，动态判断食品适配性",
+  "main": "",
+  "author": "",
+  "license": "",
+  "dependencies": {}
+}

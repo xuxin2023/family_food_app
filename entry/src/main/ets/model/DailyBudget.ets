@@ -1,0 +1,86 @@
+// 今日预算数据模型
+
+export class DailyBudget {
+  memberId: string = '';
+  date: string = '';              // YYYY-MM-DD
+  sodiumBudget: number = 2000;    // 钠预算总量 mg
+  sodiumRemaining: number = 2000; // 钠剩余额度 mg
+  sugarBudget: number = 50;       // 糖预算总量 g
+  sugarRemaining: number = 50;    // 糖剩余额度 g
+  calorieBudget: number = 2000;   // 热量预算总量 kcal
+  calorieRemaining: number = 2000;// 热量剩余额度 kcal
+  fatBudget: number = 65;         // 脂肪预算总量 g
+  fatRemaining: number = 65;      // 脂肪剩余额度 g
+
+  // 钠预算使用百分比
+  sodiumUsagePercent(): number {
+    if (this.sodiumBudget === 0) return 100;
+    return Math.max(0, Math.min(100, ((this.sodiumBudget - this.sodiumRemaining) / this.sodiumBudget) * 100));
+  }
+
+  // 糖预算使用百分比
+  sugarUsagePercent(): number {
+    if (this.sugarBudget === 0) return 100;
+    return Math.max(0, Math.min(100, ((this.sugarBudget - this.sugarRemaining) / this.sugarBudget) * 100));
+  }
+
+  // 热量预算使用百分比
+  calorieUsagePercent(): number {
+    if (this.calorieBudget === 0) return 100;
+    return Math.max(0, Math.min(100, ((this.calorieBudget - this.calorieRemaining) / this.calorieBudget) * 100));
+  }
+
+  // 脂肪预算使用百分比
+  fatUsagePercent(): number {
+    if (this.fatBudget === 0) return 100;
+    return Math.max(0, Math.min(100, ((this.fatBudget - this.fatRemaining) / this.fatBudget) * 100));
+  }
+
+  // 钠预算是否耗尽
+  isSodiumExhausted(): boolean {
+    return this.sodiumRemaining <= 0;
+  }
+
+  // 糖预算是否耗尽
+  isSugarExhausted(): boolean {
+    return this.sugarRemaining <= 0;
+  }
+
+  // 扣减摄入量
+  deductIntake(sodium: number, sugar: number, calories: number, fat: number): void {
+    this.sodiumRemaining -= sodium;
+    this.sugarRemaining -= sugar;
+    this.calorieRemaining -= calories;
+    this.fatRemaining -= fat;
+  }
+
+  toJson(): Record<string, Object> {
+    return {
+      memberId: this.memberId,
+      date: this.date,
+      sodiumBudget: this.sodiumBudget,
+      sodiumRemaining: this.sodiumRemaining,
+      sugarBudget: this.sugarBudget,
+      sugarRemaining: this.sugarRemaining,
+      calorieBudget: this.calorieBudget,
+      calorieRemaining: this.calorieRemaining,
+      fatBudget: this.fatBudget,
+      fatRemaining: this.fatRemaining
+    };
+  }
+
+  static fromJson(json: Record<string, Object>): DailyBudget {
+    const budget = new DailyBudget();
+    budget.memberId = json.memberId as string;
+    budget.date = json.date as string;
+    budget.sodiumBudget = json.sodiumBudget as number;
+    budget.sodiumRemaining = json.sodiumRemaining as number;
+    budget.sugarBudget = json.sugarBudget as number;
+    budget.sugarRemaining = json.sugarRemaining as number;
+    budget.calorieBudget = json.calorieBudget as number;
+    budget.calorieRemaining = json.calorieRemaining as number;
+    budget.fatBudget = json.fatBudget as number;
+    budget.fatRemaining = json.fatRemaining as number;
+    return budget;
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "string": [
+    { "name": "module_desc", "value": "家庭饮食平衡助手" },
+    { "name": "ability_desc", "value": "家庭饮食平衡助手主入口" },
+    { "name": "ability_label", "value": "饮食平衡助手" },
+    { "name": "camera_reason", "value": "用于拍照识别食品包装标签" },
+    { "name": "internet_reason", "value": "用于可选的AI润色服务" },
+    { "name": "app_name", "value": "家庭饮食平衡助手" },
+    { "name": "home_title", "value": "今天给谁看？" },
+    { "name": "scan_button", "value": "拍食品标签" },
+    { "name": "balance_button", "value": "记录美食" },
+    { "name": "basket_button", "value": "购物篮检查" },
+    { "name": "member_dad", "value": "爸爸" },
+    { "name": "member_mom", "value": "妈妈" },
+    { "name": "member_child", "value": "孩子" },
+    { "name": "member_me", "value": "我" },
+    { "name": "level_suitable", "value": "适合" },
+    { "name": "level_small", "value": "少量可以" },
+    { "name": "level_cautious", "value": "今天谨慎" },
+    { "name": "level_avoid", "value": "建议避免" },
+    { "name": "slogan_1", "value": "给爸妈买食品前，先拍一下。" },
+    { "name": "slogan_2", "value": "孩子零食会不会影响正餐，一拍就知道。" },
+    { "name": "slogan_3", "value": "吃完烧烤火锅，下一餐怎么搭。" },
+    { "name": "slogan_4", "value": "同一款食品，爸爸、妈妈、孩子建议都不同。" },
+    { "name": "slogan_5", "value": "不是不让你吃，而是帮你吃得更有数。" },
+    { "name": "disclaimer", "value": "本结果基于包装标签识别和健康目标生成，不代表对当前批次进行检测，不替代医生或营养师建议。" }
+  ]
+}

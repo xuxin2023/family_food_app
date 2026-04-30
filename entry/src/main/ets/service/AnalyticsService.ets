@@ -211,6 +211,13 @@ export class AnalyticsService {
     hilog.info(DOMAIN_ZERO, TAG, 'Member count updated: %{public}d', count);
   }
 
+  /**
+   * 获取家庭成员数
+   */
+  getMemberCount(): number {
+    return this.memberCount;
+  }
+
   // ==================== 批量写入 ====================
 
   /**
@@ -238,14 +245,14 @@ export class AnalyticsService {
       await this.rdbStore.beginTransaction();
       for (const event of batch) {
         const valueBucket: relationalStore.ValuesBucket = {
-          [ANALYTICS_COLUMNS.EVENT_ID]: event.eventId,
-          [ANALYTICS_COLUMNS.EVENT_TYPE]: event.eventType,
-          [ANALYTICS_COLUMNS.TIMESTAMP]: event.timestamp,
-          [ANALYTICS_COLUMNS.PROPERTIES]: JSON.stringify(event.properties),
-          [ANALYTICS_COLUMNS.SESSION_ID]: event.sessionId,
-          [ANALYTICS_COLUMNS.USER_ID]: this.userId,
-          [ANALYTICS_COLUMNS.USER_TIER]: this.userTier,
-          [ANALYTICS_COLUMNS.MEMBER_COUNT]: this.memberCount
+          'event_id': event.eventId,
+          'event_type': event.eventType,
+          'timestamp': event.timestamp,
+          'properties': JSON.stringify(event.properties),
+          'session_id': event.sessionId,
+          'user_id': this.userId,
+          'user_tier': this.userTier,
+          'member_count': this.memberCount
         };
         await this.rdbStore.insert(ANALYTICS_TABLE_NAME, valueBucket);
       }
@@ -291,7 +298,7 @@ export class AnalyticsService {
       }
 
       predicates.orderByDesc(ANALYTICS_COLUMNS.TIMESTAMP);
-      predicates.limit(limit);
+      predicates.limitAs(limit);
 
       const resultSet = await this.rdbStore.query(predicates);
       const events: AnalyticsEvent[] = [];

@@ -2,11 +2,12 @@
 // 首页 - 家庭饮食平衡助手 V5
 // V5增强：今日家庭状态条、各成员预算剩余
 
-import { router } from '@kit.ArkUI';
+import { router, promptAction } from '@kit.ArkUI';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { MemberCard } from '../components/MemberCard';
 import { AppState } from '../AppState';
 import { SubscriptionTier } from '../model/PricingModel';
+import { MilestoneService, Milestone } from '../service/MilestoneService';
 
 @Entry
 @Component
@@ -15,8 +16,10 @@ struct HomePage {
   @State selectedMemberId: string = ''
   @State currentSloganIndex: number = 0
   @State refreshToggle: boolean = false
+  @State milestones: Milestone[] = []
 
   private appState: AppState = AppState.getInstance()
+  private milestoneService: MilestoneService = MilestoneService.getInstance()
 
   private slogans: string[] = [
     '给爸妈买食品前，先拍一下。',
@@ -29,6 +32,15 @@ struct HomePage {
   async aboutToAppear() {
     this.currentSloganIndex = Math.floor(Math.random() * this.slogans.length)
     await this.loadFamilyMembers()
+    await this.refreshMilestones()
+  }
+
+  private async refreshMilestones() {
+    try {
+      this.milestones = await this.milestoneService.checkMilestones()
+    } catch (_error) {
+      // 静默失败
+    }
   }
 
   async loadFamilyMembers() {
@@ -60,6 +72,11 @@ struct HomePage {
 
       // V5增强：今日家庭状态条
       this.buildFamilyStatusBar()
+
+      // 里程碑横向滑动卡片
+      if (this.milestones.length > 0) {
+        this.buildMilestoneCarousel()
+      }
 
       // 家庭成员选择
       Text('今天给谁看？')
@@ -202,6 +219,117 @@ struct HomePage {
     .width('100%')
     .height('100%')
     .backgroundColor('#FAFAFA')
+  }
+
+  @Builder
+  buildMilestoneCarousel() {
+    Column() {
+      Row() {
+        Text('🏆 成就里程碑')
+          .fontSize(14)
+          .fontWeight(FontWeight.Medium)
+          .fontColor('#1A1A1A')
+        Blank()
+        Text('查看全部')
+          .fontSize(11)
+          .fontColor('#007DFF')
+          .onClick(() => {
+            router.pushUrl({ url: 'pages/SettingsPage' })
+          })
+      }
+      .width('100%')
+      .margin({ bottom: 8 })
+
+      Scroll() {
+        Row({ space: 12 }) {
+          ForEach(this.milestones, (milestone: Milestone) => {
+            this.MilestoneCard(milestone)
+          })
+        }
+        .padding({ left: 0, right: 0 })
+      }
+      .scrollable(ScrollDirection.Horizontal)
+      .width('100%')
+    }
+    .width('100%')
+    .padding(12)
+    .backgroundColor('#FFFFFF')
+    .borderRadius(10)
+    .margin({ left: 16, right: 16, bottom: 12 })
+    .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
+  }
+
+  @Builder
+  MilestoneCard(milestone: Milestone) {
+    Column() {
+      // Emoji 图标
+      Text(milestone.icon)
+        .fontSize(28)
+        .margin({ bottom: 6 })
+
+      // 标题
+      Text(milestone.title)
+        .fontSize(13)
+        .fontWeight(FontWeight.Medium)
+        .fontColor('#212121')
+        .lineHeight(18)
+        .maxLines(1)
+        .margin({ bottom: 8 })
+
+      // 进度条
+      Row() {
+        Column() {
+          // 进度条背景
+          Row() {
+            Column() {
+              // 进度条填充
+              Row()
+                .width(`${milestone.progress}%`)
+                .height(6)
+                .backgroundColor(milestone.achieved && !milestone.acknowledged ? '#FFD700' : '#1976D2')
+                .borderRadius(3)
+            }
+            .width('100%')
+            .height(6)
+            .backgroundColor('#E0E0E0')
+            .borderRadius(3)
+          }
+          .width('100%')
+          .margin({ bottom: 4 })
+
+          // 百分比文字
+          if (milestone.achieved) {
+            Text('✅ 已完成')
+              .fontSize(11)
+              .fontColor('#2E7D32')
+          } else {
+            Text(`${milestone.progress}% (${milestone.current}/${milestone.target})`)
+              .fontSize(10)
+              .fontColor('#9E9E9E')
+          }
+        }
+        .layoutWeight(1)
+      }
+    }
+    .width(160)
+    .height(120)
+    .padding(12)
+    .backgroundColor('#F5F5F5')
+    .borderRadius(12)
+    .border(milestone.achieved && !milestone.acknowledged ?
+      { width: 2, color: '#FFD700' } : undefined)
+    .alignItems(HorizontalAlign.Center)
+    .onClick(() => {
+      if (milestone.achieved) {
+        promptAction.showToast({
+          message: `🎉 恭喜达成「${milestone.title}」！解锁了新的饮食智慧`,
+          duration: 3000
+        })
+        this.milestoneService.acknowledgeMilestone(milestone.name)
+        // 刷新以去掉金色边框
+        this.refreshMilestones()
+      }
+    })
   }
 
   @Builder

@@ -1,9 +1,6 @@
 // 埋点数据模型
 // 定义所有埋点事件的结构和类型枚举
 
-/**
- * 埋点事件接口
- */
 export interface AnalyticsEvent {
   eventId: string
   eventType: string
@@ -12,9 +9,6 @@ export interface AnalyticsEvent {
   sessionId: string
 }
 
-/**
- * 事件类型枚举
- */
 export enum EventType {
   PAGE_VIEW = 'page_view',
   SCAN = 'scan',
@@ -26,19 +20,18 @@ export enum EventType {
   ALTERNATIVE_CLICK = 'alternative_click'
 }
 
-/**
- * 埋点数据库表字段名（保持与 DB 列名一致）
- */
 export const ANALYTICS_TABLE_NAME = 'analytics_events';
 
-export const ANALYTICS_COLUMNS = {
-  ID: 'id',
-  EVENT_ID: 'event_id',
-  EVENT_TYPE: 'event_type',
-  TIMESTAMP: 'timestamp',
-  PROPERTIES: 'properties',
-  SESSION_ID: 'session_id',
-  USER_ID: 'user_id',
-  USER_TIER: 'user_tier',
-  MEMBER_COUNT: 'member_count'
-} as const;
+export class AnalyticsColumns {
+  ID: string = 'id';
+  EVENT_ID: string = 'event_id';
+  EVENT_TYPE: string = 'event_type';
+  TIMESTAMP: string = 'timestamp';
+  PROPERTIES: string = 'properties';
+  SESSION_ID: string = 'session_id';
+  USER_ID: string = 'user_id';
+  USER_TIER: string = 'user_tier';
+  MEMBER_COUNT: string = 'member_count';
+}
+
+export const ANALYTICS_COLUMNS = new AnalyticsColumns();

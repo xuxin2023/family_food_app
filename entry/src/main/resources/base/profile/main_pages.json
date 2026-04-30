@@ -1,5 +1,6 @@
 {
   "src": [
+    "pages/Index",
     "pages/HomePage",
     "pages/MemberPage",
     "pages/MemberEditPage",
@@ -10,6 +11,7 @@
     "pages/BalancePage",
     "pages/BasketCheckPage",
     "pages/WeeklyReportPage",
-    "pages/SettingsPage"
+    "pages/SettingsPage",
+    "pages/SubscriptionPage"
   ]
 }

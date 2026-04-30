@@ -91,7 +91,7 @@ struct ReportPage {
           .height(50)
           .backgroundColor('#1976D2')
           .borderRadius(25)
-          .margin({ bottom: 24 })
+          .margin({ bottom: 12 })
           .onClick(() => {
             router.pushUrl({
               url: 'pages/SharePage',
@@ -102,6 +102,71 @@ struct ReportPage {
               }
             })
           })
+
+        // 加入购物篮按钮
+        Button() {
+          Row() {
+            Text('\uD83D\uDED2').fontSize(18)
+            Text('\u52A0\u5165\u8D2D\u7269\u7BEE').fontSize(16).fontColor('#FF9800').margin({ left: 6 })
+          }
+        }
+        .width('90%')
+        .height(48)
+        .backgroundColor('#FFF3E0')
+        .borderRadius(24)
+        .margin({ bottom: 12 })
+        .onClick(() => {
+          this.appState.addToBasket(this.foodLabel)
+          router.pushUrl({ url: 'pages/BasketCheckPage' })
+        })
+
+        // 查看替代品按钮
+        Button() {
+          Row() {
+            Text('\uD83D\uDD04').fontSize(18)
+            Text('\u67E5\u770B\u66FF\u4EE3\u54C1').fontSize(16).fontColor('#007DFF').margin({ left: 6 })
+          }
+        }
+        .width('90%')
+        .height(48)
+        .backgroundColor('#E3F2FD')
+        .borderRadius(24)
+        .margin({ bottom: 12 })
+        .onClick(() => {
+          router.pushUrl({
+            url: 'pages/SearchPage',
+            params: {
+              foodName: this.foodLabel.foodName,
+              memberId: this.selectedMemberId
+            }
+          })
+        })
+
+        // 底部生产主体信息卡
+        if (this.foodLabel.manufacturer.length > 0) {
+          Column() {
+            Text('\u751F\u4EA7\u4E3B\u4F53\u4FE1\u606F')
+              .fontSize(14)
+              .fontWeight(FontWeight.Medium)
+              .fontColor('#333333')
+              .margin({ bottom: 8 })
+            Text(`\u751F\u4EA7\u5546\uFF1A${this.foodLabel.manufacturer}`)
+              .fontSize(13)
+              .fontColor('#666666')
+              .margin({ bottom: 4 })
+            if (this.foodLabel.scNumber.length > 0) {
+              Text(`SC\u7F16\u53F7\uFF1A${this.foodLabel.scNumber}`)
+                .fontSize(13)
+                .fontColor('#666666')
+                .margin({ bottom: 4 })
+            }
+          }
+          .width('90%')
+          .padding(16)
+          .backgroundColor('#FFFFFF')
+          .borderRadius(12)
+          .margin({ bottom: 24 })
+        }
       }
       .width('100%')
       .alignItems(HorizontalAlign.Center)

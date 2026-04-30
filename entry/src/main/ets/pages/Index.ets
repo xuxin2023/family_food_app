@@ -2,7 +2,7 @@
 // 应用入口页面 - 判断引导状态后进入主导航
 // V2增强：三屏引导内容具体化
 
-import { AppState } from '../model/AppState';
+import { AppState } from '../AppState';
 import { MainNavigation } from './MainNavigation';
 
 @Entry
@@ -37,7 +37,7 @@ struct Index {
 @Component
 struct GuidePage {
   @State currentPage: number = 0;
-  private callback?: () => void;
+  onComplete?: () => void;
 
   build() {
     Column() {
@@ -48,7 +48,7 @@ struct GuidePage {
           .fontColor('#999999')
           .padding({ left: 16, right: 16, top: 8, bottom: 8 })
           .onClick(() => {
-            this.callback?.();
+            this.onComplete?.();
           })
       }
       .width('100%')
@@ -87,7 +87,7 @@ struct GuidePage {
             if (this.currentPage < 2) {
               this.currentPage++;
             } else {
-              this.callback?.();
+              this.onComplete?.();
             }
           })
       }
@@ -102,9 +102,8 @@ struct GuidePage {
   @Builder
   buildPage1() {
     Column() {
-      Image($r('sys.media.ohos_ic_public_group'))
-        .width(100)
-        .height(100)
+      Text('👨‍👩‍👧‍👦')
+        .fontSize(80)
         .margin({ bottom: 24 })
 
       Text('为全家建立健康档案')
@@ -211,9 +210,8 @@ struct GuidePage {
   @Builder
   buildPage3() {
     Column() {
-      Image($r('sys.media.ohos_ic_public_verify'))
-        .width(100)
-        .height(100)
+      Text('✅')
+        .fontSize(80)
         .margin({ bottom: 24 })
 
       Text('全家报告，一目了然')

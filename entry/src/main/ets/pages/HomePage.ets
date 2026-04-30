@@ -165,6 +165,22 @@ struct HomePage {
           })
         }
 
+        // 🛡️ 查品牌/商家透明度（无门控，所有用户可用）
+        Button() {
+          Row() {
+            Text('🛡️').fontSize(20)
+            Text('查品牌/商家透明度').fontSize(18).fontColor('#7B1FA2').margin({ left: 8 })
+          }
+        }
+        .width('90%')
+        .height(48)
+        .backgroundColor('#F3E5F5')
+        .borderRadius(24)
+        .margin({ bottom: 12 })
+        .onClick(() => {
+          router.pushUrl({ url: 'pages/SettingsPage' })
+        })
+
         Row() {
           Text('历史').fontSize(13).fontColor('#757575')
             .onClick(() => { router.pushUrl({ url: 'pages/HistoryPage' }) })

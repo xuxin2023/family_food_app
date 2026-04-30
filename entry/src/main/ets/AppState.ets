@@ -68,6 +68,8 @@ export class AppState {
   private currentTier: SubscriptionTier = SubscriptionTier.FREE;
   private todayScanCount: number = 0;
   private todayScanDate: string = '';
+  // 引导状态
+  hasShownGuide: boolean = false;
 
   private constructor() {}
 

@@ -178,3 +178,56 @@ export interface FamilyMemberSimple {
   dynamicAdjustment: SimpleDynamicRule[];
   dislikedAdditives: DislikedAdditive[];
 }
+
+/**
+ * 动态适配计算结果（增强版）
+ */
+export interface EnhancedFoodRecommendation {
+  productName: string;
+  memberId: string;
+  memberName: string;
+  maxIntake_g: number;
+  level: RecommendationLevel;
+  levelText: string;
+  reason: string;
+  /** 动态调整原因说明 */
+  dynamicAdjustReason?: string;
+  /** 当日第几次扫描 */
+  scanIndex?: number;
+  /** 前几次扫描对本建议的影响说明 */
+  previousScanImpact?: string;
+}
+
+/**
+ * 家长控制面板数据
+ */
+export interface ParentPanelData {
+  /** 今日已记录甜食次数 */
+  sweetCountToday: number;
+  /** 今日甜食建议上限（默认3次） */
+  sweetLimit: number;
+  /** 剩余甜食次数 */
+  remainingQuota: number;
+  /** 今日因零食影响正餐的次数 */
+  mealAffectedCount: number;
+  /** 今晚睡前需避免的食品类型列表 */
+  sleepRiskFoods: string[];
+  /** 明日甜食建议额度（基于今日表现动态调整） */
+  tomorrowSweetQuota: number;
+  /** 本周甜食趋势简述 */
+  weeklySummary: string;
+}
+
+/**
+ * 年龄专属建议
+ */
+export interface AgeSpecificAdvice {
+  /** 年龄段标识 */
+  ageGroup: string;
+  /** 最大份量 */
+  maxPortion: number;
+  /** 建议文案 */
+  adviceText: string;
+  /** 教育提示 */
+  educationalTip: string;
+}

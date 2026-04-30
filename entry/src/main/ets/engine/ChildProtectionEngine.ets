@@ -1,8 +1,9 @@
 // ChildProtectionEngine.ets
 // 儿童保护引擎 - 正餐保护、睡前保护、口味保护、甜食次数检查
 // V3增强：getChildMealAdvice 生活化呵护式建议、咖啡因+时间检查
+// V4增强：getParentControlPanel 家长控制面板、getAgeSpecificAdvice 年龄专属建议
 
-import { FamilyMember, FoodNutrition } from '../model/FoodAdapterTypes';
+import { FamilyMember, FoodNutrition, ParentPanelData, AgeSpecificAdvice } from '../model/FoodAdapterTypes';
 import { ChildProtection } from '../model/ChildProtection';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { FoodLabel } from '../model/FoodLabel';
@@ -168,6 +169,120 @@ export class ChildProtectionEngine {
     result.counteractReminder = this.checkCounteractReminder(foodName, foodLabel);
 
     return result;
+  }
+
+  /**
+   * V4增强：获取家长控制面板数据
+   * @param memberId 家庭成员ID
+   * @param todaySweetCount 今日已记录甜食次数
+   * @param sweetLimit 今日甜食上限（默认3）
+   * @returns 家长控制面板数据
+   */
+  static getParentControlPanel(
+    memberId: string,
+    todaySweetCount: number,
+    sweetLimit: number
+  ): ParentPanelData {
+    const remainingQuota: number = Math.max(0, sweetLimit - todaySweetCount);
+
+    // 今晚睡前需避免的食品类型
+    const sleepRiskFoods: string[] = [];
+    const now: Date = new Date();
+    const currentHour: number = now.getHours();
+    if (currentHour >= 18) {
+      sleepRiskFoods.push('含咖啡因饮品');
+    }
+    if (currentHour >= 20) {
+      sleepRiskFoods.push('高糖零食');
+      sleepRiskFoods.push('油炸食品');
+    }
+
+    // 明日甜食建议额度 - 基于今日消耗动态调整
+    let tomorrowQuota: number = sweetLimit;
+    if (todaySweetCount >= sweetLimit) {
+      tomorrowQuota = Math.max(1, sweetLimit - 1); // 今日吃满了，明日减额
+    } else if (todaySweetCount <= 1) {
+      tomorrowQuota = sweetLimit + 1; // 今日很少，明日奖励
+    }
+
+    // 本周甜食趋势简述（简化版）
+    const weeklySummary: string = todaySweetCount > sweetLimit
+      ? '本周甜食次数略偏高，可适当控制'
+      : '本周甜食次数控制良好，继续加油';
+
+    const panel: ParentPanelData = {
+      sweetCountToday: todaySweetCount,
+      sweetLimit: sweetLimit,
+      remainingQuota: remainingQuota,
+      mealAffectedCount: 0,
+      sleepRiskFoods: sleepRiskFoods,
+      tomorrowSweetQuota: tomorrowQuota,
+      weeklySummary: weeklySummary
+    };
+
+    return panel;
+  }
+
+  /**
+   * V4增强：获取年龄专属食用建议
+   * @param age 儿童年龄
+   * @param foodName 食品名称
+   * @param isHighSugar 是否高糖
+   * @param isHighSodium 是否高钠
+   * @returns 年龄专属建议
+   */
+  static getAgeSpecificAdvice(
+    age: number,
+    foodName: string,
+    isHighSugar: boolean,
+    isHighSodium: boolean
+  ): AgeSpecificAdvice {
+    let ageGroup: string = '';
+    let maxPortion: number = 50;
+    let adviceText: string = '';
+    let educationalTip: string = '';
+
+    if (age >= 0 && age <= 3) {
+      ageGroup = '0-3岁婴幼儿';
+      maxPortion = 20;
+      adviceText = `${foodName}对${ageGroup}宝宝来说，建议少量尝试${maxPortion}g以内即可`;
+      educationalTip = '这个阶段宝宝味觉和消化系统正在发育，清淡饮食更有利于健康成长哦～';
+    } else if (age >= 4 && age <= 6) {
+      ageGroup = '4-6岁学龄前';
+      maxPortion = 30;
+      if (isHighSugar) {
+        adviceText = `${foodName}含糖偏高，${ageGroup}小朋友一次最多${maxPortion}g`;
+        educationalTip = '甜食可以吃，但要记得吃完漱口，保护小牙齿！';
+      } else if (isHighSodium) {
+        adviceText = `${foodName}含盐偏高，${ageGroup}小朋友一次最多${maxPortion}g`;
+        educationalTip = '口味清淡的习惯要从小培养，一起做口味小侦探吧～';
+      } else {
+        adviceText = `${foodName}对${ageGroup}小朋友来说适量吃没问题`;
+        educationalTip = '吃东西前先看看标签，认识成分是好习惯！';
+      }
+    } else if (age >= 7 && age <= 12) {
+      ageGroup = '7-12岁学龄期';
+      maxPortion = 50;
+      if (isHighSugar) {
+        adviceText = `${foodName}糖分较高，${ageGroup}小朋友建议控制在${maxPortion}g以内`;
+        educationalTip = '运动后吃甜食补充能量可以，但别当正餐哦！';
+      } else {
+        adviceText = `${foodName}对${ageGroup}小朋友来说比较友好，适量享用`;
+        educationalTip = '学会看营养标签，做自己的健康小管家！';
+      }
+    } else {
+      ageGroup = '12岁以上青少年';
+      maxPortion = 80;
+      adviceText = `${foodName}对${ageGroup}可以按成人标准适量食用`;
+      educationalTip = '青春期的营养很重要，均衡搭配才是王道！';
+    }
+
+    return {
+      ageGroup: ageGroup,
+      maxPortion: maxPortion,
+      adviceText: adviceText,
+      educationalTip: educationalTip
+    };
   }
 
   private checkMealProtection(

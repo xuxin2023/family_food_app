@@ -1,15 +1,16 @@
 import { router, promptAction } from '@kit.ArkUI';
 import { AppState } from '../AppState';
 import { FoodLabel } from '../model/FoodLabel';
-import { FamilyProfile } from '../model/FamilyProfile';
+import { FamilyProfile, AgeGroup } from '../model/FamilyProfile';
 import { Recommendation, getLevelColorValue } from '../model/Recommendation';
 import { ChildProtection } from '../model/ChildProtection';
 import { CredibilityResult } from '../model/CredibilityResult';
-import { AlternativeFood, RecommendationLevel } from '../model/FoodAdapterTypes';
+import { AlternativeFood, RecommendationLevel, ParentPanelData, AgeSpecificAdvice } from '../model/FoodAdapterTypes';
 import { FoodLabelCard } from '../components/FoodLabelCard';
 import { FamilyCompareView } from '../components/FamilyCompareView';
 import { ChildProtectionCard } from '../components/ChildProtectionCard';
 import { CredibilityCard } from '../components/CredibilityCard';
+import { ChildProtectionEngine } from '../engine/ChildProtectionEngine';
 import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
 
 @Entry
@@ -23,6 +24,9 @@ struct ReportPage {
   @State childProtection: ChildProtection | null = null
   @State credibilityResult: CredibilityResult = new CredibilityResult()
   @State alternatives: AlternativeFood[] = []
+  @State parentPanel: ParentPanelData | null = null
+  @State ageAdvice: AgeSpecificAdvice | null = null
+  @State dynamicFactors: string[] = []
 
   private appState: AppState = AppState.getInstance()
   private foodId: string = ''
@@ -71,6 +75,43 @@ struct ReportPage {
           .margin({ bottom: 14 })
         }
 
+        // 今日动态调整说明区域
+        if (this.dynamicFactors.length > 0) {
+          Column() {
+            Text('📊 今日动态调整')
+              .fontSize(FONT_SIZE.LG)
+              .fontWeight(FONT_WEIGHT.BOLD)
+              .width('100%')
+              .margin({ bottom: SPACING.SM })
+
+            Text('根据当前食品标签和今日健康状态，系统为您动态调整以下因素：')
+              .fontSize(FONT_SIZE.SMALL)
+              .fontColor(COLORS.TEXT_TERTIARY)
+              .width('100%')
+              .margin({ bottom: SPACING.SM })
+
+            ForEach(this.dynamicFactors, (factor: string) => {
+              Row() {
+                Text('•')
+                  .fontSize(FONT_SIZE.SMALL)
+                  .fontColor(COLORS.ACCENT_GREEN)
+                  .margin({ right: SPACING.XS })
+                Text(factor)
+                  .fontSize(FONT_SIZE.SMALL)
+                  .fontColor(COLORS.TEXT_PRIMARY)
+              }
+              .width('100%')
+              .margin({ bottom: SPACING.XS })
+            }, (factor: string) => factor)
+          }
+          .width('92%')
+          .padding(SPACING.LG)
+          .backgroundColor(COLORS.BG_CARD)
+          .borderRadius(RADIUS.LG)
+          .alignItems(HorizontalAlign.Start)
+          .margin({ bottom: 14 })
+        }
+
         if (this.selectedRecommendation !== null) {
           this.SelectedMemberSummary()
         }
@@ -80,6 +121,89 @@ struct ReportPage {
             ChildProtectionCard({ protection: this.childProtection })
           }
           .width('92%')
+          .margin({ bottom: 14 })
+        }
+
+        // 家长控制面板
+        if (this.parentPanel !== null) {
+          Column() {
+            Text('👨‍👩‍👧 家长控制面板')
+              .fontSize(FONT_SIZE.LG)
+              .fontWeight(FONT_WEIGHT.BOLD)
+              .width('100%')
+              .margin({ bottom: SPACING.SM })
+
+            // 甜食额度
+            Row() {
+              Text('今日甜食')
+                .fontSize(FONT_SIZE.SMALL)
+                .fontColor(COLORS.TEXT_SECONDARY)
+              Text(`${this.parentPanel.sweetCountToday}/${this.parentPanel.sweetLimit}`)
+                .fontSize(FONT_SIZE.LG)
+                .fontWeight(FONT_WEIGHT.BOLD)
+                .fontColor(this.parentPanel.remainingQuota > 0 ? COLORS.LEVEL_GREEN : COLORS.LEVEL_RED)
+                .margin({ left: SPACING.SM })
+              Text('次')
+                .fontSize(FONT_SIZE.SMALL)
+                .fontColor(COLORS.TEXT_SECONDARY)
+            }
+            .width('100%')
+            .margin({ bottom: SPACING.SM })
+
+            // 睡前风险
+            if (this.parentPanel.sleepRiskFoods.length > 0) {
+              Text('⚠️ 今晚睡前需避免：')
+                .fontSize(FONT_SIZE.SMALL)
+                .fontColor(COLORS.LEVEL_ORANGE)
+                .width('100%')
+                .margin({ bottom: SPACING.XS })
+              ForEach(this.parentPanel.sleepRiskFoods, (food: string) => {
+                Text(`  • ${food}`)
+                  .fontSize(FONT_SIZE.SMALL)
+                  .fontColor(COLORS.TEXT_TERTIARY)
+                  .margin({ bottom: 2 })
+              }, (food: string) => food)
+            }
+          }
+          .width('92%')
+          .padding(SPACING.LG)
+          .backgroundColor(COLORS.BG_CARD)
+          .borderRadius(RADIUS.LG)
+          .alignItems(HorizontalAlign.Start)
+          .margin({ bottom: 14 })
+        }
+
+        // 年龄专属建议卡片
+        if (this.ageAdvice !== null) {
+          Column() {
+            Text('🎯 年龄专属建议')
+              .fontSize(FONT_SIZE.LG)
+              .fontWeight(FONT_WEIGHT.BOLD)
+              .width('100%')
+              .margin({ bottom: SPACING.SM })
+
+            Text(this.ageAdvice.adviceText)
+              .fontSize(FONT_SIZE.MD)
+              .fontColor(COLORS.TEXT_PRIMARY)
+              .width('100%')
+              .margin({ bottom: SPACING.SM })
+
+            Text(`建议份量：${this.ageAdvice.maxPortion}g 以内`)
+              .fontSize(FONT_SIZE.SMALL)
+              .fontColor(COLORS.ACCENT_GREEN)
+              .width('100%')
+              .margin({ bottom: SPACING.SM })
+
+            Text(this.ageAdvice.educationalTip)
+              .fontSize(FONT_SIZE.SMALL)
+              .fontColor(COLORS.TEXT_TERTIARY)
+              .width('100%')
+          }
+          .width('92%')
+          .padding(SPACING.LG)
+          .backgroundColor(COLORS.BG_CARD)
+          .borderRadius(RADIUS.LG)
+          .alignItems(HorizontalAlign.Start)
           .margin({ bottom: 14 })
         }
 
@@ -129,6 +253,25 @@ struct ReportPage {
                 foodName: this.foodLabel.foodName,
                 recommendations: this.recommendations,
                 members: this.familyMembers
+              }
+            })
+          })
+
+        // 生成分享卡片按钮
+        Button('🖼️ 生成分享卡片')
+          .width('90%')
+          .height(50)
+          .backgroundColor('#7B1FA2')
+          .borderRadius(25)
+          .margin({ bottom: 12 })
+          .onClick(() => {
+            router.pushUrl({
+              url: 'pages/SharePage',
+              params: {
+                foodName: this.foodLabel.foodName,
+                recommendations: this.recommendations,
+                members: this.familyMembers,
+                shareType: 'image'
               }
             })
           })
@@ -456,11 +599,68 @@ struct ReportPage {
     this.credibilityResult = this.appState.calculateCredibility(this.foodLabel)
     this.selectMember(this.selectedMemberId)
 
+    // 初始化：今日动态调整因素
+    this.initDynamicFactors()
+
+    // 初始化：家长控制面板 & 年龄建议（选中儿童时）
+    const selectedMember = this.familyMembers.find(m => m.memberId === this.selectedMemberId)
+    if (selectedMember !== undefined && selectedMember.isChild()) {
+      const childAge = this.getApproxAge(selectedMember.ageGroup)
+      this.parentPanel = ChildProtectionEngine.getParentControlPanel(
+        this.selectedMemberId, 1, 3
+      )
+      this.ageAdvice = ChildProtectionEngine.getAgeSpecificAdvice(
+        childAge,
+        this.foodLabel.foodName,
+        this.foodLabel.isHighSugar(),
+        this.foodLabel.isHighSodium()
+      )
+    }
+
     if (!this.historySaved) {
       for (const recommendation of this.recommendations) {
         await this.appState.saveScanHistory(recommendation.memberId, this.foodLabel, recommendation)
       }
       this.historySaved = true
+    }
+  }
+
+  /**
+   * 初始化今日动态调整因素
+   */
+  private initDynamicFactors() {
+    const factors: string[] = [];
+    // 基于食品特征生成动态说明
+    if (this.foodLabel.isHighSodium()) {
+      factors.push('钠含量偏高 ⚠️');
+    }
+    if (this.foodLabel.isHighSugar()) {
+      factors.push('糖含量偏高 ⚠️');
+    }
+    if (this.foodLabel.isHighCalorie()) {
+      factors.push('热量密度较高');
+    }
+    if (this.foodLabel.isHighFat()) {
+      factors.push('脂肪含量偏高');
+    }
+    // 检查是否有钠含量较低的健康选项
+    if (this.foodLabel.nutrition.sodium <= 120) {
+      factors.push('钠含量控制良好 ✅');
+    }
+    this.dynamicFactors = factors;
+  }
+
+  /**
+   * 根据年龄组获取近似年龄（用于儿童保护建议）
+   */
+  private getApproxAge(ageGroup: AgeGroup): number {
+    switch (ageGroup) {
+      case AgeGroup.CHILD:
+        return 6
+      case AgeGroup.TEEN:
+        return 14
+      default:
+        return 30
     }
   }
 

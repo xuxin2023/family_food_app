@@ -4,6 +4,8 @@ import { FoodLabel } from '../model/FoodLabel';
 import { AppState } from '../AppState';
 import { FoodInputResult, FoodInputService } from '../service/FoodInputService';
 import { SubscriptionTier } from '../model/PricingModel';
+import { NutriScoreBadge } from '../components/NutriScoreBadge';
+import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
 
 @Entry
 @Component
@@ -18,6 +20,13 @@ struct ScanPage {
   @State recognitionHint: string = ''
   @State ocrConfidence: number = 1
 
+  // 预加载数据
+  @State frequentItems: FoodLabel[] = []
+  @State scoreReady: boolean = false       // 评分是否已计算完成
+  @State nutriScore: number = 50           // 当前食品的评分
+  @State detailLoading: boolean = false    // 详细分析是否正在加载
+
+  // 编辑面板字段
   @State editFoodName: string = ''
   @State editSodium: string = '0'
   @State editSugar: string = '0'
@@ -35,12 +44,38 @@ struct ScanPage {
   private appState: AppState = AppState.getInstance()
   private foodInputService: FoodInputService = new FoodInputService()
 
-  aboutToAppear() {
+  async aboutToAppear() {
     const params = router.getParams() as Record<string, string>
     if (params) {
       this.memberId = params.memberId || ''
     }
     this.refreshScanQuota()
+    // 异步预加载高频商品库
+    this.loadFrequentItems()
+  }
+
+  private async loadFrequentItems() {
+    try {
+      const records = await this.appState.getRecentScanHistory(50)
+      // 从扫描历史中提取高频商品
+      const foodIds = new Set<string>()
+      const items: FoodLabel[] = []
+      for (const record of records) {
+        const foodId = record.foodId
+        if (foodId && !foodIds.has(foodId)) {
+          foodIds.add(foodId)
+          const foodLabel = await this.appState.findFoodById(foodId)
+          if (foodLabel && foodLabel.foodName.length > 0) {
+            items.push(foodLabel)
+            if (items.length >= 8) break
+          }
+        }
+      }
+      this.frequentItems = items
+    } catch (error) {
+      // 预加载失败不影响主流程
+      console.warn('预加载高频商品失败', error)
+    }
   }
 
   build() {
@@ -49,27 +84,27 @@ struct ScanPage {
         Row() {
           Text('<')
             .fontSize(24)
-            .fontColor('#1976D2')
+            .fontColor(COLORS.PRIMARY)
             .onClick(() => { router.back() })
           Text('识别食品标签')
-            .fontSize(20)
-            .fontWeight(FontWeight.Bold)
-            .margin({ left: 16 })
+            .fontSize(FONT_SIZE.TITLE)
+            .fontWeight(FONT_WEIGHT.BOLD)
+            .margin({ left: SPACING.LG })
         }
         .width('100%')
-        .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+        .padding({ left: SPACING.LG, right: SPACING.LG, top: SPACING.LG, bottom: SPACING.LG })
 
         this.ModeSelector()
 
         if (this.appState.getCurrentTier() === SubscriptionTier.FREE) {
           Row() {
             Text(this.scanLimitReached ? '今日扫描次数已用完' : `今日剩余扫描：${this.remainingScans} 次`)
-              .fontSize(12)
-              .fontColor(this.scanLimitReached ? '#D32F2F' : '#F57C00')
+              .fontSize(FONT_SIZE.SMALL)
+              .fontColor(this.scanLimitReached ? COLORS.LEVEL_RED : '#F57C00')
           }
           .width('100%')
-          .padding({ left: 16, right: 16 })
-          .margin({ bottom: 12 })
+          .padding({ left: SPACING.LG, right: SPACING.LG })
+          .margin({ bottom: SPACING.MD })
         }
 
         this.ResultCard()
@@ -83,15 +118,15 @@ struct ScanPage {
             Button(this.scanMode === 'barcode' ? '扫码录入' : '拍标签 / 生成草稿')
               .width('90%')
               .height(52)
-              .backgroundColor('#1976D2')
+              .backgroundColor(COLORS.PRIMARY)
               .borderRadius(26)
               .onClick(() => { this.startRecognition() })
 
             Button('手动录入')
               .width('90%')
               .height(48)
-              .backgroundColor('#E3F2FD')
-              .fontColor('#1976D2')
+              .backgroundColor(COLORS.BG_CARD)
+              .fontColor(COLORS.PRIMARY)
               .borderRadius(24)
               .margin({ top: 10 })
               .onClick(() => { this.startManualEntry() })
@@ -99,7 +134,7 @@ struct ScanPage {
             Button('查看适配报告')
               .width('90%')
               .height(52)
-              .backgroundColor('#43A047')
+              .backgroundColor(COLORS.ACCENT_GREEN)
               .borderRadius(26)
               .onClick(() => { this.viewReport() })
 
@@ -107,8 +142,8 @@ struct ScanPage {
               Button(this.showEditPanel ? '收起修正面板' : '手动修正')
                 .layoutWeight(1)
                 .height(46)
-                .backgroundColor('#E3F2FD')
-                .fontColor('#1976D2')
+                .backgroundColor(COLORS.BG_CARD)
+                .fontColor(COLORS.PRIMARY)
                 .borderRadius(23)
                 .onClick(() => {
                   this.showEditPanel = !this.showEditPanel
@@ -132,14 +167,14 @@ struct ScanPage {
         }
         .width('100%')
         .alignItems(HorizontalAlign.Center)
-        .margin({ top: 16, bottom: 24 })
+        .margin({ top: SPACING.LG, bottom: SPACING.XL })
       }
       .width('100%')
       .alignItems(HorizontalAlign.Center)
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#FAFAFA')
+    .backgroundColor(COLORS.BG_PAGE)
   }
 
   @Builder
@@ -149,66 +184,130 @@ struct ScanPage {
         .fontSize(15)
         .padding({ left: 20, right: 20, top: 8, bottom: 8 })
         .borderRadius(20)
-        .backgroundColor(this.scanMode === 'camera' ? '#1976D2' : '#FFFFFF')
-        .fontColor(this.scanMode === 'camera' ? '#FFFFFF' : '#212121')
+        .backgroundColor(this.scanMode === 'camera' ? COLORS.PRIMARY : COLORS.WHITE)
+        .fontColor(this.scanMode === 'camera' ? COLORS.WHITE : '#212121')
         .onClick(() => { this.scanMode = 'camera' })
 
       Text('扫码')
         .fontSize(15)
         .padding({ left: 20, right: 20, top: 8, bottom: 8 })
         .borderRadius(20)
-        .backgroundColor(this.scanMode === 'barcode' ? '#1976D2' : '#FFFFFF')
-        .fontColor(this.scanMode === 'barcode' ? '#FFFFFF' : '#212121')
+        .backgroundColor(this.scanMode === 'barcode' ? COLORS.PRIMARY : COLORS.WHITE)
+        .fontColor(this.scanMode === 'barcode' ? COLORS.WHITE : '#212121')
         .margin({ left: 10 })
         .onClick(() => { this.scanMode = 'barcode' })
     }
     .width('100%')
-    .padding({ left: 16, right: 16 })
-    .margin({ bottom: 12 })
+    .padding({ left: SPACING.LG, right: SPACING.LG })
+    .margin({ bottom: SPACING.MD })
   }
 
   @Builder
   ResultCard() {
     Column() {
       if (this.isRecognizing) {
-        LoadingProgress()
-          .width(40)
-          .height(40)
-          .color('#1976D2')
-        Text('正在处理中...')
-          .fontSize(14)
-          .fontColor('#757575')
-          .margin({ top: 12 })
+        // 识别中：显示加载状态+评分徽章骨架
+        Column() {
+          LoadingProgress()
+            .width(40)
+            .height(40)
+            .color(COLORS.PRIMARY)
+          Text('正在处理中...')
+            .fontSize(FONT_SIZE.BODY)
+            .fontColor(COLORS.TEXT_TERTIARY)
+            .margin({ top: SPACING.MD })
+        }
+        .alignItems(HorizontalAlign.Center)
+        .justifyContent(FlexAlign.Center)
+        .width('100%')
+        .height(this.scoreReady ? 'auto' : 140)
       } else if (this.foodLabel.foodId.length === 0) {
+        // 未识别：显示提示+高频商品快速入口
+        if (this.frequentItems.length > 0) {
+          Text('🔥 快速选择历史商品')
+            .fontSize(FONT_SIZE.SMALL)
+            .fontColor(COLORS.TEXT_SECONDARY)
+            .margin({ bottom: SPACING.SM })
+          Scroll() {
+            Row() {
+              ForEach(this.frequentItems, (item: FoodLabel) => {
+                Column() {
+                  Text(item.foodName)
+                    .fontSize(FONT_SIZE.TINY)
+                    .fontColor(COLORS.TEXT_PRIMARY)
+                    .maxLines(2)
+                    .textOverflow({ overflow: TextOverflow.Ellipsis })
+                    .lineHeight(14)
+                    .textAlign(TextAlign.Center)
+                }
+                .width(72)
+                .height(60)
+                .padding(SPACING.XS)
+                .backgroundColor(COLORS.BG_CARD_HIGHLIGHT)
+                .borderRadius(RADIUS.SM)
+                .margin({ right: SPACING.SM })
+                .onClick(() => {
+                  this.foodLabel = item
+                  // 进入后自动计算评分
+                  this.calculateScoreForCurrentLabel()
+                })
+              }, (item: FoodLabel) => item.foodId)
+            }
+          }
+          .scrollable(ScrollDirection.Horizontal)
+          .scrollBar(BarState.Off)
+          .margin({ bottom: SPACING.MD })
+        }
+
         Text('识别后会在这里生成一个可编辑的 FoodLabel 草稿')
           .fontSize(15)
-          .fontColor('#616161')
+          .fontColor(COLORS.TEXT_TERTIARY)
           .textAlign(TextAlign.Center)
         Text('P0 版支持扫码命中本地库，或先生成草稿后手动修正')
-          .fontSize(12)
-          .fontColor('#9E9E9E')
+          .fontSize(FONT_SIZE.SMALL)
+          .fontColor(COLORS.TEXT_TERTIARY)
           .textAlign(TextAlign.Center)
-          .margin({ top: 8 })
+          .margin({ top: SPACING.SM })
       } else {
+        // 识别完成：先展示评分徽章，再异步加载详情
+        if (this.scoreReady) {
+          // 评分徽章区域
+          NutriScoreBadge({
+            score: this.nutriScore,
+            diameter: 120,
+            animating: true
+          })
+          .margin({ bottom: SPACING.MD })
+        } else if (this.detailLoading) {
+          LoadingProgress()
+            .width(32)
+            .height(32)
+            .color(COLORS.ACCENT_GREEN)
+          Text('正在评估营养评分...')
+            .fontSize(FONT_SIZE.SMALL)
+            .fontColor(COLORS.TEXT_TERTIARY)
+            .margin({ top: SPACING.SM, bottom: SPACING.MD })
+        }
+
         Text(this.foodLabel.foodName.length > 0 ? this.foodLabel.foodName : '待补充食品名称')
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .margin({ bottom: 8 })
+          .fontSize(FONT_SIZE.TITLE)
+          .fontWeight(FONT_WEIGHT.BOLD)
+          .margin({ bottom: SPACING.SM })
 
         if (this.recognitionHint.length > 0) {
           Text(this.recognitionHint)
-            .fontSize(12)
-            .fontColor('#1976D2')
+            .fontSize(FONT_SIZE.SMALL)
+            .fontColor(COLORS.PRIMARY)
             .textAlign(TextAlign.Center)
             .margin({ bottom: 6 })
         }
 
         if (this.recognizedText.length > 0) {
           Text(this.recognizedText)
-            .fontSize(12)
-            .fontColor('#757575')
+            .fontSize(FONT_SIZE.SMALL)
+            .fontColor(COLORS.TEXT_TERTIARY)
             .textAlign(TextAlign.Center)
-            .margin({ bottom: 8 })
+            .margin({ bottom: SPACING.SM })
         }
 
         Row() {
@@ -218,25 +317,25 @@ struct ScanPage {
         }
         .width('100%')
         .justifyContent(FlexAlign.SpaceAround)
-        .margin({ bottom: 8 })
+        .margin({ bottom: SPACING.SM })
 
         if (this.foodLabel.barcode.length > 0) {
           Text(`条码：${this.foodLabel.barcode}`)
-            .fontSize(12)
-            .fontColor('#616161')
+            .fontSize(FONT_SIZE.SMALL)
+            .fontColor(COLORS.TEXT_SECONDARY)
             .margin({ bottom: 6 })
         }
 
         Text(this.showEditPanel ? '请核对下方字段后保存或查看报告' : '如信息不完整，可展开手动修正面板补全')
-          .fontSize(12)
-          .fontColor('#9E9E9E')
+          .fontSize(FONT_SIZE.SMALL)
+          .fontColor(COLORS.TEXT_TERTIARY)
           .textAlign(TextAlign.Center)
       }
     }
     .width('92%')
     .padding(20)
-    .backgroundColor('#FFFFFF')
-    .borderRadius(16)
+    .backgroundColor(COLORS.BG_CARD)
+    .borderRadius(RADIUS.LG)
     .alignItems(HorizontalAlign.Center)
   }
 
@@ -245,7 +344,7 @@ struct ScanPage {
     Column() {
       Text(label)
         .fontSize(11)
-        .fontColor('#9E9E9E')
+        .fontColor(COLORS.TEXT_TERTIARY)
       Text(value)
         .fontSize(13)
         .fontWeight(FontWeight.Medium)
@@ -257,13 +356,46 @@ struct ScanPage {
     .borderRadius(10)
   }
 
+  /**
+   * 基于当前食品标签快速计算评分
+   */
+  private calculateScoreForCurrentLabel() {
+    this.scoreReady = false
+    this.detailLoading = true
+    // 异步计算评分
+    setTimeout(() => {
+      this.nutriScore = this.quickNutriScore(this.foodLabel)
+      this.scoreReady = true
+      this.detailLoading = false
+    }, 600) // 模拟异步加载，展示过渡效果
+  }
+
+  /**
+   * 快速营养评分（本地简化版）
+   */
+  private quickNutriScore(label: FoodLabel): number {
+    const nutrition = label.nutrition
+    let score = 50
+    // 钠扣分 (每100mg扣2分)
+    score -= Math.min(40, Math.floor(nutrition.sodium / 100) * 2)
+    // 糖扣分 (每10g扣3分)
+    score -= Math.min(30, Math.floor(nutrition.sugar / 10) * 3)
+    // 脂肪扣分 (每10g扣2分)
+    score -= Math.min(20, Math.floor(nutrition.fat / 10) * 2)
+    // 蛋白质加分 (每5g加2分)
+    score += Math.min(20, Math.floor(nutrition.protein / 5) * 2)
+    // 热量扣分 (每100kcal扣1分)
+    score -= Math.min(20, Math.floor(nutrition.calories / 100))
+    return Math.max(0, Math.min(100, score))
+  }
+
   @Builder
   EditPanel() {
     Column() {
       Text('手动修正')
         .fontSize(17)
         .fontWeight(FontWeight.Bold)
-        .margin({ bottom: 12 })
+        .margin({ bottom: SPACING.MD })
 
       this.FormInput('食品名称', this.editFoodName, '输入食品名称', (value: string) => { this.editFoodName = value })
       this.FormInput('钠（mg/100g）', this.editSodium, '0', (value: string) => { this.editSodium = value })
@@ -276,7 +408,7 @@ struct ScanPage {
       Column() {
         Text('配料')
           .fontSize(13)
-          .fontColor('#757575')
+          .fontColor(COLORS.TEXT_TERTIARY)
           .margin({ bottom: 6 })
         TextArea({ text: this.editIngredients, placeholder: '一行一个，或用逗号分隔' })
           .width('100%')
@@ -288,7 +420,7 @@ struct ScanPage {
       }
       .width('100%')
       .alignItems(HorizontalAlign.Start)
-      .margin({ bottom: 12 })
+      .margin({ bottom: SPACING.MD })
 
       this.FormInput('生产商', this.editManufacturer, '输入生产商', (value: string) => { this.editManufacturer = value })
       this.FormInput('SC 编号', this.editScNumber, '输入 SC 编号', (value: string) => { this.editScNumber = value })
@@ -297,8 +429,8 @@ struct ScanPage {
     }
     .width('92%')
     .padding(16)
-    .backgroundColor('#FFFFFF')
-    .borderRadius(16)
+    .backgroundColor(COLORS.BG_CARD)
+    .borderRadius(RADIUS.LG)
     .margin({ top: 14 })
     .alignItems(HorizontalAlign.Start)
   }
@@ -308,7 +440,7 @@ struct ScanPage {
     Column() {
       Text(title)
         .fontSize(13)
-        .fontColor('#757575')
+        .fontColor(COLORS.TEXT_TERTIARY)
         .margin({ bottom: 6 })
       TextInput({ text: value, placeholder })
         .width('100%')
@@ -320,7 +452,7 @@ struct ScanPage {
     }
     .width('100%')
     .alignItems(HorizontalAlign.Start)
-    .margin({ bottom: 12 })
+    .margin({ bottom: SPACING.MD })
   }
 
   private refreshScanQuota() {
@@ -354,6 +486,8 @@ struct ScanPage {
 
       if (this.foodLabel.foodId.length > 0) {
         this.appState.recordScan()
+        // 识别完成后异步计算评分
+        this.calculateScoreForCurrentLabel()
       }
     } catch (error) {
       promptAction.showToast({ message: '识别失败，已切换到手动录入' })
@@ -411,6 +545,10 @@ struct ScanPage {
     this.showEditPanel = result.requiresManualReview
     if (this.showEditPanel) {
       this.loadEditFormFromLabel()
+    }
+    // 识别完成后立即计算评分
+    if (this.foodLabel.foodId.length > 0) {
+      this.calculateScoreForCurrentLabel()
     }
   }
 

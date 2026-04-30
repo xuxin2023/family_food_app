@@ -1,14 +1,16 @@
-import { router } from '@kit.ArkUI';
+import { router, promptAction } from '@kit.ArkUI';
 import { AppState } from '../AppState';
 import { FoodLabel } from '../model/FoodLabel';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { Recommendation, getLevelColorValue } from '../model/Recommendation';
 import { ChildProtection } from '../model/ChildProtection';
 import { CredibilityResult } from '../model/CredibilityResult';
+import { AlternativeFood, RecommendationLevel } from '../model/FoodAdapterTypes';
 import { FoodLabelCard } from '../components/FoodLabelCard';
 import { FamilyCompareView } from '../components/FamilyCompareView';
 import { ChildProtectionCard } from '../components/ChildProtectionCard';
 import { CredibilityCard } from '../components/CredibilityCard';
+import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
 
 @Entry
 @Component
@@ -20,6 +22,7 @@ struct ReportPage {
   @State selectedRecommendation: Recommendation | null = null
   @State childProtection: ChildProtection | null = null
   @State credibilityResult: CredibilityResult = new CredibilityResult()
+  @State alternatives: AlternativeFood[] = []
 
   private appState: AppState = AppState.getInstance()
   private foodId: string = ''
@@ -80,6 +83,33 @@ struct ReportPage {
           .margin({ bottom: 14 })
         }
 
+        // 替代品推荐卡片 (横向滚动)
+        if (this.alternatives.length > 0) {
+          Column() {
+            Text('🔄 更健康的替代品推荐')
+              .fontSize(FONT_SIZE.LG)
+              .fontWeight(FONT_WEIGHT.BOLD)
+              .width('100%')
+              .margin({ bottom: SPACING.MD })
+
+            Scroll() {
+              Row() {
+                ForEach(this.alternatives, (item: AlternativeFood, index: number) => {
+                  this.AlternativeCardItem(item, index)
+                }, (item: AlternativeFood, index: number) => `${item.productName}_${index}`)
+              }
+            }
+            .scrollable(ScrollDirection.Horizontal)
+            .scrollBar(BarState.Off)
+          }
+          .width('92%')
+          .padding(SPACING.LG)
+          .backgroundColor(COLORS.BG_CARD)
+          .borderRadius(RADIUS.LG)
+          .alignItems(HorizontalAlign.Start)
+          .margin({ bottom: 14 })
+        }
+
         Column() {
           CredibilityCard({ result: this.credibilityResult })
         }
@@ -118,28 +148,6 @@ struct ReportPage {
         .onClick(() => {
           this.appState.addToBasket(this.foodLabel)
           router.pushUrl({ url: 'pages/BasketCheckPage' })
-        })
-
-        // 查看替代品按钮
-        Button() {
-          Row() {
-            Text('\uD83D\uDD04').fontSize(18)
-            Text('\u67E5\u770B\u66FF\u4EE3\u54C1').fontSize(16).fontColor('#007DFF').margin({ left: 6 })
-          }
-        }
-        .width('90%')
-        .height(48)
-        .backgroundColor('#E3F2FD')
-        .borderRadius(24)
-        .margin({ bottom: 12 })
-        .onClick(() => {
-          router.pushUrl({
-            url: 'pages/SearchPage',
-            params: {
-              foodName: this.foodLabel.foodName,
-              memberId: this.selectedMemberId
-            }
-          })
         })
 
         // 底部生产主体信息卡
@@ -265,6 +273,165 @@ struct ReportPage {
     }
   }
 
+  @Builder
+  AlternativeCardItem(item: AlternativeFood, index: number) {
+    Column() {
+      // 替代品名称
+      Text(item.productName)
+        .fontSize(FONT_SIZE.SMALL)
+        .fontWeight(FONT_WEIGHT.MEDIUM)
+        .fontColor(COLORS.TEXT_PRIMARY)
+        .maxLines(2)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .lineHeight(18)
+        .textAlign(TextAlign.Start)
+        .width('100%')
+        .height(36)
+
+      // 评分差
+      Row() {
+        Text('评分')
+          .fontSize(FONT_SIZE.TINY)
+          .fontColor(COLORS.TEXT_TERTIARY)
+        Text(this.getScoreDiffStr(item))
+          .fontSize(FONT_SIZE.SMALL)
+          .fontWeight(FONT_WEIGHT.BOLD)
+          .fontColor(this.getScoreDiff(item) > 0 ? COLORS.LEVEL_GREEN : COLORS.LEVEL_RED)
+          .margin({ left: 4 })
+      }
+      .width('100%')
+      .margin({ top: SPACING.SM })
+
+      // 关键改善指标
+      Text(this.getImprovementLabel(item))
+        .fontSize(FONT_SIZE.TINY)
+        .fontColor(COLORS.ACCENT_GREEN)
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .width('100%')
+        .margin({ top: SPACING.XS })
+
+      // 最适合成员标签
+      Text(this.getBestMemberLabel(item))
+        .fontSize(FONT_SIZE.TINY)
+        .fontColor(COLORS.WHITE)
+        .padding({ left: 6, right: 6, top: 2, bottom: 2 })
+        .backgroundColor(COLORS.PRIMARY)
+        .borderRadius(RADIUS.SM)
+        .margin({ top: 'auto' })
+    }
+    .width(140)
+    .height(180)
+    .padding(SPACING.MD)
+    .backgroundColor(COLORS.BG_CARD_HIGHLIGHT)
+    .borderRadius(RADIUS.MD)
+    .borderWidth(1)
+    .borderColor('#F0E0E8')
+    .margin({ right: SPACING.MD })
+    .onClick(() => {
+      this.viewAlternativeDetail(item)
+    })
+  }
+
+  private getScoreDiff(item: AlternativeFood): number {
+    return item.healthScore - 50
+  }
+
+  private getScoreDiffStr(item: AlternativeFood): string {
+    const diff = item.healthScore - 50
+    return diff > 0 ? `+${diff}` : `${diff}`
+  }
+
+  /**
+   * 获取最适合吃替代品的成员标签
+   */
+  private getBestMemberLabel(item: AlternativeFood): string {
+    if (this.recommendations.length > 0) {
+      for (const rec of this.recommendations) {
+        if (rec.isAvoid()) {
+          const member = this.familyMembers.find(m => m.memberId === rec.memberId)
+          if (member) {
+            return member.nickname
+          }
+        }
+      }
+    }
+    if (this.familyMembers.length > 0) {
+      return this.familyMembers[0].nickname
+    }
+    return '全家推荐'
+  }
+
+  /**
+   * 获取关键改善指标标签
+   */
+  private getImprovementLabel(item: AlternativeFood): string {
+    if (item.sodium_mg < 100) return '低钠'
+    if (item.sugar_g < 5) return '低糖'
+    if (item.energyKcal < 100) return '低热量'
+    if (item.sugar_g < 10) return '控糖优选'
+    return '更健康选择'
+  }
+
+  /**
+   * 查看替代品详情
+   */
+  private viewAlternativeDetail(item: AlternativeFood) {
+    promptAction.showToast({ message: `查看: ${item.productName}` })
+  }
+
+  /**
+   * 生成模拟替代品数据
+   */
+  private generateMockAlternatives(): AlternativeFood[] {
+    const foodName = this.foodLabel.foodName
+    if (foodName.length === 0) return []
+
+    const mockItems: AlternativeFood[] = [
+      {
+        productName: `${foodName}(低盐版)`,
+        brand: '健康优选',
+        healthScore: 78,
+        level: RecommendationLevel.GREEN,
+        sodium_mg: 80,
+        sugar_g: 3,
+        energyKcal: 120,
+        reason: '钠含量降低60%'
+      },
+      {
+        productName: `${foodName}(无糖)`,
+        brand: '天然食品',
+        healthScore: 72,
+        level: RecommendationLevel.GREEN,
+        sodium_mg: 200,
+        sugar_g: 0,
+        energyKcal: 90,
+        reason: '零糖配方'
+      },
+      {
+        productName: `有机${foodName}`,
+        brand: '有机农场',
+        healthScore: 65,
+        level: RecommendationLevel.YELLOW,
+        sodium_mg: 150,
+        sugar_g: 5,
+        energyKcal: 110,
+        reason: '有机原料更安心'
+      },
+      {
+        productName: `${foodName}(高钙)`,
+        brand: '营养佳品',
+        healthScore: 60,
+        level: RecommendationLevel.YELLOW,
+        sodium_mg: 180,
+        sugar_g: 8,
+        energyKcal: 130,
+        reason: '添加钙质营养强化'
+      }
+    ]
+    return mockItems
+  }
+
   private async loadReportData() {
     this.familyMembers = await this.appState.getAllMembers()
     if (this.foodId.length > 0) {
@@ -285,6 +452,7 @@ struct ReportPage {
     }
 
     this.recommendations = this.appState.calculateFamilyComparison(this.foodLabel)
+    this.alternatives = this.generateMockAlternatives()
     this.credibilityResult = this.appState.calculateCredibility(this.foodLabel)
     this.selectMember(this.selectedMemberId)
 

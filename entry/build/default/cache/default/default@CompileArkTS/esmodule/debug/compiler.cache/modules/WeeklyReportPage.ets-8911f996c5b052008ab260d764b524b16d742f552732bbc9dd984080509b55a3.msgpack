@@ -1,762 +1,0 @@
-Ôr@Ÿªassertions¤code´customTransformCache¬dependencies¢id¤meta±moduleSideEffects¬originalCode±originalSourcemap«resolvedIds®sourcemapChainµsyntheticNamedExportsµtransformDependencies®transformFiles¨cacheAstÔrAÚEif (!("finalizeConstruction" in ViewPU.prototype)) {
-    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
-}
-import router from "@ohos.router";
-import { AppState } from '../AppState';
-import { MealScenario } from '../model/MealBalance';
-import { WeeklyReportEngine } from '../engine/WeeklyReportEngine';
-import { DateUtil } from '../utils/DateUtil';
-// å‘¨èŒƒå›´
-class WeekRange {
-    constructor() {
-        this.startDate = '';
-        this.endDate = '';
-    }
-}
-class WeeklyReportPage extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
-        super(parent, __localStorage, elmtId, extraInfo);
-        if (typeof paramsLambda === "function") {
-            this.paramsGenerator_ = paramsLambda;
-        }
-        this.__reports = new ObservedPropertyObjectPU([], this, "reports");
-        this.__weekLabel = new ObservedPropertySimplePU('', this, "weekLabel");
-        this.appState = AppState.getInstance();
-        this.setInitiallyProvidedValue(params);
-        this.finalizeConstruction();
-    }
-    setInitiallyProvidedValue(params) {
-        if (params.reports !== undefined) {
-            this.reports = params.reports;
-        }
-        if (params.weekLabel !== undefined) {
-            this.weekLabel = params.weekLabel;
-        }
-        if (params.appState !== undefined) {
-            this.appState = params.appState;
-        }
-    }
-    updateStateVars(params) {
-    }
-    purgeVariableDependenciesOnElmtId(rmElmtId) {
-        this.__reports.purgeDependencyOnElmtId(rmElmtId);
-        this.__weekLabel.purgeDependencyOnElmtId(rmElmtId);
-    }
-    aboutToBeDeleted() {
-        this.__reports.aboutToBeDeleted();
-        this.__weekLabel.aboutToBeDeleted();
-        SubscriberManager.Get().delete(this.id__());
-        this.aboutToBeDeletedInternal();
-    }
-    get reports() {
-        return this.__reports.get();
-    }
-    set reports(newValue) {
-        this.__reports.set(newValue);
-    }
-    get weekLabel() {
-        return this.__weekLabel.get();
-    }
-    set weekLabel(newValue) {
-        this.__weekLabel.set(newValue);
-    }
-    async aboutToAppear() {
-        const members = await this.appState.getAllMembers();
-        const weekRange = this.getCurrentWeekRange();
-        this.weekLabel = `${weekRange.startDate} ~ ${weekRange.endDate}`;
-        const scanHistory = await this.appState.getRecentScanHistory(200);
-        const reports = [];
-        const engine = new WeeklyReportEngine();
-        for (const member of members) {
-            const data = await this.buildWeeklyData(member, weekRange.startDate, weekRange.endDate, scanHistory);
-            reports.push(engine.generate(data, member));
-        }
-        this.reports = reports;
-    }
-    initialRender() {
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Scroll.create();
-            Scroll.width('100%');
-            Scroll.height('100%');
-            Scroll.backgroundColor('#FAFAFA');
-        }, Scroll);
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Column.create();
-            Column.width('100%');
-            Column.alignItems(HorizontalAlign.Center);
-        }, Column);
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Row.create();
-            Row.width('100%');
-            Row.padding({ left: 16, right: 16, top: 16, bottom: 16 });
-        }, Row);
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Text.create('<');
-            Text.fontSize(24);
-            Text.fontColor('#1976D2');
-            Text.onClick(() => { router.back(); });
-        }, Text);
-        Text.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Text.create('å®¶åº­å‘¨æŠ¥');
-            Text.fontSize(20);
-            Text.fontWeight(FontWeight.Bold);
-            Text.margin({ left: 16 });
-        }, Text);
-        Text.pop();
-        Row.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            If.create();
-            if (this.weekLabel.length > 0) {
-                this.ifElseBranchUpdateFunction(0, () => {
-                    this.observeComponentCreation2((elmtId, isInitialRender) => {
-                        Text.create(this.weekLabel);
-                        Text.fontSize(13);
-                        Text.fontColor('#757575');
-                        Text.width('92%');
-                        Text.margin({ bottom: 12 });
-                        Text.textAlign(TextAlign.Start);
-                    }, Text);
-                    Text.pop();
-                });
-            }
-            else {
-                this.ifElseBranchUpdateFunction(1, () => {
-                });
-            }
-        }, If);
-        If.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            If.create();
-            if (this.reports.length === 0) {
-                this.ifElseBranchUpdateFunction(0, () => {
-                    this.observeComponentCreation2((elmtId, isInitialRender) => {
-                        Column.create();
-                        Column.width('100%');
-                        Column.height('70%');
-                        Column.justifyContent(FlexAlign.Center);
-                        Column.alignItems(HorizontalAlign.Center);
-                    }, Column);
-                    this.observeComponentCreation2((elmtId, isInitialRender) => {
-                        Text.create('æœ¬å‘¨è¿˜æ²¡æœ‰å¯å±•ç¤ºçš„è®°å½•');
-                        Text.fontSize(16);
-                        Text.fontColor('#616161');
-                    }, Text);
-                    Text.pop();
-                    this.observeComponentCreation2((elmtId, isInitialRender) => {
-                        Text.create('å…ˆå»æ‰«ç ã€æŸ¥çœ‹æŠ¥å‘Šæˆ–è®°å½•ä¸€é¤ï¼Œå†å›æ¥æŸ¥çœ‹å‘¨æŠ¥');
-                        Text.fontSize(12);
-                        Text.fontColor('#9E9E9E');
-                        Text.margin({ top: 8 });
-                    }, Text);
-                    Text.pop();
-                    Column.pop();
-                });
-            }
-            else {
-                this.ifElseBranchUpdateFunction(1, () => {
-                    this.observeComponentCreation2((elmtId, isInitialRender) => {
-                        ForEach.create();
-                        const forEachItemGenFunction = _item => {
-                            const report = _item;
-                            this.MemberWeeklyCard.bind(this)(report);
-                        };
-                        this.forEachUpdateFunction(elmtId, this.reports, forEachItemGenFunction, (report) => report.memberId, false, false);
-                    }, ForEach);
-                    ForEach.pop();
-                });
-            }
-        }, If);
-        If.pop();
-        Column.pop();
-        Scroll.pop();
-    }
-    MemberWeeklyCard(report, parent = null) {
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Column.create();
-            Column.width('92%');
-            Column.padding(16);
-            Column.backgroundColor('#FFFFFF');
-            Column.borderRadius(16);
-            Column.alignItems(HorizontalAlign.Start);
-            Column.margin({ bottom: 12 });
-        }, Column);
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Text.create(report.memberName);
-            Text.fontSize(18);
-            Text.fontWeight(FontWeight.Bold);
-            Text.margin({ bottom: 6 });
-        }, Text);
-        Text.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Text.create(report.summary);
-            Text.fontSize(14);
-            Text.fontColor('#212121');
-            Text.margin({ bottom: 10 });
-        }, Text);
-        Text.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            If.create();
-            if (report.highlights.length > 0) {
-                this.ifElseBranchUpdateFunction(0, () => {
-                    this.observeComponentCreation2((elmtId, isInitialRender) => {
-                        Text.create('æœ¬å‘¨é‡ç‚¹');
-                        Text.fontSize(13);
-                        Text.fontColor('#757575');
-                        Text.margin({ bottom: 6 });
-                    }, Text);
-                    Text.pop();
-                    this.observeComponentCreation2((elmtId, isInitialRender) => {
-                        ForEach.create();
-                        const forEachItemGenFunction = _item => {
-                            const item = _item;
-                            this.observeComponentCreation2((elmtId, isInitialRender) => {
-                                Text.create(`â€¢ ${item}`);
-                                Text.fontSize(12);
-                                Text.fontColor('#616161');
-                                Text.margin({ bottom: 4 });
-                            }, Text);
-                            Text.pop();
-                        };
-                        this.forEachUpdateFunction(elmtId, report.highlights, forEachItemGenFunction, (item, index) => `${index}`, false, true);
-                    }, ForEach);
-                    ForEach.pop();
-                });
-            }
-            else {
-                this.ifElseBranchUpdateFunction(1, () => {
-                });
-            }
-        }, If);
-        If.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            If.create();
-            if (report.suggestions.length > 0) {
-                this.ifElseBranchUpdateFunction(0, () => {
-                    this.observeComponentCreation2((elmtId, isInitialRender) => {
-                        Text.create('ä¸‹å‘¨å»ºè®®');
-                        Text.fontSize(13);
-                        Text.fontColor('#757575');
-                        Text.margin({ top: 8, bottom: 6 });
-                    }, Text);
-                    Text.pop();
-                    this.observeComponentCreation2((elmtId, isInitialRender) => {
-                        ForEach.create();
-                        const forEachItemGenFunction = _item => {
-                            const item = _item;
-                            this.observeComponentCreation2((elmtId, isInitialRender) => {
-                                Text.create(`â€¢ ${item}`);
-                                Text.fontSize(12);
-                                Text.fontColor('#616161');
-                                Text.margin({ bottom: 4 });
-                            }, Text);
-                            Text.pop();
-                        };
-                        this.forEachUpdateFunction(elmtId, report.suggestions, forEachItemGenFunction, (item, index) => `${index}`, false, true);
-                    }, ForEach);
-                    ForEach.pop();
-                });
-            }
-            else {
-                this.ifElseBranchUpdateFunction(1, () => {
-                });
-            }
-        }, If);
-        If.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            If.create();
-            if (report.buyLess.length > 0 || report.buyMore.length > 0) {
-                this.ifElseBranchUpdateFunction(0, () => {
-                    this.observeComponentCreation2((elmtId, isInitialRender) => {
-                        Text.create('é‡‡è´­å»ºè®®');
-                        Text.fontSize(13);
-                        Text.fontColor('#757575');
-                        Text.margin({ top: 8, bottom: 6 });
-                    }, Text);
-                    Text.pop();
-                    this.observeComponentCreation2((elmtId, isInitialRender) => {
-                        If.create();
-                        if (report.buyLess.length > 0) {
-                            this.ifElseBranchUpdateFunction(0, () => {
-                                this.observeComponentCreation2((elmtId, isInitialRender) => {
-                                    Text.create(`å°‘ä¹°ï¼š${report.buyLess.join('ã€')}`);
-                                    Text.fontSize(12);
-                                    Text.fontColor('#D32F2F');
-                                    Text.margin({ bottom: 4 });
-                                }, Text);
-                                Text.pop();
-                            });
-                        }
-                        else {
-                            this.ifElseBranchUpdateFunction(1, () => {
-                            });
-                        }
-                    }, If);
-                    If.pop();
-                    this.observeComponentCreation2((elmtId, isInitialRender) => {
-                        If.create();
-                        if (report.buyMore.length > 0) {
-                            this.ifElseBranchUpdateFunction(0, () => {
-                                this.observeComponentCreation2((elmtId, isInitialRender) => {
-                                    Text.create(`å¤‡ä¸€äº›ï¼š${report.buyMore.join('ã€')}`);
-                                    Text.fontSize(12);
-                                    Text.fontColor('#2E7D32');
-                                }, Text);
-                                Text.pop();
-                            });
-                        }
-                        else {
-                            this.ifElseBranchUpdateFunction(1, () => {
-                            });
-                        }
-                    }, If);
-                    If.pop();
-                });
-            }
-            else {
-                this.ifElseBranchUpdateFunction(1, () => {
-                });
-            }
-        }, If);
-        If.pop();
-        Column.pop();
-    }
-    getCurrentWeekRange() {
-        const today = new Date();
-        const day = today.getDay();
-        const diffToMonday = day === 0 ? 6 : day - 1;
-        const start = new Date(today);
-        start.setHours(0, 0, 0, 0);
-        start.setDate(today.getDate() - diffToMonday);
-        const end = new Date(start);
-        end.setDate(start.getDate() + 6);
-        const range = new WeekRange();
-        range.startDate = DateUtil.formatDate(start);
-        range.endDate = DateUtil.formatDate(end);
-        return range;
-    }
-    async buildWeeklyData(member, startDate, endDate, scanHistory) {
-        const records = await this.appState.getDietRecordsByDateRange(member.memberId, startDate, endDate);
-        const highSodiumDays = new Set();
-        const highSugarDays = new Set();
-        const highFatDays = new Set();
-        let sweetNearMealCount = 0;
-        let lateNightSnackCount = 0;
-        let heavyFlavorCount = 0;
-        let childSnackOverLimit = 0;
-        for (const record of records) {
-            if (record.sodiumIntake >= 800) {
-                highSodiumDays.add(record.date);
-            }
-            if (record.sugarIntake >= 15) {
-                highSugarDays.add(record.date);
-            }
-            if (record.fatIntake >= 20) {
-                highFatDays.add(record.date);
-            }
-            if (record.scenario === MealScenario.MILK_TEA || record.scenario === MealScenario.DESSERT || record.sugarIntake >= 15) {
-                sweetNearMealCount++;
-            }
-            if (record.scenario === MealScenario.LATE_NIGHT) {
-                lateNightSnackCount++;
-            }
-            if (record.scenario === MealScenario.BBQ ||
-                record.scenario === MealScenario.HOTPOT ||
-                record.scenario === MealScenario.LUWEI ||
-                record.scenario === MealScenario.INSTANT_NOODLE ||
-                record.scenario === MealScenario.FRIED_CHICKEN) {
-                heavyFlavorCount++;
-            }
-            if (member.isChild() &&
-                (record.scenario === MealScenario.MILK_TEA || record.scenario === MealScenario.DESSERT || record.sugarIntake >= 15)) {
-                childSnackOverLimit++;
-            }
-        }
-        const totalScans = scanHistory.filter(record => record.memberId === member.memberId && this.timestampInRange(record.scannedAt, startDate, endDate)).length;
-        const data = {
-            memberId: member.memberId,
-            weekStart: startDate,
-            weekEnd: endDate,
-            totalScans: totalScans,
-            highSodiumDays: highSodiumDays.size,
-            highSugarDays: highSugarDays.size,
-            highFatDays: highFatDays.size,
-            sweetNearMealCount: sweetNearMealCount,
-            lateNightSnackCount: lateNightSnackCount,
-            heavyFlavorCount: heavyFlavorCount,
-            childSnackOverLimit: childSnackOverLimit
-        };
-        return data;
-    }
-    timestampInRange(timestamp, startDate, endDate) {
-        const date = DateUtil.formatDate(new Date(timestamp));
-        return date >= startDate && date <= endDate;
-    }
-    rerender() {
-        this.updateDirtyElements();
-    }
-    static getEntryName() {
-        return "WeeklyReportPage";
-    }
-}
-registerNamedRoute(() => new WeeklyReportPage(undefined, {}), "", { bundleName: "com.familyfood.helper", moduleName: "entry", pagePath: "pages/WeeklyReportPage", pageFullPath: "entry/src/main/ets/pages/WeeklyReportPage", integratedHsp: "false", moduleType: "followWithHap" });
-//# sourceMappingURL=WeeklyReportPage.js.mapÂ•Ùf hvigor_ignore_C:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.router.d.tsÙ6E:\APP\family_food_app\entry\src\main\ets\AppState.etsÙ?E:\APP\family_food_app\entry\src\main\ets\model\MealBalance.etsÙGE:\APP\family_food_app\entry\src\main\ets\engine\WeeklyReportEngine.etsÙ<E:\APP\family_food_app\entry\src\main\ets\utils\DateUtil.etsÙDE:\APP\family_food_app\entry\src\main\ets\pages\WeeklyReportPage.etsÔrBšªmoduleName±isLocalDependency¯isNodeEntryFile§pkgPath±belongProjectPath§pkgNameªpkgVersion±dependencyPkgInfo°belongModulePath¬shouldEmitJs¥entryÃÂ¼E:\APP\family_food_app\entry¶E:\APP\family_food_app¥entry¥1.0.0Ô  ¼E:\APP\family_food_app\entryÃÃÚ¸import { router } from '@kit.ArkUI';
-import { AppState } from '../AppState';
-import { FamilyProfile } from '../model/FamilyProfile';
-import { MealScenario } from '../model/MealBalance';
-import { WeeklyDietData, WeeklyReport, WeeklyReportEngine } from '../engine/WeeklyReportEngine';
-import { DietRecord, ScanHistoryRecord } from '../repository/HistoryRepository';
-import { DateUtil } from '../utils/DateUtil';
-
-// å‘¨èŒƒå›´
-class WeekRange {
-  startDate: string = '';
-  endDate: string = '';
-}
-
-@Entry
-@Component
-struct WeeklyReportPage {
-  @State reports: WeeklyReport[] = []
-  @State weekLabel: string = ''
-
-  private appState: AppState = AppState.getInstance()
-
-  async aboutToAppear() {
-    const members = await this.appState.getAllMembers()
-    const weekRange = this.getCurrentWeekRange()
-    this.weekLabel = `${weekRange.startDate} ~ ${weekRange.endDate}`
-    const scanHistory = await this.appState.getRecentScanHistory(200)
-
-    const reports: WeeklyReport[] = []
-    const engine = new WeeklyReportEngine()
-    for (const member of members) {
-      const data = await this.buildWeeklyData(member, weekRange.startDate, weekRange.endDate, scanHistory)
-      reports.push(engine.generate(data, member))
-    }
-    this.reports = reports
-  }
-
-  build() {
-    Scroll() {
-      Column() {
-        Row() {
-          Text('<')
-            .fontSize(24)
-            .fontColor('#1976D2')
-            .onClick(() => { router.back() })
-          Text('å®¶åº­å‘¨æŠ¥')
-            .fontSize(20)
-            .fontWeight(FontWeight.Bold)
-            .margin({ left: 16 })
-        }
-        .width('100%')
-        .padding({ left: 16, right: 16, top: 16, bottom: 16 })
-
-        if (this.weekLabel.length > 0) {
-          Text(this.weekLabel)
-            .fontSize(13)
-            .fontColor('#757575')
-            .width('92%')
-            .margin({ bottom: 12 })
-            .textAlign(TextAlign.Start)
-        }
-
-        if (this.reports.length === 0) {
-          Column() {
-            Text('æœ¬å‘¨è¿˜æ²¡æœ‰å¯å±•ç¤ºçš„è®°å½•')
-              .fontSize(16)
-              .fontColor('#616161')
-            Text('å…ˆå»æ‰«ç ã€æŸ¥çœ‹æŠ¥å‘Šæˆ–è®°å½•ä¸€é¤ï¼Œå†å›æ¥æŸ¥çœ‹å‘¨æŠ¥')
-              .fontSize(12)
-              .fontColor('#9E9E9E')
-              .margin({ top: 8 })
-          }
-          .width('100%')
-          .height('70%')
-          .justifyContent(FlexAlign.Center)
-          .alignItems(HorizontalAlign.Center)
-        } else {
-          ForEach(this.reports, (report: WeeklyReport) => {
-            this.MemberWeeklyCard(report)
-          }, (report: WeeklyReport) => report.memberId)
-        }
-      }
-      .width('100%')
-      .alignItems(HorizontalAlign.Center)
-    }
-    .width('100%')
-    .height('100%')
-    .backgroundColor('#FAFAFA')
-  }
-
-  @Builder
-  MemberWeeklyCard(report: WeeklyReport) {
-    Column() {
-      Text(report.memberName)
-        .fontSize(18)
-        .fontWeight(FontWeight.Bold)
-        .margin({ bottom: 6 })
-
-      Text(report.summary)
-        .fontSize(14)
-        .fontColor('#212121')
-        .margin({ bottom: 10 })
-
-      if (report.highlights.length > 0) {
-        Text('æœ¬å‘¨é‡ç‚¹')
-          .fontSize(13)
-          .fontColor('#757575')
-          .margin({ bottom: 6 })
-        ForEach(report.highlights, (item: string) => {
-          Text(`â€¢ ${item}`)
-            .fontSize(12)
-            .fontColor('#616161')
-            .margin({ bottom: 4 })
-        }, (item: string, index: number) => `${index}`)
-      }
-
-      if (report.suggestions.length > 0) {
-        Text('ä¸‹å‘¨å»ºè®®')
-          .fontSize(13)
-          .fontColor('#757575')
-          .margin({ top: 8, bottom: 6 })
-        ForEach(report.suggestions, (item: string) => {
-          Text(`â€¢ ${item}`)
-            .fontSize(12)
-            .fontColor('#616161')
-            .margin({ bottom: 4 })
-        }, (item: string, index: number) => `${index}`)
-      }
-
-      if (report.buyLess.length > 0 || report.buyMore.length > 0) {
-        Text('é‡‡è´­å»ºè®®')
-          .fontSize(13)
-          .fontColor('#757575')
-          .margin({ top: 8, bottom: 6 })
-
-        if (report.buyLess.length > 0) {
-          Text(`å°‘ä¹°ï¼š${report.buyLess.join('ã€')}`)
-            .fontSize(12)
-            .fontColor('#D32F2F')
-            .margin({ bottom: 4 })
-        }
-
-        if (report.buyMore.length > 0) {
-          Text(`å¤‡ä¸€äº›ï¼š${report.buyMore.join('ã€')}`)
-            .fontSize(12)
-            .fontColor('#2E7D32')
-        }
-      }
-    }
-    .width('92%')
-    .padding(16)
-    .backgroundColor('#FFFFFF')
-    .borderRadius(16)
-    .alignItems(HorizontalAlign.Start)
-    .margin({ bottom: 12 })
-  }
-
-  private getCurrentWeekRange(): WeekRange {
-    const today = new Date()
-    const day = today.getDay()
-    const diffToMonday = day === 0 ? 6 : day - 1
-    const start = new Date(today)
-    start.setHours(0, 0, 0, 0)
-    start.setDate(today.getDate() - diffToMonday)
-    const end = new Date(start)
-    end.setDate(start.getDate() + 6)
-    const range = new WeekRange();
-    range.startDate = DateUtil.formatDate(start);
-    range.endDate = DateUtil.formatDate(end);
-    return range;
-  }
-
-  private async buildWeeklyData(
-    member: FamilyProfile,
-    startDate: string,
-    endDate: string,
-    scanHistory: ScanHistoryRecord[]
-  ): Promise<WeeklyDietData> {
-    const records = await this.appState.getDietRecordsByDateRange(member.memberId, startDate, endDate)
-    const highSodiumDays: Set<string> = new Set()
-    const highSugarDays: Set<string> = new Set()
-    const highFatDays: Set<string> = new Set()
-
-    let sweetNearMealCount = 0
-    let lateNightSnackCount = 0
-    let heavyFlavorCount = 0
-    let childSnackOverLimit = 0
-
-    for (const record of records) {
-      if (record.sodiumIntake >= 800) {
-        highSodiumDays.add(record.date)
-      }
-      if (record.sugarIntake >= 15) {
-        highSugarDays.add(record.date)
-      }
-      if (record.fatIntake >= 20) {
-        highFatDays.add(record.date)
-      }
-
-      if (record.scenario === MealScenario.MILK_TEA || record.scenario === MealScenario.DESSERT || record.sugarIntake >= 15) {
-        sweetNearMealCount++
-      }
-      if (record.scenario === MealScenario.LATE_NIGHT) {
-        lateNightSnackCount++
-      }
-      if (
-        record.scenario === MealScenario.BBQ ||
-        record.scenario === MealScenario.HOTPOT ||
-        record.scenario === MealScenario.LUWEI ||
-        record.scenario === MealScenario.INSTANT_NOODLE ||
-        record.scenario === MealScenario.FRIED_CHICKEN
-      ) {
-        heavyFlavorCount++
-      }
-      if (
-        member.isChild() &&
-        (record.scenario === MealScenario.MILK_TEA || record.scenario === MealScenario.DESSERT || record.sugarIntake >= 15)
-      ) {
-        childSnackOverLimit++
-      }
-    }
-
-    const totalScans = scanHistory.filter(record =>
-      record.memberId === member.memberId && this.timestampInRange(record.scannedAt, startDate, endDate)
-    ).length
-
-    const data: WeeklyDietData = {
-      memberId: member.memberId,
-      weekStart: startDate,
-      weekEnd: endDate,
-      totalScans: totalScans,
-      highSodiumDays: highSodiumDays.size,
-      highSugarDays: highSugarDays.size,
-      highFatDays: highFatDays.size,
-      sweetNearMealCount: sweetNearMealCount,
-      lateNightSnackCount: lateNightSnackCount,
-      heavyFlavorCount: heavyFlavorCount,
-      childSnackOverLimit: childSnackOverLimit
-    };
-    return data;
-  }
-
-  private timestampInRange(timestamp: number, startDate: string, endDate: string): boolean {
-    const date = DateUtil.formatDate(new Date(timestamp))
-    return date >= startDate && date <= endDate
-  }
-}
-ÀÔrC•¬@ohos.router«../AppState´../model/MealBalance¼../engine/WeeklyReportEngine±../utils/DateUtilÔrD—ªassertions¨external¢id¤meta±moduleSideEffectsªresolvedByµsyntheticNamedExportsAÃÙf hvigor_ignore_C:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.router.d.tsAÃªoh-resolveÂDAÂÙ6E:\APP\family_food_app\entry\src\main\ets\AppState.etsAÃªoh-resolveÂDAÂÙ?E:\APP\family_food_app\entry\src\main\ets\model\MealBalance.etsAÃªoh-resolveÂDAÂÙGE:\APP\family_food_app\entry\src\main\ets\engine\WeeklyReportEngine.etsAÃªoh-resolveÂDAÂÙ<E:\APP\family_food_app\entry\src\main\ets\utils\DateUtil.etsAÃªoh-resolveÂ“ÔrE–§version¤fileªsourceRoot§sources¥names¨mappings³WeeklyReportPage.js ‘´WeeklyReportPage.etsÜŠ–”    ”  	”  ”  ”!  #”"  $˜”   ” ”	 	” ” ” ”& &”' '˜”   ” ”	 	” ” ” ”3 3”4 4˜”   ” ”	 '” 9” ;”# ÌA”ÌA Ì_”ÌB Ì`˜”   ” ”	 	” ” ” ”, ,”- -’”   ” “”  	 ” 	” 	‘” 	 •” 
-” 
-” 
-” 
-” 
-•” ” 	” ” ” ’”  ” ‘” ’” ” ‘”  ’”6 #”8 %’”8 ”: •” ”  '”! (”, 3”. 5‘” ’” 	” ’” 	” ’” 	” ’” 	” ”” ”	 ”
- ” œ” ” 
-” ” ” ”" ”# ”+ '”, (”9 5”; 7”< 7™” ” 
-” ” ” ” ”2 .”4 0”5 0Ÿ” ” ” 	” ” ” ”% !”& "”/ +”5 1”> :”? ;”ÌF ÌB”ÌH ÌD”ÌI ÌD” ” 
-” ” ”" ”& "”' #”/ +”0 ,”ÌD Ì@”ÌE ÌA”ÌH ÌD”ÌI ÌE”ÌJ ÌE–” ” 
-” ” $” &” &˜” ” 
-” ” ” ”- )”/ +”0 +—” ” 	” ” ” ”$  ”& "Ü ” ” ” ” ” ”# ”$ ”3 -”4 .”: 4”< 6”ÌE ?”ÌF Ì@”ÌO ÌI”ÌQ ÌK”ÌZ ÌT”Ì[ ÌU”Ìb Ì\”Ìd Ì^”Ìo Ìi”Ìp Ìj”Ìq ÌjŸ”  ”  ”  ”  ”  ”  ”   ”(  "”)  #”-  '”/  )”5  /”6  0”7  1”8  1‘”	 !—” "” "” "	” "” "” "” "’” #” #‘” %’” &” &
-–” &” &
-” ÌU” ÌU
-” ÌU” ÌU–” &” &
-” ÌV” ÌV” ÌV”  ÌV–” &” &
-” ÌW”" ÌW”# ÌW”, ÌW’” '” '–” '” '” ÌR” ÌR” ÌR” ÌR˜” '” '” ÌS” ÌS” ÌS”- ÌS!”. ÌS"”4 ÌS(’” (” (–” (” (” 2	” 2” 2” 2Ü ” (” (” 3	” 3” 3” 3” 3”  3”" 3”$ 3”) 3"”+ 3$”- 3&”/ 3(”2 3+”4 3-”6 3/”8 31”> 37”Ì@ 39”ÌB 3;”ÌD 3=”” )
-” )” )” )–” )
-” )” *” *” *” *–” )
-” )” +” +” +”$ + Ÿ” )
-” )” ,” ,” ,” ,” ,”! ,”' ,#”( ,$”, ,(”. ,*”/ ,*”0 ,+”1 ,,’” )
-” )”” -
-” -” -” -–” -
-” -” .” .” .” .˜” -
-” -” /” /” /”& /"”' /#”+ /'š” -
-” -” 0” 0” 0” 0” 0”  0”" 0”$ 0 ’” -
-” -’” (” (š” 5” 5” 5” 5” 5” 5”% 5!”( 5$”) 5%”+ 5'–” 6
-” 6”$ 6”( 6”) 6”2 6–” 6
-” 6” 7”% 7”& 7”( 7–” 6
-” 6” 8”& 8”' 8”0 8 –” 6
-” 6” 9”" 9”# 9”( 9š” 6
-” 6” :”# :”$ :”& :”, :”. :”0 : ”2 :"˜” 6
-” 6” ;”& ;”' ;”0 ; ”1 ;!”6 ;&’” 6
-” 6‘” <	‘” <	š” >” >” >” >” >” >”# >”( >$”) >%”+ >'’” ?
-” ?–” ?
-” ?” ÌH”$ ÌH”% ÌH”+ ÌH–” ?
-” ?” ÌI”% ÌI”& ÌI”+ ÌI˜” ?
-” ?” ÌJ”- ÌJ”. ÌJ”7 ÌJ#”8 ÌJ$”> ÌJ*˜” ?
-” ?” ÌK”) ÌK”* ÌK”9 ÌK%”: ÌK&”Ì@ ÌK,”” Ì@” Ì@”$ Ì@”1 Ì@–” Ì@” Ì@” ÌA”% ÌA”& ÌA”( ÌA–” Ì@” Ì@” ÌB”& ÌB”' ÌB”0 ÌB"’” Ì@” Ì@”” ÌC” ÌC”$ ÌC”< ÌC)–” ÌC” ÌC” ÌD”% ÌD”& ÌD”( ÌD–” ÌC” ÌC” ÌE”& ÌE”' ÌE”0 ÌE"š” ÌC” ÌC” ÌF”# ÌF”$ ÌF”& ÌF”) ÌF”+ ÌF”, ÌF”. ÌF ’” ÌC” ÌC’” ?
-” ?‘” ÌL	‘” ÌL’” ÌM
-” ÌM—” ÌN”  ÌN”! ÌN”1 ÌN!”= ÌN"”ÌC ÌN(”ÌD ÌN)”; ÌM”? ÌM”Ì@ ÌM”ÌG ÌM”Ìa ÌO”Ìb ÌO”Ìh ÌO"”Ìj ÌO$”Ìl ÌO&”Ìm ÌO'”Ìs ÌO-”Ìt ÌO.”Ì| ÌO6’” ÌM
-” ÌM‘” ÌP	’” '” '’” &” &
-‘” ÌX”” Ì[” Ì[” Ì[” Ì['’” Ì\” Ì\
-–” Ì\” Ì\
-” Ì•” Ì•
-” Ì•” Ì•–” Ì\” Ì\
-” Ì–” Ì–” Ì–” Ì––” Ì\” Ì\
-” Ì—”" Ì—”# Ì—”, Ì—–” Ì\” Ì\
-” Ì˜” Ì˜”  Ì˜”" Ì˜˜” Ì\” Ì\
-” Ì™” Ì™” Ì™”- Ì™”. Ì™ ”3 Ì™%š” Ì\” Ì\
-” Ìš” Ìš” Ìš” Ìš”" Ìš”$ Ìš”& Ìš”( Ìš–” Ì]” Ì]
-” Ì]” Ì]” Ì]”) Ì]–” Ì]” Ì]
-” Ì^	” Ì^” Ì^” Ì^˜” Ì]” Ì]
-” Ì_	” Ì_” Ì_”& Ì_”' Ì_”+ Ì_#š” Ì]” Ì]
-” Ì`	” Ì`” Ì`” Ì`”  Ì`”" Ì`”# Ì`”% Ì`’” Ì]” Ì]
-–” Ìb” Ìb
-” Ìb” Ìb” Ìb”& Ìb–” Ìb” Ìb
-” Ìc	” Ìc” Ìc” Ìc–” Ìb” Ìb
-” Ìd	” Ìd” Ìd”$ Ìdš” Ìb” Ìb
-” Ìe	” Ìe” Ìe” Ìe”  Ìe”" Ìe”$ Ìe”& Ìe’” Ìb” Ìb
-š” Ìg” Ìg
-” Ìg” Ìg”! Ìg”" Ìg”( Ìg"”+ Ìg%”, Ìg&”. Ìg(”” Ìh” Ìh”$ Ìh”* Ìh–” Ìh” Ìh” Ìi”% Ìi”& Ìi”( Ìi–” Ìh” Ìh” Ìj”& Ìj”' Ìj”0 Ìjš” Ìh” Ìh” Ìk”# Ìk”$ Ìk”& Ìk”, Ìk”. Ìk”/ Ìk”1 Ìk’” Ìh” Ìh’” Ìl” Ìl–”  Ìm
-”$ Ìm”, Ìm”1 Ìm”5 Ìm”7 Ìm–”  Ìm
-”$ Ìm”% Ìn”- Ìn”. Ìn”0 Ìn–”  Ìm
-”$ Ìm”% Ìo”. Ìo”/ Ìo”8 Ìo š”  Ìm
-”$ Ìm”% Ìp”+ Ìp”, Ìp”. Ìp”4 Ìp”6 Ìp”7 Ìp”9 Ìp!’” Ìm
-”  ÌmŸ”; Ìl”ÌA Ìl”ÌB Ìl”ÌL Ìl!”Ìf Ìq”Ìg Ìq”Ìk Ìq”Ìm Ìq”Ìr Ìq'”Ìt Ìq)”Ìv Ìq+”Ìw Ìq,”Ìz Ìq/”Ì Ìq4”Ì Ìq6’” Ìl” Ìl‘” Ìr‘” Ìrš” Ìt” Ìt
-” Ìt” Ìt”" Ìt”# Ìt”) Ìt#”, Ìt&”- Ìt'”/ Ìt)”” Ìu” Ìu”$ Ìu”* Ìu–” Ìu” Ìu” Ìv”% Ìv”& Ìv”( Ìv–” Ìu” Ìu” Ìw”& Ìw”' Ìw”0 Ìw” Ìu” Ìu” Ìx”# Ìx”$ Ìx”& Ìx”) Ìx”+ Ìx”, Ìx”. Ìx”4 Ìx"”6 Ìx$”7 Ìx%”9 Ìx'’” Ìu” Ìu’” Ìy” Ìy–”  Ìz
-”$ Ìz”, Ìz”1 Ìz”5 Ìz”7 Ìz–”  Ìz
-”$ Ìz”% Ì{”- Ì{”. Ì{”0 Ì{–”  Ìz
-”$ Ìz”% Ì|”. Ì|”/ Ì|”8 Ì| š”  Ìz
-”$ Ìz”% Ì}”+ Ì}”, Ì}”. Ì}”4 Ì}”6 Ì}”7 Ì}”9 Ì}!’” Ìz
-”  ÌzŸ”; Ìy”ÌA Ìy”ÌB Ìy”ÌM Ìy"”Ìg Ì~”Ìh Ì~”Ìl Ì~”Ìn Ì~”Ìs Ì~'”Ìu Ì~)”Ìw Ì~+”Ìx Ì~,”Ì{ Ì~/”Ì€ Ì~4”Ì‚ Ì~6’” Ìy” Ìy‘” Ì‘” ÌÜ ” Ì” Ì
-” Ì” Ì” Ì” Ì”% Ì”( Ì"”) Ì#”- Ì'”3 Ì-”4 Ì.”; Ì5”< Ì6”ÌB Ì<”ÌE Ì?”ÌF ÌÌ@”ÌH ÌÌB”” Ì‚” Ì‚”$ Ì‚”* Ì‚–” Ì‚” Ì‚” Ìƒ”% Ìƒ”& Ìƒ”( Ìƒ–” Ì‚” Ì‚” Ì„”& Ì„”' Ì„”0 Ì„” Ì‚” Ì‚” Ì…”# Ì…”$ Ì…”& Ì…”) Ì…”+ Ì…”, Ì…”. Ì…”4 Ì…"”6 Ì…$”7 Ì…%”9 Ì…'’” Ì‚” Ì‚š” Ì‡” Ì‡”" Ì‡”# Ì‡”* Ì‡”+ Ì‡”1 Ì‡!”4 Ì‡$”5 Ì‡%”7 Ì‡'”$ Ìˆ
-”( Ìˆ”0 Ìˆ”6 Ìˆ”< Ìˆ”= Ìˆ”ÌD Ìˆ#”ÌE Ìˆ$”ÌI Ìˆ(”ÌJ Ìˆ)”ÌM Ìˆ,”ÌN Ìˆ-”ÌP Ìˆ/–”$ Ìˆ
-”( Ìˆ”) Ì‰”1 Ì‰”2 Ì‰”4 Ì‰–”$ Ìˆ
-”( Ìˆ”) ÌŠ”2 ÌŠ”3 ÌŠ”< ÌŠ š”$ Ìˆ
-”( Ìˆ”) Ì‹”/ Ì‹”0 Ì‹”2 Ì‹”8 Ì‹”: Ì‹”; Ì‹”= Ì‹!’”  Ìˆ
-”$ Ìˆ‘” ÌŒ	‘” ÌŒ	š” Ì” Ì”" Ì”# Ì”* Ì”+ Ì”1 Ì!”4 Ì$”5 Ì%”7 Ì'”$ Ì
-”( Ì”0 Ì”7 Ì”= Ì”> Ì”ÌE Ì$”ÌF Ì%”ÌJ Ì)”ÌK Ì*”ÌN Ì-”ÌO Ì.”ÌQ Ì0–”$ Ì
-”( Ì”) Ì”1 Ì”2 Ì”4 Ì–”$ Ì
-”( Ì”) Ì‘”2 Ì‘”3 Ì‘”< Ì‘ ’”  Ì
-”$ Ì‘” Ì’	‘” Ì’	‘” Ì“‘” Ì“’” Ì\” Ì\
-‘” Ì›’” Ì
-” Ì˜” Ì” Ì
-” Ì” Ì” Ì” Ì”  Ì”! Ì™” ÌŸ” ÌŸ
-” ÌŸ” ÌŸ” ÌŸ” ÌŸ”  ÌŸ”" ÌŸ”# ÌŸÜ ” Ì ” Ì 
-” Ì ” Ì ”  Ì ”% Ì !”& Ì "”' Ì #”( Ì $”) Ì %”* Ì &”+ Ì '”, Ì (”- Ì )”0 Ì ,”3 Ì /”4 Ì 0”5 Ì 0š” Ì¡” Ì¡
-” Ì¡” Ì¡” Ì¡” Ì¡” Ì¡”$ Ì¡ ”% Ì¡!”& Ì¡!” Ì¢” Ì¢	” Ì¢
-” Ì¢” Ì¢” Ì¢” Ì¢” Ì¢” Ì¢” Ì¢”  Ì¢”! Ì¢”" Ì¢”# Ì¢” Ì£” Ì£	” Ì£
-” Ì£” Ì£” Ì£” Ì£”# Ì£”% Ì£!”( Ì£$”4 Ì£0”5 Ì£1”6 Ì£1š” Ì¤” Ì¤
-” Ì¤” Ì¤” Ì¤” Ì¤” Ì¤”" Ì¤”# Ì¤”$ Ì¤” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥”! Ì¥”# Ì¥”& Ì¥"”' Ì¥#”( Ì¥$”) Ì¥$˜” Ì¦” Ì¦
-” Ì¦” Ì¦” Ì¦”# Ì¦”% Ì¦!”& Ì¦"œ” Ì§” Ì§	” Ì§
-” Ì§” Ì§”" Ì§”# Ì§”- Ì§)”. Ì§*”3 Ì§/”4 Ì§0”5 Ì§1œ” Ì¨” Ì¨	” Ì¨
-” Ì¨” Ì¨”  Ì¨”! Ì¨”+ Ì¨'”, Ì¨(”/ Ì¨+”0 Ì¨,”1 Ì¨-”” Ì©” Ì©” Ì©” Ì©’” Ìª” Ìªœ” Ì¬
-”	 Ì¬”
- Ì¬” Ì¬” Ì­”  Ì­”" Ì®”+ Ì®”- Ì¯”4 Ì¯”6 Ì°”ÌA Ì°$Ü ” Ì²” Ì²
-” Ì²” Ì²” Ì²”" Ì²”# Ì²”+ Ì²'”, Ì²(”ÌE Ì²ÌA”ÌF Ì²ÌB”ÌL Ì²ÌH”ÌM Ì²ÌI”ÌU Ì²ÌQ”ÌW Ì²ÌS”Ì` Ì²Ì\”Ìb Ì²Ì^”Ìi Ì²Ìe”Ìj Ì²Ìf”Ìk Ì²Ìf˜” Ì³” Ì³
-” Ì³” Ì³(”# Ì³,”& Ì³/”( Ì³1”) Ì³1˜” Ì´” Ì´
-” Ì´” Ì´'”" Ì´+”% Ì´.”' Ì´0”( Ì´0˜” Ìµ” Ìµ
-” Ìµ” Ìµ%”  Ìµ)”# Ìµ,”% Ìµ.”& Ìµ.–” Ì·” Ì·” Ì·”! Ì·”" Ì·”# Ì·–” Ì¸” Ì¸” Ì¸”" Ì¸”# Ì¸”$ Ì¸–” Ì¹” Ì¹” Ì¹” Ì¹”  Ì¹”! Ì¹–” Ìº” Ìº” Ìº”" Ìº”# Ìº”$ Ìº—” Ì¼” Ì¼	” Ì¼” Ì¼” Ì¼”$ Ì¼ ”& Ì¼"˜” Ì½” Ì½
-” Ì½” Ì½”# Ì½”' Ì½!”* Ì½$”, Ì½&š” Ì¾” Ì¾” Ì¾”" Ì¾”# Ì¾”) Ì¾!”* Ì¾"”. Ì¾&”/ Ì¾'”0 Ì¾'‘” Ì¿˜” ÌÀ” ÌÀ
-” ÌÀ” ÌÀ”" ÌÀ”& ÌÀ ”( ÌÀ"”* ÌÀ$š” ÌÁ” ÌÁ” ÌÁ”! ÌÁ”" ÌÁ”( ÌÁ ”) ÌÁ!”- ÌÁ%”. ÌÁ&”/ ÌÁ&‘” ÌÂ˜” ÌÃ” ÌÃ
-” ÌÃ” ÌÃ”  ÌÃ”$ ÌÃ”& ÌÃ ”( ÌÃ"š” ÌÄ” ÌÄ” ÌÄ” ÌÄ”  ÌÄ”& ÌÄ”' ÌÄ”+ ÌÄ#”, ÌÄ$”- ÌÄ$‘” ÌÅÜ ” ÌÇ” ÌÇ
-” ÌÇ” ÌÇ” ÌÇ”$ ÌÇ”0 ÌÇ*”1 ÌÇ+”9 ÌÇ3”= ÌÇ7”ÌC ÌÇ=”ÌD ÌÇ>”ÌL ÌÇÌF”ÌQ ÌÇÌK”Ì] ÌÇÌW”Ì^ ÌÇÌX”Ìe ÌÇÌ_”Ìi ÌÇÌc”Ìo ÌÇÌi”Ìp ÌÇÌj”Ì{ ÌÇÌu”Ì ÌÇÌy”Ì ÌÇÌ{”Ìƒ ÌÇÌ}”” ÌÈ”" ÌÈ”$ ÌÈ”% ÌÈ‘” ÌÉš” ÌÊ” ÌÊ
-” ÌÊ” ÌÊ” ÌÊ”$ ÌÊ”0 ÌÊ*”1 ÌÊ+”; ÌÊ5”= ÌÊ7”” ÌË”# ÌË”% ÌË”& ÌË‘” ÌÌ™” ÌÍ” ÌÎ” ÌÎ” ÌÎ” ÌÎ”$ ÌÎ”0 ÌÎ(”1 ÌÎ)”4 ÌÎ,˜” ÌÏ” ÌÏ” ÌÏ” ÌÏ”$ ÌÏ”0 ÌÏ(”1 ÌÏ)”7 ÌÏ/˜” ÌĞ” ÌĞ” ÌĞ” ÌĞ”$ ÌĞ”0 ÌĞ(”1 ÌĞ)”6 ÌĞ.˜” ÌÑ” ÌÑ” ÌÑ” ÌÑ”$ ÌÑ”0 ÌÑ(”1 ÌÑ)”? ÌÑ7™” ÌÒ” ÌÒ” ÌÒ” ÌÒ”$ ÌÒ”0 ÌÒ(”1 ÌÒ)”> ÌÒ6”Ì@ ÌÓ”” ÌÔ”  ÌÔ”" ÌÔ”# ÌÔ‘” ÌÕ–” ÌÖ” Ì×” Ì×” Ì×” Ì×”  Ì×Ü ” ÌØ” ÌØ	” ÌØ” ÌØ”  ÌØ”% ÌØ”1 ÌØ)”2 ÌØ*”: ÌØ2”> ÌØ6”ÌD ÌØ<”ÌE ÌØ=”ÌM ÌØÌE”ÌR ÌØÌJ”Ì^ ÌØÌV”Ì_ ÌØÌW”Ìf ÌØÌ^”Ìj ÌØÌb”Ìp ÌØÌh”Ìq ÌØÌi”Ì| ÌØÌt”Ì€ ÌØÌx”Ì‚ ÌØÌz”Ìƒ ÌØÌ{”Ì… ÌÙ”” ÌÚ”# ÌÚ”% ÌÚ”& ÌÚ‘” ÌÛ‘”	 ÌÜÜ $” ÌŞ” ÌŞ
-” ÌŞ” ÌŞ”& ÌŞ"”' ÌŞ#”- ÌŞ)”. ÌŞ*”4 ÌŞ0”5 ÌŞ1”7 ÌŞ3”8 Ìß”> Ìß”? Ìß”ÌG Ìß”ÌL Ìß”ÌR Ìß ”ÌS Ìß!”Ì[ Ìß)”Ì_ Ìß-”Ìc Ìß1”Ìd Ìß2”Ìt ÌßÌB”Ìu ÌßÌC”Ì{ ÌßÌI”Ì| ÌßÌJ”Ì… ÌßÌS”Ì‡ ÌßÌU”Ì ÌßÌ^”Ì’ ÌßÌ`”Ì™ ÌßÌg”Ìš ÌßÌh”Ì› Ìà”Ìœ Ìà”Ì¢ Ìà”Ì£ Ìà”” Ìâ” Ìâ
-” Ìâ” Ìâ!–” Ìã” Ìã” Ìã” Ìã” Ìã”% Ìã”” Ìä” Ìä” Ìä”  Ìä”” Ìå” Ìå” Ìå” Ìå”” Ìæ” Ìæ” Ìæ”" Ìæ–” Ìç” Ìç” Ìç”* Ìç$”+ Ìç%”/ Ìç)–” Ìè” Ìè” Ìè”( Ìè"”) Ìè#”- Ìè'–” Ìé” Ìé” Ìé”$ Ìé”% Ìé”) Ìé#”” Ìê” Ìê”  Ìê”2 Ìê,”” Ìë” Ìë”! Ìë”4 Ìë.”” Ìì” Ìì” Ìì”. Ìì(”” Ìí” Ìí”! Ìí”4 Ìí.’”	 Ìî”
- Ìî”” Ìï” Ìï” Ìï” Ìï’” Ìğ” Ìğ˜” Ìò
-” Ìò” Ìò” Ìò,”  Ìò.”) Ìò?”+ ÌòÌA”2 ÌòÌPŸ” Ìó” Ìó
-” Ìó” Ìó” Ìó” Ìó”( Ìó$”) Ìó%”- Ìó)”1 Ìó-”2 Ìó.”; Ìó7”< Ìó8”= Ìó9”> Ìó9š” Ìô” Ìô” Ìô” Ìô”  Ìô”$ Ìô ”( Ìô$”, Ìô(”3 Ìô/”4 Ìô/’” Ìõ” ÌõÔrF–§version¤file§sources®sourcesContent¥names¨mappingsÀ‘À‘ÀÜ“‘”    ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”  	 ‘”  
- ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”    ‘”  ! ‘”  " ‘”  # ‘”  $ ‘”  % ‘”  & ‘”  ' ‘”  ( ‘”  ) ‘”  * ‘”  + ‘”  , ‘”  - ‘”  . ‘”  / ‘”  0 ‘”  1 ‘”  2 ‘”  3 ‘”  4 ‘”  5 ‘”  6 ‘”  7 ‘”  8 ‘”  9 ‘”  : ‘”  ; ‘”  < ‘”  = ‘”  > ‘”  ? ‘”  Ì@ ‘”  ÌA ‘”  ÌB ‘”  ÌC ‘”  ÌD ‘”  ÌE ‘”  ÌF ‘”  ÌG ‘”  ÌH ‘”  ÌI ‘”  ÌJ ‘”  ÌK ‘”  ÌL ‘”  ÌM ‘”  ÌN ‘”  ÌO ‘”  ÌP ‘”  ÌQ ‘”  ÌR ‘”  ÌS ‘”  ÌT ‘”  ÌU ‘”  ÌV ‘”  ÌW ‘”  ÌX ‘”  ÌY ‘”  ÌZ ‘”  Ì[ ‘”  Ì\ ‘”  Ì] ‘”  Ì^ ‘”  Ì_ ‘”  Ì` ‘”  Ìa ‘”  Ìb ‘”  Ìc ‘”  Ìd ‘”  Ìe ‘”  Ìf ‘”  Ìg ‘”  Ìh ‘”  Ìi ‘”  Ìj ‘”  Ìk ‘”  Ìl ‘”  Ìm ‘”  Ìn ‘”  Ìo ‘”  Ìp ‘”  Ìq ‘”  Ìr ‘”  Ìs ‘”  Ìt ‘”  Ìu ‘”  Ìv ‘”  Ìw ‘”  Ìx ‘”  Ìy ‘”  Ìz ‘”  Ì{ ‘”  Ì| ‘”  Ì} ‘”  Ì~ ‘”  Ì ‘”  Ì€ ‘”  Ì ‘”  Ì‚ ‘”  Ìƒ ‘”  Ì„ ‘”  Ì… ‘”  Ì† ‘”  Ì‡ ‘”  Ìˆ ‘”  Ì‰ ‘”  ÌŠ ‘”  Ì‹ ‘”  ÌŒ ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì‘ ‘”  Ì’ ‘”  Ì“ ‘”  Ì” ‘”  Ì• ‘”  Ì– ‘”  Ì— ‘”  Ì˜ ‘”  Ì™ ‘”  Ìš ‘”  Ì› ‘”  Ìœ ‘”  Ì ‘”  Ì ‘”  ÌŸ ‘”  Ì  ‘”  Ì¡ ‘”  Ì¢ ‘”  Ì£ ‘”  Ì¤ ‘”  Ì¥ ‘”  Ì¦ ‘”  Ì§ ‘”  Ì¨ ‘”  Ì© ‘”  Ìª ‘”  Ì« ‘”  Ì¬ ‘”  Ì­ ‘”  Ì® ‘”  Ì¯ ‘”  Ì° ‘”  Ì± ‘”  Ì² ‘”  Ì³ ‘”  Ì´ ‘”  Ìµ ‘”  Ì¶ ‘”  Ì· ‘”  Ì¸ ‘”  Ì¹ ‘”  Ìº ‘”  Ì» ‘”  Ì¼ ‘”  Ì½ ‘”  Ì¾ ‘”  Ì¿ ‘”  ÌÀ ‘”  ÌÁ ‘”  ÌÂ ‘”  ÌÃ ‘”  ÌÄ ‘”  ÌÅ ‘”  ÌÆ ‘”  ÌÇ ‘”  ÌÈ ‘”  ÌÉ ‘”  ÌÊ ‘”  ÌË ‘”  ÌÌ ‘”  ÌÍ ‘”  ÌÎ ‘”  ÌÏ ‘”  ÌĞ ‘”  ÌÑ ‘”  ÌÒ ‘”  ÌÓ ‘”  ÌÔ ‘”  ÌÕ ‘”  ÌÖ ‘”  Ì× ‘”  ÌØ ‘”  ÌÙ ‘”  ÌÚ ‘”  ÌÛ ‘”  ÌÜ ‘”  Ìİ ‘”  ÌŞ ‘”  Ìß ‘”  Ìà ‘”  Ìá ‘”  Ìâ ‘”  Ìã ‘”  Ìä ‘”  Ìå ‘”  Ìæ ‘”  Ìç ‘”  Ìè ‘”  Ìé ‘”  Ìê ‘”  Ìë ‘”  Ìì ‘”  Ìí ‘”  Ìî ‘”  Ìï ‘”  Ìğ ‘”  Ìñ ‘”  Ìò ‘”  Ìó ‘”  Ìô ‘”  Ìõ ‘”  Ìö ‘”  Ì÷ ‘”  Ìø ‘”  Ìù ‘”  Ìú ‘”  Ìû ‘”  Ìü ‘”  Ìı ‘”  Ìş ‘”  Ìÿ ‘”  Í  ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í	 ‘”  Í
- ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í  ‘”  Í! ‘”  Í" ‘”  Í# ‘”  Í$ ‘”  Í% ‘”  Í& ‘”  Í' ‘”  Í( ‘”  Í) ‘”  Í* ‘”  Í+ ‘”  Í, ‘”  Í- ‘”  Í. ‘”  Í/ ‘”  Í0 ‘”  Í1 ‘”  Í2 ‘”  Í3 ‘”  Í4 ‘”  Í5 ‘”  Í6 ‘”  Í7 ‘”  Í8 ‘”  Í9 ‘”  Í: ‘”  Í; ‘”  Í< ‘”  Í= ‘”  Í> ‘”  Í? ‘”  Í@ ‘”  ÍA ‘”  ÍB ‘”  ÍC ‘”  ÍD ‘”  ÍE ‘”  ÍF ‘”  ÍG ‘”  ÍH ‘”  ÍI ‘”  ÍJ ‘”  ÍK ‘”  ÍL ‘”  ÍM ‘”  ÍN ‘”  ÍO ‘”  ÍP ‘”  ÍQ ‘”  ÍR ‘”  ÍS ‘”  ÍT ‘”  ÍU ‘”  ÍV ‘”  ÍW ‘”  ÍX ‘”  ÍY ‘”  ÍZ ‘”  Í[ ‘”  Í\ ‘”  Í] ‘”  Í^ ‘”  Í_ ‘”  Í` ‘”  Ía ‘”  Íb ‘”  Íc ‘”  Íd ‘”  Íe ‘”  Íf ‘”  Íg ‘”  Íh ‘”  Íi ‘”  Íj ‘”  Ík ‘”  Íl ‘”  Ím ‘”  Ín ‘”  Ío ‘”  Íp ‘”  Íq ‘”  Ír ‘”  Ís ‘”  Ít ‘”  Íu ‘”  Ív ‘”  Íw ‘”  Íx ‘”  Íy ‘”  Íz ‘”  Í{ ‘”  Í| ‘”  Í} ‘”  Í~ ‘”  Í ‘”  Í€ ‘”  Í ‘”  Í‚ ‘”  Íƒ ‘”  Í„ ‘”  Í… ‘”  Í† ‘”  Í‡ ‘”  Íˆ ‘”  Í‰ ‘”  ÍŠ ‘”  Í‹ ‘”  ÍŒ ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í‘ ‘”  Í’ ÔrG’§missing¦pluginÃ¦genAbcÂÔ  ÔrH”²dynamicImportCache¹exportAllDeclarationCache»exportNamedDeclarationCache«importCache•ÔrI•¤type¥start£endªspecifiers¦source±ImportDeclarationÌ€Ì¢‘ÔrJ”¤type¥start£end¥local¶ImportDefaultSpecifierÌ‡ÌÔrK”¤type¥start£end¤nameªIdentifierÌ‡Ì¦routerÔrL•¤type¥start£end¥value£raw§LiteralÌ“Ì¡¬@ohos.router®"@ohos.router"I±ImportDeclarationÌ¤ÌË‘ÔrM•¤type¥start£end¨imported¥local¯ImportSpecifierÌ­ÌµKªIdentifierÌ­Ìµ¨AppStateKªIdentifierÌ­Ìµ¨AppStateL§LiteralÌ½ÌÊ«../AppState­'../AppState'I±ImportDeclarationÌÍÍ‘M¯ImportSpecifierÌÖÌâKªIdentifierÌÖÌâ¬MealScenarioKªIdentifierÌÖÌâ¬MealScenarioL§LiteralÌêÍ ´../model/MealBalance¶'../model/MealBalance'I±ImportDeclarationÍÍE‘M¯ImportSpecifierÍÍKªIdentifierÍÍ²WeeklyReportEngineKªIdentifierÍÍ²WeeklyReportEngineL§LiteralÍ&ÍD¼../engine/WeeklyReportEngine¾'../engine/WeeklyReportEngine'I±ImportDeclarationÍGÍt‘M¯ImportSpecifierÍPÍXKªIdentifierÍPÍX¨DateUtilKªIdentifierÍPÍX¨DateUtilL§LiteralÍ`Ís±../utils/DateUtil³'../utils/DateUtil'

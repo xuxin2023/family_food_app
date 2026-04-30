@@ -1,320 +1,0 @@
-Ôr@Ÿªassertions¤code´customTransformCache¬dependencies¢id¤meta±moduleSideEffects¬originalCode±originalSourcemap«resolvedIds®sourcemapChainµsyntheticNamedExportsµtransformDependencies®transformFiles¨cacheAstÔrAÚÜif (!("finalizeConstruction" in ViewPU.prototype)) {
-    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
-}
-// æˆå‘˜ç®¡ç†é¡µ - å®¶åº­æˆå‘˜åˆ—è¡¨
-import router from "@ohos.router";
-class MemberPage extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
-        super(parent, __localStorage, elmtId, extraInfo);
-        if (typeof paramsLambda === "function") {
-            this.paramsGenerator_ = paramsLambda;
-        }
-        this.__members = new ObservedPropertyObjectPU([], this, "members");
-        this.setInitiallyProvidedValue(params);
-        this.finalizeConstruction();
-    }
-    setInitiallyProvidedValue(params) {
-        if (params.members !== undefined) {
-            this.members = params.members;
-        }
-    }
-    updateStateVars(params) {
-    }
-    purgeVariableDependenciesOnElmtId(rmElmtId) {
-        this.__members.purgeDependencyOnElmtId(rmElmtId);
-    }
-    aboutToBeDeleted() {
-        this.__members.aboutToBeDeleted();
-        SubscriberManager.Get().delete(this.id__());
-        this.aboutToBeDeletedInternal();
-    }
-    get members() {
-        return this.__members.get();
-    }
-    set members(newValue) {
-        this.__members.set(newValue);
-    }
-    aboutToAppear() {
-        // TODO: ä»Žæœ¬åœ°æ•°æ®åº“åŠ è½½
-    }
-    initialRender() {
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Column.create();
-            Column.width('100%');
-            Column.height('100%');
-            Column.backgroundColor('#FAFAFA');
-        }, Column);
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            // é¡¶éƒ¨å¯¼èˆª
-            Row.create();
-            // é¡¶éƒ¨å¯¼èˆª
-            Row.width('100%');
-            // é¡¶éƒ¨å¯¼èˆª
-            Row.padding({ left: 16, right: 16, top: 16, bottom: 16 });
-        }, Row);
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Text.create('â†');
-            Text.fontSize(24);
-            Text.fontColor('#1976D2');
-            Text.onClick(() => { router.back(); });
-        }, Text);
-        Text.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Text.create('å®¶åº­æˆå‘˜ç®¡ç†');
-            Text.fontSize(20);
-            Text.fontWeight(FontWeight.Bold);
-            Text.margin({ left: 16 });
-        }, Text);
-        Text.pop();
-        // é¡¶éƒ¨å¯¼èˆª
-        Row.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            // æˆå‘˜åˆ—è¡¨
-            List.create();
-            // æˆå‘˜åˆ—è¡¨
-            List.width('100%');
-            // æˆå‘˜åˆ—è¡¨
-            List.layoutWeight(1);
-            // æˆå‘˜åˆ—è¡¨
-            List.padding({ left: 16, right: 16 });
-        }, List);
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            ForEach.create();
-            const forEachItemGenFunction = _item => {
-                const member = _item;
-                {
-                    const itemCreation = (elmtId, isInitialRender) => {
-                        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                        ListItem.create(deepRenderFunction, true);
-                        if (!isInitialRender) {
-                            ListItem.pop();
-                        }
-                        ViewStackProcessor.StopGetAccessRecording();
-                    };
-                    const itemCreation2 = (elmtId, isInitialRender) => {
-                        ListItem.create(deepRenderFunction, true);
-                    };
-                    const deepRenderFunction = (elmtId, isInitialRender) => {
-                        itemCreation(elmtId, isInitialRender);
-                        this.MemberListItem.bind(this)(member);
-                        ListItem.pop();
-                    };
-                    this.observeComponentCreation2(itemCreation2, ListItem);
-                    ListItem.pop();
-                }
-            };
-            this.forEachUpdateFunction(elmtId, this.members, forEachItemGenFunction, (member) => member.memberId, false, false);
-        }, ForEach);
-        ForEach.pop();
-        {
-            const itemCreation = (elmtId, isInitialRender) => {
-                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                ListItem.create(deepRenderFunction, true);
-                if (!isInitialRender) {
-                    // æ·»åŠ æˆå‘˜æŒ‰é’®
-                    ListItem.pop();
-                }
-                ViewStackProcessor.StopGetAccessRecording();
-            };
-            const itemCreation2 = (elmtId, isInitialRender) => {
-                ListItem.create(deepRenderFunction, true);
-            };
-            const deepRenderFunction = (elmtId, isInitialRender) => {
-                itemCreation(elmtId, isInitialRender);
-                this.observeComponentCreation2((elmtId, isInitialRender) => {
-                    Row.create();
-                    Row.width('100%');
-                    Row.height(56);
-                    Row.justifyContent(FlexAlign.Center);
-                    Row.backgroundColor('#E3F2FD');
-                    Row.borderRadius(12);
-                    Row.margin({ top: 8 });
-                    Row.onClick(() => {
-                        router.pushUrl({ url: 'pages/MemberEditPage' });
-                    });
-                }, Row);
-                this.observeComponentCreation2((elmtId, isInitialRender) => {
-                    Text.create('+ æ·»åŠ å®¶åº­æˆå‘˜');
-                    Text.fontSize(16);
-                    Text.fontColor('#1976D2');
-                }, Text);
-                Text.pop();
-                Row.pop();
-                // æ·»åŠ æˆå‘˜æŒ‰é’®
-                ListItem.pop();
-            };
-            this.observeComponentCreation2(itemCreation2, ListItem);
-            // æ·»åŠ æˆå‘˜æŒ‰é’®
-            ListItem.pop();
-        }
-        // æˆå‘˜åˆ—è¡¨
-        List.pop();
-        Column.pop();
-    }
-    MemberListItem(member, parent = null) {
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Row.create();
-            Row.width('100%');
-            Row.padding(16);
-            Row.backgroundColor('#FFFFFF');
-            Row.borderRadius(12);
-            Row.margin({ top: 8 });
-            Row.onClick(() => {
-                router.pushUrl({
-                    url: 'pages/MemberEditPage',
-                    params: { memberId: member.memberId }
-                });
-            });
-        }, Row);
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Column.create();
-            Column.alignItems(HorizontalAlign.Start);
-            Column.layoutWeight(1);
-        }, Column);
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Text.create(member.nickname);
-            Text.fontSize(16);
-            Text.fontWeight(FontWeight.Medium);
-        }, Text);
-        Text.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Text.create(member.healthGoals.join('Â·'));
-            Text.fontSize(12);
-            Text.fontColor('#757575');
-            Text.margin({ top: 4 });
-        }, Text);
-        Text.pop();
-        Column.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Text.create('ç¼–è¾‘');
-            Text.fontSize(14);
-            Text.fontColor('#1976D2');
-        }, Text);
-        Text.pop();
-        Row.pop();
-    }
-    rerender() {
-        this.updateDirtyElements();
-    }
-    static getEntryName() {
-        return "MemberPage";
-    }
-}
-registerNamedRoute(() => new MemberPage(undefined, {}), "", { bundleName: "com.familyfood.helper", moduleName: "entry", pagePath: "pages/MemberPage", pageFullPath: "entry/src/main/ets/pages/MemberPage", integratedHsp: "false", moduleType: "followWithHap" });
-//# sourceMappingURL=MemberPage.js.mapÂ‘Ùf hvigor_ignore_C:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.router.d.tsÙ>E:\APP\family_food_app\entry\src\main\ets\pages\MemberPage.etsÔrBšªmoduleName±isLocalDependency¯isNodeEntryFile§pkgPath±belongProjectPath§pkgNameªpkgVersion±dependencyPkgInfo°belongModulePath¬shouldEmitJs¥entryÃÂ¼E:\APP\family_food_app\entry¶E:\APP\family_food_app¥entry¥1.0.0Ô  ¼E:\APP\family_food_app\entryÃÃÚ¯// æˆå‘˜ç®¡ç†é¡µ - å®¶åº­æˆå‘˜åˆ—è¡¨
-
-import { router } from '@kit.ArkUI';
-import { FamilyProfile } from '../model/FamilyProfile';
-
-@Entry
-@Component
-struct MemberPage {
-  @State members: FamilyProfile[] = []
-
-  aboutToAppear() {
-    // TODO: ä»Žæœ¬åœ°æ•°æ®åº“åŠ è½½
-  }
-
-  build() {
-    Column() {
-      // é¡¶éƒ¨å¯¼èˆª
-      Row() {
-        Text('â†').fontSize(24).fontColor('#1976D2')
-          .onClick(() => { router.back() })
-        Text('å®¶åº­æˆå‘˜ç®¡ç†').fontSize(20).fontWeight(FontWeight.Bold)
-          .margin({ left: 16 })
-      }
-      .width('100%')
-      .padding({ left: 16, right: 16, top: 16, bottom: 16 })
-
-      // æˆå‘˜åˆ—è¡¨
-      List() {
-        ForEach(this.members, (member: FamilyProfile) => {
-          ListItem() {
-            this.MemberListItem(member)
-          }
-        }, (member: FamilyProfile) => member.memberId)
-
-        // æ·»åŠ æˆå‘˜æŒ‰é’®
-        ListItem() {
-          Row() {
-            Text('+ æ·»åŠ å®¶åº­æˆå‘˜').fontSize(16).fontColor('#1976D2')
-          }
-          .width('100%')
-          .height(56)
-          .justifyContent(FlexAlign.Center)
-          .backgroundColor('#E3F2FD')
-          .borderRadius(12)
-          .margin({ top: 8 })
-          .onClick(() => {
-            router.pushUrl({ url: 'pages/MemberEditPage' })
-          })
-        }
-      }
-      .width('100%')
-      .layoutWeight(1)
-      .padding({ left: 16, right: 16 })
-    }
-    .width('100%')
-    .height('100%')
-    .backgroundColor('#FAFAFA')
-  }
-
-  @Builder
-  MemberListItem(member: FamilyProfile) {
-    Row() {
-      Column() {
-        Text(member.nickname).fontSize(16).fontWeight(FontWeight.Medium)
-        Text(member.healthGoals.join('Â·')).fontSize(12).fontColor('#757575').margin({ top: 4 })
-      }
-      .alignItems(HorizontalAlign.Start)
-      .layoutWeight(1)
-
-      Text('ç¼–è¾‘').fontSize(14).fontColor('#1976D2')
-    }
-    .width('100%')
-    .padding(16)
-    .backgroundColor('#FFFFFF')
-    .borderRadius(12)
-    .margin({ top: 8 })
-    .onClick(() => {
-      router.pushUrl({
-        url: 'pages/MemberEditPage',
-        params: { memberId: member.memberId }
-      })
-    })
-  }
-}
-ÀÔrC‘¬@ohos.routerÔrD—ªassertions¨external¢id¤meta±moduleSideEffectsªresolvedByµsyntheticNamedExportsAÃÙf hvigor_ignore_C:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.router.d.tsÔrE‘¯hostModulesInfo›ÔrF’²hostDependencyName®hostModuleName¬@ohos.router¥entryF¬@ohos.router¥entryF¬@ohos.router¥entryF¬@ohos.router¥entryF¬@ohos.router¥entryF¬@ohos.router¥entryF¬@ohos.router¥entryF¬@ohos.router¥entryF¬@ohos.router¥entryF¬@ohos.router¥entryF¬@ohos.router¥entryÃªoh-resolveÂ“ÔrG–§version¤fileªsourceRoot§sources¥names¨mappings­MemberPage.js ‘®MemberPage.etsÜ Ã’”    ”  –”   ” 	” ” ”! #”" $’” ” ‘”  ’”6 $”8 &‘” 7’” 	” ’” 	” ’” 
-” 
-’” ” ’” ” ‘” ’” ” 
-–” ” 
-” 6” 6
-” 6” 6–” ” 
-” 7” 7” 7”  7–” ” 
-” 8”" 8”# 8”, 8’” ” ’” ” 	’” ” –” ” 	” ” ” ” ’” ” Ü ” ” 	” ” ” ” ” ”  ”" ”$ ”)  ”+ "”- $”/ &”2 )”4 +”6 -”8 /”> 5”Ì@ 7”ÌB 9”ÌD ;”” ” ” ” –” ” ” ” ” ” –” ” ” ” (” )”$ 2Ÿ” ” ” ” ” ” ” ”! ”' !”( "”, &”. (”/ (”0 )”1 *’” ” ”” ” ” ”  –” ” ” ” ”  ” "˜” ” ” $” .” /”& 9”' :”+ >š” ” ” ” ” ” ” ”  ”" ”$ ’” ” ’” ” ’” ” 	’” ” ’” ” 
-’” ” –” ” 
-” 2” 2” 2” 2’” ” –” ” 
-” 3” 3” 3” 3’” ” ž” ” 
-” 4” 4” 4” 4” 4”! 4”# 4”% 4”* 4 ”, 4"”. 4$”0 4&’” ” ’” 
-”$ —” ” ” ”+ ”7  ”= &”> '’” 
-”  ’” 
-” ”/ ”3 ”4 ”; ”ÌU  ”ÌV  ”Ì\  !”Ì^  #”Ì`  %”Ìa  &”Ìg  ,”Ìh  -”Ìp  5’” ” ’” "” "’” #” #’” $
-” $–” $
-” $” '” '” '”$ '–” $
-” $” (” (” (”! (˜” $
-” $” )”& )”' )”0 )#”1 )$”7 )*–” $
-” $” *”' *”( *”1 *$–” $
-” $” +”$ +”% +”' +š” $
-” $” ,” ,” ,”! ,”$ ,”& ,”' ,”) ,—” $
-” $” -” -”  -”# -”% -œ” .” .” .”& .”' .”) .”, . ”. ."”ÌD .8”ÌF .:”ÌG .;”ÌH .;’” /
-” /”” %” %”  %”* %–” %” %” %”! %%”" %&”$ %(–” %” %” %*”" %3”# %4”, %=’” %” %’” $
-” $’” "” "’” #” #’” "” "’” #” #’” ” ’” ” 
-’” ” 
-‘” 9”” <” <” <” <&’” =” =–” =” =” ÌG” ÌG
-” ÌG” ÌG–” =” =” ÌH” ÌH” ÌH” ÌH–” =” =” ÌI” ÌI”  ÌI”) ÌI–” =” =” ÌJ” ÌJ” ÌJ” ÌJš” =” =” ÌK” ÌK” ÌK” ÌK” ÌK” ÌK” ÌK”! ÌK—” =” =” ÌL” ÌL” ÌL” ÌL” ÌL•” ÌM” ÌM” ÌM” ÌM” ÌM”” ÌN” ÌN” ÌN”/ ÌN#š” ÌO” ÌO” ÌO” ÌO”& ÌO”( ÌO”. ÌO"”/ ÌO#”7 ÌO+”9 ÌO-“” ÌP” ÌP” ÌP’” ÌQ” ÌQ’” >” >˜” >” >” ÌB” ÌB” ÌB”- ÌB!”. ÌB"”3 ÌB'–” >” >” ÌC” ÌC”  ÌC”! ÌC–” ?” ?” ?” ?” ?”' ?–” ?” ?” ?” ?&” ?'” ?)˜” ?” ?” ?+” ?5” ?6”& ?Ì@”' ?ÌA”- ?ÌG’” ?” ?›” Ì@” Ì@” Ì@” Ì@” Ì@”* Ì@”+ Ì@ ”/ Ì@$”0 Ì@%”3 Ì@(”4 Ì@)–” Ì@” Ì@” Ì@+” Ì@3” Ì@4” Ì@6–” Ì@” Ì@” Ì@8” Ì@ÌA” Ì@ÌB”$ Ì@ÌKš” Ì@” Ì@” Ì@ÌM” Ì@ÌS” Ì@ÌT” Ì@ÌV” Ì@ÌY” Ì@Ì[”  Ì@Ì\”" Ì@Ì^’” Ì@” Ì@’” >” >”” ÌE” ÌE
-” ÌE” ÌE–” ÌE” ÌE
-” ÌE” ÌE” ÌE” ÌE–” ÌE” ÌE
-” ÌE” ÌE'” ÌE(”$ ÌE1’” ÌE” ÌE
-’” =” =‘” ÌRÔrH–§version¤file§sources®sourcesContent¥names¨mappingsÀ‘À‘ÀÜ Ì‘”    ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”  	 ‘”  
- ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”    ‘”  ! ‘”  " ‘”  # ‘”  $ ‘”  % ‘”  & ‘”  ' ‘”  ( ‘”  ) ‘”  * ‘”  + ‘”  , ‘”  - ‘”  . ‘”  / ‘”  0 ‘”  1 ‘”  2 ‘”  3 ‘”  4 ‘”  5 ‘”  6 ‘”  7 ‘”  8 ‘”  9 ‘”  : ‘”  ; ‘”  < ‘”  = ‘”  > ‘”  ? ‘”  Ì@ ‘”  ÌA ‘”  ÌB ‘”  ÌC ‘”  ÌD ‘”  ÌE ‘”  ÌF ‘”  ÌG ‘”  ÌH ‘”  ÌI ‘”  ÌJ ‘”  ÌK ‘”  ÌL ‘”  ÌM ‘”  ÌN ‘”  ÌO ‘”  ÌP ‘”  ÌQ ‘”  ÌR ‘”  ÌS ‘”  ÌT ‘”  ÌU ‘”  ÌV ‘”  ÌW ‘”  ÌX ‘”  ÌY ‘”  ÌZ ‘”  Ì[ ‘”  Ì\ ‘”  Ì] ‘”  Ì^ ‘”  Ì_ ‘”  Ì` ‘”  Ìa ‘”  Ìb ‘”  Ìc ‘”  Ìd ‘”  Ìe ‘”  Ìf ‘”  Ìg ‘”  Ìh ‘”  Ìi ‘”  Ìj ‘”  Ìk ‘”  Ìl ‘”  Ìm ‘”  Ìn ‘”  Ìo ‘”  Ìp ‘”  Ìq ‘”  Ìr ‘”  Ìs ‘”  Ìt ‘”  Ìu ‘”  Ìv ‘”  Ìw ‘”  Ìx ‘”  Ìy ‘”  Ìz ‘”  Ì{ ‘”  Ì| ‘”  Ì} ‘”  Ì~ ‘”  Ì ‘”  Ì€ ‘”  Ì ‘”  Ì‚ ‘”  Ìƒ ‘”  Ì„ ‘”  Ì… ‘”  Ì† ‘”  Ì‡ ‘”  Ìˆ ‘”  Ì‰ ‘”  ÌŠ ‘”  Ì‹ ‘”  ÌŒ ‘”  Ì ‘”  ÌŽ ‘”  Ì ‘”  Ì ‘”  Ì‘ ‘”  Ì’ ‘”  Ì“ ‘”  Ì” ‘”  Ì• ‘”  Ì– ‘”  Ì— ‘”  Ì˜ ‘”  Ì™ ‘”  Ìš ‘”  Ì› ‘”  Ìœ ‘”  Ì ‘”  Ìž ‘”  ÌŸ ‘”  Ì  ‘”  Ì¡ ‘”  Ì¢ ‘”  Ì£ ‘”  Ì¤ ‘”  Ì¥ ‘”  Ì¦ ‘”  Ì§ ‘”  Ì¨ ‘”  Ì© ‘”  Ìª ‘”  Ì« ‘”  Ì¬ ‘”  Ì­ ‘”  Ì® ‘”  Ì¯ ‘”  Ì° ‘”  Ì± ‘”  Ì² ‘”  Ì³ ‘”  Ì´ ‘”  Ìµ ‘”  Ì¶ ‘”  Ì· ‘”  Ì¸ ‘”  Ì¹ ‘”  Ìº ‘”  Ì» ‘”  Ì¼ ‘”  Ì½ ‘”  Ì¾ ‘”  Ì¿ ‘”  ÌÀ ‘”  ÌÁ ‘”  ÌÂ ‘”  ÌÃ ‘”  ÌÄ ‘”  ÌÅ ‘”  ÌÆ ‘”  ÌÇ ‘”  ÌÈ ‘”  ÌÉ ‘”  ÌÊ ‘”  ÌË ÔrI’§missing¦pluginÃ¦genAbcÂÔ  ÔrJ”²dynamicImportCache¹exportAllDeclarationCache»exportNamedDeclarationCache«importCache‘ÔrK•¤type¥start£endªspecifiers¦source±ImportDeclarationÌ“Ìµ‘ÔrL”¤type¥start£end¥local¶ImportDefaultSpecifierÌšÌ ÔrM”¤type¥start£end¤nameªIdentifierÌšÌ ¦routerÔrN•¤type¥start£end¥value£raw§LiteralÌ¦Ì´¬@ohos.router®"@ohos.router"

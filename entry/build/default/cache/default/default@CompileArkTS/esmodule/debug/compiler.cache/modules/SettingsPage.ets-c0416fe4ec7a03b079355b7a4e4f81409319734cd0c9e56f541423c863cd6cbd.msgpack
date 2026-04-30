@@ -1,656 +1,0 @@
-Ôr@Ÿªassertions¤code´customTransformCache¬dependencies¢id¤meta±moduleSideEffects¬originalCode±originalSourcemap«resolvedIds®sourcemapChainµsyntheticNamedExportsµtransformDependencies®transformFiles¨cacheAstÔrAÚ:Õif (!("finalizeConstruction" in ViewPU.prototype)) {
-    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
-}
-import router from "@ohos.router";
-import promptAction from "@ohos.promptAction";
-import { AppState } from '../AppState';
-import { HealthSignal, StepLevel, SleepStatus, BpStatus, BsStatus, DataSource } from '../model/HealthSignal';
-import { DateUtil } from '../utils/DateUtil';
-class SettingsPage extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
-        super(parent, __localStorage, elmtId, extraInfo);
-        if (typeof paramsLambda === "function") {
-            this.paramsGenerator_ = paramsLambda;
-        }
-        this.__familyMembers = new ObservedPropertyObjectPU([], this, "familyMembers");
-        this.__selectedMemberId = new ObservedPropertySimplePU('', this, "selectedMemberId");
-        this.__stepLevel = new ObservedPropertySimplePU(StepLevel.NORMAL, this, "stepLevel");
-        this.__sleepStatus = new ObservedPropertySimplePU(SleepStatus.GOOD, this, "sleepStatus");
-        this.__hadHighSodiumToday = new ObservedPropertySimplePU(false, this, "hadHighSodiumToday");
-        this.__hadHighSugarToday = new ObservedPropertySimplePU(false, this, "hadHighSugarToday");
-        this.appState = AppState.getInstance();
-        this.setInitiallyProvidedValue(params);
-        this.finalizeConstruction();
-    }
-    setInitiallyProvidedValue(params) {
-        if (params.familyMembers !== undefined) {
-            this.familyMembers = params.familyMembers;
-        }
-        if (params.selectedMemberId !== undefined) {
-            this.selectedMemberId = params.selectedMemberId;
-        }
-        if (params.stepLevel !== undefined) {
-            this.stepLevel = params.stepLevel;
-        }
-        if (params.sleepStatus !== undefined) {
-            this.sleepStatus = params.sleepStatus;
-        }
-        if (params.hadHighSodiumToday !== undefined) {
-            this.hadHighSodiumToday = params.hadHighSodiumToday;
-        }
-        if (params.hadHighSugarToday !== undefined) {
-            this.hadHighSugarToday = params.hadHighSugarToday;
-        }
-        if (params.appState !== undefined) {
-            this.appState = params.appState;
-        }
-    }
-    updateStateVars(params) {
-    }
-    purgeVariableDependenciesOnElmtId(rmElmtId) {
-        this.__familyMembers.purgeDependencyOnElmtId(rmElmtId);
-        this.__selectedMemberId.purgeDependencyOnElmtId(rmElmtId);
-        this.__stepLevel.purgeDependencyOnElmtId(rmElmtId);
-        this.__sleepStatus.purgeDependencyOnElmtId(rmElmtId);
-        this.__hadHighSodiumToday.purgeDependencyOnElmtId(rmElmtId);
-        this.__hadHighSugarToday.purgeDependencyOnElmtId(rmElmtId);
-    }
-    aboutToBeDeleted() {
-        this.__familyMembers.aboutToBeDeleted();
-        this.__selectedMemberId.aboutToBeDeleted();
-        this.__stepLevel.aboutToBeDeleted();
-        this.__sleepStatus.aboutToBeDeleted();
-        this.__hadHighSodiumToday.aboutToBeDeleted();
-        this.__hadHighSugarToday.aboutToBeDeleted();
-        SubscriberManager.Get().delete(this.id__());
-        this.aboutToBeDeletedInternal();
-    }
-    get familyMembers() {
-        return this.__familyMembers.get();
-    }
-    set familyMembers(newValue) {
-        this.__familyMembers.set(newValue);
-    }
-    get selectedMemberId() {
-        return this.__selectedMemberId.get();
-    }
-    set selectedMemberId(newValue) {
-        this.__selectedMemberId.set(newValue);
-    }
-    get stepLevel() {
-        return this.__stepLevel.get();
-    }
-    set stepLevel(newValue) {
-        this.__stepLevel.set(newValue);
-    }
-    get sleepStatus() {
-        return this.__sleepStatus.get();
-    }
-    set sleepStatus(newValue) {
-        this.__sleepStatus.set(newValue);
-    }
-    get hadHighSodiumToday() {
-        return this.__hadHighSodiumToday.get();
-    }
-    set hadHighSodiumToday(newValue) {
-        this.__hadHighSodiumToday.set(newValue);
-    }
-    get hadHighSugarToday() {
-        return this.__hadHighSugarToday.get();
-    }
-    set hadHighSugarToday(newValue) {
-        this.__hadHighSugarToday.set(newValue);
-    }
-    async aboutToAppear() {
-        this.familyMembers = await this.appState.getAllMembers();
-        if (this.familyMembers.length > 0) {
-            this.selectedMemberId = this.familyMembers[0].memberId;
-            this.loadMemberSignal(this.selectedMemberId);
-        }
-    }
-    initialRender() {
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Scroll.create();
-            Scroll.width('100%');
-            Scroll.height('100%');
-            Scroll.backgroundColor('#FAFAFA');
-        }, Scroll);
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Column.create();
-            Column.width('100%');
-            Column.alignItems(HorizontalAlign.Center);
-        }, Column);
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Row.create();
-            Row.width('100%');
-            Row.padding({ left: 16, right: 16, top: 16, bottom: 16 });
-        }, Row);
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Text.create('<');
-            Text.fontSize(24);
-            Text.fontColor('#1976D2');
-            Text.onClick(() => { router.back(); });
-        }, Text);
-        Text.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Text.create('è®¾ç½®');
-            Text.fontSize(20);
-            Text.fontWeight(FontWeight.Bold);
-            Text.margin({ left: 16 });
-        }, Text);
-        Text.pop();
-        Row.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Column.create();
-            Column.width('92%');
-            Column.padding(16);
-            Column.backgroundColor('#FFFFFF');
-            Column.borderRadius(16);
-            Column.alignItems(HorizontalAlign.Start);
-            Column.margin({ bottom: 14 });
-        }, Column);
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Text.create('P0 MVP åªä½¿ç”¨æœ¬åœ°æ‰‹åŠ¨çŠ¶æ€');
-            Text.fontSize(16);
-            Text.fontWeight(FontWeight.Bold);
-            Text.margin({ bottom: 6 });
-        }, Text);
-        Text.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Text.create('å½“å‰ä¸æ¥çœŸå® Health Kitï¼Œä¸æ¥çœŸå®è®¢é˜…ä»˜è´¹ã€‚ä½ å¯ä»¥ä¸ºæ¯ä¸ªå®¶åº­æˆå‘˜æ‰‹åŠ¨è®¾ç½®ä»Šå¤©çš„æ´»åŠ¨ã€ç¡çœ å’Œåå’¸/åç”œçŠ¶æ€ã€‚');
-            Text.fontSize(12);
-            Text.fontColor('#616161');
-            Text.lineHeight(18);
-        }, Text);
-        Text.pop();
-        Column.pop();
-        this.MemberSelector.bind(this)();
-        this.ManualHealthPanel.bind(this)();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Button.createWithLabel('ä¿å­˜ä»Šæ—¥çŠ¶æ€');
-            Button.width('90%');
-            Button.height(50);
-            Button.backgroundColor('#1976D2');
-            Button.borderRadius(25);
-            Button.margin({ top: 8, bottom: 24 });
-            Button.onClick(() => { this.saveManualStatus(); });
-        }, Button);
-        Button.pop();
-        Column.pop();
-        Scroll.pop();
-    }
-    MemberSelector(parent = null) {
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Column.create();
-            Column.width('92%');
-            Column.padding(16);
-            Column.backgroundColor('#FFFFFF');
-            Column.borderRadius(16);
-            Column.alignItems(HorizontalAlign.Start);
-            Column.margin({ bottom: 14 });
-        }, Column);
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Text.create('è®¾ç½®è°çš„ä»Šæ—¥çŠ¶æ€');
-            Text.fontSize(14);
-            Text.fontColor('#757575');
-            Text.margin({ bottom: 8 });
-        }, Text);
-        Text.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Row.create();
-        }, Row);
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            ForEach.create();
-            const forEachItemGenFunction = _item => {
-                const member = _item;
-                this.observeComponentCreation2((elmtId, isInitialRender) => {
-                    Text.create(member.nickname);
-                    Text.fontSize(13);
-                    Text.padding({ left: 12, right: 12, top: 6, bottom: 6 });
-                    Text.borderRadius(16);
-                    Text.backgroundColor(this.selectedMemberId === member.memberId ? '#1976D2' : '#FFFFFF');
-                    Text.fontColor(this.selectedMemberId === member.memberId ? '#FFFFFF' : '#212121');
-                    Text.margin({ right: 8 });
-                    Text.onClick(() => {
-                        this.selectedMemberId = member.memberId;
-                        this.loadMemberSignal(member.memberId);
-                    });
-                }, Text);
-                Text.pop();
-            };
-            this.forEachUpdateFunction(elmtId, this.familyMembers, forEachItemGenFunction, (member) => member.memberId, false, false);
-        }, ForEach);
-        ForEach.pop();
-        Row.pop();
-        Column.pop();
-    }
-    ManualHealthPanel(parent = null) {
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Column.create();
-            Column.width('92%');
-            Column.padding(16);
-            Column.backgroundColor('#FFFFFF');
-            Column.borderRadius(16);
-            Column.alignItems(HorizontalAlign.Start);
-        }, Column);
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Text.create('æ‰‹åŠ¨ä»Šæ—¥çŠ¶æ€');
-            Text.fontSize(17);
-            Text.fontWeight(FontWeight.Bold);
-            Text.margin({ bottom: 12 });
-        }, Text);
-        Text.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Text.create('æ´»åŠ¨é‡');
-            Text.fontSize(13);
-            Text.fontColor('#757575');
-            Text.margin({ bottom: 8 });
-        }, Text);
-        Text.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Row.create();
-            Row.margin({ bottom: 14 });
-        }, Row);
-        this.OptionChip.bind(this)('æ´»åŠ¨å°‘', this.stepLevel === StepLevel.LOW, () => { this.stepLevel = StepLevel.LOW; });
-        this.OptionChip.bind(this)('æ­£å¸¸', this.stepLevel === StepLevel.NORMAL, () => { this.stepLevel = StepLevel.NORMAL; });
-        this.OptionChip.bind(this)('è¿åŠ¨å¤š', this.stepLevel === StepLevel.HIGH, () => { this.stepLevel = StepLevel.HIGH; });
-        Row.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Text.create('ç¡çœ ');
-            Text.fontSize(13);
-            Text.fontColor('#757575');
-            Text.margin({ bottom: 8 });
-        }, Text);
-        Text.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Row.create();
-            Row.margin({ bottom: 14 });
-        }, Row);
-        this.OptionChip.bind(this)('å¥½', this.sleepStatus === SleepStatus.GOOD, () => { this.sleepStatus = SleepStatus.GOOD; });
-        this.OptionChip.bind(this)('ä¸€èˆ¬', this.sleepStatus === SleepStatus.FAIR, () => { this.sleepStatus = SleepStatus.FAIR; });
-        this.OptionChip.bind(this)('å·®', this.sleepStatus === SleepStatus.POOR, () => { this.sleepStatus = SleepStatus.POOR; });
-        Row.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Text.create('ä»Šå¤©å·²ç»åƒè¿‡');
-            Text.fontSize(13);
-            Text.fontColor('#757575');
-            Text.margin({ bottom: 8 });
-        }, Text);
-        Text.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Row.create();
-        }, Row);
-        this.OptionChip.bind(this)('é«˜ç›', this.hadHighSodiumToday, () => { this.hadHighSodiumToday = !this.hadHighSodiumToday; });
-        this.OptionChip.bind(this)('é«˜ç³–', this.hadHighSugarToday, () => { this.hadHighSugarToday = !this.hadHighSugarToday; });
-        Row.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Text.create('è¿™äº›çŠ¶æ€ä¼šç›´æ¥å½±å“ä»Šå¤©çš„é€‚é…æŠ¥å‘Šå’Œç¾é£Ÿé¢åº¦åˆ¤æ–­ã€‚');
-            Text.fontSize(12);
-            Text.fontColor('#9E9E9E');
-            Text.margin({ top: 12 });
-        }, Text);
-        Text.pop();
-        Column.pop();
-    }
-    OptionChip(label, active, onClick, parent = null) {
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Text.create(label);
-            Text.fontSize(13);
-            Text.padding({ left: 12, right: 12, top: 8, bottom: 8 });
-            Text.borderRadius(18);
-            Text.backgroundColor(active ? '#1976D2' : '#F5F5F5');
-            Text.fontColor(active ? '#FFFFFF' : '#212121');
-            Text.margin({ right: 8 });
-            Text.onClick(onClick);
-        }, Text);
-        Text.pop();
-    }
-    loadMemberSignal(memberId) {
-        const signal = this.appState.getHealthSignal(memberId);
-        this.stepLevel = signal.stepLevel;
-        this.sleepStatus = signal.sleepStatus;
-        this.hadHighSodiumToday = signal.hadHighSodiumToday;
-        this.hadHighSugarToday = signal.hadHighSugarToday;
-    }
-    saveManualStatus() {
-        if (this.selectedMemberId.length === 0) {
-            return;
-        }
-        const signal = new HealthSignal();
-        signal.memberId = this.selectedMemberId;
-        signal.date = DateUtil.getToday();
-        signal.stepLevel = this.stepLevel;
-        signal.activityCaloriesLevel = this.stepLevel;
-        signal.sleepStatus = this.sleepStatus;
-        signal.manualBpStatus = this.hadHighSodiumToday ? BpStatus.ELEVATED : BpStatus.NORMAL;
-        signal.manualBsStatus = this.hadHighSugarToday ? BsStatus.ELEVATED : BsStatus.NORMAL;
-        signal.hadHighSodiumToday = this.hadHighSodiumToday;
-        signal.hadHighSugarToday = this.hadHighSugarToday;
-        signal.source = DataSource.MANUAL;
-        this.appState.updateHealthSignal(signal);
-        promptAction.showToast({ message: 'ä»Šæ—¥çŠ¶æ€å·²ä¿å­˜' });
-    }
-    rerender() {
-        this.updateDirtyElements();
-    }
-    static getEntryName() {
-        return "SettingsPage";
-    }
-}
-registerNamedRoute(() => new SettingsPage(undefined, {}), "", { bundleName: "com.familyfood.helper", moduleName: "entry", pagePath: "pages/SettingsPage", pageFullPath: "entry/src/main/ets/pages/SettingsPage", integratedHsp: "false", moduleType: "followWithHap" });
-//# sourceMappingURL=SettingsPage.js.mapÂ•Ùf hvigor_ignore_C:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.router.d.tsÙl hvigor_ignore_C:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.promptAction.d.tsÙ6E:\APP\family_food_app\entry\src\main\ets\AppState.etsÙ@E:\APP\family_food_app\entry\src\main\ets\model\HealthSignal.etsÙ<E:\APP\family_food_app\entry\src\main\ets\utils\DateUtil.etsÙ@E:\APP\family_food_app\entry\src\main\ets\pages\SettingsPage.etsÔrBšªmoduleName±isLocalDependency¯isNodeEntryFile§pkgPath±belongProjectPath§pkgNameªpkgVersion±dependencyPkgInfo°belongModulePath¬shouldEmitJs¥entryÃÂ¼E:\APP\family_food_app\entry¶E:\APP\family_food_app¥entry¥1.0.0Ô  ¼E:\APP\family_food_app\entryÃÃÚ7import { router, promptAction } from '@kit.ArkUI';
-import { AppState } from '../AppState';
-import { FamilyProfile } from '../model/FamilyProfile';
-import {
-  HealthSignal,
-  StepLevel,
-  SleepStatus,
-  BpStatus,
-  BsStatus,
-  DataSource
-} from '../model/HealthSignal';
-import { DateUtil } from '../utils/DateUtil';
-
-@Entry
-@Component
-struct SettingsPage {
-  @State familyMembers: FamilyProfile[] = []
-  @State selectedMemberId: string = ''
-  @State stepLevel: StepLevel = StepLevel.NORMAL
-  @State sleepStatus: SleepStatus = SleepStatus.GOOD
-  @State hadHighSodiumToday: boolean = false
-  @State hadHighSugarToday: boolean = false
-
-  private appState: AppState = AppState.getInstance()
-
-  async aboutToAppear() {
-    this.familyMembers = await this.appState.getAllMembers()
-    if (this.familyMembers.length > 0) {
-      this.selectedMemberId = this.familyMembers[0].memberId
-      this.loadMemberSignal(this.selectedMemberId)
-    }
-  }
-
-  build() {
-    Scroll() {
-      Column() {
-        Row() {
-          Text('<')
-            .fontSize(24)
-            .fontColor('#1976D2')
-            .onClick(() => { router.back() })
-          Text('è®¾ç½®')
-            .fontSize(20)
-            .fontWeight(FontWeight.Bold)
-            .margin({ left: 16 })
-        }
-        .width('100%')
-        .padding({ left: 16, right: 16, top: 16, bottom: 16 })
-
-        Column() {
-          Text('P0 MVP åªä½¿ç”¨æœ¬åœ°æ‰‹åŠ¨çŠ¶æ€')
-            .fontSize(16)
-            .fontWeight(FontWeight.Bold)
-            .margin({ bottom: 6 })
-          Text('å½“å‰ä¸æ¥çœŸå® Health Kitï¼Œä¸æ¥çœŸå®è®¢é˜…ä»˜è´¹ã€‚ä½ å¯ä»¥ä¸ºæ¯ä¸ªå®¶åº­æˆå‘˜æ‰‹åŠ¨è®¾ç½®ä»Šå¤©çš„æ´»åŠ¨ã€ç¡çœ å’Œåå’¸/åç”œçŠ¶æ€ã€‚')
-            .fontSize(12)
-            .fontColor('#616161')
-            .lineHeight(18)
-        }
-        .width('92%')
-        .padding(16)
-        .backgroundColor('#FFFFFF')
-        .borderRadius(16)
-        .alignItems(HorizontalAlign.Start)
-        .margin({ bottom: 14 })
-
-        this.MemberSelector()
-        this.ManualHealthPanel()
-
-        Button('ä¿å­˜ä»Šæ—¥çŠ¶æ€')
-          .width('90%')
-          .height(50)
-          .backgroundColor('#1976D2')
-          .borderRadius(25)
-          .margin({ top: 8, bottom: 24 })
-          .onClick(() => { this.saveManualStatus() })
-      }
-      .width('100%')
-      .alignItems(HorizontalAlign.Center)
-    }
-    .width('100%')
-    .height('100%')
-    .backgroundColor('#FAFAFA')
-  }
-
-  @Builder
-  MemberSelector() {
-    Column() {
-      Text('è®¾ç½®è°çš„ä»Šæ—¥çŠ¶æ€')
-        .fontSize(14)
-        .fontColor('#757575')
-        .margin({ bottom: 8 })
-      Row() {
-        ForEach(this.familyMembers, (member: FamilyProfile) => {
-          Text(member.nickname)
-            .fontSize(13)
-            .padding({ left: 12, right: 12, top: 6, bottom: 6 })
-            .borderRadius(16)
-            .backgroundColor(this.selectedMemberId === member.memberId ? '#1976D2' : '#FFFFFF')
-            .fontColor(this.selectedMemberId === member.memberId ? '#FFFFFF' : '#212121')
-            .margin({ right: 8 })
-            .onClick(() => {
-              this.selectedMemberId = member.memberId
-              this.loadMemberSignal(member.memberId)
-            })
-        }, (member: FamilyProfile) => member.memberId)
-      }
-    }
-    .width('92%')
-    .padding(16)
-    .backgroundColor('#FFFFFF')
-    .borderRadius(16)
-    .alignItems(HorizontalAlign.Start)
-    .margin({ bottom: 14 })
-  }
-
-  @Builder
-  ManualHealthPanel() {
-    Column() {
-      Text('æ‰‹åŠ¨ä»Šæ—¥çŠ¶æ€')
-        .fontSize(17)
-        .fontWeight(FontWeight.Bold)
-        .margin({ bottom: 12 })
-
-      Text('æ´»åŠ¨é‡')
-        .fontSize(13)
-        .fontColor('#757575')
-        .margin({ bottom: 8 })
-      Row() {
-        this.OptionChip('æ´»åŠ¨å°‘', this.stepLevel === StepLevel.LOW, () => { this.stepLevel = StepLevel.LOW })
-        this.OptionChip('æ­£å¸¸', this.stepLevel === StepLevel.NORMAL, () => { this.stepLevel = StepLevel.NORMAL })
-        this.OptionChip('è¿åŠ¨å¤š', this.stepLevel === StepLevel.HIGH, () => { this.stepLevel = StepLevel.HIGH })
-      }
-      .margin({ bottom: 14 })
-
-      Text('ç¡çœ ')
-        .fontSize(13)
-        .fontColor('#757575')
-        .margin({ bottom: 8 })
-      Row() {
-        this.OptionChip('å¥½', this.sleepStatus === SleepStatus.GOOD, () => { this.sleepStatus = SleepStatus.GOOD })
-        this.OptionChip('ä¸€èˆ¬', this.sleepStatus === SleepStatus.FAIR, () => { this.sleepStatus = SleepStatus.FAIR })
-        this.OptionChip('å·®', this.sleepStatus === SleepStatus.POOR, () => { this.sleepStatus = SleepStatus.POOR })
-      }
-      .margin({ bottom: 14 })
-
-      Text('ä»Šå¤©å·²ç»åƒè¿‡')
-        .fontSize(13)
-        .fontColor('#757575')
-        .margin({ bottom: 8 })
-      Row() {
-        this.OptionChip('é«˜ç›', this.hadHighSodiumToday, () => { this.hadHighSodiumToday = !this.hadHighSodiumToday })
-        this.OptionChip('é«˜ç³–', this.hadHighSugarToday, () => { this.hadHighSugarToday = !this.hadHighSugarToday })
-      }
-
-      Text('è¿™äº›çŠ¶æ€ä¼šç›´æ¥å½±å“ä»Šå¤©çš„é€‚é…æŠ¥å‘Šå’Œç¾é£Ÿé¢åº¦åˆ¤æ–­ã€‚')
-        .fontSize(12)
-        .fontColor('#9E9E9E')
-        .margin({ top: 12 })
-    }
-    .width('92%')
-    .padding(16)
-    .backgroundColor('#FFFFFF')
-    .borderRadius(16)
-    .alignItems(HorizontalAlign.Start)
-  }
-
-  @Builder
-  OptionChip(label: string, active: boolean, onClick: () => void) {
-    Text(label)
-      .fontSize(13)
-      .padding({ left: 12, right: 12, top: 8, bottom: 8 })
-      .borderRadius(18)
-      .backgroundColor(active ? '#1976D2' : '#F5F5F5')
-      .fontColor(active ? '#FFFFFF' : '#212121')
-      .margin({ right: 8 })
-      .onClick(onClick)
-  }
-
-  private loadMemberSignal(memberId: string) {
-    const signal = this.appState.getHealthSignal(memberId)
-    this.stepLevel = signal.stepLevel
-    this.sleepStatus = signal.sleepStatus
-    this.hadHighSodiumToday = signal.hadHighSodiumToday
-    this.hadHighSugarToday = signal.hadHighSugarToday
-  }
-
-  private saveManualStatus() {
-    if (this.selectedMemberId.length === 0) {
-      return
-    }
-
-    const signal = new HealthSignal()
-    signal.memberId = this.selectedMemberId
-    signal.date = DateUtil.getToday()
-    signal.stepLevel = this.stepLevel
-    signal.activityCaloriesLevel = this.stepLevel
-    signal.sleepStatus = this.sleepStatus
-    signal.manualBpStatus = this.hadHighSodiumToday ? BpStatus.ELEVATED : BpStatus.NORMAL
-    signal.manualBsStatus = this.hadHighSugarToday ? BsStatus.ELEVATED : BsStatus.NORMAL
-    signal.hadHighSodiumToday = this.hadHighSodiumToday
-    signal.hadHighSugarToday = this.hadHighSugarToday
-    signal.source = DataSource.MANUAL
-
-    this.appState.updateHealthSignal(signal)
-    promptAction.showToast({ message: 'ä»Šæ—¥çŠ¶æ€å·²ä¿å­˜' })
-  }
-}
-ÀÔrC•¬@ohos.router²@ohos.promptAction«../AppStateµ../model/HealthSignal±../utils/DateUtilÔrD—ªassertions¨external¢id¤meta±moduleSideEffectsªresolvedByµsyntheticNamedExportsAÃÙf hvigor_ignore_C:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.router.d.tsAÃªoh-resolveÂDAÃÙl hvigor_ignore_C:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.promptAction.d.tsAÃªoh-resolveÂDAÂÙ6E:\APP\family_food_app\entry\src\main\ets\AppState.etsAÃªoh-resolveÂDAÂÙ@E:\APP\family_food_app\entry\src\main\ets\model\HealthSignal.etsAÃªoh-resolveÂDAÂÙ<E:\APP\family_food_app\entry\src\main\ets\utils\DateUtil.etsAÃªoh-resolveÂ“ÔrE–§version¤fileªsourceRoot§sources¥names¨mappings¯SettingsPage.js ‘°SettingsPage.etsÜL–”    ”  	”  ”  %”!  1”"  2–”    ”  ”  ”  %”-  1”.  2˜”   ” ”	 	” ” ” ”& &”' 'Ü ”   ” ”	 ” ” ”  ”" ”- ”/ ”7 
-”9 ”ÌA 
-”ÌC 	”ÌM 	”ÌO 
-”ÌU 
-”Ìl 
-”Ìm 
-˜”   ” ”	 	” ” ” ”, ,”- -’” ” ‘”  ’”< *”> ,’”? $”ÌA &””8  ”ÌA )”ÌB *”ÌH 0””: $”ÌE /”ÌF 0”ÌJ 4’”ÌA '”ÌF ,’”Ì@ &”ÌE +•” ”  '”! (”, 3”. 5‘” -’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ’” 	” ”” ”	 ”
- ” ” ” ” 	” ” ”# ”' #”( $”0 ,”1 -”> :”Ì@ <”ÌA <š” ” ” ” ” ” ”% !”( $”) %”+ '” ” 
-” ”! ”$ ”( "”) #”6 0”7 1”8 2”9 3”: 4”ÌB <”ÌC <š” ” 
-” ”! ”" ”&  ”' !”7 1”8 2”9 2‘”	 ’” ” ‘” !’” "” "
-–” "” "
-” ÌP” ÌP
-” ÌP” ÌP–” "” "
-” ÌQ” ÌQ” ÌQ”  ÌQ–” "” "
-” ÌR”" ÌR”# ÌR”, ÌR’” #” #–” #” #” ÌM” ÌM” ÌM” ÌM˜” #” #” ÌN” ÌN” ÌN”- ÌN!”. ÌN"”4 ÌN(’” $” $–” $” $” .	” .” .” .Ü ” $” $” /	” /” /” /” /”  /”" /”$ /”) /"”+ /$”- /&”/ /(”2 /+”4 /-”6 //”8 /1”> /7”Ì@ /9”ÌB /;”ÌD /=”” %
-” %” %” %–” %
-” %” &” &” &” &–” %
-” %” '” '” '”$ ' Ÿ” %
-” %” (” (” (” (” (”! (”' (#”( ($”, ((”. (*”/ (*”0 (+”1 (,’” %
-” %”” )
-” )” )” )–” )
-” )” *” *” *” *˜” )
-” )” +” +” +”& +"”' +#”+ +'š” )
-” )” ,” ,” ,” ,” ,”  ,”" ,”$ , ’” )
-” )’” $” $’” 1” 1–” 1” 1” ;	” ;” ;” ;–” 1” 1” <	” <” <” <–” 1” 1” =	”" =”# =”, ="–” 1” 1” >	” >”  >”" >˜” 1” 1” ?	” ?” ?”- ?#”. ?$”3 ?)š” 1” 1” Ì@	” Ì@” Ì@” Ì@”" Ì@”$ Ì@”& Ì@”( Ì@”” 2
-” 2” 2”* 2!–” 2
-” 2” 3” 3” 3” 3˜” 2
-” 2” 4” 4” 4”& 4"”' 4#”+ 4'š” 2
-” 2” 5” 5” 5” 5”  5”" 5”# 5”% 5!’” 2
-” 2”” 6
-” 6” 6”ÌT 6ÌK–” 6
-” 6” 7” 7” 7” 7–” 6
-” 6” 8” 8” 8”$ 8 –” 6
-” 6” 9” 9” 9” 9’” 6
-” 6’” 1” 1•” ÌB” ÌB” ÌB” ÌB”( ÌB•” ÌC” ÌC” ÌC” ÌC”+ ÌC ”” ÌE” ÌE”# ÌE”+ ÌE–” ÌE” ÌE” ÌF” ÌF” ÌF” ÌF–” ÌE” ÌE” ÌG” ÌG” ÌG” ÌG–” ÌE” ÌE” ÌH”" ÌH”# ÌH”, ÌH$–” ÌE” ÌE” ÌI” ÌI”  ÌI”" ÌI” ÌE” ÌE” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ”! ÌJ”" ÌJ”$ ÌJ”* ÌJ"”, ÌJ$”. ÌJ&”0 ÌJ(Ÿ” ÌE” ÌE” ÌK” ÌK” ÌK” ÌK”  ÌK”# ÌK”' ÌK”( ÌK ”8 ÌK0”: ÌK2”; ÌK2”< ÌK3”= ÌK4’” ÌE” ÌE’” #” #’” "” "
-‘” ÌS’” ÌV” ÌV’” ÌW” ÌW
-–” ÌW” ÌW
-” Ìl” Ìl
-” Ìl” Ìl–” ÌW” ÌW
-” Ìm” Ìm” Ìm” Ìm–” ÌW” ÌW
-” Ìn”" Ìn”# Ìn”, Ìn–” ÌW” ÌW
-” Ìo” Ìo”  Ìo”" Ìo˜” ÌW” ÌW
-” Ìp” Ìp” Ìp”- Ìp”. Ìp ”3 Ìp%š” ÌW” ÌW
-” Ìq” Ìq” Ìq” Ìq”" Ìq”$ Ìq”& Ìq”( Ìq”” ÌX” ÌX
-” ÌX”" ÌX–” ÌX” ÌX
-” ÌY	” ÌY” ÌY” ÌY–” ÌX” ÌX
-” ÌZ	” ÌZ” ÌZ”$ ÌZš” ÌX” ÌX
-” Ì[	” Ì[” Ì[” Ì[”  Ì[”" Ì[”# Ì[”% Ì[’” ÌX” ÌX
-’” Ì\” Ì\	’” Ì]” Ì]–” Ì^
-” Ì^”  Ì^”& Ì^”' Ì^”/ Ì^–” Ì^
-” Ì^” Ì_”! Ì_”" Ì_”$ Ì_Ü ” Ì^
-” Ì^” Ì`”  Ì`”! Ì`”# Ì`”' Ì`”) Ì`”+ Ì`”- Ì`!”2 Ì`&”4 Ì`(”6 Ì`*”8 Ì`,”; Ì`/”= Ì`1”> Ì`2”Ì@ Ì`4”ÌF Ì`:”ÌH Ì`<”ÌI Ì`=”ÌK Ì`?–” Ì^
-” Ì^” Ìa”% Ìa”& Ìa”( ÌaÜ ” Ì^
-” Ì^” Ìb”( Ìb”) Ìb”- Ìb!”. Ìb"”> Ìb2”ÌC Ìb7”ÌI Ìb=”ÌJ Ìb>”ÌR ÌbÌF”ÌS ÌbÌG”ÌT ÌbÌH”ÌU ÌbÌI”Ì^ ÌbÌR”Ì_ ÌbÌS”Ì` ÌbÌT”Ìa ÌbÌU”Ìj ÌbÌ^Ü ” Ì^
-” Ì^” Ìc”" Ìc”# Ìc”' Ìc”( Ìc”8 Ìc,”= Ìc1”ÌC Ìc7”ÌD Ìc8”ÌL ÌcÌ@”ÌM ÌcÌA”ÌN ÌcÌB”ÌO ÌcÌC”ÌX ÌcÌL”ÌY ÌcÌM”ÌZ ÌcÌN”Ì[ ÌcÌO”Ìd ÌcÌXš” Ì^
-” Ì^” Ìd” Ìd”  Ìd”" Ìd”' Ìd”) Ìd”* Ìd”, Ìd —” Ì^
-” Ì^” Ìe”  Ìe”! Ìe”$ Ìe”& Ìe™” Ìf” Ìf” Ìf”- Ìf#”0 Ìf&”6 Ìf,”7 Ìf-”? Ìf5”Ì@ Ìf5š” Ìg” Ìg” Ìg”- Ìg#”. Ìg$”4 Ìg*”5 Ìg+”= Ìg3”> Ìg4”? Ìg4’” Ìh” Ìh’” Ì^
-” Ì^”/ Ì]”3 Ì]”4 Ì]”ÌA Ì]"”Ì[ Ìi”Ì\ Ìi”Ìb Ìi!”Ìd Ìi#”Ìf Ìi%”Ìg Ìi&”Ìm Ìi,”Ìn Ìi-”Ìv Ìi5’” Ì]” Ì]’” Ì\” Ì\	’” ÌW” ÌW
-‘” Ìr’” Ìu” Ìu’” Ìv” Ìv
-–” Ìv” Ìv
-” Ì ” Ì 
-” Ì ” Ì –” Ìv” Ìv
-” Ì¡” Ì¡” Ì¡” Ì¡–” Ìv” Ìv
-” Ì¢”" Ì¢”# Ì¢”, Ì¢–” Ìv” Ìv
-” Ì£” Ì£”  Ì£”" Ì£˜” Ìv” Ìv
-” Ì¤” Ì¤” Ì¤”- Ì¤”. Ì¤ ”3 Ì¤%”” Ìw” Ìw
-” Ìw”  Ìw–” Ìw” Ìw
-” Ìx	” Ìx” Ìx” Ìx˜” Ìw” Ìw
-” Ìy	” Ìy” Ìy”& Ìy”' Ìy”+ Ìy#š” Ìw” Ìw
-” Ìz	” Ìz” Ìz” Ìz”  Ìz”" Ìz”$ Ìz”& Ìz’” Ìw” Ìw
-”” Ì|” Ì|
-” Ì|” Ì|–” Ì|” Ì|
-” Ì}	” Ì}” Ì}” Ì}–” Ì|” Ì|
-” Ì~	” Ì~” Ì~”$ Ì~š” Ì|” Ì|
-” Ì	” Ì” Ì” Ì”  Ì”" Ì”# Ì”% Ì’” Ì|” Ì|
-’” Ì€” Ì€	š” Ì€” Ì€	” Ì…” Ì…” Ì…” Ì…” Ì…”! Ì…”# Ì…”% Ì…Ü ” Ì” Ì” Ì” Ì”# Ì”( Ì”* Ì”. Ì#”/ Ì$”8 Ì-”= Ì2”ÌF Ì;”ÌG Ì<”ÌJ Ì?”ÌL ÌÌA”ÌO ÌÌD”ÌQ ÌÌF”ÌT ÌÌI”ÌX ÌÌM”ÌY ÌÌN”Ìb ÌÌW”Ìe ÌÌZ”Ìn ÌÌc”Ìo ÌÌd”Ìr ÌÌg”Ìs ÌÌg”Ìt ÌÌh”Ìu ÌÌi”Ìv ÌÌjÜ ” Ì‚” Ì‚” Ì‚” Ì‚”# Ì‚”' Ì‚”) Ì‚”- Ì‚"”. Ì‚#”7 Ì‚,”< Ì‚1”ÌE Ì‚:”ÌF Ì‚;”ÌL Ì‚ÌA”ÌN Ì‚ÌC”ÌQ Ì‚ÌF”ÌS Ì‚ÌH”ÌV Ì‚ÌK”ÌZ Ì‚ÌO”Ì[ Ì‚ÌP”Ìd Ì‚ÌY”Ìg Ì‚Ì\”Ìp Ì‚Ìe”Ìq Ì‚Ìf”Ìw Ì‚Ìl”Ìx Ì‚Ìl”Ìy Ì‚Ìm”Ìz Ì‚Ìn”Ì{ Ì‚ÌoÜ ” Ìƒ” Ìƒ” Ìƒ” Ìƒ”# Ìƒ”( Ìƒ”* Ìƒ”. Ìƒ#”/ Ìƒ$”8 Ìƒ-”= Ìƒ2”ÌF Ìƒ;”ÌG Ìƒ<”ÌK ÌƒÌ@”ÌM ÌƒÌB”ÌP ÌƒÌE”ÌR ÌƒÌG”ÌU ÌƒÌJ”ÌY ÌƒÌN”ÌZ ÌƒÌO”Ìc ÌƒÌX”Ìf ÌƒÌ[”Ìo ÌƒÌd”Ìp ÌƒÌe”Ìt ÌƒÌi”Ìu ÌƒÌi”Ìv ÌƒÌj”Ìw ÌƒÌk”Ìx ÌƒÌl’” Ì€” Ì€	”” Ì‡” Ì‡
-” Ì‡” Ì‡–” Ì‡” Ì‡
-” Ìˆ	” Ìˆ” Ìˆ” Ìˆ–” Ì‡” Ì‡
-” Ì‰	” Ì‰” Ì‰”$ Ì‰š” Ì‡” Ì‡
-” ÌŠ	” ÌŠ” ÌŠ” ÌŠ”  ÌŠ”" ÌŠ”# ÌŠ”% ÌŠ’” Ì‡” Ì‡
-’” Ì‹” Ì‹	š” Ì‹” Ì‹	” Ì” Ì” Ì” Ì” Ì”! Ì”# Ì”% ÌÜ ” ÌŒ” ÌŒ” ÌŒ” ÌŒ”# ÌŒ”& ÌŒ”( ÌŒ”, ÌŒ!”- ÌŒ"”8 ÌŒ-”= ÌŒ2”ÌH ÌŒ=”ÌI ÌŒ>”ÌM ÌŒÌB”ÌO ÌŒÌD”ÌR ÌŒÌG”ÌT ÌŒÌI”ÌW ÌŒÌL”Ì[ ÌŒÌP”Ì\ ÌŒÌQ”Ìg ÌŒÌ\”Ìj ÌŒÌ_”Ìu ÌŒÌj”Ìv ÌŒÌk”Ìz ÌŒÌo”Ì{ ÌŒÌo”Ì| ÌŒÌp”Ì} ÌŒÌq”Ì~ ÌŒÌrÜ ” Ì” Ì” Ì” Ì”# Ì”' Ì”) Ì”- Ì"”. Ì#”9 Ì.”> Ì3”ÌI Ì>”ÌJ Ì?”ÌN ÌÌC”ÌP ÌÌE”ÌS ÌÌH”ÌU ÌÌJ”ÌX ÌÌM”Ì\ ÌÌQ”Ì] ÌÌR”Ìh ÌÌ]”Ìk ÌÌ`”Ìv ÌÌk”Ìw ÌÌl”Ì{ ÌÌp”Ì| ÌÌp”Ì} ÌÌq”Ì~ ÌÌr”Ì ÌÌsÜ ” Ì” Ì” Ì” Ì”# Ì”& Ì”( Ì”, Ì!”- Ì"”8 Ì-”= Ì2”ÌH Ì=”ÌI Ì>”ÌM ÌÌB”ÌO ÌÌD”ÌR ÌÌG”ÌT ÌÌI”ÌW ÌÌL”Ì[ ÌÌP”Ì\ ÌÌQ”Ìg ÌÌ\”Ìj ÌÌ_”Ìu ÌÌj”Ìv ÌÌk”Ìz ÌÌo”Ì{ ÌÌo”Ì| ÌÌp”Ì} ÌÌq”Ì~ ÌÌr’” Ì‹” Ì‹	”” Ì’” Ì’
-” Ì’”  Ì’–” Ì’” Ì’
-” Ì“	” Ì“” Ì“” Ì“–” Ì’” Ì’
-” Ì”	” Ì”” Ì””$ Ì”š” Ì’” Ì’
-” Ì•	” Ì•” Ì•” Ì•”  Ì•”" Ì•”# Ì•”% Ì•’” Ì’” Ì’
-’” Ì–” Ì–	Ü ” Ì—” Ì—” Ì—” Ì—”# Ì—”' Ì—”) Ì—”- Ì—"”. Ì—#”Ì@ Ì—5”ÌB Ì—7”ÌE Ì—:”ÌG Ì—<”ÌJ Ì—?”ÌN Ì—ÌC”ÌO Ì—ÌD”Ìa Ì—ÌV”Ìd Ì—ÌY”Ìe Ì—ÌZ”Ìi Ì—Ì^”Ìj Ì—Ì_”Ì| Ì—Ìq”Ì} Ì—Ìq”Ì~ Ì—Ìr”Ì Ì—Ìs”Ì€ Ì—ÌtÜ ” Ì˜” Ì˜” Ì˜” Ì˜”# Ì˜”' Ì˜”) Ì˜”- Ì˜"”. Ì˜#”? Ì˜4”ÌA Ì˜6”ÌD Ì˜9”ÌF Ì˜;”ÌI Ì˜>”ÌM Ì˜ÌB”ÌN Ì˜ÌC”Ì_ Ì˜ÌT”Ìb Ì˜ÌW”Ìc Ì˜ÌX”Ìg Ì˜Ì\”Ìh Ì˜Ì]”Ìy Ì˜Ìn”Ìz Ì˜Ìn”Ì{ Ì˜Ìo”Ì| Ì˜Ìp”Ì} Ì˜Ìq’” Ì–” Ì–	”” Ì›” Ì›
-” Ì›”2 Ì›%–” Ì›” Ì›
-” Ìœ	” Ìœ” Ìœ” Ìœ–” Ì›” Ì›
-” Ì	” Ì” Ì”$ Ìš” Ì›” Ì›
-” Ì	” Ì” Ì” Ì” Ì” Ì”! Ì”# Ì’” Ì›” Ì›
-’” Ìv” Ìv
-‘” Ì¥˜” Ì¨” Ì¨” Ì¨” Ì¨” Ì¨” Ì¨+” Ì¨-”% Ì¨Ì@”” Ì©” Ì©” Ì©	” Ì©–” Ì©” Ì©” Ìª” Ìª” Ìª” ÌªÜ ” Ì©” Ì©” Ì«” Ì«” Ì«” Ì«” Ì«”! Ì«”# Ì«”% Ì«”* Ì« ”, Ì«"”. Ì«$”0 Ì«&”3 Ì«)”5 Ì«+”6 Ì«,”8 Ì«.”> Ì«4”Ì@ Ì«6”ÌA Ì«7”ÌC Ì«9–” Ì©” Ì©” Ì¬” Ì¬” Ì¬”  Ì¬” Ì©” Ì©” Ì­”  Ì­”! Ì­”' Ì­”( Ì­”) Ì­”* Ì­ ”3 Ì­)”4 Ì­*”5 Ì­+”6 Ì­,”? Ì­5” Ì©” Ì©” Ì®” Ì®” Ì®”! Ì®”" Ì®”# Ì®”$ Ì®”- Ì®#”. Ì®$”/ Ì®%”0 Ì®&”9 Ì®/š” Ì©” Ì©” Ì¯” Ì¯” Ì¯” Ì¯” Ì¯”! Ì¯”" Ì¯”$ Ì¯–” Ì©” Ì©” Ì°” Ì°” Ì°”  Ì°’” Ì©” Ì©‘” Ì±”” Ì³
-” Ì³” Ì³” Ì³+” Ì´” Ì´
-” Ì´” Ì´” Ì´” Ì´”$ Ì´ ”% Ì´!”4 Ì´0”5 Ì´1”= Ì´9”> Ì´:”? Ì´:™” Ìµ” Ìµ” Ìµ	” Ìµ” Ìµ” Ìµ”  Ìµ”) Ìµ%”* Ìµ%™” Ì¶” Ì¶” Ì¶	” Ì¶” Ì¶”! Ì¶”" Ì¶”- Ì¶)”. Ì¶)™” Ì·” Ì·” Ì·	” Ì·”" Ì·”( Ì·$”) Ì·%”; Ì·7”< Ì·7™” Ì¸” Ì¸” Ì¸	” Ì¸”! Ì¸”' Ì¸#”( Ì¸$”9 Ì¸5”: Ì¸5’” Ì¹” Ì¹’” Ì»
-” Ì»š” Ì¼” Ì¼” Ì¼” Ì¼”! Ì¼”" Ì¼”( Ì¼$”- Ì¼)”. Ì¼*”0 Ì¼,’” Ì½” Ì½‘”	 Ì¾˜” ÌÀ” ÌÀ
-” ÌÀ” ÌÀ” ÌÀ”' ÌÀ#”) ÌÀ%”* ÌÀ%™” ÌÁ” ÌÁ
-” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ”/ ÌÁ+”0 ÌÁ+š” ÌÂ” ÌÂ
-” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ”' ÌÂ#”) ÌÂ%”* ÌÂ%™” ÌÃ” ÌÃ
-” ÌÃ” ÌÃ” ÌÃ” ÌÃ”  ÌÃ”) ÌÃ%”* ÌÃ%™” ÌÄ” ÌÄ
-” ÌÄ”$ ÌÄ ”' ÌÄ#”+ ÌÄ'”, ÌÄ(”5 ÌÄ1”6 ÌÄ1™” ÌÅ” ÌÅ
-” ÌÅ” ÌÅ” ÌÅ”! ÌÅ”" ÌÅ”- ÌÅ)”. ÌÅ)Ü ” ÌÆ” ÌÆ
-” ÌÆ” ÌÆ”  ÌÆ”$ ÌÆ ”% ÌÆ!”7 ÌÆ3”8 ÌÆ4”9 ÌÆ5”: ÌÆ6”ÌB ÌÆ>”ÌC ÌÆ?”ÌK ÌÆÌG”ÌL ÌÆÌH”ÌM ÌÆÌI”ÌN ÌÆÌJ”ÌV ÌÆÌR”ÌW ÌÆÌS”Ì] ÌÆÌY”Ì^ ÌÆÌYÜ ” ÌÇ” ÌÇ
-” ÌÇ” ÌÇ”  ÌÇ”$ ÌÇ ”% ÌÇ!”6 ÌÇ2”7 ÌÇ3”8 ÌÇ4”9 ÌÇ5”ÌA ÌÇ=”ÌB ÌÇ>”ÌJ ÌÇÌF”ÌK ÌÇÌG”ÌL ÌÇÌH”ÌM ÌÇÌI”ÌU ÌÇÌQ”ÌV ÌÇÌR”Ì\ ÌÇÌX”Ì] ÌÇÌX™” ÌÈ” ÌÈ
-” ÌÈ”! ÌÈ”$ ÌÈ ”( ÌÈ$”) ÌÈ%”; ÌÈ7”< ÌÈ7™” ÌÉ” ÌÉ
-” ÌÉ”  ÌÉ”# ÌÉ”' ÌÉ#”( ÌÉ$”9 ÌÉ5”: ÌÉ5™” ÌÊ” ÌÊ
-” ÌÊ” ÌÊ” ÌÊ”" ÌÊ”# ÌÊ”) ÌÊ%”* ÌÊ%š” ÌÌ” ÌÌ” ÌÌ	” ÌÌ” ÌÌ”( ÌÌ$”) ÌÌ%”/ ÌÌ+”0 ÌÌ,”1 ÌÌ,œ” ÌÍ” ÌÍ” ÌÍ” ÌÍ” ÌÍ”! ÌÍ”( ÌÍ$”* ÌÍ&”3 ÌÍ/”5 ÌÍ1”6 ÌÍ2”7 ÌÍ2’” ÌÎ” ÌÎÔrF–§version¤file§sources®sourcesContent¥names¨mappingsÀ‘À‘ÀÜU‘”    ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”  	 ‘”  
- ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”    ‘”  ! ‘”  " ‘”  # ‘”  $ ‘”  % ‘”  & ‘”  ' ‘”  ( ‘”  ) ‘”  * ‘”  + ‘”  , ‘”  - ‘”  . ‘”  / ‘”  0 ‘”  1 ‘”  2 ‘”  3 ‘”  4 ‘”  5 ‘”  6 ‘”  7 ‘”  8 ‘”  9 ‘”  : ‘”  ; ‘”  < ‘”  = ‘”  > ‘”  ? ‘”  Ì@ ‘”  ÌA ‘”  ÌB ‘”  ÌC ‘”  ÌD ‘”  ÌE ‘”  ÌF ‘”  ÌG ‘”  ÌH ‘”  ÌI ‘”  ÌJ ‘”  ÌK ‘”  ÌL ‘”  ÌM ‘”  ÌN ‘”  ÌO ‘”  ÌP ‘”  ÌQ ‘”  ÌR ‘”  ÌS ‘”  ÌT ‘”  ÌU ‘”  ÌV ‘”  ÌW ‘”  ÌX ‘”  ÌY ‘”  ÌZ ‘”  Ì[ ‘”  Ì\ ‘”  Ì] ‘”  Ì^ ‘”  Ì_ ‘”  Ì` ‘”  Ìa ‘”  Ìb ‘”  Ìc ‘”  Ìd ‘”  Ìe ‘”  Ìf ‘”  Ìg ‘”  Ìh ‘”  Ìi ‘”  Ìj ‘”  Ìk ‘”  Ìl ‘”  Ìm ‘”  Ìn ‘”  Ìo ‘”  Ìp ‘”  Ìq ‘”  Ìr ‘”  Ìs ‘”  Ìt ‘”  Ìu ‘”  Ìv ‘”  Ìw ‘”  Ìx ‘”  Ìy ‘”  Ìz ‘”  Ì{ ‘”  Ì| ‘”  Ì} ‘”  Ì~ ‘”  Ì ‘”  Ì€ ‘”  Ì ‘”  Ì‚ ‘”  Ìƒ ‘”  Ì„ ‘”  Ì… ‘”  Ì† ‘”  Ì‡ ‘”  Ìˆ ‘”  Ì‰ ‘”  ÌŠ ‘”  Ì‹ ‘”  ÌŒ ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì‘ ‘”  Ì’ ‘”  Ì“ ‘”  Ì” ‘”  Ì• ‘”  Ì– ‘”  Ì— ‘”  Ì˜ ‘”  Ì™ ‘”  Ìš ‘”  Ì› ‘”  Ìœ ‘”  Ì ‘”  Ì ‘”  ÌŸ ‘”  Ì  ‘”  Ì¡ ‘”  Ì¢ ‘”  Ì£ ‘”  Ì¤ ‘”  Ì¥ ‘”  Ì¦ ‘”  Ì§ ‘”  Ì¨ ‘”  Ì© ‘”  Ìª ‘”  Ì« ‘”  Ì¬ ‘”  Ì­ ‘”  Ì® ‘”  Ì¯ ‘”  Ì° ‘”  Ì± ‘”  Ì² ‘”  Ì³ ‘”  Ì´ ‘”  Ìµ ‘”  Ì¶ ‘”  Ì· ‘”  Ì¸ ‘”  Ì¹ ‘”  Ìº ‘”  Ì» ‘”  Ì¼ ‘”  Ì½ ‘”  Ì¾ ‘”  Ì¿ ‘”  ÌÀ ‘”  ÌÁ ‘”  ÌÂ ‘”  ÌÃ ‘”  ÌÄ ‘”  ÌÅ ‘”  ÌÆ ‘”  ÌÇ ‘”  ÌÈ ‘”  ÌÉ ‘”  ÌÊ ‘”  ÌË ‘”  ÌÌ ‘”  ÌÍ ‘”  ÌÎ ‘”  ÌÏ ‘”  ÌĞ ‘”  ÌÑ ‘”  ÌÒ ‘”  ÌÓ ‘”  ÌÔ ‘”  ÌÕ ‘”  ÌÖ ‘”  Ì× ‘”  ÌØ ‘”  ÌÙ ‘”  ÌÚ ‘”  ÌÛ ‘”  ÌÜ ‘”  Ìİ ‘”  ÌŞ ‘”  Ìß ‘”  Ìà ‘”  Ìá ‘”  Ìâ ‘”  Ìã ‘”  Ìä ‘”  Ìå ‘”  Ìæ ‘”  Ìç ‘”  Ìè ‘”  Ìé ‘”  Ìê ‘”  Ìë ‘”  Ìì ‘”  Ìí ‘”  Ìî ‘”  Ìï ‘”  Ìğ ‘”  Ìñ ‘”  Ìò ‘”  Ìó ‘”  Ìô ‘”  Ìõ ‘”  Ìö ‘”  Ì÷ ‘”  Ìø ‘”  Ìù ‘”  Ìú ‘”  Ìû ‘”  Ìü ‘”  Ìı ‘”  Ìş ‘”  Ìÿ ‘”  Í  ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í	 ‘”  Í
- ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í  ‘”  Í! ‘”  Í" ‘”  Í# ‘”  Í$ ‘”  Í% ‘”  Í& ‘”  Í' ‘”  Í( ‘”  Í) ‘”  Í* ‘”  Í+ ‘”  Í, ‘”  Í- ‘”  Í. ‘”  Í/ ‘”  Í0 ‘”  Í1 ‘”  Í2 ‘”  Í3 ‘”  Í4 ‘”  Í5 ‘”  Í6 ‘”  Í7 ‘”  Í8 ‘”  Í9 ‘”  Í: ‘”  Í; ‘”  Í< ‘”  Í= ‘”  Í> ‘”  Í? ‘”  Í@ ‘”  ÍA ‘”  ÍB ‘”  ÍC ‘”  ÍD ‘”  ÍE ‘”  ÍF ‘”  ÍG ‘”  ÍH ‘”  ÍI ‘”  ÍJ ‘”  ÍK ‘”  ÍL ‘”  ÍM ‘”  ÍN ‘”  ÍO ‘”  ÍP ‘”  ÍQ ‘”  ÍR ‘”  ÍS ‘”  ÍT ÔrG’§missing¦pluginÃ¦genAbcÂÔ  ÔrH”²dynamicImportCache¹exportAllDeclarationCache»exportNamedDeclarationCache«importCache•ÔrI•¤type¥start£endªspecifiers¦source±ImportDeclarationÌ€Ì¢‘ÔrJ”¤type¥start£end¥local¶ImportDefaultSpecifierÌ‡ÌÔrK”¤type¥start£end¤nameªIdentifierÌ‡Ì¦routerÔrL•¤type¥start£end¥value£raw§LiteralÌ“Ì¡¬@ohos.router®"@ohos.router"I±ImportDeclarationÌ¤ÌÒ‘J¶ImportDefaultSpecifierÌ«Ì·KªIdentifierÌ«Ì·¬promptActionL§LiteralÌ½ÌÑ²@ohos.promptAction´"@ohos.promptAction"I±ImportDeclarationÌÔÌû‘ÔrM•¤type¥start£end¨imported¥local¯ImportSpecifierÌİÌåKªIdentifierÌİÌå¨AppStateKªIdentifierÌİÌå¨AppStateL§LiteralÌíÌú«../AppState­'../AppState'I±ImportDeclarationÌıÍj–M¯ImportSpecifierÍÍKªIdentifierÍÍ¬HealthSignalKªIdentifierÍÍ¬HealthSignalM¯ImportSpecifierÍÍKªIdentifierÍÍ©StepLevelKªIdentifierÍÍ©StepLevelM¯ImportSpecifierÍÍ*KªIdentifierÍÍ*«SleepStatusKªIdentifierÍÍ*«SleepStatusM¯ImportSpecifierÍ,Í4KªIdentifierÍ,Í4¨BpStatusKªIdentifierÍ,Í4¨BpStatusM¯ImportSpecifierÍ6Í>KªIdentifierÍ6Í>¨BsStatusKªIdentifierÍ6Í>¨BsStatusM¯ImportSpecifierÍ@ÍJKªIdentifierÍ@ÍJªDataSourceKªIdentifierÍ@ÍJªDataSourceL§LiteralÍRÍiµ../model/HealthSignal·'../model/HealthSignal'I±ImportDeclarationÍlÍ™‘M¯ImportSpecifierÍuÍ}KªIdentifierÍuÍ}¨DateUtilKªIdentifierÍuÍ}¨DateUtilL§LiteralÍ…Í˜±../utils/DateUtil³'../utils/DateUtil'

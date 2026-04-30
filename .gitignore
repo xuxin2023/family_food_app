@@ -8,3 +8,8 @@ local.properties
 
 Thumbs.db
 .DS_Store
+
+# Build outputs and caches
+entry/build/
+build_error.log
+build_error_clean.txt

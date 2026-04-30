@@ -1,774 +1,0 @@
-Ôr@Ÿªassertions¤code´customTransformCache¬dependencies¢id¤meta±moduleSideEffects¬originalCode±originalSourcemap«resolvedIds®sourcemapChainµsyntheticNamedExportsµtransformDependencies®transformFiles¨cacheAstÔrAÚ-Û// OCRæœåŠ¡ - é›†æˆåä¸ºCore Vision Kit
-// APIå‚è€ƒï¼šhttps://developer.huawei.com/consumer/cn/doc/harmonyos-references-V5/textrecognition-V5
-import textRecognition from "@hms.ai.ocr.textRecognition";
-import image from "@ohos.multimedia.image";
-import hilog from "@ohos.hilog";
-import { FoodLabel, FoodSource, NutritionPer100g } from '../model/FoodLabel';
-const TAG = 'OcrService';
-const DOMAIN_ZERO = 0;
-// OCRè¾¹ç•Œæ¡†
-export class OcrBounds {
-    constructor() {
-        this.left = 0;
-        this.top = 0;
-        this.right = 0;
-        this.bottom = 0;
-    }
-}
-// OCRè¯†åˆ«å—
-export class OcrBlock {
-    constructor() {
-        this.text = '';
-        this.confidence = 0;
-        this.bounds = new OcrBounds();
-    }
-}
-// OCRè¯†åˆ«ç»“æœ
-export class OcrResult {
-    constructor() {
-        this.text = '';
-        this.confidence = 0;
-        this.blocks = [];
-    }
-}
-// OEMä¿¡æ¯
-export class OemInfo {
-    constructor() {
-        this.principal = '';
-        this.trustee = '';
-    }
-}
-export class OcrService {
-    /**
-     * åˆå§‹åŒ–OCRå¼•æ“ï¼ˆå…¼å®¹æ—§è°ƒç”¨ç‚¹ï¼Œå½“å‰æ— éœ€åˆ›å»ºè¯†åˆ«å®ä¾‹ï¼‰
-     */
-    async init() {
-        hilog.info(DOMAIN_ZERO, TAG, 'OCR service ready with function-based Core Vision Kit API');
-    }
-    /**
-     * é‡Šæ”¾OCRèµ„æºï¼ˆå…¼å®¹æ—§è°ƒç”¨ç‚¹ï¼Œå½“å‰æ— éœ€é‡Šæ”¾è¯†åˆ«å®ä¾‹ï¼‰
-     */
-    async release() {
-        hilog.info(DOMAIN_ZERO, TAG, 'OCR service release skipped for function-based Core Vision Kit API');
-    }
-    /**
-     * ä»å›¾ç‰‡URIè¯†åˆ«æ–‡å­—
-     * @param imageUri å›¾ç‰‡URIï¼ˆç”±ç›¸æœºæˆ–ç›¸å†Œè¿”å›ï¼‰
-     * @returns OCRè¯†åˆ«ç»“æœ
-     */
-    async recognizeText(imageUri) {
-        let pixelMap = null;
-        try {
-            const imageSource = image.createImageSource(imageUri);
-            pixelMap = await imageSource.createPixelMap();
-            const result = await this.recognizeFromPixelMap(pixelMap);
-            hilog.info(DOMAIN_ZERO, TAG, 'OCR recognized %{public}d blocks', result.blocks.length);
-            return result;
-        }
-        catch (error) {
-            hilog.error(DOMAIN_ZERO, TAG, 'OCR recognize failed: %{public}s', JSON.stringify(error));
-            return { text: '', confidence: 0, blocks: [] };
-        }
-        finally {
-            if (pixelMap) {
-                try {
-                    pixelMap.release();
-                }
-                catch (releaseError) {
-                    hilog.warn(DOMAIN_ZERO, TAG, 'OCR pixelMap release failed: %{public}s', JSON.stringify(releaseError));
-                }
-            }
-        }
-    }
-    /**
-     * ä»PixelMapè¯†åˆ«æ–‡å­—ï¼ˆç›¸æœºå®æ—¶å¸§åœºæ™¯ï¼‰
-     * @param pixelMap ç›¸æœºå¸§PixelMap
-     * @returns OCRè¯†åˆ«ç»“æœ
-     */
-    async recognizeFromPixelMap(pixelMap) {
-        try {
-            const visionInfo = { pixelMap };
-            const config = {
-                isDirectionDetectionSupported: false
-            };
-            const textResult = await textRecognition.recognizeText(visionInfo, config);
-            return this.parseOcrResult(textResult);
-        }
-        catch (error) {
-            hilog.error(DOMAIN_ZERO, TAG, 'OCR recognize from PixelMap failed: %{public}s', JSON.stringify(error));
-            return { text: '', confidence: 0, blocks: [] };
-        }
-    }
-    /**
-     * ä»OCRæ–‡æœ¬ä¸­æå–é£Ÿå“æ ‡ç­¾ç»“æ„åŒ–æ•°æ®
-     * @param ocrText OCRè¯†åˆ«çš„åŸå§‹æ–‡æœ¬
-     * @returns ç»“æ„åŒ–çš„FoodLabel
-     */
-    extractFoodLabel(ocrText) {
-        const label = new FoodLabel();
-        label.foodId = `food_${Date.now()}`;
-        label.source = FoodSource.USER_UPLOAD;
-        label.identifiedAt = Date.now();
-        // æå–é£Ÿå“åç§°ï¼ˆé€šå¸¸åœ¨åŒ…è£…æœ€æ˜¾çœ¼ä½ç½®ï¼‰
-        label.foodName = this.extractFoodName(ocrText);
-        // æå–è¥å…»æˆåˆ†è¡¨
-        label.nutrition = this.extractNutrition(ocrText);
-        // æå–é…æ–™è¡¨
-        label.ingredients = this.extractIngredients(ocrText);
-        // æå–ç”Ÿäº§å•†
-        label.manufacturer = this.extractManufacturer(ocrText);
-        // æå–SCç¼–å·
-        label.scNumber = this.extractScNumber(ocrText);
-        // æå–å§”æ‰˜æ–¹/å—æ‰˜æ–¹
-        const oemInfo = this.extractOemInfo(ocrText);
-        label.principal = oemInfo.principal;
-        label.trustee = oemInfo.trustee;
-        // æå–æ¡ç ï¼ˆå¦‚æœOCRç»“æœä¸­åŒ…å«ï¼‰
-        const barcode = this.extractBarcode(ocrText);
-        if (barcode.length > 0) {
-            label.barcode = barcode;
-        }
-        return label;
-    }
-    /**
-     * å®Œæ•´æµç¨‹ï¼šæ‹ç…§ â†’ OCR â†’ æå–FoodLabel
-     * @param imageUri å›¾ç‰‡URI
-     * @returns ç»“æ„åŒ–çš„FoodLabel
-     */
-    async recognizeAndExtract(imageUri) {
-        const ocrResult = await this.recognizeText(imageUri);
-        if (ocrResult.text.length === 0) {
-            // OCRå¤±è´¥ï¼Œè¿”å›ç©ºæ ‡ç­¾
-            const label = new FoodLabel();
-            label.foodId = `food_${Date.now()}`;
-            label.foodName = 'è¯†åˆ«å¤±è´¥ï¼Œè¯·æ‰‹åŠ¨è¾“å…¥';
-            label.source = FoodSource.USER_UPLOAD;
-            label.identifiedAt = Date.now();
-            return label;
-        }
-        return this.extractFoodLabel(ocrResult.text);
-    }
-    // ========== å†…éƒ¨æ–¹æ³• ==========
-    /**
-     * è§£æCore Vision Kitè¿”å›çš„OCRç»“æœ
-     */
-    parseOcrResult(textResult) {
-        const blocks = [];
-        let fullText = textResult.value ? textResult.value.trim() : '';
-        for (const block of textResult.blocks) {
-            const lines = [];
-            for (const line of block.lines) {
-                if (line.words.length > 0) {
-                    const words = line.words.map((word) => word.value).join(' ').trim();
-                    if (words.length > 0) {
-                        lines.push(words);
-                        continue;
-                    }
-                }
-                const lineValue = line.value.trim();
-                if (lineValue.length > 0) {
-                    lines.push(lineValue);
-                }
-            }
-            const blockValue = block.value.trim();
-            const blockText = blockValue.length > 0 ? blockValue : lines.join('\n').trim();
-            if (blockText.length === 0) {
-                continue;
-            }
-            blocks.push({
-                text: blockText,
-                confidence: 0,
-                bounds: this.buildBounds(this.resolveCornerPoints(block))
-            });
-        }
-        if (fullText.length === 0 && blocks.length > 0) {
-            fullText = blocks.map((block) => block.text).join('\n').trim();
-        }
-        return {
-            text: fullText,
-            confidence: 0,
-            blocks
-        };
-    }
-    resolveCornerPoints(block) {
-        for (const line of block.lines) {
-            if (line.cornerPoints.length > 0) {
-                return line.cornerPoints;
-            }
-        }
-        // å°è¯•ä»blockæœ¬èº«è·å–cornerPointsï¼ˆä½¿ç”¨åå°„æ–¹å¼ï¼‰
-        // ç”±äº TextBlock å¯èƒ½æ²¡æœ‰ç›´æ¥çš„ cornerPoints å±æ€§ï¼Œè¿™é‡Œè¿”å›ç©ºæ•°ç»„
-        return [];
-    }
-    buildBounds(cornerPoints) {
-        const bounds = new OcrBounds();
-        if (cornerPoints.length === 0) {
-            return bounds;
-        }
-        bounds.left = cornerPoints[0].x;
-        bounds.top = cornerPoints[0].y;
-        bounds.right = cornerPoints[0].x;
-        bounds.bottom = cornerPoints[0].y;
-        for (const point of cornerPoints) {
-            bounds.left = Math.min(bounds.left, point.x);
-            bounds.top = Math.min(bounds.top, point.y);
-            bounds.right = Math.max(bounds.right, point.x);
-            bounds.bottom = Math.max(bounds.bottom, point.y);
-        }
-        return bounds;
-    }
-    // æå–é£Ÿå“åç§°
-    extractFoodName(text) {
-        // ç­–ç•¥1ï¼šæŸ¥æ‰¾"å“å"å…³é”®å­—
-        const nameMatch = text.match(/(?:å“å|äº§å“åç§°|é£Ÿå“åç§°)[ï¼š:]\s*(.*?)(?:\n|$)/);
-        if (nameMatch && nameMatch[1].trim().length > 0) {
-            return nameMatch[1].trim().substring(0, 30);
-        }
-        // ç­–ç•¥2ï¼šå–ç¬¬ä¸€è¡Œéç©ºæ–‡æœ¬ï¼ˆé€šå¸¸æ˜¯é£Ÿå“åï¼‰
-        const lines = text.split('\n').filter(l => l.trim().length > 0);
-        if (lines.length > 0) {
-            return lines[0].trim().substring(0, 30);
-        }
-        return 'æœªçŸ¥é£Ÿå“';
-    }
-    // æå–è¥å…»æˆåˆ†
-    extractNutrition(text) {
-        const nutrition = new NutritionPer100g();
-        // é’ ï¼ˆæ”¯æŒ"é’ "å’Œ"é’ /Na"ä¸¤ç§å†™æ³•ï¼‰
-        const sodiumMatch = text.match(/(?:é’ |Na)[^\d]*(\d+\.?\d*)\s*mg/);
-        if (sodiumMatch)
-            nutrition.sodium = parseFloat(sodiumMatch[1]);
-        // ç³–ï¼ˆæ”¯æŒ"ç³–"å’Œ"æ€»ç³–"ï¼‰
-        const sugarMatch = text.match(/(?:æ€»ç³–|ç³–(?:å«é‡)?)[^\d]*(\d+\.?\d*)\s*g/);
-        if (sugarMatch)
-            nutrition.sugar = parseFloat(sugarMatch[1]);
-        // èƒ½é‡/çƒ­é‡
-        const calorieMatch = text.match(/(?:èƒ½é‡|çƒ­é‡|Energy)[^\d]*(\d+\.?\d*)\s*(?:kcal|åƒå¡|kJ|åƒç„¦)/);
-        if (calorieMatch)
-            nutrition.calories = parseFloat(calorieMatch[1]);
-        // è„‚è‚ª
-        const fatMatch = text.match(/(?:è„‚è‚ª|æ€»è„‚è‚ª)[^\d]*(\d+\.?\d*)\s*g/);
-        if (fatMatch)
-            nutrition.fat = parseFloat(fatMatch[1]);
-        // é¥±å’Œè„‚è‚ª
-        const satFatMatch = text.match(/(?:é¥±å’Œè„‚è‚ª|é¥±å’Œè„‚è‚ªé…¸)[^\d]*(\d+\.?\d*)\s*g/);
-        if (satFatMatch)
-            nutrition.saturatedFat = parseFloat(satFatMatch[1]);
-        // ç¢³æ°´åŒ–åˆç‰©
-        const carbMatch = text.match(/(?:ç¢³æ°´åŒ–åˆç‰©|ç¢³æ°´)[^\d]*(\d+\.?\d*)\s*g/);
-        if (carbMatch)
-            nutrition.carbohydrate = parseFloat(carbMatch[1]);
-        // è›‹ç™½è´¨
-        const proteinMatch = text.match(/(?:è›‹ç™½è´¨|è›‹ç™½)[^\d]*(\d+\.?\d*)\s*g/);
-        if (proteinMatch)
-            nutrition.protein = parseFloat(proteinMatch[1]);
-        return nutrition;
-    }
-    // æå–é…æ–™è¡¨
-    extractIngredients(text) {
-        // æ”¯æŒå¤šè¡Œé…æ–™è¡¨
-        const ingredientsMatch = text.match(/(?:é…æ–™|åŸæ–™)[è¡¨]?[ï¼š:]\s*([\s\S]*?)(?=\n\n|è¥å…»æˆä»½|è¥å…»æˆåˆ†|ç”Ÿäº§å•†|$)/);
-        if (ingredientsMatch) {
-            const raw = ingredientsMatch[1].replace(/\n/g, ' ');
-            return raw.split(/[ã€,ï¼Œ;ï¼›]/).map(s => s.trim()).filter(s => s.length > 0);
-        }
-        return [];
-    }
-    // æå–ç”Ÿäº§å•†
-    extractManufacturer(text) {
-        const match = text.match(/(?:ç”Ÿäº§å•†|ç”Ÿäº§ä¼ä¸š|åˆ¶é€ å•†|ç”Ÿäº§è€…)[ï¼š:]\s*(.*?)(?:\n|$)/);
-        return match ? match[1].trim() : '';
-    }
-    // æå–SCç¼–å·
-    extractScNumber(text) {
-        const match = text.match(/SC\d{14}/);
-        return match ? match[0] : '';
-    }
-    // æå–å§”æ‰˜æ–¹/å—æ‰˜æ–¹
-    extractOemInfo(text) {
-        const result = new OemInfo();
-        const principalMatch = text.match(/(?:å§”æ‰˜æ–¹|å§”æ‰˜ç”Ÿäº§ä¼ä¸š|å§”æ‰˜å•ä½)[ï¼š:]\s*(.*?)(?:\n|$)/);
-        const trusteeMatch = text.match(/(?:å—æ‰˜æ–¹|å—æ‰˜ç”Ÿäº§ä¼ä¸š|å—æ‰˜å•ä½|å®é™…ç”Ÿäº§ä¼ä¸š)[ï¼š:]\s*(.*?)(?:\n|$)/);
-        result.principal = principalMatch ? principalMatch[1].trim() : '';
-        result.trustee = trusteeMatch ? trusteeMatch[1].trim() : '';
-        return result;
-    }
-    // æå–æ¡ç ï¼ˆOCRå¯èƒ½æ‰«åˆ°æ¡ç æ•°å­—ï¼‰
-    extractBarcode(text) {
-        // EAN-13æ¡ç 
-        const match = text.match(/\b(\d{13})\b/);
-        return match ? match[1] : '';
-    }
-}
-//# sourceMappingURL=OcrService.js.mapÂ”Ùm hvigor_ignore_C:_Program Files_Huawei_DevEco Studio_sdk_default_hms_ets_api_@hms.ai.ocr.textRecognition.d.tsÙp hvigor_ignore_C:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.multimedia.image.d.tsÙe hvigor_ignore_C:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.hilog.d.tsÙ=E:\APP\family_food_app\entry\src\main\ets\model\FoodLabel.etsÙ@E:\APP\family_food_app\entry\src\main\ets\service\OcrService.etsÔrB›ªmoduleName±isLocalDependency¯isNodeEntryFile§pkgPath±belongProjectPath§pkgNameªpkgVersion±dependencyPkgInfo¯hostModulesInfo°belongModulePath¬shouldEmitJs¥entryÃÂ¼E:\APP\family_food_app\entry¶E:\APP\family_food_app¥entry¥1.0.0Ô  ‘ÔrC’²hostDependencyName®hostModuleName¬./OcrService¥entry¼E:\APP\family_food_app\entryÃÃÚ+V// OCRæœåŠ¡ - é›†æˆåä¸ºCore Vision Kit
-// APIå‚è€ƒï¼šhttps://developer.huawei.com/consumer/cn/doc/harmonyos-references-V5/textrecognition-V5
-
-import { textRecognition } from '@kit.CoreVisionKit';
-import { image } from '@kit.ImageKit';
-import { hilog } from '@kit.PerformanceAnalysisKit';
-import { FoodLabel, FoodSource, NutritionPer100g } from '../model/FoodLabel';
-
-const TAG = 'OcrService';
-const DOMAIN_ZERO = 0;
-
-// OCRè¾¹ç•Œæ¡†
-export class OcrBounds {
-  left: number = 0;
-  top: number = 0;
-  right: number = 0;
-  bottom: number = 0;
-}
-
-// OCRè¯†åˆ«å—
-export class OcrBlock {
-  text: string = '';
-  confidence: number = 0;
-  bounds: OcrBounds = new OcrBounds();
-}
-
-// OCRè¯†åˆ«ç»“æœ
-export class OcrResult {
-  text: string = '';
-  confidence: number = 0;
-  blocks: OcrBlock[] = [];
-}
-
-// OEMä¿¡æ¯
-export class OemInfo {
-  principal: string = '';
-  trustee: string = '';
-}
-
-export class OcrService {
-  /**
-   * åˆå§‹åŒ–OCRå¼•æ“ï¼ˆå…¼å®¹æ—§è°ƒç”¨ç‚¹ï¼Œå½“å‰æ— éœ€åˆ›å»ºè¯†åˆ«å®ä¾‹ï¼‰
-   */
-  async init(): Promise<void> {
-    hilog.info(DOMAIN_ZERO, TAG, 'OCR service ready with function-based Core Vision Kit API');
-  }
-
-  /**
-   * é‡Šæ”¾OCRèµ„æºï¼ˆå…¼å®¹æ—§è°ƒç”¨ç‚¹ï¼Œå½“å‰æ— éœ€é‡Šæ”¾è¯†åˆ«å®ä¾‹ï¼‰
-   */
-  async release(): Promise<void> {
-    hilog.info(DOMAIN_ZERO, TAG, 'OCR service release skipped for function-based Core Vision Kit API');
-  }
-
-  /**
-   * ä»å›¾ç‰‡URIè¯†åˆ«æ–‡å­—
-   * @param imageUri å›¾ç‰‡URIï¼ˆç”±ç›¸æœºæˆ–ç›¸å†Œè¿”å›ï¼‰
-   * @returns OCRè¯†åˆ«ç»“æœ
-   */
-  async recognizeText(imageUri: string): Promise<OcrResult> {
-    let pixelMap: image.PixelMap | null = null;
-    try {
-      const imageSource = image.createImageSource(imageUri);
-      pixelMap = await imageSource.createPixelMap();
-      const result = await this.recognizeFromPixelMap(pixelMap);
-      hilog.info(DOMAIN_ZERO, TAG, 'OCR recognized %{public}d blocks', result.blocks.length);
-      return result;
-    } catch (error) {
-      hilog.error(DOMAIN_ZERO, TAG, 'OCR recognize failed: %{public}s', JSON.stringify(error));
-      return { text: '', confidence: 0, blocks: [] };
-    } finally {
-      if (pixelMap) {
-        try {
-          pixelMap.release();
-        } catch (releaseError) {
-          hilog.warn(DOMAIN_ZERO, TAG, 'OCR pixelMap release failed: %{public}s', JSON.stringify(releaseError));
-        }
-      }
-    }
-  }
-
-  /**
-   * ä»PixelMapè¯†åˆ«æ–‡å­—ï¼ˆç›¸æœºå®æ—¶å¸§åœºæ™¯ï¼‰
-   * @param pixelMap ç›¸æœºå¸§PixelMap
-   * @returns OCRè¯†åˆ«ç»“æœ
-   */
-  async recognizeFromPixelMap(pixelMap: image.PixelMap): Promise<OcrResult> {
-    try {
-      const visionInfo: textRecognition.VisionInfo = { pixelMap };
-      const config: textRecognition.TextRecognitionConfiguration = {
-        isDirectionDetectionSupported: false
-      };
-      const textResult = await textRecognition.recognizeText(visionInfo, config);
-      return this.parseOcrResult(textResult);
-    } catch (error) {
-      hilog.error(DOMAIN_ZERO, TAG, 'OCR recognize from PixelMap failed: %{public}s', JSON.stringify(error));
-      return { text: '', confidence: 0, blocks: [] };
-    }
-  }
-
-  /**
-   * ä»OCRæ–‡æœ¬ä¸­æå–é£Ÿå“æ ‡ç­¾ç»“æ„åŒ–æ•°æ®
-   * @param ocrText OCRè¯†åˆ«çš„åŸå§‹æ–‡æœ¬
-   * @returns ç»“æ„åŒ–çš„FoodLabel
-   */
-  extractFoodLabel(ocrText: string): FoodLabel {
-    const label = new FoodLabel();
-    label.foodId = `food_${Date.now()}`;
-    label.source = FoodSource.USER_UPLOAD;
-    label.identifiedAt = Date.now();
-
-    // æå–é£Ÿå“åç§°ï¼ˆé€šå¸¸åœ¨åŒ…è£…æœ€æ˜¾çœ¼ä½ç½®ï¼‰
-    label.foodName = this.extractFoodName(ocrText);
-
-    // æå–è¥å…»æˆåˆ†è¡¨
-    label.nutrition = this.extractNutrition(ocrText);
-
-    // æå–é…æ–™è¡¨
-    label.ingredients = this.extractIngredients(ocrText);
-
-    // æå–ç”Ÿäº§å•†
-    label.manufacturer = this.extractManufacturer(ocrText);
-
-    // æå–SCç¼–å·
-    label.scNumber = this.extractScNumber(ocrText);
-
-    // æå–å§”æ‰˜æ–¹/å—æ‰˜æ–¹
-    const oemInfo = this.extractOemInfo(ocrText);
-    label.principal = oemInfo.principal;
-    label.trustee = oemInfo.trustee;
-
-    // æå–æ¡ç ï¼ˆå¦‚æœOCRç»“æœä¸­åŒ…å«ï¼‰
-    const barcode = this.extractBarcode(ocrText);
-    if (barcode.length > 0) {
-      label.barcode = barcode;
-    }
-
-    return label;
-  }
-
-  /**
-   * å®Œæ•´æµç¨‹ï¼šæ‹ç…§ â†’ OCR â†’ æå–FoodLabel
-   * @param imageUri å›¾ç‰‡URI
-   * @returns ç»“æ„åŒ–çš„FoodLabel
-   */
-  async recognizeAndExtract(imageUri: string): Promise<FoodLabel> {
-    const ocrResult = await this.recognizeText(imageUri);
-    if (ocrResult.text.length === 0) {
-      // OCRå¤±è´¥ï¼Œè¿”å›ç©ºæ ‡ç­¾
-      const label = new FoodLabel();
-      label.foodId = `food_${Date.now()}`;
-      label.foodName = 'è¯†åˆ«å¤±è´¥ï¼Œè¯·æ‰‹åŠ¨è¾“å…¥';
-      label.source = FoodSource.USER_UPLOAD;
-      label.identifiedAt = Date.now();
-      return label;
-    }
-    return this.extractFoodLabel(ocrResult.text);
-  }
-
-  // ========== å†…éƒ¨æ–¹æ³• ==========
-
-  /**
-   * è§£æCore Vision Kitè¿”å›çš„OCRç»“æœ
-   */
-  private parseOcrResult(textResult: textRecognition.TextRecognitionResult): OcrResult {
-    const blocks: OcrBlock[] = [];
-    let fullText = textResult.value ? textResult.value.trim() : '';
-
-    for (const block of textResult.blocks) {
-      const lines: string[] = [];
-      for (const line of block.lines) {
-        if (line.words.length > 0) {
-          const words = line.words.map((word) => word.value).join(' ').trim();
-          if (words.length > 0) {
-            lines.push(words);
-            continue;
-          }
-        }
-
-        const lineValue = line.value.trim();
-        if (lineValue.length > 0) {
-          lines.push(lineValue);
-        }
-      }
-
-      const blockValue = block.value.trim();
-      const blockText = blockValue.length > 0 ? blockValue : lines.join('\n').trim();
-      if (blockText.length === 0) {
-        continue;
-      }
-
-      blocks.push({
-        text: blockText,
-        confidence: 0,
-        bounds: this.buildBounds(this.resolveCornerPoints(block))
-      });
-    }
-
-    if (fullText.length === 0 && blocks.length > 0) {
-      fullText = blocks.map((block) => block.text).join('\n').trim();
-    }
-
-    return {
-      text: fullText,
-      confidence: 0,
-      blocks
-    };
-  }
-
-  private resolveCornerPoints(block: textRecognition.TextBlock): Array<textRecognition.PixelPoint> {
-    for (const line of block.lines) {
-      if (line.cornerPoints.length > 0) {
-        return line.cornerPoints;
-      }
-    }
-
-    // å°è¯•ä»blockæœ¬èº«è·å–cornerPointsï¼ˆä½¿ç”¨åå°„æ–¹å¼ï¼‰
-    // ç”±äº TextBlock å¯èƒ½æ²¡æœ‰ç›´æ¥çš„ cornerPoints å±æ€§ï¼Œè¿™é‡Œè¿”å›ç©ºæ•°ç»„
-    return [];
-  }
-
-  private buildBounds(cornerPoints: Array<textRecognition.PixelPoint>): OcrBounds {
-    const bounds = new OcrBounds();
-    if (cornerPoints.length === 0) {
-      return bounds;
-    }
-
-    bounds.left = cornerPoints[0].x;
-    bounds.top = cornerPoints[0].y;
-    bounds.right = cornerPoints[0].x;
-    bounds.bottom = cornerPoints[0].y;
-
-    for (const point of cornerPoints) {
-      bounds.left = Math.min(bounds.left, point.x);
-      bounds.top = Math.min(bounds.top, point.y);
-      bounds.right = Math.max(bounds.right, point.x);
-      bounds.bottom = Math.max(bounds.bottom, point.y);
-    }
-
-    return bounds;
-  }
-
-  // æå–é£Ÿå“åç§°
-  private extractFoodName(text: string): string {
-    // ç­–ç•¥1ï¼šæŸ¥æ‰¾"å“å"å…³é”®å­—
-    const nameMatch = text.match(/(?:å“å|äº§å“åç§°|é£Ÿå“åç§°)[ï¼š:]\s*(.*?)(?:\n|$)/);
-    if (nameMatch && nameMatch[1].trim().length > 0) {
-      return nameMatch[1].trim().substring(0, 30);
-    }
-    // ç­–ç•¥2ï¼šå–ç¬¬ä¸€è¡Œéç©ºæ–‡æœ¬ï¼ˆé€šå¸¸æ˜¯é£Ÿå“åï¼‰
-    const lines = text.split('\n').filter(l => l.trim().length > 0);
-    if (lines.length > 0) {
-      return lines[0].trim().substring(0, 30);
-    }
-    return 'æœªçŸ¥é£Ÿå“';
-  }
-
-  // æå–è¥å…»æˆåˆ†
-  private extractNutrition(text: string): NutritionPer100g {
-    const nutrition = new NutritionPer100g();
-
-    // é’ ï¼ˆæ”¯æŒ"é’ "å’Œ"é’ /Na"ä¸¤ç§å†™æ³•ï¼‰
-    const sodiumMatch = text.match(/(?:é’ |Na)[^\d]*(\d+\.?\d*)\s*mg/);
-    if (sodiumMatch) nutrition.sodium = parseFloat(sodiumMatch[1]);
-
-    // ç³–ï¼ˆæ”¯æŒ"ç³–"å’Œ"æ€»ç³–"ï¼‰
-    const sugarMatch = text.match(/(?:æ€»ç³–|ç³–(?:å«é‡)?)[^\d]*(\d+\.?\d*)\s*g/);
-    if (sugarMatch) nutrition.sugar = parseFloat(sugarMatch[1]);
-
-    // èƒ½é‡/çƒ­é‡
-    const calorieMatch = text.match(/(?:èƒ½é‡|çƒ­é‡|Energy)[^\d]*(\d+\.?\d*)\s*(?:kcal|åƒå¡|kJ|åƒç„¦)/);
-    if (calorieMatch) nutrition.calories = parseFloat(calorieMatch[1]);
-
-    // è„‚è‚ª
-    const fatMatch = text.match(/(?:è„‚è‚ª|æ€»è„‚è‚ª)[^\d]*(\d+\.?\d*)\s*g/);
-    if (fatMatch) nutrition.fat = parseFloat(fatMatch[1]);
-
-    // é¥±å’Œè„‚è‚ª
-    const satFatMatch = text.match(/(?:é¥±å’Œè„‚è‚ª|é¥±å’Œè„‚è‚ªé…¸)[^\d]*(\d+\.?\d*)\s*g/);
-    if (satFatMatch) nutrition.saturatedFat = parseFloat(satFatMatch[1]);
-
-    // ç¢³æ°´åŒ–åˆç‰©
-    const carbMatch = text.match(/(?:ç¢³æ°´åŒ–åˆç‰©|ç¢³æ°´)[^\d]*(\d+\.?\d*)\s*g/);
-    if (carbMatch) nutrition.carbohydrate = parseFloat(carbMatch[1]);
-
-    // è›‹ç™½è´¨
-    const proteinMatch = text.match(/(?:è›‹ç™½è´¨|è›‹ç™½)[^\d]*(\d+\.?\d*)\s*g/);
-    if (proteinMatch) nutrition.protein = parseFloat(proteinMatch[1]);
-
-    return nutrition;
-  }
-
-  // æå–é…æ–™è¡¨
-  private extractIngredients(text: string): string[] {
-    // æ”¯æŒå¤šè¡Œé…æ–™è¡¨
-    const ingredientsMatch = text.match(/(?:é…æ–™|åŸæ–™)[è¡¨]?[ï¼š:]\s*([\s\S]*?)(?=\n\n|è¥å…»æˆä»½|è¥å…»æˆåˆ†|ç”Ÿäº§å•†|$)/);
-    if (ingredientsMatch) {
-      const raw = ingredientsMatch[1].replace(/\n/g, ' ');
-      return raw.split(/[ã€,ï¼Œ;ï¼›]/).map(s => s.trim()).filter(s => s.length > 0);
-    }
-    return [];
-  }
-
-  // æå–ç”Ÿäº§å•†
-  private extractManufacturer(text: string): string {
-    const match = text.match(/(?:ç”Ÿäº§å•†|ç”Ÿäº§ä¼ä¸š|åˆ¶é€ å•†|ç”Ÿäº§è€…)[ï¼š:]\s*(.*?)(?:\n|$)/);
-    return match ? match[1].trim() : '';
-  }
-
-  // æå–SCç¼–å·
-  private extractScNumber(text: string): string {
-    const match = text.match(/SC\d{14}/);
-    return match ? match[0] : '';
-  }
-
-  // æå–å§”æ‰˜æ–¹/å—æ‰˜æ–¹
-  private extractOemInfo(text: string): OemInfo {
-    const result = new OemInfo();
-    const principalMatch = text.match(/(?:å§”æ‰˜æ–¹|å§”æ‰˜ç”Ÿäº§ä¼ä¸š|å§”æ‰˜å•ä½)[ï¼š:]\s*(.*?)(?:\n|$)/);
-    const trusteeMatch = text.match(/(?:å—æ‰˜æ–¹|å—æ‰˜ç”Ÿäº§ä¼ä¸š|å—æ‰˜å•ä½|å®é™…ç”Ÿäº§ä¼ä¸š)[ï¼š:]\s*(.*?)(?:\n|$)/);
-    result.principal = principalMatch ? principalMatch[1].trim() : '';
-    result.trustee = trusteeMatch ? trusteeMatch[1].trim() : '';
-    return result;
-  }
-
-  // æå–æ¡ç ï¼ˆOCRå¯èƒ½æ‰«åˆ°æ¡ç æ•°å­—ï¼‰
-  private extractBarcode(text: string): string {
-    // EAN-13æ¡ç 
-    const match = text.match(/\b(\d{13})\b/);
-    return match ? match[1] : '';
-  }
-}
-ÀÔrD”»@hms.ai.ocr.textRecognition¶@ohos.multimedia.image«@ohos.hilog²../model/FoodLabelÔrE—ªassertions¨external¢id¤meta±moduleSideEffectsªresolvedByµsyntheticNamedExportsAÃÙm hvigor_ignore_C:_Program Files_Huawei_DevEco Studio_sdk_default_hms_ets_api_@hms.ai.ocr.textRecognition.d.tsÔrF‘¯hostModulesInfo‘C»@hms.ai.ocr.textRecognition¥entryÃªoh-resolveÂEAÃÙp hvigor_ignore_C:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.multimedia.image.d.tsF‘C¶@ohos.multimedia.image¥entryÃªoh-resolveÂEAÃÙe hvigor_ignore_C:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.hilog.d.tsAÃªoh-resolveÂEAÂÙ=E:\APP\family_food_app\entry\src\main\ets\model\FoodLabel.etsAÃªoh-resolveÂ“ÔrG–§version¤fileªsourceRoot§sources¥names¨mappings­OcrService.js ‘®OcrService.etsÜ.’”    ”  ’”   ”Ì` Ì`–”   ” 	” ”  ”9 4”: 5–”   ” 	” ” ”* %”+ &–”   ” 	” ” ” 3”  4œ”   ” ”	 	” ” ” ”   ”0 0”2 2”8 8”ÌL ÌL”ÌM ÌM–”   ” ”	 	” ” ” –”  	 ” 	” 	” 	” 	” 	’”   ”	 	””   ” ” ” ‘”  •” ” ” ” ” •” ” ” ” ” •” ” ” ” ” •” ” ” ” ” ’”  ” ‘” ’”   ”	 	””   ” ” ” ‘”  •” ” ” ” ” •” ” ” ” ” —” ” ” ” ”# #”% %”& &’”  ” ‘” ’”   ”
- 
-””   ” ” ” ‘”  •” ” ” ” ” •” ” ” ” ” •” ” ” ” ” ’”  ” ‘” ’”  ! ” !””  " ” "” "” "‘” " •” #” #” #” #” #•” $” $	” $” $” $’” % ” %‘” %””  ' ” '” '” '‘” (‘” *”” +”	 +”
- +” +œ” ,” ,	” ,
-” ,” ,” ,”  ,”# ,”% ,!”Ì` ,Ì\”Ìa ,Ì]”Ìb ,Ì^’” -” -‘” /‘” 1”” 2”	 2”
- 2” 2œ” 3” 3	” 3
-” 3” 3” 3”  3”# 3”% 3!”Ìi 3Ìe”Ìj 3Ìf”Ìk 3Ìg’” 4” 4‘” 6‘” :–” ;”	 ;”
- ;” ;” ;”  ;&–” <” <” <” <*” <.” </’” =” =›” >” >” >”  >”% >”& > ”7 >1”8 >2”Ì@ >:”ÌA >;”ÌB ><™” ?” ?” ?” ?”( ?"”) ?#”7 ?1”9 ?3”: ?4œ” Ì@” Ì@” Ì@” Ì@”! Ì@”% Ì@”& Ì@ ”; Ì@5”< Ì@6”ÌD Ì@>”ÌE Ì@?”ÌF Ì@Ì@Ü ” ÌA” ÌA” ÌA” ÌA” ÌA”" ÌA”$ ÌA”' ÌA!”) ÌA#”ÌK ÌAÌE”ÌM ÌAÌG”ÌS ÌAÌM”ÌT ÌAÌN”ÌZ ÌAÌT”Ì[ ÌAÌU”Ìa ÌAÌ[”Ìb ÌAÌ\”Ìc ÌAÌ]”” ÌB” ÌB” ÌB” ÌB‘”	 ÌC”” ÌC” ÌC” ÌC” ÌCÜ ” ÌD” ÌD” ÌD” ÌD” ÌD”# ÌD”% ÌD”( ÌD"”* ÌD$”ÌL ÌDÌF”ÌN ÌDÌH”ÌR ÌDÌL”ÌS ÌDÌM”Ì\ ÌDÌV”Ì] ÌDÌW”Ìb ÌDÌ\”Ìc ÌDÌ]”Ìd ÌDÌ^”Ìe ÌDÌ_Ü ” ÌE” ÌE” ÌE” ÌE” ÌE” ÌE” ÌE”) ÌE#”+ ÌE%”, ÌE&”. ÌE(”4 ÌE.”6 ÌE0”8 ÌE2”: ÌE4”; ÌE5‘”	 ÌF‘” ÌF”” ÌG” ÌG
-” ÌG” ÌG’” ÌH” ÌH–” ÌI
-” ÌI” ÌI”$ ÌI”& ÌI”' ÌI‘” ÌJ	”” ÌJ
-” ÌJ”# ÌJ”% ÌJÜ ” ÌK
-” ÌK” ÌK” ÌK” ÌK”* ÌK ”, ÌK"”/ ÌK%”1 ÌK'”ÌZ ÌKÌP”Ì\ ÌKÌR”Ì` ÌKÌV”Ìa ÌKÌW”Ìj ÌKÌ`”Ìk ÌKÌa”Ìw ÌKÌm”Ìx ÌKÌn”Ìy ÌKÌo”Ìz ÌKÌp‘” ÌL	‘” ÌM‘”	 ÌN’” ÌO” ÌO‘” ÌQ‘” ÌU–” ÌV”	 ÌV”
- ÌV” ÌV”  ÌV”( ÌV6’” ÌW” ÌW˜” ÌX” ÌX” ÌX” ÌX5”! ÌX7”) ÌX?”+ ÌXÌA”, ÌXÌB”” ÌY” ÌY” ÌY” ÌYÌC”” ÌZ”- ÌZ%”/ ÌZ'”4 ÌZ,’” Ì[” Ì[” Ì\” Ì\” Ì\” Ì\”% Ì\”4 Ì\.”5 Ì\/”ÌB Ì\<”ÌC Ì\=”ÌM Ì\ÌG”ÌO Ì\ÌI”ÌU Ì\ÌO”ÌV Ì\ÌP”ÌW Ì\ÌQ™” Ì]” Ì]” Ì]” Ì]”& Ì] ”' Ì]!”1 Ì]+”2 Ì],”3 Ì]-‘”	 Ì^”” Ì^” Ì^” Ì^” Ì^Ü ” Ì_” Ì_” Ì_” Ì_” Ì_”# Ì_”% Ì_”( Ì_"”* Ì_$”ÌZ Ì_ÌT”Ì\ Ì_ÌV”Ì` Ì_ÌZ”Ìa Ì_Ì[”Ìj Ì_Ìd”Ìk Ì_Ìe”Ìp Ì_Ìj”Ìq Ì_Ìk”Ìr Ì_Ìl”Ìs Ì_ÌmÜ ” Ì`” Ì`” Ì`” Ì`” Ì`” Ì`” Ì`”) Ì`#”+ Ì`%”, Ì`&”. Ì`(”4 Ì`.”6 Ì`0”8 Ì`2”: Ì`4”; Ì`5‘”	 Ìa’” Ìb” Ìb‘” Ìd‘” Ìh”” Ìi” Ìi” Ìi” Ìi"˜” Ìj” Ìj
-” Ìj” Ìj” Ìj”# Ìj”% Ìj!”& Ìj"œ” Ìk” Ìk	” Ìk
-” Ìk” Ìk” Ìk”# Ìk”$ Ìk ”' Ìk#”) Ìk%”+ Ìk'”, Ìk(™” Ìl” Ìl	” Ìl
-” Ìl” Ìl”! Ìl”" Ìl”- Ìl)”. Ìl*š” Ìm” Ìm	” Ìm
-” Ìm” Ìm”! Ìm”" Ìm”% Ìm!”' Ìm#”( Ìm$’” Ìo” Ìoœ” Ìp” Ìp	” Ìp
-” Ìp” Ìp” Ìp” Ìp”- Ìp)”. Ìp*”5 Ìp1”6 Ìp2”7 Ìp3’” Ìr” Ìrœ” Ìs” Ìs	” Ìs
-” Ìs” Ìs” Ìs” Ìs”/ Ìs+”0 Ìs,”7 Ìs3”8 Ìs4”9 Ìs5’” Ìu” Ìuœ” Ìv” Ìv	” Ìv
-” Ìv” Ìv”  Ìv”! Ìv”3 Ìv/”4 Ìv0”; Ìv7”< Ìv8”= Ìv9’” Ìx” Ìxœ” Ìy” Ìy	” Ìy
-” Ìy” Ìy”! Ìy”" Ìy”5 Ìy1”6 Ìy2”= Ìy9”> Ìy:”? Ìy;’” Ì{” Ì{œ” Ì|” Ì|	” Ì|
-” Ì|” Ì|” Ì|” Ì|”- Ì|)”. Ì|*”5 Ì|1”6 Ì|2”7 Ì|3’” Ì~” Ì~›” Ì” Ì
-” Ì” Ì” Ì” Ì”+ Ì'”, Ì(”3 Ì/”4 Ì0”5 Ì1™” Ì€” Ì€	” Ì€
-” Ì€” Ì€”! Ì€”" Ì€”+ Ì€'”, Ì€(™” Ì” Ì	” Ì
-” Ì” Ì” Ì”  Ì”' Ì#”( Ì$’” Ìƒ” Ìƒ›” Ì„” Ì„
-” Ì„” Ì„” Ì„” Ì„”+ Ì„'”, Ì„(”3 Ì„/”4 Ì„0”5 Ì„1˜” Ì…” Ì…” Ì…” Ì…” Ì…” Ì…” Ì…”  Ì…—” Ì†” Ì†” Ì†” Ì†” Ì†”# Ì†”$ Ì†‘”	 Ì‡”” Ì‰” Ì‰” Ì‰” Ì‰’” ÌŠ” ÌŠ‘” ÌŒ‘” Ì–” Ì‘”	 Ì‘”
- Ì‘” Ì‘” Ì‘”& Ì‘,œ” Ì’” Ì’
-” Ì’” Ì’”  Ì’”$ Ì’ ”% Ì’!”2 Ì’.”3 Ì’/”; Ì’7”< Ì’8”= Ì’9š” Ì“” Ì“” Ì“” Ì“” Ì“” Ì“”! Ì“”& Ì“"”' Ì“#”) Ì“%’” Ì”” Ì”˜” Ì•” Ì•” Ì•” Ì•” Ì•”' Ì•!”) Ì•#”* Ì•$œ” Ì–” Ì–” Ì–” Ì–” Ì–”# Ì–”' Ì–!”( Ì–"”+ Ì–%”- Ì–'”/ Ì–)”0 Ì–*—” Ì—” Ì—” Ì—” Ì—” Ì—”) Ì—#”* Ì—$™” Ì˜” Ì˜” Ì˜” Ì˜” Ì˜”% Ì˜”& Ì˜ ”1 Ì˜+”2 Ì˜,š” Ì™” Ì™” Ì™” Ì™”! Ì™”% Ì™”& Ì™ ”) Ì™#”+ Ì™%”, Ì™&”” Ìš” Ìš” Ìš” Ìš‘”	 Ì››” Ìœ” Ìœ” Ìœ” Ìœ”$ Ìœ ”% Ìœ!”. Ìœ*”/ Ìœ+”3 Ìœ/”4 Ìœ0”5 Ìœ1’” Ì” Ì’” ÌŸ”! ÌŸ‘” Ì¡‘” Ì£”” Ì¤
-” Ì¤” Ì¤” Ì¤ÌJ–” Ì¥” Ì¥
-” Ì¥” Ì¥” Ì¥!” Ì¥"Ü ” Ì¦” Ì¦” Ì¦” Ì¦”! Ì¦”" Ì¦”' Ì¦#”( Ì¦$”) Ì¦%”* Ì¦&”4 Ì¦0”5 Ì¦1”: Ì¦6”; Ì¦7”? Ì¦;”ÌA Ì¦=”ÌB Ì¦>”ÌC Ì¦?”ÌD Ì¦Ì@”ÌF Ì¦ÌB”ÌG Ì¦ÌC™” Ì¨” Ì¨	” Ì¨” Ì¨” Ì¨”& Ì¨"”' Ì¨#”- Ì¨)”/ Ì¨+–” Ì©” Ì©” Ì©” Ì©” Ì© ” Ì©!™” Ìª” Ìª” Ìª” Ìª” Ìª”$ Ìª”% Ìª”* Ìª$”, Ìª&š” Ì«” Ì«” Ì«” Ì«” Ì«” Ì«”% Ì«”( Ì« ”) Ì«!”+ Ì«#Ü ” Ì¬
-” Ì¬” Ì¬”" Ì¬”& Ì¬”' Ì¬”, Ì¬"”- Ì¬#”0 Ì¬&”1 Ì¬'”2 Ì¬(”6 Ì¬,”8 Ì¬.”: Ì¬0”; Ì¬1”? Ì¬5”Ì@ Ì¬6”ÌE Ì¬;”ÌF Ì¬<”ÌG Ì¬=”ÌK Ì¬ÌA”ÌL Ì¬ÌB”ÌO Ì¬ÌE”ÌP Ì¬ÌF”ÌQ Ì¬ÌG”ÌU Ì¬ÌK”ÌW Ì¬ÌM”ÌX Ì¬ÌN˜” Ì­
-” Ì­” Ì­” Ì­”$ Ì­”' Ì­”( Ì­”* Ì­ ˜” Ì®” Ì®” Ì®”" Ì®”# Ì®”( Ì®”) Ì®”* Ì®’” Ì¯”! Ì¯‘” Ì°‘” Ì±	›” Ì³” Ì³” Ì³”" Ì³”& Ì³”' Ì³”, Ì³$”- Ì³%”1 Ì³)”3 Ì³+”4 Ì³,˜” Ì´” Ì´” Ì´” Ì´”$ Ì´”' Ì´”( Ì´ ”* Ì´"˜” Ìµ
-” Ìµ” Ìµ” Ìµ” Ìµ”( Ìµ”) Ìµ”* Ìµ ‘” Ì¶	‘” Ì·›” Ì¹” Ì¹” Ì¹” Ì¹”$ Ì¹”% Ì¹”* Ì¹$”+ Ì¹%”/ Ì¹)”1 Ì¹+”2 Ì¹,Ü ” Ìº” Ìº” Ìº” Ìº”( Ìº"”) Ìº#”/ Ìº)”2 Ìº,”3 Ìº-”4 Ìº.”5 Ìº/”6 Ìº0”Ì@ Ìº:”ÌA Ìº;”ÌB Ìº<”ÌC Ìº=”ÌH ÌºÌB”ÌI ÌºÌC”ÌM ÌºÌG”ÌN ÌºÌH”ÌR ÌºÌL”ÌS ÌºÌM”ÌT ÌºÌN”ÌX ÌºÌR”ÌZ ÌºÌT”Ì[ ÌºÌU˜” Ì»” Ì»
-” Ì»” Ì»”  Ì»”% Ì»”& Ì» ”( Ì»"’” Ì¼” Ì¼‘” Ì½•” Ì¿” Ì¿” Ì¿” Ì¿” Ì¿”” ÌÀ” ÌÀ” ÌÀ” ÌÀ”” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ”( ÌÂ ”) ÌÂ!”- ÌÂ%”. ÌÂ&”ÌA ÌÂ9”ÌB ÌÂ:”ÌG ÌÂ?”ÌH ÌÂÌ@”ÌI ÌÂÌA“” ÌÃ” ÌÃ” ÌÃ	‘”	 ÌÄ” ÌÆ” ÌÆ” ÌÆ” ÌÆ” ÌÆ”  ÌÆ”! ÌÆ”% ÌÆ!”+ ÌÆ'”, ÌÆ(”2 ÌÆ.”5 ÌÆ1”6 ÌÆ2”8 ÌÆ4Ü ” ÌÇ” ÌÇ” ÌÇ” ÌÇ” ÌÇ”! ÌÇ”" ÌÇ”# ÌÇ”( ÌÇ"”* ÌÇ$”, ÌÇ&”- ÌÇ'”2 ÌÇ,”3 ÌÇ-”7 ÌÇ1”8 ÌÇ2”9 ÌÇ3”= ÌÇ7”> ÌÇ8”ÌB ÌÇ<”ÌC ÌÇ=”ÌD ÌÇ>”ÌH ÌÇÌB”ÌJ ÌÇÌD”ÌK ÌÇÌE‘”	 ÌÈ’” ÌÊ” ÌÊ”” ÌË” ÌË
-” ÌË” ÌË”” ÌÌ” ÌÌ” ÌÌ” ÌÌ’” ÌÍ” ÌÍ’”	 ÌÎ”
- ÌÎ’” ÌÏ” ÌÏ”” ÌÑ
-” ÌÑ” ÌÑ” ÌÑ>™” ÌÒ” ÌÒ	” ÌÒ” ÌÒ” ÌÒ”  ÌÒ”! ÌÒ”& ÌÒ"”( ÌÒ$š” ÌÓ” ÌÓ
-” ÌÓ” ÌÓ”! ÌÓ”" ÌÓ”( ÌÓ"”+ ÌÓ%”, ÌÓ&”. ÌÓ(–” ÌÔ” ÌÔ” ÌÔ” ÌÔ”( ÌÔ ”) ÌÔ!‘” ÌÕ‘”	 ÌÖ’” ÌØ”+ ÌØ'’” ÌÙ”7 ÌÙ3”” ÌÚ” ÌÚ” ÌÚ” ÌÚ’” ÌÛ” ÌÛ”” Ìİ
-” Ìİ” Ìİ” ÌİÌE˜” ÌŞ” ÌŞ
-” ÌŞ” ÌŞ” ÌŞ”$ ÌŞ ”& ÌŞ"”' ÌŞ#˜” Ìß” Ìß” Ìß” Ìß” Ìß”$ Ìß ”% Ìß!”' Ìß#”” Ìà” Ìà” Ìà” Ìà‘”	 Ìáœ” Ìã” Ìã
-” Ìã” Ìã” Ìã”" Ìã”# Ìã”$ Ìã ”% Ìã!”& Ìã"”' Ìã#”( Ìã$œ” Ìä” Ìä
-” Ìä” Ìä” Ìä”! Ìä”" Ìä”# Ìä”$ Ìä ”% Ìä!”& Ìä"”' Ìä#œ” Ìå” Ìå
-” Ìå” Ìå” Ìå”# Ìå”$ Ìå ”% Ìå!”& Ìå"”' Ìå#”( Ìå$”) Ìå%œ” Ìæ” Ìæ
-” Ìæ” Ìæ” Ìæ”$ Ìæ ”% Ìæ!”& Ìæ"”' Ìæ#”( Ìæ$”) Ìæ%”* Ìæ&—” Ìè” Ìè	” Ìè” Ìè” Ìè”( Ìè$”* Ìè&Ü ” Ìé” Ìé” Ìé” Ìé” Ìé” Ìé” Ìé”" Ìé”# Ìé”) Ìé#”* Ìé$”. Ìé(”0 Ìé*”5 Ìé/”6 Ìé0”7 Ìé1”8 Ìé2”9 Ìé3Ü ” Ìê” Ìê” Ìê” Ìê” Ìê” Ìê” Ìê”! Ìê”" Ìê”( Ìê"”) Ìê#”, Ìê&”. Ìê(”3 Ìê-”4 Ìê.”5 Ìê/”6 Ìê0”7 Ìê1Ü ” Ìë” Ìë” Ìë” Ìë” Ìë” Ìë”  Ìë”# Ìë”$ Ìë”* Ìë$”+ Ìë%”0 Ìë*”2 Ìë,”7 Ìë1”8 Ìë2”9 Ìë3”: Ìë4”; Ìë5Ü ” Ìì” Ìì” Ìì” Ìì” Ìì”  Ìì”! Ìì”$ Ìì”% Ìì”+ Ìì%”, Ìì&”2 Ìì,”4 Ìì.”9 Ìì3”: Ìì4”; Ìì5”< Ìì6”= Ìì7‘”	 Ìí”” Ìï” Ìï” Ìï” Ìï’” Ìğ” Ìğ’” Ìò” Ìò”” Ìó
-” Ìó” Ìó” Ìó&’” Ìô” Ìô›” Ìõ” Ìõ
-” Ìõ” Ìõ” Ìõ” Ìõ”$ Ìõ ”% Ìõ!”ÌK ÌõÌG”ÌL ÌõÌH”ÌM ÌõÌIÜ ” Ìö” Ìö” Ìö” Ìö”" Ìö”# Ìö”$ Ìö ”% Ìö!”& Ìö"”* Ìö&”, Ìö(”- Ìö)”3 Ìö/”6 Ìö2”7 Ìö3”9 Ìö5Ü ” Ì÷” Ì÷” Ì÷” Ì÷” Ì÷” Ì÷”  Ì÷”$ Ì÷”& Ì÷ ”' Ì÷!”0 Ì÷*”1 Ì÷+”2 Ì÷,”4 Ì÷.”6 Ì÷0”7 Ì÷1”8 Ì÷2‘”	 Ìø’” Ìù” ÌùÜ ” Ìú” Ìú
-” Ìú” Ìú” Ìú” Ìú”  Ìú”! Ìú”% Ìú!”& Ìú"”' Ìú#”- Ìú)”. Ìú*”/ Ìú+”0 Ìú,”2 Ìú.”3 Ìú/”4 Ìú0”5 Ìú1”9 Ìú5”; Ìú7”< Ìú8”ÌB Ìú>”ÌE ÌúÌA”ÌF ÌúÌB”ÌG ÌúÌC”ÌH ÌúÌD˜” Ìû” Ìû” Ìû” Ìû” Ìû” Ìû” Ìû” ÌûÜ ” Ìü” Ìü” Ìü” Ìü” Ìü” Ìü” Ìü”  Ìü”" Ìü”# Ìü”, Ìü&”- Ìü'”. Ìü(”0 Ìü*”2 Ìü,”3 Ìü-”4 Ìü.‘”	 Ìı”” Ìş” Ìş” Ìş” Ìş’” Ìÿ” Ìÿ’” Í” Í”” Í
-” Í” Í” Í'˜” Í” Í
-” Í” Í” Í”. Í*”0 Í,”1 Í-’” Í” Í›” Í” Í
-” Í” Í”  Í”! Í”& Í"”' Í#”ÌG ÍÌC”ÌH ÍÌD”ÌI ÍÌE“” Í” Í” Í” Í” Í” Í” Í%” Í(”) Í2”* Í3”5 Í>”6 Í?”7 ÍÌ@”8 ÍÌA”9 ÍÌB”: ÍÌC’” Í	” Í	›” Í
-” Í
-
-” Í
-” Í
-” Í
-”  Í
-”% Í
-!”& Í
-"”ÌL Í
-ÌH”ÌM Í
-ÌI”ÌN Í
-ÌJ“” Í” Í” Í” Í” Í” Í” Í#” Í&”( Í0”) Í1”3 Í;”4 Í<”5 Í=”6 Í>”7 Í?”8 ÍÌ@’” Í” Í›” Í” Í
-” Í” Í”! Í”" Í”' Í#”( Í$”Ì_ ÍÌ[”Ì` ÍÌ\”Ìa ÍÌ]“” Í” Í” Í” Í” Í” Í ” Í(”! Í+”+ Í5”, Í6”8 ÍÌB”9 ÍÌC”: ÍÌD”; ÍÌE”< ÍÌF”= ÍÌG’” Í” Í	›” Í” Í
-” Í” Í” Í” Í”# Í”$ Í ”ÌE ÍÌA”ÌF ÍÌB”ÌG ÍÌC“” Í” Í” Í” Í” Í” Í” Í” Í"”& Í,”' Í-”/ Í5”0 Í6”1 Í7”2 Í8”3 Í9”4 Í:’” Í” Í›” Í” Í
-” Í” Í”  Í”! Í”& Í"”' Í#”ÌL ÍÌH”ÌM ÍÌI”ÌN ÍÌJ“” Í” Í” Í” Í” Í” Í”" Í+”% Í.”/ Í8”0 Í9”; ÍÌD”< ÍÌE”= ÍÌF”> ÍÌG”? ÍÌH”Ì@ ÍÌI’” Í” Í›” Í” Í
-” Í” Í” Í” Í”$ Í ”% Í!”ÌH ÍÌD”ÌI ÍÌE”ÌJ ÍÌF“” Í” Í” Í” Í” Í” Í”" Í)”% Í,”/ Í6”0 Í7”9 ÍÌ@”: ÍÌA”; ÍÌB”< ÍÌC”= ÍÌD”> ÍÌE’” Í” Í
-›” Í” Í
-” Í” Í”! Í”" Í”' Í#”( Í$”ÌI ÍÌE”ÌJ ÍÌF”ÌK ÍÌG“” Í” Í” Í” Í” Í” Í ” Í'”  Í*”* Í4”+ Í5”7 ÍÌA”8 ÍÌB”9 ÍÌC”: ÍÌD”; ÍÌE”< ÍÌF”” Í!” Í!” Í!” Í!’” Í"” Í"’” Í$” Í$
-”” Í%
-” Í%” Í%” Í%)’” Í&” Í&›” Í'” Í'
-” Í'”! Í'”% Í'!”& Í'"”+ Í''”, Í'(”Ìd Í'Ì`”Ìe Í'Ìa”Ìf Í'Ìb”” Í(” Í(” Í(” Í(Ü ” Í)” Í)” Í)” Í)”( Í)"”) Í)#”* Í)$”+ Í)%”, Í)&”3 Í)-”4 Í).”9 Í)3”; Í)5”> Í)8”? Í)9”Ì@ Í):Ü "” Í*” Í*” Í*” Í*” Í*” Í*”& Í* ”' Í*!”( Í*"”+ Í*%”, Í*&”- Í*'”. Í*(”0 Í**”1 Í*+”2 Í*,”3 Í*-”7 Í*1”9 Í*3”: Í*4”; Í*5”ÌA Í*;”ÌB Í*<”ÌC Í*=”ÌD Í*>”ÌF Í*Ì@”ÌG Í*ÌA”ÌH Í*ÌB”ÌI Í*ÌC”ÌO Í*ÌI”ÌR Í*ÌL”ÌS Í*ÌM”ÌT Í*ÌN”ÌU Í*ÌO‘”	 Í+”” Í,” Í,” Í,” Í,’” Í-” Í-’” Í/” Í/
-”” Í0
-” Í0” Í0” Í0*›” Í1” Í1
-” Í1” Í1” Í1” Í1”  Í1”! Í1”ÌK Í1ÌG”ÌL Í1ÌH”ÌM Í1ÌIÜ ” Í2” Í2” Í2” Í2” Í2” Í2” Í2” Í2” Í2” Í2”  Í2”$ Í2 ”& Í2"”' Í2#”( Í2$”) Í2%”+ Í2'”, Í2(’” Í3” Í3’” Í5” Í5”” Í6
-” Í6” Í6” Í6&›” Í7” Í7
-” Í7” Í7” Í7” Í7”  Í7”! Í7”+ Í7'”, Í7(”- Í7)Ÿ” Í8” Í8” Í8” Í8” Í8” Í8” Í8” Í8” Í8” Í8”  Í8”! Í8”" Í8”$ Í8 ”% Í8!’” Í9” Í9’” Í;” Í;”” Í<
-” Í<” Í<” Í<%˜” Í=” Í=
-” Í=” Í=” Í=”" Í=”$ Í= ”% Í=!›” Í>” Í>
-” Í>” Í>”# Í>”$ Í> ”) Í>%”* Í>&”ÌS Í>ÌO”ÌT Í>ÌP”ÌU Í>ÌQ›” Í?” Í?
-” Í?” Í?”! Í?”" Í?”' Í?#”( Í?$”ÌX Í?ÌT”ÌY Í?ÌU”ÌZ Í?ÌVÜ ” Í@” Í@
-” Í@” Í@” Í@”) Í@%”* Í@&”+ Í@'”, Í@(”: Í@6”; Í@7”< Í@8”= Í@9”> Í@:”ÌB Í@>”ÌD Í@Ì@”ÌE Í@ÌA”ÌF Í@ÌB”ÌG Í@ÌC”ÌI Í@ÌE”ÌJ Í@ÌFÜ ” ÍA” ÍA
-” ÍA” ÍA” ÍA”% ÍA!”& ÍA"”' ÍA#”( ÍA$”4 ÍA0”5 ÍA1”6 ÍA2”7 ÍA3”8 ÍA4”< ÍA8”> ÍA:”? ÍA;”Ì@ ÍA<”ÌA ÍA=”ÌC ÍA?”ÌD ÍAÌ@”” ÍB” ÍB” ÍB” ÍB’” ÍC” ÍC’” ÍE” ÍE”” ÍF
-” ÍF” ÍF” ÍF%’” ÍG” ÍG›” ÍH” ÍH
-” ÍH” ÍH” ÍH” ÍH”  ÍH”! ÍH”/ ÍH+”0 ÍH,”1 ÍH-Ÿ” ÍI” ÍI” ÍI” ÍI” ÍI” ÍI” ÍI” ÍI” ÍI” ÍI”  ÍI”! ÍI”" ÍI”$ ÍI ”% ÍI!’” ÍJ” ÍJ‘” ÍKÔrH–§version¤file§sources®sourcesContent¥names¨mappingsÀ‘À‘ÀÜ/‘”    ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”  	 ‘”  
- ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”    ‘”  ! ‘”  " ‘”  # ‘”  $ ‘”  % ‘”  & ‘”  ' ‘”  ( ‘”  ) ‘”  * ‘”  + ‘”  , ‘”  - ‘”  . ‘”  / ‘”  0 ‘”  1 ‘”  2 ‘”  3 ‘”  4 ‘”  5 ‘”  6 ‘”  7 ‘”  8 ‘”  9 ‘”  : ‘”  ; ‘”  < ‘”  = ‘”  > ‘”  ? ‘”  Ì@ ‘”  ÌA ‘”  ÌB ‘”  ÌC ‘”  ÌD ‘”  ÌE ‘”  ÌF ‘”  ÌG ‘”  ÌH ‘”  ÌI ‘”  ÌJ ‘”  ÌK ‘”  ÌL ‘”  ÌM ‘”  ÌN ‘”  ÌO ‘”  ÌP ‘”  ÌQ ‘”  ÌR ‘”  ÌS ‘”  ÌT ‘”  ÌU ‘”  ÌV ‘”  ÌW ‘”  ÌX ‘”  ÌY ‘”  ÌZ ‘”  Ì[ ‘”  Ì\ ‘”  Ì] ‘”  Ì^ ‘”  Ì_ ‘”  Ì` ‘”  Ìa ‘”  Ìb ‘”  Ìc ‘”  Ìd ‘”  Ìe ‘”  Ìf ‘”  Ìg ‘”  Ìh ‘”  Ìi ‘”  Ìj ‘”  Ìk ‘”  Ìl ‘”  Ìm ‘”  Ìn ‘”  Ìo ‘”  Ìp ‘”  Ìq ‘”  Ìr ‘”  Ìs ‘”  Ìt ‘”  Ìu ‘”  Ìv ‘”  Ìw ‘”  Ìx ‘”  Ìy ‘”  Ìz ‘”  Ì{ ‘”  Ì| ‘”  Ì} ‘”  Ì~ ‘”  Ì ‘”  Ì€ ‘”  Ì ‘”  Ì‚ ‘”  Ìƒ ‘”  Ì„ ‘”  Ì… ‘”  Ì† ‘”  Ì‡ ‘”  Ìˆ ‘”  Ì‰ ‘”  ÌŠ ‘”  Ì‹ ‘”  ÌŒ ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì‘ ‘”  Ì’ ‘”  Ì“ ‘”  Ì” ‘”  Ì• ‘”  Ì– ‘”  Ì— ‘”  Ì˜ ‘”  Ì™ ‘”  Ìš ‘”  Ì› ‘”  Ìœ ‘”  Ì ‘”  Ì ‘”  ÌŸ ‘”  Ì  ‘”  Ì¡ ‘”  Ì¢ ‘”  Ì£ ‘”  Ì¤ ‘”  Ì¥ ‘”  Ì¦ ‘”  Ì§ ‘”  Ì¨ ‘”  Ì© ‘”  Ìª ‘”  Ì« ‘”  Ì¬ ‘”  Ì­ ‘”  Ì® ‘”  Ì¯ ‘”  Ì° ‘”  Ì± ‘”  Ì² ‘”  Ì³ ‘”  Ì´ ‘”  Ìµ ‘”  Ì¶ ‘”  Ì· ‘”  Ì¸ ‘”  Ì¹ ‘”  Ìº ‘”  Ì» ‘”  Ì¼ ‘”  Ì½ ‘”  Ì¾ ‘”  Ì¿ ‘”  ÌÀ ‘”  ÌÁ ‘”  ÌÂ ‘”  ÌÃ ‘”  ÌÄ ‘”  ÌÅ ‘”  ÌÆ ‘”  ÌÇ ‘”  ÌÈ ‘”  ÌÉ ‘”  ÌÊ ‘”  ÌË ‘”  ÌÌ ‘”  ÌÍ ‘”  ÌÎ ‘”  ÌÏ ‘”  ÌĞ ‘”  ÌÑ ‘”  ÌÒ ‘”  ÌÓ ‘”  ÌÔ ‘”  ÌÕ ‘”  ÌÖ ‘”  Ì× ‘”  ÌØ ‘”  ÌÙ ‘”  ÌÚ ‘”  ÌÛ ‘”  ÌÜ ‘”  Ìİ ‘”  ÌŞ ‘”  Ìß ‘”  Ìà ‘”  Ìá ‘”  Ìâ ‘”  Ìã ‘”  Ìä ‘”  Ìå ‘”  Ìæ ‘”  Ìç ‘”  Ìè ‘”  Ìé ‘”  Ìê ‘”  Ìë ‘”  Ìì ‘”  Ìí ‘”  Ìî ‘”  Ìï ‘”  Ìğ ‘”  Ìñ ‘”  Ìò ‘”  Ìó ‘”  Ìô ‘”  Ìõ ‘”  Ìö ‘”  Ì÷ ‘”  Ìø ‘”  Ìù ‘”  Ìú ‘”  Ìû ‘”  Ìü ‘”  Ìı ‘”  Ìş ‘”  Ìÿ ‘”  Í  ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í	 ‘”  Í
- ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í  ‘”  Í! ‘”  Í" ‘”  Í# ‘”  Í$ ‘”  Í% ‘”  Í& ‘”  Í' ‘”  Í( ‘”  Í) ‘”  Í* ‘”  Í+ ‘”  Í, ‘”  Í- ‘”  Í. ÔrI’§missing¦pluginÃ¦genAbcÂÔ  ÔrJ”²dynamicImportCache¹exportAllDeclarationCache»exportNamedDeclarationCache«importCache•ÔrK–¤type¥start£end«declarationªspecifiers¦source¶ExportNamedDeclarationÍšÍ3ÔrL–¤type¥start£end¢idªsuperClass¤body°ClassDeclarationÍ¡Í3ÔrM”¤type¥start£end¤nameªIdentifierÍ§Í°©OcrBoundsÀÔrN”¤type¥start£end¤body©ClassBodyÍ±Í3‘ÔrO˜¤type¥start£end¦static¨computed£key¤kind¥value°MethodDefinitionÍ¸Í0ÂÂMªIdentifierÍ¸ÍÃ«constructor«constructorÔrP™¤type¥start£end¢idªexpression©generator¥async¦params¤body²FunctionExpressionÍÃÍ0ÀÂÂÂN®BlockStatementÍÆÍ0”ÔrQ”¤type¥start£endªexpression³ExpressionStatementÍÑÍßÔrR–¤type¥start£end¨operator¤left¥right´AssignmentExpressionÍÑÍŞ¡=ÔrS—¤type¥start£end¦object¨property¨computed¨optional°MemberExpressionÍÑÍÚÔrT“¤type¥start£end®ThisExpressionÍÑÍÕMªIdentifierÍÖÍÚ¤leftÂÂÔrU•¤type¥start£end¥value£raw§LiteralÍİÍŞ ¡0Q³ExpressionStatementÍéÍöR´AssignmentExpressionÍéÍõ¡=S°MemberExpressionÍéÍñT®ThisExpressionÍéÍíMªIdentifierÍîÍñ£topÂÂU§LiteralÍôÍõ ¡0Q³ExpressionStatementÍ ÍR´AssignmentExpressionÍ Í¡=S°MemberExpressionÍ Í
-T®ThisExpressionÍ ÍMªIdentifierÍÍ
-¥rightÂÂU§LiteralÍÍ ¡0Q³ExpressionStatementÍÍ)R´AssignmentExpressionÍÍ(¡=S°MemberExpressionÍÍ$T®ThisExpressionÍÍMªIdentifierÍÍ$¦bottomÂÂU§LiteralÍ'Í( ¡0ÀK¶ExportNamedDeclarationÍ@ÍÕL°ClassDeclarationÍGÍÕMªIdentifierÍMÍU¨OcrBlockÀN©ClassBodyÍVÍÕ‘O°MethodDefinitionÍ]ÍÒÂÂMªIdentifierÍ]Íh«constructor«constructorP²FunctionExpressionÍhÍÒÀÂÂÂN®BlockStatementÍkÍÒ“Q³ExpressionStatementÍvÍ…R´AssignmentExpressionÍvÍ„¡=S°MemberExpressionÍvÍT®ThisExpressionÍvÍzMªIdentifierÍ{Í¤textÂÂU§LiteralÍ‚Í„ ¢''Q³ExpressionStatementÍÍ£R´AssignmentExpressionÍÍ¢¡=S°MemberExpressionÍÍT®ThisExpressionÍÍ“MªIdentifierÍ”ÍªconfidenceÂÂU§LiteralÍ¡Í¢ ¡0Q³ExpressionStatementÍ­ÍËR´AssignmentExpressionÍ­ÍÊ¡=S°MemberExpressionÍ­Í¸T®ThisExpressionÍ­Í±MªIdentifierÍ²Í¸¦boundsÂÂÔrV•¤type¥start£end¦callee©arguments­NewExpressionÍ»ÍÊMªIdentifierÍ¿ÍÈ©OcrBoundsÀK¶ExportNamedDeclarationÍãÍlL°ClassDeclarationÍêÍlMªIdentifierÍğÍù©OcrResultÀN©ClassBodyÍúÍl‘O°MethodDefinitionÍÍiÂÂMªIdentifierÍÍ«constructor«constructorP²FunctionExpressionÍÍiÀÂÂÂN®BlockStatementÍÍi“Q³ExpressionStatementÍÍ)R´AssignmentExpressionÍÍ(¡=S°MemberExpressionÍÍ#T®ThisExpressionÍÍMªIdentifierÍÍ#¤textÂÂU§LiteralÍ&Í( ¢''Q³ExpressionStatementÍ3ÍGR´AssignmentExpressionÍ3ÍF¡=S°MemberExpressionÍ3ÍBT®ThisExpressionÍ3Í7MªIdentifierÍ8ÍBªconfidenceÂÂU§LiteralÍEÍF ¡0Q³ExpressionStatementÍQÍbR´AssignmentExpressionÍQÍa¡=S°MemberExpressionÍQÍ\T®ThisExpressionÍQÍUMªIdentifierÍVÍ\¦blocksÂÂÔrW”¤type¥start£end¨elements¯ArrayExpressionÍ_ÍaÀK¶ExportNamedDeclarationÍxÍçL°ClassDeclarationÍÍçMªIdentifierÍ…ÍŒ§OemInfoÀN©ClassBodyÍÍç‘O°MethodDefinitionÍ”ÍäÂÂMªIdentifierÍ”ÍŸ«constructor«constructorP²FunctionExpressionÍŸÍäÀÂÂÂN®BlockStatementÍ¢Íä’Q³ExpressionStatementÍ­ÍÁR´AssignmentExpressionÍ­ÍÀ¡=S°MemberExpressionÍ­Í»T®ThisExpressionÍ­Í±MªIdentifierÍ²Í»©principalÂÂU§LiteralÍ¾ÍÀ ¢''Q³ExpressionStatementÍËÍİR´AssignmentExpressionÍËÍÜ¡=S°MemberExpressionÍËÍ×T®ThisExpressionÍËÍÏMªIdentifierÍĞÍ×§trusteeÂÂU§LiteralÍÚÍÜ ¢''ÀK¶ExportNamedDeclarationÍéÍ)—L°ClassDeclarationÍğÍ)—MªIdentifierÍöÍ ªOcrServiceÀN©ClassBodyÍÍ)—Ü O°MethodDefinitionÍ>Í·ÂÂMªIdentifierÍDÍH¤init¦methodP²FunctionExpressionÍHÍ·ÀÂÂÃN®BlockStatementÍKÍ·‘Q³ExpressionStatementÍVÍ°ÔrX–¤type¥start£end¦callee©arguments¨optional®CallExpressionÍVÍ¯S°MemberExpressionÍVÍ`MªIdentifierÍVÍ[¥hilogMªIdentifierÍ\Í`¤infoÂÂ“MªIdentifierÍaÍl«DOMAIN_ZEROMªIdentifierÍnÍq£TAGU§LiteralÍsÍ®Ù9OCR service ready with function-based Core Vision Kit APIÙ;'OCR service ready with function-based Core Vision Kit API'ÂO°MethodDefinitionÍòÍwÂÂMªIdentifierÍøÍÿ§release¦methodP²FunctionExpressionÍÿÍwÀÂÂÃN®BlockStatementÍÍw‘Q³ExpressionStatementÍÍpX®CallExpressionÍÍoS°MemberExpressionÍÍMªIdentifierÍÍ¥hilogMªIdentifierÍÍ¤infoÂÂ“MªIdentifierÍÍ#«DOMAIN_ZEROMªIdentifierÍ%Í(£TAGU§LiteralÍ*ÍnÙBOCR service release skipped for function-based Core Vision Kit APIÙD'OCR service release skipped for function-based Core Vision Kit API'ÂO°MethodDefinitionÍãÍ	¦ÂÂMªIdentifierÍéÍö­recognizeText¦methodP²FunctionExpressionÍöÍ	¦ÀÂÂÃ‘MªIdentifierÍ÷Íÿ¨imageUriN®BlockStatementÍÍ	¦’ÔrY•¤type¥start£end¬declarations¤kind³VariableDeclarationÍÍ ‘ÔrZ•¤type¥start£end¢id¤init²VariableDeclaratorÍÍMªIdentifierÍÍ¨pixelMapU§LiteralÍÍÀ¤null£letÔr[–¤type¥start£end¥block§handler©finalizer¬TryStatementÍ*Í	ŸN®BlockStatementÍ.Íƒ•Y³VariableDeclarationÍ=Ís‘Z²VariableDeclaratorÍCÍrMªIdentifierÍCÍN«imageSourceX®CallExpressionÍQÍrS°MemberExpressionÍQÍhMªIdentifierÍQÍV¥imageMªIdentifierÍWÍh±createImageSourceÂÂ‘MªIdentifierÍiÍq¨imageUriÂ¥constQ³ExpressionStatementÍÍ¯R´AssignmentExpressionÍÍ®¡=MªIdentifierÍÍ‰¨pixelMapÔr\”¤type¥start£end¨argument¯AwaitExpressionÍŒÍ®X®CallExpressionÍ’Í®S°MemberExpressionÍ’Í¬MªIdentifierÍ’Í«imageSourceMªIdentifierÍÍ¬®createPixelMapÂÂÂY³VariableDeclarationÍ½Í÷‘Z²VariableDeclaratorÍÃÍöMªIdentifierÍÃÍÉ¦result\¯AwaitExpressionÍÌÍöX®CallExpressionÍÒÍöS°MemberExpressionÍÒÍìT®ThisExpressionÍÒÍÖMªIdentifierÍ×ÍìµrecognizeFromPixelMapÂÂ‘MªIdentifierÍíÍõ¨pixelMapÂ¥constQ³ExpressionStatementÍÍ\X®CallExpressionÍÍ[S°MemberExpressionÍÍMªIdentifierÍÍ
-¥hilogMªIdentifierÍÍ¤infoÂÂ”MªIdentifierÍÍ«DOMAIN_ZEROMªIdentifierÍÍ £TAGU§LiteralÍ"ÍDÙ OCR recognized %{public}d blocksÙ"'OCR recognized %{public}d blocks'S°MemberExpressionÍFÍZS°MemberExpressionÍFÍSMªIdentifierÍFÍL¦resultMªIdentifierÍMÍS¦blocksÂÂMªIdentifierÍTÍZ¦lengthÂÂÂ\¯ReturnStatementÍjÍxMªIdentifierÍqÍw¦resultÔr]•¤type¥start£end¥param¤body«CatchClauseÍÍKMªIdentifierÍ”Í™¥errorN®BlockStatementÍ›ÍK’Q³ExpressionStatementÍªÍX®CallExpressionÍªÍS°MemberExpressionÍªÍµMªIdentifierÍªÍ¯¥hilogMªIdentifierÍ°Íµ¥errorÂÂ”MªIdentifierÍ¶ÍÁ«DOMAIN_ZEROMªIdentifierÍÃÍÆ£TAGU§LiteralÍÈÍêÙ OCR recognize failed: %{public}sÙ"'OCR recognize failed: %{public}s'X®CallExpressionÍìÍS°MemberExpressionÍìÍúMªIdentifierÍìÍğ¤JSONMªIdentifierÍñÍú©stringifyÂÂ‘MªIdentifierÍûÍ ¥errorÂÂ\¯ReturnStatementÍÍ@Ôr^”¤type¥start£endªproperties°ObjectExpressionÍÍ?“Ôr_™¤type¥start£end¦method©shorthand¨computed£key¥value¤kind¨PropertyÍÍ"ÂÂÂMªIdentifierÍÍ¤textU§LiteralÍ Í" ¢''¤init_¨PropertyÍ$Í1ÂÂÂMªIdentifierÍ$Í.ªconfidenceU§LiteralÍ0Í1 ¡0¤init_¨PropertyÍ3Í=ÂÂÂMªIdentifierÍ3Í9¦blocksW¯ArrayExpressionÍ;Í=¤initN®BlockStatementÍ]Í	Ÿ‘Ôr`–¤type¥start£end¤testªconsequent©alternate«IfStatementÍlÍ	”MªIdentifierÍpÍx¨pixelMapN®BlockStatementÍzÍ	”‘[¬TryStatementÍÍ	…N®BlockStatementÍ‘ÍÎ‘Q³ExpressionStatementÍ¨Í»X®CallExpressionÍ¨ÍºS°MemberExpressionÍ¨Í¸MªIdentifierÍ¨Í°¨pixelMapMªIdentifierÍ±Í¸§releaseÂÂÂ]«CatchClauseÍàÍ	…MªIdentifierÍçÍó¬releaseErrorN®BlockStatementÍõÍ	…‘Q³ExpressionStatementÍ	Í	rX®CallExpressionÍ	Í	qS°MemberExpressionÍ	Í	MªIdentifierÍ	Í	¥hilogMªIdentifierÍ	Í	¤warnÂÂ”MªIdentifierÍ	Í	"«DOMAIN_ZEROMªIdentifierÍ	$Í	'£TAGU§LiteralÍ	)Í	RÙ'OCR pixelMap release failed: %{public}sÙ)'OCR pixelMap release failed: %{public}s'X®CallExpressionÍ	TÍ	pS°MemberExpressionÍ	TÍ	bMªIdentifierÍ	TÍ	X¤JSONMªIdentifierÍ	YÍ	b©stringifyÂÂ‘MªIdentifierÍ	cÍ	o¬releaseErrorÂÂÀÀO°MethodDefinitionÍ
-ÍXÂÂMªIdentifierÍ
- Í
-5µrecognizeFromPixelMap¦methodP²FunctionExpressionÍ
-5ÍXÀÂÂÃ‘MªIdentifierÍ
-6Í
->¨pixelMapN®BlockStatementÍ
-@ÍX‘[¬TryStatementÍ
-KÍQN®BlockStatementÍ
-OÍ{”Y³VariableDeclarationÍ
-^Í
-~‘Z²VariableDeclaratorÍ
-dÍ
-}MªIdentifierÍ
-dÍ
-nªvisionInfo^°ObjectExpressionÍ
-qÍ
-}‘Ôra™¤type¥start£end¦method©shorthand¨computed£key¤kind¥value¨PropertyÍ
-sÍ
-{ÂÃÂMªIdentifierÍ
-sÍ
-{¨pixelMap¤initMªIdentifierÍ
-sÍ
-{¨pixelMap¥constY³VariableDeclarationÍ
-ŒÍ
-â‘Z²VariableDeclaratorÍ
-’Í
-áMªIdentifierÍ
-’Í
-˜¦config^°ObjectExpressionÍ
-›Í
-á‘_¨PropertyÍ
-®Í
-ÒÂÂÂMªIdentifierÍ
-®Í
-Ë½isDirectionDetectionSupportedU§LiteralÍ
-ÍÍ
-ÒÂ¥false¤init¥constY³VariableDeclarationÍ
-ğÍ;‘Z²VariableDeclaratorÍ
-öÍ:MªIdentifierÍ
-öÍ ªtextResult\¯AwaitExpressionÍÍ:X®CallExpressionÍ	Í:S°MemberExpressionÍ	Í&MªIdentifierÍ	Í¯textRecognitionMªIdentifierÍÍ&­recognizeTextÂÂ’MªIdentifierÍ'Í1ªvisionInfoMªIdentifierÍ3Í9¦configÂ¥const\¯ReturnStatementÍIÍpX®CallExpressionÍPÍoS°MemberExpressionÍPÍcT®ThisExpressionÍPÍTMªIdentifierÍUÍc®parseOcrResultÂÂ‘MªIdentifierÍdÍnªtextResultÂ]«CatchClauseÍ…ÍQMªIdentifierÍŒÍ‘¥errorN®BlockStatementÍ“ÍQ’Q³ExpressionStatementÍ¢Í	X®CallExpressionÍ¢ÍS°MemberExpressionÍ¢Í­MªIdentifierÍ¢Í§¥hilogMªIdentifierÍ¨Í­¥errorÂÂ”MªIdentifierÍ®Í¹«DOMAIN_ZEROMªIdentifierÍ»Í¾£TAGU§LiteralÍÀÍğÙ.OCR recognize from PixelMap failed: %{public}sÙ0'OCR recognize from PixelMap failed: %{public}s'X®CallExpressionÍòÍS°MemberExpressionÍòÍ MªIdentifierÍòÍö¤JSONMªIdentifierÍ÷Í ©stringifyÂÂ‘MªIdentifierÍÍ¥errorÂÂ\¯ReturnStatementÍÍF^°ObjectExpressionÍÍE“_¨PropertyÍ Í(ÂÂÂMªIdentifierÍ Í$¤textU§LiteralÍ&Í( ¢''¤init_¨PropertyÍ*Í7ÂÂÂMªIdentifierÍ*Í4ªconfidenceU§LiteralÍ6Í7 ¡0¤init_¨PropertyÍ9ÍCÂÂÂMªIdentifierÍ9Í?¦blocksW¯ArrayExpressionÍAÍC¤initÀO°MethodDefinitionÍÌÍ™ÂÂMªIdentifierÍÌÍÜ°extractFoodLabel¦methodP²FunctionExpressionÍÜÍ™ÀÂÂÂ‘MªIdentifierÍİÍä§ocrTextN®BlockStatementÍæÍ™ŸY³VariableDeclarationÍñÍ‘Z²VariableDeclaratorÍ÷ÍMªIdentifierÍ÷Íü¥labelV­NewExpressionÍÿÍMªIdentifierÍÍ©FoodLabel¥constQ³ExpressionStatementÍÍ=R´AssignmentExpressionÍÍ<¡=S°MemberExpressionÍÍ%MªIdentifierÍÍ¥labelMªIdentifierÍÍ%¦foodIdÂÂÔrb•¤type¥start£end«expressions¦quasis¯TemplateLiteralÍ(Í<‘X®CallExpressionÍ0Í:S°MemberExpressionÍ0Í8MªIdentifierÍ0Í4¤DateMªIdentifierÍ5Í8£nowÂÂÂ’Ôrc•¤type¥start£end¥value¤tail¯TemplateElementÍ)Í.Ôrd’£raw¦cooked¥food_¥food_Âc¯TemplateElementÍ;Í;d  ÃQ³ExpressionStatementÍGÍmR´AssignmentExpressionÍGÍl¡=S°MemberExpressionÍGÍSMªIdentifierÍGÍL¥labelMªIdentifierÍMÍS¦sourceÂÂS°MemberExpressionÍVÍlMªIdentifierÍVÍ`ªFoodSourceMªIdentifierÍaÍl«USER_UPLOADÂÂQ³ExpressionStatementÍwÍ—R´AssignmentExpressionÍwÍ–¡=S°MemberExpressionÍwÍ‰MªIdentifierÍwÍ|¥labelMªIdentifierÍ}Í‰¬identifiedAtÂÂX®CallExpressionÍŒÍ–S°MemberExpressionÍŒÍ”MªIdentifierÍŒÍ¤DateMªIdentifierÍ‘Í”£nowÂÂÂQ³ExpressionStatementÍÀÍïR´AssignmentExpressionÍÀÍî¡=S°MemberExpressionÍÀÍÎMªIdentifierÍÀÍÅ¥labelMªIdentifierÍÆÍÎ¨foodNameÂÂX®CallExpressionÍÑÍîS°MemberExpressionÍÑÍåT®ThisExpressionÍÑÍÕMªIdentifierÍÖÍå¯extractFoodNameÂÂ‘MªIdentifierÍæÍí§ocrTextÂQ³ExpressionStatementÍÍ>R´AssignmentExpressionÍÍ=¡=S°MemberExpressionÍÍMªIdentifierÍÍ¥labelMªIdentifierÍÍ©nutritionÂÂX®CallExpressionÍÍ=S°MemberExpressionÍÍ4T®ThisExpressionÍÍ#MªIdentifierÍ$Í4°extractNutritionÂÂ‘MªIdentifierÍ5Í<§ocrTextÂQ³ExpressionStatementÍZÍR´AssignmentExpressionÍZÍ¡=S°MemberExpressionÍZÍkMªIdentifierÍZÍ_¥labelMªIdentifierÍ`Ík«ingredientsÂÂX®CallExpressionÍnÍS°MemberExpressionÍnÍ…T®ThisExpressionÍnÍrMªIdentifierÍsÍ…²extractIngredientsÂÂ‘MªIdentifierÍ†Í§ocrTextÂQ³ExpressionStatementÍ«ÍâR´AssignmentExpressionÍ«Íá¡=S°MemberExpressionÍ«Í½MªIdentifierÍ«Í°¥labelMªIdentifierÍ±Í½¬manufacturerÂÂX®CallExpressionÍÀÍáS°MemberExpressionÍÀÍØT®ThisExpressionÍÀÍÄMªIdentifierÍÅÍØ³extractManufacturerÂÂ‘MªIdentifierÍÙÍà§ocrTextÂQ³ExpressionStatementÍÿÍ.R´AssignmentExpressionÍÿÍ-¡=S°MemberExpressionÍÿÍMªIdentifierÍÿÍ¥labelMªIdentifierÍÍ¨scNumberÂÂX®CallExpressionÍÍ-S°MemberExpressionÍÍ$T®ThisExpressionÍÍMªIdentifierÍÍ$¯extractScNumberÂÂ‘MªIdentifierÍ%Í,§ocrTextÂY³VariableDeclarationÍNÍ{‘Z²VariableDeclaratorÍTÍzMªIdentifierÍTÍ[§oemInfoX®CallExpressionÍ^ÍzS°MemberExpressionÍ^ÍqT®ThisExpressionÍ^ÍbMªIdentifierÍcÍq®extractOemInfoÂÂ‘MªIdentifierÍrÍy§ocrTextÂ¥constQ³ExpressionStatementÍ…Í©R´AssignmentExpressionÍ…Í¨¡=S°MemberExpressionÍ…Í”MªIdentifierÍ…ÍŠ¥labelMªIdentifierÍ‹Í”©principalÂÂS°MemberExpressionÍ—Í¨MªIdentifierÍ—Í§oemInfoMªIdentifierÍŸÍ¨©principalÂÂQ³ExpressionStatementÍ³ÍÓR´AssignmentExpressionÍ³ÍÒ¡=S°MemberExpressionÍ³ÍÀMªIdentifierÍ³Í¸¥labelMªIdentifierÍ¹ÍÀ§trusteeÂÂS°MemberExpressionÍÃÍÒMªIdentifierÍÃÍÊ§oemInfoMªIdentifierÍËÍÒ§trusteeÂÂY³VariableDeclarationÍúÍ'‘Z²VariableDeclaratorÍ Í&MªIdentifierÍ Í§barcodeX®CallExpressionÍ
-Í&S°MemberExpressionÍ
-ÍT®ThisExpressionÍ
-ÍMªIdentifierÍÍ®extractBarcodeÂÂ‘MªIdentifierÍÍ%§ocrTextÂ¥const`«IfStatementÍ1Í{Ôre–¤type¥start£end¤left¨operator¥right°BinaryExpressionÍ5ÍGS°MemberExpressionÍ5ÍCMªIdentifierÍ5Í<§barcodeMªIdentifierÍ=ÍC¦lengthÂÂ¡>U§LiteralÍFÍG ¡0N®BlockStatementÍIÍ{‘Q³ExpressionStatementÍXÍpR´AssignmentExpressionÍXÍo¡=S°MemberExpressionÍXÍeMªIdentifierÍXÍ]¥labelMªIdentifierÍ^Íe§barcodeÂÂMªIdentifierÍhÍo§barcodeÀ\¯ReturnStatementÍ…Í’MªIdentifierÍŒÍ‘¥labelO°MethodDefinitionÍÍÂÂMªIdentifierÍÍ+³recognizeAndExtract¦methodP²FunctionExpressionÍ+ÍÀÂÂÃ‘MªIdentifierÍ,Í4¨imageUriN®BlockStatementÍ6Í“Y³VariableDeclarationÍAÍv‘Z²VariableDeclaratorÍGÍuMªIdentifierÍGÍP©ocrResult\¯AwaitExpressionÍSÍuX®CallExpressionÍYÍuS°MemberExpressionÍYÍkT®ThisExpressionÍYÍ]MªIdentifierÍ^Ík­recognizeTextÂÂ‘MªIdentifierÍlÍt¨imageUriÂ¥const`«IfStatementÍ€ÍĞe°BinaryExpressionÍ„ÍŸS°MemberExpressionÍ„Í™S°MemberExpressionÍ„Í’MªIdentifierÍ„Í©ocrResultMªIdentifierÍÍ’¤textÂÂMªIdentifierÍ“Í™¦lengthÂÂ£===U§LiteralÍÍŸ ¡0N®BlockStatementÍ¡ÍĞ–Y³VariableDeclarationÍÌÍê‘Z²VariableDeclaratorÍÒÍéMªIdentifierÍÒÍ×¥labelV­NewExpressionÍÚÍéMªIdentifierÍŞÍç©FoodLabel¥constQ³ExpressionStatementÍøÍR´AssignmentExpressionÍøÍ¡=S°MemberExpressionÍøÍMªIdentifierÍøÍı¥labelMªIdentifierÍşÍ¦foodIdÂÂb¯TemplateLiteralÍÍ‘X®CallExpressionÍÍS°MemberExpressionÍÍMªIdentifierÍÍ¤DateMªIdentifierÍÍ£nowÂÂÂ’c¯TemplateElementÍÍd¥food_¥food_Âc¯TemplateElementÍÍd  ÃQ³ExpressionStatementÍ*ÍHR´AssignmentExpressionÍ*ÍG¡=S°MemberExpressionÍ*Í8MªIdentifierÍ*Í/¥labelMªIdentifierÍ0Í8¨foodNameÂÂU§LiteralÍ;ÍG¾è¯†åˆ«å¤±è´¥ï¼Œè¯·æ‰‹åŠ¨è¾“å…¥Ù 'è¯†åˆ«å¤±è´¥ï¼Œè¯·æ‰‹åŠ¨è¾“å…¥'Q³ExpressionStatementÍVÍ|R´AssignmentExpressionÍVÍ{¡=S°MemberExpressionÍVÍbMªIdentifierÍVÍ[¥labelMªIdentifierÍ\Íb¦sourceÂÂS°MemberExpressionÍeÍ{MªIdentifierÍeÍoªFoodSourceMªIdentifierÍpÍ{«USER_UPLOADÂÂQ³ExpressionStatementÍŠÍªR´AssignmentExpressionÍŠÍ©¡=S°MemberExpressionÍŠÍœMªIdentifierÍŠÍ¥labelMªIdentifierÍÍœ¬identifiedAtÂÂX®CallExpressionÍŸÍ©S°MemberExpressionÍŸÍ§MªIdentifierÍŸÍ£¤DateMªIdentifierÍ¤Í§£nowÂÂÂ\¯ReturnStatementÍ¸ÍÅMªIdentifierÍ¿ÍÄ¥labelÀ\¯ReturnStatementÍÚÍX®CallExpressionÍáÍS°MemberExpressionÍáÍöT®ThisExpressionÍáÍåMªIdentifierÍæÍö°extractFoodLabelÂÂ‘S°MemberExpressionÍ÷ÍMªIdentifierÍ÷Í ©ocrResultMªIdentifierÍÍ¤textÂÂÂO°MethodDefinitionÍkÍúÂÂMªIdentifierÍkÍy®parseOcrResult¦methodP²FunctionExpressionÍyÍúÀÂÂÂ‘MªIdentifierÍzÍ„ªtextResultN®BlockStatementÍ†Íú•Y³VariableDeclarationÍ‘Í£‘Z²VariableDeclaratorÍ—Í¢MªIdentifierÍ—Í¦blocksW¯ArrayExpressionÍ Í¢¥constY³VariableDeclarationÍ­Íì‘Z²VariableDeclaratorÍ±ÍëMªIdentifierÍ±Í¹¨fullText`µConditionalExpressionÍ¼ÍëS°MemberExpressionÍ¼ÍÌMªIdentifierÍ¼ÍÆªtextResultMªIdentifierÍÇÍÌ¥valueÂÂX®CallExpressionÍÏÍæS°MemberExpressionÍÏÍäS°MemberExpressionÍÏÍßMªIdentifierÍÏÍÙªtextResultMªIdentifierÍÚÍß¥valueÂÂMªIdentifierÍàÍä¤trimÂÂÂU§LiteralÍéÍë ¢''£letÔrf—¤type¥start£end¥await¤left¥right¤body®ForOfStatementÍöÍõÂY³VariableDeclarationÍûÍ‘Z²VariableDeclaratorÍÍMªIdentifierÍÍ¥blockÀ¥constS°MemberExpressionÍ
-ÍMªIdentifierÍ
-ÍªtextResultMªIdentifierÍÍ¦blocksÂÂN®BlockStatementÍÍõ–Y³VariableDeclarationÍ,Í=‘Z²VariableDeclaratorÍ2Í<MªIdentifierÍ2Í7¥linesW¯ArrayExpressionÍ:Í<¥constf®ForOfStatementÍKÍKÂY³VariableDeclarationÍPÍZ‘Z²VariableDeclaratorÍVÍZMªIdentifierÍVÍZ¤lineÀ¥constS°MemberExpressionÍ^ÍiMªIdentifierÍ^Íc¥blockMªIdentifierÍdÍi¥linesÂÂN®BlockStatementÍkÍK“`«IfStatementÍ~Íše°BinaryExpressionÍ‚Í—S°MemberExpressionÍ‚Í“S°MemberExpressionÍ‚ÍŒMªIdentifierÍ‚Í†¤lineMªIdentifierÍ‡ÍŒ¥wordsÂÂMªIdentifierÍÍ“¦lengthÂÂ¡>U§LiteralÍ–Í— ¡0N®BlockStatementÍ™Íš’Y³VariableDeclarationÍ°Íô‘Z²VariableDeclaratorÍ¶ÍóMªIdentifierÍ¶Í»¥wordsX®CallExpressionÍ¾ÍóS°MemberExpressionÍ¾ÍñX®CallExpressionÍ¾ÍìS°MemberExpressionÍ¾ÍçX®CallExpressionÍ¾ÍâS°MemberExpressionÍ¾ÍÌS°MemberExpressionÍ¾ÍÈMªIdentifierÍ¾ÍÂ¤lineMªIdentifierÍÃÍÈ¥wordsÂÂMªIdentifierÍÉÍÌ£mapÂÂ‘P·ArrowFunctionExpressionÍÍÍáÀÃÂÂ‘MªIdentifierÍÎÍÒ¤wordS°MemberExpressionÍ×ÍáMªIdentifierÍ×ÍÛ¤wordMªIdentifierÍÜÍá¥valueÂÂÂMªIdentifierÍãÍç¤joinÂÂ‘U§LiteralÍèÍë¡ £' 'ÂMªIdentifierÍíÍñ¤trimÂÂÂ¥const`«IfStatementÍ
-Í‡e°BinaryExpressionÍÍS°MemberExpressionÍÍMªIdentifierÍÍ¥wordsMªIdentifierÍÍ¦lengthÂÂ¡>U§LiteralÍÍ ¡0N®BlockStatementÍ Í‡’Q³ExpressionStatementÍ;ÍMX®CallExpressionÍ;ÍLS°MemberExpressionÍ;ÍEMªIdentifierÍ;Í@¥linesMªIdentifierÍAÍE¤pushÂÂ‘MªIdentifierÍFÍK¥wordsÂÔrg”¤type¥start£end¥label±ContinueStatementÍgÍpÀÀÀY³VariableDeclarationÍ¬ÍĞ‘Z²VariableDeclaratorÍ²ÍÏMªIdentifierÍ²Í»©lineValueX®CallExpressionÍ¾ÍÏS°MemberExpressionÍ¾ÍÍS°MemberExpressionÍ¾ÍÈMªIdentifierÍ¾ÍÂ¤lineMªIdentifierÍÃÍÈ¥valueÂÂMªIdentifierÍÉÍÍ¤trimÂÂÂ¥const`«IfStatementÍâÍ<e°BinaryExpressionÍæÍúS°MemberExpressionÍæÍöMªIdentifierÍæÍï©lineValueMªIdentifierÍğÍö¦lengthÂÂ¡>U§LiteralÍùÍú ¡0N®BlockStatementÍüÍ<‘Q³ExpressionStatementÍÍ)X®CallExpressionÍÍ(S°MemberExpressionÍÍMªIdentifierÍÍ¥linesMªIdentifierÍÍ¤pushÂÂ‘MªIdentifierÍÍ'©lineValueÂÀY³VariableDeclarationÍYÍ‘Z²VariableDeclaratorÍ_Í~MªIdentifierÍ_ÍiªblockValueX®CallExpressionÍlÍ~S°MemberExpressionÍlÍ|S°MemberExpressionÍlÍwMªIdentifierÍlÍq¥blockMªIdentifierÍrÍw¥valueÂÂMªIdentifierÍxÍ|¤trimÂÂÂ¥constY³VariableDeclarationÍÍÜ‘Z²VariableDeclaratorÍ“ÍÛMªIdentifierÍ“Íœ©blockText`µConditionalExpressionÍŸÍÛe°BinaryExpressionÍŸÍ´S°MemberExpressionÍŸÍ°MªIdentifierÍŸÍ©ªblockValueMªIdentifierÍªÍ°¦lengthÂÂ¡>U§LiteralÍ³Í´ ¡0MªIdentifierÍ·ÍÁªblockValueX®CallExpressionÍÄÍÛS°MemberExpressionÍÄÍÙX®CallExpressionÍÄÍÔS°MemberExpressionÍÄÍÎMªIdentifierÍÄÍÉ¥linesMªIdentifierÍÊÍÎ¤joinÂÂ‘U§LiteralÍÏÍÓ¡
-¤'\n'ÂMªIdentifierÍÕÍÙ¤trimÂÂÂ¥const`«IfStatementÍêÍ1e°BinaryExpressionÍîÍS°MemberExpressionÍîÍşMªIdentifierÍîÍ÷©blockTextMªIdentifierÍøÍş¦lengthÂÂ£===U§LiteralÍÍ ¡0N®BlockStatementÍÍ1‘g±ContinueStatementÍÍ"ÀÀQ³ExpressionStatementÍ?ÍêX®CallExpressionÍ?ÍéS°MemberExpressionÍ?ÍJMªIdentifierÍ?ÍE¦blocksMªIdentifierÍFÍJ¤pushÂÂ‘^°ObjectExpressionÍKÍè“_¨PropertyÍ^ÍmÂÂÂMªIdentifierÍ^Íb¤textMªIdentifierÍdÍm©blockText¤init_¨PropertyÍ€ÍÂÂÂMªIdentifierÍ€ÍŠªconfidenceU§LiteralÍŒÍ ¡0¤init_¨PropertyÍ ÍÙÂÂÂMªIdentifierÍ Í¦¦boundsX®CallExpressionÍ¨ÍÙS°MemberExpressionÍ¨Í¸T®ThisExpressionÍ¨Í¬MªIdentifierÍ­Í¸«buildBoundsÂÂ‘X®CallExpressionÍ¹ÍØS°MemberExpressionÍ¹ÍÑT®ThisExpressionÍ¹Í½MªIdentifierÍ¾ÍÑ³resolveCornerPointsÂÂ‘MªIdentifierÍÒÍ×¥blockÂÂ¤initÂ`«IfStatementÍÿÍˆe±LogicalExpressionÍÍ-e°BinaryExpressionÍÍS°MemberExpressionÍÍMªIdentifierÍÍ¨fullTextMªIdentifierÍÍ¦lengthÂÂ£===U§LiteralÍÍ ¡0¢&&e°BinaryExpressionÍÍ-S°MemberExpressionÍÍ)MªIdentifierÍÍ"¦blocksMªIdentifierÍ#Í)¦lengthÂÂ¡>U§LiteralÍ,Í- ¡0N®BlockStatementÍ/Íˆ‘Q³ExpressionStatementÍ>Í}R´AssignmentExpressionÍ>Í|¡=MªIdentifierÍ>ÍF¨fullTextX®CallExpressionÍIÍ|S°MemberExpressionÍIÍzX®CallExpressionÍIÍuS°MemberExpressionÍIÍoX®CallExpressionÍIÍjS°MemberExpressionÍIÍSMªIdentifierÍIÍO¦blocksMªIdentifierÍPÍS£mapÂÂ‘P·ArrowFunctionExpressionÍTÍiÀÃÂÂ‘MªIdentifierÍUÍZ¥blockS°MemberExpressionÍ_ÍiMªIdentifierÍ_Íd¥blockMªIdentifierÍeÍi¤textÂÂÂMªIdentifierÍkÍo¤joinÂÂ‘U§LiteralÍpÍt¡
-¤'\n'ÂMªIdentifierÍvÍz¤trimÂÂÂÀ\¯ReturnStatementÍ’Íó^°ObjectExpressionÍ™Íò“_¨PropertyÍ¨Í¶ÂÂÂMªIdentifierÍ¨Í¬¤textMªIdentifierÍ®Í¶¨fullText¤init_¨PropertyÍÅÍÒÂÂÂMªIdentifierÍÅÍÏªconfidenceU§LiteralÍÑÍÒ ¡0¤inita¨PropertyÍáÍçÂÃÂMªIdentifierÍáÍç¦blocks¤initMªIdentifierÍáÍç¦blocksO°MethodDefinitionÍ Í>ÂÂMªIdentifierÍ Í³resolveCornerPoints¦methodP²FunctionExpressionÍÍ>ÀÂÂÂ‘MªIdentifierÍÍ¥blockN®BlockStatementÍÍ>’f®ForOfStatementÍ&Í½ÂY³VariableDeclarationÍ+Í5‘Z²VariableDeclaratorÍ1Í5MªIdentifierÍ1Í5¤lineÀ¥constS°MemberExpressionÍ9ÍDMªIdentifierÍ9Í>¥blockMªIdentifierÍ?ÍD¥linesÂÂN®BlockStatementÍFÍ½‘`«IfStatementÍUÍ²e°BinaryExpressionÍYÍuS°MemberExpressionÍYÍqS°MemberExpressionÍYÍjMªIdentifierÍYÍ]¤lineMªIdentifierÍ^Íj¬cornerPointsÂÂMªIdentifierÍkÍq¦lengthÂÂ¡>U§LiteralÍtÍu ¡0N®BlockStatementÍwÍ²‘\¯ReturnStatementÍŠÍ£S°MemberExpressionÍ‘Í¢MªIdentifierÍ‘Í•¤lineMªIdentifierÍ–Í¢¬cornerPointsÂÂÀ\¯ReturnStatementÍ-Í7W¯ArrayExpressionÍ4Í6O°MethodDefinitionÍDÍÊÂÂMªIdentifierÍDÍO«buildBounds¦methodP²FunctionExpressionÍOÍÊÀÂÂÂ‘MªIdentifierÍPÍ\¬cornerPointsN®BlockStatementÍ^ÍÊ˜Y³VariableDeclarationÍiÍˆ‘Z²VariableDeclaratorÍoÍ‡MªIdentifierÍoÍu¦boundsV­NewExpressionÍxÍ‡MªIdentifierÍ|Í…©OcrBounds¥const`«IfStatementÍ’ÍÙe°BinaryExpressionÍ–Í¯S°MemberExpressionÍ–Í©MªIdentifierÍ–Í¢¬cornerPointsMªIdentifierÍ£Í©¦lengthÂÂ£===U§LiteralÍ®Í¯ ¡0N®BlockStatementÍ±ÍÙ‘\¯ReturnStatementÍÀÍÎMªIdentifierÍÇÍÍ¦boundsÀQ³ExpressionStatementÍãÍR´AssignmentExpressionÍãÍ¡=S°MemberExpressionÍãÍîMªIdentifierÍãÍé¦boundsMªIdentifierÍêÍî¤leftÂÂS°MemberExpressionÍñÍS°MemberExpressionÍñÍ MªIdentifierÍñÍı¬cornerPointsU§LiteralÍşÍÿ ¡0ÃÂMªIdentifierÍÍ¡xÂÂQ³ExpressionStatementÍÍ,R´AssignmentExpressionÍÍ+¡=S°MemberExpressionÍÍMªIdentifierÍÍ¦boundsMªIdentifierÍÍ£topÂÂS°MemberExpressionÍÍ+S°MemberExpressionÍÍ)MªIdentifierÍÍ&¬cornerPointsU§LiteralÍ'Í( ¡0ÃÂMªIdentifierÍ*Í+¡yÂÂQ³ExpressionStatementÍ6ÍWR´AssignmentExpressionÍ6ÍV¡=S°MemberExpressionÍ6ÍBMªIdentifierÍ6Í<¦boundsMªIdentifierÍ=ÍB¥rightÂÂS°MemberExpressionÍEÍVS°MemberExpressionÍEÍTMªIdentifierÍEÍQ¬cornerPointsU§LiteralÍRÍS ¡0ÃÂMªIdentifierÍUÍV¡xÂÂQ³ExpressionStatementÍaÍƒR´AssignmentExpressionÍaÍ‚¡=S°MemberExpressionÍaÍnMªIdentifierÍaÍg¦boundsMªIdentifierÍhÍn¦bottomÂÂS°MemberExpressionÍqÍ‚S°MemberExpressionÍqÍ€MªIdentifierÍqÍ}¬cornerPointsU§LiteralÍ~Í ¡0ÃÂMªIdentifierÍÍ‚¡yÂÂf®ForOfStatementÍÍ«ÂY³VariableDeclarationÍ’Í‘Z²VariableDeclaratorÍ˜ÍMªIdentifierÍ˜Í¥pointÀ¥constMªIdentifierÍ¡Í­¬cornerPointsN®BlockStatementÍ¯Í«”Q³ExpressionStatementÍ¾ÍëR´AssignmentExpressionÍ¾Íê¡=S°MemberExpressionÍ¾ÍÉMªIdentifierÍ¾ÍÄ¦boundsMªIdentifierÍÅÍÉ¤leftÂÂX®CallExpressionÍÌÍêS°MemberExpressionÍÌÍÔMªIdentifierÍÌÍĞ¤MathMªIdentifierÍÑÍÔ£minÂÂ’S°MemberExpressionÍÕÍàMªIdentifierÍÕÍÛ¦boundsMªIdentifierÍÜÍà¤leftÂÂS°MemberExpressionÍâÍéMªIdentifierÍâÍç¥pointMªIdentifierÍèÍé¡xÂÂÂQ³ExpressionStatementÍùÍ$R´AssignmentExpressionÍùÍ#¡=S°MemberExpressionÍùÍMªIdentifierÍùÍÿ¦boundsMªIdentifierÍ Í£topÂÂX®CallExpressionÍÍ#S°MemberExpressionÍÍMªIdentifierÍÍ
-¤MathMªIdentifierÍÍ£minÂÂ’S°MemberExpressionÍÍMªIdentifierÍÍ¦boundsMªIdentifierÍÍ£topÂÂS°MemberExpressionÍÍ"MªIdentifierÍÍ ¥pointMªIdentifierÍ!Í"¡yÂÂÂQ³ExpressionStatementÍ2ÍaR´AssignmentExpressionÍ2Í`¡=S°MemberExpressionÍ2Í>MªIdentifierÍ2Í8¦boundsMªIdentifierÍ9Í>¥rightÂÂX®CallExpressionÍAÍ`S°MemberExpressionÍAÍIMªIdentifierÍAÍE¤MathMªIdentifierÍFÍI£maxÂÂ’S°MemberExpressionÍJÍVMªIdentifierÍJÍP¦boundsMªIdentifierÍQÍV¥rightÂÂS°MemberExpressionÍXÍ_MªIdentifierÍXÍ]¥pointMªIdentifierÍ^Í_¡xÂÂÂQ³ExpressionStatementÍoÍ R´AssignmentExpressionÍoÍŸ¡=S°MemberExpressionÍoÍ|MªIdentifierÍoÍu¦boundsMªIdentifierÍvÍ|¦bottomÂÂX®CallExpressionÍÍŸS°MemberExpressionÍÍ‡MªIdentifierÍÍƒ¤MathMªIdentifierÍ„Í‡£maxÂÂ’S°MemberExpressionÍˆÍ•MªIdentifierÍˆÍ¦boundsMªIdentifierÍÍ•¦bottomÂÂS°MemberExpressionÍ—ÍMªIdentifierÍ—Íœ¥pointMªIdentifierÍÍ¡yÂÂÂ\¯ReturnStatementÍµÍÃMªIdentifierÍ¼ÍÂ¦boundsO°MethodDefinitionÍßÍÌÂÂMªIdentifierÍßÍî¯extractFoodName¦methodP²FunctionExpressionÍîÍÌÀÂÂÂ‘MªIdentifierÍïÍó¤textN®BlockStatementÍõÍÌ•Y³VariableDeclarationÍÍ_‘Z²VariableDeclaratorÍ Í^MªIdentifierÍ Í)©nameMatchX®CallExpressionÍ,Í^S°MemberExpressionÍ,Í6MªIdentifierÍ,Í0¤textMªIdentifierÍ1Í6¥matchÂÂ‘Ôrh–¤type¥start£end¥value£raw¥regex§LiteralÍ7Í]’Ù:(?:å“å|äº§å“åç§°|é£Ÿå“åç§°)[ï¼š:]\s*(.*?)(?:\n|$) Ù</(?:å“å|äº§å“åç§°|é£Ÿå“åç§°)[ï¼š:]\s*(.*?)(?:\n|$)/Ôri’§pattern¥flagsÙ:(?:å“å|äº§å“åç§°|é£Ÿå“åç§°)[ï¼š:]\s*(.*?)(?:\n|$) Â¥const`«IfStatementÍiÍàe±LogicalExpressionÍmÍ˜MªIdentifierÍmÍv©nameMatch¢&&e°BinaryExpressionÍzÍ˜S°MemberExpressionÍzÍ”X®CallExpressionÍzÍS°MemberExpressionÍzÍ‹S°MemberExpressionÍzÍ†MªIdentifierÍzÍƒ©nameMatchU§LiteralÍ„Í…¡1ÃÂMªIdentifierÍ‡Í‹¤trimÂÂÂMªIdentifierÍÍ”¦lengthÂÂ¡>U§LiteralÍ—Í˜ ¡0N®BlockStatementÍšÍà‘\¯ReturnStatementÍ©ÍÕX®CallExpressionÍ°ÍÔS°MemberExpressionÍ°ÍÍX®CallExpressionÍ°ÍÃS°MemberExpressionÍ°ÍÁS°MemberExpressionÍ°Í¼MªIdentifierÍ°Í¹©nameMatchU§LiteralÍºÍ»¡1ÃÂMªIdentifierÍ½ÍÁ¤trimÂÂÂMªIdentifierÍÄÍÍ©substringÂÂ’U§LiteralÍÎÍÏ ¡0U§LiteralÍÑÍÓ¢30ÂÀY³VariableDeclarationÍÍK‘Z²VariableDeclaratorÍÍJMªIdentifierÍÍ¥linesX®CallExpressionÍÍJS°MemberExpressionÍÍ0X®CallExpressionÍÍ)S°MemberExpressionÍÍ#MªIdentifierÍÍ¤textMªIdentifierÍÍ#¥splitÂÂ‘U§LiteralÍ$Í(¡
-¤'\n'ÂMªIdentifierÍ*Í0¦filterÂÂ‘P·ArrowFunctionExpressionÍ1ÍIÀÃÂÂ‘MªIdentifierÍ1Í2¡le°BinaryExpressionÍ6ÍIS°MemberExpressionÍ6ÍEX®CallExpressionÍ6Í>S°MemberExpressionÍ6Í<MªIdentifierÍ6Í7¡lMªIdentifierÍ8Í<¤trimÂÂÂMªIdentifierÍ?ÍE¦lengthÂÂ¡>U§LiteralÍHÍI ¡0Â¥const`«IfStatementÍUÍ­e°BinaryExpressionÍYÍiS°MemberExpressionÍYÍeMªIdentifierÍYÍ^¥linesMªIdentifierÍ_Íe¦lengthÂÂ¡>U§LiteralÍhÍi ¡0N®BlockStatementÍkÍ­‘\¯ReturnStatementÍzÍ¢X®CallExpressionÍÍ¡S°MemberExpressionÍÍšX®CallExpressionÍÍS°MemberExpressionÍÍS°MemberExpressionÍÍ‰MªIdentifierÍÍ†¥linesU§LiteralÍ‡Íˆ ¡0ÃÂMªIdentifierÍŠÍ¤trimÂÂÂMªIdentifierÍ‘Íš©substringÂÂ’U§LiteralÍ›Íœ ¡0U§LiteralÍÍ ¢30ÂÀ\¯ReturnStatementÍ·ÍÅU§LiteralÍ¾ÍÄ¬æœªçŸ¥é£Ÿå“®'æœªçŸ¥é£Ÿå“'O°MethodDefinitionÍáÍ$iÂÂMªIdentifierÍáÍñ°extractNutrition¦methodP²FunctionExpressionÍñÍ$iÀÂÂÂ‘MªIdentifierÍòÍö¤textN®BlockStatementÍøÍ$iÜ Y³VariableDeclarationÍÍ,‘Z²VariableDeclaratorÍ	Í+MªIdentifierÍ	Í©nutritionV­NewExpressionÍÍ+MªIdentifierÍÍ)°NutritionPer100g¥constY³VariableDeclarationÍVÍ—‘Z²VariableDeclaratorÍ\Í–MªIdentifierÍ\Íg«sodiumMatchX®CallExpressionÍjÍ–S°MemberExpressionÍjÍtMªIdentifierÍjÍn¤textMªIdentifierÍoÍt¥matchÂÂ‘h§LiteralÍuÍ•’Ù (?:é’ |Na)[^\d]*(\d+\.?\d*)\s*mg Ù"/(?:é’ |Na)[^\d]*(\d+\.?\d*)\s*mg/iÙ (?:é’ |Na)[^\d]*(\d+\.?\d*)\s*mg Â¥const`«IfStatementÍ¡ÍíMªIdentifierÍ¥Í°«sodiumMatchQ³ExpressionStatementÍ¿ÍíR´AssignmentExpressionÍ¿Íì¡=S°MemberExpressionÍ¿ÍÏMªIdentifierÍ¿ÍÈ©nutritionMªIdentifierÍÉÍÏ¦sodiumÂÂX®CallExpressionÍÒÍìMªIdentifierÍÒÍÜªparseFloat‘S°MemberExpressionÍİÍëMªIdentifierÍİÍè«sodiumMatchU§LiteralÍéÍê¡1ÃÂÂÀY³VariableDeclarationÍ Í W‘Z²VariableDeclaratorÍ Í VMªIdentifierÍ Í !ªsugarMatchX®CallExpressionÍ $Í VS°MemberExpressionÍ $Í .MªIdentifierÍ $Í (¤textMªIdentifierÍ )Í .¥matchÂÂ‘h§LiteralÍ /Í U’Ù.(?:æ€»ç³–|ç³–(?:å«é‡)?)[^\d]*(\d+\.?\d*)\s*g Ù0/(?:æ€»ç³–|ç³–(?:å«é‡)?)[^\d]*(\d+\.?\d*)\s*g/iÙ.(?:æ€»ç³–|ç³–(?:å«é‡)?)[^\d]*(\d+\.?\d*)\s*g Â¥const`«IfStatementÍ aÍ ªMªIdentifierÍ eÍ oªsugarMatchQ³ExpressionStatementÍ ~Í ªR´AssignmentExpressionÍ ~Í ©¡=S°MemberExpressionÍ ~Í MªIdentifierÍ ~Í ‡©nutritionMªIdentifierÍ ˆÍ ¥sugarÂÂX®CallExpressionÍ Í ©MªIdentifierÍ Í šªparseFloat‘S°MemberExpressionÍ ›Í ¨MªIdentifierÍ ›Í ¥ªsugarMatchU§LiteralÍ ¦Í §¡1ÃÂÂÀY³VariableDeclarationÍ ÆÍ!‘Z²VariableDeclaratorÍ ÌÍ!MªIdentifierÍ ÌÍ Ø¬calorieMatchX®CallExpressionÍ ÛÍ!S°MemberExpressionÍ ÛÍ åMªIdentifierÍ ÛÍ ß¤textMªIdentifierÍ àÍ å¥matchÂÂ‘h§LiteralÍ æÍ!’ÙE(?:èƒ½é‡|çƒ­é‡|Energy)[^\d]*(\d+\.?\d*)\s*(?:kcal|åƒå¡|kJ|åƒç„¦) ÙG/(?:èƒ½é‡|çƒ­é‡|Energy)[^\d]*(\d+\.?\d*)\s*(?:kcal|åƒå¡|kJ|åƒç„¦)/iÙE(?:èƒ½é‡|çƒ­é‡|Energy)[^\d]*(\d+\.?\d*)\s*(?:kcal|åƒå¡|kJ|åƒç„¦) Â¥const`«IfStatementÍ!)Í!yMªIdentifierÍ!-Í!9¬calorieMatchQ³ExpressionStatementÍ!HÍ!yR´AssignmentExpressionÍ!HÍ!x¡=S°MemberExpressionÍ!HÍ!ZMªIdentifierÍ!HÍ!Q©nutritionMªIdentifierÍ!RÍ!Z¨caloriesÂÂX®CallExpressionÍ!]Í!xMªIdentifierÍ!]Í!gªparseFloat‘S°MemberExpressionÍ!hÍ!wMªIdentifierÍ!hÍ!t¬calorieMatchU§LiteralÍ!uÍ!v¡1ÃÂÂÀY³VariableDeclarationÍ!’Í!Ñ‘Z²VariableDeclaratorÍ!˜Í!ĞMªIdentifierÍ!˜Í! ¨fatMatchX®CallExpressionÍ!£Í!ĞS°MemberExpressionÍ!£Í!­MªIdentifierÍ!£Í!§¤textMªIdentifierÍ!¨Í!­¥matchÂÂ‘h§LiteralÍ!®Í!Ï’Ù)(?:è„‚è‚ª|æ€»è„‚è‚ª)[^\d]*(\d+\.?\d*)\s*g Ù+/(?:è„‚è‚ª|æ€»è„‚è‚ª)[^\d]*(\d+\.?\d*)\s*g/iÙ)(?:è„‚è‚ª|æ€»è„‚è‚ª)[^\d]*(\d+\.?\d*)\s*g Â¥const`«IfStatementÍ!ÛÍ"MªIdentifierÍ!ßÍ!ç¨fatMatchQ³ExpressionStatementÍ!öÍ"R´AssignmentExpressionÍ!öÍ"¡=S°MemberExpressionÍ!öÍ"MªIdentifierÍ!öÍ!ÿ©nutritionMªIdentifierÍ" Í"£fatÂÂX®CallExpressionÍ"Í"MªIdentifierÍ"Í"ªparseFloat‘S°MemberExpressionÍ"Í"MªIdentifierÍ"Í"¨fatMatchU§LiteralÍ"Í"¡1ÃÂÂÀY³VariableDeclarationÍ"9Í"‘Z²VariableDeclaratorÍ"?Í"~MªIdentifierÍ"?Í"J«satFatMatchX®CallExpressionÍ"MÍ"~S°MemberExpressionÍ"MÍ"WMªIdentifierÍ"MÍ"Q¤textMªIdentifierÍ"RÍ"W¥matchÂÂ‘h§LiteralÍ"XÍ"}’Ù5(?:é¥±å’Œè„‚è‚ª|é¥±å’Œè„‚è‚ªé…¸)[^\d]*(\d+\.?\d*)\s*g Ù7/(?:é¥±å’Œè„‚è‚ª|é¥±å’Œè„‚è‚ªé…¸)[^\d]*(\d+\.?\d*)\s*g/iÙ5(?:é¥±å’Œè„‚è‚ª|é¥±å’Œè„‚è‚ªé…¸)[^\d]*(\d+\.?\d*)\s*g Â¥const`«IfStatementÍ"‰Í"ÛMªIdentifierÍ"Í"˜«satFatMatchQ³ExpressionStatementÍ"§Í"ÛR´AssignmentExpressionÍ"§Í"Ú¡=S°MemberExpressionÍ"§Í"½MªIdentifierÍ"§Í"°©nutritionMªIdentifierÍ"±Í"½¬saturatedFatÂÂX®CallExpressionÍ"ÀÍ"ÚMªIdentifierÍ"ÀÍ"ÊªparseFloat‘S°MemberExpressionÍ"ËÍ"ÙMªIdentifierÍ"ËÍ"Ö«satFatMatchU§LiteralÍ"×Í"Ø¡1ÃÂÂÀY³VariableDeclarationÍ"÷Í#9‘Z²VariableDeclaratorÍ"ıÍ#8MªIdentifierÍ"ıÍ#©carbMatchX®CallExpressionÍ#	Í#8S°MemberExpressionÍ#	Í#MªIdentifierÍ#	Í#¤textMªIdentifierÍ#Í#¥matchÂÂ‘h§LiteralÍ#Í#7’Ù/(?:ç¢³æ°´åŒ–åˆç‰©|ç¢³æ°´)[^\d]*(\d+\.?\d*)\s*g Ù1/(?:ç¢³æ°´åŒ–åˆç‰©|ç¢³æ°´)[^\d]*(\d+\.?\d*)\s*g/iÙ/(?:ç¢³æ°´åŒ–åˆç‰©|ç¢³æ°´)[^\d]*(\d+\.?\d*)\s*g Â¥const`«IfStatementÍ#CÍ#‘MªIdentifierÍ#GÍ#P©carbMatchQ³ExpressionStatementÍ#_Í#‘R´AssignmentExpressionÍ#_Í#¡=S°MemberExpressionÍ#_Í#uMªIdentifierÍ#_Í#h©nutritionMªIdentifierÍ#iÍ#u¬carbohydrateÂÂX®CallExpressionÍ#xÍ#MªIdentifierÍ#xÍ#‚ªparseFloat‘S°MemberExpressionÍ#ƒÍ#MªIdentifierÍ#ƒÍ#Œ©carbMatchU§LiteralÍ#Í#¡1ÃÂÂÀY³VariableDeclarationÍ#«Í#î‘Z²VariableDeclaratorÍ#±Í#íMªIdentifierÍ#±Í#½¬proteinMatchX®CallExpressionÍ#ÀÍ#íS°MemberExpressionÍ#ÀÍ#ÊMªIdentifierÍ#ÀÍ#Ä¤textMªIdentifierÍ#ÅÍ#Ê¥matchÂÂ‘h§LiteralÍ#ËÍ#ì’Ù)(?:è›‹ç™½è´¨|è›‹ç™½)[^\d]*(\d+\.?\d*)\s*g Ù+/(?:è›‹ç™½è´¨|è›‹ç™½)[^\d]*(\d+\.?\d*)\s*g/iÙ)(?:è›‹ç™½è´¨|è›‹ç™½)[^\d]*(\d+\.?\d*)\s*g Â¥const`«IfStatementÍ#øÍ$GMªIdentifierÍ#üÍ$¬proteinMatchQ³ExpressionStatementÍ$Í$GR´AssignmentExpressionÍ$Í$F¡=S°MemberExpressionÍ$Í$(MªIdentifierÍ$Í$ ©nutritionMªIdentifierÍ$!Í$(§proteinÂÂX®CallExpressionÍ$+Í$FMªIdentifierÍ$+Í$5ªparseFloat‘S°MemberExpressionÍ$6Í$EMªIdentifierÍ$6Í$B¬proteinMatchU§LiteralÍ$CÍ$D¡1ÃÂÂÀ\¯ReturnStatementÍ$QÍ$bMªIdentifierÍ$XÍ$a©nutritionO°MethodDefinitionÍ$}Í%óÂÂMªIdentifierÍ$}Í$²extractIngredients¦methodP²FunctionExpressionÍ$Í%óÀÂÂÂ‘MªIdentifierÍ$Í$”¤textN®BlockStatementÍ$–Í%ó“Y³VariableDeclarationÍ$µÍ%‘Z²VariableDeclaratorÍ$»Í%MªIdentifierÍ$»Í$Ë°ingredientsMatchX®CallExpressionÍ$ÎÍ%S°MemberExpressionÍ$ÎÍ$ØMªIdentifierÍ$ÎÍ$Ò¤textMªIdentifierÍ$ÓÍ$Ø¥matchÂÂ‘h§LiteralÍ$ÙÍ%’ÙX(?:é…æ–™|åŸæ–™)[è¡¨]?[ï¼š:]\s*([\s\S]*?)(?=\n\n|è¥å…»æˆä»½|è¥å…»æˆåˆ†|ç”Ÿäº§å•†|$) ÙZ/(?:é…æ–™|åŸæ–™)[è¡¨]?[ï¼š:]\s*([\s\S]*?)(?=\n\n|è¥å…»æˆä»½|è¥å…»æˆåˆ†|ç”Ÿäº§å•†|$)/iÙX(?:é…æ–™|åŸæ–™)[è¡¨]?[ï¼š:]\s*([\s\S]*?)(?=\n\n|è¥å…»æˆä»½|è¥å…»æˆåˆ†|ç”Ÿäº§å•†|$) Â¥const`«IfStatementÍ%Í%ØMªIdentifierÍ%!Í%1°ingredientsMatchN®BlockStatementÍ%3Í%Ø’Y³VariableDeclarationÍ%BÍ%v‘Z²VariableDeclaratorÍ%HÍ%uMªIdentifierÍ%HÍ%K£rawX®CallExpressionÍ%NÍ%uS°MemberExpressionÍ%NÍ%iS°MemberExpressionÍ%NÍ%aMªIdentifierÍ%NÍ%^°ingredientsMatchU§LiteralÍ%_Í%`¡1ÃÂMªIdentifierÍ%bÍ%i§replaceÂÂ’h§LiteralÍ%jÍ%o’¢\n¡g¥/\n/gi¢\n¡gU§LiteralÍ%qÍ%t¡ £' 'Â¥const\¯ReturnStatementÍ%„Í%ÍX®CallExpressionÍ%‹Í%ÌS°MemberExpressionÍ%‹Í%¹X®CallExpressionÍ%‹Í%²S°MemberExpressionÍ%‹Í%£X®CallExpressionÍ%‹Í%ŸS°MemberExpressionÍ%‹Í%”MªIdentifierÍ%‹Í%£rawMªIdentifierÍ%Í%”¥splitÂÂ‘h§LiteralÍ%•Í%’­[ã€,ï¼Œ;ï¼›] ¯/[ã€,ï¼Œ;ï¼›]/i­[ã€,ï¼Œ;ï¼›] ÂMªIdentifierÍ% Í%££mapÂÂ‘P·ArrowFunctionExpressionÍ%¤Í%±ÀÃÂÂ‘MªIdentifierÍ%¤Í%¥¡sX®CallExpressionÍ%©Í%±S°MemberExpressionÍ%©Í%¯MªIdentifierÍ%©Í%ª¡sMªIdentifierÍ%«Í%¯¤trimÂÂÂÂMªIdentifierÍ%³Í%¹¦filterÂÂ‘P·ArrowFunctionExpressionÍ%ºÍ%ËÀÃÂÂ‘MªIdentifierÍ%ºÍ%»¡se°BinaryExpressionÍ%¿Í%ËS°MemberExpressionÍ%¿Í%ÇMªIdentifierÍ%¿Í%À¡sMªIdentifierÍ%ÁÍ%Ç¦lengthÂÂ¡>U§LiteralÍ%ÊÍ%Ë ¡0ÂÀ\¯ReturnStatementÍ%âÍ%ìW¯ArrayExpressionÍ%éÍ%ëO°MethodDefinitionÍ&Í&¦ÂÂMªIdentifierÍ&Í&³extractManufacturer¦methodP²FunctionExpressionÍ&Í&¦ÀÂÂÂ‘MªIdentifierÍ&Í&¤textN®BlockStatementÍ&!Í&¦’Y³VariableDeclarationÍ&,Í&q‘Z²VariableDeclaratorÍ&2Í&pMªIdentifierÍ&2Í&7¥matchX®CallExpressionÍ&:Í&pS°MemberExpressionÍ&:Í&DMªIdentifierÍ&:Í&>¤textMªIdentifierÍ&?Í&D¥matchÂÂ‘h§LiteralÍ&EÍ&o’ÙD(?:ç”Ÿäº§å•†|ç”Ÿäº§ä¼ä¸š|åˆ¶é€ å•†|ç”Ÿäº§è€…)[ï¼š:]\s*(.*?)(?:\n|$) ÙF/(?:ç”Ÿäº§å•†|ç”Ÿäº§ä¼ä¸š|åˆ¶é€ å•†|ç”Ÿäº§è€…)[ï¼š:]\s*(.*?)(?:\n|$)/iÙD(?:ç”Ÿäº§å•†|ç”Ÿäº§ä¼ä¸š|åˆ¶é€ å•†|ç”Ÿäº§è€…)[ï¼š:]\s*(.*?)(?:\n|$) Â¥const\¯ReturnStatementÍ&{Í&Ÿ`µConditionalExpressionÍ&‚Í&MªIdentifierÍ&‚Í&‡¥matchX®CallExpressionÍ&ŠÍ&™S°MemberExpressionÍ&ŠÍ&—S°MemberExpressionÍ&ŠÍ&’MªIdentifierÍ&ŠÍ&¥matchU§LiteralÍ&Í&‘¡1ÃÂMªIdentifierÍ&“Í&—¤trimÂÂÂU§LiteralÍ&œÍ& ¢''O°MethodDefinitionÍ&»Í'/ÂÂMªIdentifierÍ&»Í&Ê¯extractScNumber¦methodP²FunctionExpressionÍ&ÊÍ'/ÀÂÂÂ‘MªIdentifierÍ&ËÍ&Ï¤textN®BlockStatementÍ&ÑÍ'/’Y³VariableDeclarationÍ&ÜÍ'‘Z²VariableDeclaratorÍ&âÍ' MªIdentifierÍ&âÍ&ç¥matchX®CallExpressionÍ&êÍ' S°MemberExpressionÍ&êÍ&ôMªIdentifierÍ&êÍ&î¤textMªIdentifierÍ&ïÍ&ô¥matchÂÂ‘h§LiteralÍ&õÍ&ÿ’¨SC\d{14} ª/SC\d{14}/i¨SC\d{14} Â¥const\¯ReturnStatementÍ'Í'(`µConditionalExpressionÍ'Í''MªIdentifierÍ'Í'¥matchS°MemberExpressionÍ'Í'"MªIdentifierÍ'Í'¥matchU§LiteralÍ' Í'! ¡0ÃÂU§LiteralÍ'%Í'' ¢''O°MethodDefinitionÍ'GÍ(èÂÂMªIdentifierÍ'GÍ'U®extractOemInfo¦methodP²FunctionExpressionÍ'UÍ(èÀÂÂÂ‘MªIdentifierÍ'VÍ'Z¤textN®BlockStatementÍ'\Í(è–Y³VariableDeclarationÍ'gÍ'„‘Z²VariableDeclaratorÍ'mÍ'ƒMªIdentifierÍ'mÍ's¦resultV­NewExpressionÍ'vÍ'ƒMªIdentifierÍ'zÍ'§OemInfo¥constY³VariableDeclarationÍ'Í'Û‘Z²VariableDeclaratorÍ'”Í'ÚMªIdentifierÍ'”Í'¢®principalMatchX®CallExpressionÍ'¥Í'ÚS°MemberExpressionÍ'¥Í'¯MªIdentifierÍ'¥Í'©¤textMªIdentifierÍ'ªÍ'¯¥matchÂÂ‘h§LiteralÍ'°Í'Ù’ÙC(?:å§”æ‰˜æ–¹|å§”æ‰˜ç”Ÿäº§ä¼ä¸š|å§”æ‰˜å•ä½)[ï¼š:]\s*(.*?)(?:\n|$) ÙE/(?:å§”æ‰˜æ–¹|å§”æ‰˜ç”Ÿäº§ä¼ä¸š|å§”æ‰˜å•ä½)[ï¼š:]\s*(.*?)(?:\n|$)/iÙC(?:å§”æ‰˜æ–¹|å§”æ‰˜ç”Ÿäº§ä¼ä¸š|å§”æ‰˜å•ä½)[ï¼š:]\s*(.*?)(?:\n|$) Â¥constY³VariableDeclarationÍ'åÍ(7‘Z²VariableDeclaratorÍ'ëÍ(6MªIdentifierÍ'ëÍ'÷¬trusteeMatchX®CallExpressionÍ'úÍ(6S°MemberExpressionÍ'úÍ(MªIdentifierÍ'úÍ'ş¤textMªIdentifierÍ'ÿÍ(¥matchÂÂ‘h§LiteralÍ(Í(5’ÙV(?:å—æ‰˜æ–¹|å—æ‰˜ç”Ÿäº§ä¼ä¸š|å—æ‰˜å•ä½|å®é™…ç”Ÿäº§ä¼ä¸š)[ï¼š:]\s*(.*?)(?:\n|$) ÙX/(?:å—æ‰˜æ–¹|å—æ‰˜ç”Ÿäº§ä¼ä¸š|å—æ‰˜å•ä½|å®é™…ç”Ÿäº§ä¼ä¸š)[ï¼š:]\s*(.*?)(?:\n|$)/iÙV(?:å—æ‰˜æ–¹|å—æ‰˜ç”Ÿäº§ä¼ä¸š|å—æ‰˜å•ä½|å®é™…ç”Ÿäº§ä¼ä¸š)[ï¼š:]\s*(.*?)(?:\n|$) Â¥constQ³ExpressionStatementÍ(AÍ(ƒR´AssignmentExpressionÍ(AÍ(‚¡=S°MemberExpressionÍ(AÍ(QMªIdentifierÍ(AÍ(G¦resultMªIdentifierÍ(HÍ(Q©principalÂÂ`µConditionalExpressionÍ(TÍ(‚MªIdentifierÍ(TÍ(b®principalMatchX®CallExpressionÍ(eÍ(}S°MemberExpressionÍ(eÍ({S°MemberExpressionÍ(eÍ(vMªIdentifierÍ(eÍ(s®principalMatchU§LiteralÍ(tÍ(u¡1ÃÂMªIdentifierÍ(wÍ({¤trimÂÂÂU§LiteralÍ(€Í(‚ ¢''Q³ExpressionStatementÍ(Í(ÉR´AssignmentExpressionÍ(Í(È¡=S°MemberExpressionÍ(Í(›MªIdentifierÍ(Í(“¦resultMªIdentifierÍ(”Í(›§trusteeÂÂ`µConditionalExpressionÍ(Í(ÈMªIdentifierÍ(Í(ª¬trusteeMatchX®CallExpressionÍ(­Í(ÃS°MemberExpressionÍ(­Í(ÁS°MemberExpressionÍ(­Í(¼MªIdentifierÍ(­Í(¹¬trusteeMatchU§LiteralÍ(ºÍ(»¡1ÃÂMªIdentifierÍ(½Í(Á¤trimÂÂÂU§LiteralÍ(ÆÍ(È ¢''\¯ReturnStatementÍ(ÓÍ(áMªIdentifierÍ(ÚÍ(à¦resultO°MethodDefinitionÍ)Í)”ÂÂMªIdentifierÍ)Í)®extractBarcode¦methodP²FunctionExpressionÍ)Í)”ÀÂÂÂ‘MªIdentifierÍ)Í)¤textN®BlockStatementÍ)Í)”’Y³VariableDeclarationÍ)=Í)f‘Z²VariableDeclaratorÍ)CÍ)eMªIdentifierÍ)CÍ)H¥matchX®CallExpressionÍ)KÍ)eS°MemberExpressionÍ)KÍ)UMªIdentifierÍ)KÍ)O¤textMªIdentifierÍ)PÍ)U¥matchÂÂ‘h§LiteralÍ)VÍ)d’¬\b(\d{13})\b ®/\b(\d{13})\b/i¬\b(\d{13})\b Â¥const\¯ReturnStatementÍ)pÍ)`µConditionalExpressionÍ)wÍ)ŒMªIdentifierÍ)wÍ)|¥matchS°MemberExpressionÍ)Í)‡MªIdentifierÍ)Í)„¥matchU§LiteralÍ)…Í)†¡1ÃÂU§LiteralÍ)ŠÍ)Œ ¢''À”Ôrj•¤type¥start£endªspecifiers¦source±ImportDeclarationÌ‚Ì¼‘Ôrk”¤type¥start£end¥local¶ImportDefaultSpecifierÌ‰Ì˜MªIdentifierÌ‰Ì˜¯textRecognitionU§LiteralÌÌ»»@hms.ai.ocr.textRecognition½"@hms.ai.ocr.textRecognition"j±ImportDeclarationÌ¾Ìé‘k¶ImportDefaultSpecifierÌÅÌÊMªIdentifierÌÅÌÊ¥imageU§LiteralÌĞÌè¶@ohos.multimedia.image¸"@ohos.multimedia.image"j±ImportDeclarationÌëÍ‘k¶ImportDefaultSpecifierÌòÌ÷MªIdentifierÌòÌ÷¥hilogU§LiteralÌıÍ
-«@ohos.hilog­"@ohos.hilog"j±ImportDeclarationÍÍZ“Ôrl•¤type¥start£end¨imported¥local¯ImportSpecifierÍÍMªIdentifierÍÍ©FoodLabelMªIdentifierÍÍ©FoodLabell¯ImportSpecifierÍ!Í+MªIdentifierÍ!Í+ªFoodSourceMªIdentifierÍ!Í+ªFoodSourcel¯ImportSpecifierÍ-Í=MªIdentifierÍ-Í=°NutritionPer100gMªIdentifierÍ-Í=°NutritionPer100gU§LiteralÍEÍY²../model/FoodLabel´'../model/FoodLabel'

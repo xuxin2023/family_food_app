@@ -1,683 +1,0 @@
-Ôr@Ÿªassertions¤code´customTransformCache¬dependencies¢id¤meta±moduleSideEffects¬originalCode±originalSourcemap«resolvedIds®sourcemapChainµsyntheticNamedExportsµtransformDependencies®transformFiles¨cacheAstÔrAÚ,]import { ChildProtection } from '../model/ChildProtection';
-// ===== æ–°å¢ç±»å‹ =====
-export class ChildMealAdvice {
-    constructor() {
-        /** æ˜¯å¦å½±å“æ­£é¤ */
-        this.affectMeal = false;
-        /** æ˜¯å¦å½±å“ç¡çœ  */
-        this.affectSleep = false;
-        /** ä»Šæ—¥ç”œé£Ÿæ¬¡æ•° */
-        this.sweetCountToday = 0;
-        /** ç”Ÿæ´»åŒ–å»ºè®® */
-        this.advice = '';
-        /** ç»¿è‰²é€šè¡Œ/é»„è‰²æ³¨æ„/æ©™è‰²æé†’/çº¢è‰²ç¦æ­¢ */
-        this.level = 'ç»¿è‰²é€šè¡Œ';
-    }
-}
-// ===== å¸¸é‡ =====
-const HIGH_SUGAR_SNACKS = ['è›‹ç³•', 'é¥¼å¹²', 'è–¯ç‰‡', 'å¥¶èŒ¶', 'ç”œé¥®', 'ç³–æœ', 'å·§å…‹åŠ›', 'å†°æ·‡æ·‹', 'æœå†»', 'æ£’æ£’ç³–', 'å¥¶ç³–', 'èœœé¥¯', 'ç³–æ°´'];
-const HIGH_FAT_SNACKS = ['è–¯ç‰‡', 'ç‚¸é¸¡', 'æ²¹ç‚¸', 'è†¨åŒ–', 'æ²¹æ¡', 'æ˜¥å·'];
-const CAFFEINE_DRINKS = ['å’–å•¡', 'å¥¶èŒ¶', 'èŒ¶é¥®', 'åŠŸèƒ½é¥®æ–™', 'å¯ä¹', 'çº¢ç‰›', 'æµ“èŒ¶'];
-const FRIED_FOODS = ['ç‚¸é¸¡', 'æ²¹ç‚¸', 'æ²¹æ¡', 'æ˜¥å·', 'è–¯æ¡', 'å¤©å¦‡ç½—'];
-export class MealTimeParams {
-    constructor() {
-        this.breakfast = '07:30';
-        this.lunch = '12:00';
-        this.dinner = '18:00';
-    }
-}
-class MealInfo {
-    constructor() {
-        this.name = '';
-        this.time = '';
-    }
-}
-// ===== å¼•æ“ =====
-export class ChildProtectionEngine {
-    /**
-     * V3å¢å¼ºï¼šå„¿ç«¥æ­£é¤å»ºè®® - ç”Ÿæ´»åŒ–å‘µæŠ¤å¼
-     * @param member å®¶åº­æˆå‘˜ï¼ˆéœ€ä¸ºå„¿ç«¥ï¼‰
-     * @param food é£Ÿå“è¥å…»æ•°æ®
-     * @param currentTime å½“å‰æ—¶é—´
-     * @param nextMealTime ä¸‹ä¸€é¤æ—¶é—´
-     * @returns å„¿ç«¥æ­£é¤å»ºè®®
-     */
-    static getChildMealAdvice(member, food, currentTime, nextMealTime) {
-        const result = new ChildMealAdvice();
-        if (member.healthGoal !== 'children') {
-            result.advice = 'éå„¿ç«¥æˆå‘˜ï¼Œæ— éœ€å„¿ç«¥ä¿æŠ¤å»ºè®®';
-            return result;
-        }
-        const foodName = food.productName;
-        const currentHour = currentTime.getHours();
-        const currentMin = currentTime.getMinutes();
-        const currentMinutes = currentHour * 60 + currentMin;
-        const isSweet = HIGH_SUGAR_SNACKS.some(s => foodName.includes(s)) || food.sugar_g > 10;
-        const isFat = HIGH_FAT_SNACKS.some(s => foodName.includes(s)) || food.fat_g > 15;
-        const isCaffeine = CAFFEINE_DRINKS.some(s => foodName.includes(s));
-        const isFried = FRIED_FOODS.some(s => foodName.includes(s));
-        const isHighCalorie = food.energy_kj > 400;
-        // è®¡ç®—è·ä¸‹ä¸€é¤åˆ†é’Ÿæ•°
-        const nextMinutes = nextMealTime.getHours() * 60 + nextMealTime.getMinutes();
-        const diffToMeal = nextMinutes - currentMinutes;
-        // è§„åˆ™1ï¼šè·ä¸‹ä¸€é¤<1å°æ—¶ä¸”çƒ­é‡>100kcal
-        if (diffToMeal > 0 && diffToMeal <= 60 && isHighCalorie) {
-            result.affectMeal = true;
-            result.advice = 'å°è‚šå­è¦ç•™ç»™æ­£é¤å“¦ï¼Œé¥­åå¯ä»¥å°ä¸€å°å£ï½';
-            result.level = 'æ©™è‰²æé†’';
-            return result;
-        }
-        // è§„åˆ™2ï¼šè·ä¸‹ä¸€é¤<30åˆ†é’Ÿ
-        if (diffToMeal > 0 && diffToMeal <= 30) {
-            result.affectMeal = true;
-            result.advice = 'é©¬ä¸Šè¦åƒé¥­å•¦ï¼Œå…ˆæ”¶èµ·æ¥ï¼Œåƒå®Œæ­£é¤å†å†³å®šè¦ä¸è¦åƒå§ï½';
-            result.level = 'æ©™è‰²æé†’';
-            return result;
-        }
-        // è§„åˆ™3ï¼š21:00åå«ç³–é£Ÿå“
-        if (currentHour >= 21 && isSweet) {
-            result.affectSleep = true;
-            result.advice = 'å·²ç»åˆ·è¿‡ç‰™äº†å§ï¼Ÿæ˜å¤©å†åƒä¼šæ›´ç”œå“¦ï½';
-            result.level = 'çº¢è‰²ç¦æ­¢';
-            return result;
-        }
-        // è§„åˆ™4ï¼šå«å’–å•¡å› +18:00å
-        if (currentHour >= 18 && isCaffeine) {
-            result.affectSleep = true;
-            result.advice = 'è¿™ä¸ªæœ‰ç‚¹æç¥ï¼Œæ™šä¸Šä¼šç¡ä¸ç€å“¦ï¼Œæ˜å¤©ä¸Šåˆå†å–å§ï½';
-            result.level = 'æ©™è‰²æé†’';
-            return result;
-        }
-        // è§„åˆ™5ï¼šè·ä¸‹ä¸€é¤1-2å°æ—¶
-        if (diffToMeal > 60 && diffToMeal <= 120 && (isSweet || isFat)) {
-            result.affectMeal = true;
-            result.advice = `è¿˜æœ‰${Math.round(diffToMeal / 60)}å°æ—¶åƒé¥­ï¼Œå…ˆå°‘åƒä¸€ç‚¹è§£è§£é¦‹ï¼Œç•™ç€è‚šå­åƒæ­£é¤å“¦ï½`;
-            result.level = 'é»„è‰²æ³¨æ„';
-            return result;
-        }
-        // è§„åˆ™6ï¼š21:00åé«˜è„‚/æ²¹ç‚¸
-        if (currentHour >= 21 && (isFat || isFried)) {
-            result.affectSleep = true;
-            result.advice = 'æ™šä¸Šåƒæ²¹è…»çš„è‚šå­ä¼šä¸èˆ’æœï¼Œæ˜å¤©å†åƒå¥½ä¸å¥½ï¼Ÿ';
-            result.level = 'æ©™è‰²æé†’';
-            return result;
-        }
-        // è§„åˆ™7ï¼š20:00åå«ç³–
-        if (currentHour >= 20 && isSweet) {
-            result.affectSleep = true;
-            result.advice = 'å·²ç»8ç‚¹å¤šäº†ï¼Œæ™šä¸Šåƒç”œçš„å®¹æ˜“å½±å“ç¡çœ ï¼Œæ˜å¤©ç™½å¤©å†åƒå§ï½';
-            result.level = 'é»„è‰²æ³¨æ„';
-            return result;
-        }
-        // æ— è§¦å‘
-        result.advice = 'è¿™ä¸ªæ—¶é—´åƒæ²¡é—®é¢˜ï¼Œè®°å¾—é€‚é‡å°±å¥½ï½';
-        result.level = 'ç»¿è‰²é€šè¡Œ';
-        return result;
-    }
-    /**
-     * è®¡ç®—å„¿ç«¥ä¿æŠ¤å»ºè®®ï¼ˆåŸæœ‰æ–¹æ³•ï¼Œå…¼å®¹æ—§è°ƒç”¨ï¼‰
-     */
-    calculate(profile, foodLabel, currentTime, mealTimes, bedtime) {
-        const result = new ChildProtection();
-        result.memberId = profile.memberId;
-        if (!profile.isChild()) {
-            return result;
-        }
-        const foodName = foodLabel.foodName.toLowerCase();
-        const currentHour = currentTime.getHours();
-        const currentMin = currentTime.getMinutes();
-        result.mealProtection = this.checkMealProtection(foodName, foodLabel, currentHour, currentMin, mealTimes);
-        result.bedtimeProtection = this.checkBedtimeProtection(foodName, foodLabel, currentHour, currentMin, bedtime);
-        result.tasteProtection = this.checkTasteProtection(foodName, foodLabel);
-        result.counteractReminder = this.checkCounteractReminder(foodName, foodLabel);
-        return result;
-    }
-    checkMealProtection(foodName, foodLabel, currentHour, currentMin, mealTimes) {
-        const isHighSugarSnack = HIGH_SUGAR_SNACKS.some(s => foodName.includes(s)) || foodLabel.isHighSugar();
-        const isHighFatSnack = HIGH_FAT_SNACKS.some(s => foodName.includes(s)) || foodLabel.isHighFat();
-        if (!isHighSugarSnack && !isHighFatSnack) {
-            return '';
-        }
-        const currentMinutes = currentHour * 60 + currentMin;
-        const meals = [];
-        const breakfastMeal = new MealInfo();
-        breakfastMeal.name = 'æ—©é¤';
-        breakfastMeal.time = mealTimes.breakfast;
-        meals.push(breakfastMeal);
-        const lunchMeal = new MealInfo();
-        lunchMeal.name = 'åˆé¤';
-        lunchMeal.time = mealTimes.lunch;
-        meals.push(lunchMeal);
-        const dinnerMeal = new MealInfo();
-        dinnerMeal.name = 'æ™šé¤';
-        dinnerMeal.time = mealTimes.dinner;
-        meals.push(dinnerMeal);
-        for (const meal of meals) {
-            const parts = meal.time.split(':');
-            const mealH = Number(parts[0]);
-            const mealM = Number(parts[1]);
-            const mealMinutes = mealH * 60 + mealM;
-            const diffMin = mealMinutes - currentMinutes;
-            if (diffMin > 0 && diffMin <= 120) {
-                if (diffMin <= 60) {
-                    if (isHighSugarSnack && isHighFatSnack) {
-                        return `å¿«åƒ${meal.name}äº†ï¼Œè¿™ä¸ªåˆç”œåˆæ²¹çš„é›¶é£Ÿå¯èƒ½ä¼šè®©å®å®ä¸æƒ³å¥½å¥½åƒé¥­ï¼Œå’±ä»¬é¥­åå½“å°å¥–åŠ±å†åƒå¥½ä¸å¥½ï¼Ÿ`;
-                    }
-                    if (isHighSugarSnack) {
-                        return `é©¬ä¸Šè¦åƒ${meal.name}äº†ï¼Œç°åœ¨åƒç”œçš„å®¹æ˜“å½±å“èƒƒå£ï¼Œåƒå®Œé¥­å†å°ä¸€å°å£å§ï½`;
-                    }
-                    return `è·ç¦»${meal.name}ä¸åˆ°1å°æ—¶ï¼Œè¿™ä¸ªé›¶é£Ÿå¯èƒ½ä¼šå½±å“æ­£é¤é£Ÿæ¬²ï¼Œå»ºè®®å…ˆä¸åƒæˆ–åªå°‘é‡å°è¯•`;
-                }
-                else {
-                    if (isHighSugarSnack) {
-                        return `è¿˜æœ‰${Math.round(diffMin / 60)}å°æ—¶åƒ${meal.name}ï¼Œç°åœ¨åƒç”œçš„å¯èƒ½ä¼šå½±å“åƒé¥­ï¼Œå…ˆå°‘åƒä¸€ç‚¹è§£è§£é¦‹å°±å¥½ï½`;
-                    }
-                    return `è·ç¦»${meal.name}çº¦${Math.round(diffMin / 60)}å°æ—¶ï¼Œå¯èƒ½å½±å“æ­£é¤é£Ÿæ¬²ï¼Œå»ºè®®æ§åˆ¶ä»½é‡`;
-                }
-            }
-        }
-        return '';
-    }
-    checkBedtimeProtection(foodName, foodLabel, currentHour, currentMin, bedtime) {
-        const isSweet = HIGH_SUGAR_SNACKS.some(s => foodName.includes(s)) || foodLabel.isHighSugar();
-        const isPuffed = foodName.includes('è†¨åŒ–') || foodName.includes('è–¯ç‰‡');
-        const isFried = FRIED_FOODS.some(s => foodName.includes(s)) || foodLabel.isHighFat();
-        const isCaffeine = CAFFEINE_DRINKS.some(s => foodName.includes(s));
-        if (currentHour >= 20) {
-            if (isSweet) {
-                return 'å·²ç»8ç‚¹å¤šäº†ï¼Œæ™šä¸Šåƒç”œçš„å®¹æ˜“å½±å“ç¡çœ å’Œç‰™é½¿å¥åº·ï¼Œæ˜å¤©ç™½å¤©å†åƒå¥½ä¸å¥½ï¼Ÿ';
-            }
-            if (isCaffeine) {
-                return 'è¿™ä¹ˆæ™šäº†å–å«å’–å•¡å› çš„ï¼Œå®å®æ™šä¸Šä¼šç¡ä¸ç€çš„ï¼Œæ˜å¤©å†å–å§ï½';
-            }
-            if (isFried) {
-                return 'æ™šä¸Šåƒæ²¹ç‚¸çš„ä¸å¥½æ¶ˆåŒ–ï¼Œè‚šå­èƒ€èƒ€çš„ç¡ä¸èˆ’æœï¼Œæ˜å¤©å†å°å§ï¼';
-            }
-        }
-        const parts = bedtime.split(':');
-        const bedH = Number(parts[0]);
-        const bedM = Number(parts[1]);
-        const currentMinutes = currentHour * 60 + currentMin;
-        const bedMinutes = bedH * 60 + bedM;
-        const diffMin = bedMinutes - currentMinutes;
-        if (diffMin > 0 && diffMin <= 60) {
-            if (isSweet) {
-                return 'å¿«åˆ°ç¡è§‰æ—¶é—´äº†ï¼Œç”œé£Ÿä¼šè®©å®å®å…´å¥‹ç¡ä¸ç€ï¼Œæ˜å¤©å†åƒå¥½ä¸å¥½ï¼Ÿ';
-            }
-            if (isPuffed) {
-                return 'ä¸´è¿‘ç¡å‰ï¼Œè†¨åŒ–é£Ÿå“ä¸å¥½æ¶ˆåŒ–ï¼Œè‚šå­ä¼šä¸èˆ’æœçš„ï½';
-            }
-            if (isFried) {
-                return 'å¿«ç¡è§‰äº†ï¼Œæ²¹ç‚¸é£Ÿå“ä¼šå¢åŠ æ¶ˆåŒ–è´Ÿæ‹…ï¼Œæ˜å¤©å†åƒå§ï¼';
-            }
-            if (isCaffeine) {
-                return 'ç¡å‰å–å«å’–å•¡å› çš„é¥®å“ä¼šå½±å“ç¡çœ è´¨é‡ï¼Œæ˜å¤©å†å–å§ï½';
-            }
-        }
-        return '';
-    }
-    checkTasteProtection(foodName, foodLabel) {
-        const issues = [];
-        if (foodLabel.isHighSugar() || HIGH_SUGAR_SNACKS.some(s => foodName.includes(s))) {
-            issues.push('ç³–å«é‡åé«˜');
-        }
-        if (foodLabel.isHighSodium()) {
-            issues.push('é’ å«é‡åé«˜');
-        }
-        if (foodLabel.isHighFat() || HIGH_FAT_SNACKS.some(s => foodName.includes(s))) {
-            issues.push('è„‚è‚ªå«é‡åé«˜');
-        }
-        if (issues.length > 0) {
-            return `${issues.join('ã€')}ï¼Œä¸å»ºè®®ä½œä¸ºæ¯æ—¥å›ºå®šé›¶é£Ÿæˆ–é¥®å“`;
-        }
-        return '';
-    }
-    checkCounteractReminder(foodName, foodLabel) {
-        const isSweetSnack = HIGH_SUGAR_SNACKS.some(s => foodName.includes(s)) || foodLabel.isHighSugar();
-        const isHighCalorie = foodLabel.isHighCalorie();
-        return isSweetSnack || isHighCalorie;
-    }
-}
-//# sourceMappingURL=ChildProtectionEngine.js.mapÂ‘ÙCE:\APP\family_food_app\entry\src\main\ets\model\ChildProtection.etsÙJE:\APP\family_food_app\entry\src\main\ets\engine\ChildProtectionEngine.etsÔrB›ªmoduleName±isLocalDependency¯isNodeEntryFile§pkgPath±belongProjectPath§pkgNameªpkgVersion±dependencyPkgInfo¯hostModulesInfo°belongModulePath¬shouldEmitJs¥entryÃÂ¼E:\APP\family_food_app\entry¶E:\APP\family_food_app¥entry¥1.0.0Ô  ‘ÔrC’²hostDependencyName®hostModuleName¾./engine/ChildProtectionEngine¥entry¼E:\APP\family_food_app\entryÃÃÚ*H// ChildProtectionEngine.ets
-// å„¿ç«¥ä¿æŠ¤å¼•æ“ - æ­£é¤ä¿æŠ¤ã€ç¡å‰ä¿æŠ¤ã€å£å‘³ä¿æŠ¤ã€ç”œé£Ÿæ¬¡æ•°æ£€æŸ¥
-// V3å¢å¼ºï¼šgetChildMealAdvice ç”Ÿæ´»åŒ–å‘µæŠ¤å¼å»ºè®®ã€å’–å•¡å› +æ—¶é—´æ£€æŸ¥
-
-import { FamilyMember, FoodNutrition } from '../model/FoodAdapterTypes';
-import { ChildProtection } from '../model/ChildProtection';
-import { FamilyProfile } from '../model/FamilyProfile';
-import { FoodLabel } from '../model/FoodLabel';
-
-// ===== æ–°å¢ç±»å‹ =====
-
-export class ChildMealAdvice {
-  /** æ˜¯å¦å½±å“æ­£é¤ */
-  affectMeal: boolean = false;
-  /** æ˜¯å¦å½±å“ç¡çœ  */
-  affectSleep: boolean = false;
-  /** ä»Šæ—¥ç”œé£Ÿæ¬¡æ•° */
-  sweetCountToday: number = 0;
-  /** ç”Ÿæ´»åŒ–å»ºè®® */
-  advice: string = '';
-  /** ç»¿è‰²é€šè¡Œ/é»„è‰²æ³¨æ„/æ©™è‰²æé†’/çº¢è‰²ç¦æ­¢ */
-  level: string = 'ç»¿è‰²é€šè¡Œ';
-}
-
-// ===== å¸¸é‡ =====
-
-const HIGH_SUGAR_SNACKS: string[] = ['è›‹ç³•', 'é¥¼å¹²', 'è–¯ç‰‡', 'å¥¶èŒ¶', 'ç”œé¥®', 'ç³–æœ', 'å·§å…‹åŠ›', 'å†°æ·‡æ·‹', 'æœå†»', 'æ£’æ£’ç³–', 'å¥¶ç³–', 'èœœé¥¯', 'ç³–æ°´'];
-const HIGH_FAT_SNACKS: string[] = ['è–¯ç‰‡', 'ç‚¸é¸¡', 'æ²¹ç‚¸', 'è†¨åŒ–', 'æ²¹æ¡', 'æ˜¥å·'];
-const CAFFEINE_DRINKS: string[] = ['å’–å•¡', 'å¥¶èŒ¶', 'èŒ¶é¥®', 'åŠŸèƒ½é¥®æ–™', 'å¯ä¹', 'çº¢ç‰›', 'æµ“èŒ¶'];
-const FRIED_FOODS: string[] = ['ç‚¸é¸¡', 'æ²¹ç‚¸', 'æ²¹æ¡', 'æ˜¥å·', 'è–¯æ¡', 'å¤©å¦‡ç½—'];
-
-export class MealTimeParams {
-  breakfast: string = '07:30';
-  lunch: string = '12:00';
-  dinner: string = '18:00';
-}
-
-class MealInfo {
-  name: string = '';
-  time: string = '';
-}
-
-// ===== å¼•æ“ =====
-
-export class ChildProtectionEngine {
-  /**
-   * V3å¢å¼ºï¼šå„¿ç«¥æ­£é¤å»ºè®® - ç”Ÿæ´»åŒ–å‘µæŠ¤å¼
-   * @param member å®¶åº­æˆå‘˜ï¼ˆéœ€ä¸ºå„¿ç«¥ï¼‰
-   * @param food é£Ÿå“è¥å…»æ•°æ®
-   * @param currentTime å½“å‰æ—¶é—´
-   * @param nextMealTime ä¸‹ä¸€é¤æ—¶é—´
-   * @returns å„¿ç«¥æ­£é¤å»ºè®®
-   */
-  static getChildMealAdvice(
-    member: FamilyMember,
-    food: FoodNutrition,
-    currentTime: Date,
-    nextMealTime: Date
-  ): ChildMealAdvice {
-    const result = new ChildMealAdvice();
-
-    if (member.healthGoal !== 'children') {
-      result.advice = 'éå„¿ç«¥æˆå‘˜ï¼Œæ— éœ€å„¿ç«¥ä¿æŠ¤å»ºè®®';
-      return result;
-    }
-
-    const foodName = food.productName;
-    const currentHour = currentTime.getHours();
-    const currentMin = currentTime.getMinutes();
-    const currentMinutes = currentHour * 60 + currentMin;
-
-    const isSweet = HIGH_SUGAR_SNACKS.some(s => foodName.includes(s)) || food.sugar_g > 10;
-    const isFat = HIGH_FAT_SNACKS.some(s => foodName.includes(s)) || food.fat_g > 15;
-    const isCaffeine = CAFFEINE_DRINKS.some(s => foodName.includes(s));
-    const isFried = FRIED_FOODS.some(s => foodName.includes(s));
-    const isHighCalorie = food.energy_kj > 400;
-
-    // è®¡ç®—è·ä¸‹ä¸€é¤åˆ†é’Ÿæ•°
-    const nextMinutes = nextMealTime.getHours() * 60 + nextMealTime.getMinutes();
-    const diffToMeal = nextMinutes - currentMinutes;
-
-    // è§„åˆ™1ï¼šè·ä¸‹ä¸€é¤<1å°æ—¶ä¸”çƒ­é‡>100kcal
-    if (diffToMeal > 0 && diffToMeal <= 60 && isHighCalorie) {
-      result.affectMeal = true;
-      result.advice = 'å°è‚šå­è¦ç•™ç»™æ­£é¤å“¦ï¼Œé¥­åå¯ä»¥å°ä¸€å°å£ï½';
-      result.level = 'æ©™è‰²æé†’';
-      return result;
-    }
-
-    // è§„åˆ™2ï¼šè·ä¸‹ä¸€é¤<30åˆ†é’Ÿ
-    if (diffToMeal > 0 && diffToMeal <= 30) {
-      result.affectMeal = true;
-      result.advice = 'é©¬ä¸Šè¦åƒé¥­å•¦ï¼Œå…ˆæ”¶èµ·æ¥ï¼Œåƒå®Œæ­£é¤å†å†³å®šè¦ä¸è¦åƒå§ï½';
-      result.level = 'æ©™è‰²æé†’';
-      return result;
-    }
-
-    // è§„åˆ™3ï¼š21:00åå«ç³–é£Ÿå“
-    if (currentHour >= 21 && isSweet) {
-      result.affectSleep = true;
-      result.advice = 'å·²ç»åˆ·è¿‡ç‰™äº†å§ï¼Ÿæ˜å¤©å†åƒä¼šæ›´ç”œå“¦ï½';
-      result.level = 'çº¢è‰²ç¦æ­¢';
-      return result;
-    }
-
-    // è§„åˆ™4ï¼šå«å’–å•¡å› +18:00å
-    if (currentHour >= 18 && isCaffeine) {
-      result.affectSleep = true;
-      result.advice = 'è¿™ä¸ªæœ‰ç‚¹æç¥ï¼Œæ™šä¸Šä¼šç¡ä¸ç€å“¦ï¼Œæ˜å¤©ä¸Šåˆå†å–å§ï½';
-      result.level = 'æ©™è‰²æé†’';
-      return result;
-    }
-
-    // è§„åˆ™5ï¼šè·ä¸‹ä¸€é¤1-2å°æ—¶
-    if (diffToMeal > 60 && diffToMeal <= 120 && (isSweet || isFat)) {
-      result.affectMeal = true;
-      result.advice = `è¿˜æœ‰${Math.round(diffToMeal / 60)}å°æ—¶åƒé¥­ï¼Œå…ˆå°‘åƒä¸€ç‚¹è§£è§£é¦‹ï¼Œç•™ç€è‚šå­åƒæ­£é¤å“¦ï½`;
-      result.level = 'é»„è‰²æ³¨æ„';
-      return result;
-    }
-
-    // è§„åˆ™6ï¼š21:00åé«˜è„‚/æ²¹ç‚¸
-    if (currentHour >= 21 && (isFat || isFried)) {
-      result.affectSleep = true;
-      result.advice = 'æ™šä¸Šåƒæ²¹è…»çš„è‚šå­ä¼šä¸èˆ’æœï¼Œæ˜å¤©å†åƒå¥½ä¸å¥½ï¼Ÿ';
-      result.level = 'æ©™è‰²æé†’';
-      return result;
-    }
-
-    // è§„åˆ™7ï¼š20:00åå«ç³–
-    if (currentHour >= 20 && isSweet) {
-      result.affectSleep = true;
-      result.advice = 'å·²ç»8ç‚¹å¤šäº†ï¼Œæ™šä¸Šåƒç”œçš„å®¹æ˜“å½±å“ç¡çœ ï¼Œæ˜å¤©ç™½å¤©å†åƒå§ï½';
-      result.level = 'é»„è‰²æ³¨æ„';
-      return result;
-    }
-
-    // æ— è§¦å‘
-    result.advice = 'è¿™ä¸ªæ—¶é—´åƒæ²¡é—®é¢˜ï¼Œè®°å¾—é€‚é‡å°±å¥½ï½';
-    result.level = 'ç»¿è‰²é€šè¡Œ';
-    return result;
-  }
-
-  /**
-   * è®¡ç®—å„¿ç«¥ä¿æŠ¤å»ºè®®ï¼ˆåŸæœ‰æ–¹æ³•ï¼Œå…¼å®¹æ—§è°ƒç”¨ï¼‰
-   */
-  calculate(
-    profile: FamilyProfile,
-    foodLabel: FoodLabel,
-    currentTime: Date,
-    mealTimes: MealTimeParams,
-    bedtime: string
-  ): ChildProtection {
-    const result = new ChildProtection();
-    result.memberId = profile.memberId;
-
-    if (!profile.isChild()) {
-      return result;
-    }
-
-    const foodName = foodLabel.foodName.toLowerCase();
-    const currentHour = currentTime.getHours();
-    const currentMin = currentTime.getMinutes();
-
-    result.mealProtection = this.checkMealProtection(foodName, foodLabel, currentHour, currentMin, mealTimes);
-    result.bedtimeProtection = this.checkBedtimeProtection(foodName, foodLabel, currentHour, currentMin, bedtime);
-    result.tasteProtection = this.checkTasteProtection(foodName, foodLabel);
-    result.counteractReminder = this.checkCounteractReminder(foodName, foodLabel);
-
-    return result;
-  }
-
-  private checkMealProtection(
-    foodName: string,
-    foodLabel: FoodLabel,
-    currentHour: number,
-    currentMin: number,
-    mealTimes: MealTimeParams
-  ): string {
-    const isHighSugarSnack = HIGH_SUGAR_SNACKS.some(s => foodName.includes(s)) || foodLabel.isHighSugar();
-    const isHighFatSnack = HIGH_FAT_SNACKS.some(s => foodName.includes(s)) || foodLabel.isHighFat();
-
-    if (!isHighSugarSnack && !isHighFatSnack) {
-      return '';
-    }
-
-    const currentMinutes = currentHour * 60 + currentMin;
-    const meals: MealInfo[] = [];
-    const breakfastMeal = new MealInfo();
-    breakfastMeal.name = 'æ—©é¤';
-    breakfastMeal.time = mealTimes.breakfast;
-    meals.push(breakfastMeal);
-    const lunchMeal = new MealInfo();
-    lunchMeal.name = 'åˆé¤';
-    lunchMeal.time = mealTimes.lunch;
-    meals.push(lunchMeal);
-    const dinnerMeal = new MealInfo();
-    dinnerMeal.name = 'æ™šé¤';
-    dinnerMeal.time = mealTimes.dinner;
-    meals.push(dinnerMeal);
-
-    for (const meal of meals) {
-      const parts = meal.time.split(':');
-      const mealH = Number(parts[0]);
-      const mealM = Number(parts[1]);
-      const mealMinutes = mealH * 60 + mealM;
-      const diffMin = mealMinutes - currentMinutes;
-
-      if (diffMin > 0 && diffMin <= 120) {
-        if (diffMin <= 60) {
-          if (isHighSugarSnack && isHighFatSnack) {
-            return `å¿«åƒ${meal.name}äº†ï¼Œè¿™ä¸ªåˆç”œåˆæ²¹çš„é›¶é£Ÿå¯èƒ½ä¼šè®©å®å®ä¸æƒ³å¥½å¥½åƒé¥­ï¼Œå’±ä»¬é¥­åå½“å°å¥–åŠ±å†åƒå¥½ä¸å¥½ï¼Ÿ`;
-          }
-          if (isHighSugarSnack) {
-            return `é©¬ä¸Šè¦åƒ${meal.name}äº†ï¼Œç°åœ¨åƒç”œçš„å®¹æ˜“å½±å“èƒƒå£ï¼Œåƒå®Œé¥­å†å°ä¸€å°å£å§ï½`;
-          }
-          return `è·ç¦»${meal.name}ä¸åˆ°1å°æ—¶ï¼Œè¿™ä¸ªé›¶é£Ÿå¯èƒ½ä¼šå½±å“æ­£é¤é£Ÿæ¬²ï¼Œå»ºè®®å…ˆä¸åƒæˆ–åªå°‘é‡å°è¯•`;
-        } else {
-          if (isHighSugarSnack) {
-            return `è¿˜æœ‰${Math.round(diffMin / 60)}å°æ—¶åƒ${meal.name}ï¼Œç°åœ¨åƒç”œçš„å¯èƒ½ä¼šå½±å“åƒé¥­ï¼Œå…ˆå°‘åƒä¸€ç‚¹è§£è§£é¦‹å°±å¥½ï½`;
-          }
-          return `è·ç¦»${meal.name}çº¦${Math.round(diffMin / 60)}å°æ—¶ï¼Œå¯èƒ½å½±å“æ­£é¤é£Ÿæ¬²ï¼Œå»ºè®®æ§åˆ¶ä»½é‡`;
-        }
-      }
-    }
-    return '';
-  }
-
-  private checkBedtimeProtection(
-    foodName: string,
-    foodLabel: FoodLabel,
-    currentHour: number,
-    currentMin: number,
-    bedtime: string
-  ): string {
-    const isSweet = HIGH_SUGAR_SNACKS.some(s => foodName.includes(s)) || foodLabel.isHighSugar();
-    const isPuffed = foodName.includes('è†¨åŒ–') || foodName.includes('è–¯ç‰‡');
-    const isFried = FRIED_FOODS.some(s => foodName.includes(s)) || foodLabel.isHighFat();
-    const isCaffeine = CAFFEINE_DRINKS.some(s => foodName.includes(s));
-
-    if (currentHour >= 20) {
-      if (isSweet) {
-        return 'å·²ç»8ç‚¹å¤šäº†ï¼Œæ™šä¸Šåƒç”œçš„å®¹æ˜“å½±å“ç¡çœ å’Œç‰™é½¿å¥åº·ï¼Œæ˜å¤©ç™½å¤©å†åƒå¥½ä¸å¥½ï¼Ÿ';
-      }
-      if (isCaffeine) {
-        return 'è¿™ä¹ˆæ™šäº†å–å«å’–å•¡å› çš„ï¼Œå®å®æ™šä¸Šä¼šç¡ä¸ç€çš„ï¼Œæ˜å¤©å†å–å§ï½';
-      }
-      if (isFried) {
-        return 'æ™šä¸Šåƒæ²¹ç‚¸çš„ä¸å¥½æ¶ˆåŒ–ï¼Œè‚šå­èƒ€èƒ€çš„ç¡ä¸èˆ’æœï¼Œæ˜å¤©å†å°å§ï¼';
-      }
-    }
-
-    const parts = bedtime.split(':');
-    const bedH = Number(parts[0]);
-    const bedM = Number(parts[1]);
-    const currentMinutes = currentHour * 60 + currentMin;
-    const bedMinutes = bedH * 60 + bedM;
-    const diffMin = bedMinutes - currentMinutes;
-
-    if (diffMin > 0 && diffMin <= 60) {
-      if (isSweet) {
-        return 'å¿«åˆ°ç¡è§‰æ—¶é—´äº†ï¼Œç”œé£Ÿä¼šè®©å®å®å…´å¥‹ç¡ä¸ç€ï¼Œæ˜å¤©å†åƒå¥½ä¸å¥½ï¼Ÿ';
-      }
-      if (isPuffed) {
-        return 'ä¸´è¿‘ç¡å‰ï¼Œè†¨åŒ–é£Ÿå“ä¸å¥½æ¶ˆåŒ–ï¼Œè‚šå­ä¼šä¸èˆ’æœçš„ï½';
-      }
-      if (isFried) {
-        return 'å¿«ç¡è§‰äº†ï¼Œæ²¹ç‚¸é£Ÿå“ä¼šå¢åŠ æ¶ˆåŒ–è´Ÿæ‹…ï¼Œæ˜å¤©å†åƒå§ï¼';
-      }
-      if (isCaffeine) {
-        return 'ç¡å‰å–å«å’–å•¡å› çš„é¥®å“ä¼šå½±å“ç¡çœ è´¨é‡ï¼Œæ˜å¤©å†å–å§ï½';
-      }
-    }
-    return '';
-  }
-
-  private checkTasteProtection(foodName: string, foodLabel: FoodLabel): string {
-    const issues: string[] = [];
-    if (foodLabel.isHighSugar() || HIGH_SUGAR_SNACKS.some(s => foodName.includes(s))) {
-      issues.push('ç³–å«é‡åé«˜');
-    }
-    if (foodLabel.isHighSodium()) {
-      issues.push('é’ å«é‡åé«˜');
-    }
-    if (foodLabel.isHighFat() || HIGH_FAT_SNACKS.some(s => foodName.includes(s))) {
-      issues.push('è„‚è‚ªå«é‡åé«˜');
-    }
-    if (issues.length > 0) {
-      return `${issues.join('ã€')}ï¼Œä¸å»ºè®®ä½œä¸ºæ¯æ—¥å›ºå®šé›¶é£Ÿæˆ–é¥®å“`;
-    }
-    return '';
-  }
-
-  private checkCounteractReminder(foodName: string, foodLabel: FoodLabel): boolean {
-    const isSweetSnack = HIGH_SUGAR_SNACKS.some(s => foodName.includes(s)) || foodLabel.isHighSugar();
-    const isHighCalorie = foodLabel.isHighCalorie();
-    return isSweetSnack || isHighCalorie;
-  }
-}
-ÀÔrD‘¸../model/ChildProtectionÔrE—ªassertions¨external¢id¤meta±moduleSideEffectsªresolvedByµsyntheticNamedExportsAÂÙCE:\APP\family_food_app\entry\src\main\ets\model\ChildProtection.etsAÃªoh-resolveÂ“ÔrF–§version¤fileªsourceRoot§sources¥names¨mappings¸ChildProtectionEngine.js ‘¹ChildProtectionEngine.etsÜ ğ˜”   ” ”	 	” ” ”   ”: :”; ;’”  	 ” 	””   ” ” ” ‘”  ’” ” •” ” ” ” ”  ’” ” •” ” ” ”  ”! ’” ” •” ” ” ”  ”! ’” ” •” ” ” ” ” ’” ”" •” ” ” ” ” ’”  ” ‘” ’”   ” Ü  ”   ” ” ” $” %” )”! +”% /”' 1”+ 5”- 7”1 ;”3 =”7 ÌA”9 ÌC”= ÌG”? ÌI”ÌD ÌN”ÌF ÌP”ÌK ÌU”ÌM ÌW”ÌQ Ì[”ÌS Ì]”ÌX Ìb”ÌZ Ìd”Ì^ Ìh”Ì` Ìj”Ìd Ìn”Ìf Ìp”Ìj Ìt”Ìk Ìu”Ìl ÌvÜ ”   ” ” ” "” #” '” )”# -”% /”) 3”+ 5”/ 9”1 ;”5 ?”7 ÌA”; ÌE”< ÌF”= ÌGÜ ”   ” ” ” "” #” '” )”# -”% /”) 3”+ 5”1 ;”3 =”7 ÌA”9 ÌC”= ÌG”? ÌI”ÌC ÌM”ÌD ÌN”ÌE ÌOÜ ”   ” ” ” ” ” #” %” )”! +”% /”' 1”+ 5”- 7”1 ;”3 =”8 ÌB”9 ÌC”: ÌD””   ” ” ” ‘”  •”  ”  ”  ”   ”!  •” !” !” !” !” !•” "” "” "” "” "’” # ” #‘” #“”  % ” %” %‘” % •” &” &” &” &” &•” '” '” '” '” '’” ( ” (‘” (’”  * ” *””  , ” ,” ,”" ,"‘” -‘” 4œ” 5”
- 5” 5	” 5” 6”$ 6”& 7”* 7”, 8”7 8”9 9”ÌE 9˜” ;” ;
-” ;” ;” ;”* ;&”, ;(”- ;)˜” =” =” =” =” =”" =”, =(”. =*—” >” >” >” >” >”, >&”- >'”” ?” ?” ?” ?‘”	 Ì@˜” ÌB” ÌB
-” ÌB” ÌB” ÌB” ÌB”) ÌB%”* ÌB&™” ÌC” ÌC
-” ÌC” ÌC”' ÌC#”( ÌC$”0 ÌC,”2 ÌC.”3 ÌC/™” ÌD” ÌD
-” ÌD” ÌD”& ÌD"”' ÌD#”1 ÌD-”3 ÌD/”4 ÌD0š” ÌE” ÌE
-” ÌE” ÌE”* ÌE&”- ÌE)”/ ÌE+”2 ÌE.”< ÌE8”= ÌE9Ü ” ÌG” ÌG
-” ÌG” ÌG”) ÌG%”* ÌG&”. ÌG*”/ ÌG+”0 ÌG,”1 ÌG-”3 ÌG/”4 ÌG0”< ÌG8”= ÌG9”ÌE ÌGÌA”ÌF ÌGÌB”ÌG ÌGÌC”ÌH ÌGÌD”ÌI ÌGÌE”ÌM ÌGÌI”ÌQ ÌGÌM”ÌR ÌGÌN”ÌY ÌGÌU”Ì\ ÌGÌX”Ì^ ÌGÌZ”Ì_ ÌGÌ[Ü ” ÌH” ÌH
-” ÌH” ÌH”% ÌH!”& ÌH"”* ÌH&”+ ÌH'”, ÌH(”- ÌH)”/ ÌH+”0 ÌH,”8 ÌH4”9 ÌH5”ÌA ÌH=”ÌB ÌH>”ÌC ÌH?”ÌD ÌHÌ@”ÌE ÌHÌA”ÌI ÌHÌE”ÌM ÌHÌI”ÌN ÌHÌJ”ÌS ÌHÌO”ÌV ÌHÌR”ÌX ÌHÌT”ÌY ÌHÌUÜ ” ÌI” ÌI
-” ÌI” ÌI”* ÌI&”+ ÌI'”/ ÌI+”0 ÌI,”1 ÌI-”2 ÌI.”4 ÌI0”5 ÌI1”= ÌI9”> ÌI:”ÌF ÌIÌB”ÌG ÌIÌC”ÌH ÌIÌD”ÌI ÌIÌE”ÌJ ÌIÌF”ÌK ÌIÌGÜ ” ÌJ” ÌJ
-” ÌJ” ÌJ”# ÌJ”$ ÌJ ”( ÌJ$”) ÌJ%”* ÌJ&”+ ÌJ'”- ÌJ)”. ÌJ*”6 ÌJ2”7 ÌJ3”? ÌJ;”Ì@ ÌJ<”ÌA ÌJ=”ÌB ÌJ>”ÌC ÌJ?”ÌD ÌJÌ@š” ÌK” ÌK
-” ÌK” ÌK”" ÌK”# ÌK”, ÌK(”/ ÌK+”2 ÌK.”3 ÌK/’” ÌM” ÌMÜ ” ÌN” ÌN
-” ÌN” ÌN”( ÌN$”) ÌN%”1 ÌN-”3 ÌN/”6 ÌN2”8 ÌN4”; ÌN7”ÌG ÌNÌC”ÌH ÌNÌD”ÌR ÌNÌN”ÌT ÌNÌP”ÌU ÌNÌQ˜” ÌO” ÌO
-” ÌO” ÌO”& ÌO"”) ÌO%”7 ÌO3”8 ÌO4’” ÌQ”" ÌQœ” ÌR” ÌR” ÌR” ÌR” ÌR” ÌR”( ÌR$”, ÌR(”. ÌR*”2 ÌR.”? ÌR;”ÌA ÌR=—” ÌS” ÌS” ÌS” ÌS”  ÌS”$ ÌS”% ÌS—” ÌT” ÌT” ÌT” ÌT” ÌT”1 ÌT+”2 ÌT,—” ÌU” ÌU” ÌU” ÌU” ÌU”! ÌU”" ÌU”” ÌV” ÌV” ÌV” ÌV‘”	 ÌW’” ÌY” ÌYš” ÌZ” ÌZ” ÌZ” ÌZ” ÌZ” ÌZ”( ÌZ$”, ÌZ(”. ÌZ*”0 ÌZ,—” Ì[” Ì[” Ì[” Ì[”  Ì[”$ Ì[”% Ì[—” Ì\” Ì\” Ì\” Ì\” Ì\”7 Ì\1”8 Ì\2—” Ì]” Ì]” Ì]” Ì]” Ì]”! Ì]”" Ì]”” Ì^” Ì^” Ì^” Ì^‘”	 Ì_’” Ìa” Ìa˜” Ìb” Ìb” Ìb” Ìb” Ìb”! Ìb”( Ìb$”* Ìb&—” Ìc” Ìc” Ìc” Ìc”! Ìc”% Ìc”& Ìc —” Ìd” Ìd” Ìd” Ìd” Ìd”/ Ìd)”0 Ìd*—” Ìe” Ìe” Ìe” Ìe” Ìe”! Ìe”" Ìe”” Ìf” Ìf” Ìf” Ìf‘”	 Ìg’” Ìi” Ìi˜” Ìj” Ìj” Ìj” Ìj” Ìj”! Ìj”+ Ìj'”- Ìj)—” Ìk” Ìk” Ìk” Ìk”! Ìk”% Ìk”& Ìk —” Ìl” Ìl” Ìl” Ìl” Ìl”5 Ìl/”6 Ìl0—” Ìm” Ìm” Ìm” Ìm” Ìm”! Ìm”" Ìm”” Ìn” Ìn” Ìn” Ìn‘”	 Ìo’” Ìq” ÌqÜ ” Ìr” Ìr” Ìr” Ìr” Ìr” Ìr”) Ìr%”- Ìr)”0 Ìr,”4 Ìr0”5 Ìr1”< Ìr8”Ì@ Ìr<”ÌE ÌrÌA”ÌF ÌrÌB”ÌH ÌrÌD—” Ìs” Ìs” Ìs” Ìs”  Ìs”$ Ìs”% ÌsÜ ” Ìt” Ìt” Ìt” Ìt” Ìt”! Ìt”% Ìt”& Ìt ”+ Ìt%”, Ìt&”6 Ìt0”9 Ìt3”; Ìt5”< Ìt6”ÌU ÌtÌO”ÌV ÌtÌP—” Ìu” Ìu” Ìu” Ìu” Ìu”! Ìu”" Ìu”” Ìv” Ìv” Ìv” Ìv‘”	 Ìw’” Ìy” Ìyœ” Ìz” Ìz” Ìz” Ìz” Ìz”! Ìz”" Ìz”' Ìz#”+ Ìz'”2 Ìz.”3 Ìz/”5 Ìz1—” Ì{” Ì{” Ì{” Ì{”! Ì{”% Ì{”& Ì{ —” Ì|” Ì|” Ì|” Ì|” Ì|”3 Ì|-”4 Ì|.—” Ì}” Ì}” Ì}” Ì}” Ì}”! Ì}”" Ì}”” Ì~” Ì~” Ì~” Ì~‘”	 Ì’” Ì” Ì˜” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚”! Ì‚”( Ì‚$”* Ì‚&—” Ìƒ” Ìƒ” Ìƒ” Ìƒ”! Ìƒ”% Ìƒ”& Ìƒ —” Ì„” Ì„” Ì„” Ì„” Ì„”9 Ì„3”: Ì„4—” Ì…” Ì…” Ì…” Ì…” Ì…”! Ì…”" Ì…”” Ì†” Ì†” Ì†” Ì†‘”	 Ì‡’” Ì‰” Ì‰
-—” ÌŠ” ÌŠ
-” ÌŠ” ÌŠ” ÌŠ”* ÌŠ&”+ ÌŠ'—” Ì‹” Ì‹
-” Ì‹” Ì‹” Ì‹” Ì‹” Ì‹”” ÌŒ” ÌŒ” ÌŒ” ÌŒ’” Ì” Ì‘” Ì‘” Ì‘œ” Ì’” Ì’” Ì“” Ì“” Ì””  Ì””" Ì•”- Ì•”/ Ì–”8 Ì–”: Ì—”ÌA Ì—˜” Ì™” Ì™
-” Ì™” Ì™” Ì™”* Ì™&”, Ì™(”- Ì™)™” Ìš” Ìš
-” Ìš” Ìš” Ìš”! Ìš”" Ìš”* Ìš&”+ Ìš'˜” Ìœ” Ìœ” Ìœ	” Ìœ” Ìœ” Ìœ” Ìœ”  Ìœ”” Ì” Ì” Ì” Ì‘”	 Ì›” Ì ” Ì 
-” Ì ” Ì ”" Ì ”# Ì ”+ Ì '”, Ì (”7 Ì 3”9 Ì 5”: Ì 6™” Ì¡” Ì¡
-” Ì¡” Ì¡”' Ì¡#”( Ì¡$”0 Ì¡,”2 Ì¡.”3 Ì¡/™” Ì¢” Ì¢
-” Ì¢” Ì¢”& Ì¢"”' Ì¢#”1 Ì¢-”3 Ì¢/”4 Ì¢0Ü ” Ì¤” Ì¤
-” Ì¤” Ì¤”  Ì¤”$ Ì¤ ”% Ì¤!”8 Ì¤4”9 Ì¤5”ÌA Ì¤=”ÌC Ì¤?”ÌL Ì¤ÌH”ÌN Ì¤ÌJ”ÌY Ì¤ÌU”Ì[ Ì¤ÌW”Ìe Ì¤Ìa”Ìg Ì¤Ìc”Ìp Ì¤Ìl”Ìq Ì¤Ìm”Ìr Ì¤ÌnÜ ” Ì¥” Ì¥
-” Ì¥”  Ì¥”# Ì¥”' Ì¥#”( Ì¥$”> Ì¥:”? Ì¥;”ÌG Ì¥ÌC”ÌI Ì¥ÌE”ÌR Ì¥ÌN”ÌT Ì¥ÌP”Ì_ Ì¥Ì[”Ìa Ì¥Ì]”Ìk Ì¥Ìg”Ìm Ì¥Ìi”Ìt Ì¥Ìp”Ìu Ì¥Ìq”Ìv Ì¥Ìr” Ì¦” Ì¦
-” Ì¦” Ì¦”! Ì¦”% Ì¦!”& Ì¦"”: Ì¦6”; Ì¦7”ÌC Ì¦?”ÌE Ì¦ÌA”ÌN Ì¦ÌJ”ÌO Ì¦ÌK”ÌP Ì¦ÌL” Ì§” Ì§
-” Ì§”! Ì§”$ Ì§ ”( Ì§$”) Ì§%”Ì@ Ì§<”ÌA Ì§=”ÌI Ì§ÌE”ÌK Ì§ÌG”ÌT Ì§ÌP”ÌU Ì§ÌQ”ÌV Ì§ÌR”” Ì©” Ì©” Ì©” Ì©’” Ìª” Ìªœ” Ì¬
-” Ì¬” Ì­”  Ì­”" Ì®”+ Ì®”- Ì¯”8 Ì¯”: Ì°”ÌD Ì°”ÌF Ì±”ÌO Ì±Ü ” Ì³” Ì³
-” Ì³”! Ì³”2 Ì³.”3 Ì³/”7 Ì³3”8 Ì³4”9 Ì³5”: Ì³6”< Ì³8”= Ì³9”ÌE Ì³ÌA”ÌF Ì³ÌB”ÌN Ì³ÌJ”ÌO Ì³ÌK”ÌP Ì³ÌL”ÌQ Ì³ÌM”ÌR Ì³ÌN”ÌV Ì³ÌR”Ì_ Ì³Ì[”Ì` Ì³Ì\”Ìk Ì³Ìg”Ìm Ì³Ìi”Ìn Ì³ÌjÜ ” Ì´” Ì´
-” Ì´” Ì´”. Ì´*”/ Ì´+”3 Ì´/”4 Ì´0”5 Ì´1”6 Ì´2”8 Ì´4”9 Ì´5”ÌA Ì´=”ÌB Ì´>”ÌJ Ì´ÌF”ÌK Ì´ÌG”ÌL Ì´ÌH”ÌM Ì´ÌI”ÌN Ì´ÌJ”ÌR Ì´ÌN”Ì[ Ì´ÌW”Ì\ Ì´ÌX”Ìe Ì´Ìa”Ìg Ì´Ìc”Ìh Ì´Ìd˜” Ì¶” Ì¶” Ì¶	” Ì¶”! Ì¶”" Ì¶”0 Ì¶,”2 Ì¶.”” Ì·” Ì·” Ì·” Ì·‘”	 Ì¸š” Ìº” Ìº
-” Ìº” Ìº”* Ìº&”- Ìº)”/ Ìº+”2 Ìº.”< Ìº8”= Ìº9–” Ì»” Ì»
-” Ì»” Ì»” Ì» ” Ì»!˜” Ì¼” Ì¼
-” Ì¼” Ì¼”" Ì¼”* Ì¼&”, Ì¼(”- Ì¼)—” Ì½” Ì½” Ì½” Ì½” Ì½”! Ì½”" Ì½™” Ì¾” Ì¾” Ì¾” Ì¾” Ì¾”& Ì¾"”' Ì¾#”0 Ì¾,”1 Ì¾-˜” Ì¿” Ì¿	” Ì¿
-” Ì¿” Ì¿”  Ì¿”! Ì¿”" Ì¿˜” ÌÀ” ÌÀ
-” ÌÀ” ÌÀ” ÌÀ”& ÌÀ"”( ÌÀ$”) ÌÀ%—” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ™” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ”" ÌÂ”# ÌÂ”( ÌÂ$”) ÌÂ%˜” ÌÃ” ÌÃ	” ÌÃ
-” ÌÃ” ÌÃ” ÌÃ” ÌÃ” ÌÃ˜” ÌÄ” ÌÄ
-” ÌÄ” ÌÄ” ÌÄ”' ÌÄ#”) ÌÄ%”* ÌÄ&—” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅ™” ÌÆ” ÌÆ” ÌÆ” ÌÆ” ÌÆ”# ÌÆ”$ ÌÆ ”* ÌÆ&”+ ÌÆ'˜” ÌÇ” ÌÇ	” ÌÇ
-” ÌÇ” ÌÇ” ÌÇ” ÌÇ” ÌÇ—” ÌÉ” ÌÉ	” ÌÉ” ÌÉ” ÌÉ”  ÌÉ”" ÌÉ” ÌÊ” ÌÊ” ÌÊ” ÌÊ” ÌÊ” ÌÊ”# ÌÊ”$ ÌÊ”) ÌÊ#”* ÌÊ$”- ÌÊ'”. ÌÊ(”/ ÌÊ)œ” ÌË” ÌË” ÌË” ÌË”  ÌË”! ÌË”& ÌË ”' ÌË!”( ÌË"”) ÌË#”* ÌË$”+ ÌË%œ” ÌÌ” ÌÌ” ÌÌ” ÌÌ”  ÌÌ”! ÌÌ”& ÌÌ ”' ÌÌ!”( ÌÌ"”) ÌÌ#”* ÌÌ$”+ ÌÌ%š” ÌÍ” ÌÍ” ÌÍ”  ÌÍ”% ÌÍ”( ÌÍ"”* ÌÍ$”- ÌÍ'”2 ÌÍ,”3 ÌÍ-˜” ÌÎ” ÌÎ” ÌÎ” ÌÎ”' ÌÎ!”* ÌÎ$”8 ÌÎ2”9 ÌÎ3š” ÌĞ” ÌĞ
-” ÌĞ” ÌĞ” ÌĞ” ÌĞ”& ÌĞ ”* ÌĞ$”- ÌĞ'”/ ÌĞ)–” ÌÑ” ÌÑ” ÌÑ” ÌÑ”! ÌÑ”# ÌÑ–” ÌÒ
-” ÌÒ”( ÌÒ”, ÌÒ"”: ÌÒ0”< ÌÒ2˜” ÌÓ” ÌÓ”$ ÌÓ”( ÌÓ”) ÌÓ”- ÌÓ!”ÌU ÌÓÌI”ÌV ÌÓÌJ‘” ÌÔ”” ÌÕ
-” ÌÕ”( ÌÕ”* ÌÕ ˜” ÌÖ” ÌÖ”& ÌÖ”* ÌÖ”+ ÌÖ”/ ÌÖ#”ÌI ÌÖ=”ÌJ ÌÖ>‘” Ì×˜” ÌØ
-” ÌØ”  ÌØ”$ ÌØ”% ÌØ”) ÌØ”ÌJ ÌØÌ@”ÌK ÌØÌA‘” ÌÙ	‘” ÌÙ”” ÌÚ
-” ÌÚ”( ÌÚ”* ÌÚ Ü ” ÌÛ” ÌÛ”$ ÌÛ”( ÌÛ”) ÌÛ”. ÌÛ"”/ ÌÛ#”6 ÌÛ*”9 ÌÛ-”; ÌÛ/”< ÌÛ0”ÌB ÌÛ6”ÌF ÌÛ:”ÌG ÌÛ;”ÌK ÌÛ?”Ìf ÌÛÌZ”Ìg ÌÛÌ[‘” ÌÜÜ ” Ìİ
-” Ìİ”  Ìİ”$ Ìİ”% Ìİ”) Ìİ”- Ìİ#”1 Ìİ'”2 Ìİ(”7 Ìİ-”8 Ìİ.”? Ìİ5”ÌB Ìİ8”ÌD Ìİ:”ÌE Ìİ;”ÌY ÌİÌO”ÌZ ÌİÌP‘” ÌŞ	‘” Ìß‘”	 Ìà”” Ìá” Ìá” Ìá” Ìá’” Ìâ” Ìâœ” Ìä
-” Ìä ” Ìå”# Ìå”% Ìæ”. Ìæ”0 Ìç”; Ìç”= Ìè”ÌG Ìè”ÌI Ìé”ÌP ÌéÜ ” Ìë” Ìë
-” Ìë” Ìë”) Ìë%”* Ìë&”. Ìë*”/ Ìë+”0 Ìë,”1 Ìë-”3 Ìë/”4 Ìë0”< Ìë8”= Ìë9”ÌE ÌëÌA”ÌF ÌëÌB”ÌG ÌëÌC”ÌH ÌëÌD”ÌI ÌëÌE”ÌM ÌëÌI”ÌV ÌëÌR”ÌW ÌëÌS”Ìb ÌëÌ^”Ìd ÌëÌ`”Ìe ÌëÌaÜ ” Ìì” Ìì
-” Ìì” Ìì”! Ìì”" Ìì”* Ìì&”+ Ìì'”/ Ìì+”0 Ìì,”4 Ìì0”< Ìì8”= Ìì9”ÌE ÌìÌA”ÌF ÌìÌB”ÌJ ÌìÌF”ÌK ÌìÌG”ÌL ÌìÌHÜ ” Ìí” Ìí
-” Ìí” Ìí”# Ìí”$ Ìí ”( Ìí$”) Ìí%”* Ìí&”+ Ìí'”- Ìí)”. Ìí*”6 Ìí2”7 Ìí3”? Ìí;”Ì@ Ìí<”ÌA Ìí=”ÌB Ìí>”ÌC Ìí?”ÌG ÌíÌC”ÌP ÌíÌL”ÌQ ÌíÌM”ÌZ ÌíÌV”Ì\ ÌíÌX”Ì] ÌíÌYÜ ” Ìî” Ìî
-” Ìî” Ìî”* Ìî&”+ Ìî'”/ Ìî+”0 Ìî,”1 Ìî-”2 Ìî.”4 Ìî0”5 Ìî1”= Ìî9”> Ìî:”ÌF ÌîÌB”ÌG ÌîÌC”ÌH ÌîÌD”ÌI ÌîÌE”ÌJ ÌîÌF”ÌK ÌîÌG–” Ìğ” Ìğ” Ìğ” Ìğ” Ìğ” Ìğ”” Ìñ” Ìñ
-” Ìñ” Ìñ”” Ìò” Ìò”; Ìò3”< Ìò4‘” Ìó”” Ìô” Ìô
-” Ìô” Ìô”” Ìõ” Ìõ”4 Ìõ,”5 Ìõ-‘” Ìö”” Ì÷” Ì÷
-” Ì÷” Ì÷”” Ìø” Ìø”4 Ìø,”5 Ìø-‘” Ìù‘”	 Ìú›” Ìü” Ìü
-” Ìü” Ìü” Ìü” Ìü”# Ìü”$ Ìü ”' Ìü#”( Ìü$”) Ìü%œ” Ìı” Ìı
-” Ìı” Ìı” Ìı” Ìı”! Ìı”" Ìı”# Ìı”$ Ìı ”% Ìı!”& Ìı"œ” Ìş” Ìş
-” Ìş” Ìş” Ìş” Ìş”! Ìş”" Ìş”# Ìş”$ Ìş ”% Ìş!”& Ìş"š” Ìÿ” Ìÿ
-” Ìÿ” Ìÿ”* Ìÿ&”- Ìÿ)”/ Ìÿ+”2 Ìÿ.”< Ìÿ8”= Ìÿ9š” Í ” Í 
-” Í ” Í ” Í ”" Í ”$ Í  ”' Í #”+ Í '”, Í (˜” Í” Í
-” Í” Í”" Í”% Í!”3 Í/”4 Í0š” Í” Í” Í” Í” Í” Í”" Í”& Í"”( Í$”* Í&”” Í” Í
-” Í” Í”” Í” Í”5 Í-”6 Í.‘” Í”” Í” Í
-” Í” Í”” Í” Í”/ Í'”0 Í(‘” Í	”” Í
-” Í
-
-” Í
-” Í
-”” Í” Í”0 Í(”1 Í)‘” Í”” Í” Í
-” Í” Í”” Í” Í”1 Í)”2 Í*‘” Í‘”	 Í”” Í” Í” Í” Í’” Í” Í–” Í
-” Í” Í”! Í/”# Í1”, ÍÌE–” Í” Í
-” Í” Í” Í” Í Ü ” Í” Í” Í” Í”! Í”# Í”' Í#”8 Í4”9 Í5”= Í9”> Í:”? Í;”Ì@ Í<”ÌB Í>”ÌC Í?”ÌK ÍÌG”ÌL ÍÌH”ÌT ÍÌP”ÌU ÍÌQ”ÌV ÍÌR”ÌW ÍÌS”ÌX ÍÌT”ÌZ ÍÌV˜” Í” Í” Í” Í” Í” Í”  Í”! Í‘”	 Í—” Í” Í” Í” Í”" Í”$ Í ”& Í"˜” Í” Í” Í” Í” Í” Í”  Í”! Í‘”	 ÍÜ ” Í” Í” Í” Í” Í”! Í”% Í!”4 Í0”5 Í1”9 Í5”: Í6”; Í7”< Í8”> Í:”? Í;”ÌG ÍÌC”ÌH ÍÌD”ÌP ÍÌL”ÌQ ÍÌM”ÌR ÍÌN”ÌS ÍÌO”ÌT ÍÌP”ÌV ÍÌR˜” Í” Í” Í” Í” Í”  Í”! Í”" Í‘”	 Í˜” Í” Í” Í” Í” Í” Í” Í” Í›” Í ” Í ” Í ” Í ” Í ”! Í ”" Í ”% Í ”& Í  ”7 Í 1”8 Í 2‘”	 Í!”” Í"” Í"” Í"” Í"’” Í#” Í#–” Í%
-” Í%!” Í%"”$ Í%2”& Í%4”/ Í%ÌHÜ ” Í&” Í&
-” Í&” Í&”. Í&*”/ Í&+”3 Í&/”4 Í&0”5 Í&1”6 Í&2”8 Í&4”9 Í&5”ÌA Í&=”ÌB Í&>”ÌJ Í&ÌF”ÌK Í&ÌG”ÌL Í&ÌH”ÌM Í&ÌI”ÌN Í&ÌJ”ÌR Í&ÌN”Ì[ Í&ÌW”Ì\ Í&ÌX”Ìg Í&Ìc”Ìi Í&Ìe”Ìj Í&Ìf™” Í'” Í'
-” Í'” Í'”' Í'#”( Í'$”5 Í'1”7 Í'3”8 Í'4–” Í(” Í(” Í(” Í(”, Í((”- Í()’” Í)” Í)‘” Í*ÔrG–§version¤file§sources®sourcesContent¥names¨mappingsÀ‘À‘ÀÜ ñ‘”    ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”  	 ‘”  
- ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”    ‘”  ! ‘”  " ‘”  # ‘”  $ ‘”  % ‘”  & ‘”  ' ‘”  ( ‘”  ) ‘”  * ‘”  + ‘”  , ‘”  - ‘”  . ‘”  / ‘”  0 ‘”  1 ‘”  2 ‘”  3 ‘”  4 ‘”  5 ‘”  6 ‘”  7 ‘”  8 ‘”  9 ‘”  : ‘”  ; ‘”  < ‘”  = ‘”  > ‘”  ? ‘”  Ì@ ‘”  ÌA ‘”  ÌB ‘”  ÌC ‘”  ÌD ‘”  ÌE ‘”  ÌF ‘”  ÌG ‘”  ÌH ‘”  ÌI ‘”  ÌJ ‘”  ÌK ‘”  ÌL ‘”  ÌM ‘”  ÌN ‘”  ÌO ‘”  ÌP ‘”  ÌQ ‘”  ÌR ‘”  ÌS ‘”  ÌT ‘”  ÌU ‘”  ÌV ‘”  ÌW ‘”  ÌX ‘”  ÌY ‘”  ÌZ ‘”  Ì[ ‘”  Ì\ ‘”  Ì] ‘”  Ì^ ‘”  Ì_ ‘”  Ì` ‘”  Ìa ‘”  Ìb ‘”  Ìc ‘”  Ìd ‘”  Ìe ‘”  Ìf ‘”  Ìg ‘”  Ìh ‘”  Ìi ‘”  Ìj ‘”  Ìk ‘”  Ìl ‘”  Ìm ‘”  Ìn ‘”  Ìo ‘”  Ìp ‘”  Ìq ‘”  Ìr ‘”  Ìs ‘”  Ìt ‘”  Ìu ‘”  Ìv ‘”  Ìw ‘”  Ìx ‘”  Ìy ‘”  Ìz ‘”  Ì{ ‘”  Ì| ‘”  Ì} ‘”  Ì~ ‘”  Ì ‘”  Ì€ ‘”  Ì ‘”  Ì‚ ‘”  Ìƒ ‘”  Ì„ ‘”  Ì… ‘”  Ì† ‘”  Ì‡ ‘”  Ìˆ ‘”  Ì‰ ‘”  ÌŠ ‘”  Ì‹ ‘”  ÌŒ ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì‘ ‘”  Ì’ ‘”  Ì“ ‘”  Ì” ‘”  Ì• ‘”  Ì– ‘”  Ì— ‘”  Ì˜ ‘”  Ì™ ‘”  Ìš ‘”  Ì› ‘”  Ìœ ‘”  Ì ‘”  Ì ‘”  ÌŸ ‘”  Ì  ‘”  Ì¡ ‘”  Ì¢ ‘”  Ì£ ‘”  Ì¤ ‘”  Ì¥ ‘”  Ì¦ ‘”  Ì§ ‘”  Ì¨ ‘”  Ì© ‘”  Ìª ‘”  Ì« ‘”  Ì¬ ‘”  Ì­ ‘”  Ì® ‘”  Ì¯ ‘”  Ì° ‘”  Ì± ‘”  Ì² ‘”  Ì³ ‘”  Ì´ ‘”  Ìµ ‘”  Ì¶ ‘”  Ì· ‘”  Ì¸ ‘”  Ì¹ ‘”  Ìº ‘”  Ì» ‘”  Ì¼ ‘”  Ì½ ‘”  Ì¾ ‘”  Ì¿ ‘”  ÌÀ ‘”  ÌÁ ‘”  ÌÂ ‘”  ÌÃ ‘”  ÌÄ ‘”  ÌÅ ‘”  ÌÆ ‘”  ÌÇ ‘”  ÌÈ ‘”  ÌÉ ‘”  ÌÊ ‘”  ÌË ‘”  ÌÌ ‘”  ÌÍ ‘”  ÌÎ ‘”  ÌÏ ‘”  ÌĞ ‘”  ÌÑ ‘”  ÌÒ ‘”  ÌÓ ‘”  ÌÔ ‘”  ÌÕ ‘”  ÌÖ ‘”  Ì× ‘”  ÌØ ‘”  ÌÙ ‘”  ÌÚ ‘”  ÌÛ ‘”  ÌÜ ‘”  Ìİ ‘”  ÌŞ ‘”  Ìß ‘”  Ìà ‘”  Ìá ‘”  Ìâ ‘”  Ìã ‘”  Ìä ‘”  Ìå ‘”  Ìæ ‘”  Ìç ‘”  Ìè ‘”  Ìé ‘”  Ìê ‘”  Ìë ‘”  Ìì ‘”  Ìí ‘”  Ìî ‘”  Ìï ‘”  Ìğ ÔrH’§missing¦pluginÃ¦genAbcÂÔ  ÔrI”²dynamicImportCache¹exportAllDeclarationCache»exportNamedDeclarationCache«importCache“ÔrJ–¤type¥start£end«declarationªspecifiers¦source¶ExportNamedDeclarationÌRÍ¯ÔrK–¤type¥start£end¢idªsuperClass¤body°ClassDeclarationÌYÍ¯ÔrL”¤type¥start£end¤nameªIdentifierÌ_Ìn¯ChildMealAdviceÀÔrM”¤type¥start£end¤body©ClassBodyÌoÍ¯‘ÔrN˜¤type¥start£end¦static¨computed£key¤kind¥value°MethodDefinitionÌvÍ¬ÂÂLªIdentifierÌvÌ«constructor«constructorÔrO™¤type¥start£end¢idªexpression©generator¥async¦params¤body²FunctionExpressionÌÍ¬ÀÂÂÂM®BlockStatementÌ„Í¬•ÔrP”¤type¥start£endªexpression³ExpressionStatementÌ¦Ì¾ÔrQ–¤type¥start£end¨operator¤left¥right´AssignmentExpressionÌ¦Ì½¡=ÔrR—¤type¥start£end¦object¨property¨computed¨optional°MemberExpressionÌ¦ÌµÔrS“¤type¥start£end®ThisExpressionÌ¦ÌªLªIdentifierÌ«ÌµªaffectMealÂÂÔrT•¤type¥start£end¥value£raw§LiteralÌ¸Ì½Â¥falseP³ExpressionStatementÌßÌøQ´AssignmentExpressionÌßÌ÷¡=R°MemberExpressionÌßÌïS®ThisExpressionÌßÌãLªIdentifierÌäÌï«affectSleepÂÂT§LiteralÌòÌ÷Â¥falseP³ExpressionStatementÍÍ2Q´AssignmentExpressionÍÍ1¡=R°MemberExpressionÍÍ-S®ThisExpressionÍÍLªIdentifierÍÍ-¯sweetCountTodayÂÂT§LiteralÍ0Í1 ¡0P³ExpressionStatementÍRÍcQ´AssignmentExpressionÍRÍb¡=R°MemberExpressionÍRÍ]S®ThisExpressionÍRÍVLªIdentifierÍWÍ]¦adviceÂÂT§LiteralÍ`Íb ¢''P³ExpressionStatementÍ‘Í¥Q´AssignmentExpressionÍ‘Í¤¡=R°MemberExpressionÍ‘Í›S®ThisExpressionÍ‘Í•LªIdentifierÍ–Í›¥levelÂÂT§LiteralÍÍ¤¬ç»¿è‰²é€šè¡Œ®'ç»¿è‰²é€šè¡Œ'ÀJ¶ExportNamedDeclarationÍôÍ’K°ClassDeclarationÍûÍ’LªIdentifierÍÍ®MealTimeParamsÀM©ClassBodyÍÍ’‘N°MethodDefinitionÍÍÂÂLªIdentifierÍÍ"«constructor«constructorO²FunctionExpressionÍ"ÍÀÂÂÂM®BlockStatementÍ%Í“P³ExpressionStatementÍ0ÍIQ´AssignmentExpressionÍ0ÍH¡=R°MemberExpressionÍ0Í>S®ThisExpressionÍ0Í4LªIdentifierÍ5Í>©breakfastÂÂT§LiteralÍAÍH¥07:30§'07:30'P³ExpressionStatementÍSÍhQ´AssignmentExpressionÍSÍg¡=R°MemberExpressionÍSÍ]S®ThisExpressionÍSÍWLªIdentifierÍXÍ]¥lunchÂÂT§LiteralÍ`Íg¥12:00§'12:00'P³ExpressionStatementÍrÍˆQ´AssignmentExpressionÍrÍ‡¡=R°MemberExpressionÍrÍ}S®ThisExpressionÍrÍvLªIdentifierÍwÍ}¦dinnerÂÂT§LiteralÍ€Í‡¥18:00§'18:00'ÀJ¶ExportNamedDeclarationÍ
-Í%~K°ClassDeclarationÍÍ%~LªIdentifierÍÍ,µChildProtectionEngineÀM©ClassBodyÍ-Í%~–N°MethodDefinitionÍùÍ|ÃÂLªIdentifierÍ Í²getChildMealAdvice¦methodO²FunctionExpressionÍÍ|ÀÂÂÂ”LªIdentifierÍÍ¦memberLªIdentifierÍÍ¤foodLªIdentifierÍ!Í,«currentTimeLªIdentifierÍ.Í:¬nextMealTimeM®BlockStatementÍ<Í|Ü ÔrU•¤type¥start£end¬declarations¤kind³VariableDeclarationÍGÍl‘ÔrV•¤type¥start£end¢id¤init²VariableDeclaratorÍMÍkLªIdentifierÍMÍS¦resultÔrW•¤type¥start£end¦callee©arguments­NewExpressionÍVÍkLªIdentifierÍZÍi¯ChildMealAdvice¥constÔrX–¤type¥start£end¤testªconsequent©alternate«IfStatementÍvÍóÔrY–¤type¥start£end¤left¨operator¥right°BinaryExpressionÍzÍšR°MemberExpressionÍzÍ‹LªIdentifierÍzÍ€¦memberLªIdentifierÍÍ‹ªhealthGoalÂÂ£!==T§LiteralÍÍš¨childrenª'children'M®BlockStatementÍœÍó’P³ExpressionStatementÍ«ÍÌQ´AssignmentExpressionÍ«ÍË¡=R°MemberExpressionÍ«Í¸LªIdentifierÍ«Í±¦resultLªIdentifierÍ²Í¸¦adviceÂÂT§LiteralÍ»ÍËÙ*éå„¿ç«¥æˆå‘˜ï¼Œæ— éœ€å„¿ç«¥ä¿æŠ¤å»ºè®®Ù,'éå„¿ç«¥æˆå‘˜ï¼Œæ— éœ€å„¿ç«¥ä¿æŠ¤å»ºè®®'ÔrZ”¤type¥start£end¨argument¯ReturnStatementÍÚÍèLªIdentifierÍáÍç¦resultÀU³VariableDeclarationÍıÍ‘V²VariableDeclaratorÍÍLªIdentifierÍÍ¨foodNameR°MemberExpressionÍÍLªIdentifierÍÍ¤foodLªIdentifierÍÍ«productNameÂÂ¥constU³VariableDeclarationÍ)ÍT‘V²VariableDeclaratorÍ/ÍSLªIdentifierÍ/Í:«currentHourÔr[–¤type¥start£end¦callee©arguments¨optional®CallExpressionÍ=ÍSR°MemberExpressionÍ=ÍQLªIdentifierÍ=ÍH«currentTimeLªIdentifierÍIÍQ¨getHoursÂÂÂ¥constU³VariableDeclarationÍ^ÍŠ‘V²VariableDeclaratorÍdÍ‰LªIdentifierÍdÍnªcurrentMin[®CallExpressionÍqÍ‰R°MemberExpressionÍqÍ‡LªIdentifierÍqÍ|«currentTimeLªIdentifierÍ}Í‡ªgetMinutesÂÂÂ¥constU³VariableDeclarationÍ”ÍÉ‘V²VariableDeclaratorÍšÍÈLªIdentifierÍšÍ¨®currentMinutesY°BinaryExpressionÍ«ÍÈY°BinaryExpressionÍ«Í»LªIdentifierÍ«Í¶«currentHour¡*T§LiteralÍ¹Í»<¢60¡+LªIdentifierÍ¾ÍÈªcurrentMin¥constU³VariableDeclarationÍÓÍ*‘V²VariableDeclaratorÍÙÍ)LªIdentifierÍÙÍà§isSweetY±LogicalExpressionÍãÍ)[®CallExpressionÍãÍR°MemberExpressionÍãÍùLªIdentifierÍãÍô±HIGH_SUGAR_SNACKSLªIdentifierÍõÍù¤someÂÂ‘O·ArrowFunctionExpressionÍúÍÀÃÂÂ‘LªIdentifierÍúÍû¡s[®CallExpressionÍÿÍR°MemberExpressionÍÿÍLªIdentifierÍÿÍ¨foodNameLªIdentifierÍÍ¨includesÂÂ‘LªIdentifierÍÍ¡sÂÂ¢||Y°BinaryExpressionÍÍ)R°MemberExpressionÍÍ$LªIdentifierÍÍ¤foodLªIdentifierÍÍ$§sugar_gÂÂ¡>T§LiteralÍ'Í)
-¢10¥constU³VariableDeclarationÍ4Í…‘V²VariableDeclaratorÍ:Í„LªIdentifierÍ:Í?¥isFatY±LogicalExpressionÍBÍ„[®CallExpressionÍBÍqR°MemberExpressionÍBÍVLªIdentifierÍBÍQ¯HIGH_FAT_SNACKSLªIdentifierÍRÍV¤someÂÂ‘O·ArrowFunctionExpressionÍWÍpÀÃÂÂ‘LªIdentifierÍWÍX¡s[®CallExpressionÍ\ÍpR°MemberExpressionÍ\ÍmLªIdentifierÍ\Íd¨foodNameLªIdentifierÍeÍm¨includesÂÂ‘LªIdentifierÍnÍo¡sÂÂ¢||Y°BinaryExpressionÍuÍ„R°MemberExpressionÍuÍLªIdentifierÍuÍy¤foodLªIdentifierÍzÍ¥fat_gÂÂ¡>T§LiteralÍ‚Í„¢15¥constU³VariableDeclarationÍÍÒ‘V²VariableDeclaratorÍ•ÍÑLªIdentifierÍ•ÍŸªisCaffeine[®CallExpressionÍ¢ÍÑR°MemberExpressionÍ¢Í¶LªIdentifierÍ¢Í±¯CAFFEINE_DRINKSLªIdentifierÍ²Í¶¤someÂÂ‘O·ArrowFunctionExpressionÍ·ÍĞÀÃÂÂ‘LªIdentifierÍ·Í¸¡s[®CallExpressionÍ¼ÍĞR°MemberExpressionÍ¼ÍÍLªIdentifierÍ¼ÍÄ¨foodNameLªIdentifierÍÅÍÍ¨includesÂÂ‘LªIdentifierÍÎÍÏ¡sÂÂ¥constU³VariableDeclarationÍÜÍ‘V²VariableDeclaratorÍâÍLªIdentifierÍâÍé§isFried[®CallExpressionÍìÍR°MemberExpressionÍìÍüLªIdentifierÍìÍ÷«FRIED_FOODSLªIdentifierÍøÍü¤someÂÂ‘O·ArrowFunctionExpressionÍıÍÀÃÂÂ‘LªIdentifierÍıÍş¡s[®CallExpressionÍÍR°MemberExpressionÍÍLªIdentifierÍÍ
-¨foodNameLªIdentifierÍÍ¨includesÂÂ‘LªIdentifierÍÍ¡sÂÂ¥constU³VariableDeclarationÍ"ÍM‘V²VariableDeclaratorÍ(ÍLLªIdentifierÍ(Í5­isHighCalorieY°BinaryExpressionÍ8ÍLR°MemberExpressionÍ8ÍFLªIdentifierÍ8Í<¤foodLªIdentifierÍ=ÍF©energy_kjÂÂ¡>T§LiteralÍIÍLÍ£400¥constU³VariableDeclarationÍmÍº‘V²VariableDeclaratorÍsÍ¹LªIdentifierÍsÍ~«nextMinutesY°BinaryExpressionÍÍ¹Y°BinaryExpressionÍÍ[®CallExpressionÍÍ˜R°MemberExpressionÍÍ–LªIdentifierÍÍ¬nextMealTimeLªIdentifierÍÍ–¨getHoursÂÂÂ¡*T§LiteralÍ›Í<¢60¡+[®CallExpressionÍ Í¹R°MemberExpressionÍ Í·LªIdentifierÍ Í¬¬nextMealTimeLªIdentifierÍ­Í·ªgetMinutesÂÂÂ¥constU³VariableDeclarationÍÄÍô‘V²VariableDeclaratorÍÊÍóLªIdentifierÍÊÍÔªdiffToMealY°BinaryExpressionÍ×ÍóLªIdentifierÍ×Íâ«nextMinutes¡-LªIdentifierÍåÍó®currentMinutes¥constX«IfStatementÍ	"Í
-Y±LogicalExpressionÍ	&Í	YY±LogicalExpressionÍ	&Í	HY°BinaryExpressionÍ	&Í	4LªIdentifierÍ	&Í	0ªdiffToMeal¡>T§LiteralÍ	3Í	4 ¡0¢&&Y°BinaryExpressionÍ	8Í	HLªIdentifierÍ	8Í	BªdiffToMeal¢<=T§LiteralÍ	FÍ	H<¢60¢&&LªIdentifierÍ	LÍ	Y­isHighCalorieM®BlockStatementÍ	[Í
-”P³ExpressionStatementÍ	jÍ	ƒQ´AssignmentExpressionÍ	jÍ	‚¡=R°MemberExpressionÍ	jÍ	{LªIdentifierÍ	jÍ	p¦resultLªIdentifierÍ	qÍ	{ªaffectMealÂÂT§LiteralÍ	~Í	‚Ã¤trueP³ExpressionStatementÍ	‘Í	·Q´AssignmentExpressionÍ	‘Í	¶¡=R°MemberExpressionÍ	‘Í	LªIdentifierÍ	‘Í	—¦resultLªIdentifierÍ	˜Í	¦adviceÂÂT§LiteralÍ	¡Í	¶Ù9å°è‚šå­è¦ç•™ç»™æ­£é¤å“¦ï¼Œé¥­åå¯ä»¥å°ä¸€å°å£ï½Ù;'å°è‚šå­è¦ç•™ç»™æ­£é¤å“¦ï¼Œé¥­åå¯ä»¥å°ä¸€å°å£ï½'P³ExpressionStatementÍ	ÅÍ	ÛQ´AssignmentExpressionÍ	ÅÍ	Ú¡=R°MemberExpressionÍ	ÅÍ	ÑLªIdentifierÍ	ÅÍ	Ë¦resultLªIdentifierÍ	ÌÍ	Ñ¥levelÂÂT§LiteralÍ	ÔÍ	Ú¬æ©™è‰²æé†’®'æ©™è‰²æé†’'Z¯ReturnStatementÍ	éÍ	÷LªIdentifierÍ	ğÍ	ö¦resultÀX«IfStatementÍ
-&Í
-ûY±LogicalExpressionÍ
-*Í
-LY°BinaryExpressionÍ
-*Í
-8LªIdentifierÍ
-*Í
-4ªdiffToMeal¡>T§LiteralÍ
-7Í
-8 ¡0¢&&Y°BinaryExpressionÍ
-<Í
-LLªIdentifierÍ
-<Í
-FªdiffToMeal¢<=T§LiteralÍ
-JÍ
-L¢30M®BlockStatementÍ
-NÍ
-û”P³ExpressionStatementÍ
-]Í
-vQ´AssignmentExpressionÍ
-]Í
-u¡=R°MemberExpressionÍ
-]Í
-nLªIdentifierÍ
-]Í
-c¦resultLªIdentifierÍ
-dÍ
-nªaffectMealÂÂT§LiteralÍ
-qÍ
-uÃ¤trueP³ExpressionStatementÍ
-„Í
-°Q´AssignmentExpressionÍ
-„Í
-¯¡=R°MemberExpressionÍ
-„Í
-‘LªIdentifierÍ
-„Í
-Š¦resultLªIdentifierÍ
-‹Í
-‘¦adviceÂÂT§LiteralÍ
-”Í
-¯ÙKé©¬ä¸Šè¦åƒé¥­å•¦ï¼Œå…ˆæ”¶èµ·æ¥ï¼Œåƒå®Œæ­£é¤å†å†³å®šè¦ä¸è¦åƒå§ï½ÙM'é©¬ä¸Šè¦åƒé¥­å•¦ï¼Œå…ˆæ”¶èµ·æ¥ï¼Œåƒå®Œæ­£é¤å†å†³å®šè¦ä¸è¦åƒå§ï½'P³ExpressionStatementÍ
-¾Í
-ÔQ´AssignmentExpressionÍ
-¾Í
-Ó¡=R°MemberExpressionÍ
-¾Í
-ÊLªIdentifierÍ
-¾Í
-Ä¦resultLªIdentifierÍ
-ÅÍ
-Ê¥levelÂÂT§LiteralÍ
-ÍÍ
-Ó¬æ©™è‰²æé†’®'æ©™è‰²æé†’'Z¯ReturnStatementÍ
-âÍ
-ğLªIdentifierÍ
-éÍ
-ï¦resultÀX«IfStatementÍ ÍèY±LogicalExpressionÍ$Í@Y°BinaryExpressionÍ$Í5LªIdentifierÍ$Í/«currentHour¢>=T§LiteralÍ3Í5¢21¢&&LªIdentifierÍ9Í@§isSweetM®BlockStatementÍBÍè”P³ExpressionStatementÍQÍkQ´AssignmentExpressionÍQÍj¡=R°MemberExpressionÍQÍcLªIdentifierÍQÍW¦resultLªIdentifierÍXÍc«affectSleepÂÂT§LiteralÍfÍjÃ¤trueP³ExpressionStatementÍyÍQ´AssignmentExpressionÍyÍœ¡=R°MemberExpressionÍyÍ†LªIdentifierÍyÍ¦resultLªIdentifierÍ€Í†¦adviceÂÂT§LiteralÍ‰ÍœÙ3å·²ç»åˆ·è¿‡ç‰™äº†å§ï¼Ÿæ˜å¤©å†åƒä¼šæ›´ç”œå“¦ï½Ù5'å·²ç»åˆ·è¿‡ç‰™äº†å§ï¼Ÿæ˜å¤©å†åƒä¼šæ›´ç”œå“¦ï½'P³ExpressionStatementÍ«ÍÁQ´AssignmentExpressionÍ«ÍÀ¡=R°MemberExpressionÍ«Í·LªIdentifierÍ«Í±¦resultLªIdentifierÍ²Í·¥levelÂÂT§LiteralÍºÍÀ¬çº¢è‰²ç¦æ­¢®'çº¢è‰²ç¦æ­¢'Z¯ReturnStatementÍÏÍİLªIdentifierÍÖÍÜ¦resultÀX«IfStatementÍÍßY±LogicalExpressionÍÍ1Y°BinaryExpressionÍÍ#LªIdentifierÍÍ«currentHour¢>=T§LiteralÍ!Í#¢18¢&&LªIdentifierÍ'Í1ªisCaffeineM®BlockStatementÍ3Íß”P³ExpressionStatementÍBÍ\Q´AssignmentExpressionÍBÍ[¡=R°MemberExpressionÍBÍTLªIdentifierÍBÍH¦resultLªIdentifierÍIÍT«affectSleepÂÂT§LiteralÍWÍ[Ã¤trueP³ExpressionStatementÍjÍ”Q´AssignmentExpressionÍjÍ“¡=R°MemberExpressionÍjÍwLªIdentifierÍjÍp¦resultLªIdentifierÍqÍw¦adviceÂÂT§LiteralÍzÍ“ÙEè¿™ä¸ªæœ‰ç‚¹æç¥ï¼Œæ™šä¸Šä¼šç¡ä¸ç€å“¦ï¼Œæ˜å¤©ä¸Šåˆå†å–å§ï½ÙG'è¿™ä¸ªæœ‰ç‚¹æç¥ï¼Œæ™šä¸Šä¼šç¡ä¸ç€å“¦ï¼Œæ˜å¤©ä¸Šåˆå†å–å§ï½'P³ExpressionStatementÍ¢Í¸Q´AssignmentExpressionÍ¢Í·¡=R°MemberExpressionÍ¢Í®LªIdentifierÍ¢Í¨¦resultLªIdentifierÍ©Í®¥levelÂÂT§LiteralÍ±Í·¬æ©™è‰²æé†’®'æ©™è‰²æé†’'Z¯ReturnStatementÍÆÍÔLªIdentifierÍÍÍÓ¦resultÀX«IfStatementÍÍY±LogicalExpressionÍÍAY±LogicalExpressionÍÍ+Y°BinaryExpressionÍÍLªIdentifierÍÍªdiffToMeal¡>T§LiteralÍÍ<¢60¢&&Y°BinaryExpressionÍÍ+LªIdentifierÍÍ$ªdiffToMeal¢<=T§LiteralÍ(Í+Ìx£120¢&&Y±LogicalExpressionÍ0Í@LªIdentifierÍ0Í7§isSweet¢||LªIdentifierÍ;Í@¥isFatM®BlockStatementÍCÍ”P³ExpressionStatementÍRÍkQ´AssignmentExpressionÍRÍj¡=R°MemberExpressionÍRÍcLªIdentifierÍRÍX¦resultLªIdentifierÍYÍcªaffectMealÂÂT§LiteralÍfÍjÃ¤trueP³ExpressionStatementÍyÍÃQ´AssignmentExpressionÍyÍÂ¡=R°MemberExpressionÍyÍ†LªIdentifierÍyÍ¦resultLªIdentifierÍ€Í†¦adviceÂÂÔr\•¤type¥start£end«expressions¦quasis¯TemplateLiteralÍ‰ÍÂ‘[®CallExpressionÍÍ©R°MemberExpressionÍÍ˜LªIdentifierÍÍ’¤MathLªIdentifierÍ“Í˜¥roundÂÂ‘Y°BinaryExpressionÍ™Í¨LªIdentifierÍ™Í£ªdiffToMeal¡/T§LiteralÍ¦Í¨<¢60Â’Ôr]•¤type¥start£end¥value¤tail¯TemplateElementÍŠÍŒÔr^’£raw¦cooked¦è¿˜æœ‰¦è¿˜æœ‰Â]¯TemplateElementÍªÍÁ^ÙEå°æ—¶åƒé¥­ï¼Œå…ˆå°‘åƒä¸€ç‚¹è§£è§£é¦‹ï¼Œç•™ç€è‚šå­åƒæ­£é¤å“¦ï½ÙEå°æ—¶åƒé¥­ï¼Œå…ˆå°‘åƒä¸€ç‚¹è§£è§£é¦‹ï¼Œç•™ç€è‚šå­åƒæ­£é¤å“¦ï½ÃP³ExpressionStatementÍÑÍçQ´AssignmentExpressionÍÑÍæ¡=R°MemberExpressionÍÑÍİLªIdentifierÍÑÍ×¦resultLªIdentifierÍØÍİ¥levelÂÂT§LiteralÍàÍæ¬é»„è‰²æ³¨æ„®'é»„è‰²æ³¨æ„'Z¯ReturnStatementÍõÍLªIdentifierÍüÍ¦resultÀX«IfStatementÍ4ÍY±LogicalExpressionÍ8Í_Y°BinaryExpressionÍ8ÍILªIdentifierÍ8ÍC«currentHour¢>=T§LiteralÍGÍI¢21¢&&Y±LogicalExpressionÍNÍ^LªIdentifierÍNÍS¥isFat¢||LªIdentifierÍWÍ^§isFriedM®BlockStatementÍaÍ”P³ExpressionStatementÍpÍŠQ´AssignmentExpressionÍpÍ‰¡=R°MemberExpressionÍpÍ‚LªIdentifierÍpÍv¦resultLªIdentifierÍwÍ‚«affectSleepÂÂT§LiteralÍ…Í‰Ã¤trueP³ExpressionStatementÍ˜ÍÀQ´AssignmentExpressionÍ˜Í¿¡=R°MemberExpressionÍ˜Í¥LªIdentifierÍ˜Í¦resultLªIdentifierÍŸÍ¥¦adviceÂÂT§LiteralÍ¨Í¿Ù?æ™šä¸Šåƒæ²¹è…»çš„è‚šå­ä¼šä¸èˆ’æœï¼Œæ˜å¤©å†åƒå¥½ä¸å¥½ï¼ŸÙA'æ™šä¸Šåƒæ²¹è…»çš„è‚šå­ä¼šä¸èˆ’æœï¼Œæ˜å¤©å†åƒå¥½ä¸å¥½ï¼Ÿ'P³ExpressionStatementÍÎÍäQ´AssignmentExpressionÍÎÍã¡=R°MemberExpressionÍÎÍÚLªIdentifierÍÎÍÔ¦resultLªIdentifierÍÕÍÚ¥levelÂÂT§LiteralÍİÍã¬æ©™è‰²æé†’®'æ©™è‰²æé†’'Z¯ReturnStatementÍòÍ LªIdentifierÍùÍÿ¦resultÀX«IfStatementÍ.Í Y±LogicalExpressionÍ2ÍNY°BinaryExpressionÍ2ÍCLªIdentifierÍ2Í=«currentHour¢>=T§LiteralÍAÍC¢20¢&&LªIdentifierÍGÍN§isSweetM®BlockStatementÍPÍ ”P³ExpressionStatementÍ_ÍyQ´AssignmentExpressionÍ_Íx¡=R°MemberExpressionÍ_ÍqLªIdentifierÍ_Íe¦resultLªIdentifierÍfÍq«affectSleepÂÂT§LiteralÍtÍxÃ¤trueP³ExpressionStatementÍ‡ÍµQ´AssignmentExpressionÍ‡Í´¡=R°MemberExpressionÍ‡Í”LªIdentifierÍ‡Í¦resultLªIdentifierÍÍ”¦adviceÂÂT§LiteralÍ—Í´ÙOå·²ç»8ç‚¹å¤šäº†ï¼Œæ™šä¸Šåƒç”œçš„å®¹æ˜“å½±å“ç¡çœ ï¼Œæ˜å¤©ç™½å¤©å†åƒå§ï½ÙQ'å·²ç»8ç‚¹å¤šäº†ï¼Œæ™šä¸Šåƒç”œçš„å®¹æ˜“å½±å“ç¡çœ ï¼Œæ˜å¤©ç™½å¤©å†åƒå§ï½'P³ExpressionStatementÍÃÍÙQ´AssignmentExpressionÍÃÍØ¡=R°MemberExpressionÍÃÍÏLªIdentifierÍÃÍÉ¦resultLªIdentifierÍÊÍÏ¥levelÂÂT§LiteralÍÒÍØ¬é»„è‰²æ³¨æ„®'é»„è‰²æ³¨æ„'Z¯ReturnStatementÍçÍõLªIdentifierÍîÍô¦resultÀP³ExpressionStatementÍÍ=Q´AssignmentExpressionÍÍ<¡=R°MemberExpressionÍÍ'LªIdentifierÍÍ ¦resultLªIdentifierÍ!Í'¦adviceÂÂT§LiteralÍ*Í<Ù0è¿™ä¸ªæ—¶é—´åƒæ²¡é—®é¢˜ï¼Œè®°å¾—é€‚é‡å°±å¥½ï½Ù2'è¿™ä¸ªæ—¶é—´åƒæ²¡é—®é¢˜ï¼Œè®°å¾—é€‚é‡å°±å¥½ï½'P³ExpressionStatementÍGÍ]Q´AssignmentExpressionÍGÍ\¡=R°MemberExpressionÍGÍSLªIdentifierÍGÍM¦resultLªIdentifierÍNÍS¥levelÂÂT§LiteralÍVÍ\¬ç»¿è‰²é€šè¡Œ®'ç»¿è‰²é€šè¡Œ'Z¯ReturnStatementÍgÍuLªIdentifierÍnÍt¦resultN°MethodDefinitionÍ±ÍóÂÂLªIdentifierÍ±Íº©calculate¦methodO²FunctionExpressionÍºÍóÀÂÂÂ•LªIdentifierÍ»ÍÂ§profileLªIdentifierÍÄÍÍ©foodLabelLªIdentifierÍÏÍÚ«currentTimeLªIdentifierÍÜÍå©mealTimesLªIdentifierÍçÍî§bedtimeM®BlockStatementÍğÍó›U³VariableDeclarationÍûÍ ‘V²VariableDeclaratorÍÍLªIdentifierÍÍ¦resultW­NewExpressionÍ
-ÍLªIdentifierÍÍ¯ChildProtection¥constP³ExpressionStatementÍ*ÍMQ´AssignmentExpressionÍ*ÍL¡=R°MemberExpressionÍ*Í9LªIdentifierÍ*Í0¦resultLªIdentifierÍ1Í9¨memberIdÂÂR°MemberExpressionÍ<ÍLLªIdentifierÍ<ÍC§profileLªIdentifierÍDÍL¨memberIdÂÂX«IfStatementÍWÍ—Ôr_–¤type¥start£end¨operator¦prefix¨argument¯UnaryExpressionÍ[Ím¡!Ã[®CallExpressionÍ\ÍmR°MemberExpressionÍ\ÍkLªIdentifierÍ\Íc§profileLªIdentifierÍdÍk§isChildÂÂÂM®BlockStatementÍoÍ—‘Z¯ReturnStatementÍ~ÍŒLªIdentifierÍ…Í‹¦resultÀU³VariableDeclarationÍ¡ÍÓ‘V²VariableDeclaratorÍ§ÍÒLªIdentifierÍ§Í¯¨foodName[®CallExpressionÍ²ÍÒR°MemberExpressionÍ²ÍĞR°MemberExpressionÍ²ÍÄLªIdentifierÍ²Í»©foodLabelLªIdentifierÍ¼ÍÄ¨foodNameÂÂLªIdentifierÍÅÍĞ«toLowerCaseÂÂÂ¥constU³VariableDeclarationÍİÍ‘V²VariableDeclaratorÍãÍLªIdentifierÍãÍî«currentHour[®CallExpressionÍñÍR°MemberExpressionÍñÍLªIdentifierÍñÍü«currentTimeLªIdentifierÍıÍ¨getHoursÂÂÂ¥constU³VariableDeclarationÍÍ>‘V²VariableDeclaratorÍÍ=LªIdentifierÍÍ"ªcurrentMin[®CallExpressionÍ%Í=R°MemberExpressionÍ%Í;LªIdentifierÍ%Í0«currentTimeLªIdentifierÍ1Í;ªgetMinutesÂÂÂ¥constP³ExpressionStatementÍHÍ²Q´AssignmentExpressionÍHÍ±¡=R°MemberExpressionÍHÍ]LªIdentifierÍHÍN¦resultLªIdentifierÍOÍ]®mealProtectionÂÂ[®CallExpressionÍ`Í±R°MemberExpressionÍ`ÍxS®ThisExpressionÍ`ÍdLªIdentifierÍeÍx³checkMealProtectionÂÂ•LªIdentifierÍyÍ¨foodNameLªIdentifierÍƒÍŒ©foodLabelLªIdentifierÍÍ™«currentHourLªIdentifierÍ›Í¥ªcurrentMinLªIdentifierÍ§Í°©mealTimesÂP³ExpressionStatementÍ¼Í*Q´AssignmentExpressionÍ¼Í)¡=R°MemberExpressionÍ¼ÍÔLªIdentifierÍ¼ÍÂ¦resultLªIdentifierÍÃÍÔ±bedtimeProtectionÂÂ[®CallExpressionÍ×Í)R°MemberExpressionÍ×ÍòS®ThisExpressionÍ×ÍÛLªIdentifierÍÜÍò¶checkBedtimeProtectionÂÂ•LªIdentifierÍóÍû¨foodNameLªIdentifierÍıÍ©foodLabelLªIdentifierÍÍ«currentHourLªIdentifierÍÍªcurrentMinLªIdentifierÍ!Í(§bedtimeÂP³ExpressionStatementÍ4Í|Q´AssignmentExpressionÍ4Í{¡=R°MemberExpressionÍ4ÍJLªIdentifierÍ4Í:¦resultLªIdentifierÍ;ÍJ¯tasteProtectionÂÂ[®CallExpressionÍMÍ{R°MemberExpressionÍMÍfS®ThisExpressionÍMÍQLªIdentifierÍRÍf´checkTasteProtectionÂÂ’LªIdentifierÍgÍo¨foodNameLªIdentifierÍqÍz©foodLabelÂP³ExpressionStatementÍ†ÍÔQ´AssignmentExpressionÍ†ÍÓ¡=R°MemberExpressionÍ†ÍŸLªIdentifierÍ†ÍŒ¦resultLªIdentifierÍÍŸ²counteractReminderÂÂ[®CallExpressionÍ¢ÍÓR°MemberExpressionÍ¢Í¾S®ThisExpressionÍ¢Í¦LªIdentifierÍ§Í¾·checkCounteractReminderÂÂ’LªIdentifierÍ¿ÍÇ¨foodNameLªIdentifierÍÉÍÒ©foodLabelÂZ¯ReturnStatementÍŞÍìLªIdentifierÍåÍë¦resultN°MethodDefinitionÍùÍ-ÂÂLªIdentifierÍùÍ³checkMealProtection¦methodO²FunctionExpressionÍÍ-ÀÂÂÂ•LªIdentifierÍÍ¨foodNameLªIdentifierÍÍ ©foodLabelLªIdentifierÍ"Í-«currentHourLªIdentifierÍ/Í9ªcurrentMinLªIdentifierÍ;ÍD©mealTimesM®BlockStatementÍFÍ-Ü U³VariableDeclarationÍQÍ·‘V²VariableDeclaratorÍWÍ¶LªIdentifierÍWÍg°isHighSugarSnackY±LogicalExpressionÍjÍ¶[®CallExpressionÍjÍ›R°MemberExpressionÍjÍ€LªIdentifierÍjÍ{±HIGH_SUGAR_SNACKSLªIdentifierÍ|Í€¤someÂÂ‘O·ArrowFunctionExpressionÍÍšÀÃÂÂ‘LªIdentifierÍÍ‚¡s[®CallExpressionÍ†ÍšR°MemberExpressionÍ†Í—LªIdentifierÍ†Í¨foodNameLªIdentifierÍÍ—¨includesÂÂ‘LªIdentifierÍ˜Í™¡sÂÂ¢||[®CallExpressionÍŸÍ¶R°MemberExpressionÍŸÍ´LªIdentifierÍŸÍ¨©foodLabelLªIdentifierÍ©Í´«isHighSugarÂÂÂ¥constU³VariableDeclarationÍÁÍ!‘V²VariableDeclaratorÍÇÍ LªIdentifierÍÇÍÕ®isHighFatSnackY±LogicalExpressionÍØÍ [®CallExpressionÍØÍR°MemberExpressionÍØÍìLªIdentifierÍØÍç¯HIGH_FAT_SNACKSLªIdentifierÍèÍì¤someÂÂ‘O·ArrowFunctionExpressionÍíÍÀÃÂÂ‘LªIdentifierÍíÍî¡s[®CallExpressionÍòÍR°MemberExpressionÍòÍLªIdentifierÍòÍú¨foodNameLªIdentifierÍûÍ¨includesÂÂ‘LªIdentifierÍÍ¡sÂÂ¢||[®CallExpressionÍÍ R°MemberExpressionÍÍLªIdentifierÍÍ©foodLabelLªIdentifierÍÍ©isHighFatÂÂÂ¥constX«IfStatementÍ+ÍyY±LogicalExpressionÍ/ÍS_¯UnaryExpressionÍ/Í@¡!ÃLªIdentifierÍ0Í@°isHighSugarSnack¢&&_¯UnaryExpressionÍDÍS¡!ÃLªIdentifierÍEÍS®isHighFatSnackM®BlockStatementÍUÍy‘Z¯ReturnStatementÍdÍnT§LiteralÍkÍm ¢''ÀU³VariableDeclarationÍƒÍ¸‘V²VariableDeclaratorÍ‰Í·LªIdentifierÍ‰Í—®currentMinutesY°BinaryExpressionÍšÍ·Y°BinaryExpressionÍšÍªLªIdentifierÍšÍ¥«currentHour¡*T§LiteralÍ¨Íª<¢60¡+LªIdentifierÍ­Í·ªcurrentMin¥constU³VariableDeclarationÍÂÍÓ‘V²VariableDeclaratorÍÈÍÒLªIdentifierÍÈÍÍ¥mealsÔr`”¤type¥start£end¨elements¯ArrayExpressionÍĞÍÒ¥constU³VariableDeclarationÍİÍ‘V²VariableDeclaratorÍãÍLªIdentifierÍãÍğ­breakfastMealW­NewExpressionÍóÍLªIdentifierÍ÷Íÿ¨MealInfo¥constP³ExpressionStatementÍÍ&Q´AssignmentExpressionÍÍ%¡=R°MemberExpressionÍÍLªIdentifierÍÍ­breakfastMealLªIdentifierÍÍ¤nameÂÂT§LiteralÍ!Í%¦æ—©é¤¨'æ—©é¤'P³ExpressionStatementÍ0ÍYQ´AssignmentExpressionÍ0ÍX¡=R°MemberExpressionÍ0ÍBLªIdentifierÍ0Í=­breakfastMealLªIdentifierÍ>ÍB¤timeÂÂR°MemberExpressionÍEÍXLªIdentifierÍEÍN©mealTimesLªIdentifierÍOÍX©breakfastÂÂP³ExpressionStatementÍcÍ}[®CallExpressionÍcÍ|R°MemberExpressionÍcÍmLªIdentifierÍcÍh¥mealsLªIdentifierÍiÍm¤pushÂÂ‘LªIdentifierÍnÍ{­breakfastMealÂU³VariableDeclarationÍ‡Í¨‘V²VariableDeclaratorÍÍ§LªIdentifierÍÍ–©lunchMealW­NewExpressionÍ™Í§LªIdentifierÍÍ¥¨MealInfo¥constP³ExpressionStatementÍ²ÍÈQ´AssignmentExpressionÍ²ÍÇ¡=R°MemberExpressionÍ²ÍÀLªIdentifierÍ²Í»©lunchMealLªIdentifierÍ¼ÍÀ¤nameÂÂT§LiteralÍÃÍÇ¦åˆé¤¨'åˆé¤'P³ExpressionStatementÍÒÍóQ´AssignmentExpressionÍÒÍò¡=R°MemberExpressionÍÒÍàLªIdentifierÍÒÍÛ©lunchMealLªIdentifierÍÜÍà¤timeÂÂR°MemberExpressionÍãÍòLªIdentifierÍãÍì©mealTimesLªIdentifierÍíÍò¥lunchÂÂP³ExpressionStatementÍıÍ[®CallExpressionÍıÍR°MemberExpressionÍıÍLªIdentifierÍıÍ¥mealsLªIdentifierÍÍ¤pushÂÂ‘LªIdentifierÍÍ©lunchMealÂU³VariableDeclarationÍÍ?‘V²VariableDeclaratorÍ#Í>LªIdentifierÍ#Í-ªdinnerMealW­NewExpressionÍ0Í>LªIdentifierÍ4Í<¨MealInfo¥constP³ExpressionStatementÍIÍ`Q´AssignmentExpressionÍIÍ_¡=R°MemberExpressionÍIÍXLªIdentifierÍIÍSªdinnerMealLªIdentifierÍTÍX¤nameÂÂT§LiteralÍ[Í_¦æ™šé¤¨'æ™šé¤'P³ExpressionStatementÍjÍQ´AssignmentExpressionÍjÍŒ¡=R°MemberExpressionÍjÍyLªIdentifierÍjÍtªdinnerMealLªIdentifierÍuÍy¤timeÂÂR°MemberExpressionÍ|ÍŒLªIdentifierÍ|Í…©mealTimesLªIdentifierÍ†ÍŒ¦dinnerÂÂP³ExpressionStatementÍ—Í®[®CallExpressionÍ—Í­R°MemberExpressionÍ—Í¡LªIdentifierÍ—Íœ¥mealsLªIdentifierÍÍ¡¤pushÂÂ‘LªIdentifierÍ¢Í¬ªdinnerMealÂÔra—¤type¥start£end¥await¤left¥right¤body®ForOfStatementÍ¸ÍÂU³VariableDeclarationÍ½ÍÇ‘V²VariableDeclaratorÍÃÍÇLªIdentifierÍÃÍÇ¤mealÀ¥constLªIdentifierÍËÍĞ¥mealsM®BlockStatementÍÒÍ–U³VariableDeclarationÍáÍ‘V²VariableDeclaratorÍçÍLªIdentifierÍçÍì¥parts[®CallExpressionÍïÍR°MemberExpressionÍïÍşR°MemberExpressionÍïÍøLªIdentifierÍïÍó¤mealLªIdentifierÍôÍø¤timeÂÂLªIdentifierÍùÍş¥splitÂÂ‘T§LiteralÍÿÍ¡:£':'Â¥constU³VariableDeclarationÍÍ1‘V²VariableDeclaratorÍÍ0LªIdentifierÍÍ¥mealH[®CallExpressionÍ Í0LªIdentifierÍ Í&¦Number‘R°MemberExpressionÍ'Í/LªIdentifierÍ'Í,¥partsT§LiteralÍ-Í. ¡0ÃÂÂ¥constU³VariableDeclarationÍ?Í^‘V²VariableDeclaratorÍEÍ]LªIdentifierÍEÍJ¥mealM[®CallExpressionÍMÍ]LªIdentifierÍMÍS¦Number‘R°MemberExpressionÍTÍ\LªIdentifierÍTÍY¥partsT§LiteralÍZÍ[¡1ÃÂÂ¥constU³VariableDeclarationÍlÍ“‘V²VariableDeclaratorÍrÍ’LªIdentifierÍrÍ}«mealMinutesY°BinaryExpressionÍ€Í’Y°BinaryExpressionÍ€ÍŠLªIdentifierÍ€Í…¥mealH¡*T§LiteralÍˆÍŠ<¢60¡+LªIdentifierÍÍ’¥mealM¥constU³VariableDeclarationÍ¡ÍÎ‘V²VariableDeclaratorÍ§ÍÍLªIdentifierÍ§Í®§diffMinY°BinaryExpressionÍ±ÍÍLªIdentifierÍ±Í¼«mealMinutes¡-LªIdentifierÍ¿ÍÍ®currentMinutes¥constX«IfStatementÍÜÍY±LogicalExpressionÍàÍıY°BinaryExpressionÍàÍëLªIdentifierÍàÍç§diffMin¡>T§LiteralÍêÍë ¡0¢&&Y°BinaryExpressionÍïÍıLªIdentifierÍïÍö§diffMin¢<=T§LiteralÍúÍıÌx£120M®BlockStatementÍÿÍ‘X«IfStatementÍÍøY°BinaryExpressionÍÍ#LªIdentifierÍÍ§diffMin¢<=T§LiteralÍ!Í#<¢60M®BlockStatementÍ%ÍÄ“X«IfStatementÍ<ÍÔY±LogicalExpressionÍ@ÍbLªIdentifierÍ@ÍP°isHighSugarSnack¢&&LªIdentifierÍTÍb®isHighFatSnackM®BlockStatementÍdÍÔ‘Z¯ReturnStatementÍÍ½\¯TemplateLiteralÍ†Í¼‘R°MemberExpressionÍ‹Í”LªIdentifierÍ‹Í¤mealLªIdentifierÍÍ”¤nameÂÂ’]¯TemplateElementÍ‡Í‰^¦å¿«åƒ¦å¿«åƒÂ]¯TemplateElementÍ•Í»^Ùräº†ï¼Œè¿™ä¸ªåˆç”œåˆæ²¹çš„é›¶é£Ÿå¯èƒ½ä¼šè®©å®å®ä¸æƒ³å¥½å¥½åƒé¥­ï¼Œå’±ä»¬é¥­åå½“å°å¥–åŠ±å†åƒå¥½ä¸å¥½ï¼ŸÙräº†ï¼Œè¿™ä¸ªåˆç”œåˆæ²¹çš„é›¶é£Ÿå¯èƒ½ä¼šè®©å®å®ä¸æƒ³å¥½å¥½åƒé¥­ï¼Œå’±ä»¬é¥­åå½“å°å¥–åŠ±å†åƒå¥½ä¸å¥½ï¼ŸÃÀX«IfStatementÍêÍdLªIdentifierÍîÍş°isHighSugarSnackM®BlockStatementÍ Íd‘Z¯ReturnStatementÍÍM\¯TemplateLiteralÍ"ÍL‘R°MemberExpressionÍ)Í2LªIdentifierÍ)Í-¤mealLªIdentifierÍ.Í2¤nameÂÂ’]¯TemplateElementÍ#Í'^¬é©¬ä¸Šè¦åƒ¬é©¬ä¸Šè¦åƒÂ]¯TemplateElementÍ3ÍK^ÙHäº†ï¼Œç°åœ¨åƒç”œçš„å®¹æ˜“å½±å“èƒƒå£ï¼Œåƒå®Œé¥­å†å°ä¸€å°å£å§ï½ÙHäº†ï¼Œç°åœ¨åƒç”œçš„å®¹æ˜“å½±å“èƒƒå£ï¼Œåƒå®Œé¥­å†å°ä¸€å°å£å§ï½ÃÀZ¯ReturnStatementÍzÍ±\¯TemplateLiteralÍÍ°‘R°MemberExpressionÍ†ÍLªIdentifierÍ†ÍŠ¤mealLªIdentifierÍ‹Í¤nameÂÂ’]¯TemplateElementÍ‚Í„^¦è·ç¦»¦è·ç¦»Â]¯TemplateElementÍÍ¯^Ù[ä¸åˆ°1å°æ—¶ï¼Œè¿™ä¸ªé›¶é£Ÿå¯èƒ½ä¼šå½±å“æ­£é¤é£Ÿæ¬²ï¼Œå»ºè®®å…ˆä¸åƒæˆ–åªå°‘é‡å°è¯•Ù[ä¸åˆ°1å°æ—¶ï¼Œè¿™ä¸ªé›¶é£Ÿå¯èƒ½ä¼šå½±å“æ­£é¤é£Ÿæ¬²ï¼Œå»ºè®®å…ˆä¸åƒæˆ–åªå°‘é‡å°è¯•ÃM®BlockStatementÍÛÍø’X«IfStatementÍòÍ‰LªIdentifierÍöÍ°isHighSugarSnackM®BlockStatementÍÍ‰‘Z¯ReturnStatementÍ#Ír\¯TemplateLiteralÍ*Íq’[®CallExpressionÍ/ÍGR°MemberExpressionÍ/Í9LªIdentifierÍ/Í3¤MathLªIdentifierÍ4Í9¥roundÂÂ‘Y°BinaryExpressionÍ:ÍFLªIdentifierÍ:ÍA§diffMin¡/T§LiteralÍDÍF<¢60ÂR°MemberExpressionÍMÍVLªIdentifierÍMÍQ¤mealLªIdentifierÍRÍV¤nameÂÂ“]¯TemplateElementÍ+Í-^¦è¿˜æœ‰¦è¿˜æœ‰Â]¯TemplateElementÍHÍK^©å°æ—¶åƒ©å°æ—¶åƒÂ]¯TemplateElementÍWÍp^ÙKï¼Œç°åœ¨åƒç”œçš„å¯èƒ½ä¼šå½±å“åƒé¥­ï¼Œå…ˆå°‘åƒä¸€ç‚¹è§£è§£é¦‹å°±å¥½ï½ÙKï¼Œç°åœ¨åƒç”œçš„å¯èƒ½ä¼šå½±å“åƒé¥­ï¼Œå…ˆå°‘åƒä¸€ç‚¹è§£è§£é¦‹å°±å¥½ï½ÃÀZ¯ReturnStatementÍŸÍå\¯TemplateLiteralÍ¦Íä’R°MemberExpressionÍ«Í´LªIdentifierÍ«Í¯¤mealLªIdentifierÍ°Í´¤nameÂÂ[®CallExpressionÍ¸ÍĞR°MemberExpressionÍ¸ÍÂLªIdentifierÍ¸Í¼¤MathLªIdentifierÍ½ÍÂ¥roundÂÂ‘Y°BinaryExpressionÍÃÍÏLªIdentifierÍÃÍÊ§diffMin¡/T§LiteralÍÍÍÏ<¢60Â“]¯TemplateElementÍ§Í©^¦è·ç¦»¦è·ç¦»Â]¯TemplateElementÍµÍ¶^£çº¦£çº¦Â]¯TemplateElementÍÑÍã^Ù6å°æ—¶ï¼Œå¯èƒ½å½±å“æ­£é¤é£Ÿæ¬²ï¼Œå»ºè®®æ§åˆ¶ä»½é‡Ù6å°æ—¶ï¼Œå¯èƒ½å½±å“æ­£é¤é£Ÿæ¬²ï¼Œå»ºè®®æ§åˆ¶ä»½é‡ÃÀZ¯ReturnStatementÍÍ&T§LiteralÍ#Í% ¢''N°MethodDefinitionÍ3Í"2ÂÂLªIdentifierÍ3ÍI¶checkBedtimeProtection¦methodO²FunctionExpressionÍIÍ"2ÀÂÂÂ•LªIdentifierÍJÍR¨foodNameLªIdentifierÍTÍ]©foodLabelLªIdentifierÍ_Íj«currentHourLªIdentifierÍlÍvªcurrentMinLªIdentifierÍxÍ§bedtimeM®BlockStatementÍÍ"2U³VariableDeclarationÍŒÍé‘V²VariableDeclaratorÍ’ÍèLªIdentifierÍ’Í™§isSweetY±LogicalExpressionÍœÍè[®CallExpressionÍœÍÍR°MemberExpressionÍœÍ²LªIdentifierÍœÍ­±HIGH_SUGAR_SNACKSLªIdentifierÍ®Í²¤someÂÂ‘O·ArrowFunctionExpressionÍ³ÍÌÀÃÂÂ‘LªIdentifierÍ³Í´¡s[®CallExpressionÍ¸ÍÌR°MemberExpressionÍ¸ÍÉLªIdentifierÍ¸ÍÀ¨foodNameLªIdentifierÍÁÍÉ¨includesÂÂ‘LªIdentifierÍÊÍË¡sÂÂ¢||[®CallExpressionÍÑÍèR°MemberExpressionÍÑÍæLªIdentifierÍÑÍÚ©foodLabelLªIdentifierÍÛÍæ«isHighSugarÂÂÂ¥constU³VariableDeclarationÍóÍ7‘V²VariableDeclaratorÍùÍ6LªIdentifierÍùÍ¨isPuffedY±LogicalExpressionÍÍ6[®CallExpressionÍÍR°MemberExpressionÍÍLªIdentifierÍÍ¨foodNameLªIdentifierÍÍ¨includesÂÂ‘T§LiteralÍÍ¦è†¨åŒ–¨'è†¨åŒ–'Â¢||[®CallExpressionÍÍ6R°MemberExpressionÍÍ0LªIdentifierÍÍ'¨foodNameLªIdentifierÍ(Í0¨includesÂÂ‘T§LiteralÍ1Í5¦è–¯ç‰‡¨'è–¯ç‰‡'Â¥constU³VariableDeclarationÍAÍ–‘V²VariableDeclaratorÍGÍ•LªIdentifierÍGÍN§isFriedY±LogicalExpressionÍQÍ•[®CallExpressionÍQÍ|R°MemberExpressionÍQÍaLªIdentifierÍQÍ\«FRIED_FOODSLªIdentifierÍ]Ía¤someÂÂ‘O·ArrowFunctionExpressionÍbÍ{ÀÃÂÂ‘LªIdentifierÍbÍc¡s[®CallExpressionÍgÍ{R°MemberExpressionÍgÍxLªIdentifierÍgÍo¨foodNameLªIdentifierÍpÍx¨includesÂÂ‘LªIdentifierÍyÍz¡sÂÂ¢||[®CallExpressionÍ€Í•R°MemberExpressionÍ€Í“LªIdentifierÍ€Í‰©foodLabelLªIdentifierÍŠÍ“©isHighFatÂÂÂ¥constU³VariableDeclarationÍ Íã‘V²VariableDeclaratorÍ¦ÍâLªIdentifierÍ¦Í°ªisCaffeine[®CallExpressionÍ³ÍâR°MemberExpressionÍ³ÍÇLªIdentifierÍ³ÍÂ¯CAFFEINE_DRINKSLªIdentifierÍÃÍÇ¤someÂÂ‘O·ArrowFunctionExpressionÍÈÍáÀÃÂÂ‘LªIdentifierÍÈÍÉ¡s[®CallExpressionÍÍÍáR°MemberExpressionÍÍÍŞLªIdentifierÍÍÍÕ¨foodNameLªIdentifierÍÖÍŞ¨includesÂÂ‘LªIdentifierÍßÍà¡sÂÂ¥constX«IfStatementÍíÍ@Y°BinaryExpressionÍñÍLªIdentifierÍñÍü«currentHour¢>=T§LiteralÍ Í¢20M®BlockStatementÍÍ@“X«IfStatementÍÍnLªIdentifierÍÍ§isSweetM®BlockStatementÍ Ín‘Z¯ReturnStatementÍ3Í_T§LiteralÍ:Í^Ùdå·²ç»8ç‚¹å¤šäº†ï¼Œæ™šä¸Šåƒç”œçš„å®¹æ˜“å½±å“ç¡çœ å’Œç‰™é½¿å¥åº·ï¼Œæ˜å¤©ç™½å¤©å†åƒå¥½ä¸å¥½ï¼ŸÙf'å·²ç»8ç‚¹å¤šäº†ï¼Œæ™šä¸Šåƒç”œçš„å®¹æ˜“å½±å“ç¡çœ å’Œç‰™é½¿å¥åº·ï¼Œæ˜å¤©ç™½å¤©å†åƒå¥½ä¸å¥½ï¼Ÿ'ÀX«IfStatementÍ|ÍÓLªIdentifierÍ€ÍŠªisCaffeineM®BlockStatementÍŒÍÓ‘Z¯ReturnStatementÍŸÍÄT§LiteralÍ¦ÍÃÙQè¿™ä¹ˆæ™šäº†å–å«å’–å•¡å› çš„ï¼Œå®å®æ™šä¸Šä¼šç¡ä¸ç€çš„ï¼Œæ˜å¤©å†å–å§ï½ÙS'è¿™ä¹ˆæ™šäº†å–å«å’–å•¡å› çš„ï¼Œå®å®æ™šä¸Šä¼šç¡ä¸ç€çš„ï¼Œæ˜å¤©å†å–å§ï½'ÀX«IfStatementÍáÍ5LªIdentifierÍåÍì§isFriedM®BlockStatementÍîÍ5‘Z¯ReturnStatementÍÍ&T§LiteralÍÍ%ÙQæ™šä¸Šåƒæ²¹ç‚¸çš„ä¸å¥½æ¶ˆåŒ–ï¼Œè‚šå­èƒ€èƒ€çš„ç¡ä¸èˆ’æœï¼Œæ˜å¤©å†å°å§ï¼ÙS'æ™šä¸Šåƒæ²¹ç‚¸çš„ä¸å¥½æ¶ˆåŒ–ï¼Œè‚šå­èƒ€èƒ€çš„ç¡ä¸èˆ’æœï¼Œæ˜å¤©å†å°å§ï¼'ÀÀU³VariableDeclarationÍJÍk‘V²VariableDeclaratorÍPÍjLªIdentifierÍPÍU¥parts[®CallExpressionÍXÍjR°MemberExpressionÍXÍeLªIdentifierÍXÍ_§bedtimeLªIdentifierÍ`Íe¥splitÂÂ‘T§LiteralÍfÍi¡:£':'Â¥constU³VariableDeclarationÍuÍ“‘V²VariableDeclaratorÍ{Í’LªIdentifierÍ{Í¤bedH[®CallExpressionÍ‚Í’LªIdentifierÍ‚Íˆ¦Number‘R°MemberExpressionÍ‰Í‘LªIdentifierÍ‰Í¥partsT§LiteralÍÍ ¡0ÃÂÂ¥constU³VariableDeclarationÍÍ»‘V²VariableDeclaratorÍ£ÍºLªIdentifierÍ£Í§¤bedM[®CallExpressionÍªÍºLªIdentifierÍªÍ°¦Number‘R°MemberExpressionÍ±Í¹LªIdentifierÍ±Í¶¥partsT§LiteralÍ·Í¸¡1ÃÂÂ¥constU³VariableDeclarationÍÅÍú‘V²VariableDeclaratorÍËÍùLªIdentifierÍËÍÙ®currentMinutesY°BinaryExpressionÍÜÍùY°BinaryExpressionÍÜÍìLªIdentifierÍÜÍç«currentHour¡*T§LiteralÍêÍì<¢60¡+LªIdentifierÍïÍùªcurrentMin¥constU³VariableDeclarationÍ Í (‘V²VariableDeclaratorÍ 
-Í 'LªIdentifierÍ 
-Í ªbedMinutesY°BinaryExpressionÍ Í 'Y°BinaryExpressionÍ Í  LªIdentifierÍ Í ¤bedH¡*T§LiteralÍ Í  <¢60¡+LªIdentifierÍ #Í '¤bedM¥constU³VariableDeclarationÍ 2Í ^‘V²VariableDeclaratorÍ 8Í ]LªIdentifierÍ 8Í ?§diffMinY°BinaryExpressionÍ BÍ ]LªIdentifierÍ BÍ LªbedMinutes¡-LªIdentifierÍ OÍ ]®currentMinutes¥constX«IfStatementÍ hÍ"Y±LogicalExpressionÍ lÍ ˆY°BinaryExpressionÍ lÍ wLªIdentifierÍ lÍ s§diffMin¡>T§LiteralÍ vÍ w ¡0¢&&Y°BinaryExpressionÍ {Í ˆLªIdentifierÍ {Í ‚§diffMin¢<=T§LiteralÍ †Í ˆ<¢60M®BlockStatementÍ ŠÍ"”X«IfStatementÍ ™Í îLªIdentifierÍ Í ¤§isSweetM®BlockStatementÍ ¦Í î‘Z¯ReturnStatementÍ ¹Í ßT§LiteralÍ ÀÍ ŞÙTå¿«åˆ°ç¡è§‰æ—¶é—´äº†ï¼Œç”œé£Ÿä¼šè®©å®å®å…´å¥‹ç¡ä¸ç€ï¼Œæ˜å¤©å†åƒå¥½ä¸å¥½ï¼ŸÙV'å¿«åˆ°ç¡è§‰æ—¶é—´äº†ï¼Œç”œé£Ÿä¼šè®©å®å®å…´å¥‹ç¡ä¸ç€ï¼Œæ˜å¤©å†åƒå¥½ä¸å¥½ï¼Ÿ'ÀX«IfStatementÍ üÍ!LLªIdentifierÍ! Í!¨isPuffedM®BlockStatementÍ!
-Í!L‘Z¯ReturnStatementÍ!Í!=T§LiteralÍ!$Í!<ÙBä¸´è¿‘ç¡å‰ï¼Œè†¨åŒ–é£Ÿå“ä¸å¥½æ¶ˆåŒ–ï¼Œè‚šå­ä¼šä¸èˆ’æœçš„ï½ÙD'ä¸´è¿‘ç¡å‰ï¼Œè†¨åŒ–é£Ÿå“ä¸å¥½æ¶ˆåŒ–ï¼Œè‚šå­ä¼šä¸èˆ’æœçš„ï½'ÀX«IfStatementÍ!ZÍ!ªLªIdentifierÍ!^Í!e§isFriedM®BlockStatementÍ!gÍ!ª‘Z¯ReturnStatementÍ!zÍ!›T§LiteralÍ!Í!šÙEå¿«ç¡è§‰äº†ï¼Œæ²¹ç‚¸é£Ÿå“ä¼šå¢åŠ æ¶ˆåŒ–è´Ÿæ‹…ï¼Œæ˜å¤©å†åƒå§ï¼ÙG'å¿«ç¡è§‰äº†ï¼Œæ²¹ç‚¸é£Ÿå“ä¼šå¢åŠ æ¶ˆåŒ–è´Ÿæ‹…ï¼Œæ˜å¤©å†åƒå§ï¼'ÀX«IfStatementÍ!¸Í"LªIdentifierÍ!¼Í!ÆªisCaffeineM®BlockStatementÍ!ÈÍ"‘Z¯ReturnStatementÍ!ÛÍ!ıT§LiteralÍ!âÍ!üÙHç¡å‰å–å«å’–å•¡å› çš„é¥®å“ä¼šå½±å“ç¡çœ è´¨é‡ï¼Œæ˜å¤©å†å–å§ï½ÙJ'ç¡å‰å–å«å’–å•¡å› çš„é¥®å“ä¼šå½±å“ç¡çœ è´¨é‡ï¼Œæ˜å¤©å†å–å§ï½'ÀÀZ¯ReturnStatementÍ"!Í"+T§LiteralÍ"(Í"* ¢''N°MethodDefinitionÍ"8Í$kÂÂLªIdentifierÍ"8Í"L´checkTasteProtection¦methodO²FunctionExpressionÍ"LÍ$kÀÂÂÂ’LªIdentifierÍ"MÍ"U¨foodNameLªIdentifierÍ"WÍ"`©foodLabelM®BlockStatementÍ"bÍ$k–U³VariableDeclarationÍ"mÍ"‘V²VariableDeclaratorÍ"sÍ"~LªIdentifierÍ"sÍ"y¦issues`¯ArrayExpressionÍ"|Í"~¥constX«IfStatementÍ"‰Í#
-Y±LogicalExpressionÍ"Í"Ù[®CallExpressionÍ"Í"¤R°MemberExpressionÍ"Í"¢LªIdentifierÍ"Í"–©foodLabelLªIdentifierÍ"—Í"¢«isHighSugarÂÂÂ¢||[®CallExpressionÍ"¨Í"ÙR°MemberExpressionÍ"¨Í"¾LªIdentifierÍ"¨Í"¹±HIGH_SUGAR_SNACKSLªIdentifierÍ"ºÍ"¾¤someÂÂ‘O·ArrowFunctionExpressionÍ"¿Í"ØÀÃÂÂ‘LªIdentifierÍ"¿Í"À¡s[®CallExpressionÍ"ÄÍ"ØR°MemberExpressionÍ"ÄÍ"ÕLªIdentifierÍ"ÄÍ"Ì¨foodNameLªIdentifierÍ"ÍÍ"Õ¨includesÂÂ‘LªIdentifierÍ"ÖÍ"×¡sÂÂM®BlockStatementÍ"ÛÍ#
-‘P³ExpressionStatementÍ"êÍ"ÿ[®CallExpressionÍ"êÍ"şR°MemberExpressionÍ"êÍ"õLªIdentifierÍ"êÍ"ğ¦issuesLªIdentifierÍ"ñÍ"õ¤pushÂÂ‘T§LiteralÍ"öÍ"ı¯ç³–å«é‡åé«˜±'ç³–å«é‡åé«˜'ÂÀX«IfStatementÍ#Í#a[®CallExpressionÍ#Í#0R°MemberExpressionÍ#Í#.LªIdentifierÍ#Í#!©foodLabelLªIdentifierÍ#"Í#.¬isHighSodiumÂÂÂM®BlockStatementÍ#2Í#a‘P³ExpressionStatementÍ#AÍ#V[®CallExpressionÍ#AÍ#UR°MemberExpressionÍ#AÍ#LLªIdentifierÍ#AÍ#G¦issuesLªIdentifierÍ#HÍ#L¤pushÂÂ‘T§LiteralÍ#MÍ#T¯é’ å«é‡åé«˜±'é’ å«é‡åé«˜'ÂÀX«IfStatementÍ#kÍ#éY±LogicalExpressionÍ#oÍ#·[®CallExpressionÍ#oÍ#„R°MemberExpressionÍ#oÍ#‚LªIdentifierÍ#oÍ#x©foodLabelLªIdentifierÍ#yÍ#‚©isHighFatÂÂÂ¢||[®CallExpressionÍ#ˆÍ#·R°MemberExpressionÍ#ˆÍ#œLªIdentifierÍ#ˆÍ#—¯HIGH_FAT_SNACKSLªIdentifierÍ#˜Í#œ¤someÂÂ‘O·ArrowFunctionExpressionÍ#Í#¶ÀÃÂÂ‘LªIdentifierÍ#Í#¡s[®CallExpressionÍ#¢Í#¶R°MemberExpressionÍ#¢Í#³LªIdentifierÍ#¢Í#ª¨foodNameLªIdentifierÍ#«Í#³¨includesÂÂ‘LªIdentifierÍ#´Í#µ¡sÂÂM®BlockStatementÍ#¹Í#é‘P³ExpressionStatementÍ#ÈÍ#Ş[®CallExpressionÍ#ÈÍ#İR°MemberExpressionÍ#ÈÍ#ÓLªIdentifierÍ#ÈÍ#Î¦issuesLªIdentifierÍ#ÏÍ#Ó¤pushÂÂ‘T§LiteralÍ#ÔÍ#Ü²è„‚è‚ªå«é‡åé«˜´'è„‚è‚ªå«é‡åé«˜'ÂÀX«IfStatementÍ#óÍ$PY°BinaryExpressionÍ#÷Í$R°MemberExpressionÍ#÷Í$LªIdentifierÍ#÷Í#ı¦issuesLªIdentifierÍ#şÍ$¦lengthÂÂ¡>T§LiteralÍ$Í$ ¡0M®BlockStatementÍ$
-Í$P‘Z¯ReturnStatementÍ$Í$E\¯TemplateLiteralÍ$ Í$D‘[®CallExpressionÍ$#Í$3R°MemberExpressionÍ$#Í$.LªIdentifierÍ$#Í$)¦issuesLªIdentifierÍ$*Í$.¤joinÂÂ‘T§LiteralÍ$/Í$2£ã€¥'ã€'Â’]¯TemplateElementÍ$!Í$!^  Â]¯TemplateElementÍ$4Í$C^Ù-ï¼Œä¸å»ºè®®ä½œä¸ºæ¯æ—¥å›ºå®šé›¶é£Ÿæˆ–é¥®å“Ù-ï¼Œä¸å»ºè®®ä½œä¸ºæ¯æ—¥å›ºå®šé›¶é£Ÿæˆ–é¥®å“ÃÀZ¯ReturnStatementÍ$ZÍ$dT§LiteralÍ$aÍ$c ¢''N°MethodDefinitionÍ$qÍ%{ÂÂLªIdentifierÍ$qÍ$ˆ·checkCounteractReminder¦methodO²FunctionExpressionÍ$ˆÍ%{ÀÂÂÂ’LªIdentifierÍ$‰Í$‘¨foodNameLªIdentifierÍ$“Í$œ©foodLabelM®BlockStatementÍ$Í%{“U³VariableDeclarationÍ$©Í%‘V²VariableDeclaratorÍ$¯Í%
-LªIdentifierÍ$¯Í$»¬isSweetSnackY±LogicalExpressionÍ$¾Í%
-[®CallExpressionÍ$¾Í$ïR°MemberExpressionÍ$¾Í$ÔLªIdentifierÍ$¾Í$Ï±HIGH_SUGAR_SNACKSLªIdentifierÍ$ĞÍ$Ô¤someÂÂ‘O·ArrowFunctionExpressionÍ$ÕÍ$îÀÃÂÂ‘LªIdentifierÍ$ÕÍ$Ö¡s[®CallExpressionÍ$ÚÍ$îR°MemberExpressionÍ$ÚÍ$ëLªIdentifierÍ$ÚÍ$â¨foodNameLªIdentifierÍ$ãÍ$ë¨includesÂÂ‘LªIdentifierÍ$ìÍ$í¡sÂÂ¢||[®CallExpressionÍ$óÍ%
-R°MemberExpressionÍ$óÍ%LªIdentifierÍ$óÍ$ü©foodLabelLªIdentifierÍ$ıÍ%«isHighSugarÂÂÂ¥constU³VariableDeclarationÍ%Í%E‘V²VariableDeclaratorÍ%Í%DLªIdentifierÍ%Í%(­isHighCalorie[®CallExpressionÍ%+Í%DR°MemberExpressionÍ%+Í%BLªIdentifierÍ%+Í%4©foodLabelLªIdentifierÍ%5Í%B­isHighCalorieÂÂÂ¥constZ¯ReturnStatementÍ%OÍ%tY±LogicalExpressionÍ%VÍ%sLªIdentifierÍ%VÍ%b¬isSweetSnack¢||LªIdentifierÍ%fÍ%s­isHighCalorieÀ‘Ôrb•¤type¥start£endªspecifiers¦source±ImportDeclaration ;‘Ôrc•¤type¥start£end¨imported¥local¯ImportSpecifier	LªIdentifier	¯ChildProtectionLªIdentifier	¯ChildProtectionT§Literal :¸../model/ChildProtectionº'../model/ChildProtection'

@@ -1,4 +1,5 @@
 import { router, promptAction } from '@kit.ArkUI';
+import { common } from '@kit.AbilityKit';
 import { AppState } from '../AppState';
 import { FoodLabel } from '../model/FoodLabel';
 import { FamilyProfile, AgeGroup } from '../model/FamilyProfile';
@@ -11,6 +12,7 @@ import { FamilyCompareView } from '../components/FamilyCompareView';
 import { ChildProtectionCard } from '../components/ChildProtectionCard';
 import { CredibilityCard } from '../components/CredibilityCard';
 import { ChildProtectionEngine } from '../engine/ChildProtectionEngine';
+import { ShareCardGenerator, MemberShareInfo, ShareImageParams } from '../components/ShareCard';
 import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
 
 @Entry
@@ -53,6 +55,10 @@ struct ReportPage {
             .fontSize(20)
             .fontWeight(FontWeight.Bold)
             .margin({ left: 16 })
+            .layoutWeight(1)
+          Text('\uD83D\uDCF8')
+            .fontSize(24)
+            .onClick(() => { this.handleSaveImage() })
         }
         .width('100%')
         .padding({ left: 16, right: 16, top: 16, bottom: 16 })
@@ -521,6 +527,37 @@ struct ReportPage {
    */
   private viewAlternativeDetail(item: AlternativeFood) {
     promptAction.showToast({ message: `查看: ${item.productName}` })
+  }
+
+  /**
+   * 生成分享图片（📸按钮回调）
+   */
+  private async handleSaveImage() {
+    try {
+      const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+      const memberResults: MemberShareInfo[] = this.recommendations.map((rec) => {
+        const member = this.familyMembers.find(m => m.memberId === rec.memberId);
+        const info: MemberShareInfo = {
+          name: member?.nickname || '',
+          levelText: rec.level,
+          levelColor: getLevelColorValue(rec.levelColor),
+          maxIntake: rec.maxAmount > 0 ? `最多${rec.maxAmount}g` : ''
+        };
+        return info;
+      });
+      const params: ShareImageParams = {
+        foodName: this.foodLabel.foodName,
+        nutriScore: 50,
+        levelColor: '#4CAF50',
+        memberResults: memberResults,
+        cardType: 'FAMILY_COMPARE',
+        qrPlaceholder: '扫码查看'
+      };
+      await ShareCardGenerator.generateShareImage(context, params);
+      promptAction.showToast({ message: '分享图片已保存到相册 📸' });
+    } catch (error) {
+      promptAction.showToast({ message: '保存失败，请重试' });
+    }
   }
 
   /**

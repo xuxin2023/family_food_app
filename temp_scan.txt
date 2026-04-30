@@ -1,0 +1,10 @@
+﻿    }
+    return '馃嵔锔?
+  }
+
+  private refreshScanQuota() {
+    this.scanLimitReached = !this.appState.canScanToday()
+    const remaining = this.appState.getRemainingScansToday()
+    this.remainingScans = remaining === -1 ? 999 : remaining
+  }
+

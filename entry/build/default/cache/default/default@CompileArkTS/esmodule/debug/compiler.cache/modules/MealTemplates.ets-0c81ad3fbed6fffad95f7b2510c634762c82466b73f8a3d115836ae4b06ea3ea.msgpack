@@ -1,0 +1,551 @@
+�r@��assertions�code�customTransformCache�dependencies�id�meta�moduleSideEffects�originalCode�originalSourcemap�resolvedIds�sourcemapChain�syntheticNamedExports�transformDependencies�transformFiles�cacheAst�rA��*�export const MEAL_TEMPLATES = [
+    // ===== 原有场景（增强版） =====
+    {
+        scenario: '烧烤',
+        riskTags: ['高盐', '高油', '肉类偏多', '蔬菜少'],
+        nextMealAdvice: '一碗清汤面+一份白灼蔬菜+一个水煮蛋',
+        avoidStacking: ['火锅', '卤味', '方便面', '奶茶', '甜品'],
+        hydrationReminder: true,
+        morningAdvice: '小米粥+凉拌黄瓜+蒸红薯，清淡养胃',
+        nextMealNutrients: ['膳食纤维', '维生素C', '水分'],
+        goalAdvice: {
+            '控压': '烧烤酱料钠含量很高，下一餐务必清淡，少放盐和酱油',
+            '控糖': '注意烧烤酱料中隐藏糖分，避免甜酱蘸料',
+            '减脂': '烧烤油脂丰富，下一餐选择清蒸或水煮',
+            '儿童': '烧烤口味偏重，建议给孩子搭配一份水果补充维生素'
+        }
+    },
+    {
+        scenario: '火锅',
+        riskTags: ['高盐', '高油', '蔬菜可能不足'],
+        nextMealAdvice: '小米粥+凉拌黄瓜+蒸鱼',
+        avoidStacking: ['烧烤', '卤味', '方便面', '重口味'],
+        hydrationReminder: true,
+        morningAdvice: '燕麦粥+水煮蛋+半根玉米，清淡补水',
+        nextMealNutrients: ['膳食纤维', '钾', '水分'],
+        goalAdvice: {
+            '控压': '火锅汤底通常高钠，下一餐务必清淡，避免再摄入高盐食品',
+            '控糖': '注意火锅蘸料中的糖分，下一餐减少甜食',
+            '减脂': '火锅油脂含量高，下一餐选择清淡饮食',
+            '儿童': '火锅温度高、口味重，给孩子吃要晾凉并搭配米饭'
+        }
+    },
+    {
+        scenario: '炸鸡',
+        riskTags: ['高油', '高热量'],
+        nextMealAdvice: '凉拌荞麦面+清炒时蔬+一杯柠檬水',
+        avoidStacking: ['油炸食品', '奶茶', '甜品'],
+        hydrationReminder: true,
+        morningAdvice: '南瓜粥+水煮蛋+苹果，清爽解腻',
+        nextMealNutrients: ['膳食纤维', '维生素C', '水分'],
+        goalAdvice: {
+            '控压': '油炸食品钠含量也不低，下一餐注意控盐',
+            '减脂': '炸鸡热量和脂肪都很高，下一餐严格控制热量和脂肪',
+            '控脂': '下一餐避免任何高脂食品',
+            '儿童': '炸鸡偶尔解馋可以，建议搭配蔬菜棒或水果一起'
+        }
+    },
+    {
+        scenario: '奶茶',
+        riskTags: ['高糖', '高热量'],
+        nextMealAdvice: '减少今日糖摄入，下一餐少甜，多喝水',
+        avoidStacking: ['甜品', '含糖饮料', '蛋糕'],
+        hydrationReminder: true,
+        morningAdvice: '无糖豆浆+全麦三明治，补充蛋白质',
+        nextMealNutrients: ['蛋白质', '膳食纤维'],
+        goalAdvice: {
+            '控糖': '奶茶含糖量通常很高，今日不建议再摄入任何含糖食品',
+            '减脂': '奶茶热量较高，下一餐减少主食量',
+            '儿童': '奶茶含咖啡因，不建议给孩子喝，换成牛奶或酸奶吧'
+        }
+    },
+    {
+        scenario: '甜品',
+        riskTags: ['高糖', '高热量', '高脂肪'],
+        nextMealAdvice: '蔬菜沙拉+烤鸡胸肉+一杯绿茶',
+        avoidStacking: ['奶茶', '含糖饮料', '蛋糕', '饼干'],
+        hydrationReminder: false,
+        morningAdvice: '燕麦酸奶杯+蓝莓，低糖高纤',
+        nextMealNutrients: ['蛋白质', '膳食纤维', '抗氧化物'],
+        goalAdvice: {
+            '控糖': '甜品糖分很高，今日不建议再摄入任何含糖食品',
+            '减脂': '甜品热量和脂肪都高，下一餐严格控制',
+            '控脂': '甜品通常含大量脂肪，下一餐避免高脂食品',
+            '儿童': '甜品偶尔吃可以，但今天不能再吃其他甜食了哦'
+        }
+    },
+    {
+        scenario: '卤味',
+        riskTags: ['高盐', '加工肉'],
+        nextMealAdvice: '冬瓜汤+清蒸鱼+凉拌木耳',
+        avoidStacking: ['火锅', '方便面', '咸菜', '加工肉'],
+        hydrationReminder: true,
+        morningAdvice: '白粥+水煮蛋+清炒小白菜，清淡排钠',
+        nextMealNutrients: ['钾', '水分', '膳食纤维'],
+        goalAdvice: {
+            '控压': '卤味钠含量很高，下一餐务必清淡，少放盐和酱油',
+            '控糖': '卤味调味料可能含糖，注意今日糖摄入总量',
+            '儿童': '卤味口味偏重，给孩子少量尝味即可，搭配水果'
+        }
+    },
+    {
+        scenario: '方便面',
+        riskTags: ['高盐', '高油', '营养单一'],
+        nextMealAdvice: '番茄鸡蛋汤+全麦面包+一份凉拌菠菜',
+        avoidStacking: ['火锅', '卤味', '加工肉'],
+        hydrationReminder: true,
+        morningAdvice: '杂粮粥+水煮蛋+猕猴桃，补充维生素',
+        nextMealNutrients: ['蛋白质', '膳食纤维', '维生素C'],
+        goalAdvice: {
+            '控压': '方便面钠含量极高，下一餐务必清淡',
+            '减脂': '方便面热量和脂肪较高，下一餐控制热量',
+            '儿童': '方便面营养单一，不建议经常给孩子吃，下一餐要补充蛋白质和蔬菜'
+        }
+    },
+    {
+        scenario: '夜宵',
+        riskTags: ['高热量', '影响睡眠'],
+        nextMealAdvice: '早餐适量，避免连续夜宵，白天注意营养均衡',
+        avoidStacking: ['夜宵', '含咖啡因饮品'],
+        hydrationReminder: false,
+        morningAdvice: '小米南瓜粥+水煮蛋，温和养胃',
+        nextMealNutrients: ['水分', '膳食纤维'],
+        goalAdvice: {
+            '控压': '夜宵通常高盐高油，对血压控制不利，建议尽量避免',
+            '减脂': '夜宵热量容易囤积，建议尽量避免',
+            '控糖': '夜宵可能影响次日血糖，建议尽量避免',
+            '儿童': '睡前吃东西会影响生长激素分泌，尽量让孩子养成不吃夜宵的习惯'
+        }
+    },
+    // ===== 新增场景 =====
+    {
+        scenario: '麻辣烫',
+        riskTags: ['高盐', '高油', '汤底高钠'],
+        nextMealAdvice: '杂粮饭+清蒸鲈鱼+白灼秋葵',
+        avoidStacking: ['火锅', '卤味', '方便面', '重口味'],
+        hydrationReminder: true,
+        morningAdvice: '绿豆粥+水煮蛋+凉拌海带丝，帮助排钠',
+        nextMealNutrients: ['钾', '膳食纤维', '优质蛋白'],
+        goalAdvice: {
+            '控压': '麻辣烫汤底和调料钠含量很高，下一餐务必清淡',
+            '控糖': '注意麻辣烫调料中可能含糖，今日减少甜食',
+            '减脂': '麻辣烫油脂多来自汤底和蘸料，下一餐清淡少油',
+            '儿童': '麻辣烫口味重、温度高，给孩子吃要少放辣、多选蔬菜'
+        }
+    },
+    {
+        scenario: '烤肉',
+        riskTags: ['高油', '高盐', '肉类偏多', '蔬菜少'],
+        nextMealAdvice: '蔬菜沙拉+豆腐汤+糙米饭',
+        avoidStacking: ['烧烤', '炸鸡', '卤味', '奶茶'],
+        hydrationReminder: true,
+        morningAdvice: '燕麦牛奶+水煮蛋+圣女果，清爽解腻',
+        nextMealNutrients: ['膳食纤维', '维生素C', '抗氧化物'],
+        goalAdvice: {
+            '控压': '烤肉腌制酱料钠含量高，下一餐注意控盐',
+            '控糖': '烤肉酱料中糖分不少，今日减少甜食',
+            '减脂': '烤肉脂肪含量高，下一餐选择清淡素食为主',
+            '儿童': '烤肉油脂多、温度高，给孩子吃要剪小块、搭配生菜'
+        }
+    },
+    {
+        scenario: '日料',
+        riskTags: ['高盐', '生食需注意'],
+        nextMealAdvice: '温热的味噌汤+蒸蛋+一份水果',
+        avoidStacking: ['刺身', '寿司', '重口味'],
+        hydrationReminder: false,
+        morningAdvice: '热牛奶+全麦吐司+香蕉，温和养胃',
+        nextMealNutrients: ['维生素C', '温热食物'],
+        goalAdvice: {
+            '控压': '日料中的酱油和味噌钠含量不低，注意蘸料用量',
+            '控糖': '日料整体糖分不高，但注意寿司醋饭中的糖',
+            '减脂': '日料相对健康，但天妇罗和鳗鱼热量较高',
+            '儿童': '生食不建议给孩子吃，选择熟食如照烧鸡肉饭、玉子烧'
+        }
+    },
+    {
+        scenario: '自助餐',
+        riskTags: ['高热量', '高油', '高盐', '容易过量'],
+        nextMealAdvice: '清粥小菜+水煮蔬菜，让肠胃休息',
+        avoidStacking: ['火锅', '烧烤', '油炸食品', '甜品'],
+        hydrationReminder: true,
+        morningAdvice: '蜂蜜柠檬水+燕麦粥+苹果，帮助消化',
+        nextMealNutrients: ['水分', '膳食纤维', '益生菌'],
+        goalAdvice: {
+            '控压': '自助餐品种多、钠摄入容易超标，下一餐务必清淡',
+            '控糖': '自助餐甜品和饮料含糖高，今日不再叠加甜食',
+            '减脂': '自助餐容易热量超标，下一餐严格控制',
+            '儿童': '自助餐容易吃多，帮孩子控制每样取少量，多选蔬菜和水果'
+        }
+    },
+    {
+        scenario: '下午茶',
+        riskTags: ['高糖', '高热量'],
+        nextMealAdvice: '晚餐减少主食量，增加蔬菜和优质蛋白',
+        avoidStacking: ['奶茶', '甜品', '含糖饮料'],
+        hydrationReminder: false,
+        morningAdvice: '无糖豆浆+全麦贝果+鸡蛋，均衡营养',
+        nextMealNutrients: ['蛋白质', '膳食纤维'],
+        goalAdvice: {
+            '控糖': '下午茶点心含糖量高，今日不再叠加甜食',
+            '减脂': '下午茶热量不容忽视，晚餐减少主食',
+            '儿童': '下午茶可以吃，但别影响晚餐胃口，选水果比蛋糕好'
+        }
+    },
+    {
+        scenario: '螺蛳粉',
+        riskTags: ['高盐', '高油', '高热量'],
+        nextMealAdvice: '绿豆汤+凉拌黄瓜+清蒸鸡胸肉',
+        avoidStacking: ['火锅', '卤味', '方便面', '重口味'],
+        hydrationReminder: true,
+        morningAdvice: '白粥+水煮蛋+清炒时蔬，清淡排钠',
+        nextMealNutrients: ['钾', '水分', '膳食纤维'],
+        goalAdvice: {
+            '控压': '螺蛳粉汤底和配料钠含量很高，下一餐务必清淡',
+            '控糖': '螺蛳粉本身糖分不高，但注意配料的隐藏糖分',
+            '减脂': '螺蛳粉热量和油脂较高，下一餐控制热量',
+            '儿童': '螺蛳粉口味重、辣度高，不建议给孩子吃'
+        }
+    }
+];
+//# sourceMappingURL=MealTemplates.js.map�EE:\APP\family_food_app\entry\src\main\ets\constants\MealTemplates.ets�rB��moduleName�isLocalDependency�isNodeEntryFile�pkgPath�belongProjectPath�pkgName�pkgVersion�dependencyPkgInfo�hostModulesInfo�belongModulePath�shouldEmitJs�entry�¼E:\APP\family_food_app\entry�E:\APP\family_food_app�entry�1.0.0�  ��rC��hostDependencyName�hostModuleName�../constants/MealTemplates�entry�E:\APP\family_food_app\entry���(�// MealTemplates.ets
+// 美食平衡场景模板配置 - 本地JSON格式，每种场景提供完整建议
+
+export interface MealTemplate {
+  /** 场景名称 */
+  scenario: string;
+  /** 本餐偏高风险标签 */
+  riskTags: string[];
+  /** 下一餐建议（具体菜品） */
+  nextMealAdvice: string;
+  /** 今天不再叠加的品类 */
+  avoidStacking: string[];
+  /** 是否需要补水提醒 */
+  hydrationReminder: boolean;
+  /** 明天早餐建议 */
+  morningAdvice: string;
+  /** 下一餐重点补充的营养素 */
+  nextMealNutrients: string[];
+  /** 各健康目标的特定建议 */
+  goalAdvice: Record<string, string>;
+}
+
+export const MEAL_TEMPLATES: MealTemplate[] = [
+  // ===== 原有场景（增强版） =====
+  {
+    scenario: '烧烤',
+    riskTags: ['高盐', '高油', '肉类偏多', '蔬菜少'],
+    nextMealAdvice: '一碗清汤面+一份白灼蔬菜+一个水煮蛋',
+    avoidStacking: ['火锅', '卤味', '方便面', '奶茶', '甜品'],
+    hydrationReminder: true,
+    morningAdvice: '小米粥+凉拌黄瓜+蒸红薯，清淡养胃',
+    nextMealNutrients: ['膳食纤维', '维生素C', '水分'],
+    goalAdvice: {
+      '控压': '烧烤酱料钠含量很高，下一餐务必清淡，少放盐和酱油',
+      '控糖': '注意烧烤酱料中隐藏糖分，避免甜酱蘸料',
+      '减脂': '烧烤油脂丰富，下一餐选择清蒸或水煮',
+      '儿童': '烧烤口味偏重，建议给孩子搭配一份水果补充维生素'
+    }
+  },
+  {
+    scenario: '火锅',
+    riskTags: ['高盐', '高油', '蔬菜可能不足'],
+    nextMealAdvice: '小米粥+凉拌黄瓜+蒸鱼',
+    avoidStacking: ['烧烤', '卤味', '方便面', '重口味'],
+    hydrationReminder: true,
+    morningAdvice: '燕麦粥+水煮蛋+半根玉米，清淡补水',
+    nextMealNutrients: ['膳食纤维', '钾', '水分'],
+    goalAdvice: {
+      '控压': '火锅汤底通常高钠，下一餐务必清淡，避免再摄入高盐食品',
+      '控糖': '注意火锅蘸料中的糖分，下一餐减少甜食',
+      '减脂': '火锅油脂含量高，下一餐选择清淡饮食',
+      '儿童': '火锅温度高、口味重，给孩子吃要晾凉并搭配米饭'
+    }
+  },
+  {
+    scenario: '炸鸡',
+    riskTags: ['高油', '高热量'],
+    nextMealAdvice: '凉拌荞麦面+清炒时蔬+一杯柠檬水',
+    avoidStacking: ['油炸食品', '奶茶', '甜品'],
+    hydrationReminder: true,
+    morningAdvice: '南瓜粥+水煮蛋+苹果，清爽解腻',
+    nextMealNutrients: ['膳食纤维', '维生素C', '水分'],
+    goalAdvice: {
+      '控压': '油炸食品钠含量也不低，下一餐注意控盐',
+      '减脂': '炸鸡热量和脂肪都很高，下一餐严格控制热量和脂肪',
+      '控脂': '下一餐避免任何高脂食品',
+      '儿童': '炸鸡偶尔解馋可以，建议搭配蔬菜棒或水果一起'
+    }
+  },
+  {
+    scenario: '奶茶',
+    riskTags: ['高糖', '高热量'],
+    nextMealAdvice: '减少今日糖摄入，下一餐少甜，多喝水',
+    avoidStacking: ['甜品', '含糖饮料', '蛋糕'],
+    hydrationReminder: true,
+    morningAdvice: '无糖豆浆+全麦三明治，补充蛋白质',
+    nextMealNutrients: ['蛋白质', '膳食纤维'],
+    goalAdvice: {
+      '控糖': '奶茶含糖量通常很高，今日不建议再摄入任何含糖食品',
+      '减脂': '奶茶热量较高，下一餐减少主食量',
+      '儿童': '奶茶含咖啡因，不建议给孩子喝，换成牛奶或酸奶吧'
+    }
+  },
+  {
+    scenario: '甜品',
+    riskTags: ['高糖', '高热量', '高脂肪'],
+    nextMealAdvice: '蔬菜沙拉+烤鸡胸肉+一杯绿茶',
+    avoidStacking: ['奶茶', '含糖饮料', '蛋糕', '饼干'],
+    hydrationReminder: false,
+    morningAdvice: '燕麦酸奶杯+蓝莓，低糖高纤',
+    nextMealNutrients: ['蛋白质', '膳食纤维', '抗氧化物'],
+    goalAdvice: {
+      '控糖': '甜品糖分很高，今日不建议再摄入任何含糖食品',
+      '减脂': '甜品热量和脂肪都高，下一餐严格控制',
+      '控脂': '甜品通常含大量脂肪，下一餐避免高脂食品',
+      '儿童': '甜品偶尔吃可以，但今天不能再吃其他甜食了哦'
+    }
+  },
+  {
+    scenario: '卤味',
+    riskTags: ['高盐', '加工肉'],
+    nextMealAdvice: '冬瓜汤+清蒸鱼+凉拌木耳',
+    avoidStacking: ['火锅', '方便面', '咸菜', '加工肉'],
+    hydrationReminder: true,
+    morningAdvice: '白粥+水煮蛋+清炒小白菜，清淡排钠',
+    nextMealNutrients: ['钾', '水分', '膳食纤维'],
+    goalAdvice: {
+      '控压': '卤味钠含量很高，下一餐务必清淡，少放盐和酱油',
+      '控糖': '卤味调味料可能含糖，注意今日糖摄入总量',
+      '儿童': '卤味口味偏重，给孩子少量尝味即可，搭配水果'
+    }
+  },
+  {
+    scenario: '方便面',
+    riskTags: ['高盐', '高油', '营养单一'],
+    nextMealAdvice: '番茄鸡蛋汤+全麦面包+一份凉拌菠菜',
+    avoidStacking: ['火锅', '卤味', '加工肉'],
+    hydrationReminder: true,
+    morningAdvice: '杂粮粥+水煮蛋+猕猴桃，补充维生素',
+    nextMealNutrients: ['蛋白质', '膳食纤维', '维生素C'],
+    goalAdvice: {
+      '控压': '方便面钠含量极高，下一餐务必清淡',
+      '减脂': '方便面热量和脂肪较高，下一餐控制热量',
+      '儿童': '方便面营养单一，不建议经常给孩子吃，下一餐要补充蛋白质和蔬菜'
+    }
+  },
+  {
+    scenario: '夜宵',
+    riskTags: ['高热量', '影响睡眠'],
+    nextMealAdvice: '早餐适量，避免连续夜宵，白天注意营养均衡',
+    avoidStacking: ['夜宵', '含咖啡因饮品'],
+    hydrationReminder: false,
+    morningAdvice: '小米南瓜粥+水煮蛋，温和养胃',
+    nextMealNutrients: ['水分', '膳食纤维'],
+    goalAdvice: {
+      '控压': '夜宵通常高盐高油，对血压控制不利，建议尽量避免',
+      '减脂': '夜宵热量容易囤积，建议尽量避免',
+      '控糖': '夜宵可能影响次日血糖，建议尽量避免',
+      '儿童': '睡前吃东西会影响生长激素分泌，尽量让孩子养成不吃夜宵的习惯'
+    }
+  },
+
+  // ===== 新增场景 =====
+  {
+    scenario: '麻辣烫',
+    riskTags: ['高盐', '高油', '汤底高钠'],
+    nextMealAdvice: '杂粮饭+清蒸鲈鱼+白灼秋葵',
+    avoidStacking: ['火锅', '卤味', '方便面', '重口味'],
+    hydrationReminder: true,
+    morningAdvice: '绿豆粥+水煮蛋+凉拌海带丝，帮助排钠',
+    nextMealNutrients: ['钾', '膳食纤维', '优质蛋白'],
+    goalAdvice: {
+      '控压': '麻辣烫汤底和调料钠含量很高，下一餐务必清淡',
+      '控糖': '注意麻辣烫调料中可能含糖，今日减少甜食',
+      '减脂': '麻辣烫油脂多来自汤底和蘸料，下一餐清淡少油',
+      '儿童': '麻辣烫口味重、温度高，给孩子吃要少放辣、多选蔬菜'
+    }
+  },
+  {
+    scenario: '烤肉',
+    riskTags: ['高油', '高盐', '肉类偏多', '蔬菜少'],
+    nextMealAdvice: '蔬菜沙拉+豆腐汤+糙米饭',
+    avoidStacking: ['烧烤', '炸鸡', '卤味', '奶茶'],
+    hydrationReminder: true,
+    morningAdvice: '燕麦牛奶+水煮蛋+圣女果，清爽解腻',
+    nextMealNutrients: ['膳食纤维', '维生素C', '抗氧化物'],
+    goalAdvice: {
+      '控压': '烤肉腌制酱料钠含量高，下一餐注意控盐',
+      '控糖': '烤肉酱料中糖分不少，今日减少甜食',
+      '减脂': '烤肉脂肪含量高，下一餐选择清淡素食为主',
+      '儿童': '烤肉油脂多、温度高，给孩子吃要剪小块、搭配生菜'
+    }
+  },
+  {
+    scenario: '日料',
+    riskTags: ['高盐', '生食需注意'],
+    nextMealAdvice: '温热的味噌汤+蒸蛋+一份水果',
+    avoidStacking: ['刺身', '寿司', '重口味'],
+    hydrationReminder: false,
+    morningAdvice: '热牛奶+全麦吐司+香蕉，温和养胃',
+    nextMealNutrients: ['维生素C', '温热食物'],
+    goalAdvice: {
+      '控压': '日料中的酱油和味噌钠含量不低，注意蘸料用量',
+      '控糖': '日料整体糖分不高，但注意寿司醋饭中的糖',
+      '减脂': '日料相对健康，但天妇罗和鳗鱼热量较高',
+      '儿童': '生食不建议给孩子吃，选择熟食如照烧鸡肉饭、玉子烧'
+    }
+  },
+  {
+    scenario: '自助餐',
+    riskTags: ['高热量', '高油', '高盐', '容易过量'],
+    nextMealAdvice: '清粥小菜+水煮蔬菜，让肠胃休息',
+    avoidStacking: ['火锅', '烧烤', '油炸食品', '甜品'],
+    hydrationReminder: true,
+    morningAdvice: '蜂蜜柠檬水+燕麦粥+苹果，帮助消化',
+    nextMealNutrients: ['水分', '膳食纤维', '益生菌'],
+    goalAdvice: {
+      '控压': '自助餐品种多、钠摄入容易超标，下一餐务必清淡',
+      '控糖': '自助餐甜品和饮料含糖高，今日不再叠加甜食',
+      '减脂': '自助餐容易热量超标，下一餐严格控制',
+      '儿童': '自助餐容易吃多，帮孩子控制每样取少量，多选蔬菜和水果'
+    }
+  },
+  {
+    scenario: '下午茶',
+    riskTags: ['高糖', '高热量'],
+    nextMealAdvice: '晚餐减少主食量，增加蔬菜和优质蛋白',
+    avoidStacking: ['奶茶', '甜品', '含糖饮料'],
+    hydrationReminder: false,
+    morningAdvice: '无糖豆浆+全麦贝果+鸡蛋，均衡营养',
+    nextMealNutrients: ['蛋白质', '膳食纤维'],
+    goalAdvice: {
+      '控糖': '下午茶点心含糖量高，今日不再叠加甜食',
+      '减脂': '下午茶热量不容忽视，晚餐减少主食',
+      '儿童': '下午茶可以吃，但别影响晚餐胃口，选水果比蛋糕好'
+    }
+  },
+  {
+    scenario: '螺蛳粉',
+    riskTags: ['高盐', '高油', '高热量'],
+    nextMealAdvice: '绿豆汤+凉拌黄瓜+清蒸鸡胸肉',
+    avoidStacking: ['火锅', '卤味', '方便面', '重口味'],
+    hydrationReminder: true,
+    morningAdvice: '白粥+水煮蛋+清炒时蔬，清淡排钠',
+    nextMealNutrients: ['钾', '水分', '膳食纤维'],
+    goalAdvice: {
+      '控压': '螺蛳粉汤底和配料钠含量很高，下一餐务必清淡',
+      '控糖': '螺蛳粉本身糖分不高，但注意配料的隐藏糖分',
+      '减脂': '螺蛳粉热量和油脂较高，下一餐控制热量',
+      '儿童': '螺蛳粉口味重、辣度高，不建议给孩子吃'
+    }
+  }
+];
+�A��rD��version�file�sourceRoot�sources�names�mappings�MealTemplates.js���MealTemplates.ets�� Җ�   � � � � � .�� � �� �� � � � �� � � � � � � � �% !�' #�, (�- )�� � � �, (�� � � � � � �" �$  �) %�+ '�/ +�1 -�5 1�6 2�� � � � �� � � �* &�� � � � �" �$  �* &�, (�0 ,�1 -��  �  �  �� !� !
+� !�, !&�� "� "
+� "�& " �� #� #
+� #�% #�� $� $
+� $�+ $%��	 %�� &�� '�� (� (� (� (�� )� )� )� )� )� )� )� )�' )#�( )$�� *� *� *�% *!�� +� +� +� +� +� +�" +�$ + �) +%�+ +'�0 +,�1 +-�� ,� ,� ,� ,�� -� -� -�* -&�� .� .� .� .�" .�$ . �' .#�) .%�- .)�. .*�� /� /� /�� 0� 0
+� 0�. 0(�� 1� 1
+� 1�& 1 �� 2� 2
+� 2�% 2�� 3� 3
+� 3�* 3$��	 4�� 5�� 6�� 7� 7� 7� 7�� 8� 8� 8� 8� 8� 8� 8� 8�� 9� 9� 9�* 9&�� :� :� :� :� :�  :�$ : �& :"�* :&�+ :'�� ;� ;� ;� ;�� <� <� <�( <$�� =� =� =� =�" =�$ = �* =&�, =(�0 =,�1 =-�� >� >� >�� ?� ?
+� ?�& ? �� �@� �@
+� �@�+ �@%�� �A� �A
+� �A� �A�� �B� �B
+� �B�) �B#��	 �C�� �D�� �E�� �F� �F� �F� �F�� �G� �G� �G� �G� �G� �G� �G� �G�� �H� �H� �H�+ �H'�� �I� �I� �I� �I� �I� �I�$ �I �& �I"�* �I&�+ �I'�� �J� �J� �J� �J�� �K� �K� �K�) �K%�� �L� �L� �L� �L�! �L�# �L�) �L%�* �L&�� �M� �M� �M�� �N� �N
+� �N�, �N&�� �O� �O
+� �O�# �O�� �P� �P
+� �P�+ �P%��	 �Q�� �R�� �S�� �T� �T� �T� �T�� �U� �U� �U� �U� �U� �U� �U�  �U�% �U!�& �U"�� �V� �V� �V�( �V$�� �W� �W� �W� �W� �W� �W�$ �W �& �W"�* �W&�, �W(�0 �W,�1 �W-�� �X� �X� �X�  �X�� �Y� �Y� �Y�& �Y"�� �Z� �Z� �Z� �Z�! �Z�# �Z�) �Z%�+ �Z'�1 �Z-�2 �Z.�� �[� �[� �[�� �\� �\
+� �\�) �\#�� �]� �]
+� �]�% �]�� �^� �^
+� �^�' �^!�� �_� �_
+� �_�) �_#��	 �`�� �a�� �b�� �c� �c� �c� �c�� �d� �d� �d� �d� �d� �d� �d� �d�� �e� �e� �e�& �e"�� �f� �f� �f� �f� �f� �f�# �f�% �f!�) �f%�+ �f'�0 �f,�1 �f-�� �g� �g� �g� �g�� �h� �h� �h�* �h&�� �i� �i� �i� �i� �i�! �i�% �i!�' �i#�- �i)�. �i*�� �j� �j� �j�� �k� �k
+� �k�* �k$�� �l� �l
+� �l�' �l!�� �m� �m
+� �m�) �m#��	 �n�� �o�� �p�� �q� �q� �q� �q�� �r� �r� �r� �r� �r� �r� �r� �r�% �r!�& �r"�� �s� �s� �s�+ �s'�� �t� �t� �t� �t� �t� �t�" �t�$ �t �) �t%�* �t&�� �u� �u� �u� �u�� �v� �v� �v�* �v&�� �w� �w� �w� �w�! �w�# �w�) �w%�+ �w'�1 �w-�2 �w.�� �x� �x� �x�� �y� �y
+� �y�$ �y�� �z� �z
+� �z�& �z �� �{� �{
+� �{�2 �{,��	 �|�� �}�� �~�� �� �� �� ��� ̀� ̀� ̀� ̀� ̀� ̀�  ̀�! ̀�� ́� ́� ́�. ́*�� ̂� ̂� ̂� ̂� ̂� ̂�& ̂"�' ̂#�� ̃� ̃� ̃�  ̃�� ̄� ̄� ̄�' ̄#�� ̅� ̅� ̅� ̅�  ̅�" ̅�( ̅$�) ̅%�� ̆� ̆� ̆�� ̇� ̇
+� ̇�+ ̇%�� ̈� ̈
+� ̈�# ̈�� ̉� ̉
+� ̉�% ̉�� ̊� ̊
+� ̊�1 ̊+��	 ̋�� ̌�� ̎� ̎�� ̏�� ̐� ̐� ̐� ̐�� ̑� ̑� ̑� ̑� ̑� ̑� ̑� ̑�% ̑!�& ̑"�� ̒� ̒� ̒�' ̒#�� ̓� ̓� ̓� ̓� ̓� ̓�" ̓�$ ̓ �) ̓%�+ ̓'�0 ̓,�1 ̓-�� ̔� ̔� ̔� ̔�� ̕� ̕� ̕�+ ̕'�� ̖� ̖� ̖� ̖� ̖�! ̖�' ̖#�) ̖%�/ ̖+�0 ̖,�� ̗� ̗� ̗�� ̘� ̘
+� ̘�) ̘#�� ̙� ̙
+� ̙�' ̙!�� ̚� ̚
+� ̚�) ̚#�� ̛� ̛
+� ̛�, ̛&��	 ̜�� ̝�� ̞�� ̟� ̟� ̟� ̟�� ̠� ̠� ̠� ̠� ̠� ̠� ̠� ̠�% ̠!�' ̠#�, ̠(�- ̠)�� ̡� ̡� ̡�& ̡"�� ̢� ̢� ̢� ̢� ̢� ̢�" ̢�$ ̢ �( ̢$�* ̢&�. ̢*�/ ̢+�� ̣� ̣� ̣� ̣�� ̤� ̤� ̤�* ̤&�� ̥� ̥� ̥� ̥�" ̥�$ ̥ �* ̥&�, ̥(�2 ̥.�3 ̥/�� ̦� ̦� ̦�� ̧� ̧
+� ̧�& ̧ �� ̨� ̨
+� ̨�$ ̨�� ̩� ̩
+� ̩�' ̩!�� ̪� ̪
+� ̪�+ ̪%��	 ̫�� ̬�� ̭�� ̮� ̮� ̮� ̮�� ̯� ̯� ̯� ̯� ̯� ̯�  ̯�! ̯�� ̰� ̰� ̰�( ̰$�� ̱� ̱� ̱� ̱� ̱� ̱�" ̱�$ ̱ �) ̱%�* ̱&�� ̲� ̲� ̲�  ̲�� ̳� ̳� ̳�) ̳%�� ̴� ̴� ̴� ̴�" ̴�$ ̴ �* ̴&�+ ̴'�� ̵� ̵� ̵�� ̶� ̶
+� ̶�) ̶#�� ̷� ̷
+� ̷�' ̷!�� ̸� ̸
+� ̸�& ̸ �� ̹� ̹
+� ̹�, ̹&��	 ̺�� ̻�� ̼�� ̽� ̽� ̽� ̽�� ̾� ̾� ̾� ̾� ̾� ̾� ̾�  ̾�$ ̾ �& ̾"�, ̾(�- ̾)�� ̿� ̿� ̿�) ̿%�� ��� ��� ��� ��� ��� ���" ���$ �� �* ��&�, ��(�0 ��,�1 ��-�� ��� ��� ��� ���� ��� ��� ���* ��&�� ��� ��� ��� ���  ���" ���( ��$�* ��&�/ ��+�0 ��,�� ��� ��� ���� ��� ��
+� ���* ��$�� ��� ��
+� ���( ��"�� ��� ��
+� ���% ���� ��� ��
+� ���. ��(��	 ���� ���� ���� ��� ��� ��� ���� ��� ��� ��� ��� ��� ��� ��� ���� ��� ��� ���+ ��'�� ��� ��� ��� ��� ��� ���" ���$ �� �* ��&�+ ��'�� ��� ��� ���  ���� ��� ��� ���* ��&�� ��� ��� ��� ���! ���# ���) ��%�* ��&�� ��� ��� ���� ��� ��
+� ���& �� �� ��� ��
+� ���$ ���� ��� ��
+� ���+ ��%��	 ���� ���� ���� ��� ��� ��� ���� ��� ��� ��� ��� ��� ��� ��� ���$ �� �% ��!�� ��� ��� ���( ��$�� ��� ��� ��� ��� ��� ���" ���$ �� �) ��%�+ ��'�0 ��,�1 ��-�� ��� ��� ��� ���� ��� ��� ���) ��%�� ��� ��� ��� ��� ���! ���% ��!�' ��#�- ��)�. ��*�� ��� ��� ���� ��� ��
+� ���) ��#�� ��� ��
+� ���( ��"�� ��� ��
+� ���& �� �� ��� ��
+� ���& �� ��	 ���� ���� ��� ���rE��version�file�sources�sourcesContent�names�mappings������� ӑ�    ��   ��   ��   ��   ��   ��   ��   ��   ��  	 ��  
+ ��   ��   ��   ��   ��   ��   ��   ��   ��   ��   ��   ��   ��   ��   ��   ��   ��   ��   ��   ��   ��   ��    ��  ! ��  " ��  # ��  $ ��  % ��  & ��  ' ��  ( ��  ) ��  * ��  + ��  , ��  - ��  . ��  / ��  0 ��  1 ��  2 ��  3 ��  4 ��  5 ��  6 ��  7 ��  8 ��  9 ��  : ��  ; ��  < ��  = ��  > ��  ? ��  �@ ��  �A ��  �B ��  �C ��  �D ��  �E ��  �F ��  �G ��  �H ��  �I ��  �J ��  �K ��  �L ��  �M ��  �N ��  �O ��  �P ��  �Q ��  �R ��  �S ��  �T ��  �U ��  �V ��  �W ��  �X ��  �Y ��  �Z ��  �[ ��  �\ ��  �] ��  �^ ��  �_ ��  �` ��  �a ��  �b ��  �c ��  �d ��  �e ��  �f ��  �g ��  �h ��  �i ��  �j ��  �k ��  �l ��  �m ��  �n ��  �o ��  �p ��  �q ��  �r ��  �s ��  �t ��  �u ��  �v ��  �w ��  �x ��  �y ��  �z ��  �{ ��  �| ��  �} ��  �~ ��  � ��  ̀ ��  ́ ��  ̂ ��  ̃ ��  ̄ ��  ̅ ��  ̆ ��  ̇ ��  ̈ ��  ̉ ��  ̊ ��  ̋ ��  ̌ ��  ̍ ��  ̎ ��  ̏ ��  ̐ ��  ̑ ��  ̒ ��  ̓ ��  ̔ ��  ̕ ��  ̖ ��  ̗ ��  ̘ ��  ̙ ��  ̚ ��  ̛ ��  ̜ ��  ̝ ��  ̞ ��  ̟ ��  ̠ ��  ̡ ��  ̢ ��  ̣ ��  ̤ ��  ̥ ��  ̦ ��  ̧ ��  ̨ ��  ̩ ��  ̪ ��  ̫ ��  ̬ ��  ̭ ��  ̮ ��  ̯ ��  ̰ ��  ̱ ��  ̲ ��  ̳ ��  ̴ ��  ̵ ��  ̶ ��  ̷ ��  ̸ ��  ̹ ��  ̺ ��  ̻ ��  ̼ ��  ̽ ��  ̾ ��  ̿ ��  �� ��  �� ��  �� ��  �� ��  �� ��  �� ��  �� ��  �� ��  �� ��  �� ��  �� ��  �� ��  �� ��  �� ��  �� ��  �� ��  �� ��  �� ��  �� �rF��missing�pluginægenAbc�  �rG��dynamicImportCache�exportAllDeclarationCache�exportNamedDeclarationCache�importCache����rH��type�start�end�declaration�specifiers�source�ExportNamedDeclaration �i�rI��type�start�end�declarations�kind�VariableDeclaration�i��rJ��type�start�end�id�init�VariableDeclarator�h�rK��type�start�end�name�Identifier�MEAL_TEMPLATES�rL��type�start�end�elements�ArrayExpression�h��rM��type�start�end�properties�ObjectExpression�C�N��rN��type�start�end�method�shorthand�computed�key�value�kind�Property�N�\���K�Identifier�N�V�scenario�rO��type�start�end�value�raw�Literal�X�\�烧烤�'烧烤'�initN�Property�ǧ���K�Identifier�g�o�riskTagsL�ArrayExpression�q̌�O�Literal�r�v�高盐�'高盐'O�Literal�x�|�高油�'高油'O�Literal�~̄�肉类偏多�'肉类偏多'O�Literal̆̋�蔬菜少�'蔬菜少'�initN�Property̗̻���K�Identifier̗̥�nextMealAdviceO�Literaļ̻�2一碗清汤面+一份白灼蔬菜+一个水煮蛋�4'一碗清汤面+一份白灼蔬菜+一个水煮蛋'�initN�Property�������K�Identifier���ӭavoidStackingL�ArrayExpression�����O�Literal���ڦ火锅�'火锅'O�Literal����卤味�'卤味'O�Literal����方便面�'方便面'O�Literal�����奶茶�'奶茶'O�Literal����甜品�'甜品'�initN�Property������K�Identifier����hydrationReminderO�Literal��ätrue�initN�Property�!�C���K�Identifier�!�.�morningAdviceO�Literal�0�C�/小米粥+凉拌黄瓜+蒸红薯，清淡养胃�1'小米粥+凉拌黄瓜+蒸红薯，清淡养胃'�initN�Property�N�w���K�Identifier�N�_�nextMealNutrientsL�ArrayExpression�a�w�O�Literal�b�h�膳食纤维�'膳食纤维'O�Literal�j�p�维生素C�'维生素C'O�Literal�r�v�水分�'水分'�initN�Property���G���K�Identifier�����goalAdviceM�ObjectExpression���G�N�Property�������O�Literal�����控压�'控压'O�Literal�����H烧烤酱料钠含量很高，下一餐务必清淡，少放盐和酱油�J'烧烤酱料钠含量很高，下一餐务必清淡，少放盐和酱油'�initN�Property�������O�Literal���Ц控糖�'控糖'O�Literal�����6注意烧烤酱料中隐藏糖分，避免甜酱蘸料�8'注意烧烤酱料中隐藏糖分，避免甜酱蘸料'�initN�Property������O�Literal�����减脂�'减脂'O�Literal����3烧烤油脂丰富，下一餐选择清蒸或水煮�5'烧烤油脂丰富，下一餐选择清蒸或水煮'�initN�Property��<���O�Literal��!�儿童�'儿童'O�Literal�#�<�E烧烤口味偏重，建议给孩子搭配一份水果补充维生素�G'烧烤口味偏重，建议给孩子搭配一份水果补充维生素'�init�initM�ObjectExpression�U�M�N�Property�`�n���K�Identifier�`�h�scenarioO�Literal�j�n�火锅�'火锅'�initN�Property�y�����K�Identifier�y���riskTagsL�ArrayExpression�����O�Literal�����高盐�'高盐'O�Literal�����高油�'高油'O�Literal�����蔬菜可能不足�'蔬菜可能不足'�initN�Property�������K�Identifier�����nextMealAdviceO�Literal�����小米粥+凉拌黄瓜+蒸鱼�'小米粥+凉拌黄瓜+蒸鱼'�initN�Property�������K�Identifier���٭avoidStackingL�ArrayExpression�����O�Literal����烧烤�'烧烤'O�Literal����卤味�'卤味'O�Literal�����方便面�'方便面'O�Literal�����重口味�'重口味'�initN�Property� ����K�Identifier� ��hydrationReminderO�Literal��ätrue�initN�Property�"�D���K�Identifier�"�/�morningAdviceO�Literal�1�D�/燕麦粥+水煮蛋+半根玉米，清淡补水�1'燕麦粥+水煮蛋+半根玉米，清淡补水'�initN�Property�O�u���K�Identifier�O�`�nextMealNutrientsL�ArrayExpression�b�u�O�Literal�c�i�膳食纤维�'膳食纤维'O�Literal�k�n�钾�'钾'O�Literal�p�t�水分�'水分'�initN�Property���F���K�Identifier�����goalAdviceM�ObjectExpression���F�N�Property�������O�Literal�����控压�'控压'O�Literal�����N火锅汤底通常高钠，下一餐务必清淡，避免再摄入高盐食品�P'火锅汤底通常高钠，下一餐务必清淡，避免再摄入高盐食品'�initN�Property�������O�Literal���Ц控糖�'控糖'O�Literal�����6注意火锅蘸料中的糖分，下一餐减少甜食�8'注意火锅蘸料中的糖分，下一餐减少甜食'�initN�Property������O�Literal�����减脂�'减脂'O�Literal����3火锅油脂含量高，下一餐选择清淡饮食�5'火锅油脂含量高，下一餐选择清淡饮食'�initN�Property��;���O�Literal��!�儿童�'儿童'O�Literal�#�;�B火锅温度高、口味重，给孩子吃要晾凉并搭配米饭�D'火锅温度高、口味重，给孩子吃要晾凉并搭配米饭'�init�initM�ObjectExpression�T�9�N�Property�_�m���K�Identifier�_�g�scenarioO�Literal�i�m�炸鸡�'炸鸡'�initN�Property�x�����K�Identifier�x���riskTagsL�ArrayExpression�����O�Literal�����高油�'高油'O�Literal�����高热量�'高热量'�initN�Property�������K�Identifier�����nextMealAdviceO�Literal�����,凉拌荞麦面+清炒时蔬+一杯柠檬水�.'凉拌荞麦面+清炒时蔬+一杯柠檬水'�initN�Property�������K�Identifier���ԭavoidStackingL�ArrayExpression����O�Literal���ݬ油炸食品�'油炸食品'O�Literal����奶茶�'奶茶'O�Literal����甜品�'甜品'�initN�Property������K�Identifier����hydrationReminderO�Literal��ätrue�initN�Property��7���K�Identifier��$�morningAdviceO�Literal�&�7�)南瓜粥+水煮蛋+苹果，清爽解腻�+'南瓜粥+水煮蛋+苹果，清爽解腻'�initN�Property�B�k���K�Identifier�B�S�nextMealNutrientsL�ArrayExpression�U�k�O�Literal�V�\�膳食纤维�'膳食纤维'O�Literal�^�d�维生素C�'维生素C'O�Literal�f�j�水分�'水分'�initN�Property�v�2���K�Identifier�v���goalAdviceM�ObjectExpression���2�N�Property�������O�Literal�����控压�'控压'O�Literal�����6油炸食品钠含量也不低，下一餐注意控盐�8'油炸食品钠含量也不低，下一餐注意控盐'�initN�Property�������O�Literal�����减脂�'减脂'O�Literal�����E炸鸡热量和脂肪都很高，下一餐严格控制热量和脂肪�G'炸鸡热量和脂肪都很高，下一餐严格控制热量和脂肪'�initN�Property�������O�Literal����控脂�'控脂'O�Literal�����!下一餐避免任何高脂食品�#'下一餐避免任何高脂食品'�initN�Property�
+�'���O�Literal�
+��儿童�'儿童'O�Literal��'�?炸鸡偶尔解馋可以，建议搭配蔬菜棒或水果一起�A'炸鸡偶尔解馋可以，建议搭配蔬菜棒或水果一起'�init�initM�ObjectExpression�@���N�Property�K�Y���K�Identifier�K�S�scenarioO�Literal�U�Y�奶茶�'奶茶'�initN�Property�d�{���K�Identifier�d�l�riskTagsL�ArrayExpression�n�{�O�Literal�o�s�高糖�'高糖'O�Literal�u�z�高热量�'高热量'�initN�Property�������K�Identifier�����nextMealAdviceO�Literal�����3减少今日糖摄入，下一餐少甜，多喝水�5'减少今日糖摄入，下一餐少甜，多喝水'�initN�Property�������K�Identifier�����avoidStackingL�ArrayExpression���דO�Literal���Ȧ甜品�'甜品'O�Literal���Ь含糖饮料�'含糖饮料'O�Literal���֦蛋糕�'蛋糕'�initN�Property�������K�Identifier����hydrationReminderO�Literal����ätrue�initN�Property��%���K�Identifier���morningAdviceO�Literal��%�.无糖豆浆+全麦三明治，补充蛋白质�0'无糖豆浆+全麦三明治，补充蛋白质'�initN�Property�0�R���K�Identifier�0�A�nextMealNutrientsL�ArrayExpression�C�R�O�Literal�D�I�蛋白质�'蛋白质'O�Literal�K�Q�膳食纤维�'膳食纤维'�initN�Property�]�����K�Identifier�]�g�goalAdviceM�ObjectExpression�i���N�Property�x�����O�Literal�x�|�控糖�'控糖'O�Literal�~���H奶茶含糖量通常很高，今日不建议再摄入任何含糖食品�J'奶茶含糖量通常很高，今日不建议再摄入任何含糖食品'�initN�Property�������O�Literal�����减脂�'减脂'O�Literal�����-奶茶热量较高，下一餐减少主食量�/'奶茶热量较高，下一餐减少主食量'�initN�Property�������O�Literal���Ѧ儿童�'儿童'O�Literal�����E奶茶含咖啡因，不建议给孩子喝，换成牛奶或酸奶吧�G'奶茶含咖啡因，不建议给孩子喝，换成牛奶或酸奶吧'�init�initM�ObjectExpression��	��N�Property�����K�Identifier���scenarioO�Literal���甜品�'甜品'�initN�Property�)�G���K�Identifier�)�1�riskTagsL�ArrayExpression�3�G�O�Literal�4�8�高糖�'高糖'O�Literal�:�?�高热量�'高热量'O�Literal�A�F�高脂肪�'高脂肪'�initN�Property�R�r���K�Identifier�R�`�nextMealAdviceO�Literal�b�r�&蔬菜沙拉+烤鸡胸肉+一杯绿茶�('蔬菜沙拉+烤鸡胸肉+一杯绿茶'�initN�Property�}�����K�Identifier�}���avoidStackingL�ArrayExpression�����O�Literal�����奶茶�'奶茶'O�Literal�����含糖饮料�'含糖饮料'O�Literal�����蛋糕�'蛋糕'O�Literal�����饼干�'饼干'�initN�Property�������K�Identifier���±hydrationReminderO�Literal����¥false�initN�Property�������K�Identifier����morningAdviceO�Literal�����%燕麦酸奶杯+蓝莓，低糖高纤�''燕麦酸奶杯+蓝莓，低糖高纤'�initN�Property���	'���K�Identifier���	�nextMealNutrientsL�ArrayExpression�	�	'�O�Literal�	�	�蛋白质�'蛋白质'O�Literal�	�	�膳食纤维�'膳食纤维'O�Literal�	 �	&�抗氧化物�'抗氧化物'�initN�Property�	2�	����K�Identifier�	2�	<�goalAdviceM�ObjectExpression�	>�	�N�Property�	M�	j���O�Literal�	M�	Q�控糖�'控糖'O�Literal�	S�	j�?甜品糖分很高，今日不建议再摄入任何含糖食品�A'甜品糖分很高，今日不建议再摄入任何含糖食品'�initN�Property�	y�	����O�Literal�	y�	}�减脂�'减脂'O�Literal�	�	��3甜品热量和脂肪都高，下一餐严格控制�5'甜品热量和脂肪都高，下一餐严格控制'�initN�Property�	��	����O�Literal�	��	��控脂�'控脂'O�Literal�	��	��9甜品通常含大量脂肪，下一餐避免高脂食品�;'甜品通常含大量脂肪，下一餐避免高脂食品'�initN�Property�	��	����O�Literal�	��	Ϧ儿童�'儿童'O�Literal�	��	��?甜品偶尔吃可以，但今天不能再吃其他甜食了哦�A'甜品偶尔吃可以，但今天不能再吃其他甜食了哦'�init�initM�ObjectExpression�
+�ŘN�Property�
+�
+���K�Identifier�
+�
+�scenarioO�Literal�
+�
+�卤味�'卤味'�initN�Property�
+%�
+<���K�Identifier�
+%�
+-�riskTagsL�ArrayExpression�
+/�
+<�O�Literal�
+0�
+4�高盐�'高盐'O�Literal�
+6�
+;�加工肉�'加工肉'�initN�Property�
+G�
+e���K�Identifier�
+G�
+U�nextMealAdviceO�Literal�
+W�
+e� 冬瓜汤+清蒸鱼+凉拌木耳�"'冬瓜汤+清蒸鱼+凉拌木耳'�initN�Property�
+p�
+����K�Identifier�
+p�
+}�avoidStackingL�ArrayExpression�
+�
+��O�Literal�
+��
+��火锅�'火锅'O�Literal�
+��
+��方便面�'方便面'O�Literal�
+��
+��咸菜�'咸菜'O�Literal�
+��
+��加工肉�'加工肉'�initN�Property�
+��
+����K�Identifier�
+��
+��hydrationReminderO�Literal�
+��
+�ätrue�initN�Property�
+��
+����K�Identifier�
+��
+ӭmorningAdviceO�Literal�
+��
+��/白粥+水煮蛋+清炒小白菜，清淡排钠�1'白粥+水煮蛋+清炒小白菜，清淡排钠'�initN�Property�
+�����K�Identifier�
+���nextMealNutrientsL�ArrayExpression���O�Literal��
+�钾�'钾'O�Literal���水分�'水分'O�Literal���膳食纤维�'膳食纤维'�initN�Property�$�����K�Identifier�$�.�goalAdviceM�ObjectExpression�0���N�Property�?�]���O�Literal�?�C�控压�'控压'O�Literal�E�]�B卤味钠含量很高，下一餐务必清淡，少放盐和酱油�D'卤味钠含量很高，下一餐务必清淡，少放盐和酱油'�initN�Property�l�����O�Literal�l�p�控糖�'控糖'O�Literal�r���9卤味调味料可能含糖，注意今日糖摄入总量�;'卤味调味料可能含糖，注意今日糖摄入总量'�initN�Property�������O�Literal�����儿童�'儿童'O�Literal�����?卤味口味偏重，给孩子少量尝味即可，搭配水果�A'卤味口味偏重，给孩子少量尝味即可，搭配水果'�init�initM�ObjectExpression�����N�Property�������K�Identifier���ߨscenarioO�Literal����方便面�'方便面'�initN�Property������K�Identifier�����riskTagsL�ArrayExpression����O�Literal��� �高盐�'高盐'O�Literal���高油�'高油'O�Literal���营养单一�'营养单一'�initN�Property��=���K�Identifier��(�nextMealAdviceO�Literal�*�=�/番茄鸡蛋汤+全麦面包+一份凉拌菠菜�1'番茄鸡蛋汤+全麦面包+一份凉拌菠菜'�initN�Property�H�j���K�Identifier�H�U�avoidStackingL�ArrayExpression�W�j�O�Literal�X�\�火锅�'火锅'O�Literal�^�b�卤味�'卤味'O�Literal�d�i�加工肉�'加工肉'�initN�Property�u�����K�Identifier�u���hydrationReminderO�Literal����ätrue�initN�Property�������K�Identifier�����morningAdviceO�Literal�����/杂粮粥+水煮蛋+猕猴桃，补充维生素�1'杂粮粥+水煮蛋+猕猴桃，补充维生素'�initN�Property�������K�Identifier���ձnextMealNutrientsL�ArrayExpression����O�Literal���ݩ蛋白质�'蛋白质'O�Literal����膳食纤维�'膳食纤维'O�Literal�����维生素C�'维生素C'�initN�Property�������K�Identifier����goalAdviceM�ObjectExpression����N�Property��,���O�Literal���控压�'控压'O�Literal��,�0方便面钠含量极高，下一餐务必清淡�2'方便面钠含量极高，下一餐务必清淡'�initN�Property�;�U���O�Literal�;�?�减脂�'减脂'O�Literal�A�U�6方便面热量和脂肪较高，下一餐控制热量�8'方便面热量和脂肪较高，下一餐控制热量'�initN�Property�d�����O�Literal�d�h�儿童�'儿童'O�Literal�j���Z方便面营养单一，不建议经常给孩子吃，下一餐要补充蛋白质和蔬菜�\'方便面营养单一，不建议经常给孩子吃，下一餐要补充蛋白质和蔬菜'�init�initM�ObjectExpression�����N�Property�������K�Identifier�����scenarioO�Literal�����夜宵�'夜宵'�initN�Property�������K�Identifier���ϨriskTagsL�ArrayExpression�����O�Literal���ש高热量�'高热量'O�Literal���߬影响睡眠�'影响睡眠'�initN�Property������K�Identifier�����nextMealAdviceO�Literal����<早餐适量，避免连续夜宵，白天注意营养均衡�>'早餐适量，避免连续夜宵，白天注意营养均衡'�initN�Property��;���K�Identifier��)�avoidStackingL�ArrayExpression�+�;�O�Literal�,�0�夜宵�'夜宵'O�Literal�2�:�含咖啡因饮品�'含咖啡因饮品'�initN�Property�F�^���K�Identifier�F�W�hydrationReminderO�Literal�Y�^¥false�initN�Property�i�����K�Identifier�i�v�morningAdviceO�Literal�x���(小米南瓜粥+水煮蛋，温和养胃�*'小米南瓜粥+水煮蛋，温和养胃'�initN�Property�������K�Identifier�����nextMealNutrientsL�ArrayExpression�����O�Literal�����水分�'水分'O�Literal�����膳食纤维�'膳食纤维'�initN�Property�������K�Identifier���ɪgoalAdviceM�ObjectExpression�����N�Property�������O�Literal���ަ控压�'控压'O�Literal�����E夜宵通常高盐高油，对血压控制不利，建议尽量避免�G'夜宵通常高盐高油，对血压控制不利，建议尽量避免'�initN�Property�����O�Literal���减脂�'减脂'O�Literal���-夜宵热量容易囤积，建议尽量避免�/'夜宵热量容易囤积，建议尽量避免'�initN�Property�.�G���O�Literal�.�2�控糖�'控糖'O�Literal�4�G�3夜宵可能影响次日血糖，建议尽量避免�5'夜宵可能影响次日血糖，建议尽量避免'�initN�Property�V�{���O�Literal�V�Z�儿童�'儿童'O�Literal�\�{�W睡前吃东西会影响生长激素分泌，尽量让孩子养成不吃夜宵的习惯�Y'睡前吃东西会影响生长激素分泌，尽量让孩子养成不吃夜宵的习惯'�init�initM�ObjectExpression�����N�Property�������K�Identifier�����scenarioO�Literal���ǩ麻辣烫�'麻辣烫'�initN�Property�������K�Identifier���ڨriskTagsL�ArrayExpression����O�Literal����高盐�'高盐'O�Literal����高油�'高油'O�Literal����汤底高钠�'汤底高钠'�initN�Property������K�Identifier���	�nextMealAdviceO�Literal���#杂粮饭+清蒸鲈鱼+白灼秋葵�%'杂粮饭+清蒸鲈鱼+白灼秋葵'�initN�Property�%�N���K�Identifier�%�2�avoidStackingL�ArrayExpression�4�N�O�Literal�5�9�火锅�'火锅'O�Literal�;�?�卤味�'卤味'O�Literal�A�F�方便面�'方便面'O�Literal�H�M�重口味�'重口味'�initN�Property�Y�p���K�Identifier�Y�j�hydrationReminderO�Literal�l�pätrue�initN�Property�{�����K�Identifier�{���morningAdviceO�Literal�����2绿豆粥+水煮蛋+凉拌海带丝，帮助排钠�4'绿豆粥+水煮蛋+凉拌海带丝，帮助排钠'�initN�Property�������K�Identifier�����nextMealNutrientsL�ArrayExpression���ѓO�Literal�����钾�'钾'O�Literal���Ȭ膳食纤维�'膳食纤维'O�Literal���Ь优质蛋白�'优质蛋白'�initN�Property�������K�Identifier����goalAdviceM�ObjectExpression�����N�Property������O�Literal�����控压�'控压'O�Literal����?麻辣烫汤底和调料钠含量很高，下一餐务必清淡�A'麻辣烫汤底和调料钠含量很高，下一餐务必清淡'�initN�Property�#�>���O�Literal�#�'�控糖�'控糖'O�Literal�)�>�9注意麻辣烫调料中可能含糖，今日减少甜食�;'注意麻辣烫调料中可能含糖，今日减少甜食'�initN�Property�M�j���O�Literal�M�Q�减脂�'减脂'O�Literal�S�j�?麻辣烫油脂多来自汤底和蘸料，下一餐清淡少油�A'麻辣烫油脂多来自汤底和蘸料，下一餐清淡少油'�initN�Property�y�����O�Literal�y�}�儿童�'儿童'O�Literal����H麻辣烫口味重、温度高，给孩子吃要少放辣、多选蔬菜�J'麻辣烫口味重、温度高，给孩子吃要少放辣、多选蔬菜'�init�initM�ObjectExpression�����N�Property�������K�Identifier���ŨscenarioO�Literal���˦烤肉�'烤肉'�initN�Property�������K�Identifier���ިriskTagsL�ArrayExpression�����O�Literal����高油�'高油'O�Literal����高盐�'高盐'O�Literal����肉类偏多�'肉类偏多'O�Literal�����蔬菜少�'蔬菜少'�initN�Property��$���K�Identifier���nextMealAdviceO�Literal��$� 蔬菜沙拉+豆腐汤+糙米饭�"'蔬菜沙拉+豆腐汤+糙米饭'�initN�Property�/�V���K�Identifier�/�<�avoidStackingL�ArrayExpression�>�V�O�Literal�?�C�烧烤�'烧烤'O�Literal�E�I�炸鸡�'炸鸡'O�Literal�K�O�卤味�'卤味'O�Literal�Q�U�奶茶�'奶茶'�initN�Property�a�x���K�Identifier�a�r�hydrationReminderO�Literal�t�xätrue�initN�Property�������K�Identifier�����morningAdviceO�Literal�����/燕麦牛奶+水煮蛋+圣女果，清爽解腻�1'燕麦牛奶+水煮蛋+圣女果，清爽解腻'�initN�Property�������K�Identifier�����nextMealNutrientsL�ArrayExpression���ۓO�Literal���ʬ膳食纤维�'膳食纤维'O�Literal���Ҫ维生素C�'维生素C'O�Literal���ڬ抗氧化物�'抗氧化物'�initN�Property�������K�Identifier����goalAdviceM�ObjectExpression�����N�Property�����O�Literal���控压�'控压'O�Literal���6烤肉腌制酱料钠含量高，下一餐注意控盐�8'烤肉腌制酱料钠含量高，下一餐注意控盐'�initN�Property�*�B���O�Literal�*�.�控糖�'控糖'O�Literal�0�B�0烤肉酱料中糖分不少，今日减少甜食�2'烤肉酱料中糖分不少，今日减少甜食'�initN�Property�Q�l���O�Literal�Q�U�减脂�'减脂'O�Literal�W�l�9烤肉脂肪含量高，下一餐选择清淡素食为主�;'烤肉脂肪含量高，下一餐选择清淡素食为主'�initN�Property�{�����O�Literal�{��儿童�'儿童'O�Literal�����E烤肉油脂多、温度高，给孩子吃要剪小块、搭配生菜�G'烤肉油脂多、温度高，给孩子吃要剪小块、搭配生菜'�init�initM�ObjectExpression�����N�Property�������K�Identifier���ƨscenarioO�Literal���̦日料�'日料'�initN�Property�������K�Identifier���ߨriskTagsL�ArrayExpression����O�Literal����高盐�'高盐'O�Literal����生食需注意�'生食需注意'�initN�Property������K�Identifier���	�nextMealAdviceO�Literal���&温热的味噌汤+蒸蛋+一份水果�('温热的味噌汤+蒸蛋+一份水果'�initN�Property�&�H���K�Identifier�&�3�avoidStackingL�ArrayExpression�5�H�O�Literal�6�:�刺身�'刺身'O�Literal�<�@�寿司�'寿司'O�Literal�B�G�重口味�'重口味'�initN�Property�S�k���K�Identifier�S�d�hydrationReminderO�Literal�f�k¥false�initN�Property�v�����K�Identifier�v���morningAdviceO�Literal�����,热牛奶+全麦吐司+香蕉，温和养胃�.'热牛奶+全麦吐司+香蕉，温和养胃'�initN�Property�������K�Identifier�����nextMealNutrientsL�ArrayExpression���ŒO�Literal�����维生素C�'维生素C'O�Literal���Ĭ温热食物�'温热食物'�initN�Property�������K�Identifier���ڪgoalAdviceM�ObjectExpression�����N�Property������O�Literal����控压�'控压'O�Literal����?日料中的酱油和味噌钠含量不低，注意蘸料用量�A'日料中的酱油和味噌钠含量不低，注意蘸料用量'�initN�Property��2���O�Literal���控糖�'控糖'O�Literal��2�9日料整体糖分不高，但注意寿司醋饭中的糖�;'日料整体糖分不高，但注意寿司醋饭中的糖'�initN�Property�A�[���O�Literal�A�E�减脂�'减脂'O�Literal�G�[�6日料相对健康，但天妇罗和鳗鱼热量较高�8'日料相对健康，但天妇罗和鳗鱼热量较高'�initN�Property�j�����O�Literal�j�n�儿童�'儿童'O�Literal�p���H生食不建议给孩子吃，选择熟食如照烧鸡肉饭、玉子烧�J'生食不建议给孩子吃，选择熟食如照烧鸡肉饭、玉子烧'�init�initM�ObjectExpression�����N�Property�������K�Identifier�����scenarioO�Literal�����自助餐�'自助餐'�initN�Property�������K�Identifier���ШriskTagsL�ArrayExpression����O�Literal���ة高热量�'高热量'O�Literal���ަ高油�'高油'O�Literal����高盐�'高盐'O�Literal����容易过量�'容易过量'�initN�Property������K�Identifier����nextMealAdviceO�Literal���+清粥小菜+水煮蔬菜，让肠胃休息�-'清粥小菜+水煮蔬菜，让肠胃休息'�initN�Property�$�M���K�Identifier�$�1�avoidStackingL�ArrayExpression�3�M�O�Literal�4�8�火锅�'火锅'O�Literal�:�>�烧烤�'烧烤'O�Literal�@�F�油炸食品�'油炸食品'O�Literal�H�L�甜品�'甜品'�initN�Property�X�o���K�Identifier�X�i�hydrationReminderO�Literal�k�oätrue�initN�Property�z�����K�Identifier�z���morningAdviceO�Literal�����/蜂蜜柠檬水+燕麦粥+苹果，帮助消化�1'蜂蜜柠檬水+燕麦粥+苹果，帮助消化'�initN�Property�������K�Identifier�����nextMealNutrientsL�ArrayExpression���ϓO�Literal�����水分�'水分'O�Literal���Ǭ膳食纤维�'膳食纤维'O�Literal���Ω益生菌�'益生菌'�initN�Property�������K�Identifier����goalAdviceM�ObjectExpression�����N�Property������O�Literal�����控压�'控压'O�Literal����B自助餐品种多、钠摄入容易超标，下一餐务必清淡�D'自助餐品种多、钠摄入容易超标，下一餐务必清淡'�initN�Property�"�>���O�Literal�"�&�控糖�'控糖'O�Literal�(�>�<自助餐甜品和饮料含糖高，今日不再叠加甜食�>'自助餐甜品和饮料含糖高，今日不再叠加甜食'�initN�Property�M�f���O�Literal�M�Q�减脂�'减脂'O�Literal�S�f�3自助餐容易热量超标，下一餐严格控制�5'自助餐容易热量超标，下一餐严格控制'�initN�Property�u�����O�Literal�u�y�儿童�'儿童'O�Literal�{���N自助餐容易吃多，帮孩子控制每样取少量，多选蔬菜和水果�P'自助餐容易吃多，帮孩子控制每样取少量，多选蔬菜和水果'�init�initM�ObjectExpression���l�N�Property�������K�Identifier���èscenarioO�Literal���ʩ下午茶�'下午茶'�initN�Property�������K�Identifier���ݨriskTagsL�ArrayExpression����O�Literal����高糖�'高糖'O�Literal����高热量�'高热量'�initN�Property������K�Identifier����nextMealAdviceO�Literal���3晚餐减少主食量，增加蔬菜和优质蛋白�5'晚餐减少主食量，增加蔬菜和优质蛋白'�initN�Property�%�H���K�Identifier�%�2�avoidStackingL�ArrayExpression�4�H�O�Literal�5�9�奶茶�'奶茶'O�Literal�;�?�甜品�'甜品'O�Literal�A�G�含糖饮料�'含糖饮料'�initN�Property�S�k���K�Identifier�S�d�hydrationReminderO�Literal�f�k¥false�initN�Property�v�����K�Identifier�v���morningAdviceO�Literal�����/无糖豆浆+全麦贝果+鸡蛋，均衡营养�1'无糖豆浆+全麦贝果+鸡蛋，均衡营养'�initN�Property�������K�Identifier�����nextMealNutrientsL�ArrayExpression���ŒO�Literal�����蛋白质�'蛋白质'O�Literal���Ĭ膳食纤维�'膳食纤维'�initN�Property���e���K�Identifier���ڪgoalAdviceM�ObjectExpression���e�N�Property������O�Literal����控糖�'控糖'O�Literal����6下午茶点心含糖量高，今日不再叠加甜食�8'下午茶点心含糖量高，今日不再叠加甜食'�initN�Property��,���O�Literal���减脂�'减脂'O�Literal��,�0下午茶热量不容忽视，晚餐减少主食�2'下午茶热量不容忽视，晚餐减少主食'�initN�Property�;�Z���O�Literal�;�?�儿童�'儿童'O�Literal�A�Z�E下午茶可以吃，但别影响晚餐胃口，选水果比蛋糕好�G'下午茶可以吃，但别影响晚餐胃口，选水果比蛋糕好'�init�initM�ObjectExpression�s�e�N�Property�~�����K�Identifier�~���scenarioO�Literal�����螺蛳粉�'螺蛳粉'�initN�Property�������K�Identifier�����riskTagsL�ArrayExpression�����O�Literal�����高盐�'高盐'O�Literal�����高油�'高油'O�Literal�����高热量�'高热量'�initN�Property�������K�Identifier���ήnextMealAdviceO�Literal�����&绿豆汤+凉拌黄瓜+清蒸鸡胸肉�('绿豆汤+凉拌黄瓜+清蒸鸡胸肉'�initN�Property������K�Identifier�����avoidStackingL�ArrayExpression����O�Literal�����火锅�'火锅'O�Literal���卤味�'卤味'O�Literal���方便面�'方便面'O�Literal���重口味�'重口味'�initN�Property��6���K�Identifier��0�hydrationReminderO�Literal�2�6ätrue�initN�Property�A�b���K�Identifier�A�N�morningAdviceO�Literal�P�b�,白粥+水煮蛋+清炒时蔬，清淡排钠�.'白粥+水煮蛋+清炒时蔬，清淡排钠'�initN�Property�m�����K�Identifier�m�~�nextMealNutrientsL�ArrayExpression�����O�Literal�����钾�'钾'O�Literal�����水分�'水分'O�Literal�����膳食纤维�'膳食纤维'�initN�Property���^���K�Identifier�����goalAdviceM�ObjectExpression���^�N�Property�������O�Literal�����控压�'控压'O�Literal�����?螺蛳粉汤底和配料钠含量很高，下一餐务必清淡�A'螺蛳粉汤底和配料钠含量很高，下一餐务必清淡'�initN�Property������O�Literal����控糖�'控糖'O�Literal����<螺蛳粉本身糖分不高，但注意配料的隐藏糖分�>'螺蛳粉本身糖分不高，但注意配料的隐藏糖分'�initN�Property��*���O�Literal���减脂�'减脂'O�Literal��*�6螺蛳粉热量和油脂较高，下一餐控制热量�8'螺蛳粉热量和油脂较高，下一餐控制热量'�initN�Property�9�S���O�Literal�9�=�儿童�'儿童'O�Literal�?�S�6螺蛳粉口味重、辣度高，不建议给孩子吃�8'螺蛳粉口味重、辣度高，不建议给孩子吃'�init�init�const���

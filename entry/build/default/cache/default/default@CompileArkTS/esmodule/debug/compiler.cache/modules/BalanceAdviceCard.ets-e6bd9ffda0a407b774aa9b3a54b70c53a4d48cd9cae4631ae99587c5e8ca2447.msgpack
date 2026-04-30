@@ -249,7 +249,7 @@ export class BalanceAdviceCard extends ViewPU {
         this.updateDirtyElements();
     }
 }
-//# sourceMappingURL=BalanceAdviceCard.js.mapÂ‘ÙOC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\MealBalance.etsÙZC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\components\BalanceAdviceCard.etsÔrB›ªmoduleName±isLocalDependency¯isNodeEntryFile§pkgPath±belongProjectPath§pkgNameªpkgVersion±dependencyPkgInfo¯hostModulesInfo°belongModulePath¬shouldEmitJs¥entryÃÂÙ,C:\Users\A\IDEProjects\family_food_app\entryÙ&C:\Users\A\IDEProjects\family_food_app¥entry¥1.0.0Ô  ‘ÔrC’²hostDependencyName®hostModuleName¿../components/BalanceAdviceCard¥entryÙ,C:\Users\A\IDEProjects\family_food_app\entryÃÃÚu// ç¾é£Ÿå¹³è¡¡å»ºè®®å¡ç»„ä»¶
+//# sourceMappingURL=BalanceAdviceCard.js.mapÂ‘Ù?E:\APP\family_food_app\entry\src\main\ets\model\MealBalance.etsÙJE:\APP\family_food_app\entry\src\main\ets\components\BalanceAdviceCard.etsÔrB›ªmoduleName±isLocalDependency¯isNodeEntryFile§pkgPath±belongProjectPath§pkgNameªpkgVersion±dependencyPkgInfo¯hostModulesInfo°belongModulePath¬shouldEmitJs¥entryÃÂ¼E:\APP\family_food_app\entry¶E:\APP\family_food_app¥entry¥1.0.0Ô  ‘ÔrC’²hostDependencyName®hostModuleName¿../components/BalanceAdviceCard¥entry¼E:\APP\family_food_app\entryÃÃÚ×// ç¾é£Ÿå¹³è¡¡å»ºè®®å¡ç»„ä»¶
 
 import { MealBalance, RiskTag } from '../model/MealBalance';
 
@@ -347,7 +347,7 @@ export struct BalanceAdviceCard {
     .alignItems(HorizontalAlign.Start)
   }
 }
-ÀÔrD‘´../model/MealBalanceÔrE—ªassertions¨external¢id¤meta±moduleSideEffectsªresolvedByµsyntheticNamedExportsAÂÙOC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\MealBalance.etsAÃªoh-resolveÂ“ÔrF–§version¤fileªsourceRoot§sources¥names¨mappings´BalanceAdviceCard.js ‘µBalanceAdviceCard.etsÜ ÷’”    ”  ˜”   ” ”	 	” ” ” %”2 ;”3 <””   ” ” ” ‘”  ‘” <”” ”# #”. .”0 0’”$ ”+ ’” ” ’” ” ‘” ’” 	” 	
+ÀÔrD‘´../model/MealBalanceÔrE—ªassertions¨external¢id¤meta±moduleSideEffectsªresolvedByµsyntheticNamedExportsAÂÙ?E:\APP\family_food_app\entry\src\main\ets\model\MealBalance.etsAÃªoh-resolveÂ“ÔrF–§version¤fileªsourceRoot§sources¥names¨mappings´BalanceAdviceCard.js ‘µBalanceAdviceCard.etsÜ ÷’”    ”  ˜”   ” ”	 	” ” ” %”2 ;”3 <””   ” ” ” ‘”  ‘” <”” ”# #”. .”0 0’”$ ”+ ’” ” ’” ” ‘” ’” 	” 	
 –” 	” 	
 ” Ì[” Ì[
 ” Ì[” Ì[–” 	” 	

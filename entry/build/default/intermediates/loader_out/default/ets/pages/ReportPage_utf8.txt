@@ -1,0 +1,908 @@
+﻿// ReportPage.ets
+// 统一报告页 - 展示食品适配结论、家庭对比、健康评分、替代品推荐
+// 信息层级：结论 → 份量 → 原因 → 平衡建议 → 透明度
+
+import { router, promptAction } from '@kit.ArkUI';
+import { AppState } from '../AppState';
+import { FoodLabel } from '../model/FoodLabel';
+import { FamilyProfile } from '../model/FamilyProfile';
+import { Recommendation, getLevelColorValue } from '../model/Recommendation';
+import { ChildProtection } from '../model/ChildProtection';
+import { CredibilityResult } from '../model/CredibilityResult';
+import { HealthScoreResult, AlternativeFood } from '../model/FoodAdapterTypes';
+import { NutriScoreResult, NutriScoreGrade } from '../engine/NutriScoreEngine';
+import { DailyBudget } from '../model/DailyBudget';
+import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
+import { UnifiedScoreResult, ShanghaiGradeResult } from '../engine/NutritionScoreService';
+import { SmartChoiceResult } from '../engine/SmartChoiceEngine';
+import { ManufacturerInfoCard } from '../components/ManufacturerInfoCard';
+import { FoodParser } from '../engine/FoodParser';
+
+// 适配级别颜色映射条目
+class LevelColorEntry {
+  key: string = '';
+  value: string = '';
+}
+
+const LEVEL_COLORS: LevelColorEntry[] = [
+  { key: '适合', value: COLORS.SUCCESS },
+  { key: '少量可以', value: COLORS.WARNING },
+  { key: '今天谨慎', value: COLORS.DANGER },
+  { key: '建议避免', value: COLORS.DANGER }
+];
+
+const LEVEL_BG_COLORS: LevelColorEntry[] = [
+  { key: '适合', value: COLORS.ACCENT_GREEN_LIGHT },
+  { key: '少量可以', value: COLORS.SECONDARY_LIGHT },
+  { key: '今天谨慎', value: COLORS.BG_CARD_HIGHLIGHT },
+  { key: '建议避免', value: COLORS.BG_SECTION }
+];
+
+// 成员角色对应的头像emoji
+class RoleEmojiEntry {
+  role: string = '';
+  emoji: string = '';
+}
+
+const ROLE_EMOJIS: RoleEmojiEntry[] = [
+  { role: '爸爸', emoji: '👨' },
+  { role: '妈妈', emoji: '👩' },
+  { role: '孩子', emoji: '👶' },
+  { role: '我', emoji: '🧑' }
+];
+
+@Entry
+@Component
+struct ReportPage {
+  @State foodLabel: FoodLabel = new FoodLabel()
+  @State familyMembers: FamilyProfile[] = []
+  @State recommendations: Recommendation[] = []
+  @State selectedMemberId: string = ''
+  @State selectedRecommendation: Recommendation | null = null
+  @State childProtection: ChildProtection | null = null
+  @State credibilityResult: CredibilityResult = new CredibilityResult()
+  @State healthScoreResult: HealthScoreResult | null = null
+  @State alternativeFoods: AlternativeFood[] = []
+  @State showAlternativeFoods: boolean = false
+  @State unifiedScore: UnifiedScoreResult | null = null
+  @State dailyBudget: DailyBudget | null = null
+  @State nextMealAdvice: string = ''
+  @State manufacturerName: string = ''
+  @State scNumber: string = ''
+  @State entrustInfo: string = ''
+  @State dataCompleteness: number = 0
+
+  private appState: AppState = AppState.getInstance()
+  private foodId: string = ''
+  private historySaved: boolean = false
+
+  async aboutToAppear() {
+    const params = router.getParams() as Record<string, string>
+    if (params) {
+      this.foodId = params.foodId || ''
+      this.selectedMemberId = params.memberId || ''
+    }
+    await this.loadReportData()
+  }
+
+  build() {
+    Scroll() {
+      Column() {
+        // 顶部导航
+        Row() {
+          Text('←')
+            .fontSize(FONT_SIZE.LARGE)
+            .fontColor(COLORS.PRIMARY)
+            .onClick(() => { router.back() })
+          Text('家庭适配报告')
+            .fontSize(FONT_SIZE.TITLE_LG)
+            .fontWeight(FONT_WEIGHT.BOLD)
+            .fontColor(COLORS.TEXT_PRIMARY)
+            .margin({ left: SPACING.MD })
+        }
+        .width('100%')
+        .padding({ left: SPACING.LG, right: SPACING.LG, top: SPACING.LG, bottom: SPACING.LG })
+
+        // 食品信息卡片
+        this.FoodInfoCard()
+
+        // 成员选择器
+        if (this.familyMembers.length > 0) {
+          this.MemberSelector()
+        }
+
+        // 家庭对比卡片
+        if (this.recommendations.length > 0) {
+          this.FamilyCompareCard()
+        }
+
+        // 选中成员详情
+        if (this.selectedRecommendation !== null) {
+          this.SelectedMemberDetail()
+        }
+
+        // 替代品推荐
+        if (this.showAlternativeFoods && this.alternativeFoods.length > 0) {
+          this.AlternativeFoodSection()
+        }
+
+        // 儿童正餐保护
+        if (this.childProtection !== null && this.childProtection.hasAnyAdvice()) {
+          this.ChildProtectionSection()
+        }
+
+        // 综合评分
+        if (this.unifiedScore !== null) {
+          this.UnifiedScoreSection()
+        }
+
+        // 下一餐建议
+        if (this.nextMealAdvice.length > 0) {
+          this.NextMealAdviceSection()
+        }
+
+        // 今日剩余额度
+        if (this.dailyBudget !== null) {
+          this.BudgetOverviewSection()
+        }
+
+        // 操作按钮
+        this.ActionButtons()
+
+        // 底部声明
+        this.FooterDisclaimer()
+      }
+      .width('100%')
+      .alignItems(HorizontalAlign.Center)
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor(COLORS.BG_PAGE)
+  }
+
+  // ==================== 食品信息卡片 ====================
+  @Builder
+  FoodInfoCard() {
+    Column() {
+      // 食品名称
+      Text(this.foodLabel.foodName.length > 0 ? this.foodLabel.foodName : '待补充食品名称')
+        .fontSize(FONT_SIZE.TITLE)
+        .fontWeight(FONT_WEIGHT.BOLD)
+        .fontColor(COLORS.TEXT_PRIMARY)
+        .margin({ bottom: SPACING.SM })
+
+      // 营养成分网格
+      Row() {
+        this.NutriChip('钠', `${this.foodLabel.nutrition.sodium}mg`, this.foodLabel.isHighSodium())
+        this.NutriChip('糖', `${this.foodLabel.nutrition.sugar}g`, this.foodLabel.isHighSugar())
+        this.NutriChip('热量', `${this.foodLabel.nutrition.calories}kcal`, this.foodLabel.isHighCalorie())
+        this.NutriChip('脂肪', `${this.foodLabel.nutrition.fat}g`, this.foodLabel.isHighFat())
+      }
+      .width('100%')
+      .justifyContent(FlexAlign.SpaceBetween)
+      .margin({ bottom: SPACING.SM })
+
+      // 条码信息
+      if (this.foodLabel.barcode.length > 0) {
+        Text(`条码：${this.foodLabel.barcode}`)
+          .fontSize(FONT_SIZE.SMALL)
+          .fontColor(COLORS.TEXT_HINT)
+          .margin({ bottom: SPACING.XS })
+      }
+    }
+    .width('92%')
+    .padding(SPACING.LG)
+    .backgroundColor(COLORS.BG_CARD)
+    .borderRadius(RADIUS.LG)
+    .alignItems(HorizontalAlign.Start)
+    .margin({ bottom: SPACING.SM })
+    .shadow({ radius: 8, color: COLORS.SHADOW_LIGHT, offsetX: 0, offsetY: 2 })
+  }
+
+  // ==================== 营养成分标签 ====================
+  @Builder
+  NutriChip(label: string, value: string, isHigh: boolean) {
+    Column() {
+      Text(label)
+        .fontSize(FONT_SIZE.TINY)
+        .fontColor(COLORS.TEXT_HINT)
+      Text(value)
+        .fontSize(FONT_SIZE.SMALL)
+        .fontWeight(FONT_WEIGHT.MEDIUM)
+        .fontColor(isHigh ? COLORS.DANGER : COLORS.TEXT_PRIMARY)
+        .margin({ top: SPACING.XS })
+    }
+    .padding({ left: SPACING.SM, right: SPACING.SM, top: SPACING.SM, bottom: SPACING.SM })
+    .backgroundColor(isHigh ? COLORS.DANGER_LIGHT : COLORS.BG_SECTION)
+    .borderRadius(RADIUS.SM)
+    .alignItems(HorizontalAlign.Center)
+  }
+
+  // ==================== 成员选择器 ====================
+  @Builder
+  MemberSelector() {
+    Column() {
+      Text('查看谁的结论')
+        .fontSize(FONT_SIZE.SMALL)
+        .fontColor(COLORS.TEXT_HINT)
+        .margin({ bottom: SPACING.SM })
+
+      Row() {
+        ForEach(this.familyMembers, (member: FamilyProfile) => {
+          Column() {
+            Text(this.getMemberEmoji(member))
+              .fontSize(FONT_SIZE.XLARGE)
+            Text(member.nickname)
+              .fontSize(FONT_SIZE.TINY)
+              .fontColor(this.selectedMemberId === member.memberId ? COLORS.TEXT_WHITE : COLORS.TEXT_PRIMARY)
+              .margin({ top: SPACING.XS })
+          }
+          .width(64)
+          .height(64)
+          .justifyContent(FlexAlign.Center)
+          .alignItems(HorizontalAlign.Center)
+          .borderRadius(RADIUS.FULL)
+          .backgroundColor(this.selectedMemberId === member.memberId ? COLORS.PRIMARY : COLORS.BG_SECTION)
+          .margin({ right: SPACING.SM })
+          .onClick(() => { this.selectMember(member.memberId) })
+        }, (member: FamilyProfile) => member.memberId)
+      }
+      .width('100%')
+      .justifyContent(FlexAlign.Center)
+    }
+    .width('92%')
+    .padding(SPACING.LG)
+    .backgroundColor(COLORS.BG_CARD)
+    .borderRadius(RADIUS.LG)
+    .alignItems(HorizontalAlign.Start)
+    .margin({ bottom: SPACING.SM })
+  }
+
+  // ==================== 家庭对比卡片 ====================
+  @Builder
+  FamilyCompareCard() {
+    Column() {
+      Text('👨‍👩‍👧‍👦 全家适配对比')
+        .fontSize(FONT_SIZE.SUBTITLE)
+        .fontWeight(FONT_WEIGHT.BOLD)
+        .fontColor(COLORS.TEXT_PRIMARY)
+        .margin({ bottom: SPACING.MD })
+
+      ForEach(this.recommendations, (rec: Recommendation, index: number) => {
+        if (index < this.familyMembers.length) {
+          Row() {
+            Text(this.getMemberEmoji(this.familyMembers[index]))
+              .fontSize(FONT_SIZE.BODY_LG)
+              .margin({ right: SPACING.XS })
+            Text(this.familyMembers[index].nickname)
+              .fontSize(FONT_SIZE.BODY)
+              .fontColor(COLORS.TEXT_PRIMARY)
+              .layoutWeight(1)
+
+            Text(rec.level)
+              .fontSize(FONT_SIZE.SMALL)
+              .fontColor(COLORS.TEXT_WHITE)
+              .padding({ left: SPACING.SM, right: SPACING.SM, top: SPACING.XS, bottom: SPACING.XS })
+              .borderRadius(RADIUS.SM)
+              .backgroundColor(getLevelColorValue(rec.levelColor))
+              .margin({ right: SPACING.SM })
+
+            if (rec.maxAmount > 0) {
+              Text(`最多${rec.maxAmount}g`)
+                .fontSize(FONT_SIZE.SMALL)
+                .fontColor(COLORS.TEXT_SECONDARY)
+            }
+          }
+          .width('100%')
+          .margin({ bottom: SPACING.SM })
+          .alignItems(VerticalAlign.Center)
+        }
+      })
+    }
+    .width('92%')
+    .padding(SPACING.LG)
+    .backgroundColor(COLORS.BG_CARD)
+    .borderRadius(RADIUS.LG)
+    .alignItems(HorizontalAlign.Start)
+    .margin({ bottom: SPACING.SM })
+    .shadow({ radius: 8, color: COLORS.SHADOW_LIGHT, offsetX: 0, offsetY: 2 })
+  }
+
+  // ==================== 选中成员详情 ====================
+  @Builder
+  SelectedMemberDetail() {
+    if (this.selectedRecommendation !== null) {
+      Column() {
+        // 成员头像和名称
+        Row() {
+          Text(this.getMemberEmojiById(this.selectedMemberId))
+            .fontSize(FONT_SIZE.HUGE)
+            .margin({ right: SPACING.MD })
+          Column() {
+            Text(this.getMemberName(this.selectedMemberId))
+              .fontSize(FONT_SIZE.TITLE)
+              .fontWeight(FONT_WEIGHT.BOLD)
+              .fontColor(COLORS.TEXT_PRIMARY)
+            Text(this.getHealthGoalText(this.selectedMemberId))
+              .fontSize(FONT_SIZE.SMALL)
+              .fontColor(COLORS.TEXT_HINT)
+              .margin({ top: SPACING.XS })
+          }
+          .alignItems(HorizontalAlign.Start)
+          .layoutWeight(1)
+        }
+        .width('100%')
+        .margin({ bottom: SPACING.MD })
+
+        // 建议级别大卡片
+        Row() {
+          Column() {
+            Text(this.selectedRecommendation.level)
+              .fontSize(FONT_SIZE.XLARGE)
+              .fontWeight(FONT_WEIGHT.BOLD)
+              .fontColor(COLORS.TEXT_WHITE)
+            Text(this.getAmountText(this.selectedRecommendation.maxAmount))
+              .fontSize(FONT_SIZE.SMALL)
+              .fontColor(COLORS.TEXT_WHITE)
+              .margin({ top: SPACING.XS })
+          }
+          .width('100%')
+          .padding(SPACING.LG)
+          .backgroundColor(getLevelColorValue(this.selectedRecommendation.levelColor))
+          .borderRadius(RADIUS.LG)
+          .alignItems(HorizontalAlign.Center)
+        }
+        .width('100%')
+        .margin({ bottom: SPACING.MD })
+
+        // 原因列表
+        if (this.selectedRecommendation.reasons.length > 0) {
+          Text('📋 原因')
+            .fontSize(FONT_SIZE.BODY)
+            .fontWeight(FONT_WEIGHT.MEDIUM)
+            .fontColor(COLORS.TEXT_SECONDARY)
+            .margin({ bottom: SPACING.SM })
+          ForEach(this.selectedRecommendation.reasons, (reason: string) => {
+            Text(`• ${reason}`)
+              .fontSize(FONT_SIZE.BODY)
+              .fontColor(COLORS.TEXT_PRIMARY)
+              .margin({ bottom: SPACING.XS })
+          }, (reason: string, index: number) => `reason_${index}`)
+        }
+
+        // 提醒列表
+        if (this.selectedRecommendation.reminders.length > 0) {
+          Text('💡 提醒')
+            .fontSize(FONT_SIZE.BODY)
+            .fontWeight(FONT_WEIGHT.MEDIUM)
+            .fontColor(COLORS.TEXT_SECONDARY)
+            .margin({ top: SPACING.MD, bottom: SPACING.SM })
+          ForEach(this.selectedRecommendation.reminders, (reminder: string) => {
+            Text(`• ${reminder}`)
+              .fontSize(FONT_SIZE.BODY)
+              .fontColor(COLORS.TEXT_HINT)
+              .margin({ bottom: SPACING.XS })
+          }, (reminder: string, index: number) => `reminder_${index}`)
+        }
+      }
+      .width('92%')
+      .padding(SPACING.LG)
+      .backgroundColor(COLORS.BG_CARD)
+      .borderRadius(RADIUS.LG)
+      .alignItems(HorizontalAlign.Start)
+      .margin({ bottom: SPACING.SM })
+      .shadow({ radius: 8, color: COLORS.SHADOW_LIGHT, offsetX: 0, offsetY: 2 })
+    }
+  }
+
+  // ==================== 替代品推荐 ====================
+  @Builder
+  AlternativeFoodSection() {
+    Column() {
+      Text('🔄 替代品推荐')
+        .fontSize(FONT_SIZE.SUBTITLE)
+        .fontWeight(FONT_WEIGHT.BOLD)
+        .fontColor(COLORS.TEXT_PRIMARY)
+        .margin({ bottom: SPACING.MD })
+
+      ForEach(this.alternativeFoods, (food: AlternativeFood) => {
+        Row() {
+          Column() {
+            Text(food.productName)
+              .fontSize(FONT_SIZE.BODY)
+              .fontWeight(FONT_WEIGHT.MEDIUM)
+              .fontColor(COLORS.TEXT_PRIMARY)
+            Text(food.brand)
+              .fontSize(FONT_SIZE.SMALL)
+              .fontColor(COLORS.TEXT_HINT)
+              .margin({ top: SPACING.XS })
+          }
+          .alignItems(HorizontalAlign.Start)
+          .layoutWeight(1)
+
+          Text(food.healthScore > 0 ? `${food.healthScore}分` : '')
+            .fontSize(FONT_SIZE.SMALL)
+            .fontColor(COLORS.SUCCESS)
+            .fontWeight(FONT_WEIGHT.MEDIUM)
+        }
+        .width('100%')
+        .padding(SPACING.MD)
+        .backgroundColor(COLORS.BG_SECTION)
+        .borderRadius(RADIUS.MD)
+        .margin({ bottom: SPACING.SM })
+      })
+    }
+    .width('92%')
+    .padding(SPACING.LG)
+    .backgroundColor(COLORS.BG_CARD)
+    .borderRadius(RADIUS.LG)
+    .alignItems(HorizontalAlign.Start)
+    .margin({ bottom: SPACING.SM })
+  }
+
+  // ==================== 儿童正餐保护 ====================
+  @Builder
+  ChildProtectionSection() {
+    if (this.childProtection !== null) {
+      Column() {
+        Text('👶 儿童正餐保护')
+          .fontSize(FONT_SIZE.SUBTITLE)
+          .fontWeight(FONT_WEIGHT.BOLD)
+          .fontColor(COLORS.TEXT_PRIMARY)
+          .margin({ bottom: SPACING.MD })
+
+        if (this.childProtection.mealProtection.length > 0) {
+          Row() {
+            Text('⏰')
+              .fontSize(FONT_SIZE.XLARGE)
+              .margin({ right: SPACING.MD })
+            Column() {
+              Text('临近正餐时间')
+                .fontSize(FONT_SIZE.BODY)
+                .fontWeight(FONT_WEIGHT.MEDIUM)
+              Text(this.childProtection.mealProtection)
+                .fontSize(FONT_SIZE.SMALL)
+                .fontColor(COLORS.TEXT_HINT)
+                .margin({ top: SPACING.XS })
+            }
+            .alignItems(HorizontalAlign.Start)
+            .layoutWeight(1)
+          }
+          .width('100%')
+          .padding(SPACING.MD)
+          .backgroundColor(COLORS.BG_SECTION)
+          .borderRadius(RADIUS.MD)
+          .margin({ bottom: SPACING.SM })
+        }
+
+        if (this.childProtection.sweetSnackWarning.length > 0) {
+          Row() {
+            Text('🍬')
+              .fontSize(FONT_SIZE.XLARGE)
+              .margin({ right: SPACING.MD })
+            Column() {
+              Text('今日甜食已超限')
+                .fontSize(FONT_SIZE.BODY)
+                .fontWeight(FONT_WEIGHT.MEDIUM)
+              Text(this.childProtection.sweetSnackWarning)
+                .fontSize(FONT_SIZE.SMALL)
+                .fontColor(COLORS.TEXT_HINT)
+                .margin({ top: SPACING.XS })
+            }
+            .alignItems(HorizontalAlign.Start)
+            .layoutWeight(1)
+          }
+          .width('100%')
+          .padding(SPACING.MD)
+          .backgroundColor(COLORS.BG_SECTION)
+          .borderRadius(RADIUS.MD)
+          .margin({ bottom: SPACING.SM })
+        }
+
+        if (this.childProtection.bedtimeProtection.length > 0) {
+          Row() {
+            Text('🌙')
+              .fontSize(FONT_SIZE.XLARGE)
+              .margin({ right: SPACING.MD })
+            Column() {
+              Text('睡前保护')
+                .fontSize(FONT_SIZE.BODY)
+                .fontWeight(FONT_WEIGHT.MEDIUM)
+              Text(this.childProtection.bedtimeProtection)
+                .fontSize(FONT_SIZE.SMALL)
+                .fontColor(COLORS.TEXT_HINT)
+                .margin({ top: SPACING.XS })
+            }
+            .alignItems(HorizontalAlign.Start)
+            .layoutWeight(1)
+          }
+          .width('100%')
+          .padding(SPACING.MD)
+          .backgroundColor(COLORS.BG_SECTION)
+          .borderRadius(RADIUS.MD)
+          .margin({ bottom: SPACING.SM })
+        }
+      }
+      .width('92%')
+      .padding(SPACING.LG)
+      .backgroundColor(COLORS.BG_CARD)
+      .borderRadius(RADIUS.LG)
+      .alignItems(HorizontalAlign.Start)
+      .margin({ bottom: SPACING.SM })
+    }
+  }
+
+  // ==================== 综合评分 ====================
+  @Builder
+  UnifiedScoreSection() {
+    if (this.unifiedScore !== null) {
+      Column() {
+        Row() {
+          Text('🏆 综合评分')
+            .fontSize(FONT_SIZE.SUBTITLE)
+            .fontWeight(FONT_WEIGHT.BOLD)
+          Blank()
+          Text(`${this.unifiedScore.nutriScore.score}分`)
+            .fontSize(FONT_SIZE.XLARGE)
+            .fontWeight(FONT_WEIGHT.BOLD)
+            .fontColor(this.unifiedScore.nutriScore.gradeColor)
+        }
+        .width('100%')
+        .margin({ bottom: SPACING.MD })
+
+        // 评分详情
+        Row() {
+          this.ScoreBadge('Nutri-Score', this.unifiedScore.nutriScore.grade, this.unifiedScore.nutriScore.gradeColor)
+          if (this.unifiedScore.shanghaiGrade !== null) {
+            this.ScoreBadge('上海分级', `沪${this.unifiedScore.shanghaiGrade.grade}`, this.unifiedScore.shanghaiGrade.gradeColor)
+          }
+          this.ScoreBadge('智慧选择', this.unifiedScore.smartChoice.eligible ? '✓' : '○',
+            this.unifiedScore.smartChoice.eligible ? COLORS.SUCCESS : COLORS.TEXT_HINT)
+        }
+        .width('100%')
+        .justifyContent(FlexAlign.SpaceEvenly)
+      }
+      .width('92%')
+      .padding(SPACING.LG)
+      .backgroundColor(COLORS.BG_CARD)
+      .borderRadius(RADIUS.LG)
+      .alignItems(HorizontalAlign.Start)
+      .margin({ bottom: SPACING.SM })
+    }
+  }
+
+  @Builder
+  ScoreBadge(label: string, value: string, color: string) {
+    Column() {
+      Text(value)
+        .fontSize(FONT_SIZE.TITLE)
+        .fontWeight(FONT_WEIGHT.BOLD)
+        .fontColor(color)
+      Text(label)
+        .fontSize(FONT_SIZE.TINY)
+        .fontColor(COLORS.TEXT_HINT)
+        .margin({ top: SPACING.XS })
+    }
+    .alignItems(HorizontalAlign.Center)
+  }
+
+  // ==================== 下一餐建议 ====================
+  @Builder
+  NextMealAdviceSection() {
+    Column() {
+      Row() {
+        Text('🍽️ 下一餐建议')
+          .fontSize(FONT_SIZE.SUBTITLE)
+          .fontWeight(FONT_WEIGHT.BOLD)
+        Blank()
+        Text(this.nextMealAdvice)
+          .fontSize(FONT_SIZE.BODY)
+          .fontColor(COLORS.SUCCESS)
+          .fontWeight(FONT_WEIGHT.MEDIUM)
+      }
+      .width('100%')
+    }
+    .width('92%')
+    .padding(SPACING.LG)
+    .backgroundColor(COLORS.BG_CARD)
+    .borderRadius(RADIUS.LG)
+    .alignItems(HorizontalAlign.Start)
+    .margin({ bottom: SPACING.SM })
+  }
+
+  // ==================== 今日剩余额度 ====================
+  @Builder
+  BudgetOverviewSection() {
+    if (this.dailyBudget !== null) {
+      Column() {
+        Row() {
+          Text('📊 今日剩余额度')
+            .fontSize(FONT_SIZE.SUBTITLE)
+            .fontWeight(FONT_WEIGHT.BOLD)
+          Blank()
+          Text(this.getBudgetStatusLabel(this.dailyBudget))
+            .fontSize(FONT_SIZE.SMALL)
+            .fontColor(this.getBudgetStatusColor(this.dailyBudget))
+            .padding({ left: SPACING.SM, right: SPACING.SM, top: SPACING.XS, bottom: SPACING.XS })
+            .borderRadius(RADIUS.FULL)
+            .backgroundColor(this.getBudgetStatusBgColor(this.dailyBudget))
+        }
+        .width('100%')
+        .margin({ bottom: SPACING.MD })
+
+        this.BudgetProgressRow('钠', this.dailyBudget.sodiumRemaining, this.dailyBudget.sodiumBudget, COLORS.DANGER)
+        this.BudgetProgressRow('糖', this.dailyBudget.sugarRemaining, this.dailyBudget.sugarBudget, COLORS.WARNING)
+        this.BudgetProgressRow('热量', this.dailyBudget.calorieRemaining, this.dailyBudget.calorieBudget, COLORS.ACCENT_BLUE)
+        this.BudgetProgressRow('脂肪', this.dailyBudget.fatRemaining, this.dailyBudget.fatBudget, COLORS.PRIMARY)
+      }
+      .width('92%')
+      .padding(SPACING.LG)
+      .backgroundColor(COLORS.BG_CARD)
+      .borderRadius(RADIUS.LG)
+      .alignItems(HorizontalAlign.Start)
+      .margin({ bottom: SPACING.SM })
+    }
+  }
+
+  @Builder
+  BudgetProgressRow(label: string, remaining: number, budget: number, color: string) {
+    Column() {
+      Row() {
+        Text(label)
+          .fontSize(FONT_SIZE.SMALL)
+          .fontColor(COLORS.TEXT_PRIMARY)
+        Blank()
+        Text(`${Math.round(Math.max(0, budget - remaining))} / ${Math.round(budget)}`)
+          .fontSize(FONT_SIZE.SMALL)
+          .fontColor(COLORS.TEXT_HINT)
+      }
+      .width('100%')
+      .margin({ bottom: SPACING.XS })
+
+      Row() {
+        Row()
+          .width(`${budget > 0 ? Math.min(100, Math.round(Math.max(0, budget - remaining) / budget * 100)) : 0}%`)
+          .height(8)
+          .backgroundColor(this.getBudgetBarColor(Math.max(0, budget - remaining), budget, color))
+          .borderRadius(RADIUS.SM)
+      }
+      .width('100%')
+      .height(8)
+      .backgroundColor(COLORS.BG_SECTION)
+      .borderRadius(RADIUS.SM)
+      .margin({ bottom: SPACING.SM })
+    }
+    .width('100%')
+  }
+
+  // ==================== 操作按钮 ====================
+  @Builder
+  ActionButtons() {
+    Column() {
+      Button('📤 生成分享文案')
+        .width('90%')
+        .height(48)
+        .backgroundColor(COLORS.PRIMARY)
+        .fontColor(COLORS.TEXT_WHITE)
+        .borderRadius(RADIUS.XXL)
+        .fontSize(FONT_SIZE.BODY)
+        .shadow({ radius: 6, color: COLORS.SHADOW_MEDIUM, offsetY: 3 })
+        .margin({ bottom: SPACING.MD })
+        .onClick(() => {
+          router.pushUrl({
+            url: 'pages/SharePage',
+            params: {
+              foodName: this.foodLabel.foodName,
+              recommendations: this.recommendations,
+              members: this.familyMembers
+            }
+          })
+        })
+
+      Row() {
+        Button('🔄 重新扫描')
+          .layoutWeight(1)
+          .height(48)
+          .backgroundColor(COLORS.BG_SECTION)
+          .fontColor(COLORS.TEXT_PRIMARY)
+          .borderRadius(RADIUS.XXL)
+          .fontSize(FONT_SIZE.BODY)
+          .onClick(() => {
+            router.back()
+          })
+
+        Button('📋 添加到记录')
+          .layoutWeight(1)
+          .height(48)
+          .backgroundColor(COLORS.ACCENT_GREEN)
+          .fontColor(COLORS.TEXT_WHITE)
+          .borderRadius(RADIUS.XXL)
+          .fontSize(FONT_SIZE.BODY)
+          .margin({ left: SPACING.MD })
+          .onClick(() => {
+            promptAction.showToast({ message: '已添加到今日饮食记录' })
+          })
+      }
+      .width('90%')
+    }
+    .width('100%')
+    .alignItems(HorizontalAlign.Center)
+    .margin({ bottom: SPACING.LG })
+  }
+
+  // ==================== 底部声明 ====================
+  @Builder
+  FooterDisclaimer() {
+    Text('⚠️ 本建议仅供参考，不构成医疗建议。如有特殊健康状况，请咨询专业医生。')
+      .fontSize(FONT_SIZE.TINY)
+      .fontColor(COLORS.TEXT_HINT)
+      .textAlign(TextAlign.Center)
+      .width('85%')
+      .margin({ bottom: SPACING.XXL })
+  }
+
+  // ==================== 工具方法 ====================
+  private getMemberEmoji(member: FamilyProfile): string {
+    for (const entry of ROLE_EMOJIS) {
+      if (entry.role === member.nickname) {
+        return entry.emoji
+      }
+    }
+    return '🧑'
+  }
+
+  private getMemberEmojiById(memberId: string): string {
+    const member = this.familyMembers.find(item => item.memberId === memberId)
+    if (member !== undefined) {
+      return this.getMemberEmoji(member)
+    }
+    return '🧑'
+  }
+
+  private getMemberName(memberId: string): string {
+    const member = this.familyMembers.find(item => item.memberId === memberId)
+    return member !== undefined ? member.nickname : '未知成员'
+  }
+
+  private getHealthGoalText(memberId: string): string {
+    const member = this.familyMembers.find(item => item.memberId === memberId)
+    if (member !== undefined) {
+      const goals = member.healthGoals
+      if (goals.length > 0) {
+        return goals.join('、')
+      }
+    }
+    return '日常饮食'
+  }
+
+  private getAmountText(maxAmount: number): string {
+    if (maxAmount > 0) {
+      return `建议上限：${maxAmount}g`
+    }
+    return '建议避免食用'
+  }
+
+  private getLevelColor(level: string): string {
+    for (const entry of LEVEL_COLORS) {
+      if (entry.key === level) {
+        return entry.value
+      }
+    }
+    return COLORS.TEXT_HINT
+  }
+
+  private getLevelBgColor(level: string): string {
+    for (const entry of LEVEL_BG_COLORS) {
+      if (entry.key === level) {
+        return entry.value
+      }
+    }
+    return COLORS.BG_SECTION
+  }
+
+  private getBudgetStatusLabel(budget: DailyBudget): string {
+    const totalUsage = (budget.sodiumUsagePercent() + budget.sugarUsagePercent() +
+      budget.calorieUsagePercent() + budget.fatUsagePercent()) / 4
+    if (totalUsage > 80) {
+      return '⚠️ 今日额度紧张'
+    } else if (totalUsage > 50) {
+      return '⚡ 注意控制'
+    }
+    return '✅ 额度充足'
+  }
+
+  private getBudgetStatusColor(budget: DailyBudget): string {
+    const totalUsage = (budget.sodiumUsagePercent() + budget.sugarUsagePercent() +
+      budget.calorieUsagePercent() + budget.fatUsagePercent()) / 4
+    if (totalUsage > 80) {
+      return COLORS.DANGER
+    } else if (totalUsage > 50) {
+      return COLORS.WARNING
+    }
+    return COLORS.SUCCESS
+  }
+
+  private getBudgetStatusBgColor(budget: DailyBudget): string {
+    const totalUsage = (budget.sodiumUsagePercent() + budget.sugarUsagePercent() +
+      budget.calorieUsagePercent() + budget.fatUsagePercent()) / 4
+    if (totalUsage > 80) {
+      return COLORS.DANGER_LIGHT
+    } else if (totalUsage > 50) {
+      return COLORS.WARNING_LIGHT
+    }
+    return COLORS.ACCENT_GREEN_LIGHT
+  }
+
+  private getBudgetBarColor(consumed: number, budget: number, color: string): string {
+    const ratio = budget > 0 ? consumed / budget : 0
+    if (ratio > 0.8) {
+      return COLORS.DANGER
+    } else if (ratio > 0.5) {
+      return COLORS.WARNING
+    }
+    return color
+  }
+
+  private selectMember(memberId: string) {
+    this.selectedMemberId = memberId
+    const index = this.familyMembers.findIndex(item => item.memberId === memberId)
+    if (index >= 0 && index < this.recommendations.length) {
+      this.selectedRecommendation = this.recommendations[index]
+    }
+  }
+
+  private async loadReportData() {
+    try {
+      // 加载食品标签
+      if (this.foodId.length > 0) {
+        const label = await this.appState.findFoodById(this.foodId)
+        if (label !== null) {
+          this.foodLabel = label
+        }
+      }
+
+      // 加载家庭成员
+      const members = await this.appState.getAllMembers()
+      this.familyMembers = members
+
+      // 为每个成员计算适配建议
+      if (this.familyMembers.length > 0) {
+        const recs: Recommendation[] = []
+        for (const member of this.familyMembers) {
+          const rec = this.appState.calculateRecommendation(member.memberId, this.foodLabel)
+          recs.push(rec)
+        }
+        this.recommendations = recs
+
+        // 默认选中第一个成员
+        if (this.selectedMemberId.length === 0) {
+          this.selectedMemberId = this.familyMembers[0].memberId
+        }
+        this.selectMember(this.selectedMemberId)
+      }
+
+      // 计算健康评分（使用选中成员）
+      if (this.selectedMemberId.length > 0) {
+        this.healthScoreResult = this.appState.calculateHealthScore(this.selectedMemberId, this.foodLabel)
+      }
+
+      // 获取替代品推荐
+      if (this.selectedMemberId.length > 0) {
+        this.alternativeFoods = this.appState.recommendAlternatives(this.selectedMemberId, this.foodLabel)
+      }
+      this.showAlternativeFoods = this.alternativeFoods.length > 0
+
+      // 获取今日预算
+      if (this.selectedMemberId.length > 0) {
+        this.dailyBudget = this.appState.getDailyBudget(this.selectedMemberId)
+      }
+
+      // 获取下一餐建议
+      if (this.selectedMemberId.length > 0) {
+        this.nextMealAdvice = this.appState.getNextMealAdvice(this.foodLabel, this.selectedMemberId)
+      }
+    } catch (error) {
+      console.error('ReportPage loadReportData error:', error)
+    }
+  }
+}

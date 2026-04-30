@@ -9,6 +9,12 @@ export enum MealScenario {
     LUWEI = "\u5364\u5473",
     INSTANT_NOODLE = "\u65B9\u4FBF\u9762",
     LATE_NIGHT = "\u591C\u5BB5",
+    MALATANG = "\u9EBB\u8FA3\u70EB",
+    BBQ_MEAT = "\u70E4\u8089",
+    SUSHI = "\u65E5\u6599",
+    BUFFET = "\u81EA\u52A9\u9910",
+    AFTERNOON_TEA = "\u4E0B\u5348\u8336",
+    LUOSIFEN = "\u87BA\u86F3\u7C89",
     OTHER = "\u5176\u4ED6"
 }
 // 风险标签

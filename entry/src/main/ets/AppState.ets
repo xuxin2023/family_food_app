@@ -16,7 +16,7 @@ import { RuleEngine, RuleEngineParams } from './engine/RuleEngine';
 import { HealthService } from './service/HealthService';
 import { RecommendationEngine } from './engine/RecommendationEngine';
 import { MealBalanceEngine } from './engine/MealBalanceEngine';
-import { ChildProtectionEngine } from './engine/ChildProtectionEngine';
+import { ChildProtectionEngine, MealTimeParams } from './engine/ChildProtectionEngine';
 import { CredibilityEngine } from './engine/CredibilityEngine';
 import { BasketCheckEngine, BasketCheckResult } from './engine/BasketCheckEngine';
 import { WeeklyReportEngine, WeeklyDietData, WeeklyReport } from './engine/WeeklyReportEngine';
@@ -365,9 +365,10 @@ export class AppState {
    */
   calculateChildProtection(memberId: string, foodLabel: FoodLabel): ChildProtection {
     const profile = this.membersCache.find(m => m.memberId === memberId) || new FamilyProfile();
+    const mealTimes = new MealTimeParams();
     return this.childProtectionEngine.calculate(
       profile, foodLabel, new Date(),
-      { breakfast: '07:30', lunch: '12:00', dinner: '18:00' },
+      mealTimes,
       '22:00'
     );
   }

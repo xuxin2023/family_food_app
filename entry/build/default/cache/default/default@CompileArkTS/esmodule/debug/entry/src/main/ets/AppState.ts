@@ -15,7 +15,7 @@ import { RuleEngine } from "@bundle:com.familyfood.helper/entry/ets/engine/RuleE
 import { HealthService } from "@bundle:com.familyfood.helper/entry/ets/service/HealthService";
 import { RecommendationEngine } from "@bundle:com.familyfood.helper/entry/ets/engine/RecommendationEngine";
 import { MealBalanceEngine } from "@bundle:com.familyfood.helper/entry/ets/engine/MealBalanceEngine";
-import { ChildProtectionEngine } from "@bundle:com.familyfood.helper/entry/ets/engine/ChildProtectionEngine";
+import { ChildProtectionEngine, MealTimeParams } from "@bundle:com.familyfood.helper/entry/ets/engine/ChildProtectionEngine";
 import { CredibilityEngine } from "@bundle:com.familyfood.helper/entry/ets/engine/CredibilityEngine";
 import { BasketCheckEngine } from "@bundle:com.familyfood.helper/entry/ets/engine/BasketCheckEngine";
 import type { BasketCheckResult } from "@bundle:com.familyfood.helper/entry/ets/engine/BasketCheckEngine";
@@ -319,7 +319,8 @@ export class AppState {
      */
     calculateChildProtection(memberId: string, foodLabel: FoodLabel): ChildProtection {
         const profile = this.membersCache.find(m => m.memberId === memberId) || new FamilyProfile();
-        return this.childProtectionEngine.calculate(profile, foodLabel, new Date(), { breakfast: '07:30', lunch: '12:00', dinner: '18:00' }, '22:00');
+        const mealTimes = new MealTimeParams();
+        return this.childProtectionEngine.calculate(profile, foodLabel, new Date(), mealTimes, '22:00');
     }
     /**
      * 计算食品可信度

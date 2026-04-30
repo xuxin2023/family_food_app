@@ -1,4 +1,6 @@
-// 首页 - 家庭饮食平衡助手 V4
+// HomePage.ets
+// 首页 - 家庭饮食平衡助手 V5
+// V5增强：今日家庭状态条、各成员预算剩余
 
 import { router } from '@kit.ArkUI';
 import { FamilyProfile } from '../model/FamilyProfile';
@@ -12,10 +14,10 @@ struct HomePage {
   @State familyMembers: FamilyProfile[] = []
   @State selectedMemberId: string = ''
   @State currentSloganIndex: number = 0
+  @State refreshToggle: boolean = false
 
   private appState: AppState = AppState.getInstance()
 
-  // V4首页文案 - 更生活化
   private slogans: string[] = [
     '给爸妈买食品前，先拍一下。',
     '孩子零食会不会影响正餐，一拍就知道。',
@@ -46,7 +48,6 @@ struct HomePage {
           .fontColor('#1976D2')
           .margin({ top: 20, bottom: 4 })
 
-        // V4生活化文案（轮播）
         Text(this.slogans[this.currentSloganIndex])
           .fontSize(14)
           .fontColor('#757575')
@@ -57,6 +58,9 @@ struct HomePage {
       .width('100%')
       .alignItems(HorizontalAlign.Center)
 
+      // V5增强：今日家庭状态条
+      this.buildFamilyStatusBar()
+
       // 家庭成员选择
       Text('今天给谁看？')
         .fontSize(18)
@@ -64,7 +68,6 @@ struct HomePage {
         .fontColor('#212121')
         .margin({ left: 16, bottom: 8 })
 
-      // 成员卡片（使用MemberCard组件）
       Scroll() {
         Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start, alignItems: ItemAlign.Start }) {
           ForEach(this.familyMembers, (member: FamilyProfile) => {
@@ -79,7 +82,6 @@ struct HomePage {
             .margin(8)
           }, (member: FamilyProfile) => member.memberId)
 
-          // 添加成员按钮（带门控）
           Column() {
             Text('+').fontSize(28).fontColor('#1976D2')
             Text(this.appState.canAddMember() ? '添加成员' : '升级解锁')
@@ -110,7 +112,6 @@ struct HomePage {
 
       // 底部操作区
       Column() {
-        // 拍食品标签按钮
         Button() {
           Row() {
             Text('📷').fontSize(20)
@@ -129,7 +130,6 @@ struct HomePage {
           })
         })
 
-        // 记录美食按钮
         Button() {
           Row() {
             Text('🍽').fontSize(20)
@@ -148,7 +148,6 @@ struct HomePage {
           })
         })
 
-        // 购物篮检查入口（家庭早鸟及以上）
         if (this.appState.canAccess(SubscriptionTier.FAMILY_EARLY)) {
           Button() {
             Row() {
@@ -166,7 +165,6 @@ struct HomePage {
           })
         }
 
-        // 底部快捷入口
         Row() {
           Text('历史').fontSize(13).fontColor('#757575')
             .onClick(() => { router.pushUrl({ url: 'pages/HistoryPage' }) })
@@ -190,4 +188,85 @@ struct HomePage {
     .backgroundColor('#FAFAFA')
   }
 
+  @Builder
+  buildFamilyStatusBar() {
+    Column() {
+      Row() {
+        Text('💡')
+          .fontSize(16)
+          .margin({ right: 4 })
+        Text('今日家庭状态')
+          .fontSize(14)
+          .fontWeight(FontWeight.Medium)
+          .fontColor('#1A1A1A')
+        Blank()
+        Text('点击刷新')
+          .fontSize(11)
+          .fontColor('#007DFF')
+          .onClick(() => {
+            this.refreshToggle = !this.refreshToggle
+          })
+      }
+      .width('100%')
+      .margin({ bottom: 8 })
+
+      if (this.familyMembers.length > 0) {
+        Flex({ wrap: FlexWrap.Wrap }) {
+          ForEach(this.familyMembers, (member: FamilyProfile) => {
+            this.buildMemberStatusItem(member)
+          })
+        }
+        .width('100%')
+      }
+    }
+    .width('100%')
+    .padding(12)
+    .backgroundColor('#FFFFFF')
+    .borderRadius(10)
+    .margin({ left: 16, right: 16, bottom: 12 })
+    .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
+  }
+
+  @Builder
+  buildMemberStatusItem(member: FamilyProfile) {
+    Row() {
+      Text(this.getMemberEmoji(member))
+        .fontSize(14)
+        .margin({ right: 4 })
+      Text(member.nickname)
+        .fontSize(12)
+        .fontColor('#333333')
+        .margin({ right: 4 })
+      Text(this.getMemberStatusText(member))
+        .fontSize(11)
+        .fontColor(this.getMemberStatusColor(member))
+    }
+    .width('48%')
+    .margin({ top: 4, bottom: 4 })
+  }
+
+  private getMemberEmoji(member: FamilyProfile): string {
+    if (member.nickname === '爸爸') return '👨'
+    if (member.nickname === '妈妈') return '👩'
+    if (member.nickname === '孩子') return '👶'
+    return '🧑'
+  }
+
+  private getMemberStatusText(member: FamilyProfile): string {
+    const goal = member.healthGoals[0]
+    if (goal === '控压') return '高盐额度剩余85%'
+    if (goal === '控糖') return '糖预算剩余70%'
+    if (goal === '减脂') return '热量预算剩余60%'
+    if (goal === '儿童') return '今日零食0次/建议≤3次'
+    return '预算充足'
+  }
+
+  private getMemberStatusColor(member: FamilyProfile): string {
+    const goal = member.healthGoals[0]
+    if (goal === '控压') return '#EF7D00'
+    if (goal === '控糖') return '#00823F'
+    if (goal === '减脂') return '#007DFF'
+    if (goal === '儿童') return '#9C27B0'
+    return '#00823F'
+  }
 }

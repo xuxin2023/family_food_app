@@ -10,6 +10,12 @@ export enum MealScenario {
   LUWEI = '卤味',
   INSTANT_NOODLE = '方便面',
   LATE_NIGHT = '夜宵',
+  MALATANG = '麻辣烫',
+  BBQ_MEAT = '烤肉',
+  SUSHI = '日料',
+  BUFFET = '自助餐',
+  AFTERNOON_TEA = '下午茶',
+  LUOSIFEN = '螺蛳粉',
   OTHER = '其他'
 }
 

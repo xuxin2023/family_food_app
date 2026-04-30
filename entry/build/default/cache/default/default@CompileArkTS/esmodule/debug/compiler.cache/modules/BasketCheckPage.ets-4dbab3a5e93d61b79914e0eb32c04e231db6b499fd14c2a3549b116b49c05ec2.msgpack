@@ -452,7 +452,7 @@ class BasketCheckPage extends ViewPU {
     }
 }
 registerNamedRoute(() => new BasketCheckPage(undefined, {}), "", { bundleName: "com.familyfood.helper", moduleName: "entry", pagePath: "pages/BasketCheckPage", pageFullPath: "entry/src/main/ets/pages/BasketCheckPage", integratedHsp: "false", moduleType: "followWithHap" });
-//# sourceMappingURL=BasketCheckPage.js.mapÂ“Ùf hvigor_ignore_E:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.router.d.tsÙMC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\FoodLabel.etsÙFC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\AppState.etsÙSC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\pages\BasketCheckPage.etsÔrBšªmoduleName±isLocalDependency¯isNodeEntryFile§pkgPath±belongProjectPath§pkgNameªpkgVersion±dependencyPkgInfo°belongModulePath¬shouldEmitJs¥entryÃÂÙ,C:\Users\A\IDEProjects\family_food_app\entryÙ&C:\Users\A\IDEProjects\family_food_app¥entry¥1.0.0Ô  Ù,C:\Users\A\IDEProjects\family_food_app\entryÃÃÚ// è´­ç‰©ç¯®æ£€æŸ¥é¡µ - è¿ç»­æ‰«æåæ£€æŸ¥ä¸€ç¯®å­é£Ÿå“
+//# sourceMappingURL=BasketCheckPage.js.mapÂ“Ùf hvigor_ignore_C:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.router.d.tsÙ=E:\APP\family_food_app\entry\src\main\ets\model\FoodLabel.etsÙ6E:\APP\family_food_app\entry\src\main\ets\AppState.etsÙCE:\APP\family_food_app\entry\src\main\ets\pages\BasketCheckPage.etsÔrBšªmoduleName±isLocalDependency¯isNodeEntryFile§pkgPath±belongProjectPath§pkgNameªpkgVersion±dependencyPkgInfo°belongModulePath¬shouldEmitJs¥entryÃÂ¼E:\APP\family_food_app\entry¶E:\APP\family_food_app¥entry¥1.0.0Ô  ¼E:\APP\family_food_app\entryÃÃÚÆ// è´­ç‰©ç¯®æ£€æŸ¥é¡µ - è¿ç»­æ‰«æåæ£€æŸ¥ä¸€ç¯®å­é£Ÿå“
 
 import { router } from '@kit.ArkUI';
 import { FoodLabel, FoodSource, NutritionPer100g } from '../model/FoodLabel';
@@ -636,7 +636,7 @@ struct BasketCheckPage {
     return items
   }
 }
-ÀÔrC“¬@ohos.router²../model/FoodLabel«../AppStateÔrD—ªassertions¨external¢id¤meta±moduleSideEffectsªresolvedByµsyntheticNamedExportsAÃÙf hvigor_ignore_E:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.router.d.tsAÃªoh-resolveÂDAÂÙMC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\model\FoodLabel.etsAÃªoh-resolveÂDAÂÙFC:\Users\A\IDEProjects\family_food_app\entry\src\main\ets\AppState.etsAÃªoh-resolveÂ“ÔrE–§version¤fileªsourceRoot§sources¥names¨mappings²BasketCheckPage.js ‘³BasketCheckPage.etsÜ¾’”    ”  –”   ” 	” ” ”! #”" $œ”   ” ”	 	” ” ” ”   ”0 0”2 2”8 8”ÌL ÌL”ÌM ÌM˜”   ” ”	 	” ” ” ”& &”' '’” 	” 	‘”  ’”: 
+ÀÔrC“¬@ohos.router²../model/FoodLabel«../AppStateÔrD—ªassertions¨external¢id¤meta±moduleSideEffectsªresolvedByµsyntheticNamedExportsAÃÙf hvigor_ignore_C:_Program Files_Huawei_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.router.d.tsAÃªoh-resolveÂDAÂÙ=E:\APP\family_food_app\entry\src\main\ets\model\FoodLabel.etsAÃªoh-resolveÂDAÂÙ6E:\APP\family_food_app\entry\src\main\ets\AppState.etsAÃªoh-resolveÂ“ÔrE–§version¤fileªsourceRoot§sources¥names¨mappings²BasketCheckPage.js ‘³BasketCheckPage.etsÜ¾’”    ”  –”   ” 	” ” ”! #”" $œ”   ” ”	 	” ” ” ”   ”0 0”2 2”8 8”ÌL ÌL”ÌM ÌM˜”   ” ”	 	” ” ” ”& &”' '’” 	” 	‘”  ’”: 
 $”< 
 &’”: 1”> 5•” ”  '”! (”, 3”. 5‘” '’” 
 	” 

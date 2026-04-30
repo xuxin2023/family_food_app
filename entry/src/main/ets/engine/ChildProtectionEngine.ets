@@ -1,31 +1,149 @@
-// 儿童保护引擎 - 正餐保护、睡前保护、口味保护
+// ChildProtectionEngine.ets
+// 儿童保护引擎 - 正餐保护、睡前保护、口味保护、甜食次数检查
+// V3增强：getChildMealAdvice 生活化呵护式建议、咖啡因+时间检查
 
+import { FamilyMember, FoodNutrition } from '../model/FoodAdapterTypes';
+import { ChildProtection } from '../model/ChildProtection';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { FoodLabel } from '../model/FoodLabel';
-import { ChildProtection } from '../model/ChildProtection';
 
-// 高糖零食关键词
-const HIGH_SUGAR_SNACKS = ['蛋糕', '饼干', '薯片', '奶茶', '甜饮', '糖果', '巧克力', '冰淇淋', '果冻'];
-// 高脂零食关键词
-const HIGH_FAT_SNACKS = ['薯片', '炸鸡', '油炸', '膨化'];
-// 含咖啡因饮品
-const CAFFEINE_DRINKS = ['咖啡', '奶茶', '茶饮', '功能饮料', '可乐'];
+// ===== 新增类型 =====
 
-// 正餐时间参数
-class MealTimeParams {
+export class ChildMealAdvice {
+  /** 是否影响正餐 */
+  affectMeal: boolean = false;
+  /** 是否影响睡眠 */
+  affectSleep: boolean = false;
+  /** 今日甜食次数 */
+  sweetCountToday: number = 0;
+  /** 生活化建议 */
+  advice: string = '';
+  /** 绿色通行/黄色注意/橙色提醒/红色禁止 */
+  level: string = '绿色通行';
+}
+
+// ===== 常量 =====
+
+const HIGH_SUGAR_SNACKS: string[] = ['蛋糕', '饼干', '薯片', '奶茶', '甜饮', '糖果', '巧克力', '冰淇淋', '果冻', '棒棒糖', '奶糖', '蜜饯', '糖水'];
+const HIGH_FAT_SNACKS: string[] = ['薯片', '炸鸡', '油炸', '膨化', '油条', '春卷'];
+const CAFFEINE_DRINKS: string[] = ['咖啡', '奶茶', '茶饮', '功能饮料', '可乐', '红牛', '浓茶'];
+const FRIED_FOODS: string[] = ['炸鸡', '油炸', '油条', '春卷', '薯条', '天妇罗'];
+
+export class MealTimeParams {
   breakfast: string = '07:30';
   lunch: string = '12:00';
   dinner: string = '18:00';
 }
 
-// 正餐信息
 class MealInfo {
   name: string = '';
   time: string = '';
 }
 
+// ===== 引擎 =====
+
 export class ChildProtectionEngine {
-  // 计算儿童保护建议
+  /**
+   * V3增强：儿童正餐建议 - 生活化呵护式
+   * @param member 家庭成员（需为儿童）
+   * @param food 食品营养数据
+   * @param currentTime 当前时间
+   * @param nextMealTime 下一餐时间
+   * @returns 儿童正餐建议
+   */
+  static getChildMealAdvice(
+    member: FamilyMember,
+    food: FoodNutrition,
+    currentTime: Date,
+    nextMealTime: Date
+  ): ChildMealAdvice {
+    const result = new ChildMealAdvice();
+
+    if (member.healthGoal !== 'children') {
+      result.advice = '非儿童成员，无需儿童保护建议';
+      return result;
+    }
+
+    const foodName = food.productName;
+    const currentHour = currentTime.getHours();
+    const currentMin = currentTime.getMinutes();
+    const currentMinutes = currentHour * 60 + currentMin;
+
+    const isSweet = HIGH_SUGAR_SNACKS.some(s => foodName.includes(s)) || food.sugar_g > 10;
+    const isFat = HIGH_FAT_SNACKS.some(s => foodName.includes(s)) || food.fat_g > 15;
+    const isCaffeine = CAFFEINE_DRINKS.some(s => foodName.includes(s));
+    const isFried = FRIED_FOODS.some(s => foodName.includes(s));
+    const isHighCalorie = food.energy_kj > 400;
+
+    // 计算距下一餐分钟数
+    const nextMinutes = nextMealTime.getHours() * 60 + nextMealTime.getMinutes();
+    const diffToMeal = nextMinutes - currentMinutes;
+
+    // 规则1：距下一餐<1小时且热量>100kcal
+    if (diffToMeal > 0 && diffToMeal <= 60 && isHighCalorie) {
+      result.affectMeal = true;
+      result.advice = '小肚子要留给正餐哦，饭后可以尝一小口～';
+      result.level = '橙色提醒';
+      return result;
+    }
+
+    // 规则2：距下一餐<30分钟
+    if (diffToMeal > 0 && diffToMeal <= 30) {
+      result.affectMeal = true;
+      result.advice = '马上要吃饭啦，先收起来，吃完正餐再决定要不要吃吧～';
+      result.level = '橙色提醒';
+      return result;
+    }
+
+    // 规则3：21:00后含糖食品
+    if (currentHour >= 21 && isSweet) {
+      result.affectSleep = true;
+      result.advice = '已经刷过牙了吧？明天再吃会更甜哦～';
+      result.level = '红色禁止';
+      return result;
+    }
+
+    // 规则4：含咖啡因+18:00后
+    if (currentHour >= 18 && isCaffeine) {
+      result.affectSleep = true;
+      result.advice = '这个有点提神，晚上会睡不着哦，明天上午再喝吧～';
+      result.level = '橙色提醒';
+      return result;
+    }
+
+    // 规则5：距下一餐1-2小时
+    if (diffToMeal > 60 && diffToMeal <= 120 && (isSweet || isFat)) {
+      result.affectMeal = true;
+      result.advice = `还有${Math.round(diffToMeal / 60)}小时吃饭，先少吃一点解解馋，留着肚子吃正餐哦～`;
+      result.level = '黄色注意';
+      return result;
+    }
+
+    // 规则6：21:00后高脂/油炸
+    if (currentHour >= 21 && (isFat || isFried)) {
+      result.affectSleep = true;
+      result.advice = '晚上吃油腻的肚子会不舒服，明天再吃好不好？';
+      result.level = '橙色提醒';
+      return result;
+    }
+
+    // 规则7：20:00后含糖
+    if (currentHour >= 20 && isSweet) {
+      result.affectSleep = true;
+      result.advice = '已经8点多了，晚上吃甜的容易影响睡眠，明天白天再吃吧～';
+      result.level = '黄色注意';
+      return result;
+    }
+
+    // 无触发
+    result.advice = '这个时间吃没问题，记得适量就好～';
+    result.level = '绿色通行';
+    return result;
+  }
+
+  /**
+   * 计算儿童保护建议（原有方法，兼容旧调用）
+   */
   calculate(
     profile: FamilyProfile,
     foodLabel: FoodLabel,
@@ -37,33 +155,21 @@ export class ChildProtectionEngine {
     result.memberId = profile.memberId;
 
     if (!profile.isChild()) {
-      return result; // 非儿童不计算
+      return result;
     }
 
     const foodName = foodLabel.foodName.toLowerCase();
     const currentHour = currentTime.getHours();
     const currentMin = currentTime.getMinutes();
 
-    // 1. 正餐保护
-    result.mealProtection = this.checkMealProtection(
-      foodName, foodLabel, currentHour, currentMin, mealTimes
-    );
-
-    // 2. 睡前保护
-    result.bedtimeProtection = this.checkBedtimeProtection(
-      foodName, foodLabel, currentHour, currentMin, bedtime
-    );
-
-    // 3. 口味保护
+    result.mealProtection = this.checkMealProtection(foodName, foodLabel, currentHour, currentMin, mealTimes);
+    result.bedtimeProtection = this.checkBedtimeProtection(foodName, foodLabel, currentHour, currentMin, bedtime);
     result.tasteProtection = this.checkTasteProtection(foodName, foodLabel);
-
-    // 4. 抵消提醒
     result.counteractReminder = this.checkCounteractReminder(foodName, foodLabel);
 
     return result;
   }
 
-  // 正餐保护：距离正餐少于1-2小时，高糖高脂零食提示影响正餐食欲
   private checkMealProtection(
     foodName: string,
     foodLabel: FoodLabel,
@@ -75,23 +181,19 @@ export class ChildProtectionEngine {
     const isHighFatSnack = HIGH_FAT_SNACKS.some(s => foodName.includes(s)) || foodLabel.isHighFat();
 
     if (!isHighSugarSnack && !isHighFatSnack) {
-      return ''; // 非高风险零食，不触发
+      return '';
     }
 
     const currentMinutes = currentHour * 60 + currentMin;
-
-    // 检查距离各正餐的时间
     const meals: MealInfo[] = [];
     const breakfastMeal = new MealInfo();
     breakfastMeal.name = '早餐';
     breakfastMeal.time = mealTimes.breakfast;
     meals.push(breakfastMeal);
-
     const lunchMeal = new MealInfo();
     lunchMeal.name = '午餐';
     lunchMeal.time = mealTimes.lunch;
     meals.push(lunchMeal);
-
     const dinnerMeal = new MealInfo();
     dinnerMeal.name = '晚餐';
     dinnerMeal.time = mealTimes.dinner;
@@ -104,20 +206,26 @@ export class ChildProtectionEngine {
       const mealMinutes = mealH * 60 + mealM;
       const diffMin = mealMinutes - currentMinutes;
 
-      // 距离正餐0-120分钟
       if (diffMin > 0 && diffMin <= 120) {
         if (diffMin <= 60) {
-          return `距离${meal.name}不足1小时，可能影响正餐食欲，建议先不吃或只少量尝试`;
+          if (isHighSugarSnack && isHighFatSnack) {
+            return `快吃${meal.name}了，这个又甜又油的零食可能会让宝宝不想好好吃饭，咱们饭后当小奖励再吃好不好？`;
+          }
+          if (isHighSugarSnack) {
+            return `马上要吃${meal.name}了，现在吃甜的容易影响胃口，吃完饭再尝一小口吧～`;
+          }
+          return `距离${meal.name}不到1小时，这个零食可能会影响正餐食欲，建议先不吃或只少量尝试`;
         } else {
+          if (isHighSugarSnack) {
+            return `还有${Math.round(diffMin / 60)}小时吃${meal.name}，现在吃甜的可能会影响吃饭，先少吃一点解解馋就好～`;
+          }
           return `距离${meal.name}约${Math.round(diffMin / 60)}小时，可能影响正餐食欲，建议控制份量`;
         }
       }
     }
-
     return '';
   }
 
-  // 睡前保护：睡前1小时内不建议甜食、膨化、油炸、含咖啡因
   private checkBedtimeProtection(
     foodName: string,
     foodLabel: FoodLabel,
@@ -125,6 +233,23 @@ export class ChildProtectionEngine {
     currentMin: number,
     bedtime: string
   ): string {
+    const isSweet = HIGH_SUGAR_SNACKS.some(s => foodName.includes(s)) || foodLabel.isHighSugar();
+    const isPuffed = foodName.includes('膨化') || foodName.includes('薯片');
+    const isFried = FRIED_FOODS.some(s => foodName.includes(s)) || foodLabel.isHighFat();
+    const isCaffeine = CAFFEINE_DRINKS.some(s => foodName.includes(s));
+
+    if (currentHour >= 20) {
+      if (isSweet) {
+        return '已经8点多了，晚上吃甜的容易影响睡眠和牙齿健康，明天白天再吃好不好？';
+      }
+      if (isCaffeine) {
+        return '这么晚了喝含咖啡因的，宝宝晚上会睡不着的，明天再喝吧～';
+      }
+      if (isFried) {
+        return '晚上吃油炸的不好消化，肚子胀胀的睡不舒服，明天再尝吧！';
+      }
+    }
+
     const parts = bedtime.split(':');
     const bedH = Number(parts[0]);
     const bedM = Number(parts[1]);
@@ -132,34 +257,25 @@ export class ChildProtectionEngine {
     const bedMinutes = bedH * 60 + bedM;
     const diffMin = bedMinutes - currentMinutes;
 
-    // 距离睡前1小时内
     if (diffMin > 0 && diffMin <= 60) {
-      const isSweet = HIGH_SUGAR_SNACKS.some(s => foodName.includes(s));
-      const isPuffed = foodName.includes('膨化') || foodName.includes('薯片');
-      const isFried = HIGH_FAT_SNACKS.some(s => foodName.includes(s));
-      const isCaffeine = CAFFEINE_DRINKS.some(s => foodName.includes(s));
-
       if (isSweet) {
-        return '临近睡前，不建议吃甜食，可能影响睡眠和消化';
+        return '快到睡觉时间了，甜食会让宝宝兴奋睡不着，明天再吃好不好？';
       }
       if (isPuffed) {
-        return '临近睡前，不建议吃膨化食品，增加消化负担';
+        return '临近睡前，膨化食品不好消化，肚子会不舒服的～';
       }
       if (isFried) {
-        return '临近睡前，不建议吃油炸零食，增加消化负担';
+        return '快睡觉了，油炸食品会增加消化负担，明天再吃吧！';
       }
       if (isCaffeine) {
-        return '临近睡前，不建议饮用含咖啡因饮品，影响睡眠';
+        return '睡前喝含咖啡因的饮品会影响睡眠质量，明天再喝吧～';
       }
     }
-
     return '';
   }
 
-  // 口味保护：高糖高盐高脂零食不建议高频
   private checkTasteProtection(foodName: string, foodLabel: FoodLabel): string {
     const issues: string[] = [];
-
     if (foodLabel.isHighSugar() || HIGH_SUGAR_SNACKS.some(s => foodName.includes(s))) {
       issues.push('糖含量偏高');
     }
@@ -169,15 +285,12 @@ export class ChildProtectionEngine {
     if (foodLabel.isHighFat() || HIGH_FAT_SNACKS.some(s => foodName.includes(s))) {
       issues.push('脂肪含量偏高');
     }
-
     if (issues.length > 0) {
       return `${issues.join('、')}，不建议作为每日固定零食或饮品`;
     }
-
     return '';
   }
 
-  // 抵消提醒：不建议用不吃饭来抵消甜食
   private checkCounteractReminder(foodName: string, foodLabel: FoodLabel): boolean {
     const isSweetSnack = HIGH_SUGAR_SNACKS.some(s => foodName.includes(s)) || foodLabel.isHighSugar();
     const isHighCalorie = foodLabel.isHighCalorie();

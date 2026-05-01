@@ -1,5 +1,26 @@
+// ScanPage.ets
+// 扫描页 - 对标 Yuka 体验：零点击自动扫码、超时降级、多态加载状态、历史快捷入口、离线兜底
+//
+// 核心流程：
+//   aboutToAppear
+//     ├─ 检查网络状态 → 无网络时标记 offlineMode
+//     ├─ 刷新扫描限额
+//     ├─ 预加载高频商品
+//     └─ 自动启动识别（零点击）
+//
+//   autoScanTimer (8秒超时)
+//     ├─ 8秒内获得结果 → 清除定时器
+//     └─ 8秒无结果 → 降级到拍照 OCR 模式
+//
+//   startRecognition
+//     ├─ 付费墙检查 → paywallTrigger
+//     ├─ 条码模式 → scanBarcode
+//     ├─ 相机模式 → createCameraDraft
+//     └─ 离线模式 → 纯本地规则引擎
+
 import { common } from '@kit.AbilityKit';
 import { router, promptAction } from '@kit.ArkUI';
+import { connection } from '@kit.NetworkKit';
 import { FoodLabel } from '../model/FoodLabel';
 import { AppState } from '../AppState';
 import { FoodInputResult, FoodInputService } from '../service/FoodInputService';
@@ -9,28 +30,64 @@ import { NutriScoreBadge } from '../components/NutriScoreBadge';
 import { PaywallDialog } from '../components/PaywallDialog';
 import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
 
+/** 自动扫码超时时间（毫秒） */
+const AUTO_SCAN_TIMEOUT_MS = 8000;
+
+/** 最近扫描记录显示条数 */
+const RECENT_SCAN_SHOW_COUNT = 3;
+
+// ==================== 加载阶段枚举 ====================
+
+/**
+ * 当前扫描所处的详细阶段
+ * 用于在 ResultCard 中展示不同的视觉反馈
+ */
+enum ScanPhase {
+  /** 空闲 - 尚未开始识别 */
+  IDLE = 'idle',
+  /** 正在扫码/OCR识别中 */
+  RECOGNIZING = 'recognizing',
+  /** 本地数据库查询中 */
+  DB_QUERYING = 'db_querying',
+  /** API远程查询中 */
+  API_QUERYING = 'api_querying',
+  /** 识别完成，评分计算中 */
+  SCORING = 'scoring',
+  /** 已完成 */
+  DONE = 'done',
+  /** 扫码超时 - 已降级到拍照 */
+  TIMEOUT = 'timeout',
+  /** 出错 */
+  ERROR = 'error'
+}
+
 @Entry
 @Component
 struct ScanPage {
+  // ---- 核心扫描状态 ----
   @State scanMode: string = 'camera'
+  @State scanPhase: ScanPhase = ScanPhase.IDLE
   @State foodLabel: FoodLabel = new FoodLabel()
-  @State isRecognizing: boolean = false
   @State showEditPanel: boolean = false
   @State scanLimitReached: boolean = false
   @State remainingScans: number = 3
   @State recognizedText: string = ''
   @State recognitionHint: string = ''
   @State ocrConfidence: number = 1
+  @State isOffline: boolean = false
 
-  // 预加载数据
+  // ---- 预加载与评分 ----
   @State frequentItems: FoodLabel[] = []
-  @State scoreReady: boolean = false       // 评分是否已计算完成
-  @State nutriScore: number = 50           // 当前食品的评分
-  @State detailLoading: boolean = false    // 详细分析是否正在加载
-  @State showPaywallDialog: boolean = false  // 付费墙弹窗
-  @State paywallTrigger: PaywallTrigger | null = null  // 当前付费墙信息
+  @State recentScans: FoodLabel[] = []
+  @State scoreReady: boolean = false
+  @State nutriScore: number = 50
+  @State detailLoading: boolean = false
 
-  // 编辑面板字段
+  // ---- 付费墙 ----
+  @State showPaywallDialog: boolean = false
+  @State paywallTrigger: PaywallTrigger | null = null
+
+  // ---- 编辑面板字段 ----
   @State editFoodName: string = ''
   @State editSodium: string = '0'
   @State editSugar: string = '0'
@@ -47,21 +104,81 @@ struct ScanPage {
   private memberId: string = ''
   private appState: AppState = AppState.getInstance()
   private foodInputService: FoodInputService = new FoodInputService()
+  private autoScanTimer: number = -1
+
+  // ==================== 生命周期 ====================
 
   async aboutToAppear() {
     const params = router.getParams() as Record<string, string>
     if (params) {
       this.memberId = params.memberId || ''
     }
+
+    // 1. 检测网络状态
+    await this.checkNetworkStatus()
+
+    // 2. 刷新扫描限额
     this.refreshScanQuota()
-    // 异步预加载高频商品库
+
+    // 3. 异步预加载高频商品库 + 最近扫描记录
     this.loadFrequentItems()
+    this.loadRecentScans()
+
+    // 4. 零点击自动启动识别
+    this.triggerAutoScan()
   }
+
+  /**
+   * 检查网络连通性
+   * 无网络时标记 isOffline = true，后续走纯本地流程
+   */
+  private async checkNetworkStatus(): Promise<void> {
+    try {
+      const netHandle = connection.getDefaultNetSync()
+      const caps = connection.getNetCapabilitiesSync(netHandle)
+      const hasNet = caps.bearerTypes.length > 0
+      this.isOffline = !hasNet
+    } catch (err) {
+      // 获取网络状态失败，保守地认为有网络
+      this.isOffline = false
+    }
+  }
+
+  // ==================== 零点击自动扫码 ====================
+
+  /**
+   * 自动触发扫码流程（零点击体验 - Yuka 风格）
+   *
+   * 规则：
+   * - 已到达每日限额时不自动启动
+   * - 启动后设置 8 秒超时定时器
+   * - 超时未获得结果 → 降级提示 + 切换到拍照模式
+   */
+  private triggerAutoScan() {
+    if (this.scanLimitReached) {
+      return
+    }
+
+    // 启动识别
+    this.startRecognition()
+
+    // 设置自动扫码超时定时器
+    this.autoScanTimer = setTimeout(() => {
+      if (this.foodLabel.foodId.length === 0) {
+        // 超时且未获得结果 → 降级
+        promptAction.showToast({ message: '未识别到条码，已切换到拍照模式' })
+        this.scanMode = 'camera'
+        this.scanPhase = ScanPhase.TIMEOUT
+        this.recognitionHint = '尝试手动对准标签拍照，或手动录入'
+      }
+    }, AUTO_SCAN_TIMEOUT_MS)
+  }
+
+  // ==================== 数据预加载 ====================
 
   private async loadFrequentItems() {
     try {
       const records = await this.appState.getRecentScanHistory(50)
-      // 从扫描历史中提取高频商品
       const foodIds = new Set<string>()
       const items: FoodLabel[] = []
       for (const record of records) {
@@ -77,15 +194,36 @@ struct ScanPage {
       }
       this.frequentItems = items
     } catch (error) {
-      // 预加载失败不影响主流程
       console.warn('预加载高频商品失败', error)
     }
   }
+
+  /**
+   * 加载最近 3 条扫描记录，用于快捷入口展示
+   */
+  private async loadRecentScans() {
+    try {
+      const records = await this.appState.getRecentScanHistory(RECENT_SCAN_SHOW_COUNT)
+      const items: FoodLabel[] = []
+      for (const record of records) {
+        const foodLabel = await this.appState.findFoodById(record.foodId)
+        if (foodLabel && foodLabel.foodName.length > 0) {
+          items.push(foodLabel)
+        }
+      }
+      this.recentScans = items
+    } catch (error) {
+      console.warn('加载最近扫描记录失败', error)
+    }
+  }
+
+  // ==================== UI ====================
 
   build() {
     Stack() {
       Scroll() {
         Column() {
+          // ---- 顶部导航栏 ----
           Row() {
             Text('<')
               .fontSize(24)
@@ -101,6 +239,19 @@ struct ScanPage {
 
           this.ModeSelector()
 
+          // ---- 离线提示 ----
+          if (this.isOffline) {
+            Row() {
+              Text('📡 当前无网络，使用本地识别')
+                .fontSize(FONT_SIZE.SMALL)
+                .fontColor(COLORS.WARNING)
+            }
+            .width('100%')
+            .padding({ left: SPACING.LG, right: SPACING.LG })
+            .margin({ bottom: SPACING.MD })
+          }
+
+          // ---- 扫描次数 ----
           if (this.appState.memberStatus.scansRemainingToday >= 0) {
             Row() {
               Text(this.scanLimitReached ? '今日扫描次数已用完' : `今日剩余扫描：${this.remainingScans} 次`)
@@ -113,6 +264,12 @@ struct ScanPage {
           }
 
           this.ResultCard()
+
+          // ---- 扫描历史快捷入口 ----
+          if (this.foodLabel.foodId.length === 0 && this.recentScans.length > 0 &&
+              this.scanPhase !== ScanPhase.RECOGNIZING && !this.isRecognizing()) {
+            this.RecentScanBar()
+          }
 
           if (this.showEditPanel) {
             this.EditPanel()
@@ -192,6 +349,18 @@ struct ScanPage {
     .height('100%')
   }
 
+  /**
+   * 判断当前是否处于正在识别的阶段
+   */
+  private isRecognizing(): boolean {
+    return this.scanPhase === ScanPhase.RECOGNIZING ||
+           this.scanPhase === ScanPhase.DB_QUERYING ||
+           this.scanPhase === ScanPhase.API_QUERYING ||
+           this.scanPhase === ScanPhase.SCORING
+  }
+
+  // ==================== 模式选择器 ====================
+
   @Builder
   ModeSelector() {
     Row() {
@@ -201,7 +370,13 @@ struct ScanPage {
         .borderRadius(20)
         .backgroundColor(this.scanMode === 'camera' ? COLORS.PRIMARY : COLORS.WHITE)
         .fontColor(this.scanMode === 'camera' ? COLORS.WHITE : '#212121')
-        .onClick(() => { this.scanMode = 'camera' })
+        .onClick(() => {
+          this.scanMode = 'camera'
+          // 清除超时状态提示
+          if (this.scanPhase === ScanPhase.TIMEOUT) {
+            this.scanPhase = ScanPhase.IDLE
+          }
+        })
 
       Text('扫码')
         .fontSize(15)
@@ -217,27 +392,123 @@ struct ScanPage {
     .margin({ bottom: SPACING.MD })
   }
 
+  // ==================== 最近扫描快捷入口 ====================
+
+  @Builder
+  RecentScanBar() {
+    Column() {
+      Text('⏱ 最近扫描')
+        .fontSize(FONT_SIZE.SMALL)
+        .fontColor(COLORS.TEXT_SECONDARY)
+        .margin({ bottom: SPACING.SM })
+      Scroll() {
+        Row() {
+          ForEach(this.recentScans, (item: FoodLabel) => {
+            Column() {
+              Text(item.foodName)
+                .fontSize(FONT_SIZE.TINY)
+                .fontColor(COLORS.TEXT_PRIMARY)
+                .maxLines(1)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+                .lineHeight(14)
+                .textAlign(TextAlign.Center)
+            }
+            .width(72)
+            .height(48)
+            .padding(SPACING.XS)
+            .backgroundColor(COLORS.BG_CARD_HIGHLIGHT)
+            .borderRadius(RADIUS.SM)
+            .margin({ right: SPACING.SM })
+            .onClick(() => {
+              this.foodLabel = item
+              this.calculateScoreForCurrentLabel()
+            })
+          }, (item: FoodLabel) => item.foodId)
+        }
+      }
+      .scrollable(ScrollDirection.Horizontal)
+      .scrollBar(BarState.Off)
+      .margin({ bottom: SPACING.MD })
+    }
+    .width('92%')
+  }
+
+  // ==================== 结果卡片（多态加载状态） ====================
+
   @Builder
   ResultCard() {
     Column() {
-      if (this.isRecognizing) {
-        // 识别中：显示加载状态+评分徽章骨架
-        Column() {
-          LoadingProgress()
-            .width(40)
-            .height(40)
-            .color(COLORS.PRIMARY)
-          Text('正在处理中...')
-            .fontSize(FONT_SIZE.BODY)
-            .fontColor(COLORS.TEXT_TERTIARY)
-            .margin({ top: SPACING.MD })
+      if (this.isRecognizing()) {
+        // ── 正在识别中：按阶段显示不同状态 ──
+        if (this.scanPhase === ScanPhase.RECOGNIZING) {
+          Column() {
+            LoadingProgress()
+              .width(48)
+              .height(48)
+              .color(COLORS.ACCENT_BLUE)
+            Text('正在扫描条码…')
+              .fontSize(FONT_SIZE.BODY)
+              .fontColor(COLORS.TEXT_TERTIARY)
+              .margin({ top: SPACING.MD })
+          }
+          .alignItems(HorizontalAlign.Center)
+          .justifyContent(FlexAlign.Center)
+          .width('100%')
+          .height(140)
+        } else if (this.scanPhase === ScanPhase.DB_QUERYING) {
+          Column() {
+            LoadingProgress()
+              .width(36)
+              .height(36)
+              .color(COLORS.ACCENT_GREEN)
+            Text('正在查询本地数据库…')
+              .fontSize(FONT_SIZE.BODY)
+              .fontColor(COLORS.TEXT_TERTIARY)
+              .margin({ top: SPACING.MD })
+          }
+          .alignItems(HorizontalAlign.Center)
+          .justifyContent(FlexAlign.Center)
+          .width('100%')
+          .height(100)
+        } else if (this.scanPhase === ScanPhase.API_QUERYING) {
+          Column() {
+            LoadingProgress()
+              .width(36)
+              .height(36)
+              .color(COLORS.ACCENT_PURPLE)
+            Text('正在查询远程营养数据…')
+              .fontSize(FONT_SIZE.BODY)
+              .fontColor(COLORS.TEXT_TERTIARY)
+              .margin({ top: SPACING.MD })
+            if (this.isOffline) {
+              Text('（离线模式，仅使用本地数据）')
+                .fontSize(FONT_SIZE.SMALL)
+                .fontColor(COLORS.WARNING)
+                .margin({ top: SPACING.XS })
+            }
+          }
+          .alignItems(HorizontalAlign.Center)
+          .justifyContent(FlexAlign.Center)
+          .width('100%')
+          .height(120)
+        } else if (this.scanPhase === ScanPhase.SCORING) {
+          Column() {
+            LoadingProgress()
+              .width(32)
+              .height(32)
+              .color(COLORS.ACCENT_GREEN)
+            Text('正在评估营养评分…')
+              .fontSize(FONT_SIZE.SMALL)
+              .fontColor(COLORS.TEXT_TERTIARY)
+              .margin({ top: SPACING.SM, bottom: SPACING.MD })
+          }
+          .alignItems(HorizontalAlign.Center)
+          .justifyContent(FlexAlign.Center)
+          .width('100%')
+          .height(80)
         }
-        .alignItems(HorizontalAlign.Center)
-        .justifyContent(FlexAlign.Center)
-        .width('100%')
-        .height(this.scoreReady ? 'auto' : 140)
       } else if (this.foodLabel.foodId.length === 0) {
-        // 未识别：显示提示+高频商品快速入口
+        // ── 未识别：显示高频商品快速入口 ──
         if (this.frequentItems.length > 0) {
           Text('🔥 快速选择历史商品')
             .fontSize(FONT_SIZE.SMALL)
@@ -263,7 +534,6 @@ struct ScanPage {
                 .margin({ right: SPACING.SM })
                 .onClick(() => {
                   this.foodLabel = item
-                  // 进入后自动计算评分
                   this.calculateScoreForCurrentLabel()
                 })
               }, (item: FoodLabel) => item.foodId)
@@ -271,6 +541,21 @@ struct ScanPage {
           }
           .scrollable(ScrollDirection.Horizontal)
           .scrollBar(BarState.Off)
+          .margin({ bottom: SPACING.MD })
+        }
+
+        // 超时降级提示
+        if (this.scanPhase === ScanPhase.TIMEOUT) {
+          Column() {
+            Text('⏰ 扫码超时')
+              .fontSize(15)
+              .fontColor(COLORS.LEVEL_ORANGE)
+              .fontWeight(FONT_WEIGHT.BOLD)
+            Text('请对准条码或切换使用拍照模式')
+              .fontSize(FONT_SIZE.SMALL)
+              .fontColor(COLORS.TEXT_TERTIARY)
+              .margin({ top: 4 })
+          }
           .margin({ bottom: SPACING.MD })
         }
 
@@ -284,9 +569,8 @@ struct ScanPage {
           .textAlign(TextAlign.Center)
           .margin({ top: SPACING.SM })
       } else {
-        // 识别完成：先展示评分徽章，再异步加载详情
+        // ── 识别完成：先展示评分徽章，再异步加载详情 ──
         if (this.scoreReady) {
-          // 评分徽章区域
           NutriScoreBadge({
             score: this.nutriScore,
             diameter: 120,
@@ -371,38 +655,30 @@ struct ScanPage {
     .borderRadius(10)
   }
 
-  /**
-   * 基于当前食品标签快速计算评分
-   */
+  // ==================== 评分计算 ====================
+
   private calculateScoreForCurrentLabel() {
     this.scoreReady = false
     this.detailLoading = true
-    // 异步计算评分
     setTimeout(() => {
       this.nutriScore = this.quickNutriScore(this.foodLabel)
       this.scoreReady = true
       this.detailLoading = false
-    }, 600) // 模拟异步加载，展示过渡效果
+    }, 600)
   }
 
-  /**
-   * 快速营养评分（本地简化版）
-   */
   private quickNutriScore(label: FoodLabel): number {
     const nutrition = label.nutrition
     let score = 50
-    // 钠扣分 (每100mg扣2分)
     score -= Math.min(40, Math.floor(nutrition.sodium / 100) * 2)
-    // 糖扣分 (每10g扣3分)
     score -= Math.min(30, Math.floor(nutrition.sugar / 10) * 3)
-    // 脂肪扣分 (每10g扣2分)
     score -= Math.min(20, Math.floor(nutrition.fat / 10) * 2)
-    // 蛋白质加分 (每5g加2分)
     score += Math.min(20, Math.floor(nutrition.protein / 5) * 2)
-    // 热量扣分 (每100kcal扣1分)
     score -= Math.min(20, Math.floor(nutrition.calories / 100))
     return Math.max(0, Math.min(100, score))
   }
+
+  // ==================== 编辑面板 ====================
 
   @Builder
   EditPanel() {
@@ -470,18 +746,28 @@ struct ScanPage {
     .margin({ bottom: SPACING.MD })
   }
 
+  // ==================== 扫描限额 ====================
+
   private refreshScanQuota() {
     this.scanLimitReached = false
     const status = this.appState.memberStatus
     this.remainingScans = status.scansRemainingToday === -1 ? 999 : status.scansRemainingToday
   }
 
+  // ==================== 识别入口 ====================
+
   private startManualEntry() {
     this.applyFoodInputResult(this.foodInputService.createManualDraft())
   }
 
   private async startRecognition() {
-    // 使用新版 useScan() 进行付费墙拦截
+    // 清除自动超时定时器（以免超时提示在手动操作后出现）
+    if (this.autoScanTimer >= 0) {
+      clearTimeout(this.autoScanTimer)
+      this.autoScanTimer = -1
+    }
+
+    // 付费墙拦截
     const trigger = this.appState.useScan();
     if (trigger !== null) {
       this.paywallTrigger = trigger;
@@ -490,30 +776,36 @@ struct ScanPage {
       return;
     }
 
-    this.isRecognizing = true;
+    this.scanPhase = ScanPhase.RECOGNIZING;
     try {
       if (this.scanMode === 'barcode') {
         const context = getContext(this) as common.Context
         const result = await this.foodInputService.scanBarcode(context)
         if (result) {
+          this.scanPhase = ScanPhase.DB_QUERYING
           this.applyFoodInputResult(result)
         }
       } else {
+        // 拍照模式：直接生成草稿 + 提示后续手动修正
+        this.scanPhase = ScanPhase.DB_QUERYING
         this.applyFoodInputResult(this.foodInputService.createCameraDraft())
       }
 
       if (this.foodLabel.foodId.length > 0) {
-        // 识别完成后异步计算评分
+        this.scanPhase = ScanPhase.SCORING
         this.calculateScoreForCurrentLabel()
+        this.scanPhase = ScanPhase.DONE
       }
     } catch (error) {
+      this.scanPhase = ScanPhase.ERROR
       promptAction.showToast({ message: '识别失败，已切换到手动录入' })
       this.startManualEntry()
     } finally {
-      this.isRecognizing = false
       this.refreshScanQuota()
     }
   }
+
+  // ==================== 编辑表单 ====================
 
   private loadEditFormFromLabel() {
     this.editFoodName = this.foodLabel.foodName
@@ -523,7 +815,7 @@ struct ScanPage {
     this.editFat = `${this.foodLabel.nutrition.fat}`
     this.editCarbohydrate = `${this.foodLabel.nutrition.carbohydrate}`
     this.editProtein = `${this.foodLabel.nutrition.protein}`
-    this.editIngredients = this.foodLabel.ingredients.join('\n')
+    this.editIngredients = this.foodLabel.ingredients.join('\\n')
     this.editManufacturer = this.foodLabel.manufacturer
     this.editScNumber = this.foodLabel.scNumber
     this.editPrincipal = this.foodLabel.principal
@@ -545,7 +837,7 @@ struct ScanPage {
     this.foodLabel.nutrition.carbohydrate = this.parseNumber(this.editCarbohydrate)
     this.foodLabel.nutrition.protein = this.parseNumber(this.editProtein)
     this.foodLabel.ingredients = this.editIngredients
-      .split(/\r?\n|,|，|、/)
+      .split(/\\r?\\n|,|，|、/)
       .map(item => item.trim())
       .filter(item => item.length > 0)
     this.foodLabel.manufacturer = this.editManufacturer.trim()
@@ -563,7 +855,6 @@ struct ScanPage {
     if (this.showEditPanel) {
       this.loadEditFormFromLabel()
     }
-    // 识别完成后立即计算评分
     if (this.foodLabel.foodId.length > 0) {
       this.calculateScoreForCurrentLabel()
     }

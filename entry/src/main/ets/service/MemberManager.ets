@@ -1,138 +1,172 @@
 // MemberManager.ets
-// 会员管理服务 - 权限矩阵、付费墙触发逻辑
+// 会员管理服务 - 功能权限矩阵、鉴权判断、付费墙触发逻辑
+//
+// 权限矩阵：
+// | 功能                   | 免费      | 个人     | 家庭     | 高级     |
+// |------------------------|-----------|----------|----------|----------|
+// | 扫码                   | 3次/天    | 无限     | 无限     | 无限     |
+// | 家庭成员               | 1人       | 1人      | 4人      | 6人      |
+// | 历史记录               | ✅        | ✅       | ✅       | ✅       |
+// | 替代品推荐             | ❌        | ✅       | ✅       | ✅       |
+// | 购物篮检查             | ❌        | ✅       | ✅       | ✅       |
+// | 儿童正餐保护           | ✅        | ✅       | ✅       | ✅       |
+// | 美食平衡               | 3次/天    | 无限     | 无限     | 无限     |
+// | 周报                   | ❌        | 个人     | 家庭     | 家庭     |
+// | 透明度深度报告         | ❌        | ❌       | ✅       | ✅       |
+// | 外卖透明度             | ❌        | ❌       | ❌       | ✅       |
+// | 品牌信用等级           | ❌        | ❌       | ❌       | ✅       |
 
-import { SubscriptionTier } from '../model/PricingModel';
+import { MemberTier, PaywallTrigger, hasTierAccess, getTierDisplayName } from '../model/MemberStatus';
 
-// ===== 付费墙触发信息 =====
+const TAG = 'MemberManager';
+const DOMAIN_ZERO = 0;
 
-export class PaywallTrigger {
-  title: string = '';
-  message: string = '';
-  featureName: string = '';
-  requiredTier: string = '';
-  cta: string = '';
-}
+// ==================== 功能权限定义 ====================
 
-// ===== 功能权限定义 =====
-
-interface FeatureAccess {
+/**
+ * 功能访问权限条目
+ */
+export interface FeatureAccess {
+  /** 功能名（英文标识，用于程序匹配） */
   featureName: string;
-  requiredTier: SubscriptionTier;
-  quotaLimit: number;  // -1 表示无限
+  /** 功能展示名称 */
+  featureLabel: string;
+  /** 当前等级是否可访问 */
+  isAccessible: boolean;
+  /** 该功能所需的最低等级 */
+  requiredTier: MemberTier;
+  /** 当前等级 */
+  currentTier: MemberTier;
+  /** 免费版的限制说明（次数/人数等） */
+  freeLimitDesc: string;
 }
 
-// ===== 权限矩阵 =====
+interface FeatureMatrixEntry {
+  featureName: string;
+  featureLabel: string;
+  requiredTier: MemberTier;
+  freeLimitDesc: string;
+}
 
-const FEATURE_ACCESS_MATRIX: FeatureAccess[] = [
-  { featureName: 'scan', requiredTier: SubscriptionTier.FREE, quotaLimit: 3 },
-  { featureName: 'scan_unlimited', requiredTier: SubscriptionTier.TRIAL_7DAY, quotaLimit: -1 },
-  { featureName: 'member_add', requiredTier: SubscriptionTier.TRIAL_7DAY, quotaLimit: -1 },
-  { featureName: 'weekly_report', requiredTier: SubscriptionTier.PERSONAL_YEAR, quotaLimit: -1 },
-  { featureName: 'family_weekly_report', requiredTier: SubscriptionTier.FAMILY_STANDARD, quotaLimit: -1 },
-  { featureName: 'health_data_sync', requiredTier: SubscriptionTier.FAMILY_STANDARD, quotaLimit: -1 },
-  { featureName: 'basket_check', requiredTier: SubscriptionTier.FAMILY_STANDARD, quotaLimit: -1 },
-  { featureName: 'child_protection', requiredTier: SubscriptionTier.TRIAL_7DAY, quotaLimit: -1 },
-  { featureName: 'meal_balance', requiredTier: SubscriptionTier.FREE, quotaLimit: -1 },
-  { featureName: 'meal_balance_advanced', requiredTier: SubscriptionTier.TRIAL_7DAY, quotaLimit: -1 },
-  { featureName: 'transparency_report', requiredTier: SubscriptionTier.FAMILY_PREMIUM, quotaLimit: -1 },
-  { featureName: 'shopping_list', requiredTier: SubscriptionTier.PERSONAL_YEAR, quotaLimit: -1 },
-  { featureName: 'family_shopping_list', requiredTier: SubscriptionTier.FAMILY_STANDARD, quotaLimit: -1 },
-  { featureName: 'export_data', requiredTier: SubscriptionTier.FAMILY_PREMIUM, quotaLimit: -1 },
-  { featureName: 'history', requiredTier: SubscriptionTier.FREE, quotaLimit: -1 },
-  { featureName: 'history_full', requiredTier: SubscriptionTier.PERSONAL_YEAR, quotaLimit: -1 },
+/**
+ * 功能权限矩阵
+ */
+const FEATURE_MATRIX: FeatureMatrixEntry[] = [
+  { featureName: 'scan',               featureLabel: '扫码',           requiredTier: MemberTier.FREE,     freeLimitDesc: '每天3次' },
+  { featureName: 'family_member',      featureLabel: '家庭成员',       requiredTier: MemberTier.FREE,     freeLimitDesc: '最多1人' },
+  { featureName: 'history',            featureLabel: '历史记录',       requiredTier: MemberTier.FREE,     freeLimitDesc: '' },
+  { featureName: 'alternative',        featureLabel: '替代品推荐',     requiredTier: MemberTier.PERSONAL, freeLimitDesc: '功能锁定' },
+  { featureName: 'basket_check',       featureLabel: '购物篮检查',     requiredTier: MemberTier.PERSONAL, freeLimitDesc: '功能锁定' },
+  { featureName: 'child_protection',   featureLabel: '儿童正餐保护',   requiredTier: MemberTier.FREE,     freeLimitDesc: '' },
+  { featureName: 'meal_balance',       featureLabel: '美食平衡',       requiredTier: MemberTier.FREE,     freeLimitDesc: '每天3次' },
+  { featureName: 'weekly_report',      featureLabel: '周报',           requiredTier: MemberTier.PERSONAL, freeLimitDesc: '功能锁定' },
+  { featureName: 'family_weekly_report', featureLabel: '家庭周报',     requiredTier: MemberTier.FAMILY,   freeLimitDesc: '功能锁定' },
+  { featureName: 'transparency_report', featureLabel: '透明度深度报告', requiredTier: MemberTier.FAMILY,   freeLimitDesc: '功能锁定' },
+  { featureName: 'takeout_transparency', featureLabel: '外卖透明度',   requiredTier: MemberTier.PREMIUM,  freeLimitDesc: '功能锁定' },
+  { featureName: 'brand_credibility',  featureLabel: '品牌信用等级',   requiredTier: MemberTier.PREMIUM,  freeLimitDesc: '功能锁定' },
 ];
 
-// 付费墙配置
+// ==================== 付费墙配置 ====================
+
 interface PaywallConfig {
-  action: string;
+  featureName: string;
   title: string;
   message: string;
-  featureName: string;
-  requiredTier: SubscriptionTier;
+  requiredTier: MemberTier;
   cta: string;
+  isSoftLimit: boolean;
 }
 
-const PAYWALL_TRIGGERS: PaywallConfig[] = [
+const PAYWALL_CONFIGS: PaywallConfig[] = [
   {
-    action: 'scan_exceeded',
+    featureName: 'scan',
     title: '今日扫码已达上限',
     message: '免费版每天只能扫码3次。升级后全家人都能不限次使用，每个人都有自己的专属饮食建议。',
-    featureName: '无限扫码',
-    requiredTier: SubscriptionTier.TRIAL_7DAY,
-    cta: '免费试用7天'
+    requiredTier: MemberTier.PERSONAL,
+    cta: '解锁无限扫码',
+    isSoftLimit: true
   },
   {
-    action: 'add_member',
-    title: '添加家人',
-    message: '免费版仅支持1个成员。升级后可以添加爸爸/妈妈/孩子/我，每个人都有独立档案和个性化建议。',
-    featureName: '多成员支持',
-    requiredTier: SubscriptionTier.TRIAL_7DAY,
-    cta: '解锁家庭版'
+    featureName: 'family_member',
+    title: '添加更多家庭成员',
+    message: '免费版和个人版仅支持1位家庭成员。升级家庭版后，全家人都能拥有独立档案和个性化建议。',
+    requiredTier: MemberTier.FAMILY,
+    cta: '升级家庭版',
+    isSoftLimit: true
   },
   {
-    action: 'weekly_report',
-    title: '查看饮食周报',
-    message: '周报功能需要升级后才能使用。了解一周饮食趋势，做更科学的饮食调整。',
-    featureName: '饮食周报',
-    requiredTier: SubscriptionTier.PERSONAL_YEAR,
-    cta: '开通个人版'
+    featureName: 'alternative',
+    title: '查看替代品推荐',
+    message: '替代品推荐功能需要升级才能使用。发现更健康的选择，帮家人做出更好的饮食决策。',
+    requiredTier: MemberTier.PERSONAL,
+    cta: '开通个人版',
+    isSoftLimit: true
   },
   {
-    action: 'child_protection',
-    title: '儿童正餐保护',
-    message: '孩子饭前想吃零食？升级后可以设置儿童正餐保护规则，自动提醒孩子先吃正餐。',
-    featureName: '儿童正餐保护',
-    requiredTier: SubscriptionTier.TRIAL_7DAY,
-    cta: '免费试用7天'
-  },
-  {
-    action: 'health_sync',
-    title: '健康数据联动',
-    message: '连接华为健康数据，结合运动步数、睡眠质量等动态调整每日饮食预算。',
-    featureName: '健康数据联动',
-    requiredTier: SubscriptionTier.FAMILY_STANDARD,
-    cta: '升级家庭版'
-  },
-  {
-    action: 'basket_check',
+    featureName: 'basket_check',
     title: '一键购物篮检查',
     message: '升级后可以一次性检查整个购物篮的食品适配情况，一键了解全家人的适配建议。',
-    featureName: '购物篮检查',
-    requiredTier: SubscriptionTier.FAMILY_STANDARD,
-    cta: '升级家庭版'
+    requiredTier: MemberTier.PERSONAL,
+    cta: '开通个人版',
+    isSoftLimit: true
   },
   {
-    action: 'transparency_report',
+    featureName: 'weekly_report',
+    title: '查看饮食周报',
+    message: '周报功能需要升级后才能使用。了解一周饮食趋势，做更科学的饮食调整。',
+    requiredTier: MemberTier.PERSONAL,
+    cta: '开通个人版',
+    isSoftLimit: true
+  },
+  {
+    featureName: 'family_weekly_report',
+    title: '家庭饮食周报',
+    message: '家庭版支持查看全家人的饮食周报，直观了解每位家庭成员的饮食健康状况。',
+    requiredTier: MemberTier.FAMILY,
+    cta: '升级家庭版',
+    isSoftLimit: true
+  },
+  {
+    featureName: 'transparency_report',
     title: '深度可信度报告',
-    message: '升级到高级版后可以查看每款食品的深度数据可信度分析，了解数据来源和评分依据。',
-    featureName: '深度可信度报告',
-    requiredTier: SubscriptionTier.FAMILY_PREMIUM,
-    cta: '升级高级版'
+    message: '透明度深度报告需要家庭版以上才能查看。了解每款食品的数据来源和评分依据。',
+    requiredTier: MemberTier.FAMILY,
+    cta: '升级家庭版',
+    isSoftLimit: false
   },
   {
-    action: 'export_data',
-    title: '数据导出',
-    message: '高级版支持导出家庭饮食数据报告，方便您做更深入的分析和记录。',
-    featureName: '数据导出',
-    requiredTier: SubscriptionTier.FAMILY_PREMIUM,
-    cta: '升级高级版'
+    featureName: 'takeout_transparency',
+    title: '外卖食品透明度',
+    message: '高级版专属功能。查看外卖食品的营养数据和添加剂信息，在外卖场景也能吃得明白。',
+    requiredTier: MemberTier.PREMIUM,
+    cta: '升级高级版',
+    isSoftLimit: false
+  },
+  {
+    featureName: 'brand_credibility',
+    title: '品牌信用等级',
+    message: '高级版专属功能。查看品牌生产信息、SC证书编号、委托商信息等溯源数据。',
+    requiredTier: MemberTier.PREMIUM,
+    cta: '升级高级版',
+    isSoftLimit: false
   }
 ];
 
-const TIER_ORDER: SubscriptionTier[] = [
-  SubscriptionTier.FREE,
-  SubscriptionTier.TRIAL_7DAY,
-  SubscriptionTier.PERSONAL_YEAR,
-  SubscriptionTier.FAMILY_STANDARD,
-  SubscriptionTier.FAMILY_PREMIUM
+// ==================== 等级排序 ====================
+
+const TIER_ORDER: MemberTier[] = [
+  MemberTier.FREE,
+  MemberTier.PERSONAL,
+  MemberTier.FAMILY,
+  MemberTier.PREMIUM
 ];
 
-// ===== 单例 =====
+// ==================== 单例 ====================
 
 let memberManagerInstance: MemberManager | null = null;
 
 export class MemberManager {
-  private currentTier: SubscriptionTier = SubscriptionTier.FREE;
+  private currentTier: MemberTier = MemberTier.FREE;
 
   static getInstance(): MemberManager {
     if (memberManagerInstance === null) {
@@ -144,68 +178,139 @@ export class MemberManager {
   /**
    * 设置当前会员等级
    */
-  setTier(tier: SubscriptionTier): void {
+  setTier(tier: MemberTier): void {
     this.currentTier = tier;
   }
 
   /**
-   * 检查功能是否有权限访问
-   * @param feature 功能名，如 'scan', 'weekly_report', 'child_protection' 等
-   * @returns true = 有权限，false = 被限制
+   * 获取当前会员等级
    */
-  checkCanAccess(feature: string): boolean {
-    const entry = FEATURE_ACCESS_MATRIX.find(item => item.featureName === feature);
+  getCurrentTier(): MemberTier {
+    return this.currentTier;
+  }
+
+  // ==================== 功能鉴权 ====================
+
+  /**
+   * 根据当前会员等级判断是否有权限使用某功能
+   *
+   * @param feature 功能名（如 'scan', 'alternative', 'weekly_report' 等）
+   * @returns null 表示有权限，返回 PaywallTrigger 表示需要拦截并展示付费墙
+   */
+  checkCanAccess(feature: string): PaywallTrigger | null {
+    // 在权限矩阵中查找该功能
+    const entry = FEATURE_MATRIX.find(item => item.featureName === feature);
     if (entry === undefined) {
-      return true; // 未知功能默认允许
+      // 未知功能默认允许访问
+      return null;
     }
-    const currentIndex = TIER_ORDER.indexOf(this.currentTier);
-    const requiredIndex = TIER_ORDER.indexOf(entry.requiredTier);
-    return currentIndex >= requiredIndex;
+
+    // 检查当前等级是否满足要求
+    const hasAccess = hasTierAccess(this.currentTier, entry.requiredTier);
+    if (hasAccess) {
+      return null;  // 有权限，不拦截
+    }
+
+    // 生成付费墙信息
+    const config = PAYWALL_CONFIGS.find(item => item.featureName === feature);
+    if (config !== undefined) {
+      return {
+        title: config.title,
+        message: config.message,
+        featureName: config.featureName,
+        requiredTier: config.requiredTier,
+        cta: config.cta,
+        isSoftLimit: config.isSoftLimit
+      };
+    }
+
+    // 兜底：未配置付费墙文案时，使用自动生成文案
+    const requiredName = getTierDisplayName(entry.requiredTier);
+    return {
+      title: '该功能已锁定',
+      message: `当前版本不支持"${entry.featureLabel}"。升级至${requiredName}即可解锁。`,
+      featureName: feature,
+      requiredTier: entry.requiredTier,
+      cta: `升级${requiredName}`,
+      isSoftLimit: true
+    };
   }
 
+  // ==================== 权限矩阵查询 ====================
+
   /**
-   * 获取当前等级的成员数上限（-1表示无限）
+   * 返回所有功能的权限矩阵
+   *
+   * 用于在页面中展示功能权限对比表
+   *
+   * @returns FeatureAccess[] 所有功能的权限状态
    */
-  getMemberLimit(): number {
-    if (this.currentTier === SubscriptionTier.FREE) {
-      return 1;
-    }
-    return -1;
+  getAllFeatures(): FeatureAccess[] {
+    return FEATURE_MATRIX.map(entry => {
+      return {
+        featureName: entry.featureName,
+        featureLabel: entry.featureLabel,
+        isAccessible: hasTierAccess(this.currentTier, entry.requiredTier),
+        requiredTier: entry.requiredTier,
+        currentTier: this.currentTier,
+        freeLimitDesc: entry.freeLimitDesc
+      };
+    });
   }
 
   /**
-   * 获取当前等级的每日扫码上限（-1表示无限）
+   * 获取当前等级的扫码次数上限
+   * @returns -1 表示无限
    */
   getDailyScanLimit(): number {
-    if (this.currentTier === SubscriptionTier.FREE) {
+    if (this.currentTier === MemberTier.FREE) {
       return 3;
     }
     return -1;
   }
 
   /**
-   * 获取付费墙触发信息
-   * @param action 触发动作，如 'scan_exceeded', 'add_member', 'weekly_report' 等
-   * @returns PaywallTrigger | null（当前等级已有权限时返回null）
+   * 获取当前等级的家庭成员数上限
+   * @returns -1 表示无限
    */
-  getPaywallTrigger(action: string): PaywallTrigger | null {
-    const config = PAYWALL_TRIGGERS.find(item => item.action === action);
-    if (config === undefined) {
-      return null;
+  getMemberLimit(): number {
+    switch (this.currentTier) {
+      case MemberTier.FREE:
+      case MemberTier.PERSONAL:
+        return 1;
+      case MemberTier.FAMILY:
+        return 4;
+      case MemberTier.PREMIUM:
+        return 6;
+      default:
+        return 1;
     }
+  }
 
-    // 检查用户是否已有该功能权限
-    const hasAccess = this.checkCanAccess(config.featureName);
+  /**
+   * 获取当前等级的每日美食平衡次数上限
+   * @returns -1 表示无限
+   */
+  getDailyMealBalanceLimit(): number {
+    if (this.currentTier === MemberTier.FREE) {
+      return 3;
+    }
+    return -1;
+  }
+
+  /**
+   * 获取指定功能在当前等级下的描述文案
+   * 例如：'每天3次', '最多1人', '功能锁定' 等
+   */
+  getFeatureLimitDesc(feature: string): string {
+    const entry = FEATURE_MATRIX.find(item => item.featureName === feature);
+    if (entry === undefined) {
+      return '';
+    }
+    const hasAccess = hasTierAccess(this.currentTier, entry.requiredTier);
     if (hasAccess) {
-      return null; // 已有权限，不显示付费墙
+      return this.currentTier === MemberTier.FREE ? entry.freeLimitDesc : '不限';
     }
-
-    const trigger = new PaywallTrigger();
-    trigger.title = config.title;
-    trigger.message = config.message;
-    trigger.featureName = config.featureName;
-    trigger.requiredTier = config.requiredTier;
-    trigger.cta = config.cta;
-    return trigger;
+    return '功能锁定';
   }
 }

@@ -17,6 +17,8 @@ import { NutriScoreBadge } from '../components/NutriScoreBadge';
 import { FoodLabelCard } from '../components/FoodLabelCard';
 import { ShareCardGenerator, MemberShareInfo, ShareImageParams } from '../components/ShareCard';
 import { ChildProtectionEngine } from '../engine/ChildProtectionEngine';
+import { PaywallTrigger, MemberTier, getTierDisplayName } from '../model/MemberStatus';
+import { PaywallDialog } from '../components/PaywallDialog';
 import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
 
 // ===== 页面级别类型 =====
@@ -43,6 +45,9 @@ struct ReportPage {
   @State showSkeleton: boolean = true
   @State showNutriAnim: boolean = false
   @State isImageSaving: boolean = false
+  @State showPaywallDialog: boolean = false
+  @State paywallTrigger: PaywallTrigger | null = null
+  @State showAlternativesLocked: boolean = false
 
   private appState: AppState = AppState.getInstance()
   private childProtectEngine: ChildProtectionEngine = new ChildProtectionEngine()
@@ -63,6 +68,13 @@ struct ReportPage {
       this.nutriScore = params.nutriScore
       this.credibilityResult = params.credibilityResult
       this.childProtections = params.childProtection
+    }
+
+    // 检查付费墙 — 替代品推荐需要家庭版
+    const altTrigger = this.appState.getPaywallTrigger('upgrade_member')
+    if (altTrigger !== null && altTrigger.requiredTier !== MemberTier.FREE &&
+        this.alternatives.length > 0) {
+      this.showAlternativesLocked = true
     }
 
     // 骨架屏占位
@@ -140,12 +152,20 @@ struct ReportPage {
       .height('100%')
       .backgroundColor(COLORS.BG_PAGE)
       .scrollBar(BarState.Off)
+
+      // 付费墙弹窗（覆盖在内容之上）
+      if (this.paywallTrigger !== null) {
+        PaywallDialog({
+          trigger: this.paywallTrigger,
+          showDialog: $showPaywallDialog
+        })
+      }
     }
     .width('100%')
     .height('100%')
   }
 
-  // ==================== ① 顶部导航栏 ====================
+// ==================== ① 顶部导航栏 ====================
 
   @Builder
   TopNavBar() {
@@ -517,18 +537,54 @@ struct ReportPage {
       .width('100%')
       .padding({ left: 20, top: 16, bottom: 8 })
 
-      Scroll() {
-        Row({ space: SPACING.MD }) {
-          ForEach(this.alternatives, (item: AlternativeFood) => {
-            this.AlternativeCard(item)
-          }, (item: AlternativeFood) => item.productName)
+      if (this.showAlternativesLocked) {
+        // 锁定状态 — 引导用户升级
+        Row() {
+          Text('🔒')
+            .fontSize(20)
+            .margin({ right: 8 })
+          Column() {
+            Text('替代品推荐已锁定')
+              .fontSize(FONT_SIZE.BODY)
+              .fontWeight(FONT_WEIGHT.MEDIUM)
+              .fontColor(COLORS.TEXT_PRIMARY)
+            Text('升级后可查看更健康的替代选择')
+              .fontSize(FONT_SIZE.SMALL)
+              .fontColor(COLORS.TEXT_TERTIARY)
+              .margin({ top: 2 })
+          }
+          .layoutWeight(1)
+          Button('解锁', { type: ButtonType.Normal, stateEffect: true })
+            .fontSize(FONT_SIZE.SMALL)
+            .fontColor(COLORS.WHITE)
+            .backgroundColor(COLORS.PRIMARY)
+            .borderRadius(RADIUS.SM)
+            .height(32)
+            .padding({ left: 16, right: 16 })
+            .onClick(() => {
+              this.paywallTrigger = this.appState.getPaywallTrigger('upgrade_member')
+              this.showPaywallDialog = true
+            })
         }
-        .padding({ left: 20, right: 20 })
+        .width('92%')
+        .padding(16)
+        .backgroundColor('#FFF8E1')
+        .borderRadius(RADIUS.MD)
+        .margin({ bottom: 12 })
+      } else {
+        Scroll() {
+          Row({ space: SPACING.MD }) {
+            ForEach(this.alternatives, (item: AlternativeFood) => {
+              this.AlternativeCard(item)
+            }, (item: AlternativeFood) => item.productName)
+          }
+          .padding({ left: 20, right: 20 })
+        }
+        .scrollable(ScrollDirection.Horizontal)
+        .width('100%')
+        .scrollBar(BarState.Off)
+        .height(140)
       }
-      .scrollable(ScrollDirection.Horizontal)
-      .width('100%')
-      .scrollBar(BarState.Off)
-      .height(140)
     }
     .width('100%')
     .backgroundColor(COLORS.WHITE)

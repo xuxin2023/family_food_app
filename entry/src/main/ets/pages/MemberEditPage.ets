@@ -5,6 +5,8 @@ import { FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig } from '../model
 import { HealthSignal, StepLevel, SleepStatus, BpStatus, BsStatus } from '../model/HealthSignal';
 import { AppState } from '../AppState';
 import { DateUtil } from '../utils/DateUtil';
+import { PaywallTrigger, MemberTier, getTierDisplayName } from '../model/MemberStatus';
+import { PaywallDialog } from '../components/PaywallDialog';
 
 // AgeGroup 枚举值数组
 const AGE_GROUP_VALUES: AgeGroup[] = [AgeGroup.CHILD, AgeGroup.TEEN, AgeGroup.ADULT, AgeGroup.MIDDLE_OLD, AgeGroup.OLD];
@@ -20,6 +22,8 @@ struct MemberEditPage {
   @State sleepStatusIndex: number = 0  // 默认好
   @State bpStatusIndex: number = 0  // 默认正常
   @State bsStatusIndex: number = 0  // 默认正常
+  @State showPaywallDialog: boolean = false
+  @State paywallTrigger: PaywallTrigger | null = null
 
   private appState: AppState = AppState.getInstance()
   private editingMemberId: string = ''  // 空表示新建
@@ -52,31 +56,32 @@ struct MemberEditPage {
   }
 
   build() {
-    Scroll() {
-      Column() {
-        // 顶部导航
-        Row() {
-          Text('←').fontSize(24).fontColor('#1976D2')
-            .onClick(() => { router.back() })
-          Text('编辑成员').fontSize(20).fontWeight(FontWeight.Bold)
-            .margin({ left: 16 })
-        }
-        .width('100%')
-        .padding({ left: 16, right: 16, top: 16, bottom: 16 })
-
-        // 昵称
+    Stack() {
+      Scroll() {
         Column() {
-          Text('昵称').fontSize(14).fontColor('#757575').margin({ bottom: 8 })
-          TextInput({ placeholder: '如：爸爸、妈妈、孩子' })
-            .width('100%')
-            .height(48)
-            .borderRadius(12)
-            .backgroundColor('#FFFFFF')
-            .onChange((value: string) => { this.nickname = value })
-        }
-        .width('100%')
-        .padding({ left: 16, right: 16, bottom: 16 })
-        .alignItems(HorizontalAlign.Start)
+          // 顶部导航
+          Row() {
+            Text('←').fontSize(24).fontColor('#1976D2')
+              .onClick(() => { router.back() })
+            Text('编辑成员').fontSize(20).fontWeight(FontWeight.Bold)
+              .margin({ left: 16 })
+          }
+          .width('100%')
+          .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+
+          // 昵称
+          Column() {
+            Text('昵称').fontSize(14).fontColor('#757575').margin({ bottom: 8 })
+            TextInput({ placeholder: '如：爸爸、妈妈、孩子' })
+              .width('100%')
+              .height(48)
+              .borderRadius(12)
+              .backgroundColor('#FFFFFF')
+              .onChange((value: string) => { this.nickname = value })
+          }
+          .width('100%')
+          .padding({ left: 16, right: 16, bottom: 16 })
+          .alignItems(HorizontalAlign.Start)
 
         // 年龄段
         Column() {
@@ -241,6 +246,17 @@ struct MemberEditPage {
     .height('100%')
     .backgroundColor('#FAFAFA')
     .scrollable(ScrollDirection.Vertical)
+
+      // 付费墙弹窗
+      if (this.paywallTrigger !== null) {
+        PaywallDialog({
+          trigger: this.paywallTrigger,
+          showDialog: $showPaywallDialog
+        })
+      }
+    }
+    .width('100%')
+    .height('100%')
   }
 
   async aboutToAppear() {
@@ -268,6 +284,20 @@ struct MemberEditPage {
   }
 
   private async saveMember() {
+    // 新建成员时检查付费墙
+    if (this.editingMemberId.length === 0) {
+      const trigger = this.appState.useFamilyMember()
+      if (trigger !== null) {
+        // 个性化弹窗文案：显示当前已用/上限信息
+        const status = this.appState.memberStatus
+        const tierName = getTierDisplayName(MemberTier.FAMILY)
+        trigger.message = `当前已添加 ${this.appState.memberStatus.familyMembersRemaining} 位家庭成员。升级${tierName}后，可添加无限数量的家庭成员，所有成员均可享受个性化饮食建议。`
+        this.paywallTrigger = trigger
+        this.showPaywallDialog = true
+        return
+      }
+    }
+
     const profile = new FamilyProfile()
     profile.memberId = this.editingMemberId.length > 0 ? this.editingMemberId : `member_${Date.now()}`
     profile.nickname = this.nickname
@@ -298,6 +328,11 @@ struct MemberEditPage {
 
     // 保存
     await this.appState.saveMember(profile)
+
+    // 新建成员后通知会员系统更新额度
+    if (this.editingMemberId.length === 0) {
+      this.appState.onMemberAdded()
+    }
 
     // 同步更新健康信号
     const signal = new HealthSignal()

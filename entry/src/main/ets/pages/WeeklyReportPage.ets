@@ -5,6 +5,8 @@ import { MealScenario } from '../model/MealBalance';
 import { WeeklyDietData, WeeklyReport, WeeklyReportEngine } from '../engine/WeeklyReportEngine';
 import { DietRecord, ScanHistoryRecord } from '../repository/HistoryRepository';
 import { DateUtil } from '../utils/DateUtil';
+import { PaywallTrigger, MemberTier, getTierDisplayName } from '../model/MemberStatus';
+import { PaywallDialog } from '../components/PaywallDialog';
 
 // 周范围
 class WeekRange {
@@ -17,10 +19,23 @@ class WeekRange {
 struct WeeklyReportPage {
   @State reports: WeeklyReport[] = []
   @State weekLabel: string = ''
+  @State showPaywallDialog: boolean = false
+  @State paywallTrigger: PaywallTrigger | null = null
+  @State showLockedPlaceholder: boolean = false
 
   private appState: AppState = AppState.getInstance()
 
   async aboutToAppear() {
+    // 检查付费墙 - 周报需要个人版以上
+    const trigger = this.appState.getPaywallTrigger('weekly_report')
+    if (trigger !== null && trigger.requiredTier !== MemberTier.FREE) {
+      // 当前等级无权限，显示付费墙
+      this.paywallTrigger = trigger
+      this.showPaywallDialog = true
+      this.showLockedPlaceholder = true
+      return
+    }
+
     const members = await this.appState.getAllMembers()
     const weekRange = this.getCurrentWeekRange()
     this.weekLabel = `${weekRange.startDate} ~ ${weekRange.endDate}`
@@ -36,56 +51,89 @@ struct WeeklyReportPage {
   }
 
   build() {
-    Scroll() {
-      Column() {
-        Row() {
-          Text('<')
-            .fontSize(24)
-            .fontColor('#1976D2')
-            .onClick(() => { router.back() })
-          Text('家庭周报')
-            .fontSize(20)
-            .fontWeight(FontWeight.Bold)
-            .margin({ left: 16 })
-        }
-        .width('100%')
-        .padding({ left: 16, right: 16, top: 16, bottom: 16 })
-
-        if (this.weekLabel.length > 0) {
-          Text(this.weekLabel)
-            .fontSize(13)
-            .fontColor('#757575')
-            .width('92%')
-            .margin({ bottom: 12 })
-            .textAlign(TextAlign.Start)
-        }
-
-        if (this.reports.length === 0) {
-          Column() {
-            Text('本周还没有可展示的记录')
-              .fontSize(16)
-              .fontColor('#616161')
-            Text('先去扫码、查看报告或记录一餐，再回来查看周报')
-              .fontSize(12)
-              .fontColor('#9E9E9E')
-              .margin({ top: 8 })
+    Stack() {
+      Scroll() {
+        Column() {
+          Row() {
+            Text('<')
+              .fontSize(24)
+              .fontColor('#1976D2')
+              .onClick(() => { router.back() })
+            Text('家庭周报')
+              .fontSize(20)
+              .fontWeight(FontWeight.Bold)
+              .margin({ left: 16 })
           }
           .width('100%')
-          .height('70%')
-          .justifyContent(FlexAlign.Center)
-          .alignItems(HorizontalAlign.Center)
-        } else {
-          ForEach(this.reports, (report: WeeklyReport) => {
-            this.MemberWeeklyCard(report)
-          }, (report: WeeklyReport) => report.memberId)
+          .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+
+          if (this.weekLabel.length > 0) {
+            Text(this.weekLabel)
+              .fontSize(13)
+              .fontColor('#757575')
+              .width('92%')
+              .margin({ bottom: 12 })
+              .textAlign(TextAlign.Start)
+          }
+
+          if (this.showLockedPlaceholder) {
+            // 付费锁定状态
+            Column() {
+              Text('🔒')
+                .fontSize(48)
+              Text('周报功能已锁定')
+                .fontSize(18)
+                .fontWeight(FontWeight.Bold)
+                .fontColor('#424242')
+                .margin({ top: 16 })
+              Text('升级后可查看全家人的饮食周报，了解一周饮食趋势')
+                .fontSize(14)
+                .fontColor('#9E9E9E')
+                .margin({ top: 8 })
+                .textAlign(TextAlign.Center)
+                .padding({ left: 32, right: 32 })
+            }
+            .width('100%')
+            .height('60%')
+            .justifyContent(FlexAlign.Center)
+            .alignItems(HorizontalAlign.Center)
+          } else if (this.reports.length === 0) {
+            Column() {
+              Text('本周还没有可展示的记录')
+                .fontSize(16)
+                .fontColor('#616161')
+              Text('先去扫码、查看报告或记录一餐，再回来查看周报')
+                .fontSize(12)
+                .fontColor('#9E9E9E')
+                .margin({ top: 8 })
+            }
+            .width('100%')
+            .height('70%')
+            .justifyContent(FlexAlign.Center)
+            .alignItems(HorizontalAlign.Center)
+          } else {
+            ForEach(this.reports, (report: WeeklyReport) => {
+              this.MemberWeeklyCard(report)
+            }, (report: WeeklyReport) => report.memberId)
+          }
         }
+        .width('100%')
+        .alignItems(HorizontalAlign.Center)
       }
       .width('100%')
-      .alignItems(HorizontalAlign.Center)
+      .height('100%')
+      .backgroundColor('#FAFAFA')
+
+      // 付费墙弹窗（覆盖在内容之上）
+      if (this.paywallTrigger !== null) {
+        PaywallDialog({
+          trigger: this.paywallTrigger,
+          showDialog: $showPaywallDialog
+        })
+      }
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#FAFAFA')
   }
 
   @Builder

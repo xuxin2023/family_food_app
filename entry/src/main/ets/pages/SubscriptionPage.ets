@@ -4,7 +4,8 @@
 import { router, promptAction } from '@kit.ArkUI';
 import { AppState } from '../AppState';
 import { SubscriptionTier, PRICING_PLANS } from '../model/PricingModel';
-import { IapService, IapService as IapServiceClass, ProductInfo, PurchaseResult } from '../service/IapService';
+import { IapService, PurchaseRecord } from '../service/IapService';
+import { PurchaseResult, MemberTier } from '../model/MemberStatus';
 import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
 
 // 本地方案数据（不含免费版，仅展示付费方案）
@@ -29,7 +30,7 @@ struct SubscriptionPage {
   @State selectedPlanIndex: number = -1
 
   private appState: AppState = AppState.getInstance()
-  private iapService: IapService = IapServiceClass.getInstance()
+  private iapService: IapService = IapService.getInstance()
 
   async aboutToAppear() {
     this.currentTier = this.appState.getCurrentTier()
@@ -317,12 +318,17 @@ struct SubscriptionPage {
     const result: PurchaseResult = await this.iapService.purchase(productId);
 
     if (result.success) {
-      this.appState.setTier(result.tier);
-      this.currentTier = result.tier;
+      // 使用新版 AppState 的 upgradeTier 方法
+      const tier = this.getMemberTierForProductId(productId);
+      if (tier !== MemberTier.FREE) {
+        const days = productId === 'family_food_personal_monthly' ? 30 : 365;
+        this.appState.upgradeTier(tier, days);
+      }
+      this.currentTier = plan.tier;
       promptAction.showToast({ message: '订阅成功！感谢支持 🎉' });
       setTimeout(() => { router.back(); }, 1500);
     } else {
-      promptAction.showToast({ message: result.message });
+      promptAction.showToast({ message: result.errorMessage });
     }
 
     this.isPurchasing = false;
@@ -332,14 +338,42 @@ struct SubscriptionPage {
   private async handleRestore() {
     promptAction.showToast({ message: '正在恢复购买记录...' });
     await this.iapService.restorePurchases();
-    const tier = await this.iapService.getSavedPurchaseTier();
-    if (tier !== SubscriptionTier.FREE) {
-      this.appState.setTier(tier);
-      this.currentTier = tier;
-      this.plans = this.buildPlanDisplays();
-      promptAction.showToast({ message: '已恢复订阅' });
+    const tierStr = await this.iapService.getSavedPurchaseTier();
+    if (tierStr.length > 0 && tierStr !== 'free') {
+      let tier: MemberTier = MemberTier.FREE;
+      if (tierStr === 'personal') {
+        tier = MemberTier.PERSONAL;
+      } else if (tierStr === 'family') {
+        tier = MemberTier.FAMILY;
+      } else if (tierStr === 'premium') {
+        tier = MemberTier.PREMIUM;
+      }
+      if (tier !== MemberTier.FREE) {
+        this.appState.upgradeTier(tier, 365);
+        this.currentTier = this.getSubscriptionTierForMemberTier(tier);
+        this.plans = this.buildPlanDisplays();
+        promptAction.showToast({ message: '已恢复订阅' });
+      } else {
+        promptAction.showToast({ message: '未找到有效订阅记录' });
+      }
     } else {
       promptAction.showToast({ message: '未找到有效订阅记录' });
+    }
+  }
+
+  private getMemberTierForProductId(productId: string): MemberTier {
+    if (productId.startsWith('family_food_personal')) return MemberTier.PERSONAL;
+    if (productId.startsWith('family_food_family')) return MemberTier.FAMILY;
+    if (productId.startsWith('family_food_premium')) return MemberTier.PREMIUM;
+    return MemberTier.FREE;
+  }
+
+  private getSubscriptionTierForMemberTier(tier: MemberTier): SubscriptionTier {
+    switch (tier) {
+      case MemberTier.PERSONAL: return SubscriptionTier.PERSONAL_YEAR;
+      case MemberTier.FAMILY: return SubscriptionTier.FAMILY_STANDARD;
+      case MemberTier.PREMIUM: return SubscriptionTier.FAMILY_PREMIUM;
+      default: return SubscriptionTier.FREE;
     }
   }
 }

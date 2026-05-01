@@ -4,7 +4,9 @@ import { FoodLabel } from '../model/FoodLabel';
 import { AppState } from '../AppState';
 import { FoodInputResult, FoodInputService } from '../service/FoodInputService';
 import { SubscriptionTier } from '../model/PricingModel';
+import { PaywallTrigger, MemberTier } from '../model/MemberStatus';
 import { NutriScoreBadge } from '../components/NutriScoreBadge';
+import { PaywallDialog } from '../components/PaywallDialog';
 import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
 
 @Entry
@@ -25,6 +27,8 @@ struct ScanPage {
   @State scoreReady: boolean = false       // 评分是否已计算完成
   @State nutriScore: number = 50           // 当前食品的评分
   @State detailLoading: boolean = false    // 详细分析是否正在加载
+  @State showPaywallDialog: boolean = false  // 付费墙弹窗
+  @State paywallTrigger: PaywallTrigger | null = null  // 当前付费墙信息
 
   // 编辑面板字段
   @State editFoodName: string = ''
@@ -79,102 +83,113 @@ struct ScanPage {
   }
 
   build() {
-    Scroll() {
-      Column() {
-        Row() {
-          Text('<')
-            .fontSize(24)
-            .fontColor(COLORS.PRIMARY)
-            .onClick(() => { router.back() })
-          Text('识别食品标签')
-            .fontSize(FONT_SIZE.TITLE)
-            .fontWeight(FONT_WEIGHT.BOLD)
-            .margin({ left: SPACING.LG })
-        }
-        .width('100%')
-        .padding({ left: SPACING.LG, right: SPACING.LG, top: SPACING.LG, bottom: SPACING.LG })
-
-        this.ModeSelector()
-
-        if (this.appState.getCurrentTier() === SubscriptionTier.FREE) {
+    Stack() {
+      Scroll() {
+        Column() {
           Row() {
-            Text(this.scanLimitReached ? '今日扫描次数已用完' : `今日剩余扫描：${this.remainingScans} 次`)
-              .fontSize(FONT_SIZE.SMALL)
-              .fontColor(this.scanLimitReached ? COLORS.LEVEL_RED : '#F57C00')
+            Text('<')
+              .fontSize(24)
+              .fontColor(COLORS.PRIMARY)
+              .onClick(() => { router.back() })
+            Text('识别食品标签')
+              .fontSize(FONT_SIZE.TITLE)
+              .fontWeight(FONT_WEIGHT.BOLD)
+              .margin({ left: SPACING.LG })
           }
           .width('100%')
-          .padding({ left: SPACING.LG, right: SPACING.LG })
-          .margin({ bottom: SPACING.MD })
-        }
+          .padding({ left: SPACING.LG, right: SPACING.LG, top: SPACING.LG, bottom: SPACING.LG })
 
-        this.ResultCard()
+          this.ModeSelector()
 
-        if (this.showEditPanel) {
-          this.EditPanel()
-        }
-
-        Column() {
-          if (this.foodLabel.foodId.length === 0) {
-            Button(this.scanMode === 'barcode' ? '扫码录入' : '拍标签 / 生成草稿')
-              .width('90%')
-              .height(52)
-              .backgroundColor(COLORS.PRIMARY)
-              .borderRadius(26)
-              .onClick(() => { this.startRecognition() })
-
-            Button('手动录入')
-              .width('90%')
-              .height(48)
-              .backgroundColor(COLORS.BG_CARD)
-              .fontColor(COLORS.PRIMARY)
-              .borderRadius(24)
-              .margin({ top: 10 })
-              .onClick(() => { this.startManualEntry() })
-          } else {
-            Button('查看适配报告')
-              .width('90%')
-              .height(52)
-              .backgroundColor(COLORS.ACCENT_GREEN)
-              .borderRadius(26)
-              .onClick(() => { this.viewReport() })
-
+          if (this.appState.memberStatus.scansRemainingToday >= 0) {
             Row() {
-              Button(this.showEditPanel ? '收起修正面板' : '手动修正')
-                .layoutWeight(1)
-                .height(46)
+              Text(this.scanLimitReached ? '今日扫描次数已用完' : `今日剩余扫描：${this.remainingScans} 次`)
+                .fontSize(FONT_SIZE.SMALL)
+                .fontColor(this.scanLimitReached ? COLORS.LEVEL_RED : '#F57C00')
+            }
+            .width('100%')
+            .padding({ left: SPACING.LG, right: SPACING.LG })
+            .margin({ bottom: SPACING.MD })
+          }
+
+          this.ResultCard()
+
+          if (this.showEditPanel) {
+            this.EditPanel()
+          }
+
+          Column() {
+            if (this.foodLabel.foodId.length === 0) {
+              Button(this.scanMode === 'barcode' ? '扫码录入' : '拍标签 / 生成草稿')
+                .width('90%')
+                .height(52)
+                .backgroundColor(COLORS.PRIMARY)
+                .borderRadius(26)
+                .onClick(() => { this.startRecognition() })
+
+              Button('手动录入')
+                .width('90%')
+                .height(48)
                 .backgroundColor(COLORS.BG_CARD)
                 .fontColor(COLORS.PRIMARY)
-                .borderRadius(23)
-                .onClick(() => {
-                  this.showEditPanel = !this.showEditPanel
-                  if (this.showEditPanel) {
-                    this.loadEditFormFromLabel()
-                  }
-                })
+                .borderRadius(24)
+                .margin({ top: 10 })
+                .onClick(() => { this.startManualEntry() })
+            } else {
+              Button('查看适配报告')
+                .width('90%')
+                .height(52)
+                .backgroundColor(COLORS.ACCENT_GREEN)
+                .borderRadius(26)
+                .onClick(() => { this.viewReport() })
 
-              Button('保存 FoodLabel')
-                .layoutWeight(1)
-                .height(46)
-                .backgroundColor('#FFF3E0')
-                .fontColor('#EF6C00')
-                .borderRadius(23)
-                .margin({ left: 10 })
-                .onClick(() => { this.saveDraft() })
+              Row() {
+                Button(this.showEditPanel ? '收起修正面板' : '手动修正')
+                  .layoutWeight(1)
+                  .height(46)
+                  .backgroundColor(COLORS.BG_CARD)
+                  .fontColor(COLORS.PRIMARY)
+                  .borderRadius(23)
+                  .onClick(() => {
+                    this.showEditPanel = !this.showEditPanel
+                    if (this.showEditPanel) {
+                      this.loadEditFormFromLabel()
+                    }
+                  })
+
+                Button('保存 FoodLabel')
+                  .layoutWeight(1)
+                  .height(46)
+                  .backgroundColor('#FFF3E0')
+                  .fontColor('#EF6C00')
+                  .borderRadius(23)
+                  .margin({ left: 10 })
+                  .onClick(() => { this.saveDraft() })
+              }
+              .width('90%')
+              .margin({ top: 10 })
             }
-            .width('90%')
-            .margin({ top: 10 })
           }
+          .width('100%')
+          .alignItems(HorizontalAlign.Center)
         }
         .width('100%')
-        .alignItems(HorizontalAlign.Center)
-        .margin({ top: SPACING.LG, bottom: SPACING.XL })
+        .height('100%')
+        .backgroundColor(COLORS.BG_PAGE)
       }
       .width('100%')
-      .alignItems(HorizontalAlign.Center)
+      .height('100%')
+
+      // 付费墙弹窗（覆盖在内容之上）
+      if (this.paywallTrigger !== null) {
+        PaywallDialog({
+          trigger: this.paywallTrigger,
+          showDialog: $showPaywallDialog
+        })
+      }
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(COLORS.BG_PAGE)
   }
 
   @Builder
@@ -456,9 +471,9 @@ struct ScanPage {
   }
 
   private refreshScanQuota() {
-    this.scanLimitReached = !this.appState.canScanToday()
-    const remaining = this.appState.getRemainingScansToday()
-    this.remainingScans = remaining === -1 ? 999 : remaining
+    this.scanLimitReached = false
+    const status = this.appState.memberStatus
+    this.remainingScans = status.scansRemainingToday === -1 ? 999 : status.scansRemainingToday
   }
 
   private startManualEntry() {
@@ -466,13 +481,16 @@ struct ScanPage {
   }
 
   private async startRecognition() {
-    if (!this.appState.canScanToday()) {
-      this.scanLimitReached = true
-      promptAction.showToast({ message: '今日扫描次数已用完' })
-      return
+    // 使用新版 useScan() 进行付费墙拦截
+    const trigger = this.appState.useScan();
+    if (trigger !== null) {
+      this.paywallTrigger = trigger;
+      this.showPaywallDialog = true;
+      this.scanLimitReached = true;
+      return;
     }
 
-    this.isRecognizing = true
+    this.isRecognizing = true;
     try {
       if (this.scanMode === 'barcode') {
         const context = getContext(this) as common.Context
@@ -485,7 +503,6 @@ struct ScanPage {
       }
 
       if (this.foodLabel.foodId.length > 0) {
-        this.appState.recordScan()
         // 识别完成后异步计算评分
         this.calculateScoreForCurrentLabel()
       }

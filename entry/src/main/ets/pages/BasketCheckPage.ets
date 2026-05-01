@@ -4,16 +4,29 @@ import { router } from '@kit.ArkUI';
 import { FoodLabel, FoodSource, NutritionPer100g } from '../model/FoodLabel';
 import { BasketCheckResult } from '../engine/BasketCheckEngine';
 import { AppState } from '../AppState';
+import { PaywallTrigger, MemberTier } from '../model/MemberStatus';
+import { PaywallDialog } from '../components/PaywallDialog';
 
 @Entry
 @Component
 struct BasketCheckPage {
   @State basketItems: FoodLabel[] = []
   @State checkResult: BasketCheckResult | null = null
+  @State showPaywallDialog: boolean = false
+  @State paywallTrigger: PaywallTrigger | null = null
 
   private appState: AppState = AppState.getInstance()
 
   async aboutToAppear() {
+    // 检查付费墙 - 购物篮检查需要家庭版以上
+    const trigger = this.appState.getPaywallTrigger('basket_check')
+    if (trigger !== null && trigger.requiredTier !== MemberTier.FREE) {
+      // 当前等级无权限，显示付费墙
+      this.paywallTrigger = trigger
+      this.showPaywallDialog = true
+      return
+    }
+
     // 从AppState获取购物篮数据
     this.basketItems = this.appState.getBasketItems()
     if (this.basketItems.length === 0) {
@@ -24,116 +37,128 @@ struct BasketCheckPage {
   }
 
   build() {
-    Scroll() {
-      Column() {
-        // 顶部导航
-        Row() {
-          Text('←').fontSize(24).fontColor('#1976D2')
-            .onClick(() => { router.back() })
-          Text('购物篮检查').fontSize(20).fontWeight(FontWeight.Bold)
-            .margin({ left: 16 })
-        }
-        .width('100%')
-        .padding({ left: 16, right: 16, top: 16, bottom: 16 })
-
-        // 篮子概览
-        Row() {
-          Text(`🛒 ${this.basketItems.length}款食品`).fontSize(16).fontWeight(FontWeight.Medium)
-          Blank()
-          if (this.checkResult && this.checkResult.hasRisk()) {
-            Text('需要注意').fontSize(14).fontColor('#FF5722').fontWeight(FontWeight.Medium)
-          } else {
-            Text('整体尚可').fontSize(14).fontColor('#4CAF50')
-          }
-        }
-        .width('100%')
-        .padding({ left: 16, right: 16 })
-        .margin({ bottom: 12 })
-
-        // 警告列表
-        if (this.checkResult && this.checkResult.warnings.length > 0) {
-          Column() {
-            Text('⚠ 购物篮提醒').fontSize(16).fontWeight(FontWeight.Medium).margin({ bottom: 8 })
-            ForEach(this.checkResult.warnings, (warning: string) => {
-              Row() {
-                Text('•').fontSize(14).fontColor('#FF5722').margin({ right: 6 })
-                Text(warning).fontSize(14).fontColor('#212121')
-              }
-              .margin({ bottom: 6 })
-              .width('100%')
-            }, (warning: string, index: number) => `${index}`)
-          }
-          .width('100%')
-          .padding(16)
-          .backgroundColor('#FFF3E0')
-          .borderRadius(12)
-          .margin({ left: 16, right: 16, bottom: 12 })
-          .alignItems(HorizontalAlign.Start)
-        }
-
-        // 采购建议
-        if (this.checkResult && this.checkResult.suggestions.length > 0) {
-          Column() {
-            Text('💡 采购建议').fontSize(16).fontWeight(FontWeight.Medium).margin({ bottom: 8 })
-            ForEach(this.checkResult.suggestions, (suggestion: string) => {
-              Row() {
-                Text('•').fontSize(14).fontColor('#4CAF50').margin({ right: 6 })
-                Text(suggestion).fontSize(14).fontColor('#212121')
-              }
-              .margin({ bottom: 6 })
-              .width('100%')
-            }, (suggestion: string, index: number) => `${index}`)
-          }
-          .width('100%')
-          .padding(16)
-          .backgroundColor('#E8F5E9')
-          .borderRadius(12)
-          .margin({ left: 16, right: 16, bottom: 12 })
-          .alignItems(HorizontalAlign.Start)
-        }
-
-        // 食品列表
-        Text('篮内食品').fontSize(14).fontColor('#757575')
-          .margin({ left: 16, top: 8, bottom: 8 })
-
-        ForEach(this.basketItems, (item: FoodLabel) => {
+    Stack() {
+      Scroll() {
+        Column() {
+          // 顶部导航
           Row() {
-            Column() {
-              Text(item.foodName).fontSize(14).fontWeight(FontWeight.Medium)
-              Row() {
-                if (item.isHighSodium()) { Text('高盐').fontSize(11).fontColor('#FFFFFF').backgroundColor('#FF5722').padding({ left: 6, right: 6, top: 2, bottom: 2 }).borderRadius(8).margin({ right: 4 }) }
-                if (item.isHighSugar()) { Text('高糖').fontSize(11).fontColor('#FFFFFF').backgroundColor('#FF9800').padding({ left: 6, right: 6, top: 2, bottom: 2 }).borderRadius(8).margin({ right: 4 }) }
-                if (item.isHighFat()) { Text('高脂').fontSize(11).fontColor('#FFFFFF').backgroundColor('#F44336').padding({ left: 6, right: 6, top: 2, bottom: 2 }).borderRadius(8) }
-              }
-              .margin({ top: 4 })
-            }
-            .alignItems(HorizontalAlign.Start)
-            .layoutWeight(1)
+            Text('←').fontSize(24).fontColor('#1976D2')
+              .onClick(() => { router.back() })
+            Text('购物篮检查').fontSize(20).fontWeight(FontWeight.Bold)
+              .margin({ left: 16 })
           }
           .width('100%')
-          .padding(12)
-          .backgroundColor('#FFFFFF')
-          .borderRadius(8)
-          .margin({ left: 16, right: 16, bottom: 4 })
-        }, (item: FoodLabel) => item.foodId)
+          .padding({ left: 16, right: 16, top: 16, bottom: 16 })
 
-        // 继续扫描按钮
-        Button('继续扫描添加')
-          .width('90%')
-          .height(48)
-          .backgroundColor('#1976D2')
-          .borderRadius(24)
-          .margin({ top: 16, bottom: 32 })
-          .onClick(() => {
-            router.pushUrl({ url: 'pages/ScanPage' })
-          })
+          // 篮子概览
+          Row() {
+            Text(`🛒 ${this.basketItems.length}款食品`).fontSize(16).fontWeight(FontWeight.Medium)
+            Blank()
+            if (this.checkResult && this.checkResult.hasRisk()) {
+              Text('需要注意').fontSize(14).fontColor('#FF5722').fontWeight(FontWeight.Medium)
+            } else {
+              Text('整体尚可').fontSize(14).fontColor('#4CAF50')
+            }
+          }
+          .width('100%')
+          .padding({ left: 16, right: 16 })
+          .margin({ bottom: 12 })
+
+          // 警告列表
+          if (this.checkResult && this.checkResult.warnings.length > 0) {
+            Column() {
+              Text('⚠ 购物篮提醒').fontSize(16).fontWeight(FontWeight.Medium).margin({ bottom: 8 })
+              ForEach(this.checkResult.warnings, (warning: string) => {
+                Row() {
+                  Text('•').fontSize(14).fontColor('#FF5722').margin({ right: 6 })
+                  Text(warning).fontSize(14).fontColor('#212121')
+                }
+                .margin({ bottom: 6 })
+                .width('100%')
+              }, (warning: string, index: number) => `${index}`)
+            }
+            .width('100%')
+            .padding(16)
+            .backgroundColor('#FFF3E0')
+            .borderRadius(12)
+            .margin({ left: 16, right: 16, bottom: 12 })
+            .alignItems(HorizontalAlign.Start)
+          }
+
+          // 采购建议
+          if (this.checkResult && this.checkResult.suggestions.length > 0) {
+            Column() {
+              Text('💡 采购建议').fontSize(16).fontWeight(FontWeight.Medium).margin({ bottom: 8 })
+              ForEach(this.checkResult.suggestions, (suggestion: string) => {
+                Row() {
+                  Text('•').fontSize(14).fontColor('#4CAF50').margin({ right: 6 })
+                  Text(suggestion).fontSize(14).fontColor('#212121')
+                }
+                .margin({ bottom: 6 })
+                .width('100%')
+              }, (suggestion: string, index: number) => `${index}`)
+            }
+            .width('100%')
+            .padding(16)
+            .backgroundColor('#E8F5E9')
+            .borderRadius(12)
+            .margin({ left: 16, right: 16, bottom: 12 })
+            .alignItems(HorizontalAlign.Start)
+          }
+
+          // 食品列表
+          Text('篮内食品').fontSize(14).fontColor('#757575')
+            .margin({ left: 16, top: 8, bottom: 8 })
+
+          ForEach(this.basketItems, (item: FoodLabel) => {
+            Row() {
+              Column() {
+                Text(item.foodName).fontSize(14).fontWeight(FontWeight.Medium)
+                Row() {
+                  if (item.isHighSodium()) { Text('高盐').fontSize(11).fontColor('#FFFFFF').backgroundColor('#FF5722').padding({ left: 6, right: 6, top: 2, bottom: 2 }).borderRadius(8).margin({ right: 4 }) }
+                  if (item.isHighSugar()) { Text('高糖').fontSize(11).fontColor('#FFFFFF').backgroundColor('#FF9800').padding({ left: 6, right: 6, top: 2, bottom: 2 }).borderRadius(8).margin({ right: 4 }) }
+                  if (item.isHighFat()) { Text('高脂').fontSize(11).fontColor('#FFFFFF').backgroundColor('#F44336').padding({ left: 6, right: 6, top: 2, bottom: 2 }).borderRadius(8) }
+                }
+                .margin({ top: 4 })
+              }
+              .alignItems(HorizontalAlign.Start)
+              .layoutWeight(1)
+            }
+            .width('100%')
+            .padding(12)
+            .backgroundColor('#FFFFFF')
+            .borderRadius(8)
+            .margin({ left: 16, right: 16, bottom: 4 })
+          }, (item: FoodLabel) => item.foodId)
+
+          // 继续扫描按钮
+          Button('继续扫描添加')
+            .width('90%')
+            .height(48)
+            .backgroundColor('#1976D2')
+            .borderRadius(24)
+            .margin({ top: 16, bottom: 32 })
+            .onClick(() => {
+              router.pushUrl({ url: 'pages/ScanPage' })
+            })
+        }
+        .width('100%')
       }
       .width('100%')
+      .height('100%')
+      .backgroundColor('#FAFAFA')
+      .scrollable(ScrollDirection.Vertical)
+
+      // 付费墙弹窗（覆盖在内容之上）
+      if (this.paywallTrigger !== null) {
+        PaywallDialog({
+          trigger: this.paywallTrigger,
+          showDialog: $showPaywallDialog
+        })
+      }
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#FAFAFA')
-    .scrollable(ScrollDirection.Vertical)
   }
 
   private createFallbackBasket(): FoodLabel[] {

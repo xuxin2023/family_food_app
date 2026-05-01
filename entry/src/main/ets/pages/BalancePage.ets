@@ -8,6 +8,8 @@ import { ChildProtection } from '../model/ChildProtection';
 import { PositiveAdvice } from '../engine/PositiveAdviceEngine';
 import { BalanceAdviceCard } from '../components/BalanceAdviceCard';
 import { ChildProtectionCard } from '../components/ChildProtectionCard';
+import { PaywallTrigger, MemberTier } from '../model/MemberStatus';
+import { PaywallDialog } from '../components/PaywallDialog';
 
 // 美食场景选项
 class ScenarioOption {
@@ -26,12 +28,24 @@ struct BalancePage {
   @State childProtection: ChildProtection | null = null
   @State positiveAdvice: PositiveAdvice | null = null
   @State selectedScenario: MealScenario | null = null
+  @State showPaywallDialog: boolean = false
+  @State paywallTrigger: PaywallTrigger | null = null
+  @State dailyUseCount: number = 0
+  @State isLocked: boolean = false
 
   private appState: AppState = AppState.getInstance()
+  private readonly DAILY_FREE_LIMIT: number = 3
 
   private scenarios: ScenarioOption[] = []
 
   aboutToAppear() {
+    // 检查是否有高级美食平衡功能权限
+    const trigger = this.appState.getPaywallTrigger('meal_balance_advanced')
+    if (trigger !== null && trigger.requiredTier !== MemberTier.FREE) {
+      // 当前等级无权限使用高级美食平衡功能
+      this.isLocked = true
+    }
+
     // 初始化场景选项
     const bbq = new ScenarioOption();
     bbq.emoji = '🍖';
@@ -93,86 +107,109 @@ struct BalancePage {
   }
 
   build() {
-    Scroll() {
-      Column() {
-        Row() {
-          Text('<')
-            .fontSize(24)
-            .fontColor('#1976D2')
-            .onClick(() => { router.back() })
-          Text('记录美食')
-            .fontSize(20)
-            .fontWeight(FontWeight.Bold)
-            .margin({ left: 16 })
+    Stack() {
+      Scroll() {
+        Column() {
+          Row() {
+            Text('<')
+              .fontSize(24)
+              .fontColor('#1976D2')
+              .onClick(() => { router.back() })
+            Text('记录美食')
+              .fontSize(20)
+              .fontWeight(FontWeight.Bold)
+              .margin({ left: 16 })
+          }
+          .width('100%')
+          .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+
+          // 每日次数提示
+          if (!this.isLocked) {
+            Row() {
+              Text(`今日已使用 ${this.dailyUseCount} / ${this.DAILY_FREE_LIMIT} 次`)
+                .fontSize(12)
+                .fontColor(this.dailyUseCount >= this.DAILY_FREE_LIMIT ? '#FF5722' : '#757575')
+            }
+            .width('92%')
+            .padding({ left: 4, bottom: 8 })
+          }
+
+          this.MemberSelector()
+          this.BudgetCard()
+
+          Text('今天吃了什么')
+            .fontSize(14)
+            .fontColor('#757575')
+            .width('92%')
+            .margin({ bottom: 8 })
+            .textAlign(TextAlign.Start)
+
+          Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start }) {
+            ForEach(this.scenarios, (scenario: ScenarioOption) => {
+              Column() {
+                Text(scenario.emoji)
+                  .fontSize(28)
+                Text(scenario.label)
+                  .fontSize(12)
+                  .fontColor('#212121')
+                  .margin({ top: 4 })
+              }
+              .width(88)
+              .height(88)
+              .justifyContent(FlexAlign.Center)
+              .alignItems(HorizontalAlign.Center)
+              .borderRadius(14)
+              .backgroundColor(this.selectedScenario === scenario.value ? '#E3F2FD' : '#FFFFFF')
+              .border({
+                width: this.selectedScenario === scenario.value ? 2 : 1,
+                color: this.selectedScenario === scenario.value ? '#1976D2' : '#E0E0E0',
+                style: BorderStyle.Solid,
+                radius: 14
+              })
+              .margin({ right: 8, bottom: 10 })
+              .onClick(() => { this.handleScenarioSelection(scenario.value) })
+            }, (scenario: ScenarioOption) => scenario.value)
+          }
+          .width('92%')
+          .margin({ bottom: 12 })
+
+          if (this.balanceResult !== null) {
+            Column() {
+              BalanceAdviceCard({ balance: this.balanceResult })
+            }
+            .width('92%')
+            .margin({ bottom: 12 })
+          }
+
+          if (this.childProtection !== null && this.childProtection.hasAnyAdvice()) {
+            Column() {
+              ChildProtectionCard({ protection: this.childProtection })
+            }
+            .width('92%')
+            .margin({ bottom: 12 })
+          }
+
+          if (this.positiveAdvice !== null) {
+            this.PositiveAdviceCard(this.positiveAdvice)
+          }
         }
         .width('100%')
-        .padding({ left: 16, right: 16, top: 16, bottom: 16 })
-
-        this.MemberSelector()
-        this.BudgetCard()
-
-        Text('今天吃了什么')
-          .fontSize(14)
-          .fontColor('#757575')
-          .width('92%')
-          .margin({ bottom: 8 })
-          .textAlign(TextAlign.Start)
-
-        Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start }) {
-          ForEach(this.scenarios, (scenario: ScenarioOption) => {
-            Column() {
-              Text(scenario.emoji)
-                .fontSize(28)
-              Text(scenario.label)
-                .fontSize(12)
-                .fontColor('#212121')
-                .margin({ top: 4 })
-            }
-            .width(88)
-            .height(88)
-            .justifyContent(FlexAlign.Center)
-            .alignItems(HorizontalAlign.Center)
-            .borderRadius(14)
-            .backgroundColor(this.selectedScenario === scenario.value ? '#E3F2FD' : '#FFFFFF')
-            .border({
-              width: this.selectedScenario === scenario.value ? 2 : 1,
-              color: this.selectedScenario === scenario.value ? '#1976D2' : '#E0E0E0',
-              style: BorderStyle.Solid,
-              radius: 14
-            })
-            .margin({ right: 8, bottom: 10 })
-            .onClick(() => { this.handleScenarioSelection(scenario.value) })
-          }, (scenario: ScenarioOption) => scenario.value)
-        }
-        .width('92%')
-        .margin({ bottom: 12 })
-
-        if (this.balanceResult !== null) {
-          Column() {
-            BalanceAdviceCard({ balance: this.balanceResult })
-          }
-          .width('92%')
-          .margin({ bottom: 12 })
-        }
-
-        if (this.childProtection !== null && this.childProtection.hasAnyAdvice()) {
-          Column() {
-            ChildProtectionCard({ protection: this.childProtection })
-          }
-          .width('92%')
-          .margin({ bottom: 12 })
-        }
-
-        if (this.positiveAdvice !== null) {
-          this.PositiveAdviceCard(this.positiveAdvice)
-        }
+        .alignItems(HorizontalAlign.Center)
       }
       .width('100%')
-      .alignItems(HorizontalAlign.Center)
+      .height('100%')
+      .backgroundColor('#FAFAFA')
+
+      // 付费墙弹窗（覆盖在内容之上）
+      if (this.paywallTrigger !== null) {
+        PaywallDialog({
+          trigger: this.paywallTrigger,
+          showDialog: $showPaywallDialog
+        })
+      }
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#FAFAFA')
   }
 
   @Builder
@@ -306,6 +343,20 @@ struct BalancePage {
     if (this.selectedMemberId.length === 0) {
       return
     }
+
+    // 检查每日使用次数限制（免费版每天3次）
+    if (!this.isLocked && this.dailyUseCount >= this.DAILY_FREE_LIMIT) {
+      // 检查是否需要高级美食平衡功能
+      const trigger = this.appState.getPaywallTrigger('meal_balance_advanced')
+      if (trigger !== null && trigger.requiredTier !== MemberTier.FREE) {
+        this.paywallTrigger = trigger
+        this.showPaywallDialog = true
+        return
+      }
+    }
+
+    // 增加使用次数
+    this.dailyUseCount++
 
     this.selectedScenario = scenario
     const food = this.createFoodForScenario(scenario)

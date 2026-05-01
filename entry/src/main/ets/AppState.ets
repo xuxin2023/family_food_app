@@ -27,6 +27,21 @@ import { SubscriptionTier, PricingService } from './model/PricingModel';
 import { common } from '@kit.AbilityKit';
 import { relationalStore } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import {
+  MemberTier,
+  MemberStatus,
+  PaywallTrigger,
+  ProductInfo,
+  PurchaseResult,
+  createDefaultMemberStatus,
+  createMemberStatusForTier,
+  getPaywallTriggerForFeature,
+  hasTierAccess,
+  getTierDisplayName,
+  TIER_DAILY_SCAN_LIMIT,
+  TIER_MEMBER_LIMIT,
+  TIER_WEEKLY_REPORT_LIMIT
+} from './model/MemberStatus';
 
 const TAG = 'AppState';
 const DOMAIN_ZERO = 0;
@@ -64,12 +79,20 @@ export class AppState {
   // 购物篮（内存中暂存）
   private basketItems: FoodLabel[] = [];
 
-  // 订阅状态
+  // 订阅状态（旧版，保持兼容）
   private currentTier: SubscriptionTier = SubscriptionTier.FREE;
   private todayScanCount: number = 0;
   private todayScanDate: string = '';
   // 引导状态
   hasShownGuide: boolean = false;
+
+  // ========== 新版会员状态管理 ==========
+
+  /** 会员状态 */
+  memberStatus: MemberStatus = createDefaultMemberStatus();
+
+  /** 已添加的家庭成员数量（用于计算剩余可添加数） */
+  private addedMemberCount: number = 0;
 
   private constructor() {}
 
@@ -586,6 +609,258 @@ export class AppState {
     if (this.todayScanDate !== today) {
       this.todayScanDate = today;
       this.todayScanCount = 0;
+    }
+  }
+
+  // ========== 新版会员状态操作方法 ==========
+
+  /**
+   * 消耗一次扫码次数
+   * 若剩余次数 > 0 则减1并返回 null
+   * 若已用完则返回一个柔性拦截的 PaywallTrigger
+   * @returns PaywallTrigger | null
+   */
+  useScan(): PaywallTrigger | null {
+    const status = this.memberStatus;
+
+    // 无限扫码（付费版）
+    if (status.scansRemainingToday === -1) {
+      return null;
+    }
+
+    // 还有剩余次数
+    if (status.scansRemainingToday > 0) {
+      const newStatus: MemberStatus = {
+        tier: status.tier,
+        scansRemainingToday: status.scansRemainingToday - 1,
+        familyMembersRemaining: status.familyMembersRemaining,
+        expiryDate: status.expiryDate,
+        isTrialActive: status.isTrialActive,
+        trialRemainingDays: status.trialRemainingDays,
+        weeklyReportsRemaining: status.weeklyReportsRemaining
+      };
+      this.memberStatus = newStatus;
+      return null;
+    }
+
+    // 已用完，返回付费墙
+    const trigger = getPaywallTriggerForFeature('scan', status.tier);
+    if (trigger !== null) {
+      return {
+        title: trigger.title,
+        message: trigger.message,
+        featureName: trigger.featureName,
+        requiredTier: trigger.requiredTier,
+        cta: trigger.cta,
+        isSoftLimit: true // 扫码限制为柔性拦截
+      };
+    }
+
+    // 兜底文案
+    return {
+      title: '今日扫码已达上限',
+      message: '免费版每天只能扫码3次。升级后全家人都能不限次使用。',
+      featureName: '无限扫码',
+      requiredTier: MemberTier.PERSONAL,
+      cta: '解锁无限扫码',
+      isSoftLimit: true
+    };
+  }
+
+  /**
+   * 消耗一次家庭成员添加额度
+   * 若剩余额度 > 0 则减1并返回 null
+   * 若已用完则返回一个柔性拦截的 PaywallTrigger
+   * @returns PaywallTrigger | null
+   */
+  useFamilyMember(): PaywallTrigger | null {
+    const status = this.memberStatus;
+
+    // 无限添加（高级版）
+    if (status.familyMembersRemaining === -1) {
+      return null;
+    }
+
+    // 还有剩余额度
+    if (status.familyMembersRemaining > 0) {
+      const newStatus: MemberStatus = {
+        tier: status.tier,
+        scansRemainingToday: status.scansRemainingToday,
+        familyMembersRemaining: status.familyMembersRemaining - 1,
+        expiryDate: status.expiryDate,
+        isTrialActive: status.isTrialActive,
+        trialRemainingDays: status.trialRemainingDays,
+        weeklyReportsRemaining: status.weeklyReportsRemaining
+      };
+      this.memberStatus = newStatus;
+      return null;
+    }
+
+    // 已用完，返回付费墙
+    const trigger = getPaywallTriggerForFeature('add_member', status.tier);
+    if (trigger !== null) {
+      return {
+        title: trigger.title,
+        message: trigger.message,
+        featureName: trigger.featureName,
+        requiredTier: trigger.requiredTier,
+        cta: trigger.cta,
+        isSoftLimit: true
+      };
+    }
+
+    // 兜底文案
+    return {
+      title: '添加更多家庭成员',
+      message: '免费版和个人版仅支持1位家庭成员。升级家庭版后，全家人都能拥有独立档案。',
+      featureName: '多成员支持',
+      requiredTier: MemberTier.FAMILY,
+      cta: '升级家庭版',
+      isSoftLimit: true
+    };
+  }
+
+  /**
+   * 根据功能名返回对应付费墙触发信息
+   * @param feature 功能名（如 'scan', 'add_member', 'weekly_report' 等）
+   * @returns PaywallTrigger（即使当前等级已有权限，也返回付费墙信息用于展示）
+   */
+  getPaywallTrigger(feature: string): PaywallTrigger {
+    const status = this.memberStatus;
+    const trigger = getPaywallTriggerForFeature(feature, status.tier);
+
+    if (trigger !== null) {
+      return trigger;
+    }
+
+    // 当前等级已有权限时返回默认信息
+    const displayName = getTierDisplayName(status.tier);
+    return {
+      title: '功能已解锁',
+      message: `您的${displayName}已包含此功能，尽情使用吧。`,
+      featureName: feature,
+      requiredTier: MemberTier.FREE,
+      cta: '知道了',
+      isSoftLimit: false
+    };
+  }
+
+  /**
+   * 每日重置扫码次数和试用天数
+   * 在 EntryAbility 的 onForeground 中调用
+   */
+  resetDailyScans(): void {
+    const status = this.memberStatus;
+    const scanLimit = TIER_DAILY_SCAN_LIMIT.get(status.tier) || 0;
+    const memberLimit = TIER_MEMBER_LIMIT.get(status.tier) || 0;
+    const reportLimit = TIER_WEEKLY_REPORT_LIMIT.get(status.tier) || 0;
+
+    const newStatus: MemberStatus = {
+      tier: status.tier,
+      scansRemainingToday: scanLimit,
+      familyMembersRemaining: memberLimit - this.addedMemberCount,
+      expiryDate: status.expiryDate,
+      isTrialActive: status.isTrialActive,
+      trialRemainingDays: status.trialRemainingDays,
+      weeklyReportsRemaining: reportLimit
+    };
+
+    // 如有试用天数，每日减少1天
+    if (newStatus.isTrialActive && newStatus.trialRemainingDays > 0) {
+      newStatus.trialRemainingDays = newStatus.trialRemainingDays - 1;
+      if (newStatus.trialRemainingDays <= 0) {
+        newStatus.isTrialActive = false;
+      }
+    }
+
+    this.memberStatus = newStatus;
+    hilog.info(DOMAIN_ZERO, TAG, 'Daily member status reset: scans=%{public}d, trialDays=%{public}d',
+      newStatus.scansRemainingToday, newStatus.trialRemainingDays);
+  }
+
+  /**
+   * 升级会员等级并设置有效期
+   * @param tier 目标会员等级
+   * @param days 有效期天数（如365表示年卡，7表示试用）
+   */
+  upgradeTier(tier: MemberTier, days: number): void {
+    const newStatus = createMemberStatusForTier(tier, days);
+
+    // 保留已添加的家庭成员数量信息
+    const memberLimit = TIER_MEMBER_LIMIT.get(tier) || 0;
+    if (memberLimit === -1) {
+      newStatus.familyMembersRemaining = -1;
+    } else {
+      newStatus.familyMembersRemaining = Math.max(0, memberLimit - this.addedMemberCount);
+    }
+
+    // 同时更新旧版订阅状态以保持兼容
+    if (tier !== MemberTier.FREE) {
+      // 映射到旧版 SubscriptionTier
+      if (tier === MemberTier.PERSONAL) {
+        this.currentTier = SubscriptionTier.PERSONAL_YEAR;
+      } else if (tier === MemberTier.PREMIUM) {
+        this.currentTier = SubscriptionTier.FAMILY_PREMIUM;
+      } else {
+        this.currentTier = SubscriptionTier.FAMILY_STANDARD;
+      }
+    }
+
+    this.memberStatus = newStatus;
+    hilog.info(DOMAIN_ZERO, TAG, 'Tier upgraded to %{public}s, valid for %{public}d days', tier, days);
+  }
+
+  /**
+   * 获取当前等级的每日扫码上限（-1表示无限）
+   */
+  getDailyScanLimitForCurrentTier(): number {
+    return TIER_DAILY_SCAN_LIMIT.get(this.memberStatus.tier) || 0;
+  }
+
+  /**
+   * 获取当前等级的家庭成员上限（-1表示无限）
+   */
+  getMemberLimitForCurrentTier(): number {
+    return TIER_MEMBER_LIMIT.get(this.memberStatus.tier) || 0;
+  }
+
+  /**
+   * 当添加一个家庭成员后调用，更新已添加计数
+   */
+  onMemberAdded(): void {
+    this.addedMemberCount++;
+    const status = this.memberStatus;
+    if (status.familyMembersRemaining > 0) {
+      const newStatus: MemberStatus = {
+        tier: status.tier,
+        scansRemainingToday: status.scansRemainingToday,
+        familyMembersRemaining: status.familyMembersRemaining - 1,
+        expiryDate: status.expiryDate,
+        isTrialActive: status.isTrialActive,
+        trialRemainingDays: status.trialRemainingDays,
+        weeklyReportsRemaining: status.weeklyReportsRemaining
+      };
+      this.memberStatus = newStatus;
+    }
+  }
+
+  /**
+   * 当删除一个家庭成员后调用，释放额度
+   */
+  onMemberRemoved(): void {
+    this.addedMemberCount = Math.max(0, this.addedMemberCount - 1);
+    const status = this.memberStatus;
+    if (status.familyMembersRemaining >= 0) {
+      const newStatus: MemberStatus = {
+        tier: status.tier,
+        scansRemainingToday: status.scansRemainingToday,
+        familyMembersRemaining: status.familyMembersRemaining + 1,
+        expiryDate: status.expiryDate,
+        isTrialActive: status.isTrialActive,
+        trialRemainingDays: status.trialRemainingDays,
+        weeklyReportsRemaining: status.weeklyReportsRemaining
+      };
+      this.memberStatus = newStatus;
     }
   }
 }

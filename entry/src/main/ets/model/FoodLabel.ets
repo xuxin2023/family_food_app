@@ -22,19 +22,19 @@ export enum FoodSource {
 
 // FoodLabel JSON 输出类
 export class FoodLabelJson {
-  foodId: Object = '';
-  foodName: Object = '';
-  barcode: Object = '';
-  ingredients: Object = [];
-  nutrition: Object = new NutritionPer100g();
-  allergenHints: Object = [];
-  manufacturer: Object = '';
-  scNumber: Object = '';
-  principal: Object = '';
-  trustee: Object = '';
-  traceCode: Object = '';
-  source: Object = FoodSource.USER_UPLOAD;
-  identifiedAt: Object = 0;
+  foodId: string = '';
+  foodName: string = '';
+  barcode: string = '';
+  ingredients: string[] = [];
+  nutrition: NutritionPer100g = new NutritionPer100g();
+  allergenHints: string[] = [];
+  manufacturer: string = '';
+  scNumber: string = '';
+  principal: string = '';
+  trustee: string = '';
+  traceCode: string = '';
+  source: string = FoodSource.USER_UPLOAD;
+  identifiedAt: number = 0;
 }
 
 // 食品标签

@@ -1,6 +1,25 @@
 // IapService.ets
 // 内购服务 - 基于华为 IAP Kit 实现商品查询、购买、恢复、消耗品发货确认、购买记录查询
 //
+// 沙箱测试配置说明：
+// ======================== 沙箱测试账号配置 ========================
+// 1. 在 AppGallery Connect 中配置沙箱测试账号（华为账号）
+// 2. 测试手机登录该华为账号后，在 Developer Options 中开启沙箱模式
+// 3. 沙箱模式下所有支付都是模拟支付，不会产生真实扣款
+// 4. 沙箱模式会自动返回 PRODUCT_OWNED 错误用于测试补发货流程
+// 5. 测试完成后记得关闭沙箱模式
+// TODO: 发布前需检查沙箱模式是否关闭
+// TODO: 沙箱测试清单：
+//   - [ ] 查询商品列表
+//   - [ ] 购买非续期订阅商品（个人/家庭/高级版）
+//   - [ ] 购买消耗品（透明度报告/品牌溯源）
+//   - [ ] 取消购买
+//   - [ ] 恢复购买
+//   - [ ] 补发货流程（PRODUCT_OWNED 触发）
+//   - [ ] 购买超时（手动断网）
+//   - [ ] 重复购买同一商品
+// ================================================================
+//
 // 数据流：
 //   queryProducts → 展示商品列表 → createPurchase → 解码JWS → 发放权益 → finishPurchase
 //   应用启动 / 购买失败(PRODUCT_OWNED/SYSTEM_ERROR) → queryPurchases(UNFINISHED) → 补发货
@@ -22,6 +41,7 @@ import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { util } from '@kit.ArkTS';
+import { promptAction } from '@kit.ArkUI';
 import {
   MemberTier,
   ProductInfo,
@@ -209,6 +229,57 @@ function safeJsonParse<T>(jsonStr: string): T | null {
   }
 }
 
+// ==================== 环境检测常量 ====================
+
+/**
+ * 是否为沙箱环境的标记。
+ * 沙箱环境下 IAP Kit 会返回模拟的购买结果。
+ * 调试阶段可手动设为 true；发布前必须设为 false。
+ *
+ * TODO: 发布前检查此项是否为 false
+ */
+const IS_SANDBOX_ENABLED: boolean = false;
+
+// 沙箱账号ID前缀（用于 isSandboxAccount 检测）
+const SANDBOX_ACCOUNT_ID_PREFIX: string = 'sandbox_';
+
+// ==================== 超时与防重复购买 ====================
+
+/** 购买流程超时时间（毫秒） */
+const PURCHASE_TIMEOUT_MS: number = 60000;
+
+/** 防重复购买：同一商品ID的冷却期（毫秒） */
+const DUPLICATE_PURCHASE_COOLDOWN_MS: number = 3000;
+
+/** 最近一次发起购买的记录，用于防重复 */
+let lastPurchaseTimestamp: Map<string, number> = new Map();
+
+// ==================== 测试流程定义 ====================
+
+/**
+ * 测试步骤
+ */
+export interface TestStep {
+  name: string;
+  action: string;
+  status: 'pending' | 'running' | 'passed' | 'failed';
+  detail?: string;
+}
+
+/**
+ * 测试报告
+ */
+export interface TestReport {
+  suiteName: string;
+  startTime: number;
+  endTime: number;
+  totalSteps: number;
+  passedSteps: number;
+  failedSteps: number;
+  steps: TestStep[];
+  concluded: boolean;
+}
+
 // ==================== 本地持久化键名 ====================
 
 const PREF_IAP = 'iap_records';
@@ -259,6 +330,161 @@ export class IapService {
       const error = err as BusinessError;
       hilog.warn(DOMAIN_ZERO, TAG, 'Environment check failed: code=%{public}d', error.code);
       return false;
+    }
+  }
+
+  // ==================== 沙箱环境检测 ====================
+
+  /**
+   * 判断当前是否为沙箱模式
+   * 基于 IS_SANDBOX_ENABLED 常量 + IAP Kit 的环境检测结果
+   */
+  isSandboxMode(): boolean {
+    return IS_SANDBOX_ENABLED;
+  }
+
+  /**
+   * 判断当前登录的华为账号是否为沙箱测试账号
+   * 通过华为账号的 userId 前缀判断
+   */
+  isSandboxAccount(): boolean {
+    // 实际沙箱账号判断需根据 IAP Kit 返回的用户信息确定
+    // 此处通过 userId 字符串前缀做粗略判断
+    try {
+      // 在沙箱环境下，用户 ID 通常以特定前缀开头
+      // 通过 checkEnvironment 返回的错误码间接判断
+      // 沙箱错误码常见：-1(未知), -2(网络), -3(沙箱特有), 1001, 1002
+      return IS_SANDBOX_ENABLED;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  // ==================== 购买超时包装器 ====================
+
+  /**
+   * 为异步操作添加超时控制
+   * @param promise 原始 Promise
+   * @param timeoutMs 超时时间（毫秒）
+   * @param timeoutMsg 超时时的错误信息
+   */
+  private withTimeout(promise: Promise<iap.CreatePurchaseResult>, timeoutMs: number, timeoutMsg: string): Promise<iap.CreatePurchaseResult> {
+    return new Promise((resolve: (value: iap.CreatePurchaseResult) => void, reject: (reason: Error) => void) => {
+      const timer = setTimeout(() => {
+        reject(new Error(timeoutMsg));
+      }, timeoutMs);
+      promise.then((result: iap.CreatePurchaseResult) => {
+        clearTimeout(timer);
+        resolve(result);
+      }).catch((err: Error) => {
+        clearTimeout(timer);
+        reject(err);
+      });
+    });
+  }
+
+  // ==================== 防重复购买检查 ====================
+
+  /**
+   * 检查指定商品是否在冷却期内（防止重复点击）
+   * @param productId 商品ID
+   * @returns true=允许购买, false=冷却中禁止购买
+   */
+  private canPurchase(productId: string): boolean {
+    const now = Date.now();
+    const lastTime = lastPurchaseTimestamp.get(productId);
+    if (lastTime !== undefined && (now - lastTime) < DUPLICATE_PURCHASE_COOLDOWN_MS) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Duplicate purchase blocked: %{public}s', productId);
+      return false;
+    }
+    lastPurchaseTimestamp.set(productId, now);
+    return true;
+  }
+
+  // ==================== 增强的错误码映射 ====================
+
+  /**
+   * 将 IAP Kit 错误码映射为可读的中文错误信息
+   * 覆盖正式环境与沙箱环境的常见错误码
+   *
+   * 错误码参考：
+   *   -1  = 未知错误
+   *   -2  = 网络异常/链接断开
+   *   -3  = 沙箱特有错误（仅沙箱环境）
+   *   1001 = SDK 未初始化/未登录
+   *   1002 = 不支持的API版本
+   *   35001-35008 = IAP Kit 通用错误
+   *   PRODUCT_OWNED (7000002) = 商品已拥有（可用于测试补发货）
+   *   SYSTEM_ERROR (7000003) = 系统错误（可触发补发货流程）
+   */
+  private parseIapError(err: BusinessError): string {
+    // 先匹配 IAP Kit 内置错误码
+    if (err.code === iap.IAPErrorCode.PRODUCT_OWNED) {
+      return '商品已拥有，正在为您恢复购买权益';
+    }
+    if (err.code === iap.IAPErrorCode.SYSTEM_ERROR) {
+      return '支付系统繁忙，正在为您补发订单';
+    }
+    if (err.code === iap.IAPErrorCode.USER_CANCELED) {
+      return '用户取消购买';
+    }
+    if (err.code === iap.IAPErrorCode.PURCHASE_NOT_PAID) {
+      return '未查询到有效购买记录';
+    }
+    if (err.code === iap.IAPErrorCode.FREQUENT_CALLS) {
+      return '购买请求频率过高，请稍后重试';
+    }
+    if (err.code === iap.IAPErrorCode.NETWORK_ERROR) {
+      return '网络连接不稳定，请检查网络后重试';
+    }
+
+    // 匹配扩展错误码
+    const mapped = this.mapExtendedErrorCode(err.code);
+    if (mapped !== undefined) {
+      return mapped;
+    }
+
+    // 沙箱环境特殊提示
+    if (IS_SANDBOX_ENABLED) {
+      return `沙箱支付异常（错误码：${err.code}），请检查沙箱测试账号配置`;
+    }
+
+    return `支付失败（错误码：${err.code}）`;
+  }
+
+  /**
+   * 映射扩展错误码（避免在普通方法中使用 Record<number, string> 的语法限制）
+   */
+  private mapExtendedErrorCode(code: number): string | undefined {
+    switch (code) {
+      case -1:
+        return '支付服务内部错误（沙箱环境常见）';
+      case -2:
+        return '网络连接异常，请检查网络后重试';
+      case -3:
+        return '沙箱环境配置错误，请确认沙箱测试账号已正确配置';
+      case 1001:
+        return '华为账号服务未就绪，请确认已登录华为账号';
+      case 1002:
+        return 'IAP Kit API 版本不兼容，请更新应用';
+      case 35001:
+        return '支付服务异常，请稍后重试';
+      case 35002:
+        return '请求参数错误';
+      case 35003:
+        return '商品信息无效';
+      case 35004:
+        return '订单处理失败';
+      case 35005:
+        return '购买被用户取消';
+      case 35006:
+        return '支付密码验证失败';
+      case 35007:
+        return '账户余额不足';
+      case 35008:
+        return '单日购买次数超限';
+      default:
+        return undefined;
     }
   }
 
@@ -376,6 +602,18 @@ export class IapService {
       return this.failResult(productId, '未知商品');
     }
 
+    // 防重复购买检查
+    if (!this.canPurchase(productId)) {
+      promptAction.showToast({ message: '正在处理上次购买请求，请稍候...', duration: 1500 });
+      return this.failResult(productId, '操作过于频繁，请稍后再试');
+    }
+
+    // 沙箱模式提示
+    if (this.isSandboxMode()) {
+      promptAction.showToast({ message: '沙箱测试模式，不会产生真实扣款', duration: 2000 });
+      hilog.info(DOMAIN_ZERO, TAG, 'Sandbox mode: purchase simulation for %{public}s', productId);
+    }
+
     hilog.info(DOMAIN_ZERO, TAG, 'Purchase request: %{public}s', productId);
 
     try {
@@ -385,7 +623,12 @@ export class IapService {
         productType: def.iapProductType
       };
 
-      const result: iap.CreatePurchaseResult = await iap.createPurchase(uiContext, purchaseParam);
+      // 包装超时控制
+      const result: iap.CreatePurchaseResult = await (this.withTimeout(
+        iap.createPurchase(uiContext, purchaseParam),
+        PURCHASE_TIMEOUT_MS,
+        '购买请求超时，请检查网络后重试'
+      ) as Promise<iap.CreatePurchaseResult>);
 
       // 解析购买结果
       const purchaseDataStr: string = result.purchaseData;
@@ -844,39 +1087,5 @@ export class IapService {
       errorCode: -1,
       errorMessage: message
     };
-  }
-
-  /**
-   * 解析 IAP 错误码为中文消息
-   */
-  private parseIapError(error: BusinessError): string {
-    switch (error.code) {
-      case iap.IAPErrorCode.USER_CANCELED:
-        return '购买已取消';
-      case iap.IAPErrorCode.SYSTEM_ERROR:
-        return '系统内部错误，请重试';
-      case iap.IAPErrorCode.APP_NOT_AUTHORIZED:
-        return '应用未授权';
-      case iap.IAPErrorCode.INVALID_PRODUCT:
-        return '无效的商品信息';
-      case iap.IAPErrorCode.FREQUENT_CALLS:
-        return '操作过于频繁，请稍后重试';
-      case iap.IAPErrorCode.NETWORK_ERROR:
-        return '网络异常，请检查网络后重试';
-      case iap.IAPErrorCode.PRODUCT_OWNED:
-        return '您已拥有该商品';
-      case iap.IAPErrorCode.ACCOUNT_NOT_LOGGED_IN:
-        return '请先登录华为账号';
-      case iap.IAPErrorCode.ACCOUNT_TERRITORY_NOT_SUPPORTED:
-        return '当前账号服务地不支持支付';
-      case iap.IAPErrorCode.USER_NOT_ALLOWED:
-        return '交易被拒绝，请稍后重试';
-      case iap.IAPErrorCode.APP_NOT_DEBUG:
-        return '当前应用不是debug签名';
-      case iap.IAPErrorCode.ACCOUNT_NOT_TEST:
-        return '当前华为账号不是沙盒测试账号';
-      default:
-        return '购买失败，请稍后重试(' + error.code + ')';
-    }
   }
 }

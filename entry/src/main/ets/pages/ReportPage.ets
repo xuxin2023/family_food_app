@@ -2,17 +2,15 @@
 // 家庭适配报告页 - V6 体验重构
 // 三段式布局：顶部评测区 | 家庭矩阵区 | 辅助信息区
 
-import { router, promptAction } from '@kit.ArkUI';
+import { router, promptAction, curves } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
 import { AppState } from '../AppState';
-import { FamilyProfile } from '../model/FamilyProfile';
+import { FamilyProfile, AgeGroup, HealthGoal } from '../model/FamilyProfile';
 import { FoodLabel, NutritionPer100g } from '../model/FoodLabel';
 import { Recommendation, RecommendLevel, LevelColor, getLevelColorValue } from '../model/Recommendation';
 import { AlternativeFood, RecommendationLevel, ParentPanelData } from '../model/FoodAdapterTypes';
 import { ChildProtection } from '../model/ChildProtection';
 import { CredibilityResult } from '../model/CredibilityResult';
-import { AgeGroup } from '../model/FamilyProfile';
-import { LevelBadge } from '../components/LevelBadge';
 import { NutriScoreBadge } from '../components/NutriScoreBadge';
 import { FoodLabelCard } from '../components/FoodLabelCard';
 import { ShareCardGenerator, MemberShareInfo, ShareImageParams } from '../components/ShareCard';
@@ -221,42 +219,37 @@ struct ReportPage {
   HeroSection() {
     Column() {
       Row() {
-        // 左侧：NutriScore 徽章
+        // 左侧：NutriScore 徽章（内嵌适配等级标签）
         NutriScoreBadge({
           score: this.nutriScore,
-          diameter: 110,
-          animating: this.showNutriAnim
+          diameter: 130,
+          animating: this.showNutriAnim,
+          levelText: this.selectedRec.level as string,
+          levelBgColor: getLevelColorValue(this.selectedRec.levelColor)
         })
 
-        // 右侧：适配结论
+        // 右侧：适配结论 + 成员胶囊切换器
         Column() {
-          // 适配等级徽章
-          LevelBadge({
-            level: this.selectedRec.level,
-            levelColor: this.selectedRec.levelColor,
-            fontSize: 16
-          })
-          .margin({ bottom: 8 })
-
-          // 最大食用量
+          // 最大食用量（突出显示）
           if (this.selectedRec.maxAmount > 0) {
-            Text(`建议最多 ${this.selectedRec.maxAmount}g`)
-              .fontSize(FONT_SIZE.LG)
-              .fontWeight(FONT_WEIGHT.MEDIUM)
-              .fontColor(COLORS.TEXT_SECONDARY)
-              .margin({ bottom: 6 })
+            Row() {
+              Text('👤 建议最多 ')
+                .fontSize(FONT_SIZE.BODY)
+                .fontColor(COLORS.TEXT_TERTIARY)
+              Text(`${this.selectedRec.maxAmount}g`)
+                .fontSize(FONT_SIZE.XL)
+                .fontWeight(FONT_WEIGHT.BOLD)
+                .fontColor(COLORS.TEXT_PRIMARY)
+            }
+            .margin({ bottom: 10 })
           }
 
-          // 针对成员名
-          if (this.selectedMember !== undefined) {
-            Text(`针对 ${this.selectedMember.nickname}`)
-              .fontSize(FONT_SIZE.SMALL)
-              .fontColor(COLORS.TEXT_TERTIARY)
-          }
+          // 家庭成员横向胶囊切换器
+          this.MemberCapsuleSwitcher()
         }
         .alignItems(HorizontalAlign.Start)
         .layoutWeight(1)
-        .margin({ left: 20 })
+        .margin({ left: 16 })
       }
       .width('100%')
       .alignItems(VerticalAlign.Center)
@@ -314,29 +307,162 @@ struct ReportPage {
     .margin({ top: 4 })
   }
 
+  // ==================== 家庭成员胶囊切换器 ====================
+
+  @Builder
+  MemberCapsuleSwitcher() {
+    if (this.familyMembers.length > 0) {
+      Scroll() {
+        Row({ space: 8 }) {
+          ForEach(this.familyMembers, (member: FamilyProfile, index: number) => {
+            // 每个成员头像胶囊
+            Column() {
+              // 头像圈 - 用首字或emoji表示
+              Text(this.getMemberAvatar(member))
+                .fontSize(FONT_SIZE.LG)
+                .fontColor(COLORS.WHITE)
+                .width(34)
+                .height(34)
+                .textAlign(TextAlign.Center)
+                .lineHeight(34)
+                .borderRadius(17)
+                .backgroundColor(this.selectedMemberIndex === index ?
+                  this.getMemberColor(member) : COLORS.BG_PAGE)
+                .border({
+                  width: this.selectedMemberIndex === index ? 2 : 1,
+                  color: this.selectedMemberIndex === index ?
+                    getLevelColorValue(this.recommendations[index]?.levelColor ?? LevelColor.GREEN) :
+                    '#E0E0E0'
+                })
+
+              // 成员昵称（简称）
+              Text(member.nickname.length > 4 ?
+                member.nickname.substring(0, 3) + '..' : member.nickname)
+                .fontSize(FONT_SIZE.TINY)
+                .fontColor(this.selectedMemberIndex === index ?
+                  COLORS.TEXT_PRIMARY : COLORS.TEXT_TERTIARY)
+                .lineHeight(12)
+                .margin({ top: 2 })
+                .maxLines(1)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+                .width(48)
+                .textAlign(TextAlign.Center)
+
+              // 适应等级小圆点
+              if (index < this.recommendations.length) {
+                Row()
+                  .width(6)
+                  .height(6)
+                  .borderRadius(3)
+                  .backgroundColor(getLevelColorValue(this.recommendations[index].levelColor))
+                  .margin({ top: 1 })
+              }
+            }
+            .width(48)
+            .alignItems(HorizontalAlign.Center)
+            .onClick(() => {
+              this.selectedMemberIndex = index
+            })
+            .animation({ duration: 200, curve: Curve.Friction })
+          })
+        }
+        .padding({ left: 4, right: 4 })
+      }
+      .scrollable(ScrollDirection.Horizontal)
+      .width('100%')
+      .height(62)
+      .scrollBar(BarState.Off)
+      .padding({ top: 2 })
+    }
+  }
+
+  // 获取成员头像（优先使用emoji图标）
+  private getMemberAvatar(member: FamilyProfile): string {
+    const healthGoal = member.healthGoals.length > 0 ? member.healthGoals[0] : HealthGoal.NONE
+    switch (healthGoal) {
+      case HealthGoal.CONTROL_BP:
+        return '❤️'
+      case HealthGoal.CONTROL_SUGAR:
+        return '🍬'
+      case HealthGoal.CONTROL_FAT:
+      case HealthGoal.LOSE_FAT:
+        return '⚡'
+      case HealthGoal.CHILD:
+        return '🧒'
+      default:
+        return '🙂'
+    }
+  }
+
+  // 获取成员颜色
+  private getMemberColor(member: FamilyProfile): string {
+    const healthGoal = member.healthGoals.length > 0 ? member.healthGoals[0] : HealthGoal.NONE
+    switch (healthGoal) {
+      case HealthGoal.CONTROL_BP:
+        return '#E57373'
+      case HealthGoal.CONTROL_SUGAR:
+        return '#FFB74D'
+      case HealthGoal.CONTROL_FAT:
+      case HealthGoal.LOSE_FAT:
+        return '#81C784'
+      case HealthGoal.CHILD:
+        return '#64B5F6'
+      default:
+        return '#90A4AE'
+    }
+  }
+
   // ==================== 营养成分快速摘要 ====================
+
+  // 营养素每日参考值（基于中国居民膳食营养素参考摄入量）
+  private static readonly NUTRIENT_REFERENCE: Record<string, number> = {
+    '热量': 2000,
+    '钠': 2000,
+    '糖': 50,
+    '脂肪': 65,
+    '蛋白质': 65
+  };
+
+  // 获取指定营养素标签对应的食品含量
+  private getNutrientValue(label: string): number {
+    switch (label) {
+      case '热量': return this.foodLabel.nutrition.calories;
+      case '钠': return this.foodLabel.nutrition.sodium;
+      case '糖': return this.foodLabel.nutrition.sugar;
+      case '脂肪': return this.foodLabel.nutrition.fat;
+      case '蛋白质': return this.foodLabel.nutrition.protein;
+      default: return 0;
+    }
+  }
+
+  // 获取营养素百分比（相对于每日参考值）
+  private getNutrientPercentage(label: string): number {
+    const ref = ReportPage.NUTRIENT_REFERENCE[label];
+    if (!ref || ref === 0) return 0;
+    return Math.min(100, Math.round(this.getNutrientValue(label) / ref * 100));
+  }
 
   @Builder
   NutritionQuickSummary() {
     Scroll() {
       Row({ space: SPACING.SM }) {
-        this.NutrientTag('热量', `${this.foodLabel.nutrition.calories}`, 'kcal')
-        this.NutrientTag('钠', `${this.foodLabel.nutrition.sodium}`, 'mg')
-        this.NutrientTag('糖', `${this.foodLabel.nutrition.sugar}`, 'g')
-        this.NutrientTag('脂肪', `${this.foodLabel.nutrition.fat}`, 'g')
-        this.NutrientTag('蛋白质', `${this.foodLabel.nutrition.protein}`, 'g')
+        this.NutrientTag('热量', `${this.foodLabel.nutrition.calories}`, 'kcal', this.getNutrientPercentage('热量'))
+        this.NutrientTag('钠', `${this.foodLabel.nutrition.sodium}`, 'mg', this.getNutrientPercentage('钠'))
+        this.NutrientTag('糖', `${this.foodLabel.nutrition.sugar}`, 'g', this.getNutrientPercentage('糖'))
+        this.NutrientTag('脂肪', `${this.foodLabel.nutrition.fat}`, 'g', this.getNutrientPercentage('脂肪'))
+        this.NutrientTag('蛋白质', `${this.foodLabel.nutrition.protein}`, 'g', this.getNutrientPercentage('蛋白质'))
       }
       .padding({ left: 20, right: 20 })
     }
     .scrollable(ScrollDirection.Horizontal)
     .width('100%')
-    .height(60)
+    .height(80)
     .scrollBar(BarState.Off)
     .margin({ bottom: 8 })
   }
 
   @Builder
-  NutrientTag(label: string, value: string, unit: string) {
+  NutrientTag(label: string, value: string, unit: string, percentage: number = 0) {
     Column() {
       Text(label)
         .fontSize(FONT_SIZE.TINY)
@@ -353,12 +479,25 @@ struct ReportPage {
           .margin({ left: 2 })
           .alignSelf(ItemAlign.End)
       }
+      .margin({ bottom: 6 })
+      // 进度条
+      Row() {
+        Row()
+          .width(percentage > 100 ? '100%' : `${Math.round(percentage)}%`)
+          .height(4)
+          .borderRadius(2)
+          .backgroundColor(percentage > 80 ? '#EF5350' : percentage > 50 ? '#FFA726' : '#66BB6A')
+      }
+      .width(48)
+      .height(4)
+      .borderRadius(2)
+      .backgroundColor('#EEEEEE')
     }
     .padding({ left: 12, right: 12, top: 8, bottom: 8 })
     .backgroundColor('#F5F5F5')
     .borderRadius(RADIUS.MD)
     .alignItems(HorizontalAlign.Center)
-    .height(48)
+    .height(72)
   }
 
   // ==================== ③ 家庭矩阵区 ====================
@@ -484,6 +623,15 @@ struct ReportPage {
     .borderRadius(RADIUS.LG)
     .margin({ left: 20, right: 20 })
     .alignItems(VerticalAlign.Center)
+    // 滑动入场动画（从右侧滑入+透明度变化）
+    .transition(
+      TransitionEffect.asymmetric(
+        TransitionEffect.translate({ x: 80 }).combine(TransitionEffect.opacity(0))
+          .animation({ curve: curves.springMotion(0.5, 0.7) }),
+        TransitionEffect.translate({ x: -30 }).combine(TransitionEffect.opacity(0))
+          .animation({ curve: curves.springMotion() })
+      )
+    )
   }
 
   // ==================== ④ 辅助信息区 ====================

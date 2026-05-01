@@ -3,11 +3,13 @@
 // V5增强：今日家庭状态条、各成员预算剩余
 
 import { router, promptAction } from '@kit.ArkUI';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { MemberCard } from '../components/MemberCard';
 import { AppState } from '../AppState';
 import { SubscriptionTier } from '../model/PricingModel';
 import { MilestoneService, Milestone } from '../service/MilestoneService';
+import { OnlineShoppingParser } from '../service/OnlineShoppingParser';
 
 @Entry
 @Component
@@ -17,9 +19,13 @@ struct HomePage {
   @State currentSloganIndex: number = 0
   @State refreshToggle: boolean = false
   @State milestones: Milestone[] = []
+  @State showLinkInput: boolean = false
+  @State linkInputText: string = ''
+  @State isParsingLink: boolean = false
 
   private appState: AppState = AppState.getInstance()
   private milestoneService: MilestoneService = MilestoneService.getInstance()
+  private shoppingParser: OnlineShoppingParser = OnlineShoppingParser.getInstance()
 
   private slogans: string[] = [
     '给爸妈买食品前，先拍一下。',
@@ -50,8 +56,71 @@ struct HomePage {
     }
   }
 
+  /**
+   * 解析粘贴的电商链接
+   */
+  private async handleParseLink(url: string): Promise<void> {
+    if (url.trim().length === 0) {
+      promptAction.showToast({ message: '请输入或粘贴商品链接' })
+      return
+    }
+
+    this.isParsingLink = true
+    this.showLinkInput = false
+
+    try {
+      const result = await this.shoppingParser.parseUrl(url.trim())
+
+      if (!result.parseSuccess) {
+        // 解析失败
+        promptAction.showToast({ message: result.errorMessage || '解析失败，请尝试拍照识别' })
+        this.isParsingLink = false
+        return
+      }
+
+      // 解析成功 → 构造简洁FoodLabel跳转到报告页
+      promptAction.showToast({ message: `识别到 ${result.platform}：${result.productName}` })
+
+      // 构造FoodLabel跳转到ReportPage
+      const parser = OnlineShoppingParser.getInstance()
+      const parseResult = await parser.parseUrlToLabel(url.trim())
+
+      router.pushUrl({
+        url: 'pages/ReportPage',
+        params: {
+          foodLabel: parseResult.label,
+          recommendations: [],
+          members: this.familyMembers,
+          alternatives: [],
+          nutriScore: 50,
+          credibilityResult: {
+            overallScore: 60,
+            dataSource: result.platform,
+            reliability: 'medium',
+            warnings: ['数据来自电商平台，营养成分仅供参考']
+          },
+          childProtection: []
+        }
+      })
+    } catch (error) {
+      promptAction.showToast({ message: '链接解析异常，请重试或使用拍照识别' })
+      hilog.error(0x0000, 'HomePage', 'parseLink error: ' + JSON.stringify(error))
+    } finally {
+      this.isParsingLink = false
+    }
+  }
+
+  /**
+   * 打开链接输入弹窗
+   */
+  private openLinkInput(): void {
+    this.linkInputText = ''
+    this.showLinkInput = true
+  }
+
   build() {
-    Column() {
+    Stack() {
+      Column() {
       // 顶部品牌区
       Column() {
         Text('家庭饮食平衡助手')
@@ -69,6 +138,38 @@ struct HomePage {
       }
       .width('100%')
       .alignItems(HorizontalAlign.Center)
+
+      // 快速操作区：扫描 + 粘贴链接
+      Row({ space: 12 }) {
+        Button() {
+          Row({ space: 6 }) {
+            Text('📷').fontSize(16)
+            Text('扫码识别').fontSize(14).fontColor('#FFFFFF')
+          }
+        }
+        .width('45%')
+        .height(44)
+        .borderRadius(22)
+        .backgroundColor('#1976D2')
+        .onClick(() => {
+          router.pushUrl({ url: 'pages/ScanPage' })
+        })
+
+        Button() {
+          Row({ space: 6 }) {
+            Text('🔗').fontSize(16)
+            Text('粘贴链接').fontSize(14).fontColor('#FFFFFF')
+          }
+        }
+        .width('45%')
+        .height(44)
+        .borderRadius(22)
+        .backgroundColor('#7B1FA2')
+        .onClick(() => {
+          this.showLinkInput = true
+        })
+      }
+      .margin({ bottom: 16 })
 
       // V5增强：今日家庭状态条
       this.buildFamilyStatusBar()
@@ -129,6 +230,19 @@ struct HomePage {
 
       // 底部操作区
       Column() {
+        // 粘贴电商链接按钮
+        Button() {
+          Row() {
+            Text('🔗').fontSize(20)
+            Text('粘贴链接').fontSize(18).fontColor('#FFFFFF').margin({ left: 8 })
+          }
+        }
+        .width('90%')
+        .height(48)
+        .backgroundColor('#7B1FA2')
+        .borderRadius(24)
+        .margin({ bottom: 10 })
+        .onClick(() => { this.openLinkInput() })
         Button() {
           Row() {
             Text('📷').fontSize(20)
@@ -219,9 +333,79 @@ struct HomePage {
     .width('100%')
     .height('100%')
     .backgroundColor('#FAFAFA')
-  }
 
-  @Builder
+    // 链接输入浮层
+    if (this.showLinkInput) {
+      Column() {
+        Column() {
+          Text('粘贴商品链接')
+            .fontSize(18)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#1A1A1A')
+            .margin({ bottom: 16 })
+
+          TextInput({ placeholder: '粘贴京东/淘宝/天猫商品链接...', text: this.linkInputText })
+            .width('100%')
+            .height(44)
+            .borderRadius(8)
+            .backgroundColor('#F5F5F5')
+            .padding({ left: 12, right: 12 })
+            .placeholderColor('#999999')
+            .onChange((value: string) => { this.linkInputText = value })
+
+          Row({ space: 12 }) {
+            Button('取消')
+              .width('45%')
+              .height(44)
+              .borderRadius(22)
+              .backgroundColor('#E0E0E0')
+              .fontColor('#666666')
+              .onClick(() => {
+                this.showLinkInput = false
+                this.linkInputText = ''
+              })
+
+            Button() {
+              if (this.isParsingLink) {
+                LoadingProgress()
+                  .width(20)
+                  .height(20)
+                  .color('#FFFFFF')
+              } else {
+                Text('解析链接').fontColor('#FFFFFF').fontSize(16)
+              }
+            }
+            .width('45%')
+            .height(44)
+            .borderRadius(22)
+            .backgroundColor('#7B1FA2')
+            .enabled(!this.isParsingLink)
+            .onClick(() => { this.handleParseLink(this.linkInputText) })
+          }
+          .margin({ top: 16 })
+        }
+        .width('85%')
+        .padding(24)
+        .backgroundColor('#FFFFFF')
+        .borderRadius(16)
+        .shadow({ radius: 12, color: '#33000000', offsetY: 4 })
+      }
+      .width('100%')
+      .height('100%')
+      .backgroundColor('#66000000')
+      .justifyContent(FlexAlign.Center)
+      .alignItems(HorizontalAlign.Center)
+      .onClick(() => {
+        this.showLinkInput = false
+        this.linkInputText = ''
+      })
+      .position({ x: 0, y: 0 })
+      .zIndex(999)
+    }
+  }
+}
+
+@Builder
   buildMilestoneCarousel() {
     Column() {
       Row() {

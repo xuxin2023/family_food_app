@@ -66,19 +66,6 @@ export enum PlatformType {
 }
 
 /**
- * 京东联盟API返回的商品数据结构
- */
-interface JdGoodsInfo {
-  goodsName: string;
-  goodsId: number;
-  price: string;
-  imgUrl: string;
-  skuId: number;
-  skuName: string;
-  commissionInfo: Object;
-}
-
-/**
  * 商品详情结果
  */
 interface GoodsDetail {

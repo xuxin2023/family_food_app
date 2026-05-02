@@ -462,6 +462,12 @@ export class IapService {
     if (err.code === iap.IAPErrorCode.NETWORK_ERROR) {
       return '网络连接不稳定，请检查网络后重试';
     }
+    if (err.code === iap.IAPErrorCode.ACCOUNT_NOT_TEST) {
+      return '登录的华为账号不是沙箱测试账号，请在AGC添加后再试';
+    }
+    if (err.code === iap.IAPErrorCode.APP_NOT_DEBUG) {
+      return '当前应用不是debug签名，请使用调试证书打包';
+    }
 
     // 匹配扩展错误码
     const mapped = this.mapExtendedErrorCode(err.code);

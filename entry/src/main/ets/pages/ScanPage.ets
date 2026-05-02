@@ -1,16 +1,17 @@
 // ScanPage.ets
-// 扫描页 - 对标 Yuka 体验：零点击自动扫码、超时降级、多态加载状态、历史快捷入口、离线兜底
+// 扫描页 - V2 体验升级版
+// 六大体验升级：零点击自动扫码+振动音效、超时降级引导、加载状态动画、历史快捷入口、离线兜底、错误恢复与防崩溃
 //
 // 核心流程：
 //   aboutToAppear
 //     ├─ 检查网络状态 → 无网络时标记 offlineMode
 //     ├─ 刷新扫描限额
 //     ├─ 预加载高频商品
-//     └─ 自动启动识别（零点击）
+//     └─ 自动启动识别（零点击 + 振动反馈）
 //
 //   autoScanTimer (8秒超时)
-//     ├─ 8秒内获得结果 → 清除定时器
-//     └─ 8秒无结果 → 降级到拍照 OCR 模式
+//     ├─ 8秒内获得结果 → 振动提示 + 清除定时器
+//     └─ 8秒无结果 → 降级到拍照 OCR 模式 + 提示
 //
 //   startRecognition
 //     ├─ 付费墙检查 → paywallTrigger
@@ -21,6 +22,8 @@
 import { common } from '@kit.AbilityKit';
 import { router, promptAction } from '@kit.ArkUI';
 import { connection } from '@kit.NetworkKit';
+import { vibrator } from '@kit.SensorServiceKit';
+import { BusinessError } from '@kit.BasicServicesKit';
 import { FoodLabel } from '../model/FoodLabel';
 import { AppState } from '../AppState';
 import { FoodInputResult, FoodInputService } from '../service/FoodInputService';
@@ -35,6 +38,18 @@ const AUTO_SCAN_TIMEOUT_MS = 8000;
 
 /** 最近扫描记录显示条数 */
 const RECENT_SCAN_SHOW_COUNT = 3;
+
+/** 扫码成功时振动时长（毫秒） */
+const VIBRATE_SUCCESS_MS = 80;
+
+/** 扫码失败/超时时振动时长（毫秒） */
+const VIBRATE_ERROR_MS = 200;
+
+/** 重试最大次数 */
+const MAX_RETRY_COUNT = 2;
+
+/** 防崩溃重试间隔（毫秒） */
+const RETRY_INTERVAL_MS = 1500;
 
 // ==================== 加载阶段枚举 ====================
 
@@ -101,10 +116,17 @@ struct ScanPage {
   @State editPrincipal: string = ''
   @State editTrustee: string = ''
 
+  // ---- 体验升级：错误恢复与防崩溃 ----
+  @State retryCount: number = 0
+  @State lastError: string = ''
+  @State showErrorBanner: boolean = false
+  @State isLoadingRetry: boolean = false
+
   private memberId: string = ''
   private appState: AppState = AppState.getInstance()
   private foodInputService: FoodInputService = new FoodInputService()
   private autoScanTimer: number = -1
+  private componentActive: boolean = true
 
   // ==================== 生命周期 ====================
 
@@ -126,6 +148,98 @@ struct ScanPage {
 
     // 4. 零点击自动启动识别
     this.triggerAutoScan()
+  }
+
+  aboutToDisappear(): void {
+    this.componentActive = false
+    // 清理定时器，防止内存泄漏
+    if (this.autoScanTimer !== -1) {
+      clearTimeout(this.autoScanTimer)
+      this.autoScanTimer = -1
+    }
+  }
+
+  // ==================== 振动反馈工具方法 ====================
+
+  /**
+   * 触发短促成功振动（扫码成功时使用）
+   */
+  private vibrateSuccess(): void {
+    try {
+      vibrator.startVibration({
+        type: 'time',
+        duration: VIBRATE_SUCCESS_MS
+      }, {
+        id: 0,
+        usage: 'physicalFeedback'
+      }).then(() => {
+        // 振动成功，无需额外处理
+      }).catch(() => {
+        // 振动失败静默处理，不影响核心流程
+      })
+    } catch (err) {
+      // 静默处理
+    }
+  }
+
+  /**
+   * 触发错误振动（扫码失败/超时时使用）
+   */
+  private vibrateError(): void {
+    try {
+      vibrator.startVibration({
+        type: 'time',
+        duration: VIBRATE_ERROR_MS
+      }, {
+        id: 0,
+        usage: 'physicalFeedback'
+      }).then(() => {
+        // 振动成功
+      }).catch(() => {
+        // 静默处理
+      })
+    } catch (err) {
+      // 静默处理
+    }
+  }
+
+  // ==================== 错误恢复与防崩溃 ====================
+
+  /**
+   * 安全包装异步操作，自动重试并显示错误提示
+   */
+  private async safeExecute<T>(action: () => Promise<T>, errorMessage: string): Promise<T | null> {
+    if (!this.componentActive) {
+      return null
+    }
+    try {
+      this.showErrorBanner = false
+      const result = await action()
+      this.retryCount = 0
+      return result
+    } catch (err) {
+      const errMsg = `${errorMessage}: ${err}`
+      console.error(errMsg)
+      this.lastError = errorMessage
+      this.retryCount++
+      if (this.retryCount <= MAX_RETRY_COUNT && this.componentActive) {
+        this.showErrorBanner = true
+        // 自动重试
+        setTimeout(() => {
+          if (this.componentActive) {
+            this.isLoadingRetry = true
+            this.safeExecute(action, errorMessage).then(() => {
+              this.isLoadingRetry = false
+            })
+          }
+        }, RETRY_INTERVAL_MS)
+      } else {
+        // 超出重试次数，显示永久错误提示
+        this.showErrorBanner = true
+        promptAction.showToast({ message: errorMessage + '，请稍后重试' })
+      }
+      return null
+    }
   }
 
   /**
@@ -152,20 +266,22 @@ struct ScanPage {
    * 规则：
    * - 已到达每日限额时不自动启动
    * - 启动后设置 8 秒超时定时器
-   * - 超时未获得结果 → 降级提示 + 切换到拍照模式
+   * - 超时未获得结果 → 降级提示 + 切换到拍照模式 + 错误振动
    */
   private triggerAutoScan() {
     if (this.scanLimitReached) {
       return
     }
 
-    // 启动识别
+    // 启动识别（含振动反馈）
     this.startRecognition()
+    this.vibrateSuccess()
 
     // 设置自动扫码超时定时器
     this.autoScanTimer = setTimeout(() => {
-      if (this.foodLabel.foodId.length === 0) {
+      if (this.foodLabel.foodId.length === 0 && this.componentActive) {
         // 超时且未获得结果 → 降级
+        this.vibrateError()
         promptAction.showToast({ message: '未识别到条码，已切换到拍照模式' })
         this.scanMode = 'camera'
         this.scanPhase = ScanPhase.TIMEOUT

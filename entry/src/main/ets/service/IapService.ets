@@ -48,6 +48,31 @@ import {
   PurchaseResult
 } from '../model/MemberStatus';
 
+// ==================== 沙箱测试报告类型 ====================
+
+/**
+ * 沙箱测试单个步骤结果
+ */
+export interface SandboxTestStep {
+  name: string
+  success: boolean
+  duration: number
+  errorCode: number
+  errorMessage: string
+  details: string
+}
+
+/**
+ * 沙箱测试综合报告
+ */
+export interface SandboxTestReport {
+  overallSuccess: boolean
+  totalDuration: number
+  sandboxMode: boolean
+  steps: SandboxTestStep[]
+  timestamp: number
+}
+
 const TAG = 'IapService';
 const DOMAIN_ZERO = 0;
 
@@ -879,23 +904,6 @@ export class IapService {
    * 获取购买记录（从本地 Preference 读取）
    * @returns 购买记录列表，按时间倒序排列
    */
-  async getPurchaseHistory(): Promise<PurchaseRecord[]> {
-    if (!this.context) {
-      return [];
-    }
-
-    try {
-      const prefs = await preferences.getPreferences(this.context, PREF_IAP);
-      const historyJson = prefs.getSync(KEY_PURCHASE_HISTORY, '[]') as string;
-      const records: PurchaseRecord[] = safeJsonParse<PurchaseRecord[]>(historyJson) || [];
-      records.sort((a, b) => b.purchaseTime - a.purchaseTime);
-      return records;
-    } catch (err) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'getPurchaseHistory failed: %{public}s', JSON.stringify(err));
-      return [];
-    }
-  }
-
   /**
    * 获取当前已保存的活跃商品ID
    */
@@ -1087,5 +1095,238 @@ export class IapService {
       errorCode: -1,
       errorMessage: message
     };
+  }
+
+  // ==================== 用户友好的错误码映射（对外暴露） ====================
+
+  /**
+   * 将错误码转为用户友好的提示文本
+   * 覆盖沙箱测试中的常见错误码场景
+   */
+  handlePurchaseError(code: number, message?: string): string {
+    // 自定义错误码映射（沙箱测试扩展）
+    switch (code) {
+      case -1:
+        return '支付已取消';
+      case -2:
+        return '网络异常，请检查后重试';
+      case -3:
+        return '支付失败，请稍后再试';
+      case 1001:
+        return '您的账户已订阅该服务';
+      case 1002:
+        return '商品ID不存在，请联系客服';
+      case 1003:
+        return '请先登录华为账号';
+      default:
+        break;
+    }
+    // IAP Kit 内置错误码映射
+    if (code === iap.IAPErrorCode.USER_CANCELED) {
+      return '支付已取消';
+    }
+    if (code === iap.IAPErrorCode.SYSTEM_ERROR) {
+      return '支付系统繁忙，请稍后重试';
+    }
+    if (code === iap.IAPErrorCode.PRODUCT_OWNED) {
+      return '您已订阅该服务，无需重复购买';
+    }
+    if (code === iap.IAPErrorCode.NETWORK_ERROR) {
+      return '网络异常，请检查后重试';
+    }
+    if (code === iap.IAPErrorCode.PURCHASE_NOT_PAID) {
+      return '未查询到有效购买记录';
+    }
+    if (code === iap.IAPErrorCode.FREQUENT_CALLS) {
+      return '操作过于频繁，请稍后重试';
+    }
+    if (code === iap.IAPErrorCode.ACCOUNT_NOT_LOGGED_IN) {
+      return '请先登录华为账号';
+    }
+    if (code === iap.IAPErrorCode.PURCHASE_FINISHED) {
+      return '此次购买已完成，无需重复发货';
+    }
+    return message && message.length > 0 ? message : `支付异常（错误码：${code}）`;
+  }
+
+  // ==================== 购买超时检查 ====================
+
+  /**
+   * 带超时的购买请求
+   * @param productId 商品ID
+   * @param timeoutMs 超时毫秒（默认10秒）
+   */
+  async purchaseWithTimeout(productId: string, timeoutMs: number = 10000): Promise<PurchaseResult> {
+    const purchasePromise = this.purchase(productId);
+    const timeoutPromise = new Promise<PurchaseResult>((resolve: (value: PurchaseResult) => void) => {
+      setTimeout(() => {
+        resolve({
+          success: false,
+          productId: productId,
+          errorCode: -2,
+          errorMessage: '支付处理中，请稍候查看订阅状态'
+        });
+      }, timeoutMs);
+    });
+    return Promise.race([purchasePromise, timeoutPromise]);
+  }
+
+  // ==================== 沙箱测试 ====================
+
+  /**
+   * 运行完整的沙箱闭环测试
+   *
+   * 测试流程：
+   *   1. 环境检查
+   *   2. 商品查询
+   *   3. 个人月度购买
+   *   4. 确认发货
+   *   5. 恢复购买
+   *   6. 家庭年度购买
+   *   7. 确认发货
+   *   8. 购买历史验证
+   *
+   * @returns SandboxTestReport 完整的测试报告
+   */
+  async runSandboxTest(): Promise<SandboxTestReport> {
+    const startTime = Date.now();
+    const steps: SandboxTestStep[] = [];
+    const recordStep = (name: string, success: boolean, duration: number,
+      errorCode: number, errorMessage: string, details: string): void => {
+      steps.push({ name, success, duration, errorCode, errorMessage, details });
+    };
+
+    // ---- 步骤1: 环境检查 ----
+    const envStart = Date.now();
+    try {
+      await iap.queryEnvironmentStatus(this.context);
+      recordStep('环境检查', true, Date.now() - envStart, 0, '', 'IAP环境可用');
+    } catch (err) {
+      const error = err as BusinessError;
+      recordStep('环境检查', false, Date.now() - envStart, error.code, error.message,
+        'IAP环境不可用，请确认华为账号已登录');
+    }
+
+    // ---- 步骤2: 商品查询 ----
+    const queryStart = Date.now();
+    try {
+      const products = await this.queryProducts();
+      recordStep('商品查询', true, Date.now() - queryStart, 0, '',
+        `查询到 ${products.length} 个商品`);
+    } catch (err) {
+      const error = err as BusinessError;
+      recordStep('商品查询', false, Date.now() - queryStart, error.code, error.message,
+        '商品查询失败');
+    }
+
+    // ---- 步骤3: 个人月度购买 ----
+    const purchase1Start = Date.now();
+    try {
+      const result = await this.purchase(PRODUCT_IDS.PERSONAL_MONTHLY);
+      if (result.success) {
+        recordStep('个人月度购买', true, Date.now() - purchase1Start, 0, '',
+          '购买成功');
+      } else {
+        recordStep('个人月度购买', false, Date.now() - purchase1Start, result.errorCode,
+          result.errorMessage, '购买失败');
+      }
+    } catch (err) {
+      const error = err as BusinessError;
+      recordStep('个人月度购买', false, Date.now() - purchase1Start, error.code, error.message,
+        '购买异常');
+    }
+
+    // ---- 步骤4: 确认发货（个人月度） ----
+    const consume1Start = Date.now();
+    try {
+      await this.consumePurchase(PRODUCT_IDS.PERSONAL_MONTHLY);
+      recordStep('确认发货(个人)', true, Date.now() - consume1Start, 0, '',
+        '消耗型商品发货成功');
+    } catch (err) {
+      const error = err as BusinessError;
+      recordStep('确认发货(个人)', false, Date.now() - consume1Start, error.code, error.message,
+        '发货失败');
+    }
+
+    // ---- 步骤5: 恢复购买 ----
+    const restoreStart = Date.now();
+    try {
+      await this.restorePurchases();
+      recordStep('恢复购买', true, Date.now() - restoreStart, 0, '',
+        '购买记录恢复成功');
+    } catch (err) {
+      const error = err as BusinessError;
+      recordStep('恢复购买', false, Date.now() - restoreStart, error.code, error.message,
+        '恢复失败');
+    }
+
+    // ---- 步骤6: 家庭年度购买 ----
+    const purchase2Start = Date.now();
+    try {
+      const result = await this.purchase(PRODUCT_IDS.FAMILY_YEARLY);
+      if (result.success) {
+        recordStep('家庭年度购买', true, Date.now() - purchase2Start, 0, '',
+          '购买成功');
+      } else {
+        recordStep('家庭年度购买', false, Date.now() - purchase2Start, result.errorCode,
+          result.errorMessage, '购买失败');
+      }
+    } catch (err) {
+      const error = err as BusinessError;
+      recordStep('家庭年度购买', false, Date.now() - purchase2Start, error.code, error.message,
+        '购买异常');
+    }
+
+    // ---- 步骤7: 确认发货（家庭年度） ----
+    const consume2Start = Date.now();
+    try {
+      await this.consumePurchase(PRODUCT_IDS.FAMILY_YEARLY);
+      recordStep('确认发货(家庭)', true, Date.now() - consume2Start, 0, '',
+        '消耗型商品发货成功');
+    } catch (err) {
+      const error = err as BusinessError;
+      recordStep('确认发货(家庭)', false, Date.now() - consume2Start, error.code, error.message,
+        '发货失败');
+    }
+
+    // ---- 步骤8: 购买历史验证 ----
+    const historyStart = Date.now();
+    try {
+      const history = await this.getPurchaseHistory();
+      const isValid = history.length >= 2;
+      recordStep('购买历史验证', isValid, Date.now() - historyStart, 0, '',
+        isValid ? `历史记录 ${history.length} 条，完整性正常` : `历史记录 ${history.length} 条，可能不完整`);
+    } catch (err) {
+      const error = err as BusinessError;
+      recordStep('购买历史验证', false, Date.now() - historyStart, error.code, error.message,
+        '查询历史记录失败');
+    }
+
+    const totalDuration = Date.now() - startTime;
+    const overallSuccess = steps.every(s => s.success);
+    return {
+      overallSuccess: overallSuccess,
+      totalDuration: totalDuration,
+      sandboxMode: this.isSandboxMode(),
+      steps: steps,
+      timestamp: Date.now()
+    };
+  }
+
+  /**
+   * 获取已保存的购买记录列表（沙箱测试报告用）
+   */
+  async getPurchaseHistory(): Promise<PurchaseRecord[]> {
+    if (!this.context) {
+      return [];
+    }
+    try {
+      const dataStore = await preferences.getPreferences(this.context, PREF_IAP);
+      const historyJson = dataStore.getSync(KEY_PURCHASE_HISTORY, '[]') as string;
+      const history: PurchaseRecord[] = JSON.parse(historyJson);
+      return history;
+    } catch (err) {
+      return [];
+    }
   }
 }

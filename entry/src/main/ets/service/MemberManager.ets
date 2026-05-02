@@ -246,8 +246,8 @@ export class MemberManager {
    * @returns FeatureAccess[] 所有功能的权限状态
    */
   getAllFeatures(): FeatureAccess[] {
-    return FEATURE_MATRIX.map(entry => {
-      return {
+    return FEATURE_MATRIX.map((entry: FeatureMatrixEntry): FeatureAccess => {
+      const result: FeatureAccess = {
         featureName: entry.featureName,
         featureLabel: entry.featureLabel,
         isAccessible: hasTierAccess(this.currentTier, entry.requiredTier),
@@ -255,6 +255,7 @@ export class MemberManager {
         currentTier: this.currentTier,
         freeLimitDesc: entry.freeLimitDesc
       };
+      return result;
     });
   }
 

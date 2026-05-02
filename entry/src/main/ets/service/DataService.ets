@@ -3,7 +3,7 @@
 // 整合 FoodAdapterEngine、NutriScoreEngine、AlternativeFoodRecommender 生成 FullReportResult
 
 import { common } from '@kit.AbilityKit';
-import { FoodLabel, NutritionPer100g } from '../model/FoodLabel';
+import { FoodLabel, NutritionPer100g, FoodSource } from '../model/FoodLabel';
 import { HealthSignal as OldHealthSignal } from '../model/HealthSignal';
 import { Recommendation, RecommendLevel, LevelColor } from '../model/Recommendation';
 import { FamilyProfile } from '../model/FamilyProfile';
@@ -80,11 +80,7 @@ export class DataService {
     const label = new FoodLabel();
     label.foodId = `ocr_${Date.now()}`;
     label.foodName = 'OCR识别的食品';
-    label.source = label.constructor.name as unknown as string === 'FoodLabel' ? (() => {
-      const f = new FoodLabel();
-      f.source = (() => 'OCR识别')() as never;
-      return 'OCR识别';
-    })() : 'OCR识别';
+    label.source = FoodSource.OCR_RECOGNIZE;
     label.identifiedAt = Date.now();
     label.nutrition = new NutritionPer100g();
     return label;
@@ -98,7 +94,7 @@ export class DataService {
     const label = new FoodLabel();
     label.foodId = `ai_${Date.now()}`;
     label.foodName = 'AI识别的食品';
-    label.source = 'AI视觉识别' as never;
+    label.source = FoodSource.OCR_RECOGNIZE;
     label.identifiedAt = Date.now();
     label.barcode = barcode || '';
     label.nutrition = new NutritionPer100g();

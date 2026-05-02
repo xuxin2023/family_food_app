@@ -300,10 +300,10 @@ struct SubscriptionPage {
 
   private getProductId(tier: SubscriptionTier): string {
     const map: Map<string, string> = new Map([
-      [SubscriptionTier.TRIAL_7DAY, 'com.familyfood.trial_7day'],
-      [SubscriptionTier.PERSONAL_YEAR, 'com.familyfood.personal_year'],
-      [SubscriptionTier.FAMILY_STANDARD, 'com.familyfood.family_standard'],
-      [SubscriptionTier.FAMILY_PREMIUM, 'com.familyfood.family_premium']
+      [SubscriptionTier.TRIAL_7DAY, 'family_food_personal_monthly'],
+      [SubscriptionTier.PERSONAL_YEAR, 'family_food_personal_yearly'],
+      [SubscriptionTier.FAMILY_STANDARD, 'family_food_family_yearly'],
+      [SubscriptionTier.FAMILY_PREMIUM, 'family_food_premium_yearly']
     ]);
     return map.get(tier) || '';
   }

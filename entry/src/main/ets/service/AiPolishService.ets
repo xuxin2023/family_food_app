@@ -28,18 +28,35 @@ export interface PolishInput {
 }
 
 // AgentArts响应
+interface ChoiceMessage {
+  content: string;
+}
+
+interface Choice {
+  message: ChoiceMessage;
+  finish_reason: string;
+}
+
+interface UsageInfo {
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+}
+
 interface AgentArtsResponse {
-  choices: Array<{
-    message: {
-      content: string;
-    };
-    finish_reason: string;
-  }>;
-  usage: {
-    prompt_tokens: number;
-    completion_tokens: number;
-    total_tokens: number;
-  };
+  choices: Choice[];
+  usage: UsageInfo;
+}
+
+interface ChatMessage {
+  role: string;
+  content: string;
+}
+
+// API调用返回结果
+interface PolishResult {
+  text: string;
+  tokensUsed: number;
 }
 
 export class AiPolishService {
@@ -129,22 +146,24 @@ export class AiPolishService {
   /**
    * 调用AgentArts API
    */
-  private async callAgentArts(prompt: string): Promise<{ text: string; tokensUsed: number } | null> {
+  private async callAgentArts(prompt: string): Promise<PolishResult | null> {
     try {
       const httpRequest = http.createHttp();
 
+      const messages: ChatMessage[] = [
+        {
+          role: 'system',
+          content: '你是一个食品健康建议润色助手。语气温和、生活化，不使用恐吓式表达，不使用绝对化表述（如"一定有害""放心吃"）。输出简洁，不超过100字。'
+        } as ChatMessage,
+        {
+          role: 'user',
+          content: prompt
+        } as ChatMessage
+      ];
+
       const requestBody = JSON.stringify({
         model: AGENT_ARTS_MODEL,
-        messages: [
-          {
-            role: 'system',
-            content: '你是一个食品健康建议润色助手。语气温和、生活化，不使用恐吓式表达，不使用绝对化表述（如"一定有害""放心吃"）。输出简洁，不超过100字。'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
+        messages: messages,
         temperature: 0.7,
         max_tokens: 200
       });
@@ -165,10 +184,11 @@ export class AiPolishService {
       if (response.responseCode === 200) {
         const result = JSON.parse(response.result as string) as AgentArtsResponse;
         if (result.choices && result.choices.length > 0) {
-          return {
+          const polishResult: PolishResult = {
             text: result.choices[0].message.content,
             tokensUsed: result.usage?.total_tokens || 0
           };
+          return polishResult;
         }
       } else {
         hilog.error(DOMAIN_ZERO, TAG, 'AgentArts API error: %{public}d', response.responseCode);

@@ -35,7 +35,21 @@
     // 5. AGC CLI 辅助提包命令：
     //    agc app:upload --file entry-default-signed.hap --app-id <APP_ID>
     // ========================================================
-    "signingConfigs": [],
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "C:\\Users\\xuxin\\.ohos\\config\\default_family_food_app_ddvUlaM2h_N2ULJfHL5g_Bde3CjUwoxK62ny2hV-Nvo=.cer",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001BAFEBFCBFE728FBD30B64C84DD2AEC9C58E4EB3D2424EAFCB39FB73587FFC74C39A3E04A8CD93F2",
+          "profile": "C:\\Users\\xuxin\\.ohos\\config\\default_family_food_app_ddvUlaM2h_N2ULJfHL5g_Bde3CjUwoxK62ny2hV-Nvo=.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "C:\\Users\\xuxin\\.ohos\\config\\default_family_food_app_ddvUlaM2h_N2ULJfHL5g_Bde3CjUwoxK62ny2hV-Nvo=.p12",
+          "storePassword": "0000001B2D2D12D4CF3038153C37F2EF6F50B749CC42CD09710921C945D3D953C420A6755AFF52D401018C"
+        }
+      }
+    ],
     "products": [
       {
         "name": "default",
@@ -53,6 +67,29 @@
       },
       {
         "name": "test"
+      }
+    ],
+    "capabilities": [
+      {
+        "bundleName": "com.familyfood.helper",
+        "config": [
+          {
+            "name": "Push Kit",
+            "capability": "com.huawei.service.push.base_service"
+          },
+          {
+            "name": "Device status detection",
+            "capability": "com.huawei.service.device_security.device_verify"
+          },
+          {
+            "name": "Map Kit",
+            "capability": "com.huawei.service.mapkit"
+          },
+          {
+            "name": "Safety Detect",
+            "capability": "com.huawei.service.device_security.safety_detect"
+          }
+        ]
       }
     ]
   },

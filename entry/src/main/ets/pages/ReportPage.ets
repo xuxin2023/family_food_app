@@ -168,18 +168,18 @@ struct ReportPage {
   @Builder
   TopNavBar() {
     Row() {
-      // 返回
-      Row()
-        .width(40)
-        .height(40)
-        .justifyContent(FlexAlign.Center)
-        .alignItems(VerticalAlign.Center)
-        .onClick(() => { router.back() })
-        .margin({ left: 4 }) {
+      // 返回按钮
+      Row() {
         Text('<')
           .fontSize(FONT_SIZE.LARGE)
           .fontColor(COLORS.TEXT_PRIMARY)
       }
+      .width(40)
+      .height(40)
+      .justifyContent(FlexAlign.Center)
+      .alignItems(VerticalAlign.Center)
+      .onClick(() => { router.back() })
+      .margin({ left: 4 })
 
       Blank()
 
@@ -196,16 +196,16 @@ struct ReportPage {
       Blank()
 
       // 分享按钮
-      Row()
-        .width(40)
-        .height(40)
-        .justifyContent(FlexAlign.Center)
-        .alignItems(VerticalAlign.Center)
-        .onClick(() => { this.handleSaveImage() })
-        .margin({ right: 4 }) {
+      Row() {
         Text('\uD83D\uDCF8')
           .fontSize(FONT_SIZE.XL)
       }
+      .width(40)
+      .height(40)
+      .justifyContent(FlexAlign.Center)
+      .alignItems(VerticalAlign.Center)
+      .onClick(() => { this.handleSaveImage() })
+      .margin({ right: 4 })
     }
     .width('100%')
     .height(56)

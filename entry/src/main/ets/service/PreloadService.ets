@@ -38,13 +38,11 @@ export class PreloadService {
     }
 
     try {
-      const [scanHistory, members] = await Promise.all([
-        this.appState.getRecentScanHistory(20),
-        this.appState.getAllMembers()
-      ]);
+      const scanHistoryRecords = await this.appState.getRecentScanHistory(20);
+      const members = await this.appState.getAllMembers();
 
       const labels: FoodLabel[] = [];
-      for (const record of scanHistory) {
+      for (const record of scanHistoryRecords) {
         const food = await this.appState.findFoodById(record.foodId);
         if (food !== null) {
           labels.push(food);

@@ -194,16 +194,11 @@ export class FoodAdapterEngine {
    */
   private static getStepAdjustment(signal: HealthSignal): number {
     // 步数<3000→钠/热量预算额外收紧20%；3000-6000→收紧10%；6000-10000→正常；>10000→可放宽5%
-    if (signal.isLowActivity()) {
+    if (signal.steps === '低') {
       return 0.8; // 收紧20%
     }
-    // 大体估算：StepLevel分低/正常/高三档
-    // 用活动量水平作为精细判断
-    if (signal.stepLevel === '正常' || signal.stepLevel === '高') {
-      // 步数正常或偏高
-      if (signal.activityCaloriesLevel === '高') {
-        return 1.05; // 放宽5%
-      }
+    // 大体估算：用活动量水平作为精细判断
+    if (signal.steps === '正常' || signal.steps === '高') {
       return 1.0;
     }
     // 默认
@@ -218,11 +213,11 @@ export class FoodAdapterEngine {
     if (!isHighSugarOrFat) {
       return 1.0;
     }
-    // sleep: "poor"→额外减少25%；"fair"→减少10%；"good"→正常
-    if (signal.sleepStatus === '差') {
+    // sleep: "差"→额外减少25%；"一般"→减少10%；"好"→正常
+    if (signal.sleep === '差') {
       return 0.75;
     }
-    if (signal.sleepStatus === '一般') {
+    if (signal.sleep === '一般') {
       return 0.9;
     }
     return 1.0;

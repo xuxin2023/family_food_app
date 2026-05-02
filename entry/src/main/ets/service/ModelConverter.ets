@@ -30,7 +30,8 @@ import {
   DislikedAdditive,
   SimpleDailyBudget,
   SimpleDynamicRule,
-  FamilyMemberSimple
+  FamilyMemberSimple,
+  DynamicRule
 } from '../model/FoodAdapterTypes';
 
 const TAG = 'ModelConverter';
@@ -104,12 +105,15 @@ export function familyMemberToSimple(member: FamilyMember): FamilyMemberSimple {
       saturatedFat_g: member.dailyBudget.saturatedFat_g
     },
     allergenRedline: member.allergenRedline,
-    dynamicAdjustment: member.dynamicAdjustment.map(r => ({
-      conditionKey: r.conditionKey,
-      conditionValue: r.conditionValue,
-      targetNutrient: r.targetNutrient,
-      adjustmentRatio: r.adjustmentRatio
-    })),
+    dynamicAdjustment: member.dynamicAdjustment.map((r: DynamicRule): SimpleDynamicRule => {
+      const rule: SimpleDynamicRule = {
+        conditionKey: r.conditionKey,
+        conditionValue: r.conditionValue,
+        targetNutrient: r.targetNutrient,
+        adjustmentRatio: r.adjustmentRatio
+      };
+      return rule;
+    }),
     dislikedAdditives: member.dislikedAdditives
   };
 }

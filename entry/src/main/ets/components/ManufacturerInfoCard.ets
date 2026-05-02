@@ -62,11 +62,11 @@ export struct ManufacturerInfoCard {
   InfoRow(label: string, value: string) {
     Row() {
       Text(label)
-        .fontSize(FONT_SIZE.XS)
+        .fontSize(FONT_SIZE.TINY)
         .fontColor('#9E9E9E')
         .width(60)
       Text(value)
-        .fontSize(FONT_SIZE.XS)
+        .fontSize(FONT_SIZE.TINY)
         .fontColor('#424242')
         .layoutWeight(1)
     }

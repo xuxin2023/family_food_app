@@ -20,7 +20,7 @@
 //     └─ 离线模式 → 纯本地规则引擎
 
 import { common } from '@kit.AbilityKit';
-import { router, promptAction } from '@kit.ArkUI';
+import { router, promptAction, curves } from '@kit.ArkUI';
 import { connection } from '@kit.NetworkKit';
 import { vibrator } from '@kit.SensorServiceKit';
 import { BusinessError } from '@kit.BasicServicesKit';
@@ -345,8 +345,8 @@ struct ScanPage {
         Column() {
           // ---- 顶部导航栏 ----
           Row() {
-            Text('<')
-              .fontSize(24)
+            Text('‹ 返回')
+              .fontSize(FONT_SIZE.BODY)
               .fontColor(COLORS.PRIMARY)
               .onClick(() => {
                 try {
@@ -355,13 +355,13 @@ struct ScanPage {
                   // ignore router error
                 }
               })
-            Text('识别食品标签')
-              .fontSize(FONT_SIZE.TITLE)
-              .fontWeight(FONT_WEIGHT.BOLD)
-              .margin({ left: SPACING.LG })
+            Blank()
+            if (this.foodLabel.foodId.length > 0) {
+              Text('已识别').fontSize(FONT_SIZE.TINY).fontColor(COLORS.ACCENT_GREEN)
+            }
           }
           .width('100%')
-          .padding({ left: SPACING.LG, right: SPACING.LG, top: SPACING.LG, bottom: SPACING.LG })
+          .padding({ left: SPACING.LG, right: SPACING.LG, top: SPACING.LG, bottom: SPACING.SM })
 
           this.ModeSelector()
 
@@ -409,6 +409,7 @@ struct ScanPage {
                 .backgroundColor(COLORS.PRIMARY)
                 .borderRadius(26)
                 .onClick(() => { this.startRecognition() })
+                .animation({ duration: 200, curve: curves.springMotion() })
 
               Button('手动录入')
                 .width('90%')
@@ -418,6 +419,7 @@ struct ScanPage {
                 .borderRadius(24)
                 .margin({ top: 10 })
                 .onClick(() => { this.startManualEntry() })
+                .animation({ duration: 200, curve: curves.springMotion() })
             } else {
               Button('查看适配报告')
                 .width('90%')
@@ -425,6 +427,7 @@ struct ScanPage {
                 .backgroundColor(COLORS.ACCENT_GREEN)
                 .borderRadius(26)
                 .onClick(() => { this.viewReport() })
+                .animation({ duration: 300, curve: curves.springMotion() })
 
               Row() {
                 Button(this.showEditPanel ? '收起修正面板' : '手动修正')
@@ -439,6 +442,7 @@ struct ScanPage {
                       this.loadEditFormFromLabel()
                     }
                   })
+                  .animation({ duration: 200, curve: curves.springMotion() })
 
                 Button('保存 FoodLabel')
                   .layoutWeight(1)
@@ -448,6 +452,7 @@ struct ScanPage {
                   .borderRadius(23)
                   .margin({ left: 10 })
                   .onClick(() => { this.saveDraft() })
+                  .animation({ duration: 200, curve: curves.springMotion() })
               }
               .width('90%')
               .margin({ top: 10 })
@@ -565,7 +570,7 @@ struct ScanPage {
   ResultCard() {
     Column() {
       if (this.isRecognizing()) {
-        // ── 正在识别中：按阶段显示不同状态 ──
+        // ── 正在识别中：按阶段显示不同状态（渐变过渡）──
         if (this.scanPhase === ScanPhase.RECOGNIZING) {
           Column() {
             LoadingProgress()
@@ -581,6 +586,7 @@ struct ScanPage {
           .justifyContent(FlexAlign.Center)
           .width('100%')
           .height(140)
+          .transition(TransitionEffect.opacity(1))
         } else if (this.scanPhase === ScanPhase.DB_QUERYING) {
           Column() {
             LoadingProgress()
@@ -596,6 +602,7 @@ struct ScanPage {
           .justifyContent(FlexAlign.Center)
           .width('100%')
           .height(100)
+          .transition(TransitionEffect.opacity(1))
         } else if (this.scanPhase === ScanPhase.API_QUERYING) {
           Column() {
             LoadingProgress()
@@ -617,6 +624,7 @@ struct ScanPage {
           .justifyContent(FlexAlign.Center)
           .width('100%')
           .height(120)
+          .transition(TransitionEffect.opacity(1))
         } else if (this.scanPhase === ScanPhase.SCORING) {
           Column() {
             LoadingProgress()
@@ -632,6 +640,7 @@ struct ScanPage {
           .justifyContent(FlexAlign.Center)
           .width('100%')
           .height(80)
+          .transition(TransitionEffect.opacity(1))
         }
       } else if (this.foodLabel.foodId.length === 0) {
         // ── 未识别：显示高频商品快速入口 ──

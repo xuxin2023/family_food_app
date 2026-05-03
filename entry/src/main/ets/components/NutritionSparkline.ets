@@ -1,7 +1,7 @@
 // NutritionSparkline.ets
 // 营养成分迷你趋势图组件 - 展示营养素的历史趋势变化
 
-import { COLORS, SPACING, FONT_SIZE, RADIUS } from '../constants/AppTheme';
+import { SPACING, FONT_SIZE, RADIUS } from '../constants/AppTheme';
 
 /**
  * 趋势数据点
@@ -72,7 +72,7 @@ export struct NutritionSparkline {
             .borderRadius(3)
             .backgroundColor(this.data!.color)
             .margin({ right: 3 })
-          }, (item: number, index: number) => index.toString())
+          }, (_item: number, index: number) => index.toString())
         }
         .width('100%')
         .height(28)

@@ -34,11 +34,11 @@
         "material": {
           "certpath": "C:\\Users\\xuxin\\.ohos\\config\\default_family_food_app_ddvUlaM2h_N2ULJfHL5g_Bde3CjUwoxK62ny2hV-Nvo=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001BAFEBFCBFE728FBD30B64C84DD2AEC9C58E4EB3D2424EAFCB39FB73587FFC74C39A3E04A8CD93F2",
+          "keyPassword": "0000001BAB7B0DFAA49D1D9A41C349D577325B39CA4DFD98B5880F36262D7C349F1A946D71BEF727945633",
           "profile": "C:\\Users\\xuxin\\.ohos\\config\\default_family_food_app_ddvUlaM2h_N2ULJfHL5g_Bde3CjUwoxK62ny2hV-Nvo=.p7b",
           "signAlg": "SHA256withECDSA",
           "storeFile": "C:\\Users\\xuxin\\.ohos\\config\\default_family_food_app_ddvUlaM2h_N2ULJfHL5g_Bde3CjUwoxK62ny2hV-Nvo=.p12",
-          "storePassword": "0000001B2D2D12D4CF3038153C37F2EF6F50B749CC42CD09710921C945D3D953C420A6755AFF52D401018C"
+          "storePassword": "0000001B4895240BF42E052E2B0B15F6257837C43DC4D32E5F5740EE581FD081294B8785FF8084F17F1D32"
         }
       }
     ],

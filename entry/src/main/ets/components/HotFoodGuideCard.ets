@@ -1,5 +1,5 @@
 import { router } from '@kit.ArkUI';
-import { HotFoodItem, HOT_FOODS, DailyTip, DAILY_TIPS } from '../constants/HotFoods';
+import { HotFoodItem, HOT_FOODS, DAILY_TIPS } from '../constants/HotFoods';
 import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
 
 @Component
@@ -16,7 +16,13 @@ export struct HotFoodGuideCard {
   }
 
   aboutToDisappear() {
-    if (this.tipTimer) clearInterval(this.tipTimer)
+    if (this.tipTimer) {
+      try {
+        clearInterval(this.tipTimer);
+      } catch (_e) {
+        // ignore clearInterval error
+      }
+    }
   }
 
   build() {
@@ -36,9 +42,9 @@ export struct HotFoodGuideCard {
 
         Scroll() {
           Row() {
-            ForEach(HOT_FOODS, (item: HotFoodItem, index: number) => {
+            ForEach(HOT_FOODS, (item: HotFoodItem) => {
               this.HotFoodPill(item)
-            }, (item: HotFoodItem, index: number) => `${index}`)
+            }, (item: HotFoodItem) => item.foodName)
           }
         }
         .scrollable(ScrollDirection.Horizontal)

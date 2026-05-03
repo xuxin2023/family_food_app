@@ -41,7 +41,11 @@ export default class EntryAbility extends UIAbility {
 
     // 清理定时器
     if (this.healthRefreshInterval !== -1) {
-      clearInterval(this.healthRefreshInterval);
+      try {
+        clearInterval(this.healthRefreshInterval);
+      } catch (_e) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'clearInterval failed onDestroy');
+      }
       this.healthRefreshInterval = -1;
     }
 
@@ -114,7 +118,11 @@ export default class EntryAbility extends UIAbility {
 
     // 暂停健康数据定时刷新（省电）
     if (this.healthRefreshInterval !== -1) {
-      clearInterval(this.healthRefreshInterval);
+      try {
+        clearInterval(this.healthRefreshInterval);
+      } catch (_e) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'clearInterval failed onBackground');
+      }
       this.healthRefreshInterval = -1;
     }
 

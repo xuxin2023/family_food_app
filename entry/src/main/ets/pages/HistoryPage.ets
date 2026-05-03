@@ -3,6 +3,7 @@ import { AppState } from '../AppState';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { ScanHistoryRecord } from '../repository/HistoryRepository';
 import { DateUtil } from '../utils/DateUtil';
+import { EmptyState } from '../components/EmptyState';
 
 @Entry
 @Component
@@ -62,18 +63,11 @@ struct HistoryPage {
       .margin({ bottom: 14 })
 
       if (this.getVisibleRecords().length === 0) {
-        Column() {
-          Text('还没有历史记录')
-            .fontSize(16)
-            .fontColor('#616161')
-          Text('先去拍标签或扫码，再回来查看')
-            .fontSize(12)
-            .fontColor('#9E9E9E')
-            .margin({ top: 8 })
-        }
-        .layoutWeight(1)
-        .justifyContent(FlexAlign.Center)
-        .alignItems(HorizontalAlign.Center)
+        EmptyState({
+          icon: '📭',
+          title: '还没有历史记录',
+          subtitle: '先去拍标签或扫码，再回来查看'
+        })
       } else {
         List() {
           ForEach(this.getVisibleRecords(), (record: ScanHistoryRecord) => {

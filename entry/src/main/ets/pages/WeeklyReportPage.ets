@@ -7,6 +7,7 @@ import { DietRecord, ScanHistoryRecord } from '../repository/HistoryRepository';
 import { DateUtil } from '../utils/DateUtil';
 import { PaywallTrigger, MemberTier, getTierDisplayName } from '../model/MemberStatus';
 import { PaywallDialog } from '../components/PaywallDialog';
+import { EmptyState } from '../components/EmptyState';
 
 // 周范围
 class WeekRange {
@@ -98,19 +99,13 @@ struct WeeklyReportPage {
             .justifyContent(FlexAlign.Center)
             .alignItems(HorizontalAlign.Center)
           } else if (this.reports.length === 0) {
-            Column() {
-              Text('本周还没有可展示的记录')
-                .fontSize(16)
-                .fontColor('#616161')
-              Text('先去扫码、查看报告或记录一餐，再回来查看周报')
-                .fontSize(12)
-                .fontColor('#9E9E9E')
-                .margin({ top: 8 })
-            }
+            EmptyState({
+              icon: '📊',
+              title: '本周还没有可展示的记录',
+              subtitle: '先去扫码、查看报告或记录一餐，再回来查看周报'
+            })
             .width('100%')
             .height('70%')
-            .justifyContent(FlexAlign.Center)
-            .alignItems(HorizontalAlign.Center)
           } else {
             ForEach(this.reports, (report: WeeklyReport) => {
               this.MemberWeeklyCard(report)

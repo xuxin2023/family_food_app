@@ -1,7 +1,7 @@
 // 测试用例 TC-01: 安装与首次启动验证
 // 依赖 @kit.TestKit (@ohos.UiTest)
 import { describe, it, expect } from '@ohos/hypium';
-import { Driver, ON, Component, UiDirection } from '@kit.TestKit';
+import { Driver, ON, Component } from '@kit.TestKit';
 
 function delay(ms: number): Promise<void> {
   return new Promise<void>((resolve: () => void): void => {

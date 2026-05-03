@@ -1,19 +1,19 @@
-// 测试�?TC-07: 历史记录与搜�?
-// 依赖 @kit.TestKit (�?@ohos.UiTest)
+// 测试用例 TC-07: 历史记录与搜索
+// 依赖 @kit.TestKit (即 @ohos.UiTest)
 import { describe, it, expect } from '@ohos/hypium';
-import { Driver, ON, Component, UiDirection } from '@kit.TestKit';
+import { Driver, ON } from '@kit.TestKit';
 
 export default function historySearchTest() {
   describe('HistorySearchTest', () => {
     let driver: Driver;
 
-    // 导航至历史记录页�?
+    // 导航至历史记录页面
     it('should_navigate_to_history', 0, async () => {
       driver = await Driver.create();
-      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+      const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
       await delay(2000);
 
-      // 查找"历史记录"入口（可能在底部导航或菜单中�?
+      // 查找"历史记录"入口（可能在底部导航或菜单中）
       const historyBtn = await driver.findComponent(ON.text('历史'));
       const recordBtn = await driver.findComponent(ON.text('记录'));
       const historyEntry = historyBtn || recordBtn;
@@ -24,7 +24,7 @@ export default function historySearchTest() {
         // 进入历史记录页面
         expect(true).assertTrue();
       } else {
-        // 如果找不到，可能在其他位�?
+        // 如果找不到，可能在其他位置
         expect(true).assertTrue();
       }
     });
@@ -34,13 +34,13 @@ export default function historySearchTest() {
       if (!driver) {
         driver = await Driver.create();
       }
-      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+      const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
       await delay(1000);
 
-      // 历史页面应有列表�?
+      // 历史页面应有列表项
       const listItem = await driver.findComponent(ON.text('g'));
       const hasItems = listItem !== null || true;
-      // 如果没有扫描历史，可能显�?暂无记录"
+      // 如果没有扫描历史，可能显示"暂无记录"
       if (!listItem) {
         const emptyText = await driver.findComponent(ON.text('暂无'));
         const noDataText = await driver.findComponent(ON.text('没有'));
@@ -55,7 +55,7 @@ export default function historySearchTest() {
       if (!driver) {
         driver = await Driver.create();
       }
-      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+      const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
       await delay(1000);
 
       // 查找搜索按钮或搜索框
@@ -77,7 +77,7 @@ export default function historySearchTest() {
       if (!driver) {
         driver = await Driver.create();
       }
-      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+      const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
       await delay(1000);
 
       // 尝试点击第一个历史记录项
@@ -101,7 +101,7 @@ export default function historySearchTest() {
       if (!driver) {
         driver = await Driver.create();
       }
-      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+      const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
       await delay(1000);
 
       // 查找"返回"按钮
@@ -109,10 +109,9 @@ export default function historySearchTest() {
       if (backBtn) {
         await backBtn.click();
         await delay(1000);
-        // 返回后应能看到首页元�?
+        // 返回后应能看到首页元素
       }
       expect(true).assertTrue(); // 无崩溃即通过
     });
   });
 }
-

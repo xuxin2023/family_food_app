@@ -1,19 +1,19 @@
 // 测试用例 TC-02: 扫描条码食品完整流程
 // 依赖 @kit.TestKit (来自 @ohos.UiTest)
 import { describe, it, expect } from '@ohos/hypium';
-import { Driver, ON, Component, UiDirection } from '@kit.TestKit';
+import { Driver, ON } from '@kit.TestKit';
 
 export default function barcodeScanTest() {
   describe('BarcodeScanTest', () => {
     let driver: Driver;
 
-    // 点击\"拍食品标签\"按钮进入扫描页
+    // 点击"拍食品标签"按钮进入扫描页
     it('should_navigate_to_scan_page', 0, async () => {
       driver = await Driver.create();
-      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+      const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
       await delay(2000);
 
-      // 找到\"拍食品标签\"按钮并点击
+      // 找到"拍食品标签"按钮并点击
       const scanBtn = await driver.findComponent(ON.text('拍食品标签'));
       expect(scanBtn !== null).assertTrue();
       if (scanBtn) {
@@ -21,7 +21,7 @@ export default function barcodeScanTest() {
       }
       await delay(2000);
 
-      // 确认进入扫描页，预期显示\"扫条码\"或\"手动输入\"
+      // 确认进入扫描页，预期显示"扫条码"或"手动输入"
       const scanTitle = await driver.findComponent(ON.text('扫条码'));
       const manualInput = await driver.findComponent(ON.text('手动输入'));
       expect(scanTitle !== null || manualInput !== null).assertTrue();
@@ -41,10 +41,10 @@ export default function barcodeScanTest() {
       if (!driver) {
         driver = await Driver.create();
       }
-      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+      const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
       await delay(1000);
 
-      // 查找\"手动输入\"按钮
+      // 查找"手动输入"按钮
       const manualBtn = await driver.findComponent(ON.text('手动输入'));
       if (manualBtn) {
         await manualBtn.click();
@@ -61,12 +61,12 @@ export default function barcodeScanTest() {
       if (!driver) {
         driver = await Driver.create();
       }
-      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+      const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
       await delay(1000);
 
       // 检测错误提示或结果页面的有效性
       const errorText = await driver.findComponent(ON.text('未找到'));
-      // 如果有错误提示，预期包含\"未找到\"或\"无法识别\"
+      // 如果有错误提示，预期包含"未找到"或"无法识别"
       if (errorText) {
         expect(errorText !== null).assertTrue();
       }
@@ -79,10 +79,10 @@ export default function barcodeScanTest() {
       if (!driver) {
         driver = await Driver.create();
       }
-      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+      const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
       await delay(1000);
 
-      // 检测报告页内容：预期有\"适合食用\"\"少量可以\"等建议文本
+      // 检测报告页内容：预期有"适合食用"/"少量可以"等建议文本
       const suitableText = await driver.findComponent(ON.text('适合食用'));
       const smallOkText = await driver.findComponent(ON.text('少量可以'));
       const cautiousText = await driver.findComponent(ON.text('今天谨慎'));

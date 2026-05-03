@@ -1,7 +1,7 @@
-// 测试�?TC-05: 美食平衡功能验证
-// 依赖 @kit.TestKit (�?@ohos.UiTest)
+// 测试用例 TC-05: 美食平衡功能验证
+// 依赖 @kit.TestKit (即 @ohos.UiTest)
 import { describe, it, expect } from '@ohos/hypium';
-import { Driver, ON, Component, UiDirection } from '@kit.TestKit';
+import { Driver, ON } from '@kit.TestKit';
 
 export default function mealBalanceTest() {
   describe('MealBalanceTest', () => {
@@ -10,25 +10,25 @@ export default function mealBalanceTest() {
     // 进入报告页面
     it('should_navigate_to_report', 0, async () => {
       driver = await Driver.create();
-      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+      const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
       await delay(2000);
 
-      const scanBtn = await driver.findComponent(ON.text('拍食品标�?));
+      const scanBtn = await driver.findComponent(ON.text('拍食品标签'));
       if (scanBtn) {
         await scanBtn.click();
       }
       await delay(2000);
     });
 
-    // 查找"美食平衡"�?餐后平衡"功能入口
+    // 查找"美食平衡"/"餐后平衡"功能入口
     it('should_show_meal_balance_entry', 0, async () => {
       if (!driver) {
         driver = await Driver.create();
       }
-      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+      const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
       await delay(1000);
 
-      // 检�?餐后平衡"�?平衡建议"按钮
+      // 检测"餐后平衡"或"平衡建议"按钮
       const balanceBtn = await driver.findComponent(ON.text('平衡'));
       const mealBalanceBtn = await driver.findComponent(ON.text('餐后'));
       const entryExists = balanceBtn !== null || mealBalanceBtn !== null;
@@ -40,7 +40,7 @@ export default function mealBalanceTest() {
       if (!driver) {
         driver = await Driver.create();
       }
-      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+      const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
       await delay(1000);
 
       const balanceBtn = await driver.findComponent(ON.text('平衡'));
@@ -48,7 +48,7 @@ export default function mealBalanceTest() {
         await balanceBtn.click();
         await delay(1500);
 
-        // 进入平衡面板后应有补充建�?
+        // 进入平衡面板后应有补充建议
         const supplementText = await driver.findComponent(ON.text('补充'));
         const nutritionText = await driver.findComponent(ON.text('营养'));
         expect(supplementText !== null || nutritionText !== null).assertTrue();
@@ -59,28 +59,28 @@ export default function mealBalanceTest() {
       }
     });
 
-    // 验证平衡建议包含具体的食物类别补�?
+    // 验证平衡建议包含具体的食物类别补充
     it('should_show_specific_balance_suggestions', 0, async () => {
       if (!driver) {
         driver = await Driver.create();
       }
-      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+      const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
       await delay(1000);
 
-      // 检查是否包含具体的食物建议，如"蔬菜"�?水果"�?蛋白�?
+      // 检查是否包含具体的食物建议，如"蔬菜"/"水果"/"蛋白质"
       const vegText = await driver.findComponent(ON.text('蔬菜'));
       const fruitText = await driver.findComponent(ON.text('水果'));
-      const proteinText = await driver.findComponent(ON.text('蛋白�?));
+      const proteinText = await driver.findComponent(ON.text('蛋白质'));
       const hasSuggestion = vegText !== null || fruitText !== null || proteinText !== null;
       expect(hasSuggestion).assertTrue();
     });
 
-    // 验证"关闭"�?返回"功能
+    // 验证"关闭"/"返回"功能
     it('should_close_balance_panel', 0, async () => {
       if (!driver) {
         driver = await Driver.create();
       }
-      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+      const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
       await delay(1000);
 
       // 查找关闭按钮
@@ -89,7 +89,7 @@ export default function mealBalanceTest() {
       if (closeBtn) {
         await closeBtn.click();
         await delay(1000);
-        // 关闭后应回到报告主界�?
+        // 关闭后应回到报告主界面
       } else if (backBtn) {
         await backBtn.click();
         await delay(1000);
@@ -98,4 +98,3 @@ export default function mealBalanceTest() {
     });
   });
 }
-

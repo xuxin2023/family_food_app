@@ -1,7 +1,7 @@
 // 测试用例 TC-08: 会员页面展示
 // 依赖 @kit.TestKit (即 @ohos.UiTest)
 import { describe, it, expect } from '@ohos/hypium';
-import { Driver, ON, Component, UiDirection } from '@kit.TestKit';
+import { Driver, ON } from '@kit.TestKit';
 
 export default function membershipPageTest() {
   describe('MembershipPageTest', () => {

@@ -1,9 +1,42 @@
-import { formInfo, formBindingData } from '@kit.AbilityKit';
+import { formBindingData } from '@kit.FormKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferences, relationalStore } from '@kit.ArkData';
 
 const TAG = 'FoodWidgetManager';
 const DOMAIN_ZERO = 0;
+
+// 小卡片数据类
+class SmallWidgetData {
+  foodName: string = '';
+  level: string = '';
+  levelEmoji: string = '';
+  lastScanTime: string = '';
+}
+
+// 中卡片数据类
+class MediumWidgetData extends SmallWidgetData {
+  memberCount: number = 0;
+  todayScanCount: number = 0;
+  remainingScans: number = 0;
+  sodiumPercent: number = 0;
+  sugarPercent: number = 0;
+}
+
+// 大卡片数据类
+class LargeWidgetData extends MediumWidgetData {
+  caloriePercent: number = 0;
+  fatPercent: number = 0;
+  summary: string = '';
+  memberResults: string[] = [];
+}
+
+// 表单数据类
+class WidgetFormData {
+  small: SmallWidgetData = new SmallWidgetData();
+  medium: MediumWidgetData = new MediumWidgetData();
+  large: LargeWidgetData = new LargeWidgetData();
+  updatedAt: string = '';
+}
 
 export class FoodWidgetManager {
   static readonly WIDGET_ID_SMALL = 'food_adapt_small';
@@ -15,46 +48,70 @@ export class FoodWidgetManager {
       const recentScan = await this.getRecentScanSummary(context);
       const memberCount = await this.getMemberCount(context);
 
-      const smallData = {
-        foodName: recentScan.foodName,
-        level: recentScan.level,
-        levelEmoji: recentScan.levelEmoji,
-        lastScanTime: recentScan.timeText
-      };
+      const smallData = new SmallWidgetData();
+      smallData.foodName = recentScan.foodName;
+      smallData.level = recentScan.level;
+      smallData.levelEmoji = recentScan.levelEmoji;
+      smallData.lastScanTime = recentScan.timeText;
 
-      const mediumData = {
-        ...smallData,
-        memberCount: memberCount,
-        todayScanCount: recentScan.todayCount,
-        remainingScans: recentScan.remainingScans,
-        sodiumPercent: recentScan.sodiumPercent,
-        sugarPercent: recentScan.sugarPercent
-      };
+      const mediumData = new MediumWidgetData();
+      mediumData.foodName = recentScan.foodName;
+      mediumData.level = recentScan.level;
+      mediumData.levelEmoji = recentScan.levelEmoji;
+      mediumData.lastScanTime = recentScan.timeText;
+      mediumData.memberCount = memberCount;
+      mediumData.todayScanCount = recentScan.todayCount;
+      mediumData.remainingScans = recentScan.remainingScans;
+      mediumData.sodiumPercent = recentScan.sodiumPercent;
+      mediumData.sugarPercent = recentScan.sugarPercent;
 
-      const largeData = {
-        ...mediumData,
-        caloriePercent: recentScan.caloriePercent,
-        fatPercent: recentScan.fatPercent,
-        summary: recentScan.summary,
-        memberResults: recentScan.memberResults
-      };
+      const largeData = new LargeWidgetData();
+      largeData.foodName = recentScan.foodName;
+      largeData.level = recentScan.level;
+      largeData.levelEmoji = recentScan.levelEmoji;
+      largeData.lastScanTime = recentScan.timeText;
+      largeData.memberCount = memberCount;
+      largeData.todayScanCount = recentScan.todayCount;
+      largeData.remainingScans = recentScan.remainingScans;
+      largeData.sodiumPercent = recentScan.sodiumPercent;
+      largeData.sugarPercent = recentScan.sugarPercent;
+      largeData.caloriePercent = recentScan.caloriePercent;
+      largeData.fatPercent = recentScan.fatPercent;
+      largeData.summary = recentScan.summary;
+      largeData.memberResults = recentScan.memberResults;
 
-      const formData = {
-        small: smallData,
-        medium: mediumData,
-        large: largeData,
-        updatedAt: new Date().toLocaleTimeString()
-      };
+      const formData = new WidgetFormData();
+      formData.small = smallData;
+      formData.medium = mediumData;
+      formData.large = largeData;
+      formData.updatedAt = new Date().toLocaleTimeString();
 
       return formBindingData.createFormBindingData(formData);
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Update form failed: %{public}s', JSON.stringify(error));
-      return formBindingData.createFormBindingData({
-        small: { foodName: '暂无扫描', level: '', levelEmoji: '📱', lastScanTime: '' },
-        medium: { foodName: '暂无扫描', level: '', memberCount: 0, todayScanCount: 0 },
-        large: { foodName: '暂无扫描', level: '', memberCount: 0, summary: '' },
-        updatedAt: new Date().toLocaleTimeString()
-      });
+
+      const fallbackSmall = new SmallWidgetData();
+      fallbackSmall.foodName = '暂无扫描';
+      fallbackSmall.levelEmoji = '📱';
+      fallbackSmall.lastScanTime = '';
+
+      const fallbackMedium = new MediumWidgetData();
+      fallbackMedium.foodName = '暂无扫描';
+      fallbackMedium.levelEmoji = '📱';
+      fallbackMedium.lastScanTime = '';
+
+      const fallbackLarge = new LargeWidgetData();
+      fallbackLarge.foodName = '暂无扫描';
+      fallbackLarge.levelEmoji = '📱';
+      fallbackLarge.lastScanTime = '';
+
+      const fallbackData = new WidgetFormData();
+      fallbackData.small = fallbackSmall;
+      fallbackData.medium = fallbackMedium;
+      fallbackData.large = fallbackLarge;
+      fallbackData.updatedAt = new Date().toLocaleTimeString();
+
+      return formBindingData.createFormBindingData(fallbackData);
     }
   }
 

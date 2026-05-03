@@ -3,6 +3,54 @@ import { http } from '@kit.NetworkKit';
 import { WeeklyReport, WeeklyDietData } from '../engine/WeeklyReportEngine';
 import { FamilyProfile } from '../model/FamilyProfile';
 
+// AgentArts API响应内部结构
+class AgentArtsChoiceMessage {
+  content: string = '';
+}
+
+class AgentArtsChoice {
+  message: AgentArtsChoiceMessage = new AgentArtsChoiceMessage();
+}
+
+class AgentArtsUsage {
+  total_tokens: number = 0;
+}
+
+class AgentArtsResponse {
+  choices: AgentArtsChoice[] = [];
+  usage: AgentArtsUsage = new AgentArtsUsage();
+}
+
+// AI调用结果
+class AiCallResult {
+  text: string = '';
+  tokensUsed: number = 0;
+}
+
+// AiWeeklyReportResult 实现类
+class AiWeeklyReportResultImpl implements AiWeeklyReportResult {
+  summary: string = '';
+  highlights: string[] = [];
+  suggestions: string[] = [];
+  personalizedTip: string = '';
+  motivationalMessage: string = '';
+}
+
+// 消息条目
+class ChatMessage {
+  role: string = '';
+  content: string = '';
+}
+
+// HTTP请求选项
+class HttpRequestOptions {
+  method: http.RequestMethod = http.RequestMethod.POST;
+  header: Record<string, string> = {};
+  extraData: string | Object = '';
+  connectTimeout: number = 15000;
+  readTimeout: number = 20000;
+}
+
 const TAG = 'AiWeeklyReportService';
 const DOMAIN_ZERO = 0;
 
@@ -105,66 +153,77 @@ export class AiWeeklyReportService {
         return this.buildFallbackResult(fallback);
       }
       const parsed = JSON.parse(jsonMatch[0]) as Record<string, Object>;
-      return {
-        summary: (parsed.summary as string) || fallback.summary,
-        highlights: (parsed.highlights as string[]) || fallback.highlights,
-        suggestions: (parsed.suggestions as string[]) || fallback.suggestions,
-        personalizedTip: (parsed.personalizedTip as string) || '',
-        motivationalMessage: (parsed.motivationalMessage as string) || '坚持记录，全家更安心'
-      };
+      const result = new AiWeeklyReportResultImpl();
+      result.summary = (parsed.summary as string) || fallback.summary;
+      result.highlights = (parsed.highlights as string[]) || fallback.highlights;
+      result.suggestions = (parsed.suggestions as string[]) || fallback.suggestions;
+      result.personalizedTip = (parsed.personalizedTip as string) || '';
+      result.motivationalMessage = (parsed.motivationalMessage as string) || '坚持记录，全家更安心';
+      return result;
     } catch (error) {
       return this.buildFallbackResult(fallback);
     }
   }
 
   private buildFallbackResult(report: WeeklyReport): AiWeeklyReportResult {
-    return {
-      summary: report.summary,
-      highlights: report.highlights,
-      suggestions: report.suggestions,
-      personalizedTip: '',
-      motivationalMessage: '坚持记录，全家更安心'
-    };
+    const result = new AiWeeklyReportResultImpl();
+    result.summary = report.summary;
+    result.highlights = report.highlights;
+    result.suggestions = report.suggestions;
+    result.personalizedTip = '';
+    result.motivationalMessage = '坚持记录，全家更安心';
+    return result;
   }
 
-  private async callAgentArts(prompt: string): Promise<{ text: string; tokensUsed: number } | null> {
+  private async callAgentArts(prompt: string): Promise<AiCallResult | null> {
     try {
       const httpRequest = http.createHttp();
+
+      const systemMsg = new ChatMessage();
+      systemMsg.role = 'system';
+      systemMsg.content = '你是家庭饮食周报润色助手。输出必须是合法JSON。语气温和鼓励，不恐吓。';
+
+      const userMsg = new ChatMessage();
+      userMsg.role = 'user';
+      userMsg.content = prompt;
+
+      const messages: ChatMessage[] = [systemMsg, userMsg];
+
       const requestBody = JSON.stringify({
         model: AGENT_ARTS_MODEL,
-        messages: [
-          {
-            role: 'system',
-            content: '你是家庭饮食周报润色助手。输出必须是合法JSON。语气温和鼓励，不恐吓。'
-          },
-          { role: 'user', content: prompt }
-        ],
+        messages: messages,
         temperature: 0.6,
         max_tokens: 500
       });
 
-      const response = await httpRequest.request(AGENT_ARTS_ENDPOINT, {
+      const reqHeaders: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.apiKey}`
+      };
+
+      const reqOptions: HttpRequestOptions = {
         method: http.RequestMethod.POST,
-        header: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`
-        },
+        header: reqHeaders,
         extraData: requestBody,
         connectTimeout: 15000,
         readTimeout: 20000
-      });
+      };
+
+      const response = await httpRequest.request(AGENT_ARTS_ENDPOINT, reqOptions);
       httpRequest.destroy();
 
       if (response.responseCode === 200) {
-        const result = JSON.parse(response.result as string) as {
-          choices: Array<{ message: { content: string } }>;
-          usage: { total_tokens: number };
-        };
-        if (result.choices && result.choices.length > 0) {
-          return {
-            text: result.choices[0].message.content,
-            tokensUsed: result.usage?.total_tokens || 0
-          };
+        const parsedResult = JSON.parse(response.result as string) as Record<string, Object>;
+        const choices = parsedResult['choices'] as Record<string, Object>[] ?? [];
+        if (choices.length > 0) {
+          const firstChoice = choices[0];
+          const message = firstChoice['message'] as Record<string, Object> ?? {};
+          const usage = parsedResult['usage'] as Record<string, Object> ?? {};
+
+          const callResult = new AiCallResult();
+          callResult.text = message['content'] as string ?? '';
+          callResult.tokensUsed = usage['total_tokens'] as number ?? 0;
+          return callResult;
         }
       }
       return null;

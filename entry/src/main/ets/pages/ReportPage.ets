@@ -219,29 +219,50 @@ struct ReportPage {
   HeroSection() {
     Column() {
       Row() {
-        // 左侧：NutriScore 徽章（内嵌适配等级标签）
+        // 左侧：NutriScore 徽章（紧凑版）
         NutriScoreBadge({
           score: this.nutriScore,
-          diameter: 130,
+          diameter: 100,
           animating: this.showNutriAnim,
           levelText: this.selectedRec.level as string,
           levelBgColor: getLevelColorValue(this.selectedRec.levelColor)
         })
 
-        // 右侧：适配结论 + 成员胶囊切换器
+        // 右侧：适配结论 + 最大可吃量 + 成员胶囊
         Column() {
-          // 最大食用量（突出显示）
+          // 最大可吃量行（紧凑突出显示）
           if (this.selectedRec.maxAmount > 0) {
             Row() {
-              Text('👤 建议最多 ')
-                .fontSize(FONT_SIZE.BODY)
+              Text('今日参考: ')
+                .fontSize(FONT_SIZE.SMALL)
                 .fontColor(COLORS.TEXT_TERTIARY)
               Text(`${this.selectedRec.maxAmount}g`)
                 .fontSize(FONT_SIZE.XL)
                 .fontWeight(FONT_WEIGHT.BOLD)
                 .fontColor(COLORS.TEXT_PRIMARY)
+              Text(' / 100g')
+                .fontSize(FONT_SIZE.TINY)
+                .fontColor(COLORS.TEXT_TERTIARY)
+                .margin({ left: 2 })
+                .alignSelf(ItemAlign.End)
             }
-            .margin({ bottom: 10 })
+            .margin({ bottom: 4 })
+          }
+
+          // 主要原因行（一句话摘要）
+          if (this.selectedRec.reasons.length > 0) {
+            Row() {
+              Text('📰 ')
+                .fontSize(FONT_SIZE.SMALL)
+              Text(this.selectedRec.reasons[0])
+                .fontSize(FONT_SIZE.SMALL)
+                .fontColor(COLORS.TEXT_SECONDARY)
+                .lineHeight(18)
+                .maxLines(1)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+            }
+            .width('100%')
+            .margin({ bottom: 4 })
           }
 
           // 家庭成员横向胶囊切换器
@@ -249,58 +270,40 @@ struct ReportPage {
         }
         .alignItems(HorizontalAlign.Start)
         .layoutWeight(1)
-        .margin({ left: 16 })
+        .margin({ left: 12 })
       }
       .width('100%')
       .alignItems(VerticalAlign.Center)
-      .padding({ left: 20, right: 20, top: 20, bottom: 10 })
+      .padding({ left: 16, right: 16, top: 12, bottom: 6 })
+      .backgroundColor(COLORS.WHITE)
+      .borderRadius({
+        topLeft: RADIUS.LG,
+        topRight: RADIUS.LG
+      })
 
-      // 主要原因
-      if (this.selectedRec.reasons.length > 0) {
-        Row() {
-          Text('💬 ')
-            .fontSize(FONT_SIZE.BODY)
-          Text(this.selectedRec.reasons[0])
-            .fontSize(FONT_SIZE.BODY)
-            .fontColor(COLORS.TEXT_SECONDARY)
-            .lineHeight(20)
-        }
-        .width('100%')
-        .padding({ left: 20, right: 20, bottom: 8 })
-      }
-
-      // 提醒列表
+      // 提醒列表（紧凑展示）
       if (this.selectedRec.reminders.length > 0) {
         Column() {
           ForEach(this.selectedRec.reminders, (reminder: string) => {
             Row() {
-              Text('•')
+              Text('• ')
                 .fontSize(FONT_SIZE.SMALL)
                 .fontColor(COLORS.ACCENT_BLUE)
-                .margin({ right: 6 })
               Text(reminder)
                 .fontSize(FONT_SIZE.SMALL)
                 .fontColor(COLORS.TEXT_SECONDARY)
                 .lineHeight(18)
             }
-            .margin({ bottom: 4 })
+            .margin({ bottom: 2 })
             .width('100%')
           })
         }
         .width('100%')
-        .padding({ left: 20, right: 20, bottom: 12 })
+        .padding({ left: 16, right: 16, bottom: 6 })
       }
 
       // 营养成分快速摘要
       this.NutritionQuickSummary()
-
-      // 免责声明
-      Text(this.selectedRec.disclaimer)
-        .fontSize(FONT_SIZE.TINY)
-        .fontColor(COLORS.TEXT_TERTIARY)
-        .lineHeight(16)
-        .width('100%')
-        .padding({ left: 20, right: 20, bottom: 12 })
     }
     .width('100%')
     .backgroundColor(COLORS.WHITE)
@@ -313,70 +316,57 @@ struct ReportPage {
   MemberCapsuleSwitcher() {
     if (this.familyMembers.length > 0) {
       Scroll() {
-        Row({ space: 8 }) {
+        Row({ space: 6 }) {
           ForEach(this.familyMembers, (member: FamilyProfile, index: number) => {
-            // 每个成员头像胶囊
-            Column() {
-              // 头像圈 - 用首字或emoji表示
-              Text(this.getMemberAvatar(member))
-                .fontSize(FONT_SIZE.LG)
-                .fontColor(COLORS.WHITE)
-                .width(34)
-                .height(34)
-                .textAlign(TextAlign.Center)
-                .lineHeight(34)
-                .borderRadius(17)
-                .backgroundColor(this.selectedMemberIndex === index ?
-                  this.getMemberColor(member) : COLORS.BG_PAGE)
-                .border({
-                  width: this.selectedMemberIndex === index ? 2 : 1,
-                  color: this.selectedMemberIndex === index ?
-                    getLevelColorValue(this.recommendations[index]?.levelColor ?? LevelColor.GREEN) :
-                    '#E0E0E0'
-                })
-
-              // 成员昵称（简称）
-              Text(member.nickname.length > 4 ?
-                member.nickname.substring(0, 3) + '..' : member.nickname)
-                .fontSize(FONT_SIZE.TINY)
-                .fontColor(this.selectedMemberIndex === index ?
-                  COLORS.TEXT_PRIMARY : COLORS.TEXT_TERTIARY)
-                .lineHeight(12)
-                .margin({ top: 2 })
-                .maxLines(1)
-                .textOverflow({ overflow: TextOverflow.Ellipsis })
-                .width(48)
-                .textAlign(TextAlign.Center)
-
-              // 适应等级小圆点
+            // 紧凑胶囊 - 100x32px
+            Row() {
+              // 等级小圆点（简化：仅留圆点表示）
               if (index < this.recommendations.length) {
                 Row()
                   .width(6)
                   .height(6)
                   .borderRadius(3)
                   .backgroundColor(getLevelColorValue(this.recommendations[index].levelColor))
-                  .margin({ top: 1 })
+                  .margin({ right: 4 })
               }
+              // 成员昵称缩写
+              Text(member.nickname.length > 3 ?
+                member.nickname.substring(0, 2) : member.nickname)
+                .fontSize(FONT_SIZE.TINY)
+                .fontWeight(this.selectedMemberIndex === index ?
+                  FONT_WEIGHT.BOLD : FONT_WEIGHT.REGULAR)
+                .fontColor(this.selectedMemberIndex === index ?
+                  COLORS.TEXT_PRIMARY : COLORS.TEXT_TERTIARY)
+                .maxLines(1)
             }
-            .width(48)
-            .alignItems(HorizontalAlign.Center)
+            .height(28)
+            .padding({ left: 10, right: 10 })
+            .borderRadius(14)
+            .backgroundColor(this.selectedMemberIndex === index ?
+              COLORS.BG_PAGE : '#F9F9F9')
+            .border({
+              width: 1,
+              color: this.selectedMemberIndex === index ?
+                getLevelColorValue(this.recommendations[index]?.levelColor ?? LevelColor.GREEN) :
+                '#E8E8E8'
+            })
+            .alignItems(VerticalAlign.Center)
             .onClick(() => {
               this.selectedMemberIndex = index
             })
-            .animation({ duration: 200, curve: Curve.Friction })
           })
         }
-        .padding({ left: 4, right: 4 })
+        .padding({ left: 2, right: 2 })
       }
       .scrollable(ScrollDirection.Horizontal)
       .width('100%')
-      .height(62)
+      .height(34)
       .scrollBar(BarState.Off)
-      .padding({ top: 2 })
+      .padding({ top: 0 })
     }
   }
 
-  // 获取成员头像（优先使用emoji图标）
+  // 获取成员头像（优先使用emoji图标）  // 获取成员头像（优先使用emoji图标）
   private getMemberAvatar(member: FamilyProfile): string {
     const healthGoal = member.healthGoals.length > 0 ? member.healthGoals[0] : HealthGoal.NONE
     switch (healthGoal) {
@@ -445,62 +435,64 @@ struct ReportPage {
   @Builder
   NutritionQuickSummary() {
     Scroll() {
-      Row({ space: SPACING.SM }) {
+      Row({ space: SPACING.XS }) {
         this.NutrientTag('热量', `${this.foodLabel.nutrition.calories}`, 'kcal', this.getNutrientPercentage('热量'))
         this.NutrientTag('钠', `${this.foodLabel.nutrition.sodium}`, 'mg', this.getNutrientPercentage('钠'))
         this.NutrientTag('糖', `${this.foodLabel.nutrition.sugar}`, 'g', this.getNutrientPercentage('糖'))
         this.NutrientTag('脂肪', `${this.foodLabel.nutrition.fat}`, 'g', this.getNutrientPercentage('脂肪'))
         this.NutrientTag('蛋白质', `${this.foodLabel.nutrition.protein}`, 'g', this.getNutrientPercentage('蛋白质'))
       }
-      .padding({ left: 20, right: 20 })
+      .padding({ left: 16, right: 16 })
     }
     .scrollable(ScrollDirection.Horizontal)
     .width('100%')
-    .height(80)
+    .height(68)
     .scrollBar(BarState.Off)
-    .margin({ bottom: 8 })
+    .margin({ bottom: 4 })
   }
 
   @Builder
   NutrientTag(label: string, value: string, unit: string, percentage: number = 0) {
     Column() {
       Text(label)
-        .fontSize(FONT_SIZE.TINY)
+        .fontSize(10)
         .fontColor(COLORS.TEXT_TERTIARY)
-        .margin({ bottom: 2 })
+        .margin({ bottom: 1 })
       Row() {
         Text(value)
-          .fontSize(FONT_SIZE.LG)
+          .fontSize(FONT_SIZE.SMALL)
           .fontWeight(FONT_WEIGHT.BOLD)
           .fontColor(COLORS.TEXT_PRIMARY)
         Text(unit)
-          .fontSize(FONT_SIZE.TINY)
+          .fontSize(9)
           .fontColor(COLORS.TEXT_TERTIARY)
-          .margin({ left: 2 })
+          .margin({ left: 1 })
           .alignSelf(ItemAlign.End)
       }
-      .margin({ bottom: 6 })
-      // 进度条
-      Row() {
+      .margin({ bottom: 4 })
+      // 进度条 + 百分比
+      Column() {
         Row()
           .width(percentage > 100 ? '100%' : `${Math.round(percentage)}%`)
-          .height(4)
+          .height(3)
           .borderRadius(2)
           .backgroundColor(percentage > 80 ? '#EF5350' : percentage > 50 ? '#FFA726' : '#66BB6A')
+        Text(`${Math.round(percentage)}%`)
+          .fontSize(8)
+          .fontColor(percentage > 80 ? '#EF5350' : percentage > 50 ? '#FFA726' : '#9E9E9E')
+          .lineHeight(10)
       }
-      .width(48)
-      .height(4)
-      .borderRadius(2)
-      .backgroundColor('#EEEEEE')
+      .width(40)
+      .alignItems(HorizontalAlign.Start)
     }
-    .padding({ left: 12, right: 12, top: 8, bottom: 8 })
-    .backgroundColor('#F5F5F5')
-    .borderRadius(RADIUS.MD)
+    .padding({ left: 8, right: 8, top: 6, bottom: 6 })
+    .backgroundColor('#F8F8F8')
+    .borderRadius(10)
     .alignItems(HorizontalAlign.Center)
-    .height(72)
+    .height(60)
   }
 
-  // ==================== ③ 家庭矩阵区 ====================
+  // ==================== ③ 家庭矩阵区 ====================  // ==================== ③ 家庭矩阵区 ====================
 
   @Builder
   FamilyMatrixSection() {

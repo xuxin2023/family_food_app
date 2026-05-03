@@ -2,11 +2,11 @@
 
 // ChildProtection JSON 输出类
 export class ChildProtectionJson {
-  memberId: Object = '';
-  mealProtection: Object = '';
-  bedtimeProtection: Object = '';
-  tasteProtection: Object = '';
-  counteractReminder: Object = false;
+  memberId: string = '';
+  mealProtection: string = '';
+  bedtimeProtection: string = '';
+  tasteProtection: string = '';
+  counteractReminder: boolean = false;
 }
 
 export class ChildProtection {

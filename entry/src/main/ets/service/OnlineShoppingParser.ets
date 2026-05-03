@@ -5,7 +5,7 @@
 // 京东联盟API文档参考：jd.union.open.goods.detail.query
 // 淘宝开放平台API文档参考：taobao.item.get
 
-import http from '@ohos.net.http';
+import { http } from '@kit.NetworkKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FoodLabel, NutritionPer100g, FoodSource } from '../model/FoodLabel';
 import { OcrService } from './OcrService';

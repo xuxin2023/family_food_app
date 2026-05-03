@@ -9,7 +9,7 @@
 //   FamilyMember, FoodNutrition, HealthSignal(interface), FoodRecommendation, DailyBudget
 //   定义于 model/FoodAdapterTypes.ets
 
-import { FamilyProfile, HealthGoal, AgeGroup, DailyBudgetConfig } from '../model/FamilyProfile';
+import { FamilyProfile, HealthGoal, AgeGroup } from '../model/FamilyProfile';
 import {
   HealthSignal as OldHealthSignal,
   StepLevel as OldStepLevel,

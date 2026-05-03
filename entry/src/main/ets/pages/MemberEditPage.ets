@@ -1,7 +1,7 @@
 // 成员编辑页 - 创建/编辑家庭成员画像
 
 import { router } from '@kit.ArkUI';
-import { FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig } from '../model/FamilyProfile';
+import { FamilyProfile, AgeGroup, HealthGoal } from '../model/FamilyProfile';
 import { HealthSignal, StepLevel, SleepStatus, BpStatus, BsStatus } from '../model/HealthSignal';
 import { AppState } from '../AppState';
 import { DateUtil } from '../utils/DateUtil';

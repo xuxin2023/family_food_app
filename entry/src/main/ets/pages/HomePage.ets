@@ -4,12 +4,23 @@
 
 import { router, promptAction } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { FamilyProfile } from '../model/FamilyProfile';
+import { FamilyProfile, HealthGoal } from '../model/FamilyProfile';
 import { MemberCard } from '../components/MemberCard';
 import { AppState } from '../AppState';
 import { SubscriptionTier } from '../model/PricingModel';
 import { MilestoneService, Milestone } from '../service/MilestoneService';
 import { OnlineShoppingParser } from '../service/OnlineShoppingParser';
+import { DailyBudget } from '../model/DailyBudget';
+import { COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT } from '../constants/AppTheme';
+
+export class StatusResult {
+  text: string = ''
+  color: string = ''
+  constructor(text: string, color: string) {
+    this.text = text
+    this.color = color
+  }
+}
 
 @Entry
 @Component
@@ -22,6 +33,10 @@ struct HomePage {
   @State showLinkInput: boolean = false
   @State linkInputText: string = ''
   @State isParsingLink: boolean = false
+  @State memberStatusTexts: Map<string, string> = new Map()
+  @State memberStatusColors: Map<string, string> = new Map()
+  @State remainingScans: number = 0
+  @State todayDate: string = ''
 
   private appState: AppState = AppState.getInstance()
   private milestoneService: MilestoneService = MilestoneService.getInstance()
@@ -37,7 +52,9 @@ struct HomePage {
 
   async aboutToAppear() {
     this.currentSloganIndex = Math.floor(Math.random() * this.slogans.length)
+    this.todayDate = this.getTodayDate()
     await this.loadFamilyMembers()
+    this.refreshMemberStatuses()
     await this.refreshMilestones()
   }
 
@@ -54,6 +71,33 @@ struct HomePage {
     if (this.familyMembers.length > 0 && this.selectedMemberId.length === 0) {
       this.selectedMemberId = this.familyMembers[0].memberId
     }
+  }
+
+  /**
+   * 刷新所有成员的状态文本（基于AppState实时预算数据）
+   */
+  private refreshMemberStatuses(): void {
+    this.remainingScans = this.appState.getRemainingScansToday()
+    const newTexts: Map<string, string> = new Map()
+    const newColors: Map<string, string> = new Map()
+
+    for (let i = 0; i < this.familyMembers.length; i++) {
+      const member = this.familyMembers[i]
+      const budget = this.appState.getDailyBudget(member.memberId)
+      const result = this.computeStatusFromBudget(member, budget)
+      newTexts.set(member.memberId, result.text)
+      newColors.set(member.memberId, result.color)
+    }
+
+    this.memberStatusTexts = newTexts
+    this.memberStatusColors = newColors
+  }
+
+  private getTodayDate(): string {
+    const d = new Date()
+    return d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0')
   }
 
   /**
@@ -579,6 +623,7 @@ struct HomePage {
           .fontColor('#007DFF')
           .onClick(() => {
             this.refreshToggle = !this.refreshToggle
+            this.refreshMemberStatuses()
           })
       }
       .width('100%')
@@ -627,20 +672,72 @@ struct HomePage {
   }
 
   private getMemberStatusText(member: FamilyProfile): string {
-    const goal = member.healthGoals[0]
-    if (goal === '控压') return '高盐额度剩余85%'
-    if (goal === '控糖') return '糖预算剩余70%'
-    if (goal === '减脂') return '热量预算剩余60%'
-    if (goal === '儿童') return '今日零食0次/建议≤3次'
-    return '预算充足'
+    const cached = this.memberStatusTexts.get(member.memberId)
+    if (cached !== undefined) {
+      return cached
+    }
+    return this.computeStatusFromBudget(member, undefined).text
   }
 
   private getMemberStatusColor(member: FamilyProfile): string {
-    const goal = member.healthGoals[0]
-    if (goal === '控压') return '#EF7D00'
-    if (goal === '控糖') return '#00823F'
-    if (goal === '减脂') return '#007DFF'
-    if (goal === '儿童') return '#9C27B0'
-    return '#00823F'
+    const cached = this.memberStatusColors.get(member.memberId)
+    if (cached !== undefined) {
+      return cached
+    }
+    return this.computeStatusFromBudget(member, undefined).color
+  }
+
+  /**
+   * 基于DailyBudget计算成员状态文本与颜色
+   * 映射关系：
+   * 控压 → 钠剩余百分比
+   * 控糖 → 糖剩余百分比
+   * 减脂 → 热量剩余百分比
+   * 儿童 → 所有维度中最低的百分比
+   * 无目标 → 平均剩余百分比
+   */
+  private computeStatusFromBudget(member: FamilyProfile, budget: DailyBudget | undefined): StatusResult {
+    if (budget === undefined) {
+      budget = this.appState.getDailyBudget(member.memberId)
+    }
+    const goal: HealthGoal = member.healthGoals.length > 0 ? member.healthGoals[0] : HealthGoal.NONE
+
+    let usage: number = 0
+    let primaryMetric: string = ''
+
+    if (goal === HealthGoal.CONTROL_BP) {
+      usage = budget.sodiumUsagePercent()
+      primaryMetric = '钠'
+    } else if (goal === HealthGoal.CONTROL_SUGAR) {
+      usage = budget.sugarUsagePercent()
+      primaryMetric = '糖'
+    } else if (goal === HealthGoal.LOSE_FAT) {
+      usage = budget.calorieUsagePercent()
+      primaryMetric = '热量'
+    } else if (goal === HealthGoal.CHILD) {
+      usage = Math.max(
+        budget.sodiumUsagePercent(),
+        budget.sugarUsagePercent(),
+        budget.calorieUsagePercent(),
+        budget.fatUsagePercent()
+      )
+      primaryMetric = '综合'
+    } else {
+      usage = (budget.sodiumUsagePercent() + budget.sugarUsagePercent() +
+        budget.calorieUsagePercent() + budget.fatUsagePercent()) / 4
+      primaryMetric = '综合'
+    }
+
+    const remaining = Math.max(0, 100 - Math.round(usage))
+    const text = remaining >= 80 ? primaryMetric + '预算余' + remaining + '%（充足）' :
+      remaining >= 50 ? primaryMetric + '预算剩余' + remaining + '%' :
+        remaining >= 20 ? '⚠️ ' + primaryMetric + '额度紧张(' + remaining + '%)' :
+          '🚫 ' + primaryMetric + '额度已用尽!'
+
+    const color = remaining >= 50 ? '#00823F' :
+      remaining >= 20 ? '#EF7D00' :
+        '#F44336'
+
+    return new StatusResult(text, color)
   }
 }

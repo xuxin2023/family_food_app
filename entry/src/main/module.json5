@@ -66,7 +66,7 @@
       },
       {
         "name": "ohos.permission.VIBRATE",
-        "reason": "$string:internet_reason",
+        "reason": "$string:vibrate_reason",
         "usedScene": {
           "abilities": [
             "EntryAbility"

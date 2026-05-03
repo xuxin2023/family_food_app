@@ -1,39 +1,31 @@
 {
   "app": {
-    // TODO: 发布前签名配置检查清单
     // ========================================================
-    // 1. 发布证书 (.p12) :  待生成
-    //    在 DevEco Studio 中：Build → Generate Key
-    //    → KeyStore file: family_food_release.p12 (密码需记录)
-    //    → Key Alias (别名): family_food_key (需记录)
-    //    → Key Password: 需记录 (与 store password 不同)
-    //    → Validity (有效期): 25 年
-    //    → Certificate: Distinguished Name 填写发布者信息
+    // 发布签名配置说明（请按以下步骤操作）
+    // ========================================================
+    // 1. 生成发布证书 (family_food_release.p12):
+    //    DevEco Studio → Build → Generate Key
+    //    → Key Alias: family_food_key → 有效期: 25年 → 记录密码
     //
-    // 2. 发布 Profile (.p7b) :  待配置
-    //    登录 AppGallery Connect → 用户与访问 → 证书管理
-    //    上传 .cer 文件创建新证书
-    //    → 添加 Profile → HarmonyOS App 发布
-    //    → 选择应用 → 选择证书 → 选择设备类型 (phone, tablet)
-    //    → 下载 .p7b Profile 文件
+    // 2. 导出 .cer 并在 AGC 创建证书:
+    //    a. 从 .p12 导出 .cer（可在 DevEco Studio 中操作）
+    //    b. 登录 AppGallery Connect → 用户与访问 → 证书管理
+    //    c. 上传 .cer 创建新证书
     //
-    // 3. 签名配置集成到 DevEco Studio：
-    //    进入 File → Project Structure → Signing Configs
-    //    勾选 "Automatically generate signature" 用于调试
-    //    发布时需取消自动签名，手动配置：
-    //    - Store File: family_food_release.p12
-    //    - Store Password: ★★★★★ (需记录)
-    //    - Key Alias: family_food_key
-    //    - Key Password: ★★★★★ (需记录)
-    //    - Profile File: family_food_release.p7b
-    //    - Sign Alg: SHA256withRSA/PSS
+    // 3. 创建发布 Profile (.p7b):
+    //    AGC → 添加 Profile → HarmonyOS App 发布
+    //    → 选择证书 → 选择设备(phone,tablet) → 下载 .p7b
     //
-    // 4. 发布构建：
-    //    DevEco Studio → Build → Build HAP(s) → Release
+    // 4. 在 DevEco Studio 中配置发布签名:
+    //    File → Project Structure → Signing Configs
+    //    → 取消"Automatically generate signature"
+    //    → 手动填入 .p12/.p7b 路径和密码
+    //
+    // 5. 发布构建: Build → Build HAP(s) → Release
     //    产出: entry/build/default/outputs/default/entry-default-signed.hap
     //
-    // 5. AGC CLI 辅助提包命令：
-    //    agc app:upload --file entry-default-signed.hap --app-id <APP_ID>
+    // 6. 提包（安装 AGC CLI 后）:
+    //    agc app:upload --file <hap> --app-id com.familyfood.helper
     // ========================================================
     "signingConfigs": [
       {

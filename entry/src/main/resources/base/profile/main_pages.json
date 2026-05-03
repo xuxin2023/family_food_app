@@ -1,6 +1,7 @@
 {
   "src": [
     "pages/Index",
+    "pages/PrivacyDialogPage",
     "pages/HomePage",
     "pages/MemberPage",
     "pages/MemberEditPage",

@@ -5,6 +5,7 @@
     { "name": "ability_label", "value": "食品适配助手" },
     { "name": "camera_reason", "value": "用于拍照识别食品包装标签" },
     { "name": "internet_reason", "value": "用于可选的AI润色服务" },
+    { "name": "vibrate_reason", "value": "用于扫描食品标签时提供振动反馈" },
     { "name": "app_name", "value": "食品适配助手" },
     { "name": "home_title", "value": "今天给谁看？" },
     { "name": "scan_button", "value": "拍食品标签" },

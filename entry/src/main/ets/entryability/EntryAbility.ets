@@ -1,4 +1,5 @@
 // 应用入口Ability - V4完整生命周期管理
+// V5新增：首次启动隐私政策与用户协议确认弹窗
 
 import { UIAbility, Want, AbilityConstant, errorManager } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -7,6 +8,7 @@ import { fileIo } from '@kit.CoreFileKit';
 import { AppState } from '../AppState';
 import { SubscriptionTier } from '../model/PricingModel';
 import { DataSource } from '../model/HealthSignal';
+import { preferences } from '@kit.ArkData';
 
 const TAG = 'EntryAbility';
 const DOMAIN_ZERO = 0;
@@ -34,6 +36,9 @@ export default class EntryAbility extends UIAbility {
       .catch((err: Error) => {
         hilog.error(DOMAIN_ZERO, TAG, 'AppState init failed: %{public}s', err.message);
       });
+
+    // 将context存入AppStorage供隐私弹窗使用
+    AppStorage.setOrCreate('appContext', this.context);
   }
 
   onDestroy(): void {
@@ -69,8 +74,8 @@ export default class EntryAbility extends UIAbility {
   onWindowStageCreate(windowStage: window.WindowStage): void {
     hilog.info(DOMAIN_ZERO, TAG, 'onWindowStageCreate');
 
-    // 设置主窗口
-    windowStage.loadContent('pages/HomePage', (err, data) => {
+    // 设置主窗口 - 先加载隐私确认页面，同意后跳转到HomePage
+    windowStage.loadContent('pages/PrivacyDialogPage', (err, data) => {
       if (err.code) {
         hilog.error(DOMAIN_ZERO, TAG, 'Failed to load content: %{public}s', JSON.stringify(err));
         return;

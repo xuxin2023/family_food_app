@@ -1,4 +1,5 @@
 import { router, promptAction } from '@kit.ArkUI';
+import { webview } from '@kit.ArkWeb';
 import { AppState } from '../AppState';
 import { FamilyProfile } from '../model/FamilyProfile';
 import {
@@ -10,6 +11,8 @@ import {
   DataSource
 } from '../model/HealthSignal';
 import { DateUtil } from '../utils/DateUtil';
+import { preferences } from '@kit.ArkData';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 
 @Entry
 @Component
@@ -20,8 +23,12 @@ struct SettingsPage {
   @State sleepStatus: SleepStatus = SleepStatus.GOOD
   @State hadHighSodiumToday: boolean = false
   @State hadHighSugarToday: boolean = false
+  @State showPrivacyDetail: boolean = false
+  @State showAgreementDetail: boolean = false
 
   private appState: AppState = AppState.getInstance()
+  private privacyController: webview.WebviewController = new webview.WebviewController()
+  private agreementController: webview.WebviewController = new webview.WebviewController()
 
   async aboutToAppear() {
     this.familyMembers = await this.appState.getAllMembers()
@@ -74,6 +81,97 @@ struct SettingsPage {
           .borderRadius(25)
           .margin({ top: 8, bottom: 24 })
           .onClick(() => { this.saveManualStatus() })
+
+        // ---- 隐私与合规区域 ----
+        Column() {
+          Text('隐私与合规')
+            .fontSize(17)
+            .fontWeight(FontWeight.Bold)
+            .margin({ bottom: 12 })
+
+          this.buildSettingsItem('📄 隐私政策', '了解我们如何收集和使用您的个人信息', () => {
+            this.showPrivacyDetail = !this.showPrivacyDetail
+            this.showAgreementDetail = false
+          })
+
+          this.buildSettingsItem('📋 用户协议', '使用本应用前请阅读服务条款', () => {
+            this.showAgreementDetail = !this.showAgreementDetail
+            this.showPrivacyDetail = false
+          })
+
+          this.buildSettingsItem('🗑️ 清除本地数据', '删除所有本地存储的扫描记录和成员信息', () => {
+            this.confirmClearData()
+          })
+
+          // 隐私政策详细内容
+          if (this.showPrivacyDetail) {
+            Column() {
+              Row() {
+                Text('← 收起')
+                  .fontSize(13)
+                  .fontColor('#1976D2')
+                  .onClick(() => {
+                    this.showPrivacyDetail = false
+                  })
+                Blank()
+              }
+              .width('100%')
+              .margin({ bottom: 6 })
+
+              Web({ src: $rawfile('privacy_policy.html'), controller: this.privacyController })
+                .width('100%')
+                .height(300)
+                .domStorageAccess(true)
+                .javaScriptAccess(true)
+            }
+            .width('100%')
+            .padding(8)
+            .backgroundColor('#F9F9F9')
+            .borderRadius(8)
+            .margin({ top: 8 })
+          }
+
+          // 用户协议详细内容
+          if (this.showAgreementDetail) {
+            Column() {
+              Row() {
+                Text('← 收起')
+                  .fontSize(13)
+                  .fontColor('#1976D2')
+                  .onClick(() => {
+                    this.showAgreementDetail = false
+                  })
+                Blank()
+              }
+              .width('100%')
+              .margin({ bottom: 6 })
+
+              Web({ src: $rawfile('user_agreement.html'), controller: this.agreementController })
+                .width('100%')
+                .height(300)
+                .domStorageAccess(true)
+                .javaScriptAccess(true)
+            }
+            .width('100%')
+            .padding(8)
+            .backgroundColor('#F9F9F9')
+            .borderRadius(8)
+            .margin({ top: 8 })
+          }
+
+          Text('当前版本 v4.0.0')
+            .fontSize(12)
+            .fontColor('#9E9E9E')
+            .width('100%')
+            .textAlign(TextAlign.Center)
+            .margin({ top: 16 })
+        }
+        .width('92%')
+        .padding(16)
+        .backgroundColor('#FFFFFF')
+        .borderRadius(16)
+        .alignItems(HorizontalAlign.Start)
+        .margin({ bottom: 24 })
       }
       .width('100%')
       .alignItems(HorizontalAlign.Center)
@@ -204,5 +302,78 @@ struct SettingsPage {
 
     this.appState.updateHealthSignal(signal)
     promptAction.showToast({ message: '今日状态已保存' })
+  }
+
+  /**
+   * 构建设置项行
+   */
+  @Builder
+  buildSettingsItem(title: string, subtitle: string, onClick: () => void) {
+    Row() {
+      Column() {
+        Text(title)
+          .fontSize(15)
+          .fontColor('#212121')
+          .lineHeight(22)
+        Text(subtitle)
+          .fontSize(12)
+          .fontColor('#9E9E9E')
+          .lineHeight(18)
+          .margin({ top: 2 })
+      }
+      .alignItems(HorizontalAlign.Start)
+      .layoutWeight(1)
+
+      Text('›')
+        .fontSize(20)
+        .fontColor('#BDBDBD')
+        .margin({ left: 8 })
+    }
+    .width('100%')
+    .padding({ top: 12, bottom: 12 })
+    .borderRadius(8)
+    .onClick(onClick)
+  }
+
+  /**
+   * 确认清除本地数据
+   */
+  private confirmClearData(): void {
+    AlertDialog.show({
+      title: '确认清除数据',
+      message: '此操作将删除所有本地存储的扫描记录、家庭成员信息和设置。此操作不可恢复，是否继续？',
+      primaryButton: {
+        value: '取消',
+        action: () => {
+          // 不执行任何操作
+        }
+      },
+      secondaryButton: {
+        value: '确认清除',
+        fontColor: '#F44336',
+        action: () => {
+          this.executeClearData()
+        }
+      }
+    })
+  }
+
+  /**
+   * 执行清除本地数据
+   */
+  private async executeClearData(): Promise<void> {
+    try {
+      // 清除隐私设置（重置首次启动标记）
+      const context = AppStorage.get<Object>('appContext') as Context
+      if (context) {
+        const pref = await preferences.getPreferences(context, 'privacy_settings')
+        await pref.put('privacy_agreed', false)
+        await pref.flush()
+      }
+      promptAction.showToast({ message: '本地数据已清除' })
+    } catch (_e) {
+      hilog.warn(0x0000, 'SettingsPage', 'clearData failed')
+      promptAction.showToast({ message: '清除数据失败，请重试' })
+    }
   }
 }

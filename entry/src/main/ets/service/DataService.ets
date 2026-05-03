@@ -15,12 +15,21 @@ const TAG = 'DataService';
 /**
  * 完整报告结果
  */
-export interface FullReportResult {
-  foodLabel: FoodLabel;
-  recommendations: Recommendation[];
-  members: FamilyProfile[];
-  alternatives: AlternativeFood[];
-  nutriScore: number;
+export class FullReportResult {
+  foodLabel: FoodLabel = new FoodLabel();
+  recommendations: Recommendation[] = [];
+  members: FamilyProfile[] = [];
+  alternatives: AlternativeFood[] = [];
+  nutriScore: number = 0;
+
+  constructor(foodLabel: FoodLabel, recommendations: Recommendation[],
+    members: FamilyProfile[], alternatives: AlternativeFood[], nutriScore: number) {
+    this.foodLabel = foodLabel;
+    this.recommendations = recommendations;
+    this.members = members;
+    this.alternatives = alternatives;
+    this.nutriScore = nutriScore;
+  }
 }
 
 let dataServiceInstance: DataService | null = null;
@@ -148,12 +157,12 @@ export class DataService {
       alternatives = [];
     }
 
-    return {
-      foodLabel: label,
-      recommendations: recommendations,
-      members: membersList,
-      alternatives: alternatives,
-      nutriScore: 50
-    };
+    return new FullReportResult(
+      label,
+      recommendations,
+      membersList,
+      alternatives,
+      50
+    );
   }
 }

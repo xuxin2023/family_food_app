@@ -27,17 +27,17 @@ export class PublicQueryEntry {
 
 // CredibilityResult JSON 输出类
 export class CredibilityResultJson {
-  score: Object = 0;
-  manufacturerClear: Object = false;
-  scNumberClear: Object = false;
-  oemRelationClear: Object = false;
-  hasTraceCode: Object = false;
-  manufacturerMissing: Object = false;
-  oemTrusteeMissing: Object = false;
-  tips: Object = [];
-  radarDimensions: Object = [];
-  overallGrade: Object = DataGrade.D;
-  publicQueryEntries: Object = [];
+  score: number = 0;
+  manufacturerClear: boolean = false;
+  scNumberClear: boolean = false;
+  oemRelationClear: boolean = false;
+  hasTraceCode: boolean = false;
+  manufacturerMissing: boolean = false;
+  oemTrusteeMissing: boolean = false;
+  tips: string[] = [];
+  radarDimensions: RadarDimension[] = [];
+  overallGrade: string = DataGrade.D;
+  publicQueryEntries: PublicQueryEntry[] = [];
 }
 
 export class CredibilityResult {

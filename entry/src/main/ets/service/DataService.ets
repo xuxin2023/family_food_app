@@ -1,6 +1,6 @@
 // DataService.ets
 // 统一数据服务层 - 封装降级查询链：本地缓存 → 远程API → OCR → AI识别
-// 整合 FoodAdapterEngine、NutriScoreEngine、AlternativeFoodRecommender 生成 FullReportResult
+// 整合 FoodAdapterEngine、NutriScoreEngine、AlternativeFoodRecommender 生成 FullReportResult V2
 
 import { common } from '@kit.AbilityKit';
 import { FoodLabel, NutritionPer100g, FoodSource } from '../model/FoodLabel';
@@ -8,6 +8,7 @@ import { HealthSignal as OldHealthSignal } from '../model/HealthSignal';
 import { Recommendation, RecommendLevel, LevelColor } from '../model/Recommendation';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { AlternativeFood } from '../model/FoodAdapterTypes';
+import { AlternativeFoodRecommender } from '../engine/AlternativeFoodRecommender';
 
 const TAG = 'DataService';
 
@@ -110,6 +111,7 @@ export class DataService {
 
   /**
    * 生成完整报告
+   * V2增强：集成AlternativeFoodRecommender替代食品推荐
    */
   generateReport(
     label: FoodLabel,
@@ -132,11 +134,25 @@ export class DataService {
       recommendations.push(rec);
     }
 
+    // V2：集成AlternativeFoodRecommender生成替代食品推荐
+    let alternatives: AlternativeFood[] = [];
+    try {
+      if (membersList.length > 0) {
+        alternatives = AlternativeFoodRecommender.recommendAlternatives(label, membersList, 3);
+      } else {
+        // 无成员时基于食品营养数据推荐
+        alternatives = AlternativeFoodRecommender.recommendAlternatives(label, [], 3);
+      }
+    } catch (error) {
+      // 替代推荐失败时使用空数组
+      alternatives = [];
+    }
+
     return {
       foodLabel: label,
       recommendations: recommendations,
       members: membersList,
-      alternatives: [],
+      alternatives: alternatives,
       nutriScore: 50
     };
   }

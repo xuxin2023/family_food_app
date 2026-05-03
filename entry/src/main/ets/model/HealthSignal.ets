@@ -39,17 +39,17 @@ export enum DataSource {
 
 // HealthSignal JSON 输出类
 export class HealthSignalJson {
-  memberId: Object = '';
-  date: Object = '';
-  stepLevel: Object = StepLevel.NORMAL;
-  sleepStatus: Object = SleepStatus.GOOD;
-  weightTrend: Object = WeightTrend.STABLE;
-  activityCaloriesLevel: Object = StepLevel.NORMAL;
-  manualBpStatus: Object = BpStatus.NORMAL;
-  manualBsStatus: Object = BsStatus.NORMAL;
-  hadHighSodiumToday: Object = false;
-  hadHighSugarToday: Object = false;
-  source: Object = DataSource.MANUAL;
+  memberId: string = '';
+  date: string = '';
+  stepLevel: string = StepLevel.NORMAL;
+  sleepStatus: string = SleepStatus.GOOD;
+  weightTrend: string = WeightTrend.STABLE;
+  activityCaloriesLevel: string = StepLevel.NORMAL;
+  manualBpStatus: string = BpStatus.NORMAL;
+  manualBsStatus: string = BsStatus.NORMAL;
+  hadHighSodiumToday: boolean = false;
+  hadHighSugarToday: boolean = false;
+  source: string = DataSource.MANUAL;
 }
 
 export class HealthSignal {

@@ -31,13 +31,13 @@ export enum RiskTag {
 
 // MealBalance JSON 输出类
 export class MealBalanceJson {
-  memberId: Object = '';
-  scenario: Object = MealScenario.BBQ;
-  riskTags: Object = [];
-  nextMealAdvice: Object = '';
-  avoidStacking: Object = [];
-  hydrationReminder: Object = false;
-  memberSpecificAdvice: Object = '';
+  memberId: string = '';
+  scenario: string = MealScenario.BBQ;
+  riskTags: string[] = [];
+  nextMealAdvice: string = '';
+  avoidStacking: string[] = [];
+  hydrationReminder: boolean = false;
+  memberSpecificAdvice: string = '';
 }
 
 // 美食平衡建议

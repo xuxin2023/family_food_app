@@ -78,7 +78,7 @@ export struct HotFoodGuideCard {
 
         Text('  或点击下方热门食品快速体验 →')
           .fontSize(FONT_SIZE.SMALL)
-          .fontColor(COLORS.TEXT_HINT)
+          .fontColor(COLORS.TEXT_TERTIARY)
       }
       .width('100%')
     }
@@ -94,7 +94,7 @@ export struct HotFoodGuideCard {
   DailyTipCard() {
     Row() {
       Text(DAILY_TIPS[this.currentTipIndex].emoji)
-        .fontSize(FONT_SIZE.XLARGE)
+        .fontSize(FONT_SIZE.XL)
         .margin({ right: SPACING.SM })
       Text(DAILY_TIPS[this.currentTipIndex].text)
         .fontSize(FONT_SIZE.BODY)
@@ -103,7 +103,7 @@ export struct HotFoodGuideCard {
     }
     .width('100%')
     .padding(SPACING.MD)
-    .backgroundColor(COLORS.BG_SECTION)
+    .backgroundColor(COLORS.BG_CARD)
     .borderRadius(RADIUS.MD)
     .margin({ bottom: SPACING.SM })
   }
@@ -112,7 +112,7 @@ export struct HotFoodGuideCard {
   HotFoodPill(item: HotFoodItem) {
     Column() {
       Text(item.emoji)
-        .fontSize(FONT_SIZE.XLARGE)
+        .fontSize(FONT_SIZE.XL)
         .margin({ bottom: SPACING.XS })
       Text(item.foodName)
         .fontSize(FONT_SIZE.TINY)

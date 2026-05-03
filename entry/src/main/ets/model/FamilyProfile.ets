@@ -28,16 +28,16 @@ export class MealTimes {
 
 // FamilyProfile JSON 输出类
 export class FamilyProfileJson {
-  memberId: Object = '';
-  nickname: Object = '';
-  ageGroup: Object = AgeGroup.ADULT;
-  healthGoals: Object = [];
-  allergens: Object = [];
-  dailyBudget: Object = new DailyBudgetConfigJson();
-  mealTimes: Object = new MealTimes();
-  bedtime: Object = '';
-  createdAt: Object = 0;
-  updatedAt: Object = 0;
+  memberId: string = '';
+  nickname: string = '';
+  ageGroup: string = AgeGroup.ADULT;
+  healthGoals: string[] = [];
+  allergens: string[] = [];
+  dailyBudget: DailyBudgetConfigJson = new DailyBudgetConfigJson();
+  mealTimes: MealTimes = new MealTimes();
+  bedtime: string = '';
+  createdAt: number = 0;
+  updatedAt: number = 0;
 }
 
 // DailyBudgetConfig JSON 输出类

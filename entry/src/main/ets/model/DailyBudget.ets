@@ -2,16 +2,16 @@
 
 // DailyBudget JSON 输出类
 export class DailyBudgetJson {
-  memberId: Object = '';
-  date: Object = '';
-  sodiumBudget: Object = 0;
-  sodiumRemaining: Object = 0;
-  sugarBudget: Object = 0;
-  sugarRemaining: Object = 0;
-  calorieBudget: Object = 0;
-  calorieRemaining: Object = 0;
-  fatBudget: Object = 0;
-  fatRemaining: Object = 0;
+  memberId: string = '';
+  date: string = '';
+  sodiumBudget: number = 0;
+  sodiumRemaining: number = 0;
+  sugarBudget: number = 0;
+  sugarRemaining: number = 0;
+  calorieBudget: number = 0;
+  calorieRemaining: number = 0;
+  fatBudget: number = 0;
+  fatRemaining: number = 0;
 }
 
 export class DailyBudget {

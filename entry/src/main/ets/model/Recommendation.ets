@@ -34,16 +34,16 @@ export function getLevelColorValue(color: LevelColor): string {
 
 // Recommendation JSON 输出类
 export class RecommendationJson {
-  memberId: Object = '';
-  foodId: Object = '';
-  level: Object = RecommendLevel.SUITABLE;
-  levelColor: Object = LevelColor.GREEN;
-  maxAmount: Object = 0;
-  maxServings: Object = 0;
-  reasons: Object = [];
-  reminders: Object = [];
-  disclaimer: Object = '';
-  generatedAt: Object = 0;
+  memberId: string = '';
+  foodId: string = '';
+  level: string = RecommendLevel.SUITABLE;
+  levelColor: string = LevelColor.GREEN;
+  maxAmount: number = 0;
+  maxServings: number = 0;
+  reasons: string[] = [];
+  reminders: string[] = [];
+  disclaimer: string = '';
+  generatedAt: number = 0;
 }
 
 // 适配结论

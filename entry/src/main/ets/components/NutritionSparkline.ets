@@ -28,8 +28,8 @@ interface NutritionTrendData {
 @Component
 export struct NutritionSparkline {
   @Prop data: NutritionTrendData | null = null
-  @Prop width: number = 160
-  @Prop height: number = 48
+  @Prop chartWidth: number = 160
+  @Prop chartHeight: number = 48
 
   build() {
     if (this.data === null) {
@@ -39,8 +39,8 @@ export struct NutritionSparkline {
           .fontSize(FONT_SIZE.SMALL)
           .fontColor('#9E9E9E')
       }
-      .width(this.width)
-      .height(this.height)
+      .width(this.chartWidth)
+      .height(this.chartHeight)
       .padding({ left: SPACING.SM })
       .borderRadius(RADIUS.SM)
       .backgroundColor('#F5F5F5')
@@ -49,12 +49,12 @@ export struct NutritionSparkline {
         // 标题行
         Row() {
           Text(this.data.nutrientName)
-            .fontSize(FONT_SIZE.XS)
+            .fontSize(FONT_SIZE.TINY)
             .fontColor('#616161')
             .fontWeight(500)
           Blank()
           Text(this.data.currentValue.toFixed(1) + ' ' + this.data.unit)
-            .fontSize(FONT_SIZE.XS)
+            .fontSize(FONT_SIZE.TINY)
             .fontColor(this.data.color)
             .fontWeight(500)
         }
@@ -78,8 +78,8 @@ export struct NutritionSparkline {
         .height(28)
         .alignItems(VerticalAlign.Bottom)
       }
-      .width(this.width)
-      .height(this.height)
+      .width(this.chartWidth)
+      .height(this.chartHeight)
       .padding(SPACING.XS)
     }
   }

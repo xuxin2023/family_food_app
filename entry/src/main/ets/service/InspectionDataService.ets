@@ -7,7 +7,24 @@ const TAG = 'InspectionDataService';
 const DOMAIN_ZERO = 0;
 
 const SAMR_API_BASE = 'https://spcjsac.gsxt.gov.cn';
-const LOCAL_CACHE_KEY = 'inspection_cache';
+
+// 工具函数：获取对象所有键
+function getObjectKeys(obj: Record<string, Object>): string[] {
+  const keys: string[] = [];
+  const objKeys = Object.keys(obj);
+  for (let i = 0; i < objKeys.length; i++) {
+    keys.push(objKeys[i]);
+  }
+  return keys;
+}
+
+// HTTP请求选项
+class HttpRequestOption {
+  method: http.RequestMethod = http.RequestMethod.GET;
+  header: Record<string, string> = {};
+  connectTimeout: number = 10000;
+  readTimeout: number = 10000;
+}
 
 export interface InspectionRecord {
   productName: string;
@@ -33,7 +50,6 @@ export interface InspectionSummary {
 export class InspectionDataService {
   private context: common.Context | null = null;
   private cache: Map<string, InspectionSummary> = new Map();
-  private lastSyncTime: number = 0;
   private syncInterval: number = 24 * 60 * 60 * 1000;
 
   async init(context: common.Context): Promise<void> {
@@ -55,15 +71,15 @@ export class InspectionDataService {
       const httpRequest = http.createHttp();
       const url = `${SAMR_API_BASE}/api/inspection?manufacturer=${encodeURIComponent(manufacturer)}`;
 
-      const response = await httpRequest.request(url, {
-        method: http.RequestMethod.GET,
-        header: {
-          'User-Agent': 'FamilyFoodApp/1.0',
-          'Accept': 'application/json'
-        },
-        connectTimeout: 10000,
-        readTimeout: 10000
-      });
+      const reqOpts = new HttpRequestOption();
+      reqOpts.method = http.RequestMethod.GET;
+      const reqHeaders: Record<string, string> = {
+        'User-Agent': 'FamilyFoodApp/1.0',
+        'Accept': 'application/json'
+      };
+      reqOpts.header = reqHeaders;
+
+      const response = await httpRequest.request(url, reqOpts);
       httpRequest.destroy();
 
       if (response.responseCode === 200) {
@@ -90,15 +106,15 @@ export class InspectionDataService {
       const httpRequest = http.createHttp();
       const url = `${SAMR_API_BASE}/api/inspection?scNumber=${encodeURIComponent(scNumber)}`;
 
-      const response = await httpRequest.request(url, {
-        method: http.RequestMethod.GET,
-        header: {
-          'User-Agent': 'FamilyFoodApp/1.0',
-          'Accept': 'application/json'
-        },
-        connectTimeout: 10000,
-        readTimeout: 10000
-      });
+      const reqOpts = new HttpRequestOption();
+      reqOpts.method = http.RequestMethod.GET;
+      const reqHeaders: Record<string, string> = {
+        'User-Agent': 'FamilyFoodApp/1.0',
+        'Accept': 'application/json'
+      };
+      reqOpts.header = reqHeaders;
+
+      const response = await httpRequest.request(url, reqOpts);
       httpRequest.destroy();
 
       if (response.responseCode === 200) {
@@ -116,12 +132,14 @@ export class InspectionDataService {
       const httpRequest = http.createHttp();
       const url = `${SAMR_API_BASE}/api/inspection/recent_fails?limit=${limit}`;
 
-      const response = await httpRequest.request(url, {
-        method: http.RequestMethod.GET,
-        header: { 'User-Agent': 'FamilyFoodApp/1.0' },
-        connectTimeout: 10000,
-        readTimeout: 10000
-      });
+      const reqOpts = new HttpRequestOption();
+      reqOpts.method = http.RequestMethod.GET;
+      const reqHeaders: Record<string, string> = {
+        'User-Agent': 'FamilyFoodApp/1.0'
+      };
+      reqOpts.header = reqHeaders;
+
+      const response = await httpRequest.request(url, reqOpts);
       httpRequest.destroy();
 
       if (response.responseCode === 200) {
@@ -143,15 +161,16 @@ export class InspectionDataService {
 
   private parseInspectionResponse(responseBody: string): InspectionRecord[] {
     try {
-      const json = JSON.parse(responseBody);
+      const json = JSON.parse(responseBody) as Record<string, Object> | InspectionRecord[];
       if (Array.isArray(json)) {
         return json as InspectionRecord[];
       }
-      if (json.data && Array.isArray(json.data)) {
-        return json.data as InspectionRecord[];
+      const jsonObj = json as Record<string, Object>;
+      if (jsonObj['data'] && Array.isArray(jsonObj['data'])) {
+        return jsonObj['data'] as InspectionRecord[];
       }
-      if (json.records && Array.isArray(json.records)) {
-        return json.records as InspectionRecord[];
+      if (jsonObj['records'] && Array.isArray(jsonObj['records'])) {
+        return jsonObj['records'] as InspectionRecord[];
       }
       return [];
     } catch (error) {
@@ -160,7 +179,7 @@ export class InspectionDataService {
   }
 
   private buildSummary(records: InspectionRecord[]): InspectionSummary {
-    const summary = new InspectionSummary();
+    const summary = new InspectionSummaryImpl();
     summary.totalChecks = records.length;
     summary.failCount = records.filter(r => r.result === 'fail').length;
 
@@ -185,14 +204,14 @@ export class InspectionDataService {
   }
 
   private emptySummary(): InspectionSummary {
-    return {
-      totalChecks: 0,
-      failCount: 0,
-      recentFailDate: '',
-      failItems: [],
-      lastUpdate: Date.now(),
-      riskLevel: 'low'
-    };
+    const summary = new InspectionSummaryImpl();
+    summary.totalChecks = 0;
+    summary.failCount = 0;
+    summary.recentFailDate = '';
+    summary.failItems = [];
+    summary.lastUpdate = Date.now();
+    summary.riskLevel = 'low';
+    return summary;
   }
 
   private async loadCache(): Promise<void> {
@@ -202,11 +221,11 @@ export class InspectionDataService {
       const cacheStr = prefs.getSync('cache', '') as string;
       if (cacheStr.length > 0) {
         const parsed = JSON.parse(cacheStr) as Record<string, InspectionSummary>;
-        for (const key of Object.keys(parsed)) {
+        const cacheKeys = getObjectKeys(parsed as Record<string, Object>);
+        for (const key of cacheKeys) {
           this.cache.set(key, parsed[key]);
         }
       }
-      this.lastSyncTime = prefs.getSync('last_sync', 0) as number;
     } catch (_) {}
   }
 

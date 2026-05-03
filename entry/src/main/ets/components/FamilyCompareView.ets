@@ -1,6 +1,6 @@
 // 家庭对比视图组件 - 同一食品对全家不同建议
 
-import { Recommendation, RecommendLevel, LevelColor, getLevelColorValue } from '../model/Recommendation';
+import { Recommendation, getLevelColorValue } from '../model/Recommendation';
 import { FamilyProfile } from '../model/FamilyProfile';
 
 @Component

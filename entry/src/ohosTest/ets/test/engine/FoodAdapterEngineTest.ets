@@ -1,8 +1,8 @@
 // FoodAdapterEngine 单元测试 - 动态适配矩阵
 import { describe, it, expect } from '@ohos/hypium';
-import { FoodAdapterEngine } from '../../../../src/main/ets/engine/FoodAdapterEngine';
+import { FoodAdapterEngine } from '../../../../../src/main/ets/engine/FoodAdapterEngine';
 import { FamilyMemberSimple, FoodNutrition, HealthSignal,
-  RecommendationLevel, SimpleDailyBudget, DislikedAdditive } from '../../../../src/main/ets/model/FoodAdapterTypes';
+  RecommendationLevel, SimpleDailyBudget, DislikedAdditive } from '../../../../../src/main/ets/model/FoodAdapterTypes';
 
 function createAdapterMember(): FamilyMemberSimple {
   const budget: SimpleDailyBudget = JSON.parse('{"sodium_mg":2000,"sugar_g":50,"energy_kcal":2000,"fat_g":65,"saturatedFat_g":20}') as SimpleDailyBudget;
@@ -45,7 +45,7 @@ function createAdapterFoodHighSugarFat(sugar_g: number, fat_g: number): FoodNutr
 function createAdapterFoodSodium700(): FoodNutrition {
   const f = createAdapterFood();
   f.sodium_mg = 700;
-  f.productName = '咸零�?;
+  f.productName = '咸零�?;
   return f;
 }
 
@@ -66,7 +66,7 @@ function createAdapterSignalLowSteps(): HealthSignal {
 }
 
 function createAdapterSignalPoorSleep(): HealthSignal {
-  const raw = JSON.parse('{"steps":"8000","sleep":"�?,"weightTrend":"稳定","manualBpStatus":"正常","manualBgStatus":"正常"}');
+  const raw = JSON.parse('{"steps":"8000","sleep":"�?,"weightTrend":"稳定","manualBpStatus":"正常","manualBgStatus":"正常"}');
   return raw as HealthSignal;
 }
 
@@ -125,10 +125,10 @@ export default function foodAdapterEngineTest() {
       const result1 = FoodAdapterEngine.calculateDynamicIntake(member, food, signal, intake, 1);
       const result2 = FoodAdapterEngine.calculateDynamicIntake(member, food, signal, intake, 2);
 
-      // �?次扫描建议量应≤�?�?
+      // �?次扫描建议量应≤�?�?
       expect(result2.maxIntake_g).assertLargerThanOrEqual(0);
-      // �?次扫描应有递减说明
-      expect(result2.dynamicAdjustReason.includes('�?次扫�?)).assertTrue();
+      // �?次扫描应有递减说明
+      expect(result2.dynamicAdjustReason.includes('�?次扫�?)).assertTrue();
     });
 
     it('should_apply_stronger_decay_on_later_scans', () => {
@@ -141,9 +141,9 @@ export default function foodAdapterEngineTest() {
       const result3 = FoodAdapterEngine.calculateDynamicIntake(member, food, signal, intake, 3);
       const result5 = FoodAdapterEngine.calculateDynamicIntake(member, food, signal, intake, 5);
 
-      // �?次扫描应该比�?次有更强衰减
+      // �?次扫描应该比�?次有更强衰减
       expect(result5.scanIndex).assertEqual(5);
-      expect(result5.dynamicAdjustReason.includes('�?次扫�?)).assertTrue();
+      expect(result5.dynamicAdjustReason.includes('�?次扫�?)).assertTrue();
     });
 
     // ========== 3. 步数调整 ==========
@@ -157,7 +157,7 @@ export default function foodAdapterEngineTest() {
 
       const result: EnhancedFoodRecommendation = FoodAdapterEngine.calculateDynamicIntake(member, food, signal, intake, 1);
 
-      // 步数低时应产生调整原�?
+      // 步数低时应产生调整原�?
       expect(result.dynamicAdjustReason.includes('步数')).assertTrue();
     });
 
@@ -185,7 +185,7 @@ export default function foodAdapterEngineTest() {
       const signal: HealthSignal = createAdapterHealthSignal();
       const intake: Record<string, Object> = createAdapterTodayIntake();
 
-      // 第一次扫描高钠食�?
+      // 第一次扫描高钠食�?
       FoodAdapterEngine.calculateDynamicIntake(member, food, signal, intake, 1);
 
       // 第二次扫描另一高钠食品
@@ -193,7 +193,7 @@ export default function foodAdapterEngineTest() {
       const result: EnhancedFoodRecommendation = FoodAdapterEngine.calculateDynamicIntake(member, food2, signal, intake, 2);
 
       // 预期有钠摄入偏高风险提示
-      expect(result.dynamicAdjustReason.includes('钠摄�?)).assertTrue();
+      expect(result.dynamicAdjustReason.includes('钠摄�?)).assertTrue();
     });
 
     // ========== 6. 高钠扫描计数 ==========
@@ -227,7 +227,7 @@ export default function foodAdapterEngineTest() {
       expect(count).assertEqual(0);
     });
 
-    // ========== 8. 重置所有记�?==========
+    // ========== 8. 重置所有记�?==========
 
     it('should_reset_all_records', () => {
       const member: FamilyMemberSimple = createAdapterMember();
@@ -242,7 +242,7 @@ export default function foodAdapterEngineTest() {
       expect(count).assertEqual(0);
     });
 
-    // ========== 9. 前几次扫描影响说�?==========
+    // ========== 9. 前几次扫描影响说�?==========
 
     it('should_include_previous_scan_impact', () => {
       const member: FamilyMemberSimple = createAdapterMember();
@@ -256,7 +256,7 @@ export default function foodAdapterEngineTest() {
       expect(result.previousScanImpact !== null).assertTrue();
     });
 
-    // ========== 10. 结果字段完整�?==========
+    // ========== 10. 结果字段完整�?==========
 
     it('should_fill_all_result_fields', () => {
       FoodAdapterEngine.resetTodayScanRecords();

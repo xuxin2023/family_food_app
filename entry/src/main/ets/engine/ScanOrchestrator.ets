@@ -1,12 +1,9 @@
 // ScanOrchestrator.ets
 // 扫描编排器 - 管理多步骤扫描流程：获取图片 → 预处理 → 识别 → 适配计算 → 生成报告
 
-import { FoodLabel, NutritionPer100g, FoodSource } from '../model/FoodLabel';
 import { FamilyProfile } from '../model/FamilyProfile';
-import { Recommendation, RecommendLevel, LevelColor } from '../model/Recommendation';
+import { Recommendation } from '../model/Recommendation';
 import { DataService, FullReportResult } from '../service/DataService';
-
-const TAG = 'ScanOrchestrator';
 
 /**
  * 扫描阶段枚举

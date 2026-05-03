@@ -4,13 +4,10 @@
 
 import { common } from '@kit.AbilityKit';
 import { FoodLabel, NutritionPer100g, FoodSource } from '../model/FoodLabel';
-import { HealthSignal as OldHealthSignal } from '../model/HealthSignal';
 import { Recommendation, RecommendLevel, LevelColor } from '../model/Recommendation';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { AlternativeFood } from '../model/FoodAdapterTypes';
 import { AlternativeFoodRecommender } from '../engine/AlternativeFoodRecommender';
-
-const TAG = 'DataService';
 
 /**
  * 完整报告结果
@@ -35,8 +32,6 @@ export class FullReportResult {
 let dataServiceInstance: DataService | null = null;
 
 export class DataService {
-  private context: common.Context | null = null;
-
   static getInstance(): DataService {
     if (dataServiceInstance === null) {
       dataServiceInstance = new DataService();
@@ -44,8 +39,8 @@ export class DataService {
     return dataServiceInstance;
   }
 
-  async init(context: common.Context): Promise<void> {
-    this.context = context;
+  async init(_context: common.Context): Promise<void> {
+    // 保留init方法供未来初始化使用
   }
 
   /**
@@ -85,7 +80,7 @@ export class DataService {
   /**
    * 从相机图片中 OCR 识别食品标签
    */
-  async recognizeFromCamera(imageUri: string): Promise<FoodLabel | null> {
+  async recognizeFromCamera(_imageUri: string): Promise<FoodLabel | null> {
     // 简易实现：从图片 URI 构造一个基础 FoodLabel
     const label = new FoodLabel();
     label.foodId = `ocr_${Date.now()}`;
@@ -99,7 +94,7 @@ export class DataService {
   /**
    * AI 视觉识别兜底
    */
-  async recognizeWithAiFallback(barcode?: string, imageUri?: string): Promise<FoodLabel | null> {
+  async recognizeWithAiFallback(barcode?: string, _imageUri?: string): Promise<FoodLabel | null> {
     // 简易实现：返回基于条码或图片的兜底数据
     const label = new FoodLabel();
     label.foodId = `ai_${Date.now()}`;
@@ -114,7 +109,7 @@ export class DataService {
   /**
    * 从本地缓存查询
    */
-  async lookupFromLocalCache(barcode: string): Promise<FoodLabel | null> {
+  async lookupFromLocalCache(_barcode: string): Promise<FoodLabel | null> {
     return null; // 简化为空实现
   }
 

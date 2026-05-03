@@ -101,9 +101,9 @@ export class FamilyRepository {
         const profile = new FamilyProfile();
         profile.memberId = resultSet.getString(resultSet.getColumnIndex('member_id'));
         profile.nickname = resultSet.getString(resultSet.getColumnIndex('nickname'));
-        profile.ageGroup = resultSet.getString(resultSet.getColumnIndex('age_group')) as AgeGroup;
+        profile.ageGroup = resultSet.getString(resultSet.getColumnIndex('age_group')) as string as AgeGroup;
         try {
-          profile.healthGoals = JSON.parse(resultSet.getString(resultSet.getColumnIndex('health_goals'))) as HealthGoal[];
+          profile.healthGoals = JSON.parse(resultSet.getString(resultSet.getColumnIndex('health_goals'))) as Object as HealthGoal[];
         } catch (e) {
           profile.healthGoals = [];
         }

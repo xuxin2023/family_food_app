@@ -1,7 +1,7 @@
 // HealthSignal 单元测试 - 健康信号模型
 import { describe, it, expect } from '@ohos/hypium';
 import { HealthSignal, StepLevel, SleepStatus, WeightTrend,
-  BpStatus, BsStatus, DataSource } from '../../../../src/main/ets/model/HealthSignal';
+  BpStatus, BsStatus, DataSource } from '../../../../../src/main/ets/model/HealthSignal';
 
 function createHealthSignal(stepLevel: StepLevel, sleepStatus: SleepStatus,
   weightTrend: WeightTrend, activityCaloriesLevel: StepLevel,
@@ -31,51 +31,51 @@ function createDefaultSignal(): HealthSignal {
 export default function healthSignalTest() {
   describe('HealthSignal', () => {
 
-    // ========== 活动量检�?==========
+    // ========== 活动量检查 ==========
 
-    it('should_detect_low_activity_from_step_level', () => {
+    it('should_detect_low_activity_from_step_level', 0, () => {
       const signal: HealthSignal = createHealthSignal(StepLevel.LOW, SleepStatus.GOOD,
         WeightTrend.STABLE, StepLevel.NORMAL, BpStatus.NORMAL, BsStatus.NORMAL,
         false, false, DataSource.MANUAL);
       expect(signal.isLowActivity()).assertTrue();
     });
 
-    it('should_detect_low_activity_from_activity_calories', () => {
+    it('should_detect_low_activity_from_activity_calories', 0, () => {
       const signal: HealthSignal = createHealthSignal(StepLevel.NORMAL, SleepStatus.GOOD,
         WeightTrend.STABLE, StepLevel.LOW, BpStatus.NORMAL, BsStatus.NORMAL,
         false, false, DataSource.MANUAL);
       expect(signal.isLowActivity()).assertTrue();
     });
 
-    it('should_not_detect_normal_as_low_activity', () => {
+    it('should_not_detect_normal_as_low_activity', 0, () => {
       const signal: HealthSignal = createDefaultSignal();
       expect(signal.isLowActivity()).assertFalse();
     });
 
-    it('should_detect_high_activity', () => {
+    it('should_detect_high_activity', 0, () => {
       const signal: HealthSignal = createHealthSignal(StepLevel.HIGH, SleepStatus.GOOD,
         WeightTrend.STABLE, StepLevel.NORMAL, BpStatus.NORMAL, BsStatus.NORMAL,
         false, false, DataSource.MANUAL);
       expect(signal.isHighActivity()).assertTrue();
     });
 
-    it('should_detect_high_activity_from_calories', () => {
+    it('should_detect_high_activity_from_calories', 0, () => {
       const signal: HealthSignal = createHealthSignal(StepLevel.NORMAL, SleepStatus.GOOD,
         WeightTrend.STABLE, StepLevel.HIGH, BpStatus.NORMAL, BsStatus.NORMAL,
         false, false, DataSource.MANUAL);
       expect(signal.isHighActivity()).assertTrue();
     });
 
-    // ========== 睡眠检�?==========
+    // ========== 睡眠检查 ==========
 
-    it('should_detect_poor_sleep', () => {
+    it('should_detect_poor_sleep', 0, () => {
       const signal: HealthSignal = createHealthSignal(StepLevel.NORMAL, SleepStatus.POOR,
         WeightTrend.STABLE, StepLevel.NORMAL, BpStatus.NORMAL, BsStatus.NORMAL,
         false, false, DataSource.MANUAL);
       expect(signal.isPoorSleep()).assertTrue();
     });
 
-    it('should_not_detect_good_sleep_as_poor', () => {
+    it('should_not_detect_good_sleep_as_poor', 0, () => {
       const signal: HealthSignal = createHealthSignal(StepLevel.NORMAL, SleepStatus.GOOD,
         WeightTrend.STABLE, StepLevel.NORMAL, BpStatus.NORMAL, BsStatus.NORMAL,
         false, false, DataSource.MANUAL);
@@ -84,91 +84,91 @@ export default function healthSignalTest() {
 
     // ========== 体重趋势 ==========
 
-    it('should_detect_weight_up', () => {
+    it('should_detect_weight_up', 0, () => {
       const signal: HealthSignal = createHealthSignal(StepLevel.NORMAL, SleepStatus.GOOD,
         WeightTrend.UP, StepLevel.NORMAL, BpStatus.NORMAL, BsStatus.NORMAL,
         false, false, DataSource.MANUAL);
       expect(signal.isWeightUp()).assertTrue();
     });
 
-    it('should_not_detect_stable_as_weight_up', () => {
+    it('should_not_detect_stable_as_weight_up', 0, () => {
       const signal: HealthSignal = createDefaultSignal();
       expect(signal.isWeightUp()).assertFalse();
     });
 
-    // ========== 血压检�?==========
+    // ========== 血压检查 ==========
 
-    it('should_detect_elevated_bp', () => {
+    it('should_detect_elevated_bp', 0, () => {
       const signal: HealthSignal = createHealthSignal(StepLevel.NORMAL, SleepStatus.GOOD,
         WeightTrend.STABLE, StepLevel.NORMAL, BpStatus.ELEVATED, BsStatus.NORMAL,
         false, false, DataSource.MANUAL);
       expect(signal.isHighBp()).assertTrue();
     });
 
-    it('should_detect_high_bp', () => {
+    it('should_detect_high_bp', 0, () => {
       const signal: HealthSignal = createHealthSignal(StepLevel.NORMAL, SleepStatus.GOOD,
         WeightTrend.STABLE, StepLevel.NORMAL, BpStatus.HIGH, BsStatus.NORMAL,
         false, false, DataSource.MANUAL);
       expect(signal.isHighBp()).assertTrue();
     });
 
-    it('should_detect_very_high_bp', () => {
+    it('should_detect_very_high_bp', 0, () => {
       const signal: HealthSignal = createHealthSignal(StepLevel.NORMAL, SleepStatus.GOOD,
         WeightTrend.STABLE, StepLevel.NORMAL, BpStatus.VERY_HIGH, BsStatus.NORMAL,
         false, false, DataSource.MANUAL);
       expect(signal.isHighBp()).assertTrue();
     });
 
-    it('should_not_detect_normal_bp_as_high', () => {
+    it('should_not_detect_normal_bp_as_high', 0, () => {
       const signal: HealthSignal = createDefaultSignal();
       expect(signal.isHighBp()).assertFalse();
     });
 
-    // ========== 血糖检�?==========
+    // ========== 血糖检查 ==========
 
-    it('should_detect_elevated_bs', () => {
+    it('should_detect_elevated_bs', 0, () => {
       const signal: HealthSignal = createHealthSignal(StepLevel.NORMAL, SleepStatus.GOOD,
         WeightTrend.STABLE, StepLevel.NORMAL, BpStatus.NORMAL, BsStatus.ELEVATED,
         false, false, DataSource.MANUAL);
       expect(signal.isHighBs()).assertTrue();
     });
 
-    it('should_detect_high_bs', () => {
+    it('should_detect_high_bs', 0, () => {
       const signal: HealthSignal = createHealthSignal(StepLevel.NORMAL, SleepStatus.GOOD,
         WeightTrend.STABLE, StepLevel.NORMAL, BpStatus.NORMAL, BsStatus.HIGH,
         false, false, DataSource.MANUAL);
       expect(signal.isHighBs()).assertTrue();
     });
 
-    it('should_not_detect_normal_bs_as_high', () => {
+    it('should_not_detect_normal_bs_as_high', 0, () => {
       const signal: HealthSignal = createDefaultSignal();
       expect(signal.isHighBs()).assertFalse();
     });
 
-    // ========== 今日饮食检�?==========
+    // ========== 今日饮食检查 ==========
 
-    it('should_detect_high_sodium_today', () => {
+    it('should_detect_high_sodium_today', 0, () => {
       const signal: HealthSignal = createHealthSignal(StepLevel.NORMAL, SleepStatus.GOOD,
         WeightTrend.STABLE, StepLevel.NORMAL, BpStatus.NORMAL, BsStatus.NORMAL,
         true, false, DataSource.MANUAL);
       expect(signal.isHighSodiumToday()).assertTrue();
     });
 
-    it('should_detect_high_sugar_today', () => {
+    it('should_detect_high_sugar_today', 0, () => {
       const signal: HealthSignal = createHealthSignal(StepLevel.NORMAL, SleepStatus.GOOD,
         WeightTrend.STABLE, StepLevel.NORMAL, BpStatus.NORMAL, BsStatus.NORMAL,
         false, true, DataSource.MANUAL);
       expect(signal.isHighSugarToday()).assertTrue();
     });
 
-    it('should_not_detect_no_high_sodium_today', () => {
+    it('should_not_detect_no_high_sodium_today', 0, () => {
       const signal: HealthSignal = createDefaultSignal();
       expect(signal.isHighSodiumToday()).assertFalse();
     });
 
-    // ========== JSON序列�?==========
+    // ========== JSON序列化 ==========
 
-    it('should_serialize_to_json', () => {
+    it('should_serialize_to_json', 0, () => {
       const signal: HealthSignal = createHealthSignal(StepLevel.LOW, SleepStatus.POOR,
         WeightTrend.STABLE, StepLevel.NORMAL, BpStatus.NORMAL, BsStatus.NORMAL,
         true, false, DataSource.HUAWEI_HEALTH);
@@ -183,7 +183,7 @@ export default function healthSignalTest() {
       expect((json as Record<string, Object>).source as DataSource).assertEqual(DataSource.HUAWEI_HEALTH);
     });
 
-    it('should_deserialize_from_json', () => {
+    it('should_deserialize_from_json', 0, () => {
       const jsonStr: string = JSON.stringify({
         memberId: 'test_from_json',
         date: '2025-12-20',
@@ -207,4 +207,3 @@ export default function healthSignalTest() {
     });
   });
 }
-

@@ -5,7 +5,7 @@ import mealBalanceEngineTest from './MealBalanceEngineTest';
 import childProtectionEngineTest from './ChildProtectionEngineTest';
 import credibilityEngineTest from './CredibilityEngineTest';
 import positiveAdviceEngineTest from './PositiveAdviceEngineTest';
-import basketCheckEngineTest from './BasketCheckEngineTest';
+import basketCheckEngineTest from './engine/BasketCheckEngineTest';
 
 // 新增引擎单元测试
 import foodAdapterEngineTest from './engine/FoodAdapterEngineTest';

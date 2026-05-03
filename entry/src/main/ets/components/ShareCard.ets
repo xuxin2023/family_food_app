@@ -6,9 +6,8 @@ import { image } from '@kit.ImageKit';
 import { common } from '@kit.AbilityKit';
 import { photoAccessHelper } from '@kit.MediaLibraryKit';
 import { fileIo } from '@kit.CoreFileKit';
-import { promptAction } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { Recommendation, RecommendLevel, LevelColor, getLevelColorValue } from '../model/Recommendation';
+import { Recommendation, getLevelColorValue } from '../model/Recommendation';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { FoodRecommendation, RecommendationLevel } from '../model/FoodAdapterTypes';
 

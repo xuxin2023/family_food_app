@@ -1,7 +1,11 @@
+// PushNotificationService.ets
+// 代理提醒服务 - 基于 @kit.BackgroundTasksKit 实现定时提醒
+
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
 import { preferences } from '@kit.ArkData';
-import { reminderAgentManager } from '@kit.ReminderAgentKit';
+import { reminderAgentManager } from '@kit.BackgroundTasksKit';
+import { BusinessError } from '@kit.BasicServicesKit';
 
 const TAG = 'PushNotificationService';
 const DOMAIN_ZERO = 0;
@@ -14,6 +18,16 @@ export interface NotificationConfig {
   weeklyReportDay: number;
   weeklyReportHour: number;
   budgetAlertEnabled: boolean;
+}
+
+export interface NotificationConfigUpdate {
+  dietReminderEnabled?: boolean;
+  dietReminderHour?: number;
+  dietReminderMinute?: number;
+  weeklyReportEnabled?: boolean;
+  weeklyReportDay?: number;
+  weeklyReportHour?: number;
+  budgetAlertEnabled?: boolean;
 }
 
 export const DEFAULT_NOTIFICATION_CONFIG: NotificationConfig = {
@@ -51,6 +65,18 @@ export class PushNotificationService {
 
   async setupDietReminder(): Promise<number> {
     try {
+      const btn1: reminderAgentManager.ActionButton = {
+        title: '扫码',
+        type: reminderAgentManager.ActionButtonType.ACTION_BUTTON_TYPE_CLOSE
+      };
+      const btn2: reminderAgentManager.ActionButton = {
+        title: '查看周报',
+        type: reminderAgentManager.ActionButtonType.ACTION_BUTTON_TYPE_CLOSE
+      };
+      const wantAgent: reminderAgentManager.WantAgent = {
+        pkgName: this.context?.applicationInfo.name || '',
+        abilityName: 'EntryAbility'
+      };
       const request: reminderAgentManager.ReminderRequestCalendar = {
         reminderType: reminderAgentManager.ReminderType.REMINDER_TYPE_CALENDAR,
         dateTime: {
@@ -59,41 +85,40 @@ export class PushNotificationService {
           day: 0,
           hour: this.config.dietReminderHour,
           minute: this.config.dietReminderMinute
-        },
+        } as reminderAgentManager.LocalDateTime,
         repeatMonths: [],
         repeatDays: [1, 2, 3, 4, 5, 6, 7],
         title: '饮食平衡提醒',
         content: '今天记录饮食了吗？拍一拍食品标签，看看每位的建议。',
         expiredContent: '别忘了记录今天的饮食',
-        actionButton: [
-          {
-            title: '扫码',
-            type: reminderAgentManager.ActionButtonType.ACTION_BUTTON_TYPE_CUSTOM
-          },
-          {
-            title: '查看周报',
-            type: reminderAgentManager.ActionButtonType.ACTION_BUTTON_TYPE_CUSTOM
-          }
-        ],
-        wantAgent: {
-          pkgName: this.context?.applicationInfo.name || '',
-          abilityName: 'EntryAbility'
-        },
-        maxScreenReminderAgent: 0
+        actionButton: [btn1, btn2],
+        wantAgent: wantAgent,
+        ringDuration: 5,
+        snoozeTimes: 1,
+        timeInterval: 5
       };
 
-      const reminderId = await reminderAgentManager.publishReminder(request);
+      const reminderId: number = await reminderAgentManager.publishReminder(request);
       this.reminderIds.push(reminderId);
       hilog.info(DOMAIN_ZERO, TAG, 'Diet reminder set: %{public}d', reminderId);
       return reminderId;
     } catch (error) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'Setup diet reminder failed: %{public}s', JSON.stringify(error));
+      const bizErr: BusinessError = error as BusinessError;
+      hilog.warn(DOMAIN_ZERO, TAG, 'Setup diet reminder failed: %{public}s', bizErr.message);
       return -1;
     }
   }
 
   async setupWeeklyReportReminder(): Promise<number> {
     try {
+      const btn: reminderAgentManager.ActionButton = {
+        title: '查看周报',
+        type: reminderAgentManager.ActionButtonType.ACTION_BUTTON_TYPE_CLOSE
+      };
+      const wantAgent: reminderAgentManager.WantAgent = {
+        pkgName: this.context?.applicationInfo.name || '',
+        abilityName: 'EntryAbility'
+      };
       const request: reminderAgentManager.ReminderRequestCalendar = {
         reminderType: reminderAgentManager.ReminderType.REMINDER_TYPE_CALENDAR,
         dateTime: {
@@ -102,31 +127,26 @@ export class PushNotificationService {
           day: 0,
           hour: this.config.weeklyReportHour,
           minute: 0
-        },
+        } as reminderAgentManager.LocalDateTime,
         repeatMonths: [],
         repeatDays: [this.config.weeklyReportDay + 1],
         title: '家庭饮食周报',
         content: '本周饮食周报已生成，看看全家人的饮食情况。',
         expiredContent: '查看本周饮食周报',
-        actionButton: [
-          {
-            title: '查看周报',
-            type: reminderAgentManager.ActionButtonType.ACTION_BUTTON_TYPE_CUSTOM
-          }
-        ],
-        wantAgent: {
-          pkgName: this.context?.applicationInfo.name || '',
-          abilityName: 'EntryAbility'
-        },
-        maxScreenReminderAgent: 0
+        actionButton: [btn],
+        wantAgent: wantAgent,
+        ringDuration: 5,
+        snoozeTimes: 1,
+        timeInterval: 5
       };
 
-      const reminderId = await reminderAgentManager.publishReminder(request);
+      const reminderId: number = await reminderAgentManager.publishReminder(request);
       this.reminderIds.push(reminderId);
       hilog.info(DOMAIN_ZERO, TAG, 'Weekly report reminder set: %{public}d', reminderId);
       return reminderId;
     } catch (error) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'Setup weekly reminder failed: %{public}s', JSON.stringify(error));
+      const bizErr: BusinessError = error as BusinessError;
+      hilog.warn(DOMAIN_ZERO, TAG, 'Setup weekly reminder failed: %{public}s', bizErr.message);
       return -1;
     }
   }
@@ -135,7 +155,9 @@ export class PushNotificationService {
     for (const id of this.reminderIds) {
       try {
         await reminderAgentManager.cancelReminder(id);
-      } catch (_) {}
+      } catch (_) {
+        // ignore individual cancel errors
+      }
     }
     this.reminderIds = [];
   }
@@ -144,15 +166,24 @@ export class PushNotificationService {
     return this.config;
   }
 
-  async updateConfig(config: Partial<NotificationConfig>): Promise<void> {
-    this.config = { ...this.config, ...config };
+  async updateConfig(config: NotificationConfigUpdate): Promise<void> {
+    const merged: NotificationConfig = {
+      dietReminderEnabled: config.dietReminderEnabled ?? this.config.dietReminderEnabled,
+      dietReminderHour: config.dietReminderHour ?? this.config.dietReminderHour,
+      dietReminderMinute: config.dietReminderMinute ?? this.config.dietReminderMinute,
+      weeklyReportEnabled: config.weeklyReportEnabled ?? this.config.weeklyReportEnabled,
+      weeklyReportDay: config.weeklyReportDay ?? this.config.weeklyReportDay,
+      weeklyReportHour: config.weeklyReportHour ?? this.config.weeklyReportHour,
+      budgetAlertEnabled: config.budgetAlertEnabled ?? this.config.budgetAlertEnabled
+    };
+    this.config = merged;
     await this.saveConfig();
     await this.setupAllReminders();
   }
 
   async getHasReminderPermission(): Promise<boolean> {
     try {
-      const agent = await import('@kit.NotificationKit');
+      void import('@kit.NotificationKit');
       return true;
     } catch (_) {
       return false;
@@ -172,7 +203,9 @@ export class PushNotificationService {
         weeklyReportHour: prefs.getSync('weekly_hour', 20) as number,
         budgetAlertEnabled: prefs.getSync('budget_alert', true) as boolean
       };
-    } catch (_) {}
+    } catch (_) {
+      // use defaults
+    }
   }
 
   private async saveConfig(): Promise<void> {
@@ -188,7 +221,8 @@ export class PushNotificationService {
       prefs.putSync('budget_alert', this.config.budgetAlertEnabled);
       await prefs.flush();
     } catch (error) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'Save config failed: %{public}s', JSON.stringify(error));
+      const bizErr: BusinessError = error as BusinessError;
+      hilog.warn(DOMAIN_ZERO, TAG, 'Save config failed: %{public}s', bizErr.message);
     }
   }
 }

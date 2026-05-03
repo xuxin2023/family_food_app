@@ -52,7 +52,7 @@ export struct CredibilityCard {
       if (this.result.radarDimensions.length > 0) {
         ForEach(this.result.radarDimensions, (dim: RadarDimension) => {
           this.DimensionRow(dim)
-        }, (dim: RadarDimension, index: number) => `${index}`)
+        }, (_dim: RadarDimension, index: number) => `${index}`)
       }
 
       // 提示信息列表
@@ -65,7 +65,7 @@ export struct CredibilityCard {
             }
             .margin({ bottom: 4 })
             .width('100%')
-          }, (tip: string, index: number) => `${index}`)
+          }, (_tip: string, index: number) => `${index}`)
         }
         .margin({ top: 8 })
       }
@@ -205,7 +205,7 @@ export struct CredibilityCard {
         .borderRadius(8)
         .margin({ bottom: 6 })
         .alignItems(VerticalAlign.Center)
-      }, (entry: PublicQueryEntry, index: number) => `${index}`)
+      }, (_entry: PublicQueryEntry, index: number) => `${index}`)
     }
     .width('100%')
     .alignItems(HorizontalAlign.Start)

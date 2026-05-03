@@ -5,17 +5,15 @@
 import { router, promptAction, curves } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
 import { AppState } from '../AppState';
-import { FamilyProfile, AgeGroup, HealthGoal } from '../model/FamilyProfile';
-import { FoodLabel, NutritionPer100g } from '../model/FoodLabel';
+import { FamilyProfile } from '../model/FamilyProfile';
+import { FoodLabel } from '../model/FoodLabel';
 import { Recommendation, RecommendLevel, LevelColor, getLevelColorValue } from '../model/Recommendation';
-import { AlternativeFood, RecommendationLevel, ParentPanelData } from '../model/FoodAdapterTypes';
+import { AlternativeFood } from '../model/FoodAdapterTypes';
 import { ChildProtection } from '../model/ChildProtection';
 import { CredibilityResult } from '../model/CredibilityResult';
 import { NutriScoreBadge } from '../components/NutriScoreBadge';
-import { FoodLabelCard } from '../components/FoodLabelCard';
 import { ShareCardGenerator, MemberShareInfo, ShareImageParams } from '../components/ShareCard';
-import { ChildProtectionEngine } from '../engine/ChildProtectionEngine';
-import { PaywallTrigger, MemberTier, getTierDisplayName } from '../model/MemberStatus';
+import { PaywallTrigger, MemberTier } from '../model/MemberStatus';
 import { PaywallDialog } from '../components/PaywallDialog';
 import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON } from '../constants/AppTheme';
 
@@ -48,7 +46,6 @@ struct ReportPage {
   @State showAlternativesLocked: boolean = false
 
   private appState: AppState = AppState.getInstance()
-  private childProtectEngine: ChildProtectionEngine = new ChildProtectionEngine()
   private credibilityResult: CredibilityResult = new CredibilityResult()
   private childProtections: ChildProtection[] = []
   private swiperController: SwiperController = new SwiperController()
@@ -97,51 +94,42 @@ struct ReportPage {
     return this.recommendations[idx]
   }
 
-  private get selectedMember(): FamilyProfile | undefined {
-    return this.familyMembers[this.selectedMemberIndex]
-  }
-
   private get levelColorHex(): string {
     return getLevelColorValue(this.selectedRec.levelColor)
-  }
-
-  private get levelBgLight(): string {
-    switch (this.selectedRec.levelColor) {
-      case LevelColor.GREEN:
-        return '#E8F5E9'
-      case LevelColor.YELLOW:
-        return '#FFF8E1'
-      case LevelColor.ORANGE:
-        return '#FFF3E0'
-      case LevelColor.RED:
-        return '#FFEBEE'
-      default:
-        return '#F5F5F5'
-    }
   }
 
   // ==================== 构建 UI ====================
 
   build() {
     Stack() {
-      // 骨架屏
+      // 骨架屏 - 使用条件渲染容器
       if (this.showSkeleton) {
-        this.SkeletonScreen()
+        Stack() {
+          this.SkeletonScreen()
+        }
       }
 
       Scroll() {
         Column() {
           // ---- 顶部导航 ----
-          this.TopNavBar()
+          Row() {
+            this.TopNavBar()
+          }
 
           // ---- ① 顶部评测区（Hero） ----
-          this.HeroSection()
+          Column() {
+            this.HeroSection()
+          }
 
           // ---- ② 家庭矩阵区 ----
-          this.FamilyMatrixSection()
+          Column() {
+            this.FamilyMatrixSection()
+          }
 
           // ---- ③ 辅助信息区 ----
-          this.AuxiliarySection()
+          Column() {
+            this.AuxiliarySection()
+          }
         }
         .width('100%')
         .padding({ bottom: 32 })
@@ -363,42 +351,6 @@ struct ReportPage {
       .height(34)
       .scrollBar(BarState.Off)
       .padding({ top: 0 })
-    }
-  }
-
-  // 获取成员头像（优先使用emoji图标）  // 获取成员头像（优先使用emoji图标）
-  private getMemberAvatar(member: FamilyProfile): string {
-    const healthGoal = member.healthGoals.length > 0 ? member.healthGoals[0] : HealthGoal.NONE
-    switch (healthGoal) {
-      case HealthGoal.CONTROL_BP:
-        return '❤️'
-      case HealthGoal.CONTROL_SUGAR:
-        return '🍬'
-      case HealthGoal.CONTROL_FAT:
-      case HealthGoal.LOSE_FAT:
-        return '⚡'
-      case HealthGoal.CHILD:
-        return '🧒'
-      default:
-        return '🙂'
-    }
-  }
-
-  // 获取成员颜色
-  private getMemberColor(member: FamilyProfile): string {
-    const healthGoal = member.healthGoals.length > 0 ? member.healthGoals[0] : HealthGoal.NONE
-    switch (healthGoal) {
-      case HealthGoal.CONTROL_BP:
-        return '#E57373'
-      case HealthGoal.CONTROL_SUGAR:
-        return '#FFB74D'
-      case HealthGoal.CONTROL_FAT:
-      case HealthGoal.LOSE_FAT:
-        return '#81C784'
-      case HealthGoal.CHILD:
-        return '#64B5F6'
-      default:
-        return '#90A4AE'
     }
   }
 

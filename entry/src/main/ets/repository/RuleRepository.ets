@@ -77,8 +77,11 @@ export class RuleRepository {
    */
   async loadNutritionBudgets(): Promise<NutritionBudgetRule[]> {
     const data = await this.loadJsonFile('nutrition_budgets.json');
-    if (data && data['budgets']) {
-      return data['budgets'] as NutritionBudgetRule[];
+    if (data) {
+      const budgetsObj = data['budgets'] as Object as NutritionBudgetRule[];
+      if (budgetsObj) {
+        return budgetsObj;
+      }
     }
     return [];
   }
@@ -96,8 +99,11 @@ export class RuleRepository {
    */
   async loadMealBalanceTemplates(): Promise<MealBalanceTemplate[]> {
     const data = await this.loadJsonFile('meal_balance_templates.json');
-    if (data && data['templates']) {
-      return data['templates'] as MealBalanceTemplate[];
+    if (data) {
+      const templatesObj = data['templates'] as Object as MealBalanceTemplate[];
+      if (templatesObj) {
+        return templatesObj;
+      }
     }
     return [];
   }
@@ -116,9 +122,11 @@ export class RuleRepository {
   async loadAllergenKeywords(): Promise<AllergenKeywordMap> {
     const data = await this.loadJsonFile('allergen_keywords.json');
     if (data) {
+      const a2k = data['allergenToKeywords'] as Object as Record<string, string[]>;
+      const ca = data['commonAllergens'] as Object as string[];
       return {
-        allergenToKeywords: (data['allergenToKeywords'] || {}) as Record<string, string[]>,
-        commonAllergens: (data['commonAllergens'] || []) as string[]
+        allergenToKeywords: a2k ?? {},
+        commonAllergens: ca ?? []
       };
     }
     return { allergenToKeywords: {}, commonAllergens: [] };

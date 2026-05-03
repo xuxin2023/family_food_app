@@ -15,7 +15,7 @@ export interface ShareCardParams {
 
 export class ShareImageService {
   // 生成分享图片（用于系统分享/保存到相册）
-  async generateShareImage(context: common.Context, params: ShareCardParams): Promise<string> {
+  async generateShareImage(_context: common.Context, params: ShareCardParams): Promise<string> {
     try {
       // 构建图片内容：食品名称 + 各成员适配结论
       const lines: string[] = [

@@ -1,6 +1,6 @@
 // 适配结论卡组件
 
-import { Recommendation, RecommendLevel, LevelColor, getLevelColorValue } from '../model/Recommendation';
+import { Recommendation, getLevelColorValue } from '../model/Recommendation';
 
 @Component
 export struct RecommendationCard {

@@ -1,4 +1,4 @@
-import { FoodLabel, NutritionPer100g, FoodSource } from './FoodLabel';
+import { FoodLabel, NutritionPer100g, FoodSource } from '../model/FoodLabel';
 
 export interface HotFoodItem {
   foodName: string;

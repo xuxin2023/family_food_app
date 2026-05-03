@@ -1,5 +1,3 @@
-// 食品标签数据模型
-
 // 每100g营养成分
 export class NutritionPer100g {
   sodium: number = 0;       // 钠 mg

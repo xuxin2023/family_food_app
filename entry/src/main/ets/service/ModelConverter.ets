@@ -19,7 +19,7 @@ import {
   BsStatus as OldBsStatus
 } from '../model/HealthSignal';
 import { FoodLabel, NutritionPer100g, FoodSource } from '../model/FoodLabel';
-import { Recommendation, RecommendLevel } from '../model/Recommendation';
+import { Recommendation } from '../model/Recommendation';
 import {
   FamilyMember,
   FoodNutrition,
@@ -27,14 +27,10 @@ import {
   FoodRecommendation,
   DailyBudget as NewDailyBudget,
   RecommendationLevel,
-  DislikedAdditive,
-  SimpleDailyBudget,
   SimpleDynamicRule,
   FamilyMemberSimple,
   DynamicRule
 } from '../model/FoodAdapterTypes';
-
-const TAG = 'ModelConverter';
 
 // ==================== FamilyProfile ↔ FamilyMember ====================
 
@@ -43,7 +39,7 @@ const TAG = 'ModelConverter';
  */
 export function familyProfileToFamilyMember(
   profile: FamilyProfile,
-  oldSignal?: OldHealthSignal
+  _oldSignal?: OldHealthSignal
 ): FamilyMember {
   const budget: NewDailyBudget = {
     sodium_mg: profile.dailyBudget.sodiumBudget,
@@ -78,7 +74,7 @@ export function familyMemberToFamilyProfile(member: FamilyMember): FamilyProfile
   profile.memberId = member.memberId;
   profile.nickname = member.memberName;
   profile.ageGroup = ageToAgeGroup(member.age);
-  profile.healthGoals = [member.healthGoal as HealthGoal];
+  profile.healthGoals = [member.healthGoal as string as HealthGoal];
   profile.allergens = member.allergenRedline;
   profile.dailyBudget.sodiumBudget = member.dailyBudget.sodium_mg;
   profile.dailyBudget.sugarBudget = member.dailyBudget.sugar_g;

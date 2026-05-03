@@ -54,13 +54,8 @@ export class MilestoneService {
     const countMap = await this.collectEventCounts();
     const memberCount = AnalyticsService.getInstance().getMemberCount();
 
-    const now = Date.now();
-
     // 计算连续使用天数
     const streakDays = await this.calculateStreakDays(countMap);
-
-    // 每日页面浏览次数（含首页浏览 = 当日使用）
-    const dailyUseCount = countMap.get(EventType.PAGE_VIEW) || 0;
 
     // 定义六个里程碑
     const allMilestones: Milestone[] = [
@@ -278,10 +273,14 @@ export class MilestoneService {
       if (idx > 0) {
         await this.sleep(800);
       }
-      promptAction.showToast({
-        message: `🎉 恭喜达成「${ms.title}」！${ms.description}`,
-        duration: 3000
-      });
+      try {
+        promptAction.showToast({
+          message: `🎉 恭喜达成「${ms.title}」！${ms.description}`,
+          duration: 3000
+        });
+      } catch (_) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'showToast failed for milestone: %{public}s', ms.name);
+      }
       // 默认自动标记为已确认（避免重复弹窗）
       await this.acknowledgeMilestone(ms.name);
     }

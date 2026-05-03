@@ -107,11 +107,11 @@ export class FamilyProfile {
     const profile = new FamilyProfile();
     profile.memberId = json.memberId as string;
     profile.nickname = json.nickname as string;
-    profile.ageGroup = json.ageGroup as AgeGroup;
-    profile.healthGoals = json.healthGoals as HealthGoal[];
+    profile.ageGroup = json.ageGroup as string as AgeGroup;
+    profile.healthGoals = json.healthGoals as Object as HealthGoal[];
     profile.allergens = json.allergens as string[];
     profile.dailyBudget = DailyBudgetConfig.fromJson(json.dailyBudget as Record<string, Object>);
-    profile.mealTimes = json.mealTimes as MealTimes;
+    profile.mealTimes = json.mealTimes as Object as MealTimes;
     profile.bedtime = json.bedtime as string;
     profile.createdAt = json.createdAt as number;
     profile.updatedAt = json.updatedAt as number;

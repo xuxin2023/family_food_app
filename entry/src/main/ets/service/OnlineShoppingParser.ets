@@ -346,18 +346,33 @@ export class OnlineShoppingParser {
 
     const responseWrapper = parsed['jd_union_open_goods_detail_query_response'] as Record<string, Object>;
     if (responseWrapper === undefined) {
-      throw new Error('京东API返回数据格式异常');
+      const emptyDetail: GoodsDetail = {
+        productName: '京东商品',
+        price: 0,
+        imageUrl: ''
+      };
+      return emptyDetail;
     }
 
     const queryResultStr = responseWrapper['queryResult'] as string;
     if (queryResultStr === undefined) {
-      throw new Error('京东API返回空数据');
+      const emptyDetail: GoodsDetail = {
+        productName: '京东商品',
+        price: 0,
+        imageUrl: ''
+      };
+      return emptyDetail;
     }
 
     const queryResult = JSON.parse(queryResultStr) as Array<Record<string, Object>>;
 
     if (queryResult.length === 0) {
-      throw new Error('京东API未找到商品');
+      const emptyDetail: GoodsDetail = {
+        productName: '京东商品',
+        price: 0,
+        imageUrl: ''
+      };
+      return emptyDetail;
     }
 
     const goodsInfo = queryResult[0];
@@ -429,12 +444,22 @@ export class OnlineShoppingParser {
     // 淘宝API返回格式：{ "item_get_response": { "item": { ... } } }
     const responseObj = parsed['item_get_response'] as Record<string, Object>;
     if (responseObj === undefined) {
-      throw new Error('淘宝API返回数据格式异常');
+      const emptyDetail: GoodsDetail = {
+        productName: '淘宝商品',
+        price: 0,
+        imageUrl: ''
+      };
+      return emptyDetail;
     }
 
     const item = responseObj['item'] as Record<string, Object>;
     if (item === undefined) {
-      throw new Error('淘宝API未找到商品');
+      const emptyDetail: GoodsDetail = {
+        productName: '淘宝商品',
+        price: 0,
+        imageUrl: ''
+      };
+      return emptyDetail;
     }
 
     const title = (item['title'] as string) || '淘宝商品';

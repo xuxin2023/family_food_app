@@ -1,6 +1,6 @@
 // FamilyProfile 单元测试 - 家庭成员画像模型
 import { describe, it, expect } from '@ohos/hypium';
-import { FamilyProfile, DailyBudgetConfig, AgeGroup, HealthGoal } from '../../../../src/main/ets/model/FamilyProfile';
+import { FamilyProfile, DailyBudgetConfig, AgeGroup, HealthGoal } from '../../../../../src/main/ets/model/FamilyProfile';
 
 function createProfile(ageGroup: AgeGroup, healthGoals: HealthGoal[], allergens: string[],
   memberId: string, nickname: string): FamilyProfile {
@@ -37,7 +37,7 @@ export default function familyProfileTest() {
       expect(profile.isChild()).assertFalse();
     });
 
-    // ========== HealthGoal 检�?==========
+    // ========== HealthGoal 检�?==========
 
     it('should_detect_control_bp', () => {
       const profile: FamilyProfile = createProfile(AgeGroup.ADULT, [HealthGoal.CONTROL_BP], [], 'member_1', '测试');
@@ -66,7 +66,7 @@ export default function familyProfileTest() {
       expect(profile.isControlFat()).assertFalse();
     });
 
-    // ========== 多目标检�?==========
+    // ========== 多目标检�?==========
 
     it('should_support_multiple_health_goals', () => {
       const profile: FamilyProfile = createProfile(AgeGroup.ADULT, [HealthGoal.CONTROL_BP, HealthGoal.CONTROL_SUGAR],
@@ -75,7 +75,7 @@ export default function familyProfileTest() {
       expect(profile.isControlSugar()).assertTrue();
     });
 
-    // ========== JSON序列�?==========
+    // ========== JSON序列�?==========
 
     it('should_serialize_to_json', () => {
       const profile: FamilyProfile = createProfile(AgeGroup.ADULT, [HealthGoal.CONTROL_BP, HealthGoal.CONTROL_SUGAR],
@@ -121,7 +121,7 @@ export default function familyProfileTest() {
   describe('DailyBudgetConfig', () => {
 
     it('should_create_with_defaults', () => {
-      const config: DailyBudgetConfig = new DailyBudgetConfig
+      const config: DailyBudgetConfig = new DailyBudgetConfig()
 
       expect(config.sodiumBudget).assertEqual(2000);
       expect(config.sugarBudget).assertEqual(50);
@@ -130,7 +130,7 @@ export default function familyProfileTest() {
     });
 
     it('should_serialize_to_json', () => {
-      const config: DailyBudgetConfig = new DailyBudgetConfig
+      const config: DailyBudgetConfig = new DailyBudgetConfig()
       config.sodiumBudget = 1500;
       config.sugarBudget = 30;
       config.calorieBudget = 1800;

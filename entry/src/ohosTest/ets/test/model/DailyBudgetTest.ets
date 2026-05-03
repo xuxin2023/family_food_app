@@ -1,9 +1,9 @@
 // DailyBudget 单元测试 - 今日预算模型
 import { describe, it, expect } from '@ohos/hypium';
-import { DailyBudget } from '../../../../src/main/ets/model/DailyBudget';
+import { DailyBudget } from '../../../../../src/main/ets/model/DailyBudget';
 
 function createDefaultBudget(): DailyBudget {
-  const budget: DailyBudget = new DailyBudget()
+  const budget: DailyBudget = new DailyBudget()()
   budget.memberId = 'member_1';
   budget.date = '2025-12-15';
   budget.sodiumBudget = 2000;
@@ -38,7 +38,7 @@ function createBudget(sodiumBudget: number, sodiumRemaining: number,
 export default function dailyBudgetTest() {
   describe('DailyBudget', () => {
 
-    // ========== 使用率计�?==========
+    // ========== 使用率计�?==========
 
     it('should_calculate_sodium_usage_percent', () => {
       const budget: DailyBudget = createBudget(2000, 1500, 50, 50, 2000, 2000, 65, 65);
@@ -75,7 +75,7 @@ export default function dailyBudgetTest() {
       expect(budget.sodiumUsagePercent()).assertEqual(100);
     });
 
-    // ========== 预算耗尽检�?==========
+    // ========== 预算耗尽检�?==========
 
     it('should_detect_sodium_exhausted', () => {
       const budget: DailyBudget = createBudget(2000, 0, 50, 50, 2000, 2000, 65, 65);
@@ -97,7 +97,7 @@ export default function dailyBudgetTest() {
       expect(budget.isSodiumExhausted()).assertTrue();
     });
 
-    // ========== 扣减摄入�?==========
+    // ========== 扣减摄入�?==========
 
     it('should_deduct_intake_correctly', () => {
       const budget: DailyBudget = createDefaultBudget();
@@ -117,7 +117,7 @@ export default function dailyBudgetTest() {
       expect(budget.isSodiumExhausted()).assertTrue();
     });
 
-    // ========== JSON序列�?==========
+    // ========== JSON序列�?==========
 
     it('should_serialize_to_json', () => {
       const budget: DailyBudget = createDefaultBudget();
@@ -155,16 +155,16 @@ export default function dailyBudgetTest() {
       expect(budget.fatBudget).assertEqual(70);
     });
 
-    it('should_preserve_data_through_json_roundtrip', () => {
+    it('should_preserve_data_through_json_round_trip', () => {
       const original = createDefaultBudget();
-      original.memberId = 'roundtrip_test';
+      original.memberId = 'round_trip_test';
       original.date = '2025-12-25';
       original.sodiumRemaining = 777;
 
       const json = original.toJson() as Record<string, Object>;
       const restored = DailyBudget.fromJson(json);
 
-      expect(restored.memberId).assertEqual('roundtrip_test');
+      expect(restored.memberId).assertEqual('round_trip_test');
       expect(restored.date).assertEqual('2025-12-25');
       expect(restored.sodiumRemaining).assertEqual(777);
     });

@@ -1,7 +1,7 @@
 // WeeklyReportEngine 单元测试 - 家庭饮食周报
 import { describe, it, expect } from '@ohos/hypium';
-import { WeeklyReportEngine, WeeklyDietData, WeeklyReport } from '../../../../src/main/ets/engine/WeeklyReportEngine';
-import { FamilyProfile, AgeGroup, HealthGoal } from '../../../../src/main/ets/model/FamilyProfile';
+import { WeeklyReportEngine, WeeklyDietData, WeeklyReport } from '../../../../../src/main/ets/engine/WeeklyReportEngine';
+import { FamilyProfile, AgeGroup, HealthGoal } from '../../../../../src/main/ets/model/FamilyProfile';
 
 function createWeeklyDietData(): WeeklyDietData {
   return {
@@ -20,32 +20,32 @@ function createWeeklyDietData(): WeeklyDietData {
 }
 
 function createWeeklyDietDataWithHighSodium(highSodiumDays: number): WeeklyDietData {
-  const d = createWeeklyDietData();
+  const d: WeeklyDietData = createWeeklyDietData();
   d.highSodiumDays = highSodiumDays;
   return d;
 }
 
 function createWeeklyDietDataWithHighSugar(highSugarDays: number): WeeklyDietData {
-  const d = createWeeklyDietData();
+  const d: WeeklyDietData = createWeeklyDietData();
   d.highSugarDays = highSugarDays;
   return d;
 }
 
 function createWeeklyDietDataForChild(sweetNearMealCount: number, childSnackOverLimit: number): WeeklyDietData {
-  const d = createWeeklyDietData();
+  const d: WeeklyDietData = createWeeklyDietData();
   d.sweetNearMealCount = sweetNearMealCount;
   d.childSnackOverLimit = childSnackOverLimit;
   return d;
 }
 
 function createWeeklyDietDataWithLateNight(lateNightSnackCount: number): WeeklyDietData {
-  const d = createWeeklyDietData();
+  const d: WeeklyDietData = createWeeklyDietData();
   d.lateNightSnackCount = lateNightSnackCount;
   return d;
 }
 
 function createWeeklyDietDataWithHeavyFlavor(heavyFlavorCount: number): WeeklyDietData {
-  const d = createWeeklyDietData();
+  const d: WeeklyDietData = createWeeklyDietData();
   d.heavyFlavorCount = heavyFlavorCount;
   return d;
 }
@@ -71,7 +71,7 @@ export default function weeklyReportEngineTest() {
 
     // ========== 1. 周报基本信息 ==========
 
-    it('should_set_basic_report_fields', () => {
+    it('should_set_basic_report_fields', 0, () => {
       const engine: WeeklyReportEngine = new WeeklyReportEngine();
       const data: WeeklyDietData = createWeeklyDietData();
       const profile: FamilyProfile = new FamilyProfile();
@@ -87,7 +87,7 @@ export default function weeklyReportEngineTest() {
 
     // ========== 2. 控压周报摘要 ==========
 
-    it('should_highlight_high_sodium_when_control_bp', () => {
+    it('should_highlight_high_sodium_when_control_bp', 0, () => {
       const engine: WeeklyReportEngine = new WeeklyReportEngine();
       const data: WeeklyDietData = createWeeklyDietDataWithHighSodium(5);
       const profile: FamilyProfile = new FamilyProfile();
@@ -98,12 +98,12 @@ export default function weeklyReportEngineTest() {
       const report: WeeklyReport = engine.generate(data, profile);
 
       expect(report.summary.includes('高盐')).assertTrue();
-      expect(report.summary.includes('5�?)).assertTrue();
+      expect(report.summary.includes('5')).assertTrue();
       expect(report.highlights.length).assertLargerThan(0);
       expect(report.highlights[0].includes('高盐')).assertTrue();
     });
 
-    it('should_praise_good_sodium_control', () => {
+    it('should_praise_good_sodium_control', 0, () => {
       const engine: WeeklyReportEngine = new WeeklyReportEngine();
       const data: WeeklyDietData = createWeeklyDietDataWithHighSodium(1);
       const profile: FamilyProfile = new FamilyProfile();
@@ -118,7 +118,7 @@ export default function weeklyReportEngineTest() {
 
     // ========== 3. 控糖周报摘要 ==========
 
-    it('should_highlight_high_sugar_when_control_sugar', () => {
+    it('should_highlight_high_sugar_when_control_sugar', 0, () => {
       const engine: WeeklyReportEngine = new WeeklyReportEngine();
       const data: WeeklyDietData = createWeeklyDietDataWithHighSugar(4);
       const profile: FamilyProfile = new FamilyProfile();
@@ -129,13 +129,13 @@ export default function weeklyReportEngineTest() {
       const report: WeeklyReport = engine.generate(data, profile);
 
       expect(report.summary.includes('高糖')).assertTrue();
-      expect(report.summary.includes('4�?)).assertTrue();
+      expect(report.summary.includes('4')).assertTrue();
       expect(report.highlights.length).assertLargerThan(0);
     });
 
     // ========== 4. 儿童周报 ==========
 
-    it('should_highlight_child_snack_issues', () => {
+    it('should_highlight_child_snack_issues', 0, () => {
       const engine: WeeklyReportEngine = new WeeklyReportEngine();
       const data: WeeklyDietData = createWeeklyDietDataForChild(3, 4);
       const profile: FamilyProfile = new FamilyProfile();
@@ -153,7 +153,7 @@ export default function weeklyReportEngineTest() {
 
     // ========== 5. 夜宵提醒 ==========
 
-    it('should_warn_about_late_night_snacks', () => {
+    it('should_warn_about_late_night_snacks', 0, () => {
       const engine: WeeklyReportEngine = new WeeklyReportEngine();
       const data: WeeklyDietData = createWeeklyDietDataWithLateNight(3);
       const profile: FamilyProfile = new FamilyProfile();
@@ -166,9 +166,9 @@ export default function weeklyReportEngineTest() {
       expect(report.suggestions.length).assertLargerThan(0);
     });
 
-    // ========== 6. 重口味提�?==========
+    // ========== 6. 重口味提醒 ==========
 
-    it('should_warn_about_heavy_flavor', () => {
+    it('should_warn_about_heavy_flavor', 0, () => {
       const engine: WeeklyReportEngine = new WeeklyReportEngine();
       const data: WeeklyDietData = createWeeklyDietDataWithHeavyFlavor(4);
       const profile: FamilyProfile = new FamilyProfile();
@@ -177,12 +177,12 @@ export default function weeklyReportEngineTest() {
 
       const report: WeeklyReport = engine.generate(data, profile);
 
-      expect(report.summary.includes('重口�?)).assertTrue();
+      expect(report.summary.includes('重口味')).assertTrue();
     });
 
     // ========== 7. 优秀周报 ==========
 
-    it('should_praise_good_week', () => {
+    it('should_praise_good_week', 0, () => {
       const engine: WeeklyReportEngine = new WeeklyReportEngine();
       const data: WeeklyDietData = createWeeklyDietDataGoodWeek();
       const profile: FamilyProfile = new FamilyProfile();
@@ -196,7 +196,7 @@ export default function weeklyReportEngineTest() {
 
     // ========== 8. 采购建议 ==========
 
-    it('should_recommend_buy_less_when_high_sodium', () => {
+    it('should_recommend_buy_less_when_high_sodium', 0, () => {
       const engine: WeeklyReportEngine = new WeeklyReportEngine();
       const data: WeeklyDietData = createWeeklyDietDataWithHighSodium(3);
       const profile: FamilyProfile = new FamilyProfile();
@@ -208,7 +208,7 @@ export default function weeklyReportEngineTest() {
       expect(report.buyMore.length).assertLargerThan(0);
     });
 
-    it('should_recommend_buy_less_when_high_sugar', () => {
+    it('should_recommend_buy_less_when_high_sugar', 0, () => {
       const engine: WeeklyReportEngine = new WeeklyReportEngine();
       const data: WeeklyDietData = createWeeklyDietDataWithHighSugar(3);
       const profile: FamilyProfile = new FamilyProfile();
@@ -220,7 +220,7 @@ export default function weeklyReportEngineTest() {
       expect(report.buyMore.length).assertLargerThan(0);
     });
 
-    it('should_provide_default_buy_more_when_no_issues', () => {
+    it('should_provide_default_buy_more_when_no_issues', 0, () => {
       const engine: WeeklyReportEngine = new WeeklyReportEngine();
       const data: WeeklyDietData = createWeeklyDietDataGoodWeek();
       const profile: FamilyProfile = new FamilyProfile();
@@ -236,7 +236,7 @@ export default function weeklyReportEngineTest() {
 
     // ========== 9. 健康目标建议 ==========
 
-    it('should_provide_control_bp_specific_suggestions', () => {
+    it('should_provide_control_bp_specific_suggestions', 0, () => {
       const engine: WeeklyReportEngine = new WeeklyReportEngine();
       const data: WeeklyDietData = createWeeklyDietDataWithHighSodium(3);
       const profile: FamilyProfile = new FamilyProfile();
@@ -245,12 +245,12 @@ export default function weeklyReportEngineTest() {
       const report: WeeklyReport = engine.generate(data, profile);
 
       const hasBpSuggestion: boolean = report.suggestions.some((s: string) =>
-        s.includes('�?) || s.includes('酱油') || s.includes('蚝油')
+        s.includes('盐') || s.includes('酱油') || s.includes('蚝油')
       );
       expect(hasBpSuggestion).assertTrue();
     });
 
-    it('should_provide_control_sugar_specific_suggestions', () => {
+    it('should_provide_control_sugar_specific_suggestions', 0, () => {
       const engine: WeeklyReportEngine = new WeeklyReportEngine();
       const data: WeeklyDietData = createWeeklyDietDataWithHighSugar(4);
       const profile: FamilyProfile = new FamilyProfile();
@@ -265,4 +265,3 @@ export default function weeklyReportEngineTest() {
     });
   });
 }
-

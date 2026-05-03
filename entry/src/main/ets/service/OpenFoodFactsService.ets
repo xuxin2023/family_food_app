@@ -8,6 +8,7 @@ import { http } from '@kit.NetworkKit';
 import { image } from '@kit.ImageKit';
 import { FoodNutrition } from '../model/FoodAdapterTypes';
 import { FoodLabel, NutritionPer100g, FoodSource } from '../model/FoodLabel';
+import { JsonObject } from '../model/JsonTypes';
 
 // ===== 常量定义 =====
 
@@ -470,8 +471,8 @@ export class OpenFoodFactsService {
   /**
    * 执行 HTTP GET 请求
    */
-  private async makeRequest(url: string): Promise<Record<string, Object> | null> {
-    return new Promise((resolve) => {
+  private async makeRequest(url: string): Promise<JsonObject | null> {
+    return new Promise<JsonObject | null>((resolve: (value: JsonObject | null) => void) => {
       try {
         const httpRequest = http.createHttp()
         httpRequest.request(url, {
@@ -511,8 +512,8 @@ export class OpenFoodFactsService {
   /**
    * 解析 API 原始产品数据为 OffProduct
    */
-  private parseOffProduct(barcode: string, raw: Record<string, Object>): OffProduct {
-    const nutrimentsRaw = raw['nutriments'] as Record<string, Object> ?? {}
+  private parseOffProduct(barcode: string, raw: JsonObject): OffProduct {
+    const nutrimentsRaw = raw['nutriments'] as Record<string, Object>[] ?? []
 
     const nutriments: OffNutriments = {
       energyKj: this.safeNumber(nutrimentsRaw['energy_100g'] ?? nutrimentsRaw['energy-kj_100g']),
@@ -606,7 +607,7 @@ export class OpenFoodFactsService {
   /**
    * 解析搜索结果的单个产品摘要
    */
-  private parseProductSummary(raw: Record<string, Object>): OffProductSummary | null {
+  private parseProductSummary(raw: JsonObject): OffProductSummary | null {
     const code = (raw['code'] as string) ?? ''
     if (code.length === 0) {
       return null
@@ -628,7 +629,7 @@ export class OpenFoodFactsService {
   /**
    * 安全地获取数值
    */
-  private safeNumber(value: Object | undefined): number {
+  private safeNumber(value: Object | null | undefined): number {
     if (value === undefined || value === null) {
       return 0
     }
@@ -645,7 +646,7 @@ export class OpenFoodFactsService {
   /**
    * 安全地获取整数
    */
-  private safeInt(value: Object | undefined): number {
+  private safeInt(value: Object | null | undefined): number {
     return Math.round(this.safeNumber(value))
   }
 }

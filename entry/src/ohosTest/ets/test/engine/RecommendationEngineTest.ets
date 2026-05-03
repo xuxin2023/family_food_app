@@ -1,14 +1,14 @@
 // RecommendationEngine 单元测试 - 适配计算引擎（高层封装）
 import { describe, it, expect } from '@ohos/hypium';
-import { RecommendationEngine } from '../../../../src/main/ets/engine/RecommendationEngine';
-import { FamilyProfile, AgeGroup, HealthGoal } from '../../../../src/main/ets/model/FamilyProfile';
-import { FoodLabel, NutritionPer100g } from '../../../../src/main/ets/model/FoodLabel';
-import { DailyBudget } from '../../../../src/main/ets/model/DailyBudget';
-import { HealthSignal, StepLevel, SleepStatus, WeightTrend } from '../../../../src/main/ets/model/HealthSignal';
-import { RecommendLevel, LevelColor } from '../../../../src/main/ets/model/Recommendation';
+import { RecommendationEngine } from '../../../../../src/main/ets/engine/RecommendationEngine';
+import { FamilyProfile, AgeGroup, HealthGoal } from '../../../../../src/main/ets/model/FamilyProfile';
+import { FoodLabel, NutritionPer100g } from '../../../../../src/main/ets/model/FoodLabel';
+import { DailyBudget } from '../../../../../src/main/ets/model/DailyBudget';
+import { HealthSignal, StepLevel, SleepStatus, WeightTrend } from '../../../../../src/main/ets/model/HealthSignal';
+import { RecommendLevel, LevelColor } from '../../../../../src/main/ets/model/Recommendation';
 
 function createRecProfile(): FamilyProfile {
-  const profile: FamilyProfile = new FamilyProfile
+  const profile: FamilyProfile = new FamilyProfile();
   profile.memberId = 'member_1';
   profile.nickname = '爸爸';
   profile.ageGroup = AgeGroup.ADULT;
@@ -18,11 +18,11 @@ function createRecProfile(): FamilyProfile {
 }
 
 function createRecFoodLabel(): FoodLabel {
-  const food: FoodLabel = new FoodLabel
+  const food: FoodLabel = new FoodLabel();
   food.foodId = 'food_001';
   food.foodName = '测试食品';
   food.barcode = '123456789';
-  food.ingredients = ['小麦�?, '�?, '�?];
+  food.ingredients = ['小麦粉', '盐', '糖'];
   food.nutrition = new NutritionPer100g();
   food.nutrition.sodium = 300;
   food.nutrition.sugar = 10;
@@ -35,7 +35,7 @@ function createRecFoodLabel(): FoodLabel {
 }
 
 function createRecHealthSignal(): HealthSignal {
-  const hs: HealthSignal = new HealthSignal
+  const hs: HealthSignal = new HealthSignal();
   hs.memberId = 'member_1';
   hs.stepLevel = StepLevel.NORMAL;
   hs.sleepStatus = SleepStatus.GOOD;
@@ -44,7 +44,7 @@ function createRecHealthSignal(): HealthSignal {
 }
 
 function createRecDailyBudget(): DailyBudget {
-  const budget: DailyBudget = new DailyBudget
+  const budget: DailyBudget = new DailyBudget();
   budget.memberId = 'member_1';
   budget.date = '2025-12-15';
   budget.sodiumBudget = 2000;
@@ -59,7 +59,7 @@ function createRecDailyBudget(): DailyBudget {
 }
 
 function createRecDailyBudgetZero(): DailyBudget {
-  const budget: SimpleDailyBudget = createRecDailyBudget();
+  const budget: DailyBudget = createRecDailyBudget();
   budget.sodiumRemaining = 0;
   budget.sugarRemaining = 0;
   budget.calorieRemaining = 0;
@@ -68,7 +68,7 @@ function createRecDailyBudgetZero(): DailyBudget {
 }
 
 function createRecDailyBudgetLowSodium(): DailyBudget {
-  const budget: SimpleDailyBudget = createRecDailyBudget();
+  const budget: DailyBudget = createRecDailyBudget();
   budget.sodiumRemaining = 100;
   return budget;
 }
@@ -78,29 +78,29 @@ export default function recommendationEngineTest() {
 
     // ========== 1. 单个成员基本适配 ==========
 
-    it('should_calculate_for_member', () => {
+    it('should_calculate_for_member', 0, () => {
       const engine: RecommendationEngine = new RecommendationEngine();
       const profile: FamilyProfile = createRecProfile();
       const food: FoodLabel = createRecFoodLabel();
       const signal: HealthSignal = createRecHealthSignal();
-      const budget: SimpleDailyBudget = createRecDailyBudget();
+      const budget: DailyBudget = createRecDailyBudget();
 
       const result = engine.calculateForMember(profile, signal, food, budget);
 
       expect(result.memberId).assertEqual('member_1');
       expect(result.foodId).assertEqual('food_001');
-      expect(result.maxAmount).assertLargerThanOrEqual(0);
+      expect(result.maxAmount).assertLargerOrEqual(0);
       expect(result.level !== null).assertTrue();
     });
 
-    it('should_return_avoid_when_allergen_detected', () => {
+    it('should_return_avoid_when_allergen_detected', 0, () => {
       const engine: RecommendationEngine = new RecommendationEngine();
       const profile: FamilyProfile = createRecProfile();
       profile.allergens = ['花生'];
       const food: FoodLabel = createRecFoodLabel();
-      food.ingredients = ['小麦�?, '花生�?, '�?]; // contain allergen
+      food.ingredients = ['小麦粉', '花生酱', '糖'];
       const signal: HealthSignal = createRecHealthSignal();
-      const budget: SimpleDailyBudget = createRecDailyBudget();
+      const budget: DailyBudget = createRecDailyBudget();
 
       const result = engine.calculateForMember(profile, signal, food, budget);
 
@@ -108,7 +108,7 @@ export default function recommendationEngineTest() {
       expect(result.maxAmount).assertEqual(0);
     });
 
-    it('should_return_suitable_for_low_nutrition_food', () => {
+    it('should_return_suitable_for_low_nutrition_food', 0, () => {
       const engine: RecommendationEngine = new RecommendationEngine();
       const profile: FamilyProfile = createRecProfile();
       const food: FoodLabel = createRecFoodLabel();
@@ -117,20 +117,20 @@ export default function recommendationEngineTest() {
       food.nutrition.calories = 80;
       food.nutrition.fat = 1;
       const signal: HealthSignal = createRecHealthSignal();
-      const budget: SimpleDailyBudget = createRecDailyBudget();
+      const budget: DailyBudget = createRecDailyBudget();
 
       const result = engine.calculateForMember(profile, signal, food, budget);
 
       expect(result.level).assertEqual(RecommendLevel.SUITABLE);
-      expect(result.maxAmount).assertLargerThan(50);
+      expect(result.maxAmount).assertLarger(50);
     });
 
     // ========== 2. 家庭对比 ==========
 
-    it('should_calculate_family_comparison', () => {
+    it('should_calculate_family_comparison', 0, () => {
       const engine: RecommendationEngine = new RecommendationEngine();
-      const profile1 = createRecProfile();
-      const profile2: FamilyProfile = new FamilyProfile
+      const profile1: FamilyProfile = createRecProfile();
+      const profile2: FamilyProfile = new FamilyProfile();
       profile2.memberId = 'member_2';
       profile2.nickname = '妈妈';
       profile2.ageGroup = AgeGroup.ADULT;
@@ -138,10 +138,10 @@ export default function recommendationEngineTest() {
       profile2.allergens = [];
 
       const food: FoodLabel = createRecFoodLabel();
-      const signal1 = createRecHealthSignal();
-      const signal2 = createRecHealthSignal();
-      const budget1 = createRecDailyBudget();
-      const budget2 = createRecDailyBudget();
+      const signal1: HealthSignal = createRecHealthSignal();
+      const signal2: HealthSignal = createRecHealthSignal();
+      const budget1: DailyBudget = createRecDailyBudget();
+      const budget2: DailyBudget = createRecDailyBudget();
 
       const results = engine.calculateFamilyComparison(
         [profile1, profile2],
@@ -157,10 +157,10 @@ export default function recommendationEngineTest() {
 
     // ========== 3. 家庭摘要 ==========
 
-    it('should_generate_family_summary_text', () => {
+    it('should_generate_family_summary_text', 0, () => {
       const engine: RecommendationEngine = new RecommendationEngine();
-      const profile1 = createRecProfile();
-      const profile2: FamilyProfile = new FamilyProfile
+      const profile1: FamilyProfile = createRecProfile();
+      const profile2: FamilyProfile = new FamilyProfile();
       profile2.memberId = 'member_2';
       profile2.nickname = '妈妈';
       profile2.ageGroup = AgeGroup.ADULT;
@@ -168,10 +168,10 @@ export default function recommendationEngineTest() {
       profile2.allergens = [];
 
       const food: FoodLabel = createRecFoodLabel();
-      const signal1 = createRecHealthSignal();
-      const signal2 = createRecHealthSignal();
-      const budget1 = createRecDailyBudget();
-      const budget2 = createRecDailyBudget();
+      const signal1: HealthSignal = createRecHealthSignal();
+      const signal2: HealthSignal = createRecHealthSignal();
+      const budget1: DailyBudget = createRecDailyBudget();
+      const budget2: DailyBudget = createRecDailyBudget();
 
       const results = engine.calculateFamilyComparison(
         [profile1, profile2],
@@ -186,59 +186,58 @@ export default function recommendationEngineTest() {
       expect(summary.includes('妈妈')).assertTrue();
     });
 
-    // ========== 4. 各等级覆�?==========
+    // ========== 4. 各等级覆盖 ==========
 
-    it('should_return_avoid_for_zero_budget', () => {
+    it('should_return_avoid_for_zero_budget', 0, () => {
       const engine: RecommendationEngine = new RecommendationEngine();
       const profile: FamilyProfile = createRecProfile();
       const food: FoodLabel = createRecFoodLabel();
       const signal: HealthSignal = createRecHealthSignal();
-      const budget: SimpleDailyBudget = createRecDailyBudgetZero();
+      const budget: DailyBudget = createRecDailyBudgetZero();
 
       const result = engine.calculateForMember(profile, signal, food, budget);
 
       expect(result.level).assertEqual(RecommendLevel.AVOID);
     });
 
-    it('should_return_cautious_when_amount_very_low', () => {
+    it('should_return_cautious_when_amount_very_low', 0, () => {
       const engine: RecommendationEngine = new RecommendationEngine();
       const profile: FamilyProfile = createRecProfile();
       const food: FoodLabel = createRecFoodLabel();
-      food.nutrition.sodium = 3000; // high sodium
+      food.nutrition.sodium = 3000;
       const signal: HealthSignal = createRecHealthSignal();
-      const budget: SimpleDailyBudget = createRecDailyBudgetLowSodium();
+      const budget: DailyBudget = createRecDailyBudgetLowSodium();
 
       const result = engine.calculateForMember(profile, signal, food, budget);
 
       expect(result.level).assertEqual(RecommendLevel.AVOID);
     });
 
-    // ========== 5. 动态修正因�?==========
+    // ========== 5. 动态修正因子 ==========
 
-    it('should_apply_low_activity_modifier', () => {
+    it('should_apply_low_activity_modifier', 0, () => {
       const engine: RecommendationEngine = new RecommendationEngine();
       const profile: FamilyProfile = createRecProfile();
       const food: FoodLabel = createRecFoodLabel();
-      food.nutrition.calories = 450; // high calorie
+      food.nutrition.calories = 450;
       const signal: HealthSignal = createRecHealthSignal();
       signal.stepLevel = StepLevel.LOW;
-      const budget: SimpleDailyBudget = createRecDailyBudget();
+      const budget: DailyBudget = createRecDailyBudget();
 
       const result = engine.calculateForMember(profile, signal, food, budget);
 
-      // 应该有活动量相关的提�?
-      const hasActivityReminder = result.reminders.some((r: string) => r.includes('活动�?));
+      const hasActivityReminder = result.reminders.some((r: string) => r.includes('活动'));
       expect(hasActivityReminder).assertTrue();
     });
 
-    it('should_apply_poor_sleep_modifier', () => {
+    it('should_apply_poor_sleep_modifier', 0, () => {
       const engine: RecommendationEngine = new RecommendationEngine();
       const profile: FamilyProfile = createRecProfile();
       const food: FoodLabel = createRecFoodLabel();
-      food.nutrition.sugar = 20; // high sugar
+      food.nutrition.sugar = 20;
       const signal: HealthSignal = createRecHealthSignal();
       signal.sleepStatus = SleepStatus.POOR;
-      const budget: SimpleDailyBudget = createRecDailyBudget();
+      const budget: DailyBudget = createRecDailyBudget();
 
       const result = engine.calculateForMember(profile, signal, food, budget);
 
@@ -247,4 +246,3 @@ export default function recommendationEngineTest() {
     });
   });
 }
-

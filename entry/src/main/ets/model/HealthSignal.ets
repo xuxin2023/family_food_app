@@ -1,5 +1,3 @@
-// 健康信号数据模型
-
 export enum StepLevel {
   LOW = '低',
   NORMAL = '正常',

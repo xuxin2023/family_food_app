@@ -17,7 +17,7 @@ import { ShareCardGenerator, MemberShareInfo, ShareImageParams } from '../compon
 import { ChildProtectionEngine } from '../engine/ChildProtectionEngine';
 import { PaywallTrigger, MemberTier, getTierDisplayName } from '../model/MemberStatus';
 import { PaywallDialog } from '../components/PaywallDialog';
-import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
+import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON } from '../constants/AppTheme';
 
 // ===== 页面级别类型 =====
 
@@ -175,7 +175,7 @@ struct ReportPage {
           .fontColor(COLORS.TEXT_PRIMARY)
       }
       .width(40)
-      .height(40)
+      .height(BUTTON.HEIGHT_SMALL)
       .justifyContent(FlexAlign.Center)
       .alignItems(VerticalAlign.Center)
       .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
@@ -201,14 +201,14 @@ struct ReportPage {
           .fontSize(FONT_SIZE.XL)
       }
       .width(40)
-      .height(40)
+      .height(BUTTON.HEIGHT_SMALL)
       .justifyContent(FlexAlign.Center)
       .alignItems(VerticalAlign.Center)
       .onClick(() => { this.handleSaveImage() })
       .margin({ right: 4 })
     }
     .width('100%')
-    .height(56)
+    .height(BUTTON.HEIGHT_LG)
     .padding({ left: 8, right: 8 })
     .backgroundColor(COLORS.WHITE)
   }
@@ -958,7 +958,7 @@ struct ReportPage {
           .width(40).height(20).backgroundColor('#E0E0E0').borderRadius(4)
       }
       .width('100%')
-      .height(56)
+      .height(BUTTON.HEIGHT_LG)
       .padding({ left: 16, right: 16 })
 
       // 主体占位

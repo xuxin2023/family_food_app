@@ -31,7 +31,7 @@ import { SubscriptionTier } from '../model/PricingModel';
 import { PaywallTrigger, MemberTier } from '../model/MemberStatus';
 import { NutriScoreBadge } from '../components/NutriScoreBadge';
 import { PaywallDialog } from '../components/PaywallDialog';
-import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
+import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON } from '../constants/AppTheme';
 
 /** 自动扫码超时时间（毫秒） */
 const AUTO_SCAN_TIMEOUT_MS = 8000;
@@ -407,16 +407,16 @@ struct ScanPage {
                 .width('90%')
                 .height(52)
                 .backgroundColor(COLORS.PRIMARY)
-                .borderRadius(26)
+                .borderRadius(BUTTON.RADIUS_PRIMARY)
                 .onClick(() => { this.startRecognition() })
                 .animation({ duration: 200, curve: curves.springMotion() })
 
               Button('手动录入')
                 .width('90%')
-                .height(48)
+                .height(BUTTON.HEIGHT_MD)
                 .backgroundColor(COLORS.BG_CARD)
                 .fontColor(COLORS.PRIMARY)
-                .borderRadius(24)
+                .borderRadius(BUTTON.RADIUS_MD)
                 .margin({ top: 10 })
                 .onClick(() => { this.startManualEntry() })
                 .animation({ duration: 200, curve: curves.springMotion() })
@@ -425,17 +425,17 @@ struct ScanPage {
                 .width('90%')
                 .height(52)
                 .backgroundColor(COLORS.ACCENT_GREEN)
-                .borderRadius(26)
+                .borderRadius(BUTTON.RADIUS_PRIMARY)
                 .onClick(() => { this.viewReport() })
                 .animation({ duration: 300, curve: curves.springMotion() })
 
               Row() {
                 Button(this.showEditPanel ? '收起修正面板' : '手动修正')
                   .layoutWeight(1)
-                  .height(46)
+                  .height(BUTTON.HEIGHT_SECONDARY)
                   .backgroundColor(COLORS.BG_CARD)
                   .fontColor(COLORS.PRIMARY)
-                  .borderRadius(23)
+                  .borderRadius(BUTTON.RADIUS_SECONDARY)
                   .onClick(() => {
                     this.showEditPanel = !this.showEditPanel
                     if (this.showEditPanel) {
@@ -446,10 +446,10 @@ struct ScanPage {
 
                 Button('保存 FoodLabel')
                   .layoutWeight(1)
-                  .height(46)
+                  .height(BUTTON.HEIGHT_SECONDARY)
                   .backgroundColor('#FFF3E0')
                   .fontColor('#EF6C00')
-                  .borderRadius(23)
+                  .borderRadius(BUTTON.RADIUS_SECONDARY)
                   .margin({ left: 10 })
                   .onClick(() => { this.saveDraft() })
                   .animation({ duration: 200, curve: curves.springMotion() })
@@ -498,7 +498,7 @@ struct ScanPage {
       Text('拍标签')
         .fontSize(15)
         .padding({ left: 20, right: 20, top: 8, bottom: 8 })
-        .borderRadius(20)
+        .borderRadius(BUTTON.RADIUS_SMALL)
         .backgroundColor(this.scanMode === 'camera' ? COLORS.PRIMARY : COLORS.WHITE)
         .fontColor(this.scanMode === 'camera' ? COLORS.WHITE : '#212121')
         .onClick(() => {
@@ -512,7 +512,7 @@ struct ScanPage {
       Text('扫码')
         .fontSize(15)
         .padding({ left: 20, right: 20, top: 8, bottom: 8 })
-        .borderRadius(20)
+        .borderRadius(BUTTON.RADIUS_SMALL)
         .backgroundColor(this.scanMode === 'barcode' ? COLORS.PRIMARY : COLORS.WHITE)
         .fontColor(this.scanMode === 'barcode' ? COLORS.WHITE : '#212121')
         .margin({ left: 10 })
@@ -545,7 +545,7 @@ struct ScanPage {
                 .textAlign(TextAlign.Center)
             }
             .width(72)
-            .height(48)
+            .height(BUTTON.HEIGHT_MD)
             .padding(SPACING.XS)
             .backgroundColor(COLORS.BG_CARD_HIGHLIGHT)
             .borderRadius(RADIUS.SM)
@@ -575,7 +575,7 @@ struct ScanPage {
           Column() {
             LoadingProgress()
               .width(48)
-              .height(48)
+              .height(BUTTON.HEIGHT_MD)
               .color(COLORS.ACCENT_BLUE)
             Text('正在扫描条码…')
               .fontSize(FONT_SIZE.BODY)
@@ -870,7 +870,7 @@ struct ScanPage {
         .margin({ bottom: 6 })
       TextInput({ text: value, placeholder })
         .width('100%')
-        .height(44)
+        .height(BUTTON.HEIGHT_SECONDARY)
         .padding({ left: 12, right: 12 })
         .backgroundColor('#F7F8FA')
         .borderRadius(12)

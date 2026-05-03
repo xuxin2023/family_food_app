@@ -11,7 +11,7 @@ import { SubscriptionTier } from '../model/PricingModel';
 import { MilestoneService, Milestone } from '../service/MilestoneService';
 import { OnlineShoppingParser } from '../service/OnlineShoppingParser';
 import { DailyBudget } from '../model/DailyBudget';
-import { COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT } from '../constants/AppTheme';
+import { COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, BUTTON } from '../constants/AppTheme';
 
 export class StatusResult {
   text: string = ''
@@ -192,8 +192,8 @@ struct HomePage {
           }
         }
         .width('45%')
-        .height(44)
-        .borderRadius(22)
+        .height(BUTTON.HEIGHT_SECONDARY)
+        .borderRadius(BUTTON.RADIUS_SECONDARY)
         .backgroundColor('#1976D2')
         .onClick(() => {
           try {
@@ -210,8 +210,8 @@ struct HomePage {
           }
         }
         .width('45%')
-        .height(44)
-        .borderRadius(22)
+        .height(BUTTON.HEIGHT_SECONDARY)
+        .borderRadius(BUTTON.RADIUS_SECONDARY)
         .backgroundColor('#7B1FA2')
         .onClick(() => {
           this.showLinkInput = true
@@ -290,9 +290,9 @@ struct HomePage {
           }
         }
         .width('90%')
-        .height(48)
+        .height(BUTTON.HEIGHT_MD)
         .backgroundColor('#7B1FA2')
-        .borderRadius(24)
+        .borderRadius(BUTTON.RADIUS_MD)
         .margin({ bottom: 10 })
         .onClick(() => { this.openLinkInput() })
         Button() {
@@ -302,9 +302,9 @@ struct HomePage {
           }
         }
         .width('90%')
-        .height(56)
+        .height(BUTTON.HEIGHT_LG)
         .backgroundColor('#1976D2')
-        .borderRadius(28)
+        .borderRadius(BUTTON.RADIUS_LG)
         .margin({ bottom: 12 })
         .onClick(() => {
           try {
@@ -324,9 +324,9 @@ struct HomePage {
           }
         }
         .width('90%')
-        .height(56)
+        .height(BUTTON.HEIGHT_LG)
         .backgroundColor('#E3F2FD')
-        .borderRadius(28)
+        .borderRadius(BUTTON.RADIUS_LG)
         .margin({ bottom: 12 })
         .onClick(() => {
           try {
@@ -347,9 +347,9 @@ struct HomePage {
             }
           }
           .width('90%')
-          .height(48)
+          .height(BUTTON.HEIGHT_MD)
           .backgroundColor('#FFF3E0')
-          .borderRadius(24)
+          .borderRadius(BUTTON.RADIUS_MD)
           .margin({ bottom: 12 })
           .onClick(() => {
             try {
@@ -368,9 +368,9 @@ struct HomePage {
           }
         }
         .width('90%')
-        .height(48)
+        .height(BUTTON.HEIGHT_MD)
         .backgroundColor('#F3E5F5')
-        .borderRadius(24)
+        .borderRadius(BUTTON.RADIUS_MD)
         .margin({ bottom: 12 })
         .onClick(() => {
           try {
@@ -432,7 +432,7 @@ struct HomePage {
 
           TextInput({ placeholder: '粘贴京东/淘宝/天猫商品链接...', text: this.linkInputText })
             .width('100%')
-            .height(44)
+            .height(BUTTON.HEIGHT_SECONDARY)
             .borderRadius(8)
             .backgroundColor('#F5F5F5')
             .padding({ left: 12, right: 12 })
@@ -442,8 +442,8 @@ struct HomePage {
           Row({ space: 12 }) {
             Button('取消')
               .width('45%')
-              .height(44)
-              .borderRadius(22)
+              .height(BUTTON.HEIGHT_SECONDARY)
+              .borderRadius(BUTTON.RADIUS_SECONDARY)
               .backgroundColor('#E0E0E0')
               .fontColor('#666666')
               .onClick(() => {
@@ -462,8 +462,8 @@ struct HomePage {
               }
             }
             .width('45%')
-            .height(44)
-            .borderRadius(22)
+            .height(BUTTON.HEIGHT_SECONDARY)
+            .borderRadius(BUTTON.RADIUS_SECONDARY)
             .backgroundColor('#7B1FA2')
             .enabled(!this.isParsingLink)
             .onClick(() => { this.handleParseLink(this.linkInputText) })

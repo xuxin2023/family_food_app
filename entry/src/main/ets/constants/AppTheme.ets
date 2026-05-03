@@ -48,6 +48,30 @@ export class SPACING {
   static readonly XXL: number = 32;
 }
 
+// ===== 按钮尺寸统一常量 =====
+export class BUTTON {
+  /** 大按钮高度（拍食品标签、记录美食等核心操作） */
+  static readonly HEIGHT_LG: number = 56;
+  /** 中按钮高度（购物篮检查等次要操作） */
+  static readonly HEIGHT_MD: number = 48;
+  /** 主按钮高度（扫码、查看报告等核心操作） */
+  static readonly HEIGHT_PRIMARY: number = 48;
+  /** 次按钮高度（手动录入、保存草稿等次要操作） */
+  static readonly HEIGHT_SECONDARY: number = 44;
+  /** 小型按钮高度（底部导航链接等） */
+  static readonly HEIGHT_SMALL: number = 36;
+  /** 大按钮圆角 */
+  static readonly RADIUS_LG: number = 28;
+  /** 中按钮圆角 */
+  static readonly RADIUS_MD: number = 24;
+  /** 主按钮圆角 */
+  static readonly RADIUS_PRIMARY: number = 24;
+  /** 次按钮圆角 */
+  static readonly RADIUS_SECONDARY: number = 22;
+  /** 小型按钮圆角 */
+  static readonly RADIUS_SMALL: number = 18;
+}
+
 export class FONT_SIZE {
   static readonly TINY: number = 10;
   static readonly SMALL: number = 12;

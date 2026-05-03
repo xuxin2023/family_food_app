@@ -7,6 +7,7 @@ import { AppState } from '../AppState';
 import { DateUtil } from '../utils/DateUtil';
 import { PaywallTrigger, MemberTier, getTierDisplayName } from '../model/MemberStatus';
 import { PaywallDialog } from '../components/PaywallDialog';
+import { BUTTON } from '../constants/AppTheme';
 
 // AgeGroup 枚举值数组
 const AGE_GROUP_VALUES: AgeGroup[] = [AgeGroup.CHILD, AgeGroup.TEEN, AgeGroup.ADULT, AgeGroup.MIDDLE_OLD, AgeGroup.OLD];
@@ -74,7 +75,7 @@ struct MemberEditPage {
             Text('昵称').fontSize(14).fontColor('#757575').margin({ bottom: 8 })
             TextInput({ placeholder: '如：爸爸、妈妈、孩子' })
               .width('100%')
-              .height(48)
+              .height(BUTTON.HEIGHT_MD)
               .borderRadius(12)
               .backgroundColor('#FFFFFF')
               .onChange((value: string) => { this.nickname = value })
@@ -91,7 +92,7 @@ struct MemberEditPage {
               Text(group)
                 .fontSize(14)
                 .padding({ left: 16, right: 16, top: 8, bottom: 8 })
-                .borderRadius(20)
+                .borderRadius(BUTTON.RADIUS_SMALL)
                 .backgroundColor(this.selectedAgeGroup === index ? '#1976D2' : '#F5F5F5')
                 .fontColor(this.selectedAgeGroup === index ? '#FFFFFF' : '#212121')
                 .margin({ right: 8, bottom: 8 })
@@ -111,7 +112,7 @@ struct MemberEditPage {
               Text(goal)
                 .fontSize(14)
                 .padding({ left: 16, right: 16, top: 8, bottom: 8 })
-                .borderRadius(20)
+                .borderRadius(BUTTON.RADIUS_SMALL)
                 .backgroundColor(this.selectedGoals[index] ? '#1976D2' : '#F5F5F5')
                 .fontColor(this.selectedGoals[index] ? '#FFFFFF' : '#212121')
                 .margin({ right: 8, bottom: 8 })
@@ -145,7 +146,7 @@ struct MemberEditPage {
           // 自定义过敏原输入
           TextInput({ placeholder: '自定义过敏原' })
             .width('100%')
-            .height(40)
+            .height(BUTTON.HEIGHT_SMALL)
             .borderRadius(8)
             .backgroundColor('#FFFFFF')
             .margin({ top: 8 })
@@ -232,9 +233,9 @@ struct MemberEditPage {
         // 保存按钮
         Button('保存')
           .width('90%')
-          .height(48)
+          .height(BUTTON.HEIGHT_MD)
           .backgroundColor('#1976D2')
-          .borderRadius(24)
+          .borderRadius(BUTTON.RADIUS_MD)
           .margin({ top: 16, bottom: 32 })
           .onClick(() => {
             this.saveMember()

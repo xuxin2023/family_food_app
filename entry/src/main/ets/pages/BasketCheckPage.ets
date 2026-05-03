@@ -6,6 +6,7 @@ import { BasketCheckResult } from '../engine/BasketCheckEngine';
 import { AppState } from '../AppState';
 import { PaywallTrigger, MemberTier } from '../model/MemberStatus';
 import { PaywallDialog } from '../components/PaywallDialog';
+import { BUTTON } from '../constants/AppTheme';
 
 @Entry
 @Component
@@ -134,9 +135,9 @@ struct BasketCheckPage {
           // 继续扫描按钮
           Button('继续扫描添加')
             .width('90%')
-            .height(48)
+            .height(BUTTON.HEIGHT_MD)
             .backgroundColor('#1976D2')
-            .borderRadius(24)
+            .borderRadius(BUTTON.RADIUS_MD)
             .margin({ top: 16, bottom: 32 })
             .onClick(() => {
               try {

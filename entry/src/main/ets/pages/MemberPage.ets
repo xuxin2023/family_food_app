@@ -2,6 +2,7 @@
 
 import { router } from '@kit.ArkUI';
 import { FamilyProfile } from '../model/FamilyProfile';
+import { BUTTON } from '../constants/AppTheme';
 
 @Entry
 @Component
@@ -38,7 +39,7 @@ struct MemberPage {
             Text('+ 添加家庭成员').fontSize(16).fontColor('#1976D2')
           }
           .width('100%')
-          .height(56)
+          .height(BUTTON.HEIGHT_LG)
           .justifyContent(FlexAlign.Center)
           .backgroundColor('#E3F2FD')
           .borderRadius(12)

@@ -5,6 +5,7 @@ import { ShareCard } from '../components/ShareCard';
 import { ShareService } from '../service/ShareService';
 import { AppState } from '../AppState';
 import { ShareActionResult } from '../service/share/ShareProvider';
+import { BUTTON } from '../constants/AppTheme';
 
 @Entry
 @Component
@@ -86,18 +87,18 @@ struct SharePage {
           Row() {
             Button('刷新文案')
               .layoutWeight(1)
-              .height(44)
+              .height(BUTTON.HEIGHT_SECONDARY)
               .backgroundColor('#E3F2FD')
               .fontColor('#1976D2')
-              .borderRadius(22)
+              .borderRadius(BUTTON.RADIUS_SECONDARY)
               .onClick(() => { this.refreshShareText() })
 
             Button('复制说明')
               .layoutWeight(1)
-              .height(44)
+              .height(BUTTON.HEIGHT_SECONDARY)
               .backgroundColor('#F5F5F5')
               .fontColor('#616161')
-              .borderRadius(22)
+              .borderRadius(BUTTON.RADIUS_SECONDARY)
               .margin({ left: 10 })
               .onClick(() => {
                 promptAction.showToast({ message: this.copyHint })
@@ -127,18 +128,18 @@ struct SharePage {
           Row() {
             Button('系统分享')
               .layoutWeight(1)
-              .height(44)
+              .height(BUTTON.HEIGHT_SECONDARY)
               .backgroundColor('#EEEEEE')
               .fontColor('#616161')
-              .borderRadius(22)
+              .borderRadius(BUTTON.RADIUS_SECONDARY)
               .onClick(() => { this.handleUnsupportedAction('family') })
 
             Button('微信分享')
               .layoutWeight(1)
-              .height(44)
+              .height(BUTTON.HEIGHT_SECONDARY)
               .backgroundColor('#EEEEEE')
               .fontColor('#616161')
-              .borderRadius(22)
+              .borderRadius(BUTTON.RADIUS_SECONDARY)
               .margin({ left: 10 })
               .onClick(() => { this.handleUnsupportedAction('wechat') })
           }
@@ -146,10 +147,10 @@ struct SharePage {
 
           Button('保存图片 / 相册')
             .width('100%')
-            .height(44)
+            .height(BUTTON.HEIGHT_SECONDARY)
             .backgroundColor('#EEEEEE')
             .fontColor('#616161')
-            .borderRadius(22)
+            .borderRadius(BUTTON.RADIUS_SECONDARY)
             .margin({ top: 10 })
             .onClick(() => { this.handleUnsupportedAction('image') })
         }

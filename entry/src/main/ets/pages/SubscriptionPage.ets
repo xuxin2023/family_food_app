@@ -6,7 +6,7 @@ import { AppState } from '../AppState';
 import { SubscriptionTier, PRICING_PLANS } from '../model/PricingModel';
 import { IapService, PurchaseRecord } from '../service/IapService';
 import { PurchaseResult, MemberTier } from '../model/MemberStatus';
-import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
+import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON } from '../constants/AppTheme';
 
 // 本地方案数据（不含免费版，仅展示付费方案）
 interface PlanDisplay {
@@ -226,7 +226,7 @@ struct SubscriptionPage {
       if (this.currentTier !== plan.tier) {
         Button((this.isPurchasing && this.selectedPlanIndex === plan.index) ? '处理中...' : '立即订阅')
           .width('100%')
-          .height(44)
+          .height(BUTTON.HEIGHT_SECONDARY)
           .backgroundColor(plan.index === 1 ? '#FF5722' : COLORS.PRIMARY)
           .fontColor(COLORS.TEXT_WHITE)
           .borderRadius(RADIUS.XXL)

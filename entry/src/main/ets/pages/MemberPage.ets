@@ -17,7 +17,7 @@ struct MemberPage {
       // 顶部导航
       Row() {
         Text('←').fontSize(24).fontColor('#1976D2')
-          .onClick(() => { router.back() })
+          .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
         Text('家庭成员管理').fontSize(20).fontWeight(FontWeight.Bold)
           .margin({ left: 16 })
       }
@@ -44,7 +44,13 @@ struct MemberPage {
           .borderRadius(12)
           .margin({ top: 8 })
           .onClick(() => {
-            router.pushUrl({ url: 'pages/MemberEditPage' })
+            try {
+
+              router.pushUrl({ url: 'pages/MemberEditPage' })
+
+            } catch (_e) {
+              // ignore router.pushUrl error
+            }
           })
         }
       }
@@ -75,10 +81,14 @@ struct MemberPage {
     .borderRadius(12)
     .margin({ top: 8 })
     .onClick(() => {
+      try {
       router.pushUrl({
         url: 'pages/MemberEditPage',
         params: { memberId: member.memberId }
       })
+      } catch (_e) {
+        // ignore router.pushUrl error
+      }
     })
   }
 }

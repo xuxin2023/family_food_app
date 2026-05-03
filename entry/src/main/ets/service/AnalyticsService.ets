@@ -394,7 +394,11 @@ export class AnalyticsService {
   async destroy(): Promise<void> {
     // 停止定时器
     if (this.flushTimerId !== -1) {
-      clearTimeout(this.flushTimerId);
+      try {
+        clearTimeout(this.flushTimerId);
+      } catch (_e) {
+        // ignore clearTimeout error
+      }
       this.flushTimerId = -1;
     }
     // 刷出剩余队列
@@ -441,7 +445,11 @@ export class AnalyticsService {
    */
   private startFlushTimer(): void {
     if (this.flushTimerId !== -1) {
-      clearTimeout(this.flushTimerId);
+      try {
+        clearTimeout(this.flushTimerId);
+      } catch (_e) {
+        // ignore clearTimeout error
+      }
     }
     this.flushTimerId = setInterval(() => {
       this.flush();

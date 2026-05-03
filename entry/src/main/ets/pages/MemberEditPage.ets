@@ -62,7 +62,7 @@ struct MemberEditPage {
           // 顶部导航
           Row() {
             Text('←').fontSize(24).fontColor('#1976D2')
-              .onClick(() => { router.back() })
+              .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
             Text('编辑成员').fontSize(20).fontWeight(FontWeight.Bold)
               .margin({ left: 16 })
           }
@@ -344,6 +344,14 @@ struct MemberEditPage {
     signal.manualBsStatus = [BsStatus.NORMAL, BsStatus.ELEVATED, BsStatus.HIGH][this.bsStatusIndex]
     this.appState.updateHealthSignal(signal)
 
-    router.back()
+    try {
+
+      router.back()
+
+    } catch (_e) {
+
+      // ignore router.back() error
+
+    }
   }
 }

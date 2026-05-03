@@ -42,7 +42,7 @@ struct SharePage {
           Text('<')
             .fontSize(24)
             .fontColor('#1976D2')
-            .onClick(() => { router.back() })
+            .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
           Text('分享文案')
             .fontSize(20)
             .fontWeight(FontWeight.Bold)

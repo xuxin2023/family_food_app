@@ -113,7 +113,13 @@ export struct PaywallDialog {
               .onClick(() => {
                 this.showDialog = false;
                 // 跳转到订阅页面
-                router.pushUrl({ url: 'pages/SubscriptionPage' });
+                try {
+
+                  router.pushUrl({ url: 'pages/SubscriptionPage' })
+
+                } catch (_e) {
+                  // ignore router.pushUrl error
+                };
               })
 
             // 次按钮：暂不升级（仅在软限制时显示）

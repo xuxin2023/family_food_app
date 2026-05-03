@@ -178,7 +178,7 @@ struct ReportPage {
       .height(40)
       .justifyContent(FlexAlign.Center)
       .alignItems(VerticalAlign.Center)
-      .onClick(() => { router.back() })
+      .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
       .margin({ left: 4 })
 
       Blank()

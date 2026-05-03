@@ -43,7 +43,7 @@ struct BasketCheckPage {
           // 顶部导航
           Row() {
             Text('←').fontSize(24).fontColor('#1976D2')
-              .onClick(() => { router.back() })
+              .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
             Text('购物篮检查').fontSize(20).fontWeight(FontWeight.Bold)
               .margin({ left: 16 })
           }
@@ -139,7 +139,19 @@ struct BasketCheckPage {
             .borderRadius(24)
             .margin({ top: 16, bottom: 32 })
             .onClick(() => {
-              router.pushUrl({ url: 'pages/ScanPage' })
+              try {
+
+                router.pushUrl({ url: 'pages/ScanPage' })
+
+              } catch (_e) {
+
+                try {
+                // ignore router.pushUrl error
+                } catch (_e) {
+                  // ignore router.pushUrl error
+                }
+
+              }
             })
         }
         .width('100%')

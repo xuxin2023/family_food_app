@@ -45,7 +45,7 @@ struct SubscriptionPage {
           Text('←')
             .fontSize(FONT_SIZE.LARGE)
             .fontColor(COLORS.PRIMARY)
-            .onClick(() => { router.back() })
+            .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
           Text('选择会员方案')
             .fontSize(FONT_SIZE.TITLE_LG)
             .fontWeight(FONT_WEIGHT.BOLD)
@@ -326,7 +326,13 @@ struct SubscriptionPage {
       }
       this.currentTier = plan.tier;
       promptAction.showToast({ message: '订阅成功！感谢支持 🎉' });
-      setTimeout(() => { router.back(); }, 1500);
+      setTimeout(() => {
+        try {
+          router.back();
+        } catch (_e) {
+          // ignore router.back() error
+        }
+      }, 1500);
     } else {
       promptAction.showToast({ message: result.errorMessage });
     }

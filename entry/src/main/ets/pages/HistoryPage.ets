@@ -24,7 +24,7 @@ struct HistoryPage {
         Text('<')
           .fontSize(24)
           .fontColor('#1976D2')
-          .onClick(() => { router.back() })
+          .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
         Text('历史记录')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)

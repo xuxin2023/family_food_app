@@ -399,10 +399,18 @@ export class IapService {
         reject(new Error(timeoutMsg));
       }, timeoutMs);
       promise.then((result: iap.CreatePurchaseResult) => {
-        clearTimeout(timer);
+        try {
+          clearTimeout(timer);
+        } catch (_e) {
+          // ignore clearTimeout error
+        }
         resolve(result);
       }).catch((err: Error) => {
-        clearTimeout(timer);
+        try {
+          clearTimeout(timer);
+        } catch (_e) {
+          // ignore clearTimeout error
+        }
         reject(err);
       });
     });

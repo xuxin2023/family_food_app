@@ -79,7 +79,13 @@ export struct HotFoodGuideCard {
           .borderRadius(RADIUS.XXL)
           .fontSize(FONT_SIZE.BODY)
           .onClick(() => {
-            router.pushUrl({ url: 'pages/ScanPage' })
+            try {
+
+              router.pushUrl({ url: 'pages/ScanPage' })
+
+            } catch (_e) {
+              // ignore router.pushUrl error
+            }
           })
 
         Text('  或点击下方热门食品快速体验 →')
@@ -135,10 +141,14 @@ export struct HotFoodGuideCard {
     .margin({ right: SPACING.SM })
     .shadow({ radius: 4, color: COLORS.SHADOW_LIGHT, offsetX: 0, offsetY: 1 })
     .onClick(() => {
+      try {
       router.pushUrl({
         url: 'pages/ReportPage',
         params: { hotFoodName: item.foodName }
       })
+      } catch (_e) {
+        // ignore router.pushUrl error
+      }
     })
   }
 }

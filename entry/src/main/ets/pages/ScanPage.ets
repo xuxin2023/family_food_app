@@ -154,7 +154,11 @@ struct ScanPage {
     this.componentActive = false
     // 清理定时器，防止内存泄漏
     if (this.autoScanTimer !== -1) {
-      clearTimeout(this.autoScanTimer)
+      try {
+        clearTimeout(this.autoScanTimer)
+      } catch (_e) {
+        // ignore clearTimeout error
+      }
       this.autoScanTimer = -1
     }
   }
@@ -344,7 +348,13 @@ struct ScanPage {
             Text('<')
               .fontSize(24)
               .fontColor(COLORS.PRIMARY)
-              .onClick(() => { router.back() })
+              .onClick(() => {
+                try {
+                  router.back()
+                } catch (_e) {
+                  // ignore router error
+                }
+              })
             Text('识别食品标签')
               .fontSize(FONT_SIZE.TITLE)
               .fontWeight(FONT_WEIGHT.BOLD)
@@ -879,7 +889,11 @@ struct ScanPage {
   private async startRecognition() {
     // 清除自动超时定时器（以免超时提示在手动操作后出现）
     if (this.autoScanTimer >= 0) {
-      clearTimeout(this.autoScanTimer)
+      try {
+        clearTimeout(this.autoScanTimer)
+      } catch (_e) {
+        // ignore clearTimeout error
+      }
       this.autoScanTimer = -1
     }
 
@@ -1005,12 +1019,16 @@ struct ScanPage {
     if (!saved) {
       return
     }
-    router.pushUrl({
-      url: 'pages/ReportPage',
-      params: {
-        memberId: this.memberId,
-        foodId: this.foodLabel.foodId
-      }
-    })
+    try {
+      router.pushUrl({
+        url: 'pages/ReportPage',
+        params: {
+          memberId: this.memberId,
+          foodId: this.foodLabel.foodId
+        }
+      })
+    } catch (_e) {
+      // ignore router.pushUrl error
+    }
   }
 }

@@ -152,7 +152,11 @@ struct HomePage {
         .borderRadius(22)
         .backgroundColor('#1976D2')
         .onClick(() => {
-          router.pushUrl({ url: 'pages/ScanPage' })
+          try {
+            router.pushUrl({ url: 'pages/ScanPage' })
+          } catch (_e) {
+            // ignore router.pushUrl error
+          }
         })
 
         Button() {
@@ -215,10 +219,14 @@ struct HomePage {
           .alignItems(HorizontalAlign.Center)
           .border({ width: 1, color: '#E0E0E0', style: BorderStyle.Dashed, radius: 16 })
           .onClick(() => {
-            if (this.appState.canAddMember()) {
-              router.pushUrl({ url: 'pages/MemberEditPage' })
-            } else {
-              router.pushUrl({ url: 'pages/SettingsPage' })
+            try {
+              if (this.appState.canAddMember()) {
+                router.pushUrl({ url: 'pages/MemberEditPage' })
+              } else {
+                router.pushUrl({ url: 'pages/SettingsPage' })
+              }
+            } catch (_e) {
+              // ignore router.pushUrl error
             }
           })
         }
@@ -255,10 +263,14 @@ struct HomePage {
         .borderRadius(28)
         .margin({ bottom: 12 })
         .onClick(() => {
-          router.pushUrl({
-            url: 'pages/ScanPage',
-            params: { memberId: this.selectedMemberId }
-          })
+          try {
+            router.pushUrl({
+              url: 'pages/ScanPage',
+              params: { memberId: this.selectedMemberId }
+            })
+          } catch (_e) {
+            // ignore router.pushUrl error
+          }
         })
 
         Button() {
@@ -273,10 +285,14 @@ struct HomePage {
         .borderRadius(28)
         .margin({ bottom: 12 })
         .onClick(() => {
-          router.pushUrl({
-            url: 'pages/BalancePage',
-            params: { memberId: this.selectedMemberId }
-          })
+          try {
+            router.pushUrl({
+              url: 'pages/BalancePage',
+              params: { memberId: this.selectedMemberId }
+            })
+          } catch (_e) {
+            // ignore router.pushUrl error
+          }
         })
 
         if (this.appState.canAccess(SubscriptionTier.FAMILY_EARLY)) {
@@ -292,7 +308,11 @@ struct HomePage {
           .borderRadius(24)
           .margin({ bottom: 12 })
           .onClick(() => {
-            router.pushUrl({ url: 'pages/BasketCheckPage' })
+            try {
+              router.pushUrl({ url: 'pages/BasketCheckPage' })
+            } catch (_e) {
+              // ignore router.pushUrl error
+            }
           })
         }
 
@@ -309,20 +329,42 @@ struct HomePage {
         .borderRadius(24)
         .margin({ bottom: 12 })
         .onClick(() => {
-          router.pushUrl({ url: 'pages/SettingsPage' })
+          try {
+            router.pushUrl({ url: 'pages/SettingsPage' })
+          } catch (_e) {
+            // ignore router.pushUrl error
+          }
         })
 
         Row() {
           Text('历史').fontSize(13).fontColor('#757575')
-            .onClick(() => { router.pushUrl({ url: 'pages/HistoryPage' }) })
+            .onClick(() => {
+              try {
+                router.pushUrl({ url: 'pages/HistoryPage' })
+              } catch (_e) {
+                // ignore router.pushUrl error
+              }
+            })
           Text('  |  ').fontSize(13).fontColor('#E0E0E0')
           if (this.appState.canAccess(SubscriptionTier.FAMILY_EARLY)) {
             Text('周报').fontSize(13).fontColor('#757575')
-              .onClick(() => { router.pushUrl({ url: 'pages/WeeklyReportPage' }) })
+              .onClick(() => {
+                try {
+                  router.pushUrl({ url: 'pages/WeeklyReportPage' })
+                } catch (_e) {
+                  // ignore router.pushUrl error
+                }
+              })
             Text('  |  ').fontSize(13).fontColor('#E0E0E0')
           }
           Text('设置').fontSize(13).fontColor('#757575')
-            .onClick(() => { router.pushUrl({ url: 'pages/SettingsPage' }) })
+            .onClick(() => {
+              try {
+                router.pushUrl({ url: 'pages/SettingsPage' })
+              } catch (_e) {
+                // ignore router.pushUrl error
+              }
+            })
         }
         .margin({ bottom: 16 })
       }
@@ -418,7 +460,11 @@ struct HomePage {
           .fontSize(11)
           .fontColor('#007DFF')
           .onClick(() => {
-            router.pushUrl({ url: 'pages/SettingsPage' })
+            try {
+              router.pushUrl({ url: 'pages/SettingsPage' })
+            } catch (_e) {
+              // ignore router.pushUrl error
+            }
           })
       }
       .width('100%')

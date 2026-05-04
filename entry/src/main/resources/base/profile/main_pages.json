@@ -20,6 +20,7 @@
     "pages/GroupFeedPage",
     "pages/RecipeCommunityPage",
     "pages/RecipeDetailPage",
-    "pages/RecipeCreatePage"
+    "pages/RecipeCreatePage",
+    "pages/DashboardPage"
   ]
 }

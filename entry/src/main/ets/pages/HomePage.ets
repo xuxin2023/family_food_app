@@ -505,6 +505,16 @@ struct HomePage {
               }
             })
           Text('  |  ').fontSize(13).fontColor('#E0E0E0')
+          Text('仪表盘').fontSize(13).fontColor(COLORS.PRIMARY)
+            .fontWeight(500)
+            .onClick(() => {
+              try {
+                router.pushUrl({ url: 'pages/DashboardPage' })
+              } catch (_e) {
+                // ignore router.pushUrl error
+              }
+            })
+          Text('  |  ').fontSize(13).fontColor('#E0E0E0')
           if (this.appState.hasFamilyAccess()) {
             Text('周报').fontSize(13).fontColor(COLORS.TEXT_GRAY_7575)
               .onClick(() => {

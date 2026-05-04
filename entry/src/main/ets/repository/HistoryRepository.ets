@@ -22,6 +22,7 @@ export class DietRecord {
   memberId: string = '';
   date: string = '';
   scenario: string = '';
+  mealType: string = 'breakfast';   // breakfast | lunch | dinner | snack
   foodId: string = '';
   amountG: number = 0;
   sodiumIntake: number = 0;
@@ -47,6 +48,7 @@ export class DietRecordInput {
   memberId: string = '';
   date: string = '';
   scenario: string = '';
+  mealType: string = 'breakfast';   // breakfast | lunch | dinner | snack
   foodId: string = '';
   amountG: number = 0;
   sodiumIntake: number = 0;
@@ -89,6 +91,7 @@ export class HistoryRepository {
         member_id TEXT NOT NULL,
         date TEXT NOT NULL,
         scenario TEXT,
+        meal_type TEXT DEFAULT 'breakfast',
         food_id TEXT,
         amount_g REAL,
         sodium_intake REAL,
@@ -135,6 +138,7 @@ export class HistoryRepository {
       member_id: record.memberId,
       date: record.date,
       scenario: record.scenario,
+      meal_type: record.mealType,
       food_id: record.foodId,
       amount_g: record.amountG,
       sodium_intake: record.sodiumIntake,
@@ -223,6 +227,32 @@ export class HistoryRepository {
       return records;
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Query scan history by member failed: %{public}s', JSON.stringify(error));
+      return [];
+    }
+  }
+
+  /**
+   * 查询某成员某天的饮食记录（用于膳食日记）
+   */
+  async getDietRecordsByDate(memberId: string, date: string): Promise<DietRecord[]> {
+    if (!this.rdbStore) return [];
+
+    try {
+      const predicates = new relationalStore.RdbPredicates('diet_record');
+      predicates.equalTo('member_id', memberId);
+      predicates.equalTo('date', date);
+      predicates.orderByAsc('recorded_at');
+      const resultSet = await this.rdbStore.query(predicates);
+      const records: DietRecord[] = [];
+
+      while (resultSet.goToNextRow()) {
+        records.push(this.dietRecordFromResultSet(resultSet));
+      }
+
+      resultSet.close();
+      return records;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'Query diet records by date failed: %{public}s', JSON.stringify(error));
       return [];
     }
   }
@@ -323,6 +353,12 @@ export class HistoryRepository {
     record.memberId = resultSet.getString(resultSet.getColumnIndex('member_id'));
     record.date = resultSet.getString(resultSet.getColumnIndex('date'));
     record.scenario = resultSet.getString(resultSet.getColumnIndex('scenario'));
+    // 兼容旧数据：meal_type 可能为 null
+    let mealTypeCol = -1;
+    try { mealTypeCol = resultSet.getColumnIndex('meal_type'); } catch (_e) { /* ignore */ }
+    if (mealTypeCol >= 0) {
+      record.mealType = resultSet.getString(mealTypeCol);
+    }
     record.foodId = resultSet.getString(resultSet.getColumnIndex('food_id'));
     record.amountG = resultSet.getDouble(resultSet.getColumnIndex('amount_g'));
     record.sodiumIntake = resultSet.getDouble(resultSet.getColumnIndex('sodium_intake'));

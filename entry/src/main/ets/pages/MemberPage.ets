@@ -2,22 +2,33 @@
 
 import { router } from '@kit.ArkUI';
 import { FamilyProfile } from '../model/FamilyProfile';
-import { BUTTON } from '../constants/AppTheme';
+import { AppState } from '../AppState';
+import { BUTTON, COLORS } from '../constants/AppTheme';
 
 @Entry
 @Component
 struct MemberPage {
   @State members: FamilyProfile[] = []
 
-  aboutToAppear() {
-    // TODO: 从本地数据库加载
+  private appState: AppState = AppState.getInstance()
+
+  async aboutToAppear() {
+    await this.loadMembers();
+  }
+
+  async onPageShow() {
+    await this.loadMembers();
+  }
+
+  private async loadMembers() {
+    this.members = await this.appState.getAllMembers();
   }
 
   build() {
     Column() {
       // 顶部导航
       Row() {
-        Text('←').fontSize(24).fontColor('#1976D2')
+        Text('←').fontSize(24).fontColor(COLORS.PRIMARY)
           .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
         Text('家庭成员管理').fontSize(20).fontWeight(FontWeight.Bold)
           .margin({ left: 16 })
@@ -36,12 +47,12 @@ struct MemberPage {
         // 添加成员按钮
         ListItem() {
           Row() {
-            Text('+ 添加家庭成员').fontSize(16).fontColor('#1976D2')
+            Text('+ 添加家庭成员').fontSize(16).fontColor(COLORS.PRIMARY)
           }
           .width('100%')
           .height(BUTTON.HEIGHT_LG)
           .justifyContent(FlexAlign.Center)
-          .backgroundColor('#E3F2FD')
+          .backgroundColor(COLORS.BG_CARD_HIGHLIGHT)
           .borderRadius(12)
           .margin({ top: 8 })
           .onClick(() => {
@@ -74,7 +85,7 @@ struct MemberPage {
       .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)
 
-      Text('编辑').fontSize(14).fontColor('#1976D2')
+      Text('编辑').fontSize(14).fontColor(COLORS.PRIMARY)
     }
     .width('100%')
     .padding(16)

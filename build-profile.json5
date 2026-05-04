@@ -34,17 +34,18 @@
         "material": {
           "certpath": "C:\\Users\\xuxin\\.ohos\\config\\default_family_food_app_ddvUlaM2h_N2ULJfHL5g_Bde3CjUwoxK62ny2hV-Nvo=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001BAB7B0DFAA49D1D9A41C349D577325B39CA4DFD98B5880F36262D7C349F1A946D71BEF727945633",
+          "keyPassword": "0000001BBDEE01C5854F057B4C899F4F73CE57AB6BEC199CD0872CA88D8DC9C178918D05EF688D560BEEEF",
           "profile": "C:\\Users\\xuxin\\.ohos\\config\\default_family_food_app_ddvUlaM2h_N2ULJfHL5g_Bde3CjUwoxK62ny2hV-Nvo=.p7b",
           "signAlg": "SHA256withECDSA",
           "storeFile": "C:\\Users\\xuxin\\.ohos\\config\\default_family_food_app_ddvUlaM2h_N2ULJfHL5g_Bde3CjUwoxK62ny2hV-Nvo=.p12",
-          "storePassword": "0000001B4895240BF42E052E2B0B15F6257837C43DC4D32E5F5740EE581FD081294B8785FF8084F17F1D32"
+          "storePassword": "0000001B118B4BB9D4FBBE414F8F1FD371981A4BC561AD4457A623639B4074C282EB482E71A858BC1B698C"
         }
       }
     ],
     "products": [
       {
         "name": "default",
+        "signingConfig": "default",
         "compatibleSdkVersion": "6.1.0(23)",
         "runtimeOS": "HarmonyOS",
         "targetSdkVersion": "6.1.0(23)"

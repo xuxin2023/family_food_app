@@ -8,7 +8,7 @@ function createHealthSignal(stepLevel: StepLevel, sleepStatus: SleepStatus,
   manualBpStatus: BpStatus, manualBsStatus: BsStatus,
   hadHighSodiumToday: boolean, hadHighSugarToday: boolean,
   source: DataSource): HealthSignal {
-  const signal: HealthSignal = new HealthSignal()
+  const signal: HealthSignal = new HealthSignal();
   signal.memberId = 'member_1';
   signal.date = '2025-12-15';
   signal.stepLevel = stepLevel;

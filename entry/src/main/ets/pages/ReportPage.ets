@@ -331,12 +331,12 @@ struct ReportPage {
             .padding({ left: 10, right: 10 })
             .borderRadius(14)
             .backgroundColor(this.selectedMemberIndex === index ?
-              COLORS.BG_PAGE : '#F9F9F9')
+              COLORS.BG_PAGE : COLORS.BG_LIGHT_GRAY_F9)
             .border({
               width: 1,
               color: this.selectedMemberIndex === index ?
                 getLevelColorValue(this.recommendations[index]?.levelColor ?? LevelColor.GREEN) :
-                '#E8E8E8'
+                COLORS.BORDER_LIGHT_E8
             })
             .alignItems(VerticalAlign.Center)
             .onClick(() => {
@@ -428,17 +428,17 @@ struct ReportPage {
           .width(percentage > 100 ? '100%' : `${Math.round(percentage)}%`)
           .height(3)
           .borderRadius(2)
-          .backgroundColor(percentage > 80 ? '#EF5350' : percentage > 50 ? '#FFA726' : '#66BB6A')
+          .backgroundColor(percentage > 80 ? COLORS.ACCENT_RED_EF53 : percentage > 50 ? COLORS.ACCENT_ORANGE_FFA7 : COLORS.ACCENT_GREEN_66BB)
         Text(`${Math.round(percentage)}%`)
           .fontSize(8)
-          .fontColor(percentage > 80 ? '#EF5350' : percentage > 50 ? '#FFA726' : '#9E9E9E')
+          .fontColor(percentage > 80 ? COLORS.ACCENT_RED_EF53 : percentage > 50 ? COLORS.ACCENT_ORANGE_FFA7 : COLORS.TEXT_GRAY_9E9E)
           .lineHeight(10)
       }
       .width(40)
       .alignItems(HorizontalAlign.Start)
     }
     .padding({ left: 8, right: 8, top: 6, bottom: 6 })
-    .backgroundColor('#F8F8F8')
+    .backgroundColor(COLORS.BG_LIGHTER_GRAY_F8)
     .borderRadius(10)
     .alignItems(HorizontalAlign.Center)
     .height(60)
@@ -488,7 +488,7 @@ struct ReportPage {
               .borderRadius(4)
               .backgroundColor(idx === this.selectedMemberIndex
                 ? this.getMemberLevelColor(rec)
-                : '#DDDDDD')
+                : COLORS.BORDER_LIGHT_DD)
           }, (rec: Recommendation) => rec.memberId)
         }
         .width('100%')
@@ -563,7 +563,7 @@ struct ReportPage {
     .width('90%')
     .height(170)
     .padding(SPACING.LG)
-    .backgroundColor('#F8F9FA')
+    .backgroundColor(COLORS.BG_LIGHTER_GRAY_F8)
     .borderRadius(RADIUS.LG)
     .margin({ left: 20, right: 20 })
     .alignItems(VerticalAlign.Center)
@@ -660,7 +660,7 @@ struct ReportPage {
         }
         .width('92%')
         .padding(16)
-        .backgroundColor('#FFF8E1')
+        .backgroundColor(COLORS.BG_WARM_YELLOW)
         .borderRadius(RADIUS.MD)
         .margin({ bottom: 12 })
       } else {
@@ -705,7 +705,7 @@ struct ReportPage {
     .width(140)
     .height(110)
     .padding(SPACING.MD)
-    .backgroundColor('#F0F8F0')
+    .backgroundColor(COLORS.BG_LIGHT_GREEN)
     .borderRadius(RADIUS.MD)
     .alignItems(HorizontalAlign.Start)
     .justifyContent(FlexAlign.Center)
@@ -901,13 +901,13 @@ struct ReportPage {
       // 顶部导航占位
       Row() {
         Row()
-          .width(40).height(20).backgroundColor('#E0E0E0').borderRadius(4)
+          .width(40).height(20).backgroundColor(COLORS.BORDER_LIGHT).borderRadius(4)
         Blank()
         Row()
-          .width(120).height(20).backgroundColor('#E0E0E0').borderRadius(4)
+          .width(120).height(20).backgroundColor(COLORS.BORDER_LIGHT).borderRadius(4)
         Blank()
         Row()
-          .width(40).height(20).backgroundColor('#E0E0E0').borderRadius(4)
+          .width(40).height(20).backgroundColor(COLORS.BORDER_LIGHT).borderRadius(4)
       }
       .width('100%')
       .height(BUTTON.HEIGHT_LG)
@@ -916,14 +916,14 @@ struct ReportPage {
       // 主体占位
       Column() {
         Row() {
-          Circle().width(110).height(110).fill('#E8E8E8')
+          Circle().width(110).height(110).fill(COLORS.BORDER_LIGHT_E8)
             .margin({ right: 20 })
           Column() {
-            Row().width(80).height(24).backgroundColor('#E8E8E8').borderRadius(12)
+            Row().width(80).height(24).backgroundColor(COLORS.BORDER_LIGHT_E8).borderRadius(12)
               .margin({ bottom: 8 })
-            Row().width(100).height(18).backgroundColor('#E8E8E8').borderRadius(4)
+            Row().width(100).height(18).backgroundColor(COLORS.BORDER_LIGHT_E8).borderRadius(4)
               .margin({ bottom: 6 })
-            Row().width(60).height(14).backgroundColor('#E8E8E8').borderRadius(4)
+            Row().width(60).height(14).backgroundColor(COLORS.BORDER_LIGHT_E8).borderRadius(4)
           }
           .alignItems(HorizontalAlign.Start)
         }

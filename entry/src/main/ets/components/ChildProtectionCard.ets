@@ -1,6 +1,7 @@
 // 儿童保护建议卡组件
 
 import { ChildProtection } from '../model/ChildProtection';
+import { COLORS, FONT_SIZE, SPACING, RADIUS } from '../constants/AppTheme';
 
 @Component
 export struct ChildProtectionCard {
@@ -23,10 +24,10 @@ export struct ChildProtectionCard {
         Row() {
           Text('🍽').fontSize(16).margin({ right: 8 })
           Column() {
-            Text('正餐保护').fontSize(12).fontColor('#FF9800').margin({ bottom: 2 })
+            Text('正餐保护').fontSize(12).fontColor(COLORS.ORANGE_ACCENT).margin({ bottom: 2 })
             Text(this.protection.mealProtection)
               .fontSize(13)
-              .fontColor('#212121')
+              .fontColor(COLORS.TEXT_GRAY_2121)
           }
           .alignItems(HorizontalAlign.Start)
           .layoutWeight(1)
@@ -41,10 +42,10 @@ export struct ChildProtectionCard {
         Row() {
           Text('🌙').fontSize(16).margin({ right: 8 })
           Column() {
-            Text('睡前保护').fontSize(12).fontColor('#9C27B0').margin({ bottom: 2 })
+            Text('睡前保护').fontSize(12).fontColor(COLORS.ACCENT_PURPLE_9C27).margin({ bottom: 2 })
             Text(this.protection.bedtimeProtection)
               .fontSize(13)
-              .fontColor('#212121')
+              .fontColor(COLORS.TEXT_GRAY_2121)
           }
           .alignItems(HorizontalAlign.Start)
           .layoutWeight(1)
@@ -59,10 +60,10 @@ export struct ChildProtectionCard {
         Row() {
           Text('👅').fontSize(16).margin({ right: 8 })
           Column() {
-            Text('口味保护').fontSize(12).fontColor('#4CAF50').margin({ bottom: 2 })
+            Text('口味保护').fontSize(12).fontColor(COLORS.ACCENT_GREEN_4CAF).margin({ bottom: 2 })
             Text(this.protection.tasteProtection)
               .fontSize(13)
-              .fontColor('#212121')
+              .fontColor(COLORS.TEXT_GRAY_2121)
           }
           .alignItems(HorizontalAlign.Start)
           .layoutWeight(1)
@@ -78,7 +79,7 @@ export struct ChildProtectionCard {
           Text('⚠').fontSize(16).margin({ right: 8 })
           Text('不建议用"不吃饭"来抵消甜食')
             .fontSize(13)
-            .fontColor('#FF5722')
+            .fontColor(COLORS.ACCENT_ORANGE)
             .fontWeight(FontWeight.Medium)
             .layoutWeight(1)
         }
@@ -88,7 +89,7 @@ export struct ChildProtectionCard {
     }
     .width('100%')
     .padding(16)
-    .backgroundColor('#FFF8E1')
+    .backgroundColor(COLORS.BG_WARM_YELLOW)
     .borderRadius(12)
     .alignItems(HorizontalAlign.Start)
   }

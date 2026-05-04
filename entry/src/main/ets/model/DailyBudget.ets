@@ -83,7 +83,22 @@ export class DailyBudget {
     return json;
   }
 
-  static fromJson(json: Record<string, Object>): DailyBudget {
+  static fromJson(json: DailyBudgetJson): DailyBudget {
+    const budget = new DailyBudget();
+    budget.memberId = json.memberId;
+    budget.date = json.date;
+    budget.sodiumBudget = json.sodiumBudget;
+    budget.sodiumRemaining = json.sodiumRemaining;
+    budget.sugarBudget = json.sugarBudget;
+    budget.sugarRemaining = json.sugarRemaining;
+    budget.calorieBudget = json.calorieBudget;
+    budget.calorieRemaining = json.calorieRemaining;
+    budget.fatBudget = json.fatBudget;
+    budget.fatRemaining = json.fatRemaining;
+    return budget;
+  }
+
+  static fromJsonRaw(json: Record<string, Object>): DailyBudget {
     const budget = new DailyBudget();
     budget.memberId = json.memberId as string;
     budget.date = json.date as string;

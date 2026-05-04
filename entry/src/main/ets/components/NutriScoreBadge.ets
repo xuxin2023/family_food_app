@@ -36,11 +36,11 @@ function getGradeLetter(score: number): string {
  * 根据分数获取等级文字颜色
  */
 function getGradeTextColor(score: number): string {
-  if (score >= 80) return '#FFFFFF';
-  if (score >= 60) return '#FFFFFF';
-  if (score >= 40) return '#333333';
-  if (score >= 20) return '#FFFFFF';
-  return '#FFFFFF';
+  if (score >= 80) return COLORS.WHITE;
+  if (score >= 60) return COLORS.WHITE;
+  if (score >= 40) return COLORS.TEXT_GRAY_3333;
+  if (score >= 20) return COLORS.WHITE;
+  return COLORS.WHITE;
 }
 
 @Component
@@ -97,7 +97,7 @@ export struct NutriScoreBadge {
           Text(this.levelText)
             .fontSize(11)
             .fontWeight(FontWeight.Medium)
-            .fontColor('#FFFFFF')
+            .fontColor(COLORS.WHITE)
             .padding({ left: 8, right: 8, top: 2, bottom: 2 })
             .borderRadius(8)
             .backgroundColor(this.levelBgColor)
@@ -128,18 +128,18 @@ export struct NutriScoreBadge {
           Text(`${Math.round(this.score)}`)
             .fontSize(48)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#FFFFFF')
+            .fontColor(COLORS.WHITE)
           Text(getGradeLetter(this.score))
             .fontSize(24)
             .fontWeight(FontWeight.Medium)
-            .fontColor('#FFFFFF')
+            .fontColor(COLORS.WHITE)
             .opacity(0.9)
             .margin({ top: 4 })
           if (this.levelText.length > 0) {
             Text(this.levelText)
               .fontSize(16)
               .fontWeight(FontWeight.Medium)
-              .fontColor('#FFFFFF')
+              .fontColor(COLORS.WHITE)
               .padding({ left: 14, right: 14, top: 4, bottom: 4 })
               .borderRadius(12)
               .backgroundColor(this.levelBgColor)

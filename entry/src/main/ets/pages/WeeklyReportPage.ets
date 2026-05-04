@@ -8,6 +8,7 @@ import { DateUtil } from '../utils/DateUtil';
 import { PaywallTrigger, MemberTier, getTierDisplayName } from '../model/MemberStatus';
 import { PaywallDialog } from '../components/PaywallDialog';
 import { EmptyState } from '../components/EmptyState';
+import { COLORS } from '../constants/AppTheme';
 
 // 周范围
 class WeekRange {
@@ -58,7 +59,7 @@ struct WeeklyReportPage {
           Row() {
             Text('<')
               .fontSize(24)
-              .fontColor('#1976D2')
+              .fontColor(COLORS.PRIMARY)
               .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
             Text('家庭周报')
               .fontSize(20)
@@ -71,7 +72,7 @@ struct WeeklyReportPage {
           if (this.weekLabel.length > 0) {
             Text(this.weekLabel)
               .fontSize(13)
-              .fontColor('#757575')
+              .fontColor(COLORS.TEXT_GRAY_7575)
               .width('92%')
               .margin({ bottom: 12 })
               .textAlign(TextAlign.Start)
@@ -85,11 +86,11 @@ struct WeeklyReportPage {
               Text('周报功能已锁定')
                 .fontSize(18)
                 .fontWeight(FontWeight.Bold)
-                .fontColor('#424242')
+                .fontColor(COLORS.TEXT_GRAY_4242)
                 .margin({ top: 16 })
               Text('升级后可查看全家人的饮食周报，了解一周饮食趋势')
                 .fontSize(14)
-                .fontColor('#9E9E9E')
+                .fontColor(COLORS.TEXT_GRAY_9E9E)
                 .margin({ top: 8 })
                 .textAlign(TextAlign.Center)
                 .padding({ left: 32, right: 32 })
@@ -117,7 +118,7 @@ struct WeeklyReportPage {
       }
       .width('100%')
       .height('100%')
-      .backgroundColor('#FAFAFA')
+      .backgroundColor(COLORS.BG_PAGE)
 
       // 付费墙弹窗（覆盖在内容之上）
       if (this.paywallTrigger !== null) {
@@ -141,18 +142,18 @@ struct WeeklyReportPage {
 
       Text(report.summary)
         .fontSize(14)
-        .fontColor('#212121')
+        .fontColor(COLORS.TEXT_GRAY_2121)
         .margin({ bottom: 10 })
 
       if (report.highlights.length > 0) {
         Text('本周重点')
           .fontSize(13)
-          .fontColor('#757575')
+          .fontColor(COLORS.TEXT_GRAY_7575)
           .margin({ bottom: 6 })
         ForEach(report.highlights, (item: string) => {
           Text(`• ${item}`)
             .fontSize(12)
-            .fontColor('#616161')
+            .fontColor(COLORS.TEXT_GRAY_6161)
             .margin({ bottom: 4 })
         }, (item: string, index: number) => `${index}`)
       }
@@ -160,12 +161,12 @@ struct WeeklyReportPage {
       if (report.suggestions.length > 0) {
         Text('下周建议')
           .fontSize(13)
-          .fontColor('#757575')
+          .fontColor(COLORS.TEXT_GRAY_7575)
           .margin({ top: 8, bottom: 6 })
         ForEach(report.suggestions, (item: string) => {
           Text(`• ${item}`)
             .fontSize(12)
-            .fontColor('#616161')
+            .fontColor(COLORS.TEXT_GRAY_6161)
             .margin({ bottom: 4 })
         }, (item: string, index: number) => `${index}`)
       }
@@ -173,7 +174,7 @@ struct WeeklyReportPage {
       if (report.buyLess.length > 0 || report.buyMore.length > 0) {
         Text('采购建议')
           .fontSize(13)
-          .fontColor('#757575')
+          .fontColor(COLORS.TEXT_GRAY_7575)
           .margin({ top: 8, bottom: 6 })
 
         if (report.buyLess.length > 0) {

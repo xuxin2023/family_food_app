@@ -3,8 +3,7 @@ import { describe, it, expect } from '@ohos/hypium';
 import { FoodLabel, NutritionPer100g, FoodLabelJson, FoodSource } from '../../../../../src/main/ets/model/FoodLabel';
 
 function jsonParse(text: string): Record<string, Object> {
-  const result: Record<string, Object> = JSON.parse(text) as Record<string, Object>;
-  return result;
+  return JSON.parse(text) as Record<string, Object>;
 }
 
 function createFoodLabel(sodium: number, sugar: number, calories: number, fat: number,
@@ -13,7 +12,7 @@ function createFoodLabel(sodium: number, sugar: number, calories: number, fat: n
   scNumber: string, source: FoodSource, identifiedAt: number,
   barcode: string, foodName: string, foodId: string,
   principal: string, traceCode: string): FoodLabel {
-  const food: FoodLabel = new FoodLabel()
+  const food: FoodLabel = new FoodLabel();
   food.foodId = foodId;
   food.foodName = foodName;
   food.barcode = barcode;
@@ -159,13 +158,13 @@ export default function foodLabelTest() {
 
     it('should_serialize_to_json', 0, () => {
       const food: FoodLabel = createDefaultFoodLabel();
-      const json = food.toJson() as Record<string, Object>;
+      const json: FoodLabelJson = food.toJson();
 
-      expect(json.foodId as string).assertEqual('food_1');
-      expect(json.foodName as string).assertEqual('测试食品');
-      expect(json.barcode as string).assertEqual('123456789');
-      expect(json.source as FoodSource).assertEqual(FoodSource.USER_UPLOAD);
-      expect(json.manufacturer as string).assertEqual('测试食品有限公司');
+      expect(json.foodId).assertEqual('food_1');
+      expect(json.foodName).assertEqual('测试食品');
+      expect(json.barcode).assertEqual('123456789');
+      expect(json.source).assertEqual(FoodSource.USER_UPLOAD);
+      expect(json.manufacturer).assertEqual('测试食品有限公司');
     });
 
     it('should_deserialize_from_json', 0, () => {

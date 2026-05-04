@@ -1,9 +1,9 @@
 // DailyBudget 单元测试 - 今日预算模型
 import { describe, it, expect } from '@ohos/hypium';
-import { DailyBudget } from '../../../../../src/main/ets/model/DailyBudget';
+import { DailyBudget, DailyBudgetJson } from '../../../../../src/main/ets/model/DailyBudget';
 
 function createDefaultBudget(): DailyBudget {
-  const budget: DailyBudget = new DailyBudget()()
+  const budget: DailyBudget = new DailyBudget();
   budget.memberId = 'member_1';
   budget.date = '2025-12-15';
   budget.sodiumBudget = 2000;
@@ -21,7 +21,7 @@ function createBudget(sodiumBudget: number, sodiumRemaining: number,
   sugarBudget: number, sugarRemaining: number,
   calorieBudget: number, calorieRemaining: number,
   fatBudget: number, fatRemaining: number): DailyBudget {
-  const budget: DailyBudget = new DailyBudget
+  const budget: DailyBudget = new DailyBudget();
   budget.memberId = 'member_1';
   budget.date = '2025-12-15';
   budget.sodiumBudget = sodiumBudget;
@@ -38,68 +38,68 @@ function createBudget(sodiumBudget: number, sodiumRemaining: number,
 export default function dailyBudgetTest() {
   describe('DailyBudget', () => {
 
-    // ========== 使用率计�?==========
+    // ========== 使用率计算 ==========
 
-    it('should_calculate_sodium_usage_percent', () => {
+    it('should_calculate_sodium_usage_percent', 0, () => {
       const budget: DailyBudget = createBudget(2000, 1500, 50, 50, 2000, 2000, 65, 65);
       expect(budget.sodiumUsagePercent()).assertEqual(25);
     });
 
-    it('should_calculate_sugar_usage_percent', () => {
+    it('should_calculate_sugar_usage_percent', 0, () => {
       const budget: DailyBudget = createBudget(2000, 2000, 50, 30, 2000, 2000, 65, 65);
       expect(budget.sugarUsagePercent()).assertEqual(40);
     });
 
-    it('should_calculate_calorie_usage_percent', () => {
+    it('should_calculate_calorie_usage_percent', 0, () => {
       const budget: DailyBudget = createBudget(2000, 2000, 50, 50, 2000, 1000, 65, 65);
       expect(budget.calorieUsagePercent()).assertEqual(50);
     });
 
-    it('should_calculate_fat_usage_percent', () => {
+    it('should_calculate_fat_usage_percent', 0, () => {
       const budget: DailyBudget = createBudget(2000, 2000, 50, 50, 2000, 2000, 65, 32.5);
       expect(budget.fatUsagePercent()).assertEqual(50);
     });
 
-    it('should_return_100_when_budget_zero', () => {
+    it('should_return_100_when_budget_zero', 0, () => {
       const budget: DailyBudget = createBudget(0, 0, 50, 50, 2000, 2000, 65, 65);
       expect(budget.sodiumUsagePercent()).assertEqual(100);
     });
 
-    it('should_clamp_usage_to_0_percent_min', () => {
+    it('should_clamp_usage_to_0_percent_min', 0, () => {
       const budget: DailyBudget = createBudget(2000, 2500, 50, 50, 2000, 2000, 65, 65);
       expect(budget.sodiumUsagePercent()).assertEqual(0);
     });
 
-    it('should_clamp_usage_to_100_percent_max', () => {
+    it('should_clamp_usage_to_100_percent_max', 0, () => {
       const budget: DailyBudget = createBudget(2000, -100, 50, 50, 2000, 2000, 65, 65);
       expect(budget.sodiumUsagePercent()).assertEqual(100);
     });
 
-    // ========== 预算耗尽检�?==========
+    // ========== 预算耗尽检测 ==========
 
-    it('should_detect_sodium_exhausted', () => {
+    it('should_detect_sodium_exhausted', 0, () => {
       const budget: DailyBudget = createBudget(2000, 0, 50, 50, 2000, 2000, 65, 65);
       expect(budget.isSodiumExhausted()).assertTrue();
     });
 
-    it('should_detect_sugar_exhausted', () => {
+    it('should_detect_sugar_exhausted', 0, () => {
       const budget: DailyBudget = createBudget(2000, 2000, 50, 0, 2000, 2000, 65, 65);
       expect(budget.isSugarExhausted()).assertTrue();
     });
 
-    it('should_detect_sodium_not_exhausted', () => {
+    it('should_detect_sodium_not_exhausted', 0, () => {
       const budget: DailyBudget = createBudget(2000, 100, 50, 50, 2000, 2000, 65, 65);
       expect(budget.isSodiumExhausted()).assertFalse();
     });
 
-    it('should_detect_negative_remaining_as_exhausted', () => {
+    it('should_detect_negative_remaining_as_exhausted', 0, () => {
       const budget: DailyBudget = createBudget(2000, -50, 50, 50, 2000, 2000, 65, 65);
       expect(budget.isSodiumExhausted()).assertTrue();
     });
 
-    // ========== 扣减摄入�?==========
+    // ========== 扣减摄入 ==========
 
-    it('should_deduct_intake_correctly', () => {
+    it('should_deduct_intake_correctly', 0, () => {
       const budget: DailyBudget = createDefaultBudget();
       budget.deductIntake(300, 10, 400, 8);
 
@@ -109,7 +109,7 @@ export default function dailyBudgetTest() {
       expect(budget.fatRemaining).assertEqual(57);
     });
 
-    it('should_allow_exceeded_deduction', () => {
+    it('should_allow_exceeded_deduction', 0, () => {
       const budget: DailyBudget = createBudget(2000, 100, 50, 50, 2000, 2000, 65, 65);
       budget.deductIntake(200, 0, 0, 0);
 
@@ -117,20 +117,20 @@ export default function dailyBudgetTest() {
       expect(budget.isSodiumExhausted()).assertTrue();
     });
 
-    // ========== JSON序列�?==========
+    // ========== JSON序列化 ==========
 
-    it('should_serialize_to_json', () => {
+    it('should_serialize_to_json', 0, () => {
       const budget: DailyBudget = createDefaultBudget();
-      const json = budget.toJson() as Record<string, Object>;
+      const json: DailyBudgetJson = budget.toJson();
 
-      expect(json.memberId as string).assertEqual('member_1');
-      expect(json.date as string).assertEqual('2025-12-15');
-      expect(json.sodiumBudget as number).assertEqual(2000);
-      expect(json.sodiumRemaining as number).assertEqual(2000);
-      expect(json.sugarBudget as number).assertEqual(50);
+      expect(json.memberId).assertEqual('member_1');
+      expect(json.date).assertEqual('2025-12-15');
+      expect(json.sodiumBudget).assertEqual(2000);
+      expect(json.sodiumRemaining).assertEqual(2000);
+      expect(json.sugarBudget).assertEqual(50);
     });
 
-    it('should_deserialize_from_json', () => {
+    it('should_deserialize_from_json', 0, () => {
       const jsonStr = JSON.stringify({
         memberId: 'member_test',
         date: '2025-12-20',
@@ -145,7 +145,7 @@ export default function dailyBudgetTest() {
       });
       const json = JSON.parse(jsonStr) as Record<string, Object>;
 
-      const budget: DailyBudget = DailyBudget.fromJson(json);
+      const budget: DailyBudget = DailyBudget.fromJsonRaw(json);
 
       expect(budget.memberId).assertEqual('member_test');
       expect(budget.date).assertEqual('2025-12-20');
@@ -155,13 +155,13 @@ export default function dailyBudgetTest() {
       expect(budget.fatBudget).assertEqual(70);
     });
 
-    it('should_preserve_data_through_json_round_trip', () => {
+    it('should_preserve_data_through_json_round_trip', 0, () => {
       const original = createDefaultBudget();
       original.memberId = 'round_trip_test';
       original.date = '2025-12-25';
       original.sodiumRemaining = 777;
 
-      const json = original.toJson() as Record<string, Object>;
+      const json: DailyBudgetJson = original.toJson();
       const restored = DailyBudget.fromJson(json);
 
       expect(restored.memberId).assertEqual('round_trip_test');
@@ -170,4 +170,3 @@ export default function dailyBudgetTest() {
     });
   });
 }
-

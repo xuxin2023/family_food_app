@@ -13,6 +13,8 @@
     "pages/BasketCheckPage",
     "pages/WeeklyReportPage",
     "pages/SettingsPage",
-    "pages/SubscriptionPage"
+    "pages/SubscriptionPage",
+    "pages/DietDiaryPage",
+    "pages/NutritionTrendPage"
   ]
 }

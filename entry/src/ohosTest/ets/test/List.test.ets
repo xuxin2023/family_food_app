@@ -11,8 +11,7 @@ import basketCheckEngineTest from './engine/BasketCheckEngineTest';
 import foodAdapterEngineTest from './engine/FoodAdapterEngineTest';
 import recommendationEngineTest from './engine/RecommendationEngineTest';
 import elderFriendlyEngineTest from './engine/ElderFriendlyEngineTest';
-import scanOrchestratorTest from './engine/ScanOrchestratorTest';
-import weeklyReportEngineTest from './engine/WeeklyReportEngineTest';
+import scanOrchestratorTest from './engine/ScanOrchestratorTest';import weeklyReportEngineTest from './engine/WeeklyReportEngineTest';
 
 // 新增模型单元测试
 import familyProfileTest from './model/FamilyProfileTest';
@@ -34,8 +33,7 @@ export default function tests() {
   foodAdapterEngineTest();
   recommendationEngineTest();
   elderFriendlyEngineTest();
-  scanOrchestratorTest();
-  weeklyReportEngineTest();
+  scanOrchestratorTest();  weeklyReportEngineTest();
 
   // 新增模型测试
   familyProfileTest();

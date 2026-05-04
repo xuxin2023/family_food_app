@@ -4,6 +4,7 @@
 
 import { AppState } from '../AppState';
 import { MainNavigation } from './MainNavigation';
+import { COLORS } from '../constants/AppTheme';
 
 @Entry
 @Component
@@ -45,7 +46,7 @@ struct GuidePage {
         Blank()
         Text('跳过')
           .fontSize(14)
-          .fontColor('#999999')
+          .fontColor(COLORS.TEXT_TERTIARY)
           .padding({ left: 16, right: 16, top: 8, bottom: 8 })
           .onClick(() => {
             this.onComplete?.();
@@ -65,13 +66,13 @@ struct GuidePage {
       Column() {
         Row() {
           Circle({ width: 8, height: 8 })
-            .fill(this.currentPage === 0 ? '#007DFF' : '#D0D0D0')
+            .fill(this.currentPage === 0 ? COLORS.PRIMARY : COLORS.DOT_INACTIVE)
             .margin({ left: 4, right: 4 })
           Circle({ width: 8, height: 8 })
-            .fill(this.currentPage === 1 ? '#007DFF' : '#D0D0D0')
+            .fill(this.currentPage === 1 ? COLORS.PRIMARY : COLORS.DOT_INACTIVE)
             .margin({ left: 4, right: 4 })
           Circle({ width: 8, height: 8 })
-            .fill(this.currentPage === 2 ? '#007DFF' : '#D0D0D0')
+            .fill(this.currentPage === 2 ? COLORS.PRIMARY : COLORS.DOT_INACTIVE)
             .margin({ left: 4, right: 4 })
         }
         .margin({ bottom: 24 })
@@ -79,9 +80,9 @@ struct GuidePage {
         Button(this.currentPage < 2 ? '下一步' : '开始使用')
           .width('80%')
           .height(48)
-          .backgroundColor('#007DFF')
+          .backgroundColor(COLORS.PRIMARY)
           .borderRadius(24)
-          .fontColor('#FFFFFF')
+          .fontColor(COLORS.WHITE)
           .fontSize(16)
           .onClick(() => {
             if (this.currentPage < 2) {
@@ -96,7 +97,7 @@ struct GuidePage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#FFFFFF')
+    .backgroundColor(COLORS.WHITE)
   }
 
   @Builder
@@ -109,7 +110,7 @@ struct GuidePage {
       Text('为全家建立健康档案')
         .fontSize(22)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#1A1A1A')
+        .fontColor(COLORS.TEXT_PRIMARY)
         .margin({ bottom: 16 })
 
       // 四个成员头像
@@ -125,7 +126,7 @@ struct GuidePage {
 
       Text('为每位家庭成员设置健康目标，\n后续扫码就能看到「同一食品，不同建议」')
         .fontSize(14)
-        .fontColor('#666666')
+        .fontColor(COLORS.TEXT_SECONDARY)
         .textAlign(TextAlign.Center)
         .lineHeight(22)
         .padding({ left: 32, right: 32 })
@@ -141,11 +142,11 @@ struct GuidePage {
         .fontSize(32)
       Text(name)
         .fontSize(12)
-        .fontColor('#333333')
+        .fontColor(COLORS.TEXT_GRAY_3333)
         .margin({ top: 4 })
       Text(goal)
         .fontSize(10)
-        .fontColor('#888888')
+        .fontColor(COLORS.TEXT_GRAY_8888)
     }
     .layoutWeight(1)
     .alignItems(HorizontalAlign.Center)
@@ -162,7 +163,7 @@ struct GuidePage {
       Text('三种方式，快速识别')
         .fontSize(22)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#1A1A1A')
+        .fontColor(COLORS.TEXT_PRIMARY)
         .margin({ bottom: 16 })
 
       Column() {
@@ -175,7 +176,7 @@ struct GuidePage {
 
       Text('无论哪种方式，结果都一样精准')
         .fontSize(13)
-        .fontColor('#999999')
+        .fontColor(COLORS.TEXT_TERTIARY)
         .margin({ top: 16 })
     }
     .layoutWeight(1)
@@ -192,17 +193,17 @@ struct GuidePage {
         Text(title)
           .fontSize(15)
           .fontWeight(FontWeight.Medium)
-          .fontColor('#1A1A1A')
+          .fontColor(COLORS.TEXT_PRIMARY)
         Text(desc)
           .fontSize(12)
-          .fontColor('#888888')
+          .fontColor(COLORS.TEXT_GRAY_8888)
           .margin({ top: 2 })
       }
       .layoutWeight(1)
     }
     .width('100%')
     .padding(12)
-    .backgroundColor('#F5F5F5')
+    .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
     .borderRadius(10)
     .margin({ bottom: 8 })
   }
@@ -217,7 +218,7 @@ struct GuidePage {
       Text('全家报告，一目了然')
         .fontSize(22)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#1A1A1A')
+        .fontColor(COLORS.TEXT_PRIMARY)
         .margin({ bottom: 16 })
 
       // 示例报告卡片
@@ -225,24 +226,24 @@ struct GuidePage {
         Text('辣味牛肉干')
           .fontSize(16)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#1A1A1A')
+          .fontColor(COLORS.TEXT_PRIMARY)
           .margin({ bottom: 12 })
 
-        this.buildExampleRow('👨', '爸爸', '今天谨慎', '#EF7D00', '最多50g')
-        this.buildExampleRow('👩', '妈妈', '少量可以', '#FFCC00', '最多30g')
-        this.buildExampleRow('👶', '孩子', '建议避免', '#E03C31', '')
-        this.buildExampleRow('🧑', '我', '适合食用', '#00823F', '最多80g')
+        this.buildExampleRow('👨', '爸爸', '今天谨慎', COLORS.LEVEL_ORANGE, '最多50g')
+        this.buildExampleRow('👩', '妈妈', '少量可以', COLORS.LEVEL_YELLOW, '最多30g')
+        this.buildExampleRow('👶', '孩子', '建议避免', COLORS.LEVEL_RED, '')
+        this.buildExampleRow('🧑', '我', '适合食用', COLORS.LEVEL_GREEN, '最多80g')
       }
       .width('85%')
       .padding(16)
-      .backgroundColor('#FFFFFF')
+      .backgroundColor(COLORS.WHITE)
       .borderRadius(12)
-      .shadow({ radius: 8, color: '#1A000000', offsetY: 4 })
+      .shadow({ radius: 8, color: COLORS.SHADOW_LIGHT, offsetY: 4 })
       .margin({ bottom: 16 })
 
       Text('同一款食品，全家建议都不同')
         .fontSize(14)
-        .fontColor('#666666')
+        .fontColor(COLORS.TEXT_SECONDARY)
     }
     .layoutWeight(1)
     .justifyContent(FlexAlign.Center)
@@ -259,7 +260,7 @@ struct GuidePage {
         .width(36)
       Text(level)
         .fontSize(12)
-        .fontColor('#FFFFFF')
+        .fontColor(COLORS.WHITE)
         .backgroundColor(color)
         .borderRadius(8)
         .padding({ left: 8, right: 8, top: 2, bottom: 2 })
@@ -267,7 +268,7 @@ struct GuidePage {
       if (amount.length > 0) {
         Text(amount)
           .fontSize(13)
-          .fontColor('#666666')
+          .fontColor(COLORS.TEXT_SECONDARY)
           .margin({ left: 8 })
       }
     }

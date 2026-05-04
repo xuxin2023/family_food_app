@@ -1,7 +1,7 @@
 // AiVisionService.ets
 // AI视觉识别兜底服务 - 当常规识别失败时，调用AI模型进行视觉分类
 
-import { FoodLabel, NutritionPer100g } from '../model/FoodLabel';
+import { FoodLabel, NutritionPer100g, FoodSource } from '../model/FoodLabel';
 
 const TAG = 'AiVisionService';
 
@@ -107,7 +107,7 @@ export class AiVisionService {
       label.ingredients = [];
       label.manufacturer = '';
       label.scNumber = '';
-      label.source = 'AI视觉识别' as never;
+      label.source = FoodSource.OCR_RECOGNIZE;
       label.identifiedAt = Date.now();
 
       const nutrition = new NutritionPer100g();

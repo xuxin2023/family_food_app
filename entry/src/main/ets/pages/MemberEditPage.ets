@@ -7,7 +7,7 @@ import { AppState } from '../AppState';
 import { DateUtil } from '../utils/DateUtil';
 import { PaywallTrigger, MemberTier, getTierDisplayName } from '../model/MemberStatus';
 import { PaywallDialog } from '../components/PaywallDialog';
-import { BUTTON } from '../constants/AppTheme';
+import { BUTTON, COLORS } from '../constants/AppTheme';
 
 // AgeGroup 枚举值数组
 const AGE_GROUP_VALUES: AgeGroup[] = [AgeGroup.CHILD, AgeGroup.TEEN, AgeGroup.ADULT, AgeGroup.MIDDLE_OLD, AgeGroup.OLD];
@@ -62,7 +62,7 @@ struct MemberEditPage {
         Column() {
           // 顶部导航
           Row() {
-            Text('←').fontSize(24).fontColor('#1976D2')
+            Text('←').fontSize(24).fontColor(COLORS.PRIMARY)
               .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
             Text('编辑成员').fontSize(20).fontWeight(FontWeight.Bold)
               .margin({ left: 16 })
@@ -72,12 +72,12 @@ struct MemberEditPage {
 
           // 昵称
           Column() {
-            Text('昵称').fontSize(14).fontColor('#757575').margin({ bottom: 8 })
+            Text('昵称').fontSize(14).fontColor(COLORS.TEXT_GRAY_7575).margin({ bottom: 8 })
             TextInput({ placeholder: '如：爸爸、妈妈、孩子' })
               .width('100%')
               .height(BUTTON.HEIGHT_MD)
               .borderRadius(12)
-              .backgroundColor('#FFFFFF')
+              .backgroundColor(COLORS.WHITE)
               .onChange((value: string) => { this.nickname = value })
           }
           .width('100%')
@@ -86,15 +86,15 @@ struct MemberEditPage {
 
         // 年龄段
         Column() {
-          Text('年龄段').fontSize(14).fontColor('#757575').margin({ bottom: 8 })
+          Text('年龄段').fontSize(14).fontColor(COLORS.TEXT_GRAY_7575).margin({ bottom: 8 })
           Flex({ wrap: FlexWrap.Wrap }) {
             ForEach(this.ageGroups, (group: string, index: number) => {
               Text(group)
                 .fontSize(14)
                 .padding({ left: 16, right: 16, top: 8, bottom: 8 })
                 .borderRadius(BUTTON.RADIUS_SMALL)
-                .backgroundColor(this.selectedAgeGroup === index ? '#1976D2' : '#F5F5F5')
-                .fontColor(this.selectedAgeGroup === index ? '#FFFFFF' : '#212121')
+                .backgroundColor(this.selectedAgeGroup === index ? COLORS.PRIMARY : COLORS.BG_LIGHT_GRAY_F5)
+                .fontColor(this.selectedAgeGroup === index ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
                 .margin({ right: 8, bottom: 8 })
                 .onClick(() => { this.selectedAgeGroup = index })
             }, (group: string, index: number) => `${index}`)
@@ -106,15 +106,15 @@ struct MemberEditPage {
 
         // 健康目标（多选）
         Column() {
-          Text('健康目标（可多选）').fontSize(14).fontColor('#757575').margin({ bottom: 8 })
+          Text('健康目标（可多选）').fontSize(14).fontColor(COLORS.TEXT_GRAY_7575).margin({ bottom: 8 })
           Flex({ wrap: FlexWrap.Wrap }) {
             ForEach(this.healthGoals, (goal: string, index: number) => {
               Text(goal)
                 .fontSize(14)
                 .padding({ left: 16, right: 16, top: 8, bottom: 8 })
                 .borderRadius(BUTTON.RADIUS_SMALL)
-                .backgroundColor(this.selectedGoals[index] ? '#1976D2' : '#F5F5F5')
-                .fontColor(this.selectedGoals[index] ? '#FFFFFF' : '#212121')
+                .backgroundColor(this.selectedGoals[index] ? COLORS.PRIMARY : COLORS.BG_LIGHT_GRAY_F5)
+                .fontColor(this.selectedGoals[index] ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
                 .margin({ right: 8, bottom: 8 })
                 .onClick(() => {
                   this.selectedGoals[index] = !this.selectedGoals[index]
@@ -128,15 +128,15 @@ struct MemberEditPage {
 
         // 过敏原
         Column() {
-          Text('过敏原').fontSize(14).fontColor('#757575').margin({ bottom: 8 })
+          Text('过敏原').fontSize(14).fontColor(COLORS.TEXT_GRAY_7575).margin({ bottom: 8 })
           Flex({ wrap: FlexWrap.Wrap }) {
             ForEach(this.commonAllergens, (allergen: string, index: number) => {
               Text(allergen)
                 .fontSize(14)
                 .padding({ left: 12, right: 12, top: 6, bottom: 6 })
                 .borderRadius(16)
-                .backgroundColor(this.selectedAllergens[index] ? '#FF5722' : '#F5F5F5')
-                .fontColor(this.selectedAllergens[index] ? '#FFFFFF' : '#212121')
+                .backgroundColor(this.selectedAllergens[index] ? COLORS.ACCENT_ORANGE : COLORS.BG_LIGHT_GRAY_F5)
+                .fontColor(this.selectedAllergens[index] ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
                 .margin({ right: 8, bottom: 8 })
                 .onClick(() => {
                   this.selectedAllergens[index] = !this.selectedAllergens[index]
@@ -148,7 +148,7 @@ struct MemberEditPage {
             .width('100%')
             .height(BUTTON.HEIGHT_SMALL)
             .borderRadius(8)
-            .backgroundColor('#FFFFFF')
+            .backgroundColor(COLORS.WHITE)
             .margin({ top: 8 })
             .onChange((value: string) => { this.allergenInput = value })
         }
@@ -168,8 +168,8 @@ struct MemberEditPage {
                 .fontSize(13)
                 .padding({ left: 12, right: 12, top: 6, bottom: 6 })
                 .borderRadius(16)
-                .backgroundColor(this.stepLevelIndex === index ? '#1976D2' : '#F5F5F5')
-                .fontColor(this.stepLevelIndex === index ? '#FFFFFF' : '#212121')
+                .backgroundColor(this.stepLevelIndex === index ? COLORS.PRIMARY : COLORS.BG_LIGHT_GRAY_F5)
+                .fontColor(this.stepLevelIndex === index ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
                 .margin({ right: 6 })
                 .onClick(() => { this.stepLevelIndex = index })
             }, (level: string, index: number) => `${index}`)
@@ -184,8 +184,8 @@ struct MemberEditPage {
                 .fontSize(13)
                 .padding({ left: 12, right: 12, top: 6, bottom: 6 })
                 .borderRadius(16)
-                .backgroundColor(this.sleepStatusIndex === index ? '#1976D2' : '#F5F5F5')
-                .fontColor(this.sleepStatusIndex === index ? '#FFFFFF' : '#212121')
+                .backgroundColor(this.sleepStatusIndex === index ? COLORS.PRIMARY : COLORS.BG_LIGHT_GRAY_F5)
+                .fontColor(this.sleepStatusIndex === index ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
                 .margin({ right: 6 })
                 .onClick(() => { this.sleepStatusIndex = index })
             }, (status: string, index: number) => `${index}`)
@@ -200,8 +200,8 @@ struct MemberEditPage {
                 .fontSize(13)
                 .padding({ left: 12, right: 12, top: 6, bottom: 6 })
                 .borderRadius(16)
-                .backgroundColor(this.bpStatusIndex === index ? '#FF5722' : '#F5F5F5')
-                .fontColor(this.bpStatusIndex === index ? '#FFFFFF' : '#212121')
+                .backgroundColor(this.bpStatusIndex === index ? COLORS.ACCENT_ORANGE : COLORS.BG_LIGHT_GRAY_F5)
+                .fontColor(this.bpStatusIndex === index ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
                 .margin({ right: 6 })
                 .onClick(() => { this.bpStatusIndex = index })
             }, (status: string, index: number) => `${index}`)
@@ -216,8 +216,8 @@ struct MemberEditPage {
                 .fontSize(13)
                 .padding({ left: 12, right: 12, top: 6, bottom: 6 })
                 .borderRadius(16)
-                .backgroundColor(this.bsStatusIndex === index ? '#FF5722' : '#F5F5F5')
-                .fontColor(this.bsStatusIndex === index ? '#FFFFFF' : '#212121')
+                .backgroundColor(this.bsStatusIndex === index ? COLORS.ACCENT_ORANGE : COLORS.BG_LIGHT_GRAY_F5)
+                .fontColor(this.bsStatusIndex === index ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
                 .margin({ right: 6 })
                 .onClick(() => { this.bsStatusIndex = index })
             }, (status: string, index: number) => `${index}`)
@@ -225,7 +225,7 @@ struct MemberEditPage {
         }
         .width('100%')
         .padding(16)
-        .backgroundColor('#FFFFFF')
+        .backgroundColor(COLORS.WHITE)
         .borderRadius(12)
         .margin({ left: 16, right: 16, bottom: 16 })
         .alignItems(HorizontalAlign.Start)
@@ -234,7 +234,7 @@ struct MemberEditPage {
         Button('保存')
           .width('90%')
           .height(BUTTON.HEIGHT_MD)
-          .backgroundColor('#1976D2')
+          .backgroundColor(COLORS.PRIMARY)
           .borderRadius(BUTTON.RADIUS_MD)
           .margin({ top: 16, bottom: 32 })
           .onClick(() => {

@@ -2,6 +2,7 @@
 
 import { Recommendation, getLevelColorValue } from '../model/Recommendation';
 import { FamilyProfile } from '../model/FamilyProfile';
+import { COLORS } from '../constants/AppTheme';
 
 @Component
 export struct FamilyCompareView {
@@ -13,7 +14,7 @@ export struct FamilyCompareView {
       Text('一家人不同结论')
         .fontSize(16)
         .fontWeight(FontWeight.Medium)
-        .fontColor('#212121')
+        .fontColor(COLORS.TEXT_GRAY_2121)
         .margin({ bottom: 12 })
 
       // 横向对比卡片
@@ -29,7 +30,7 @@ export struct FamilyCompareView {
     }
     .width('100%')
     .padding(16)
-    .backgroundColor('#FFFFFF')
+    .backgroundColor(COLORS.WHITE)
     .borderRadius(12)
     .alignItems(HorizontalAlign.Start)
   }
@@ -45,13 +46,13 @@ export struct FamilyCompareView {
       // 昵称
       Text(member.nickname)
         .fontSize(13)
-        .fontColor('#212121')
+        .fontColor(COLORS.TEXT_GRAY_2121)
         .margin({ bottom: 6 })
 
       // 等级标识
       Text(rec.level)
         .fontSize(12)
-        .fontColor('#FFFFFF')
+        .fontColor(COLORS.WHITE)
         .padding({ left: 8, right: 8, top: 3, bottom: 3 })
         .borderRadius(10)
         .backgroundColor(getLevelColorValue(rec.levelColor))
@@ -62,19 +63,19 @@ export struct FamilyCompareView {
         Text(`${rec.maxAmount}g`)
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#212121')
+          .fontColor(COLORS.TEXT_GRAY_2121)
       } else {
         Text('避免')
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#F44336')
+          .fontColor(COLORS.ACCENT_RED_F443)
       }
 
       // 第一条原因
       if (rec.reasons.length > 0) {
         Text(rec.reasons[0])
           .fontSize(10)
-          .fontColor('#757575')
+          .fontColor(COLORS.TEXT_GRAY_7575)
           .maxLines(2)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
           .margin({ top: 4 })
@@ -85,7 +86,7 @@ export struct FamilyCompareView {
     .padding({ top: 12, bottom: 12 })
     .margin({ right: 8 })
     .borderRadius(12)
-    .backgroundColor('#F5F5F5')
+    .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
     .alignItems(HorizontalAlign.Center)
   }
 

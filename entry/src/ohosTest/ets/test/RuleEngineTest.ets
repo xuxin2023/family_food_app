@@ -65,32 +65,32 @@ export default function ruleEngineTest() {
   describe('RuleEngine', () => {
     const engine = new RuleEngine();
 
-    // ========== 1. 过敏原红线检�?==========
+    // ========== 1. 过敏原红线检测 ==========
 
-    it('should_detect_nut_allergen', () => {
+    it('should_detect_nut_allergen', 0, () => {
       const profile = createRuleProfile([], ['坚果']);
-      const food = createRuleFood(0, 0, 0, 0, ['花生', '白砂�?, '食用�?]);
+      const food = createRuleFood(0, 0, 0, 0, ['花生', '白砂糖', '食用盐']);
       const hits = engine.checkAllergenRedline(profile, food);
       expect(hits.includes('坚果')).assertTrue();
     });
 
-    it('should_detect_dairy_allergen', () => {
-      const profile = createRuleProfile([], ['乳制�?]);
-      const food = createRuleFood(0, 0, 0, 0, ['生牛�?, '白砂�?]);
+    it('should_detect_dairy_allergen', 0, () => {
+      const profile = createRuleProfile([], ['乳制品']);
+      const food = createRuleFood(0, 0, 0, 0, ['生牛乳', '白砂糖']);
       const hits = engine.checkAllergenRedline(profile, food);
-      expect(hits.includes('乳制�?)).assertTrue();
+      expect(hits.includes('乳制品')).assertTrue();
     });
 
-    it('should_not_detect_when_no_allergen', () => {
+    it('should_not_detect_when_no_allergen', 0, () => {
       const profile = createRuleProfile([], ['坚果']);
-      const food = createRuleFood(0, 0, 0, 0, ['大米', '食用�?, '白砂�?]);
+      const food = createRuleFood(0, 0, 0, 0, ['大米', '食用盐', '白砂糖']);
       const hits = engine.checkAllergenRedline(profile, food);
       expect(hits.length).assertEqual(0);
     });
 
-    it('should_return_AVOID_when_allergen_hit', () => {
+    it('should_return_AVOID_when_allergen_hit', 0, () => {
       const profile = createRuleProfile([HealthGoal.CONTROL_BP], ['坚果']);
-      const food = createRuleFood(500, 5, 200, 10, ['花生', '食用�?]);
+      const food = createRuleFood(500, 5, 200, 10, ['花生', '食用盐']);
       const signal = createRuleSignal();
       const budget = createRuleBudget();
       const rec = engine.calculate({ profile, healthSignal: signal, foodLabel: food, dailyBudget: budget });
@@ -98,65 +98,65 @@ export default function ruleEngineTest() {
       expect(rec.maxAmount).assertEqual(0);
     });
 
-    // ========== 2. 今日可吃量计�?==========
+    // ========== 2. 今日可吃量计算 ==========
 
-    it('should_calculate_max_amount_by_sodium', () => {
-      // 剩余�?00mg，食品钠1200mg/100g �?300/1200*100 = 25g
+    it('should_calculate_max_amount_by_sodium', 0, () => {
+      // 剩余钠300mg，食品钠1200mg/100g -> 300/1200*100 = 25g
       const result = engine.calculateMaxAmount(300, 1200);
       expect(result).assertEqual(25);
     });
 
-    it('should_calculate_max_amount_by_sugar', () => {
-      // 剩余�?0g，食品糖20g/100g �?10/20*100 = 50g
+    it('should_calculate_max_amount_by_sugar', 0, () => {
+      // 剩余糖10g，食品糖20g/100g -> 10/20*100 = 50g
       const result = engine.calculateMaxAmount(10, 20);
       expect(result).assertEqual(50);
     });
 
-    it('should_return_infinity_when_no_nutrition_data', () => {
+    it('should_return_infinity_when_no_nutrition_data', 0, () => {
       const result = engine.calculateMaxAmount(100, 0);
       expect(result).assertEqual(Infinity);
     });
 
-    it('should_return_0_when_budget_exhausted', () => {
+    it('should_return_0_when_budget_exhausted', 0, () => {
       const result = engine.calculateMaxAmount(0, 100);
       expect(result).assertEqual(0);
     });
 
-    // ========== 3. 动态修正因�?==========
+    // ========== 3. 动态修正因子 ==========
 
-    it('should_reduce_high_calorie_factor_when_low_activity', () => {
+    it('should_reduce_high_calorie_factor_when_low_activity', 0, () => {
       const signal = createRuleSignal(StepLevel.LOW);
       const modifiers = engine.calculateDynamicModifiers(signal);
       expect(modifiers.highCalorieFactor).assertEqual(0.7);
       expect(modifiers.highFatFactor).assertEqual(0.7);
     });
 
-    it('should_increase_calorie_factor_when_high_activity', () => {
+    it('should_increase_calorie_factor_when_high_activity', 0, () => {
       const signal = createRuleSignal(StepLevel.HIGH);
       const modifiers = engine.calculateDynamicModifiers(signal);
       expect(modifiers.highCalorieFactor).assertEqual(1.2);
     });
 
-    it('should_reduce_sugar_factor_when_poor_sleep', () => {
+    it('should_reduce_sugar_factor_when_poor_sleep', 0, () => {
       const signal = createRuleSignal(StepLevel.NORMAL, SleepStatus.POOR);
       const modifiers = engine.calculateDynamicModifiers(signal);
       expect(modifiers.highSugarFactor).assertEqual(0.8);
     });
 
-    it('should_reduce_factors_when_weight_up', () => {
+    it('should_reduce_factors_when_weight_up', 0, () => {
       const signal = createRuleSignal(StepLevel.NORMAL, SleepStatus.GOOD, WeightTrend.UP);
       const modifiers = engine.calculateDynamicModifiers(signal);
       expect(modifiers.highCalorieFactor).assertEqual(0.8);
       expect(modifiers.highFatFactor).assertEqual(0.8);
     });
 
-    it('should_reduce_sodium_budget_when_high_bp', () => {
+    it('should_reduce_sodium_budget_when_high_bp', 0, () => {
       const signal = createRuleSignal(StepLevel.NORMAL, SleepStatus.GOOD, WeightTrend.STABLE, BpStatus.HIGH);
       const modifiers = engine.calculateDynamicModifiers(signal);
       expect(modifiers.sodiumBudgetFactor).assertEqual(0.8);
     });
 
-    it('should_return_default_modifiers_when_normal', () => {
+    it('should_return_default_modifiers_when_normal', 0, () => {
       const signal = createRuleSignal();
       const modifiers = engine.calculateDynamicModifiers(signal);
       expect(modifiers.highCalorieFactor).assertEqual(1.0);
@@ -168,7 +168,7 @@ export default function ruleEngineTest() {
 
     // ========== 4. 四级映射 ==========
 
-    it('should_return_SUITABLE_when_high_max_amount', () => {
+    it('should_return_SUITABLE_when_high_max_amount', 0, () => {
       const profile = createRuleProfile();
       const food = createRuleFood(100, 2, 100, 3);  // 低盐低糖低脂
       const signal = createRuleSignal();
@@ -177,33 +177,33 @@ export default function ruleEngineTest() {
       expect(rec.level).assertEqual(RecommendLevel.SUITABLE);
     });
 
-    it('should_return_SMALL_OK_when_moderate_max_amount', () => {
-      // 高盐食品，剩余钠较少 �?建议量在16-50g之间
+    it('should_return_SMALL_OK_when_moderate_max_amount', 0, () => {
+      // 高盐食品，剩余钠较少 -> 建议量在16-50g之间
       const profile = createRuleProfile([HealthGoal.CONTROL_BP]);
       const food = createRuleFood(1200, 3, 200, 10);  // 高盐
       const signal = createRuleSignal();
-      const budget = createRuleBudget(400, 30, 800, 40);  // 钠剩�?00mg
+      const budget = createRuleBudget(400, 30, 800, 40);  // 钠剩余400mg
       const rec = engine.calculate({ profile, healthSignal: signal, foodLabel: food, dailyBudget: budget });
-      // 400/1200*100 �?33g �?SMALL_OK
+      // 400/1200*100 = 33g -> SMALL_OK
       expect(rec.level === RecommendLevel.SMALL_OK || rec.level === RecommendLevel.CAUTIOUS).assertTrue();
     });
 
-    it('should_return_CAUTIOUS_when_very_low_max_amount', () => {
+    it('should_return_CAUTIOUS_when_very_low_max_amount', 0, () => {
       // 高盐食品，钠预算几乎用完
       const profile = createRuleProfile([HealthGoal.CONTROL_BP]);
       const food = createRuleFood(1200, 3, 200, 10);
       const signal = createRuleSignal();
-      const budget = createRuleBudget(100, 30, 800, 40);  // 钠仅�?00mg
+      const budget = createRuleBudget(100, 30, 800, 40);  // 钠仅剩100mg
       const rec = engine.calculate({ profile, healthSignal: signal, foodLabel: food, dailyBudget: budget });
-      // 100/1200*100 �?8g �?CAUTIOUS
+      // 100/1200*100 = 8g -> CAUTIOUS
       expect(rec.level).assertEqual(RecommendLevel.CAUTIOUS);
     });
 
-    it('should_return_AVOID_when_budget_exhausted', () => {
+    it('should_return_AVOID_when_budget_exhausted', 0, () => {
       const profile = createRuleProfile([HealthGoal.CONTROL_BP]);
       const food = createRuleFood(1200, 3, 200, 10);
       const signal = createRuleSignal();
-      const budget = createRuleBudget(0, 0, 0, 0);  // 预算全用�?
+      const budget = createRuleBudget(0, 0, 0, 0);  // 预算全用完
       const rec = engine.calculate({ profile, healthSignal: signal, foodLabel: food, dailyBudget: budget });
       expect(rec.level).assertEqual(RecommendLevel.AVOID);
       expect(rec.maxAmount).assertEqual(0);
@@ -211,7 +211,7 @@ export default function ruleEngineTest() {
 
     // ========== 5. 原因生成 ==========
 
-    it('should_generate_bp_control_reason', () => {
+    it('should_generate_bp_control_reason', 0, () => {
       const profile = createRuleProfile([HealthGoal.CONTROL_BP]);
       const food = createRuleFood(1200, 3, 200, 10);  // 高盐
       const signal = createRuleSignal();
@@ -220,7 +220,7 @@ export default function ruleEngineTest() {
       expect(rec.reasons.join('').includes('控压')).assertTrue();
     });
 
-    it('should_generate_sugar_control_reason', () => {
+    it('should_generate_sugar_control_reason', 0, () => {
       const profile = createRuleProfile([HealthGoal.CONTROL_SUGAR]);
       const food = createRuleFood(100, 20, 200, 10);  // 高糖
       const signal = createRuleSignal();
@@ -229,16 +229,16 @@ export default function ruleEngineTest() {
       expect(rec.reasons.join('').includes('控糖')).assertTrue();
     });
 
-    it('should_generate_lose_fat_reason', () => {
+    it('should_generate_lose_fat_reason', 0, () => {
       const profile = createRuleProfile([HealthGoal.LOSE_FAT]);
-      const food = createRuleFood(100, 3, 400, 10);  // 高热�?
+      const food = createRuleFood(100, 3, 400, 10);  // 高热量
       const signal = createRuleSignal();
       const budget = createRuleBudget();
       const rec = engine.calculate({ profile, healthSignal: signal, foodLabel: food, dailyBudget: budget });
       expect(rec.reasons.join('').includes('减脂')).assertTrue();
     });
 
-    it('should_generate_child_reason', () => {
+    it('should_generate_child_reason', 0, () => {
       const profile = createRuleProfile([HealthGoal.CHILD], [], AgeGroup.CHILD);
       const food = createRuleFood(800, 15, 200, 10);  // 高盐高糖
       const signal = createRuleSignal();
@@ -249,16 +249,16 @@ export default function ruleEngineTest() {
 
     // ========== 6. 提醒生成 ==========
 
-    it('should_remind_low_activity_high_calorie', () => {
+    it('should_remind_low_activity_high_calorie', 0, () => {
       const profile = createRuleProfile();
-      const food = createRuleFood(100, 3, 400, 20);  // 高热量高�?
-      const signal = createRuleSignal(StepLevel.LOW);  // 低活�?
+      const food = createRuleFood(100, 3, 400, 20);  // 高热量高脂
+      const signal = createRuleSignal(StepLevel.LOW);  // 低活动
       const budget = createRuleBudget();
       const rec = engine.calculate({ profile, healthSignal: signal, foodLabel: food, dailyBudget: budget });
-      expect(rec.reminders.length).assertLargerThan(0);
+      expect(rec.reminders.length).assertLarger(0);
     });
 
-    it('should_remind_poor_sleep_high_sugar', () => {
+    it('should_remind_poor_sleep_high_sugar', 0, () => {
       const profile = createRuleProfile();
       const food = createRuleFood(100, 20, 200, 10);  // 高糖
       const signal = createRuleSignal(StepLevel.NORMAL, SleepStatus.POOR);
@@ -269,7 +269,7 @@ export default function ruleEngineTest() {
 
     // ========== 7. 批量计算 ==========
 
-    it('should_calculate_family_comparison', () => {
+    it('should_calculate_family_comparison', 0, () => {
       const food = createRuleFood(800, 10, 300, 15);
       const signal = createRuleSignal();
       const budget = createRuleBudget();
@@ -291,4 +291,3 @@ export default function ruleEngineTest() {
     });
   });
 }
-

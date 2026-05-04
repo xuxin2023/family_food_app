@@ -13,6 +13,7 @@ import {
 import { DateUtil } from '../utils/DateUtil';
 import { preferences } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { COLORS } from '../constants/AppTheme';
 
 @Entry
 @Component
@@ -44,7 +45,7 @@ struct SettingsPage {
         Row() {
           Text('<')
             .fontSize(24)
-            .fontColor('#1976D2')
+            .fontColor(COLORS.PRIMARY)
             .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
           Text('设置')
             .fontSize(20)
@@ -61,12 +62,12 @@ struct SettingsPage {
             .margin({ bottom: 6 })
           Text('当前不接真实 Health Kit，不接真实订阅付费。你可以为每个家庭成员手动设置今天的活动、睡眠和偏咸/偏甜状态。')
             .fontSize(12)
-            .fontColor('#616161')
+            .fontColor(COLORS.TEXT_GRAY_6161)
             .lineHeight(18)
         }
         .width('92%')
         .padding(16)
-        .backgroundColor('#FFFFFF')
+        .backgroundColor(COLORS.WHITE)
         .borderRadius(16)
         .alignItems(HorizontalAlign.Start)
         .margin({ bottom: 14 })
@@ -77,7 +78,7 @@ struct SettingsPage {
         Button('保存今日状态')
           .width('90%')
           .height(50)
-          .backgroundColor('#1976D2')
+          .backgroundColor(COLORS.PRIMARY)
           .borderRadius(25)
           .margin({ top: 8, bottom: 24 })
           .onClick(() => { this.saveManualStatus() })
@@ -109,7 +110,7 @@ struct SettingsPage {
               Row() {
                 Text('← 收起')
                   .fontSize(13)
-                  .fontColor('#1976D2')
+                  .fontColor(COLORS.PRIMARY)
                   .onClick(() => {
                     this.showPrivacyDetail = false
                   })
@@ -126,7 +127,7 @@ struct SettingsPage {
             }
             .width('100%')
             .padding(8)
-            .backgroundColor('#F9F9F9')
+            .backgroundColor(COLORS.BG_LIGHT_GRAY_F9)
             .borderRadius(8)
             .margin({ top: 8 })
           }
@@ -137,7 +138,7 @@ struct SettingsPage {
               Row() {
                 Text('← 收起')
                   .fontSize(13)
-                  .fontColor('#1976D2')
+                  .fontColor(COLORS.PRIMARY)
                   .onClick(() => {
                     this.showAgreementDetail = false
                   })
@@ -154,21 +155,21 @@ struct SettingsPage {
             }
             .width('100%')
             .padding(8)
-            .backgroundColor('#F9F9F9')
+            .backgroundColor(COLORS.BG_LIGHT_GRAY_F9)
             .borderRadius(8)
             .margin({ top: 8 })
           }
 
           Text('当前版本 v4.0.0')
             .fontSize(12)
-            .fontColor('#9E9E9E')
+            .fontColor(COLORS.TEXT_GRAY_9E9E)
             .width('100%')
             .textAlign(TextAlign.Center)
             .margin({ top: 16 })
         }
         .width('92%')
         .padding(16)
-        .backgroundColor('#FFFFFF')
+        .backgroundColor(COLORS.WHITE)
         .borderRadius(16)
         .alignItems(HorizontalAlign.Start)
         .margin({ bottom: 24 })
@@ -178,7 +179,7 @@ struct SettingsPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#FAFAFA')
+    .backgroundColor(COLORS.BG_PAGE)
   }
 
   @Builder
@@ -186,7 +187,7 @@ struct SettingsPage {
     Column() {
       Text('设置谁的今日状态')
         .fontSize(14)
-        .fontColor('#757575')
+        .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ bottom: 8 })
       Row() {
         ForEach(this.familyMembers, (member: FamilyProfile) => {
@@ -194,8 +195,8 @@ struct SettingsPage {
             .fontSize(13)
             .padding({ left: 12, right: 12, top: 6, bottom: 6 })
             .borderRadius(16)
-            .backgroundColor(this.selectedMemberId === member.memberId ? '#1976D2' : '#FFFFFF')
-            .fontColor(this.selectedMemberId === member.memberId ? '#FFFFFF' : '#212121')
+            .backgroundColor(this.selectedMemberId === member.memberId ? COLORS.PRIMARY : COLORS.WHITE)
+            .fontColor(this.selectedMemberId === member.memberId ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
             .margin({ right: 8 })
             .onClick(() => {
               this.selectedMemberId = member.memberId
@@ -206,7 +207,7 @@ struct SettingsPage {
     }
     .width('92%')
     .padding(16)
-    .backgroundColor('#FFFFFF')
+    .backgroundColor(COLORS.WHITE)
     .borderRadius(16)
     .alignItems(HorizontalAlign.Start)
     .margin({ bottom: 14 })
@@ -222,7 +223,7 @@ struct SettingsPage {
 
       Text('活动量')
         .fontSize(13)
-        .fontColor('#757575')
+        .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ bottom: 8 })
       Row() {
         this.OptionChip('活动少', this.stepLevel === StepLevel.LOW, () => { this.stepLevel = StepLevel.LOW })
@@ -233,7 +234,7 @@ struct SettingsPage {
 
       Text('睡眠')
         .fontSize(13)
-        .fontColor('#757575')
+        .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ bottom: 8 })
       Row() {
         this.OptionChip('好', this.sleepStatus === SleepStatus.GOOD, () => { this.sleepStatus = SleepStatus.GOOD })
@@ -244,7 +245,7 @@ struct SettingsPage {
 
       Text('今天已经吃过')
         .fontSize(13)
-        .fontColor('#757575')
+        .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ bottom: 8 })
       Row() {
         this.OptionChip('高盐', this.hadHighSodiumToday, () => { this.hadHighSodiumToday = !this.hadHighSodiumToday })
@@ -253,12 +254,12 @@ struct SettingsPage {
 
       Text('这些状态会直接影响今天的适配报告和美食额度判断。')
         .fontSize(12)
-        .fontColor('#9E9E9E')
+        .fontColor(COLORS.TEXT_GRAY_9E9E)
         .margin({ top: 12 })
     }
     .width('92%')
     .padding(16)
-    .backgroundColor('#FFFFFF')
+    .backgroundColor(COLORS.WHITE)
     .borderRadius(16)
     .alignItems(HorizontalAlign.Start)
   }
@@ -269,8 +270,8 @@ struct SettingsPage {
       .fontSize(13)
       .padding({ left: 12, right: 12, top: 8, bottom: 8 })
       .borderRadius(18)
-      .backgroundColor(active ? '#1976D2' : '#F5F5F5')
-      .fontColor(active ? '#FFFFFF' : '#212121')
+      .backgroundColor(active ? COLORS.PRIMARY : '#F5F5F5')
+      .fontColor(active ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
       .margin({ right: 8 })
       .onClick(onClick)
   }
@@ -313,11 +314,11 @@ struct SettingsPage {
       Column() {
         Text(title)
           .fontSize(15)
-          .fontColor('#212121')
+          .fontColor(COLORS.TEXT_GRAY_2121)
           .lineHeight(22)
         Text(subtitle)
           .fontSize(12)
-          .fontColor('#9E9E9E')
+          .fontColor(COLORS.TEXT_GRAY_9E9E)
           .lineHeight(18)
           .margin({ top: 2 })
       }

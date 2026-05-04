@@ -1,8 +1,12 @@
 // FoodAdapterEngine.ets
 // 动态适配矩阵V3 - 连续扫描递减、步数/睡眠精确影响、关联风险识别
+//
+// 注意：本引擎使用独立的参数类型，未集成主数据体系。
+// 如需启用，请通过 ModelConverter 将 FamilyProfile/FoodLabel/HealthSignal
+// 转换为对应输入类型后再调用。
 
-import { FamilyMemberSimple, FoodNutrition, HealthSignal, EnhancedFoodRecommendation,
-  RecommendationLevel, ParentPanelData, AgeSpecificAdvice } from '../model/FoodAdapterTypes';
+import { EnhancedFoodRecommendation,
+  RecommendationLevel } from '../model/FoodAdapterTypes';
 
 /**
  * 高钠阈值（每100g钠含量mg）
@@ -36,9 +40,9 @@ export class FoodAdapterEngine {
    * @returns 增强版适配建议
    */
   static calculateDynamicIntake(
-    member: FamilyMemberSimple,
-    food: FoodNutrition,
-    healthSignal: HealthSignal,
+    member: FamilyMemberSimpleInput,
+    food: FoodNutritionInput,
+    healthSignal: HealthSignalInput,
     todayIntake: TodayIntakeInput,
     scanIndex: number
   ): EnhancedFoodRecommendation {
@@ -192,7 +196,7 @@ export class FoodAdapterEngine {
   /**
    * 根据步数水平获取预算调整因子
    */
-  private static getStepAdjustment(signal: HealthSignal): number {
+  private static getStepAdjustment(signal: HealthSignalInput): number {
     // 步数<3000→钠/热量预算额外收紧20%；3000-6000→收紧10%；6000-10000→正常；>10000→可放宽5%
     if (signal.steps === '低') {
       return 0.8; // 收紧20%
@@ -208,7 +212,7 @@ export class FoodAdapterEngine {
   /**
    * 根据睡眠质量获取高糖高脂调整因子
    */
-  private static getSleepAdjustment(signal: HealthSignal, food: FoodNutrition): number {
+  private static getSleepAdjustment(signal: HealthSignalInput, food: FoodNutritionInput): number {
     const isHighSugarOrFat: boolean = food.sugar_g > 10 || food.fat_g > 15;
     if (!isHighSugarOrFat) {
       return 1.0;
@@ -260,9 +264,58 @@ export class FoodAdapterEngine {
 /**
  * 今日摄入输入（简化版，可直接用TodayIntake数据）
  */
-interface TodayIntakeInput {
+export interface TodayIntakeInput {
   sodium_mg: number;
   sugar_g: number;
   energy_kcal: number;
   fat_g: number;
+}
+
+/**
+ * 家庭成员简档输入（自包含类型，替代已移除的 FoodAdapterTypes.FamilyMemberSimple）
+ */
+export interface FamilyMemberSimpleInput {
+  id: string;
+  name: string;
+  role: string;
+  age: number;
+  healthGoal: string;
+  dailyBudget: {
+    sodium_mg: number;
+    sugar_g: number;
+    energy_kcal: number;
+    fat_g: number;
+    saturatedFat_g: number;
+  };
+  allergenRedline: string[];
+  dislikedAdditives: string[];
+}
+
+/**
+ * 食品营养数据输入（自包含类型，替代已移除的 FoodAdapterTypes.FoodNutrition）
+ */
+export interface FoodNutritionInput {
+  productName: string;
+  brand: string;
+  sodium_mg: number;
+  sugar_g: number;
+  energy_kj: number;
+  fat_g: number;
+  saturatedFat_g: number;
+  transFat_g: number;
+  carbs_g: number;
+  protein_g: number;
+  allergens: string[];
+  manufacturer: string;
+}
+
+/**
+ * 健康信号输入（自包含类型，替代已移除的 FoodAdapterTypes.HealthSignal）
+ */
+export interface HealthSignalInput {
+  steps: string;
+  sleep: string;
+  weightTrend: string;
+  manualBpStatus?: string;
+  manualBgStatus?: string;
 }

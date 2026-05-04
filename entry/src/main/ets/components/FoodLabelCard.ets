@@ -1,6 +1,7 @@
 // 食品标签信息卡组件
 
 import { FoodLabel } from '../model/FoodLabel';
+import { COLORS } from '../constants/AppTheme';
 
 @Component
 export struct FoodLabelCard {
@@ -12,11 +13,11 @@ export struct FoodLabelCard {
       Text(this.foodLabel.foodName)
         .fontSize(18)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#212121')
+        .fontColor(COLORS.TEXT_GRAY_2121)
         .margin({ bottom: 12 })
 
       // 营养成分网格
-      Text('营养成分（每100g）').fontSize(13).fontColor('#757575').margin({ bottom: 6 })
+      Text('营养成分（每100g）').fontSize(13).fontColor(COLORS.TEXT_GRAY_7575).margin({ bottom: 6 })
       Grid() {
         GridItem() { this.NutritionItem('钠', `${this.foodLabel.nutrition.sodium}mg`, this.foodLabel.isHighSodium()) }
         GridItem() { this.NutritionItem('糖', `${this.foodLabel.nutrition.sugar}g`, this.foodLabel.isHighSugar()) }
@@ -33,17 +34,17 @@ export struct FoodLabelCard {
 
       // 配料表
       if (this.foodLabel.ingredients.length > 0) {
-        Text('配料').fontSize(13).fontColor('#757575').margin({ bottom: 4 })
+        Text('配料').fontSize(13).fontColor(COLORS.TEXT_GRAY_7575).margin({ bottom: 4 })
         Text(this.foodLabel.ingredients.join('、'))
           .fontSize(12)
-          .fontColor('#616161')
+          .fontColor(COLORS.TEXT_GRAY_6161)
           .maxLines(3)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
       }
     }
     .width('100%')
     .padding(16)
-    .backgroundColor('#FFFFFF')
+    .backgroundColor(COLORS.WHITE)
     .borderRadius(12)
     .alignItems(HorizontalAlign.Start)
   }
@@ -51,15 +52,15 @@ export struct FoodLabelCard {
   @Builder
   NutritionItem(name: string, value: string, isHigh: boolean) {
     Column() {
-      Text(name).fontSize(11).fontColor('#9E9E9E')
+      Text(name).fontSize(11).fontColor(COLORS.TEXT_GRAY_9E9E)
       Text(value)
         .fontSize(14)
         .fontWeight(FontWeight.Medium)
-        .fontColor(isHigh ? '#FF5722' : '#212121')
+        .fontColor(isHigh ? COLORS.ACCENT_ORANGE : COLORS.TEXT_GRAY_2121)
         .margin({ top: 2 })
     }
     .padding(8)
-    .backgroundColor(isHigh ? '#FFF3E0' : '#F5F5F5')
+    .backgroundColor(isHigh ? COLORS.BG_WARM_ORANGE : COLORS.BG_LIGHT_GRAY_F5)
     .borderRadius(8)
     .alignItems(HorizontalAlign.Center)
   }

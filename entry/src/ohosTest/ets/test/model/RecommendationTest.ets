@@ -5,7 +5,8 @@ import { Recommendation, RecommendLevel, LevelColor,
 
 function createRec(level: RecommendLevel, levelColor: LevelColor, maxAmount: number,
   maxServings: number, reasons: string[], reminders: string[]): Recommendation {
-  const rec: Recommendation = new Recommendation();  rec.memberId = 'member_1';
+  const rec: Recommendation = new Recommendation();
+  rec.memberId = 'member_1';
   rec.foodId = 'food_001';
   rec.level = level;
   rec.levelColor = levelColor;

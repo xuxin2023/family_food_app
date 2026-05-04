@@ -4,6 +4,7 @@ import { FamilyProfile } from '../model/FamilyProfile';
 import { ScanHistoryRecord } from '../repository/HistoryRepository';
 import { DateUtil } from '../utils/DateUtil';
 import { EmptyState } from '../components/EmptyState';
+import { COLORS } from '../constants/AppTheme';
 
 @Entry
 @Component
@@ -24,7 +25,7 @@ struct HistoryPage {
       Row() {
         Text('<')
           .fontSize(24)
-          .fontColor('#1976D2')
+          .fontColor(COLORS.PRIMARY)
           .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
         Text('历史记录')
           .fontSize(20)
@@ -40,8 +41,8 @@ struct HistoryPage {
             .fontSize(13)
             .padding({ left: 12, right: 12, top: 6, bottom: 6 })
             .borderRadius(16)
-            .backgroundColor(this.selectedMemberId === 'all' ? '#1976D2' : '#FFFFFF')
-            .fontColor(this.selectedMemberId === 'all' ? '#FFFFFF' : '#212121')
+            .backgroundColor(this.selectedMemberId === 'all' ? COLORS.PRIMARY : COLORS.WHITE)
+            .fontColor(this.selectedMemberId === 'all' ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
             .margin({ right: 8 })
             .onClick(() => { this.selectedMemberId = 'all' })
 
@@ -50,8 +51,8 @@ struct HistoryPage {
               .fontSize(13)
               .padding({ left: 12, right: 12, top: 6, bottom: 6 })
               .borderRadius(16)
-              .backgroundColor(this.selectedMemberId === member.memberId ? '#1976D2' : '#FFFFFF')
-              .fontColor(this.selectedMemberId === member.memberId ? '#FFFFFF' : '#212121')
+              .backgroundColor(this.selectedMemberId === member.memberId ? COLORS.PRIMARY : COLORS.WHITE)
+              .fontColor(this.selectedMemberId === member.memberId ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
               .margin({ right: 8 })
               .onClick(() => { this.selectedMemberId = member.memberId })
           }, (member: FamilyProfile) => member.memberId)
@@ -83,7 +84,7 @@ struct HistoryPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#FAFAFA')
+    .backgroundColor(COLORS.BG_PAGE)
   }
 
   @Builder
@@ -96,7 +97,7 @@ struct HistoryPage {
             .fontWeight(FontWeight.Medium)
           Text(this.getMemberName(record.memberId))
             .fontSize(12)
-            .fontColor('#757575')
+            .fontColor(COLORS.TEXT_GRAY_7575)
             .margin({ top: 4 })
         }
         .alignItems(HorizontalAlign.Start)
@@ -104,7 +105,7 @@ struct HistoryPage {
 
         Text(DateUtil.formatTimestamp(record.scannedAt))
           .fontSize(11)
-          .fontColor('#9E9E9E')
+          .fontColor(COLORS.TEXT_GRAY_9E9E)
       }
       .width('100%')
 
@@ -115,7 +116,7 @@ struct HistoryPage {
         if (record.maxAmount > 0) {
           Text(` · 建议上限 ${Math.round(record.maxAmount)} g`)
             .fontSize(12)
-            .fontColor('#616161')
+            .fontColor(COLORS.TEXT_GRAY_6161)
             .margin({ left: 6 })
         }
       }
@@ -125,13 +126,13 @@ struct HistoryPage {
       if (record.reasons.length > 0) {
         Text(record.reasons[0])
           .fontSize(12)
-          .fontColor('#616161')
+          .fontColor(COLORS.TEXT_GRAY_6161)
           .margin({ top: 8 })
       }
     }
     .width('100%')
     .padding(14)
-    .backgroundColor('#FFFFFF')
+    .backgroundColor(COLORS.WHITE)
     .borderRadius(14)
     .margin({ bottom: 8 })
     .alignItems(HorizontalAlign.Start)
@@ -150,10 +151,10 @@ struct HistoryPage {
   }
 
   private getLevelColor(level: string): string {
-    if (level === '适合') return '#43A047'
-    if (level === '少量可以') return '#FB8C00'
-    if (level === '今天谨慎') return '#F4511E'
-    if (level === '建议避免') return '#D32F2F'
-    return '#757575'
+    if (level === '适合') return COLORS.LEVEL_GREEN
+    if (level === '少量可以') return COLORS.LEVEL_YELLOW
+    if (level === '今天谨慎') return COLORS.LEVEL_ORANGE
+    if (level === '建议避免') return COLORS.LEVEL_RED
+    return COLORS.TEXT_GRAY_7575
   }
 }

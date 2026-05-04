@@ -394,7 +394,7 @@ export class IapService {
    * @param timeoutMsg 超时时的错误信息
    */
   private withTimeout(promise: Promise<iap.CreatePurchaseResult>, timeoutMs: number, timeoutMsg: string): Promise<iap.CreatePurchaseResult> {
-    return new Promise((resolve: (value: iap.CreatePurchaseResult) => void, reject: (reason: Error) => void) => {
+    return new Promise<iap.CreatePurchaseResult>((resolve: (value: iap.CreatePurchaseResult) => void, reject: (reason: Error) => void) => {
       const timer = setTimeout(() => {
         reject(new Error(timeoutMsg));
       }, timeoutMs);

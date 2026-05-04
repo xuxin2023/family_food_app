@@ -99,7 +99,7 @@ export default function weeklyReportEngineTest() {
 
       expect(report.summary.includes('高盐')).assertTrue();
       expect(report.summary.includes('5')).assertTrue();
-      expect(report.highlights.length).assertLargerThan(0);
+      expect(report.highlights.length).assertLarger(0);
       expect(report.highlights[0].includes('高盐')).assertTrue();
     });
 
@@ -130,7 +130,7 @@ export default function weeklyReportEngineTest() {
 
       expect(report.summary.includes('高糖')).assertTrue();
       expect(report.summary.includes('4')).assertTrue();
-      expect(report.highlights.length).assertLargerThan(0);
+      expect(report.highlights.length).assertLarger(0);
     });
 
     // ========== 4. 儿童周报 ==========
@@ -148,7 +148,7 @@ export default function weeklyReportEngineTest() {
 
       expect(report.summary.includes('甜食')).assertTrue();
       expect(report.summary.includes('零食超标')).assertTrue();
-      expect(report.suggestions.length).assertLargerThan(0);
+      expect(report.suggestions.length).assertLarger(0);
     });
 
     // ========== 5. 夜宵提醒 ==========
@@ -163,7 +163,7 @@ export default function weeklyReportEngineTest() {
       const report: WeeklyReport = engine.generate(data, profile);
 
       expect(report.summary.includes('夜宵')).assertTrue();
-      expect(report.suggestions.length).assertLargerThan(0);
+      expect(report.suggestions.length).assertLarger(0);
     });
 
     // ========== 6. 重口味提醒 ==========
@@ -204,8 +204,8 @@ export default function weeklyReportEngineTest() {
 
       const report: WeeklyReport = engine.generate(data, profile);
 
-      expect(report.buyLess.length).assertLargerThan(0);
-      expect(report.buyMore.length).assertLargerThan(0);
+      expect(report.buyLess.length).assertLarger(0);
+      expect(report.buyMore.length).assertLarger(0);
     });
 
     it('should_recommend_buy_less_when_high_sugar', 0, () => {
@@ -216,8 +216,8 @@ export default function weeklyReportEngineTest() {
 
       const report: WeeklyReport = engine.generate(data, profile);
 
-      expect(report.buyLess.length).assertLargerThan(0);
-      expect(report.buyMore.length).assertLargerThan(0);
+      expect(report.buyLess.length).assertLarger(0);
+      expect(report.buyMore.length).assertLarger(0);
     });
 
     it('should_provide_default_buy_more_when_no_issues', 0, () => {

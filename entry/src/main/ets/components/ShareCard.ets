@@ -10,6 +10,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { Recommendation, getLevelColorValue } from '../model/Recommendation';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { FoodRecommendation, RecommendationLevel } from '../model/FoodAdapterTypes';
+import { COLORS } from '../constants/AppTheme';
 
 const TAG = 'ShareCardGenerator';
 const DOMAIN_ZERO = 0;
@@ -65,7 +66,7 @@ export class ShareCardGenerator {
       const ctx = offCanvas.getContext("2d");
 
       // 2. 绘制整个画布白色背景
-      ctx.fillStyle = '#FFFFFF';
+      ctx.fillStyle = COLORS.WHITE;
       ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
       // 3. 绘制顶部渐变背景区域 (0 ~ 400px)
@@ -77,7 +78,7 @@ export class ShareCardGenerator {
       ctx.fillRect(0, 0, canvasWidth, 400);
 
       // 4. 绘制食品名称（白色居中）
-      ctx.fillStyle = '#FFFFFF';
+      ctx.fillStyle = COLORS.WHITE;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.font = 'bold 48px sans-serif';
@@ -91,7 +92,7 @@ export class ShareCardGenerator {
       // 白色圆形背景
       ctx.beginPath();
       ctx.arc(badgeCenterX, badgeCenterY, badgeRadius, 0, Math.PI * 2);
-      ctx.fillStyle = '#FFFFFF';
+      ctx.fillStyle = COLORS.WHITE;
       ctx.fill();
       ctx.closePath();
 
@@ -121,19 +122,19 @@ export class ShareCardGenerator {
         const avatarY = memberStartY + 40;
         ctx.beginPath();
         ctx.arc(avatarX, avatarY, 40, 0, Math.PI * 2);
-        ctx.fillStyle = '#E0E0E0';
+        ctx.fillStyle = COLORS.BORDER_LIGHT;
         ctx.fill();
         ctx.closePath();
 
         // 昵称首字母作为占位文字
-        ctx.fillStyle = '#9E9E9E';
+        ctx.fillStyle = COLORS.TEXT_GRAY_9E9E;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.font = '24px sans-serif';
         ctx.fillText(member.name.substring(0, 1), avatarX, avatarY);
 
         // 昵称（成员名称）
-        ctx.fillStyle = '#212121';
+        ctx.fillStyle = COLORS.TEXT_GRAY_2121;
         ctx.font = '22px sans-serif';
         ctx.textBaseline = 'top';
         ctx.fillText(member.name, cardX + memberCardWidth / 2, memberStartY + 90);
@@ -148,7 +149,7 @@ export class ShareCardGenerator {
         ctx.closePath();
 
         // 胶囊内文字
-        ctx.fillStyle = '#FFFFFF';
+        ctx.fillStyle = COLORS.WHITE;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.font = '18px sans-serif';
@@ -156,7 +157,7 @@ export class ShareCardGenerator {
 
         // "最多X克"文字
         if (member.maxIntake.length > 0) {
-          ctx.fillStyle = '#757575';
+          ctx.fillStyle = COLORS.TEXT_GRAY_7575;
           ctx.font = '16px sans-serif';
           ctx.textBaseline = 'top';
           ctx.fillText(member.maxIntake, cardX + memberCardWidth / 2, capsuleY + 48);
@@ -170,20 +171,20 @@ export class ShareCardGenerator {
       ctx.beginPath();
       ctx.moveTo(80, bottomStartY);
       ctx.lineTo(canvasWidth - 80, bottomStartY);
-      ctx.strokeStyle = '#E0E0E0';
+      ctx.strokeStyle = COLORS.BORDER_LIGHT;
       ctx.lineWidth = 2;
       ctx.stroke();
       ctx.closePath();
 
       // App名称
-      ctx.fillStyle = '#333333';
+      ctx.fillStyle = COLORS.TEXT_GRAY_3333;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.font = 'bold 28px sans-serif';
       ctx.fillText('家庭食品适配助手', canvasWidth / 2, bottomStartY + 50);
 
       // 口号
-      ctx.fillStyle = '#9E9E9E';
+      ctx.fillStyle = COLORS.TEXT_GRAY_9E9E;
       ctx.font = '20px sans-serif';
       ctx.fillText('让关爱趁早', canvasWidth / 2, bottomStartY + 90);
 
@@ -191,11 +192,11 @@ export class ShareCardGenerator {
       const qrSize = 120;
       const qrX = (canvasWidth - qrSize) / 2;
       const qrY = bottomStartY + 120;
-      ctx.fillStyle = '#F5F5F5';
+      ctx.fillStyle = COLORS.BG_LIGHT_GRAY_F5;
       ctx.fillRect(qrX, qrY, qrSize, qrSize);
 
       // 二维码占位文字
-      ctx.fillStyle = '#BDBDBD';
+      ctx.fillStyle = COLORS.TEXT_GRAY_BDBD;
       ctx.font = '14px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -258,7 +259,7 @@ export class ShareCardGenerator {
     if (color === '#f44336' || color === '#e53935') {
       return { start: '#F44336', end: '#D32F2F' };
     }
-    return { start: '#42A5F5', end: '#1E88E5' };
+    return { start: COLORS.PRIMARY_LIGHT, end: COLORS.PRIMARY };
   }
 
   /**
@@ -406,12 +407,12 @@ export struct ShareCard {
       Column() {
         Text('食品适配助手')
           .fontSize(11)
-          .fontColor('#9E9E9E')
+          .fontColor(COLORS.TEXT_GRAY_9E9E)
           .margin({ bottom: 4 })
         Text(this.foodName)
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#212121')
+          .fontColor(COLORS.TEXT_GRAY_2121)
           .margin({ bottom: 16 })
       }
       .width('100%')
@@ -420,7 +421,7 @@ export struct ShareCard {
 
       Divider()
         .width('80%')
-        .color('#E0E0E0')
+        .color(COLORS.BORDER_LIGHT)
         .margin({ bottom: 12 })
 
       Column() {
@@ -434,18 +435,18 @@ export struct ShareCard {
       Column() {
         Text(this.generateSummary())
           .fontSize(11)
-          .fontColor('#9E9E9E')
+          .fontColor(COLORS.TEXT_GRAY_9E9E)
           .margin({ top: 12, bottom: 4 })
         Text('扫码查食品，全家更安心')
           .fontSize(11)
-          .fontColor('#1976D2')
+          .fontColor(COLORS.PRIMARY)
       }
       .width('100%')
       .alignItems(HorizontalAlign.Center)
       .padding({ top: 8, bottom: 20 })
     }
     .width('100%')
-    .backgroundColor('#FFFFFF')
+    .backgroundColor(COLORS.WHITE)
     .borderRadius(16)
     .shadow({ radius: 8, color: '#1A000000', offsetY: 2 })
   }
@@ -462,7 +463,7 @@ export struct ShareCard {
 
       Text(rec.level)
         .fontSize(13)
-        .fontColor('#FFFFFF')
+        .fontColor(COLORS.WHITE)
         .padding({ left: 10, right: 10, top: 3, bottom: 3 })
         .borderRadius(10)
         .backgroundColor(getLevelColorValue(rec.levelColor))
@@ -471,7 +472,7 @@ export struct ShareCard {
       if (rec.maxAmount > 0) {
         Text(`最多${rec.maxAmount}g`)
           .fontSize(13)
-          .fontColor('#212121')
+          .fontColor(COLORS.TEXT_GRAY_2121)
           .margin({ left: 10 })
       }
     }

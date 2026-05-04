@@ -480,7 +480,7 @@ export class OnlineShoppingParser {
    * HTTP POST 请求（application/x-www-form-urlencoded）
    */
   private httpPostForm(url: string, params: Record<string, string>): Promise<string> {
-    return new Promise((resolve: (value: string) => void, reject: (reason: Error) => void) => {
+    return new Promise<string>((resolve: (value: string) => void, reject: (reason: Error) => void) => {
       const httpRequest = http.createHttp();
       // 构建表单体
       let bodyParts: Array<string> = [];

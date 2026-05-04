@@ -445,8 +445,8 @@ struct ScanPage {
                 Button('保存 FoodLabel')
                   .layoutWeight(1)
                   .height(BUTTON.HEIGHT_SECONDARY)
-                  .backgroundColor('#FFF3E0')
-                  .fontColor('#EF6C00')
+                  .backgroundColor(COLORS.BG_WARM_ORANGE)
+                  .fontColor(COLORS.ORANGE_DEEP)
                   .borderRadius(BUTTON.RADIUS_SECONDARY)
                   .margin({ left: 10 })
                   .onClick(() => { this.saveDraft() })
@@ -498,7 +498,7 @@ struct ScanPage {
         .padding({ left: 20, right: 20, top: 8, bottom: 8 })
         .borderRadius(BUTTON.RADIUS_SMALL)
         .backgroundColor(this.scanMode === 'camera' ? COLORS.PRIMARY : COLORS.WHITE)
-        .fontColor(this.scanMode === 'camera' ? COLORS.WHITE : '#212121')
+        .fontColor(this.scanMode === 'camera' ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
         .onClick(() => {
           this.scanMode = 'camera'
           // 清除超时状态提示
@@ -512,7 +512,7 @@ struct ScanPage {
         .padding({ left: 20, right: 20, top: 8, bottom: 8 })
         .borderRadius(BUTTON.RADIUS_SMALL)
         .backgroundColor(this.scanMode === 'barcode' ? COLORS.PRIMARY : COLORS.WHITE)
-        .fontColor(this.scanMode === 'barcode' ? COLORS.WHITE : '#212121')
+        .fontColor(this.scanMode === 'barcode' ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
         .margin({ left: 10 })
         .onClick(() => { this.scanMode = 'barcode' })
     }
@@ -780,11 +780,11 @@ struct ScanPage {
       Text(value)
         .fontSize(13)
         .fontWeight(FontWeight.Medium)
-        .fontColor('#212121')
+        .fontColor(COLORS.TEXT_GRAY_2121)
         .margin({ top: 2 })
     }
     .padding(8)
-    .backgroundColor('#F5F5F5')
+    .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
     .borderRadius(10)
   }
 
@@ -838,7 +838,7 @@ struct ScanPage {
           .width('100%')
           .height(100)
           .padding(10)
-          .backgroundColor('#F7F8FA')
+          .backgroundColor(COLORS.BG_PAGE_LIGHT)
           .borderRadius(12)
           .onChange((value: string) => { this.editIngredients = value })
       }
@@ -870,7 +870,7 @@ struct ScanPage {
         .width('100%')
         .height(BUTTON.HEIGHT_SECONDARY)
         .padding({ left: 12, right: 12 })
-        .backgroundColor('#F7F8FA')
+        .backgroundColor(COLORS.BG_PAGE_LIGHT)
         .borderRadius(12)
         .onChange(onChange)
     }

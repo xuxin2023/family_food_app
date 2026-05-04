@@ -126,36 +126,3 @@ export const PRICING_PLANS: SubscriptionPlan[] = [
     limitations: []
   }
 ];
-
-// 定价工具类
-export class PricingService {
-  // 获取所有可用方案
-  static getAllPlans(): SubscriptionPlan[] {
-    return PRICING_PLANS;
-  }
-
-  // 获取推荐方案（首次付费推荐7天体验）
-  static getRecommendedPlan(): SubscriptionPlan {
-    return PRICING_PLANS[1]; // 7天家庭体验
-  }
-
-  // 判断用户是否可以访问某功能
-  static canAccess(currentTier: SubscriptionTier, requiredTier: SubscriptionTier): boolean {
-    const tierOrder = [
-      SubscriptionTier.FREE,
-      SubscriptionTier.TRIAL_7DAY,
-      SubscriptionTier.PERSONAL_YEAR,
-      SubscriptionTier.FAMILY_EARLY,
-      SubscriptionTier.FAMILY_STANDARD,
-      SubscriptionTier.FAMILY_PREMIUM
-    ];
-    const currentIndex = tierOrder.indexOf(currentTier);
-    const requiredIndex = tierOrder.indexOf(requiredTier);
-    return currentIndex >= requiredIndex;
-  }
-
-  // 免费版每日扫描次数限制
-  static readonly FREE_DAILY_SCAN_LIMIT = 3;
-  // 免费版家庭成员数限制
-  static readonly FREE_MEMBER_LIMIT = 1;
-}

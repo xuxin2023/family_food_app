@@ -6,7 +6,7 @@ import { BasketCheckResult } from '../engine/BasketCheckEngine';
 import { AppState } from '../AppState';
 import { PaywallTrigger, MemberTier } from '../model/MemberStatus';
 import { PaywallDialog } from '../components/PaywallDialog';
-import { BUTTON } from '../constants/AppTheme';
+import { BUTTON, COLORS } from '../constants/AppTheme';
 
 @Entry
 @Component
@@ -43,7 +43,7 @@ struct BasketCheckPage {
         Column() {
           // 顶部导航
           Row() {
-            Text('←').fontSize(24).fontColor('#1976D2')
+            Text('←').fontSize(24).fontColor(COLORS.PRIMARY)
               .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
             Text('购物篮检查').fontSize(20).fontWeight(FontWeight.Bold)
               .margin({ left: 16 })
@@ -56,9 +56,9 @@ struct BasketCheckPage {
             Text(`🛒 ${this.basketItems.length}款食品`).fontSize(16).fontWeight(FontWeight.Medium)
             Blank()
             if (this.checkResult && this.checkResult.hasRisk()) {
-              Text('需要注意').fontSize(14).fontColor('#FF5722').fontWeight(FontWeight.Medium)
+              Text('需要注意').fontSize(14).fontColor(COLORS.ACCENT_ORANGE).fontWeight(FontWeight.Medium)
             } else {
-              Text('整体尚可').fontSize(14).fontColor('#4CAF50')
+              Text('整体尚可').fontSize(14).fontColor(COLORS.ACCENT_GREEN_4CAF)
             }
           }
           .width('100%')
@@ -71,8 +71,8 @@ struct BasketCheckPage {
               Text('⚠ 购物篮提醒').fontSize(16).fontWeight(FontWeight.Medium).margin({ bottom: 8 })
               ForEach(this.checkResult.warnings, (warning: string) => {
                 Row() {
-                  Text('•').fontSize(14).fontColor('#FF5722').margin({ right: 6 })
-                  Text(warning).fontSize(14).fontColor('#212121')
+                  Text('•').fontSize(14).fontColor(COLORS.ACCENT_ORANGE).margin({ right: 6 })
+                  Text(warning).fontSize(14).fontColor(COLORS.TEXT_GRAY_2121)
                 }
                 .margin({ bottom: 6 })
                 .width('100%')
@@ -80,7 +80,7 @@ struct BasketCheckPage {
             }
             .width('100%')
             .padding(16)
-            .backgroundColor('#FFF3E0')
+            .backgroundColor(COLORS.BG_WARM_ORANGE)
             .borderRadius(12)
             .margin({ left: 16, right: 16, bottom: 12 })
             .alignItems(HorizontalAlign.Start)
@@ -92,8 +92,8 @@ struct BasketCheckPage {
               Text('💡 采购建议').fontSize(16).fontWeight(FontWeight.Medium).margin({ bottom: 8 })
               ForEach(this.checkResult.suggestions, (suggestion: string) => {
                 Row() {
-                  Text('•').fontSize(14).fontColor('#4CAF50').margin({ right: 6 })
-                  Text(suggestion).fontSize(14).fontColor('#212121')
+                  Text('•').fontSize(14).fontColor(COLORS.ACCENT_GREEN_4CAF).margin({ right: 6 })
+                  Text(suggestion).fontSize(14).fontColor(COLORS.TEXT_GRAY_2121)
                 }
                 .margin({ bottom: 6 })
                 .width('100%')
@@ -101,14 +101,14 @@ struct BasketCheckPage {
             }
             .width('100%')
             .padding(16)
-            .backgroundColor('#E8F5E9')
+            .backgroundColor(COLORS.BG_LIGHT_GREEN)
             .borderRadius(12)
             .margin({ left: 16, right: 16, bottom: 12 })
             .alignItems(HorizontalAlign.Start)
           }
 
           // 食品列表
-          Text('篮内食品').fontSize(14).fontColor('#757575')
+          Text('篮内食品').fontSize(14).fontColor(COLORS.TEXT_GRAY_7575)
             .margin({ left: 16, top: 8, bottom: 8 })
 
           ForEach(this.basketItems, (item: FoodLabel) => {
@@ -116,9 +116,9 @@ struct BasketCheckPage {
               Column() {
                 Text(item.foodName).fontSize(14).fontWeight(FontWeight.Medium)
                 Row() {
-                  if (item.isHighSodium()) { Text('高盐').fontSize(11).fontColor('#FFFFFF').backgroundColor('#FF5722').padding({ left: 6, right: 6, top: 2, bottom: 2 }).borderRadius(8).margin({ right: 4 }) }
-                  if (item.isHighSugar()) { Text('高糖').fontSize(11).fontColor('#FFFFFF').backgroundColor('#FF9800').padding({ left: 6, right: 6, top: 2, bottom: 2 }).borderRadius(8).margin({ right: 4 }) }
-                  if (item.isHighFat()) { Text('高脂').fontSize(11).fontColor('#FFFFFF').backgroundColor('#F44336').padding({ left: 6, right: 6, top: 2, bottom: 2 }).borderRadius(8) }
+                  if (item.isHighSodium()) { Text('高盐').fontSize(11).fontColor(COLORS.WHITE).backgroundColor(COLORS.ACCENT_ORANGE).padding({ left: 6, right: 6, top: 2, bottom: 2 }).borderRadius(8).margin({ right: 4 }) }
+                  if (item.isHighSugar()) { Text('高糖').fontSize(11).fontColor(COLORS.WHITE).backgroundColor('#FF9800').padding({ left: 6, right: 6, top: 2, bottom: 2 }).borderRadius(8).margin({ right: 4 }) }
+                  if (item.isHighFat()) { Text('高脂').fontSize(11).fontColor(COLORS.WHITE).backgroundColor('#F44336').padding({ left: 6, right: 6, top: 2, bottom: 2 }).borderRadius(8) }
                 }
                 .margin({ top: 4 })
               }
@@ -127,7 +127,7 @@ struct BasketCheckPage {
             }
             .width('100%')
             .padding(12)
-            .backgroundColor('#FFFFFF')
+            .backgroundColor(COLORS.WHITE)
             .borderRadius(8)
             .margin({ left: 16, right: 16, bottom: 4 })
           }, (item: FoodLabel) => item.foodId)
@@ -136,7 +136,7 @@ struct BasketCheckPage {
           Button('继续扫描添加')
             .width('90%')
             .height(BUTTON.HEIGHT_MD)
-            .backgroundColor('#1976D2')
+            .backgroundColor(COLORS.PRIMARY)
             .borderRadius(BUTTON.RADIUS_MD)
             .margin({ top: 16, bottom: 32 })
             .onClick(() => {

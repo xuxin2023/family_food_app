@@ -6,9 +6,32 @@
 
 import { http } from '@kit.NetworkKit';
 import { image } from '@kit.ImageKit';
-import { FoodNutrition } from '../model/FoodAdapterTypes';
 import { FoodLabel, NutritionPer100g, FoodSource } from '../model/FoodLabel';
 import { JsonObject } from '../model/JsonTypes';
+
+// ===== 公开的营养数据接口（替代已移除的 FoodAdapterTypes.FoodNutrition） =====
+
+export interface OffFoodNutrition {
+  productName: string;
+  brand: string;
+  netWeight_g: number;
+  energy_kj: number;
+  protein_g: number;
+  fat_g: number;
+  saturatedFat_g: number;
+  transFat_g: number;
+  carbs_g: number;
+  sugar_g: number;
+  sodium_mg: number;
+  allergens: string[];
+  isSugarFree: boolean;
+  isSucroseFree: boolean;
+  sweeteners: string[];
+  manufacturer: string;
+  entrustInfo: string;
+  scNumber: string;
+  dataCompleteness: string;
+}
 
 // ===== 常量定义 =====
 
@@ -117,7 +140,7 @@ export interface OnlineLookupResult {
   source: string;
   confidence: number;
   product?: OffProduct;
-  nutrition?: FoodNutrition;
+  nutrition?: OffFoodNutrition;
 }
 
 // ===== 服务类 =====
@@ -338,7 +361,7 @@ export class OpenFoodFactsService {
       return null
     }
 
-    return new Promise((resolve) => {
+    return new Promise<ArrayBuffer>((resolve) => {
       try {
         const httpRequest = http.createHttp()
         httpRequest.request(imageUrl, {
@@ -385,7 +408,7 @@ export class OpenFoodFactsService {
   /**
    * 将 Open Food Facts 产品数据转换为项目的 FoodNutrition 接口
    */
-  mapToFoodNutrition(offProduct: OffProduct): FoodNutrition {
+  mapToFoodNutrition(offProduct: OffProduct): OffFoodNutrition {
     const nutriments = offProduct.nutriments
 
     // 计算钠含量

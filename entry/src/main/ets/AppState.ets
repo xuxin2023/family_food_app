@@ -13,6 +13,7 @@ import { FoodRepository } from './repository/FoodRepository';
 import { HistoryRepository, ScanHistoryRecord, DietRecord } from './repository/HistoryRepository';
 import { RuleRepository } from './repository/RuleRepository';
 import { RuleEngine, RuleEngineParams } from './engine/RuleEngine';
+import { NutritionTrendEngine, DailyNutritionSummary, NutrientTrendData, MealGroup } from './engine/NutritionTrendEngine';
 import { HealthService } from './service/HealthService';
 import { RecommendationEngine } from './engine/RecommendationEngine';
 import { MealBalanceEngine } from './engine/MealBalanceEngine';
@@ -23,7 +24,7 @@ import { WeeklyReportEngine, WeeklyDietData, WeeklyReport } from './engine/Weekl
 import { ElderFriendlyEngine, ElderFriendlyReport } from './engine/ElderFriendlyEngine';
 import { PositiveAdviceEngine, PositiveAdvice } from './engine/PositiveAdviceEngine';
 import { DateUtil } from './utils/DateUtil';
-import { SubscriptionTier, PricingService } from './model/PricingModel';
+import { SubscriptionTier } from './model/PricingModel';
 import { common } from '@kit.AbilityKit';
 import { relationalStore } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -462,12 +463,13 @@ export class AppState {
   /**
    * 保存饮食记录
    */
-  async saveDietRecord(memberId: string, scenario: string, foodId: string,
+  async saveDietRecord(memberId: string, scenario: string, mealType: string, foodId: string,
     amountG: number, sodium: number, sugar: number, calories: number, fat: number): Promise<void> {
     await this.historyRepo.saveDietRecord({
       memberId,
       date: DateUtil.getToday(),
       scenario,
+      mealType,
       foodId,
       amountG,
       sodiumIntake: sodium,
@@ -478,6 +480,52 @@ export class AppState {
     });
     // 同步扣减预算
     this.deductIntake(memberId, sodium, sugar, calories, fat);
+  }
+
+  // ========== 营养追踪 ==========
+
+  /**
+   * 获取某成员某天的膳食记录（按餐次分组）
+   */
+  async getDailyDietGroups(memberId: string, date: string): Promise<MealGroup[]> {
+    const records = await this.historyRepo.getDietRecordsByDate(memberId, date);
+    return NutritionTrendEngine.groupByMealType(records);
+  }
+
+  /**
+   * 获取趋势数据（用于 NutritionTrendPage）
+   */
+  async getNutritionTrends(memberId: string, days: number): Promise<NutrientTrendData[]> {
+    const endDate = DateUtil.getToday();
+    const d = new Date();
+    d.setDate(d.getDate() - days);
+    const startDate = DateUtil.formatDate(d);
+
+    const records = await this.historyRepo.getDietRecordsByDateRange(memberId, startDate, endDate);
+    const dailySummaries = NutritionTrendEngine.aggregateDaily(records);
+
+    // 获取该成员的预算目标
+    const budget = this.dailyBudgetsCache.get(memberId);
+    const sTarget = budget?.sodiumBudget || 2000;
+    const suTarget = budget?.sugarBudget || 50;
+    const cTarget = budget?.calorieBudget || 2000;
+    const fTarget = budget?.fatBudget || 65;
+
+    return NutritionTrendEngine.buildNutrientTrends(dailySummaries,
+      sTarget, suTarget, cTarget, fTarget);
+  }
+
+  /**
+   * 获取每日汇总列表（用于趋势图表）
+   */
+  async getDailySummaries(memberId: string, days: number): Promise<DailyNutritionSummary[]> {
+    const endDate = DateUtil.getToday();
+    const d = new Date();
+    d.setDate(d.getDate() - days);
+    const startDate = DateUtil.formatDate(d);
+
+    const records = await this.historyRepo.getDietRecordsByDateRange(memberId, startDate, endDate);
+    return NutritionTrendEngine.aggregateDaily(records);
   }
 
   // ========== 默认数据 ==========
@@ -547,10 +595,35 @@ export class AppState {
   }
 
   /**
-   * 判断功能是否可访问
+   * 判断功能是否可访问（旧版，基于 SubscriptionTier）
    */
   canAccess(requiredTier: SubscriptionTier): boolean {
-    return PricingService.canAccess(this.currentTier, requiredTier);
+    const tierOrder = [
+      SubscriptionTier.FREE,
+      SubscriptionTier.TRIAL_7DAY,
+      SubscriptionTier.PERSONAL_YEAR,
+      SubscriptionTier.FAMILY_EARLY,
+      SubscriptionTier.FAMILY_STANDARD,
+      SubscriptionTier.FAMILY_PREMIUM
+    ];
+    const currentIndex = tierOrder.indexOf(this.currentTier);
+    const requiredIndex = tierOrder.indexOf(requiredTier);
+    return currentIndex >= requiredIndex;
+  }
+
+  /**
+   * 判断是否有家庭版及以上权限（新版，基于 MemberTier）
+   */
+  hasFamilyAccess(): boolean {
+    const tier = this.memberStatus.tier;
+    return tier === MemberTier.FAMILY || tier === MemberTier.PREMIUM;
+  }
+
+  /**
+   * 判断是否有高级版权限（新版，基于 MemberTier）
+   */
+  hasPremiumAccess(): boolean {
+    return this.memberStatus.tier === MemberTier.PREMIUM;
   }
 
   /**
@@ -560,7 +633,7 @@ export class AppState {
   canScanToday(): boolean {
     this.resetScanCountIfNewDay();
     if (this.currentTier === SubscriptionTier.FREE) {
-      return this.todayScanCount < PricingService.FREE_DAILY_SCAN_LIMIT;
+      return this.todayScanCount < 3;
     }
     return true; // 付费版无限扫描
   }
@@ -579,7 +652,7 @@ export class AppState {
   getRemainingScansToday(): number {
     this.resetScanCountIfNewDay();
     if (this.currentTier === SubscriptionTier.FREE) {
-      return Math.max(0, PricingService.FREE_DAILY_SCAN_LIMIT - this.todayScanCount);
+      return Math.max(0, 3 - this.todayScanCount);
     }
     return -1; // -1表示无限
   }
@@ -589,7 +662,7 @@ export class AppState {
    */
   canAddMember(): boolean {
     if (this.currentTier === SubscriptionTier.FREE) {
-      return this.membersCache.length < PricingService.FREE_MEMBER_LIMIT;
+      return this.membersCache.length < 1;
     }
     return true; // 付费版无限制
   }
@@ -599,7 +672,7 @@ export class AppState {
    */
   getMemberLimit(): number {
     if (this.currentTier === SubscriptionTier.FREE) {
-      return PricingService.FREE_MEMBER_LIMIT;
+      return 1;
     }
     return -1;
   }

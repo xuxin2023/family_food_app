@@ -10,6 +10,7 @@ import { BalanceAdviceCard } from '../components/BalanceAdviceCard';
 import { ChildProtectionCard } from '../components/ChildProtectionCard';
 import { PaywallTrigger, MemberTier } from '../model/MemberStatus';
 import { PaywallDialog } from '../components/PaywallDialog';
+import { COLORS } from '../constants/AppTheme';
 
 // 美食场景选项
 class ScenarioOption {
@@ -113,7 +114,7 @@ struct BalancePage {
           Row() {
             Text('<')
               .fontSize(24)
-              .fontColor('#1976D2')
+              .fontColor(COLORS.PRIMARY)
               .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
             Text('记录美食')
               .fontSize(20)
@@ -128,7 +129,7 @@ struct BalancePage {
             Row() {
               Text(`今日已使用 ${this.dailyUseCount} / ${this.DAILY_FREE_LIMIT} 次`)
                 .fontSize(12)
-                .fontColor(this.dailyUseCount >= this.DAILY_FREE_LIMIT ? '#FF5722' : '#757575')
+                .fontColor(this.dailyUseCount >= this.DAILY_FREE_LIMIT ? COLORS.ACCENT_ORANGE : COLORS.TEXT_GRAY_7575)
             }
             .width('92%')
             .padding({ left: 4, bottom: 8 })
@@ -139,7 +140,7 @@ struct BalancePage {
 
           Text('今天吃了什么')
             .fontSize(14)
-            .fontColor('#757575')
+            .fontColor(COLORS.TEXT_GRAY_7575)
             .width('92%')
             .margin({ bottom: 8 })
             .textAlign(TextAlign.Start)
@@ -151,7 +152,7 @@ struct BalancePage {
                   .fontSize(28)
                 Text(scenario.label)
                   .fontSize(12)
-                  .fontColor('#212121')
+                  .fontColor(COLORS.TEXT_GRAY_2121)
                   .margin({ top: 4 })
               }
               .width(88)
@@ -159,10 +160,10 @@ struct BalancePage {
               .justifyContent(FlexAlign.Center)
               .alignItems(HorizontalAlign.Center)
               .borderRadius(14)
-              .backgroundColor(this.selectedScenario === scenario.value ? '#E3F2FD' : '#FFFFFF')
+              .backgroundColor(this.selectedScenario === scenario.value ? COLORS.BG_WARM_BLUE : COLORS.WHITE)
               .border({
                 width: this.selectedScenario === scenario.value ? 2 : 1,
-                color: this.selectedScenario === scenario.value ? '#1976D2' : '#E0E0E0',
+                color: this.selectedScenario === scenario.value ? COLORS.PRIMARY : COLORS.BORDER_LIGHT,
                 style: BorderStyle.Solid,
                 radius: 14
               })
@@ -198,7 +199,7 @@ struct BalancePage {
       }
       .width('100%')
       .height('100%')
-      .backgroundColor('#FAFAFA')
+      .backgroundColor(COLORS.BG_PAGE)
 
       // 付费墙弹窗（覆盖在内容之上）
       if (this.paywallTrigger !== null) {
@@ -217,7 +218,7 @@ struct BalancePage {
     Column() {
       Text('谁吃了')
         .fontSize(14)
-        .fontColor('#757575')
+        .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ bottom: 8 })
       Row() {
         ForEach(this.familyMembers, (member: FamilyProfile) => {
@@ -225,8 +226,8 @@ struct BalancePage {
             .fontSize(13)
             .padding({ left: 12, right: 12, top: 6, bottom: 6 })
             .borderRadius(16)
-            .backgroundColor(this.selectedMemberId === member.memberId ? '#1976D2' : '#FFFFFF')
-            .fontColor(this.selectedMemberId === member.memberId ? '#FFFFFF' : '#212121')
+            .backgroundColor(this.selectedMemberId === member.memberId ? COLORS.PRIMARY : COLORS.WHITE)
+            .fontColor(this.selectedMemberId === member.memberId ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
             .margin({ right: 8 })
             .onClick(() => {
               this.selectedMemberId = member.memberId
@@ -237,7 +238,7 @@ struct BalancePage {
     }
     .width('92%')
     .padding(16)
-    .backgroundColor('#FFFFFF')
+    .backgroundColor(COLORS.WHITE)
     .borderRadius(16)
     .alignItems(HorizontalAlign.Start)
     .margin({ bottom: 12 })
@@ -268,7 +269,7 @@ struct BalancePage {
     }
     .width('92%')
     .padding(16)
-    .backgroundColor('#FFFFFF')
+    .backgroundColor(COLORS.WHITE)
     .borderRadius(16)
     .alignItems(HorizontalAlign.Start)
     .margin({ bottom: 16 })
@@ -279,11 +280,11 @@ struct BalancePage {
     Column() {
       Text(label)
         .fontSize(12)
-        .fontColor('#757575')
+        .fontColor(COLORS.TEXT_GRAY_7575)
       Text(value)
         .fontSize(13)
         .fontWeight(FontWeight.Medium)
-        .fontColor('#212121')
+        .fontColor(COLORS.TEXT_GRAY_2121)
         .margin({ top: 4 })
     }
     .width('48%')
@@ -306,14 +307,14 @@ struct BalancePage {
         ForEach(advice.whatToSupplement, (item: string) => {
           Text(`• ${item}`)
             .fontSize(13)
-            .fontColor('#212121')
+            .fontColor(COLORS.TEXT_GRAY_2121)
             .margin({ bottom: 4 })
         }, (item: string, index: number) => `${index}`)
 
         if (advice.howToSupplement.length > 0) {
           Text('下一餐建议')
             .fontSize(13)
-            .fontColor('#757575')
+            .fontColor(COLORS.TEXT_GRAY_7575)
             .margin({ top: 8, bottom: 6 })
           ForEach(advice.howToSupplement, (item: string) => {
             Text(`• ${item}`)
@@ -325,7 +326,7 @@ struct BalancePage {
       }
       .width('92%')
       .padding(16)
-      .backgroundColor('#FFFFFF')
+      .backgroundColor(COLORS.WHITE)
       .borderRadius(16)
       .alignItems(HorizontalAlign.Start)
       .margin({ bottom: 24 })
@@ -375,6 +376,7 @@ struct BalancePage {
     await this.appState.saveDietRecord(
       this.selectedMemberId,
       scenario,
+      'snack',   // 美食平衡页面记录的归为 snack
       food.foodId,
       100,
       food.nutrition.sodium,

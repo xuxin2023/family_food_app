@@ -28,6 +28,42 @@ export class COLORS {
   static readonly LEVEL_YELLOW: string = '#FFCC00';
   static readonly LEVEL_ORANGE: string = '#EF7D00';
   static readonly LEVEL_RED: string = '#E03C31';
+  // 常用颜色补充（方便统一替换）
+  static readonly TEXT_GRAY_7575: string = '#757575';
+  static readonly TEXT_GRAY_2121: string = '#212121';
+  static readonly BG_LIGHT_GRAY_F5: string = '#F5F5F5';
+  static readonly BORDER_LIGHT: string = '#E0E0E0';
+  static readonly BG_WARM_ORANGE: string = '#FFF3E0';
+  static readonly BG_WARM_PINK: string = '#FCE4EC';
+  static readonly BG_WARM_PURPLE: string = '#F3E5F5';
+  static readonly BG_WARM_BLUE: string = '#E3F2FD';
+  static readonly ORANGE_ACCENT: string = '#FF9800';
+  static readonly ORANGE_DEEP: string = '#EF6C00';
+  static readonly PURPLE_ACCENT: string = '#7B1FA2';
+  // 高频常用色补充
+  static readonly BG_PAGE_LIGHT: string = '#F7F8FA';
+  static readonly TEXT_GRAY_6161: string = '#616161';
+  static readonly TEXT_GRAY_9E9E: string = '#9E9E9E';
+  static readonly TEXT_GRAY_3333: string = '#333333';
+  static readonly TEXT_GRAY_8888: string = '#888888';
+  static readonly BG_DIVIDER: string = '#EEEEEE';
+  static readonly ACCENT_ORANGE: string = '#FF5722';
+  static readonly DOT_INACTIVE: string = '#D0D0D0';
+  // Report/Stats 专用
+  static readonly BG_LIGHT_GRAY_F9: string = '#F9F9F9';
+  static readonly BG_LIGHTER_GRAY_F8: string = '#F8F9FA';
+  static readonly BG_LIGHT_GREEN: string = '#E8F5E9';
+  static readonly BG_WARM_YELLOW: string = '#FFF8E1';
+  static readonly ACCENT_GREEN_4CAF: string = '#4CAF50';
+  static readonly ACCENT_RED_EF53: string = '#EF5350';
+  static readonly ACCENT_ORANGE_FFA7: string = '#FFA726';
+  static readonly ACCENT_GREEN_66BB: string = '#66BB6A';
+  static readonly BORDER_LIGHT_E8: string = '#E8E8E8';
+  static readonly BORDER_LIGHT_DD: string = '#DDDDDD';
+  static readonly TEXT_GRAY_4242: string = '#424242';
+  static readonly TEXT_GRAY_BDBD: string = '#BDBDBD';
+  static readonly ACCENT_RED_F443: string = '#F44336';
+  static readonly ACCENT_PURPLE_9C27: string = '#9C27B0';
 }
 
 export class RADIUS {

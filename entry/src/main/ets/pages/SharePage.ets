@@ -5,7 +5,7 @@ import { ShareCard } from '../components/ShareCard';
 import { ShareService } from '../service/ShareService';
 import { AppState } from '../AppState';
 import { ShareActionResult } from '../service/share/ShareProvider';
-import { BUTTON } from '../constants/AppTheme';
+import { BUTTON, COLORS } from '../constants/AppTheme';
 
 @Entry
 @Component
@@ -42,7 +42,7 @@ struct SharePage {
         Row() {
           Text('<')
             .fontSize(24)
-            .fontColor('#1976D2')
+            .fontColor(COLORS.PRIMARY)
             .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
           Text('分享文案')
             .fontSize(20)
@@ -73,14 +73,14 @@ struct SharePage {
 
           Text(this.copyHint)
             .fontSize(12)
-            .fontColor('#757575')
+            .fontColor(COLORS.TEXT_GRAY_7575)
             .margin({ bottom: 12 })
 
           TextArea({ text: this.shareText, placeholder: '报告生成后，这里会出现可复制文案。' })
             .width('100%')
             .height(220)
             .padding(12)
-            .backgroundColor('#F7F8FA')
+            .backgroundColor(COLORS.BG_PAGE_LIGHT)
             .borderRadius(12)
             .onChange((value: string) => { this.shareText = value })
 
@@ -88,16 +88,16 @@ struct SharePage {
             Button('刷新文案')
               .layoutWeight(1)
               .height(BUTTON.HEIGHT_SECONDARY)
-              .backgroundColor('#E3F2FD')
-              .fontColor('#1976D2')
+              .backgroundColor(COLORS.BG_WARM_BLUE)
+              .fontColor(COLORS.PRIMARY)
               .borderRadius(BUTTON.RADIUS_SECONDARY)
               .onClick(() => { this.refreshShareText() })
 
             Button('复制说明')
               .layoutWeight(1)
               .height(BUTTON.HEIGHT_SECONDARY)
-              .backgroundColor('#F5F5F5')
-              .fontColor('#616161')
+              .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
+              .fontColor(COLORS.TEXT_GRAY_6161)
               .borderRadius(BUTTON.RADIUS_SECONDARY)
               .margin({ left: 10 })
               .onClick(() => {
@@ -109,7 +109,7 @@ struct SharePage {
         }
         .width('90%')
         .padding(16)
-        .backgroundColor('#FFFFFF')
+        .backgroundColor(COLORS.WHITE)
         .borderRadius(16)
         .alignItems(HorizontalAlign.Start)
         .margin({ bottom: 16 })
@@ -122,23 +122,23 @@ struct SharePage {
 
           Text('P0 版先保证文案可复制；系统分享、图片生成、保存相册都不会再提示假成功。')
             .fontSize(12)
-            .fontColor('#757575')
+            .fontColor(COLORS.TEXT_GRAY_7575)
             .margin({ bottom: 12 })
 
           Row() {
             Button('系统分享')
               .layoutWeight(1)
               .height(BUTTON.HEIGHT_SECONDARY)
-              .backgroundColor('#EEEEEE')
-              .fontColor('#616161')
+              .backgroundColor(COLORS.BG_DIVIDER)
+              .fontColor(COLORS.TEXT_GRAY_6161)
               .borderRadius(BUTTON.RADIUS_SECONDARY)
               .onClick(() => { this.handleUnsupportedAction('family') })
 
             Button('微信分享')
               .layoutWeight(1)
               .height(BUTTON.HEIGHT_SECONDARY)
-              .backgroundColor('#EEEEEE')
-              .fontColor('#616161')
+              .backgroundColor(COLORS.BG_DIVIDER)
+              .fontColor(COLORS.TEXT_GRAY_6161)
               .borderRadius(BUTTON.RADIUS_SECONDARY)
               .margin({ left: 10 })
               .onClick(() => { this.handleUnsupportedAction('wechat') })
@@ -148,15 +148,15 @@ struct SharePage {
           Button('保存图片 / 相册')
             .width('100%')
             .height(BUTTON.HEIGHT_SECONDARY)
-            .backgroundColor('#EEEEEE')
-            .fontColor('#616161')
+            .backgroundColor(COLORS.BG_DIVIDER)
+            .fontColor(COLORS.TEXT_GRAY_6161)
             .borderRadius(BUTTON.RADIUS_SECONDARY)
             .margin({ top: 10 })
             .onClick(() => { this.handleUnsupportedAction('image') })
         }
         .width('90%')
         .padding(16)
-        .backgroundColor('#FFFFFF')
+        .backgroundColor(COLORS.WHITE)
         .borderRadius(16)
         .alignItems(HorizontalAlign.Start)
         .margin({ bottom: 24 })
@@ -166,7 +166,7 @@ struct SharePage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#FAFAFA')
+    .backgroundColor(COLORS.BG_PAGE)
   }
 
   private refreshShareText() {

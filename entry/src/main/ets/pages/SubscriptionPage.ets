@@ -196,7 +196,7 @@ struct SubscriptionPage {
             .fontSize(FONT_SIZE.SMALL)
             .fontColor(COLORS.TEXT_WHITE)
             .padding({ left: 12, right: 12, top: 4, bottom: 4 })
-            .backgroundColor('#FF5722')
+            .backgroundColor(COLORS.ACCENT_ORANGE)
             .borderRadius(RADIUS.SM)
             .shadow({ radius: 8, color: '#44FF5722' })
         }
@@ -227,7 +227,7 @@ struct SubscriptionPage {
         Button((this.isPurchasing && this.selectedPlanIndex === plan.index) ? '处理中...' : '立即订阅')
           .width('100%')
           .height(BUTTON.HEIGHT_SECONDARY)
-          .backgroundColor(plan.index === 1 ? '#FF5722' : COLORS.PRIMARY)
+          .backgroundColor(plan.index === 1 ? COLORS.ACCENT_ORANGE : COLORS.PRIMARY)
           .fontColor(COLORS.TEXT_WHITE)
           .borderRadius(RADIUS.XXL)
           .fontSize(FONT_SIZE.BODY)
@@ -243,7 +243,7 @@ struct SubscriptionPage {
     .alignItems(HorizontalAlign.Start)
     .linearGradient({
       direction: GradientDirection.Bottom,
-      colors: [[plan.cardBg, 0], ['#FFFFFF', 1]]
+      colors: [[plan.cardBg, 0], [COLORS.WHITE, 1]]
     })
     .border({ width: plan.index === 1 ? 2 : 0, color: plan.borderColor })
     .shadow({ radius: plan.index === 1 ? 12 : 6, color: plan.index === 1 ? '#22FF5722' : COLORS.SHADOW_LIGHT, offsetX: 0, offsetY: 4 })
@@ -269,8 +269,8 @@ struct SubscriptionPage {
         isYearly: trial.isYearly,
         features: trial.features,
         badge: '限时体验',
-        borderColor: '#FF9800',
-        cardBg: '#FFF8E1'
+        borderColor: COLORS.ORANGE_ACCENT,
+        cardBg: COLORS.BG_WARM_YELLOW
       });
     }
 
@@ -285,8 +285,8 @@ struct SubscriptionPage {
         isYearly: personal.isYearly,
         features: personal.features,
         badge: '推荐',
-        borderColor: '#FF5722',
-        cardBg: '#FFF3E0'
+        borderColor: COLORS.ACCENT_ORANGE,
+        cardBg: COLORS.BG_WARM_ORANGE
       });
     }
 

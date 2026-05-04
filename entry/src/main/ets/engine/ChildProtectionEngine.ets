@@ -3,7 +3,6 @@
 // V3增强：getChildMealAdvice 生活化呵护式建议、咖啡因+时间检查
 // V4增强：getParentControlPanel 家长控制面板、getAgeSpecificAdvice 年龄专属建议
 
-import { FamilyMember, FoodNutrition, ParentPanelData, AgeSpecificAdvice } from '../model/FoodAdapterTypes';
 import { ChildProtection } from '../model/ChildProtection';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { FoodLabel } from '../model/FoodLabel';
@@ -21,6 +20,49 @@ export class ChildMealAdvice {
   advice: string = '';
   /** 绿色通行/黄色注意/橙色提醒/红色禁止 */
   level: string = '绿色通行';
+}
+
+/**
+ * 家长控制面板数据（自包含类，替代已移除的 FoodAdapterTypes.ParentPanelData）
+ */
+export class ParentPanelDataResult {
+  sweetCountToday: number = 0;
+  sweetLimit: number = 3;
+  remainingQuota: number = 0;
+  mealAffectedCount: number = 0;
+  sleepRiskFoods: string[] = [];
+  tomorrowSweetQuota: number = 0;
+  weeklySummary: string = '';
+}
+
+/**
+ * 年龄专属建议（自包含类，替代已移除的 FoodAdapterTypes.AgeSpecificAdvice）
+ */
+export class AgeSpecificAdviceResult {
+  ageGroup: string = '';
+  maxPortion: number = 0;
+  adviceText: string = '';
+  educationalTip: string = '';
+}
+
+/**
+ * getChildMealAdvice 输入 - 成员信息
+ */
+export class ChildMealMemberInput {
+  id: string = '';
+  name: string = '';
+  healthGoal: string = '';
+  age: number = 0;
+}
+
+/**
+ * getChildMealAdvice 输入 - 食品营养数据
+ */
+export class ChildMealFoodInput {
+  productName: string = '';
+  sugar_g: number = 0;
+  fat_g: number = 0;
+  energy_kj: number = 0;
 }
 
 // ===== 常量 =====
@@ -52,9 +94,11 @@ export class ChildProtectionEngine {
    * @param nextMealTime 下一餐时间
    * @returns 儿童正餐建议
    */
+  // 注意：getChildMealAdvice 使用自包含的输入类型
+  // 如需使用，请传入包含 id/name/healthGoal/age 的对象
   static getChildMealAdvice(
-    member: FamilyMember,
-    food: FoodNutrition,
+    member: ChildMealMemberInput,
+    food: ChildMealFoodInput,
     currentTime: Date,
     nextMealTime: Date
   ): ChildMealAdvice {
@@ -182,7 +226,7 @@ export class ChildProtectionEngine {
     memberId: string,
     todaySweetCount: number,
     sweetLimit: number
-  ): ParentPanelData {
+  ): ParentPanelDataResult {
     const remainingQuota: number = Math.max(0, sweetLimit - todaySweetCount);
 
     // 今晚睡前需避免的食品类型
@@ -210,15 +254,14 @@ export class ChildProtectionEngine {
       ? '本周甜食次数略偏高，可适当控制'
       : '本周甜食次数控制良好，继续加油';
 
-    const panel: ParentPanelData = {
-      sweetCountToday: todaySweetCount,
-      sweetLimit: sweetLimit,
-      remainingQuota: remainingQuota,
-      mealAffectedCount: 0,
-      sleepRiskFoods: sleepRiskFoods,
-      tomorrowSweetQuota: tomorrowQuota,
-      weeklySummary: weeklySummary
-    };
+    const panel: ParentPanelDataResult = new ParentPanelDataResult();
+    panel.sweetCountToday = todaySweetCount;
+    panel.sweetLimit = sweetLimit;
+    panel.remainingQuota = remainingQuota;
+    panel.mealAffectedCount = 0;
+    panel.sleepRiskFoods = sleepRiskFoods;
+    panel.tomorrowSweetQuota = tomorrowQuota;
+    panel.weeklySummary = weeklySummary;
 
     return panel;
   }
@@ -236,7 +279,7 @@ export class ChildProtectionEngine {
     foodName: string,
     isHighSugar: boolean,
     isHighSodium: boolean
-  ): AgeSpecificAdvice {
+  ): AgeSpecificAdviceResult {
     let ageGroup: string = '';
     let maxPortion: number = 50;
     let adviceText: string = '';
@@ -277,12 +320,12 @@ export class ChildProtectionEngine {
       educationalTip = '青春期的营养很重要，均衡搭配才是王道！';
     }
 
-    return {
-      ageGroup: ageGroup,
-      maxPortion: maxPortion,
-      adviceText: adviceText,
-      educationalTip: educationalTip
-    };
+    const result = new AgeSpecificAdviceResult();
+    result.ageGroup = ageGroup;
+    result.maxPortion = maxPortion;
+    result.adviceText = adviceText;
+    result.educationalTip = educationalTip;
+    return result;
   }
 
   private checkMealProtection(

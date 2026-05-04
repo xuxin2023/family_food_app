@@ -103,14 +103,29 @@ export class FamilyProfile {
   }
 
   // 从JSON反序列化
-  static fromJson(json: Record<string, Object>): FamilyProfile {
+  static fromJson(json: FamilyProfileJson): FamilyProfile {
+    const profile = new FamilyProfile();
+    profile.memberId = json.memberId;
+    profile.nickname = json.nickname;
+    profile.ageGroup = json.ageGroup as AgeGroup;
+    profile.healthGoals = json.healthGoals as HealthGoal[];
+    profile.allergens = json.allergens;
+    profile.dailyBudget = DailyBudgetConfig.fromJson(json.dailyBudget);
+    profile.mealTimes = json.mealTimes;
+    profile.bedtime = json.bedtime;
+    profile.createdAt = json.createdAt;
+    profile.updatedAt = json.updatedAt;
+    return profile;
+  }
+
+  static fromJsonRaw(json: Record<string, Object>): FamilyProfile {
     const profile = new FamilyProfile();
     profile.memberId = json.memberId as string;
     profile.nickname = json.nickname as string;
     profile.ageGroup = json.ageGroup as string as AgeGroup;
     profile.healthGoals = json.healthGoals as Object as HealthGoal[];
     profile.allergens = json.allergens as string[];
-    profile.dailyBudget = DailyBudgetConfig.fromJson(json.dailyBudget as Record<string, Object>);
+    profile.dailyBudget = DailyBudgetConfig.fromJsonRaw(json.dailyBudget as Record<string, Object>);
     profile.mealTimes = json.mealTimes as Object as MealTimes;
     profile.bedtime = json.bedtime as string;
     profile.createdAt = json.createdAt as number;
@@ -135,7 +150,16 @@ export class DailyBudgetConfig {
     return json;
   }
 
-  static fromJson(json: Record<string, Object>): DailyBudgetConfig {
+  static fromJson(json: DailyBudgetConfigJson): DailyBudgetConfig {
+    const config = new DailyBudgetConfig();
+    config.sodiumBudget = json.sodiumBudget;
+    config.sugarBudget = json.sugarBudget;
+    config.calorieBudget = json.calorieBudget;
+    config.fatBudget = json.fatBudget;
+    return config;
+  }
+
+  static fromJsonRaw(json: Record<string, Object>): DailyBudgetConfig {
     const config = new DailyBudgetConfig();
     config.sodiumBudget = json.sodiumBudget as number;
     config.sugarBudget = json.sugarBudget as number;

@@ -6,7 +6,6 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
 import { fileIo } from '@kit.CoreFileKit';
 import { AppState } from '../AppState';
-import { SubscriptionTier } from '../model/PricingModel';
 import { DataSource } from '../model/HealthSignal';
 import { preferences } from '@kit.ArkData';
 
@@ -102,8 +101,8 @@ export default class EntryAbility extends UIAbility {
     const timeSinceLastForeground = now - this.lastForegroundTime;
     this.lastForegroundTime = now;
 
-    // 刷新健康数据（仅家庭正式版及以上，且距上次超过5分钟）
-    if (this.appState.canAccess(SubscriptionTier.FAMILY_STANDARD) && timeSinceLastForeground > 5 * 60 * 1000) {
+    // 刷新健康数据（仅家庭版及以上，且距上次超过5分钟）
+    if (this.appState.hasFamilyAccess() && timeSinceLastForeground > 5 * 60 * 1000) {
       this.refreshHealthData();
     }
 
@@ -111,7 +110,7 @@ export default class EntryAbility extends UIAbility {
     this.refreshMembersCache();
 
     // 启动健康数据定时刷新（每30分钟）
-    if (this.healthRefreshInterval === -1 && this.appState.canAccess(SubscriptionTier.FAMILY_STANDARD)) {
+    if (this.healthRefreshInterval === -1 && this.appState.hasFamilyAccess()) {
       this.healthRefreshInterval = setInterval(() => {
         this.refreshHealthData();
       }, 30 * 60 * 1000);

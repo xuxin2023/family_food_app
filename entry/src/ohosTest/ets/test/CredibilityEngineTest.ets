@@ -1,4 +1,4 @@
-// CredibilityEngine 单元测试 - 食品可信度雷达模�?
+// CredibilityEngine 单元测试 - 食品可信度雷达模块
 
 import { describe, it, expect } from '@ohos/hypium';
 import { CredibilityEngine } from '../../../../src/main/ets/engine/CredibilityEngine';
@@ -25,16 +25,16 @@ function createFood(manufacturer: string = '', scNumber: string = '',
 export default function credibilityEngineTest() {
   describe('CredibilityEngine', () => {
 
-    it('should_return_high_score_when_full_info', () => {
+    it('should_return_high_score_when_full_info', 0, () => {
       const engine: CredibilityEngine = new CredibilityEngine();
       const food = createFood('XX食品有限公司', 'SC10633018501234', '', '', 'TRACE123');
       const result = engine.calculate(food);
-      expect(result.score).assertLargerThan(60);
+      expect(result.score).assertLarger(60);
       expect(result.manufacturerClear).assertTrue();
       expect(result.scNumberClear).assertTrue();
     });
 
-    it('should_return_low_score_when_no_info', () => {
+    it('should_return_low_score_when_no_info', 0, () => {
       const engine: CredibilityEngine = new CredibilityEngine();
       const food = createFood('', '', '', '', '');
       const result = engine.calculate(food);
@@ -42,47 +42,46 @@ export default function credibilityEngineTest() {
       expect(result.manufacturerMissing).assertTrue();
     });
 
-    it('should_detect_oem_relation', () => {
+    it('should_detect_oem_relation', 0, () => {
       const engine: CredibilityEngine = new CredibilityEngine();
       const food = createFood('XX食品有限公司', 'SC10633018501234', 'YY品牌公司', 'XX食品有限公司');
       const result = engine.calculate(food);
       expect(result.oemRelationClear).assertTrue();
     });
 
-    it('should_flag_missing_trustee', () => {
+    it('should_flag_missing_trustee', 0, () => {
       const engine: CredibilityEngine = new CredibilityEngine();
       const food = createFood('XX食品有限公司', 'SC10633018501234', 'YY品牌公司', '');
       const result = engine.calculate(food);
       expect(result.oemTrusteeMissing).assertTrue();
     });
 
-    it('should_have_radar_dimensions', () => {
+    it('should_have_radar_dimensions', 0, () => {
       const engine: CredibilityEngine = new CredibilityEngine();
       const food = createFood('XX食品有限公司', 'SC10633018501234');
       const result = engine.calculate(food);
       expect(result.radarDimensions.length).assertEqual(5);
     });
 
-    it('should_have_public_query_entries', () => {
+    it('should_have_public_query_entries', 0, () => {
       const engine: CredibilityEngine = new CredibilityEngine();
       const food = createFood('XX食品有限公司', 'SC10633018501234');
       const result = engine.calculate(food);
-      expect(result.publicQueryEntries.length).assertLargerThan(0);
+      expect(result.publicQueryEntries.length).assertLarger(0);
     });
 
-    it('should_assign_D_grade_for_user_upload', () => {
+    it('should_assign_D_grade_for_user_upload', 0, () => {
       const engine: CredibilityEngine = new CredibilityEngine();
       const food = createFood('XX食品有限公司', 'SC10633018501234');
       const result = engine.calculate(food);
       expect(result.overallGrade).assertEqual(DataGrade.D);
     });
 
-    it('should_generate_tips', () => {
+    it('should_generate_tips', 0, () => {
       const engine: CredibilityEngine = new CredibilityEngine();
       const food = createFood('', '');
       const result = engine.calculate(food);
-      expect(result.tips.length).assertLargerThan(0);
+      expect(result.tips.length).assertLarger(0);
     });
   });
 }
-

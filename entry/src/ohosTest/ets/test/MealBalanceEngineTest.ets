@@ -24,17 +24,17 @@ function createMealSignal(): HealthSignal {
 export default function mealBalanceEngineTest() {
   describe('MealBalanceEngine', () => {
 
-    it('should_generate_bbb_balance', () => {
+    it('should_generate_bbb_balance', 0, () => {
       const engine: MealBalanceEngine = new MealBalanceEngine();
       const profile = createMealProfile([HealthGoal.CONTROL_BP]);
       const signal = createMealSignal();
       const result = engine.calculate(MealScenario.BBQ, profile, signal);
       expect(result.scenario).assertEqual(MealScenario.BBQ);
-      expect(result.riskTags.length).assertLargerThan(0);
-      expect(result.nextMealAdvice.length).assertLargerThan(0);
+      expect(result.riskTags.length).assertLarger(0);
+      expect(result.nextMealAdvice.length).assertLarger(0);
     });
 
-    it('should_generate_hotpot_balance', () => {
+    it('should_generate_hotpot_balance', 0, () => {
       const engine: MealBalanceEngine = new MealBalanceEngine();
       const profile = createMealProfile([HealthGoal.CONTROL_BP]);
       const signal = createMealSignal();
@@ -43,7 +43,7 @@ export default function mealBalanceEngineTest() {
       expect(result.hydrationReminder).assertTrue();
     });
 
-    it('should_generate_milk_tea_balance', () => {
+    it('should_generate_milk_tea_balance', 0, () => {
       const engine: MealBalanceEngine = new MealBalanceEngine();
       const profile = createMealProfile([HealthGoal.CONTROL_SUGAR]);
       const signal = createMealSignal();
@@ -51,23 +51,23 @@ export default function mealBalanceEngineTest() {
       expect(result.riskTags.includes(RiskTag.HIGH_SUGAR)).assertTrue();
     });
 
-    it('should_generate_late_night_balance', () => {
+    it('should_generate_late_night_balance', 0, () => {
       const engine: MealBalanceEngine = new MealBalanceEngine();
       const profile = createMealProfile();
       const signal = createMealSignal();
       const result = engine.calculate(MealScenario.LATE_NIGHT, profile, signal);
-      expect(result.avoidStacking.length).assertLargerThan(0);
+      expect(result.avoidStacking.length).assertLarger(0);
     });
 
-    it('should_have_member_specific_advice_for_bp', () => {
+    it('should_have_member_specific_advice_for_bp', 0, () => {
       const engine: MealBalanceEngine = new MealBalanceEngine();
       const profile = createMealProfile([HealthGoal.CONTROL_BP]);
       const signal = createMealSignal();
       const result = engine.calculate(MealScenario.BBQ, profile, signal);
-      expect(result.memberSpecificAdvice.length).assertLargerThan(0);
+      expect(result.memberSpecificAdvice.length).assertLarger(0);
     });
 
-    it('should_have_different_advice_for_sugar_and_bp', () => {
+    it('should_have_different_advice_for_sugar_and_bp', 0, () => {
       const engine: MealBalanceEngine = new MealBalanceEngine();
       const bpProfile = createMealProfile([HealthGoal.CONTROL_BP]);
       const sugarProfile = createMealProfile([HealthGoal.CONTROL_SUGAR]);
@@ -78,4 +78,3 @@ export default function mealBalanceEngineTest() {
     });
   });
 }
-

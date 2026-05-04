@@ -15,7 +15,7 @@ export struct ManufacturerInfoCard {
         Text('🏭 生产信息')
           .fontSize(FONT_SIZE.MD)
           .fontWeight(FONT_WEIGHT.MEDIUM)
-          .fontColor('#424242')
+          .fontColor(COLORS.TEXT_GRAY_4242)
         Blank()
       }
       .width('100%')
@@ -41,7 +41,7 @@ export struct ManufacturerInfoCard {
       Button('📋 查询官方信息')
         .fontSize(FONT_SIZE.SMALL)
         .fontColor(COLORS.PRIMARY)
-        .backgroundColor('#E3F2FD')
+        .backgroundColor(COLORS.BG_WARM_BLUE)
         .width('100%')
         .height(36)
         .borderRadius(RADIUS.MD)
@@ -52,9 +52,9 @@ export struct ManufacturerInfoCard {
     }
     .width('100%')
     .padding(SPACING.MD)
-    .backgroundColor('#FFFFFF')
+    .backgroundColor(COLORS.WHITE)
     .borderRadius(RADIUS.MD)
-    .border({ width: 1, color: '#E0E0E0' })
+    .border({ width: 1, color: COLORS.BORDER_LIGHT })
     .margin({ bottom: SPACING.MD })
   }
 
@@ -63,11 +63,11 @@ export struct ManufacturerInfoCard {
     Row() {
       Text(label)
         .fontSize(FONT_SIZE.TINY)
-        .fontColor('#9E9E9E')
+        .fontColor(COLORS.TEXT_GRAY_9E9E)
         .width(60)
       Text(value)
         .fontSize(FONT_SIZE.TINY)
-        .fontColor('#424242')
+        .fontColor(COLORS.TEXT_GRAY_4242)
         .layoutWeight(1)
     }
     .width('100%')

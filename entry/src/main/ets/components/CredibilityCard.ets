@@ -1,6 +1,7 @@
 // 信息透明度卡组件 - V4升级：5维雷达图 + A-E数据等级 + 公开查询入口
 
 import { CredibilityResult, DataGrade, RadarDimension, PublicQueryEntry } from '../model/CredibilityResult';
+import { COLORS } from '../constants/AppTheme';
 
 @Component
 export struct CredibilityCard {
@@ -27,7 +28,7 @@ export struct CredibilityCard {
       // 数据等级说明
       Text(this.result.getGradeDesc())
         .fontSize(12)
-        .fontColor('#757575')
+        .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ bottom: 12 })
 
       // 5维雷达图
@@ -36,15 +37,15 @@ export struct CredibilityCard {
       } else {
         // 降级：旧版进度条
         Row() {
-          Text('透明度').fontSize(12).fontColor('#757575').margin({ right: 4 })
+          Text('透明度').fontSize(12).fontColor(COLORS.TEXT_GRAY_7575).margin({ right: 4 })
           Text(`${this.result.score}`).fontSize(20).fontWeight(FontWeight.Bold)
-            .fontColor(this.result.score >= 60 ? '#4CAF50' : '#FF5722')
+            .fontColor(this.result.score >= 60 ? COLORS.ACCENT_GREEN_4CAF : COLORS.ACCENT_ORANGE)
         }
         .margin({ bottom: 4 })
         Progress({ value: this.result.score, total: 100, type: ProgressType.Linear })
           .width('100%')
-          .color(this.result.score >= 60 ? '#4CAF50' : '#FF5722')
-          .backgroundColor('#E0E0E0')
+          .color(this.result.score >= 60 ? COLORS.ACCENT_GREEN_4CAF : COLORS.ACCENT_ORANGE)
+          .backgroundColor(COLORS.BORDER_LIGHT)
           .margin({ bottom: 12 })
       }
 
@@ -60,8 +61,8 @@ export struct CredibilityCard {
         Column() {
           ForEach(this.result.tips, (tip: string) => {
             Row() {
-              Text('•').fontSize(12).fontColor('#757575').margin({ right: 6 })
-              Text(tip).fontSize(12).fontColor('#616161')
+              Text('•').fontSize(12).fontColor(COLORS.TEXT_GRAY_7575).margin({ right: 6 })
+              Text(tip).fontSize(12).fontColor(COLORS.TEXT_GRAY_6161)
             }
             .margin({ bottom: 4 })
             .width('100%')
@@ -77,7 +78,7 @@ export struct CredibilityCard {
     }
     .width('100%')
     .padding(16)
-    .backgroundColor('#FFFFFF')
+    .backgroundColor(COLORS.WHITE)
     .borderRadius(12)
     .alignItems(HorizontalAlign.Start)
   }
@@ -89,7 +90,7 @@ export struct CredibilityCard {
       Text(grade)
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#FFFFFF')
+        .fontColor(COLORS.WHITE)
     }
     .width(28)
     .height(28)
@@ -107,11 +108,11 @@ export struct CredibilityCard {
       Text(`${this.result.score}`)
         .fontSize(32)
         .fontWeight(FontWeight.Bold)
-        .fontColor(this.result.score >= 60 ? '#4CAF50' : '#FF5722')
+        .fontColor(this.result.score >= 60 ? COLORS.ACCENT_GREEN_4CAF : COLORS.ACCENT_ORANGE)
 
       Text('信息透明度')
         .fontSize(11)
-        .fontColor('#757575')
+        .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ top: 2, bottom: 8 })
 
       // 5维条形图（替代Canvas雷达图，ArkUI Canvas在组件中受限）
@@ -119,7 +120,7 @@ export struct CredibilityCard {
         Row() {
           Text(this.radarLabels[index] || dim.name)
             .fontSize(11)
-            .fontColor('#757575')
+            .fontColor(COLORS.TEXT_GRAY_7575)
             .width(60)
 
           // 进度条表示维度得分
@@ -127,7 +128,7 @@ export struct CredibilityCard {
             .layoutWeight(1)
             .height(6)
             .color(this.getDimensionColor(dim))
-            .backgroundColor('#E0E0E0')
+            .backgroundColor(COLORS.BORDER_LIGHT)
 
           Text(dim.status)
             .fontSize(10)
@@ -179,7 +180,7 @@ export struct CredibilityCard {
             Text(entry.name).fontSize(13).fontWeight(FontWeight.Medium)
             Text(`查询关键词：${entry.keyword}`)
               .fontSize(11)
-              .fontColor('#757575')
+              .fontColor(COLORS.TEXT_GRAY_7575)
               .margin({ top: 2 })
             Text(entry.description)
               .fontSize(11)
@@ -191,7 +192,7 @@ export struct CredibilityCard {
 
           Text('复制')
             .fontSize(12)
-            .fontColor('#1976D2')
+            .fontColor(COLORS.PRIMARY)
             .padding({ left: 8, right: 8, top: 4, bottom: 4 })
             .borderRadius(8)
             .backgroundColor('#E3F2FD')
@@ -214,10 +215,10 @@ export struct CredibilityCard {
   // 辅助方法
   private getGradeColor(grade: DataGrade): string {
     switch (grade) {
-      case DataGrade.A: return '#4CAF50'  // 绿
+      case DataGrade.A: return COLORS.ACCENT_GREEN_4CAF  // 绿
       case DataGrade.B: return '#8BC34A'  // 浅绿
       case DataGrade.C: return '#FF9800'  // 橙
-      case DataGrade.D: return '#FF5722'  // 深橙
+      case DataGrade.D: return COLORS.ACCENT_ORANGE  // 深橙
       case DataGrade.E: return '#9E9E9E'  // 灰
       default: return '#9E9E9E'
     }

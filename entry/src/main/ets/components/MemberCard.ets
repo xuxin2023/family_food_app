@@ -1,6 +1,7 @@
 // 成员选择卡片组件
 
 import { FamilyProfile, HealthGoal } from '../model/FamilyProfile';
+import { COLORS } from '../constants/AppTheme';
 
 @Component
 export struct MemberCard {
@@ -19,12 +20,12 @@ export struct MemberCard {
       Text(this.member.nickname)
         .fontSize(16)
         .fontWeight(FontWeight.Medium)
-        .fontColor('#212121')
+        .fontColor(COLORS.TEXT_GRAY_2121)
 
       // 健康目标标签
       Text(this.member.healthGoals.join('·'))
         .fontSize(12)
-        .fontColor('#757575')
+        .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ top: 4 })
         .maxLines(1)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
@@ -33,7 +34,7 @@ export struct MemberCard {
       if (this.member.allergens.length > 0) {
         Text(`过敏：${this.member.allergens.join('、')}`)
           .fontSize(11)
-          .fontColor('#FF5722')
+          .fontColor(COLORS.ACCENT_ORANGE)
           .margin({ top: 4 })
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
@@ -42,10 +43,10 @@ export struct MemberCard {
     .width('100%')
     .padding(16)
     .borderRadius(16)
-    .backgroundColor(this.isSelected ? '#E3F2FD' : '#FFFFFF')
+    .backgroundColor(this.isSelected ? COLORS.BG_WARM_BLUE : COLORS.WHITE)
     .border({
       width: this.isSelected ? 2 : 1,
-      color: this.isSelected ? '#1976D2' : '#E0E0E0',
+      color: this.isSelected ? COLORS.PRIMARY : COLORS.BORDER_LIGHT,
       style: BorderStyle.Solid,
       radius: 16
     })

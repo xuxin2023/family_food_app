@@ -7,7 +7,6 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FamilyProfile, HealthGoal } from '../model/FamilyProfile';
 import { MemberCard } from '../components/MemberCard';
 import { AppState } from '../AppState';
-import { SubscriptionTier } from '../model/PricingModel';
 import { MilestoneService, Milestone } from '../service/MilestoneService';
 import { OnlineShoppingParser } from '../service/OnlineShoppingParser';
 import { DailyBudget } from '../model/DailyBudget';
@@ -170,12 +169,12 @@ struct HomePage {
         Text('家庭饮食平衡助手')
           .fontSize(22)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#1976D2')
+          .fontColor(COLORS.PRIMARY)
           .margin({ top: 20, bottom: 4 })
 
         Text(this.slogans[this.currentSloganIndex])
           .fontSize(14)
-          .fontColor('#757575')
+          .fontColor(COLORS.TEXT_GRAY_7575)
           .margin({ bottom: 16 })
           .textAlign(TextAlign.Center)
           .maxLines(2)
@@ -188,13 +187,13 @@ struct HomePage {
         Button() {
           Row({ space: 6 }) {
             Text('📷').fontSize(16)
-            Text('扫码识别').fontSize(14).fontColor('#FFFFFF')
+            Text('扫码识别').fontSize(14).fontColor(COLORS.WHITE)
           }
         }
         .width('45%')
         .height(BUTTON.HEIGHT_SECONDARY)
         .borderRadius(BUTTON.RADIUS_SECONDARY)
-        .backgroundColor('#1976D2')
+        .backgroundColor(COLORS.PRIMARY)
         .onClick(() => {
           try {
             router.pushUrl({ url: 'pages/ScanPage' })
@@ -206,13 +205,13 @@ struct HomePage {
         Button() {
           Row({ space: 6 }) {
             Text('🔗').fontSize(16)
-            Text('粘贴链接').fontSize(14).fontColor('#FFFFFF')
+            Text('粘贴链接').fontSize(14).fontColor(COLORS.WHITE)
           }
         }
         .width('45%')
         .height(BUTTON.HEIGHT_SECONDARY)
         .borderRadius(BUTTON.RADIUS_SECONDARY)
-        .backgroundColor('#7B1FA2')
+        .backgroundColor(COLORS.PURPLE_ACCENT)
         .onClick(() => {
           this.showLinkInput = true
         })
@@ -231,7 +230,7 @@ struct HomePage {
       Text('今天给谁看？')
         .fontSize(18)
         .fontWeight(FontWeight.Medium)
-        .fontColor('#212121')
+        .fontColor(COLORS.TEXT_GRAY_2121)
         .margin({ left: 16, bottom: 8 })
 
       Scroll() {
@@ -249,10 +248,10 @@ struct HomePage {
           }, (member: FamilyProfile) => member.memberId)
 
           Column() {
-            Text('+').fontSize(28).fontColor('#1976D2')
+            Text('+').fontSize(28).fontColor(COLORS.PRIMARY)
             Text(this.appState.canAddMember() ? '添加成员' : '升级解锁')
               .fontSize(12)
-              .fontColor(this.appState.canAddMember() ? '#1976D2' : '#FF9800')
+              .fontColor(this.appState.canAddMember() ? COLORS.PRIMARY : COLORS.ORANGE_ACCENT)
               .margin({ top: 4 })
           }
           .width('45%')
@@ -261,7 +260,7 @@ struct HomePage {
           .borderRadius(16)
           .justifyContent(FlexAlign.Center)
           .alignItems(HorizontalAlign.Center)
-          .border({ width: 1, color: '#E0E0E0', style: BorderStyle.Dashed, radius: 16 })
+          .border({ width: 1, color: COLORS.BORDER_LIGHT, style: BorderStyle.Dashed, radius: 16 })
           .onClick(() => {
             try {
               if (this.appState.canAddMember()) {
@@ -286,24 +285,24 @@ struct HomePage {
         Button() {
           Row() {
             Text('🔗').fontSize(20)
-            Text('粘贴链接').fontSize(18).fontColor('#FFFFFF').margin({ left: 8 })
+            Text('粘贴链接').fontSize(18).fontColor(COLORS.WHITE).margin({ left: 8 })
           }
         }
         .width('90%')
         .height(BUTTON.HEIGHT_MD)
-        .backgroundColor('#7B1FA2')
+        .backgroundColor(COLORS.PURPLE_ACCENT)
         .borderRadius(BUTTON.RADIUS_MD)
         .margin({ bottom: 10 })
         .onClick(() => { this.openLinkInput() })
         Button() {
           Row() {
             Text('📷').fontSize(20)
-            Text('拍食品标签').fontSize(18).fontColor('#FFFFFF').margin({ left: 8 })
+            Text('拍食品标签').fontSize(18).fontColor(COLORS.WHITE).margin({ left: 8 })
           }
         }
         .width('90%')
         .height(BUTTON.HEIGHT_LG)
-        .backgroundColor('#1976D2')
+        .backgroundColor(COLORS.PRIMARY)
         .borderRadius(BUTTON.RADIUS_LG)
         .margin({ bottom: 12 })
         .onClick(() => {
@@ -320,12 +319,12 @@ struct HomePage {
         Button() {
           Row() {
             Text('🍽').fontSize(20)
-            Text('记录美食').fontSize(18).fontColor('#1976D2').margin({ left: 8 })
+            Text('记录美食').fontSize(18).fontColor(COLORS.PRIMARY).margin({ left: 8 })
           }
         }
         .width('90%')
         .height(BUTTON.HEIGHT_LG)
-        .backgroundColor('#E3F2FD')
+        .backgroundColor(COLORS.BG_WARM_BLUE)
         .borderRadius(BUTTON.RADIUS_LG)
         .margin({ bottom: 12 })
         .onClick(() => {
@@ -339,16 +338,39 @@ struct HomePage {
           }
         })
 
-        if (this.appState.canAccess(SubscriptionTier.FAMILY_EARLY)) {
+        // 📊 膳食日记入口
+        Button() {
+          Row({ space: 6 }) {
+            Text('📊').fontSize(20)
+            Text('膳食日记').fontSize(18).fontColor(COLORS.ACCENT_GREEN_66BB).margin({ left: 8 })
+          }
+        }
+        .width('90%')
+        .height(BUTTON.HEIGHT_LG)
+        .backgroundColor(COLORS.BG_LIGHT_GREEN)
+        .borderRadius(BUTTON.RADIUS_LG)
+        .margin({ bottom: 12 })
+        .onClick(() => {
+          try {
+            router.pushUrl({
+              url: 'pages/DietDiaryPage',
+              params: { memberId: this.selectedMemberId }
+            })
+          } catch (_e) {
+            // ignore router.pushUrl error
+          }
+        })
+
+        if (this.appState.hasFamilyAccess()) {
           Button() {
             Row() {
               Text('🛒').fontSize(20)
-              Text('购物篮检查').fontSize(18).fontColor('#FF9800').margin({ left: 8 })
+              Text('购物篮检查').fontSize(18).fontColor(COLORS.ORANGE_ACCENT).margin({ left: 8 })
             }
           }
           .width('90%')
           .height(BUTTON.HEIGHT_MD)
-          .backgroundColor('#FFF3E0')
+          .backgroundColor(COLORS.BG_WARM_ORANGE)
           .borderRadius(BUTTON.RADIUS_MD)
           .margin({ bottom: 12 })
           .onClick(() => {
@@ -364,12 +386,12 @@ struct HomePage {
         Button() {
           Row() {
             Text('🛡️').fontSize(20)
-            Text('查品牌/商家透明度').fontSize(18).fontColor('#7B1FA2').margin({ left: 8 })
+            Text('查品牌/商家透明度').fontSize(18).fontColor(COLORS.PURPLE_ACCENT).margin({ left: 8 })
           }
         }
         .width('90%')
         .height(BUTTON.HEIGHT_MD)
-        .backgroundColor('#F3E5F5')
+        .backgroundColor(COLORS.BG_WARM_PURPLE)
         .borderRadius(BUTTON.RADIUS_MD)
         .margin({ bottom: 12 })
         .onClick(() => {
@@ -381,7 +403,7 @@ struct HomePage {
         })
 
         Row() {
-          Text('历史').fontSize(13).fontColor('#757575')
+          Text('历史').fontSize(13).fontColor(COLORS.TEXT_GRAY_7575)
             .onClick(() => {
               try {
                 router.pushUrl({ url: 'pages/HistoryPage' })
@@ -390,8 +412,18 @@ struct HomePage {
               }
             })
           Text('  |  ').fontSize(13).fontColor('#E0E0E0')
-          if (this.appState.canAccess(SubscriptionTier.FAMILY_EARLY)) {
-            Text('周报').fontSize(13).fontColor('#757575')
+          Text('日记').fontSize(13).fontColor(COLORS.ACCENT_GREEN_66BB)
+            .fontWeight(500)
+            .onClick(() => {
+              try {
+                router.pushUrl({ url: 'pages/DietDiaryPage' })
+              } catch (_e) {
+                // ignore router.pushUrl error
+              }
+            })
+          Text('  |  ').fontSize(13).fontColor('#E0E0E0')
+          if (this.appState.hasFamilyAccess()) {
+            Text('周报').fontSize(13).fontColor(COLORS.TEXT_GRAY_7575)
               .onClick(() => {
                 try {
                   router.pushUrl({ url: 'pages/WeeklyReportPage' })
@@ -401,7 +433,7 @@ struct HomePage {
               })
             Text('  |  ').fontSize(13).fontColor('#E0E0E0')
           }
-          Text('设置').fontSize(13).fontColor('#757575')
+          Text('设置').fontSize(13).fontColor(COLORS.TEXT_GRAY_7575)
             .onClick(() => {
               try {
                 router.pushUrl({ url: 'pages/SettingsPage' })
@@ -418,7 +450,7 @@ struct HomePage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#FAFAFA')
+    .backgroundColor(COLORS.BG_PAGE)
 
     // 链接输入浮层
     if (this.showLinkInput) {
@@ -427,14 +459,14 @@ struct HomePage {
           Text('粘贴商品链接')
             .fontSize(18)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#1A1A1A')
+            .fontColor(COLORS.TEXT_PRIMARY)
             .margin({ bottom: 16 })
 
           TextInput({ placeholder: '粘贴京东/淘宝/天猫商品链接...', text: this.linkInputText })
             .width('100%')
             .height(BUTTON.HEIGHT_SECONDARY)
             .borderRadius(8)
-            .backgroundColor('#F5F5F5')
+            .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
             .padding({ left: 12, right: 12 })
             .placeholderColor('#999999')
             .onChange((value: string) => { this.linkInputText = value })
@@ -456,15 +488,15 @@ struct HomePage {
                 LoadingProgress()
                   .width(20)
                   .height(20)
-                  .color('#FFFFFF')
+                  .color(COLORS.WHITE)
               } else {
-                Text('解析链接').fontColor('#FFFFFF').fontSize(16)
+                Text('解析链接').fontColor(COLORS.WHITE).fontSize(16)
               }
             }
             .width('45%')
             .height(BUTTON.HEIGHT_SECONDARY)
             .borderRadius(BUTTON.RADIUS_SECONDARY)
-            .backgroundColor('#7B1FA2')
+            .backgroundColor(COLORS.PURPLE_ACCENT)
             .enabled(!this.isParsingLink)
             .onClick(() => { this.handleParseLink(this.linkInputText) })
           }
@@ -472,7 +504,7 @@ struct HomePage {
         }
         .width('85%')
         .padding(24)
-        .backgroundColor('#FFFFFF')
+        .backgroundColor(COLORS.WHITE)
         .borderRadius(16)
         .shadow({ radius: 12, color: '#33000000', offsetY: 4 })
       }
@@ -498,7 +530,7 @@ struct HomePage {
         Text('🏆 成就里程碑')
           .fontSize(14)
           .fontWeight(FontWeight.Medium)
-          .fontColor('#1A1A1A')
+          .fontColor(COLORS.TEXT_PRIMARY)
         Blank()
         Text('查看全部')
           .fontSize(11)
@@ -527,7 +559,7 @@ struct HomePage {
     }
     .width('100%')
     .padding(12)
-    .backgroundColor('#FFFFFF')
+    .backgroundColor(COLORS.WHITE)
     .borderRadius(10)
     .margin({ left: 16, right: 16, bottom: 12 })
     .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
@@ -545,7 +577,7 @@ struct HomePage {
       Text(milestone.title)
         .fontSize(13)
         .fontWeight(FontWeight.Medium)
-        .fontColor('#212121')
+        .fontColor(COLORS.TEXT_GRAY_2121)
         .lineHeight(18)
         .maxLines(1)
         .margin({ bottom: 8 })
@@ -560,7 +592,7 @@ struct HomePage {
               Row()
                 .width(`${milestone.progress}%`)
                 .height(6)
-                .backgroundColor(milestone.achieved && !milestone.acknowledged ? '#FFD700' : '#1976D2')
+                .backgroundColor(milestone.achieved && !milestone.acknowledged ? '#FFD700' : COLORS.PRIMARY)
                 .borderRadius(3)
             }
             .width('100%')
@@ -588,7 +620,7 @@ struct HomePage {
     .width(160)
     .height(120)
     .padding(12)
-    .backgroundColor('#F5F5F5')
+    .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
     .borderRadius(12)
     .border(milestone.achieved && !milestone.acknowledged ?
       { width: 2, color: '#FFD700' } : undefined)
@@ -616,7 +648,7 @@ struct HomePage {
         Text('今日家庭状态')
           .fontSize(14)
           .fontWeight(FontWeight.Medium)
-          .fontColor('#1A1A1A')
+          .fontColor(COLORS.TEXT_PRIMARY)
         Blank()
         Text('点击刷新')
           .fontSize(11)
@@ -640,7 +672,7 @@ struct HomePage {
     }
     .width('100%')
     .padding(12)
-    .backgroundColor('#FFFFFF')
+    .backgroundColor(COLORS.WHITE)
     .borderRadius(10)
     .margin({ left: 16, right: 16, bottom: 12 })
     .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })

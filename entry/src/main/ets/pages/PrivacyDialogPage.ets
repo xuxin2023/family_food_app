@@ -7,6 +7,7 @@ import { webview } from '@kit.ArkWeb';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
+import { COLORS } from '../constants/AppTheme';
 
 const TAG = 'PrivacyDialogPage';
 const DOMAIN_ZERO = 0;
@@ -82,12 +83,12 @@ struct PrivacyDialogPage {
           Text('家庭饮食平衡助手')
             .fontSize(24)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#1976D2')
+            .fontColor(COLORS.PRIMARY)
             .margin({ top: 40 })
 
           Text('欢迎使用')
             .fontSize(16)
-            .fontColor('#757575')
+            .fontColor(COLORS.TEXT_GRAY_7575)
             .margin({ top: 8 })
         }
         .width('100%')
@@ -101,17 +102,17 @@ struct PrivacyDialogPage {
             Column() {
               Text('在使用本应用前，请您仔细阅读以下条款：')
                 .fontSize(14)
-                .fontColor('#333333')
+                .fontColor(COLORS.TEXT_GRAY_3333)
                 .lineHeight(22)
                 .margin({ bottom: 16 })
 
               Row() {
                 Text('1. ')
                   .fontSize(14)
-                  .fontColor('#1976D2')
+                  .fontColor(COLORS.PRIMARY)
                 Text('我们重视您的隐私保护，所有数据默认仅存储在您的设备本地。')
                   .fontSize(14)
-                  .fontColor('#333333')
+                  .fontColor(COLORS.TEXT_GRAY_3333)
                   .lineHeight(22)
               }
               .width('100%')
@@ -121,10 +122,10 @@ struct PrivacyDialogPage {
               Row() {
                 Text('2. ')
                   .fontSize(14)
-                  .fontColor('#1976D2')
+                  .fontColor(COLORS.PRIMARY)
                 Text('本应用提供的所有建议仅供饮食参考，不构成医疗建议。')
                   .fontSize(14)
-                  .fontColor('#333333')
+                  .fontColor(COLORS.TEXT_GRAY_3333)
                   .lineHeight(22)
               }
               .width('100%')
@@ -134,10 +135,10 @@ struct PrivacyDialogPage {
               Row() {
                 Text('3. ')
                   .fontSize(14)
-                  .fontColor('#1976D2')
+                  .fontColor(COLORS.PRIMARY)
                 Text('您可随时在设置中查看、导出或删除您的数据。')
                   .fontSize(14)
-                  .fontColor('#333333')
+                  .fontColor(COLORS.TEXT_GRAY_3333)
                   .lineHeight(22)
               }
               .width('100%')
@@ -147,7 +148,7 @@ struct PrivacyDialogPage {
               Row({ space: 16 }) {
                 Text('查看隐私政策')
                   .fontSize(14)
-                  .fontColor('#1976D2')
+                  .fontColor(COLORS.PRIMARY)
                   .decoration({ type: TextDecorationType.Underline })
                   .onClick(() => {
                     this.showPrivacyContent = true
@@ -156,7 +157,7 @@ struct PrivacyDialogPage {
 
                 Text('查看用户协议')
                   .fontSize(14)
-                  .fontColor('#1976D2')
+                  .fontColor(COLORS.PRIMARY)
                   .decoration({ type: TextDecorationType.Underline })
                   .onClick(() => {
                     this.showAgreementContent = true
@@ -167,7 +168,7 @@ struct PrivacyDialogPage {
             }
             .width('100%')
             .padding(16)
-            .backgroundColor('#FFFFFF')
+            .backgroundColor(COLORS.WHITE)
             .borderRadius(12)
           }
 
@@ -177,7 +178,7 @@ struct PrivacyDialogPage {
               Row() {
                 Text('← 返回')
                   .fontSize(14)
-                  .fontColor('#1976D2')
+                  .fontColor(COLORS.PRIMARY)
                   .onClick(() => {
                     this.showPrivacyContent = false
                   })
@@ -185,7 +186,7 @@ struct PrivacyDialogPage {
                 Text('隐私政策')
                   .fontSize(16)
                   .fontWeight(FontWeight.Bold)
-                  .fontColor('#333333')
+                  .fontColor(COLORS.TEXT_GRAY_3333)
               }
               .width('100%')
               .margin({ bottom: 8 })
@@ -197,7 +198,7 @@ struct PrivacyDialogPage {
                 .javaScriptAccess(true)
             }
             .width('100%')
-            .backgroundColor('#FFFFFF')
+            .backgroundColor(COLORS.WHITE)
             .borderRadius(12)
             .layoutWeight(1)
           }
@@ -208,7 +209,7 @@ struct PrivacyDialogPage {
               Row() {
                 Text('← 返回')
                   .fontSize(14)
-                  .fontColor('#1976D2')
+                  .fontColor(COLORS.PRIMARY)
                   .onClick(() => {
                     this.showAgreementContent = false
                   })
@@ -216,7 +217,7 @@ struct PrivacyDialogPage {
                 Text('用户协议')
                   .fontSize(16)
                   .fontWeight(FontWeight.Bold)
-                  .fontColor('#333333')
+                  .fontColor(COLORS.TEXT_GRAY_3333)
               }
               .width('100%')
               .margin({ bottom: 8 })
@@ -228,7 +229,7 @@ struct PrivacyDialogPage {
                 .javaScriptAccess(true)
             }
             .width('100%')
-            .backgroundColor('#FFFFFF')
+            .backgroundColor(COLORS.WHITE)
             .borderRadius(12)
             .layoutWeight(1)
           }
@@ -240,7 +241,7 @@ struct PrivacyDialogPage {
         Column() {
           Row() {
             Checkbox()
-              .selectedColor('#1976D2')
+              .selectedColor(COLORS.PRIMARY)
               .size({ width: 20, height: 20 })
               .onChange((isSelected: boolean) => {
                 this.agreed = isSelected
@@ -252,7 +253,7 @@ struct PrivacyDialogPage {
 
             Text('《隐私政策》')
               .fontSize(13)
-              .fontColor('#1976D2')
+              .fontColor(COLORS.PRIMARY)
               .onClick(() => {
                 this.showPrivacyContent = true
                 this.showAgreementContent = false
@@ -264,7 +265,7 @@ struct PrivacyDialogPage {
 
             Text('《用户协议》')
               .fontSize(13)
-              .fontColor('#1976D2')
+              .fontColor(COLORS.PRIMARY)
               .onClick(() => {
                 this.showAgreementContent = true
                 this.showPrivacyContent = false
@@ -277,9 +278,9 @@ struct PrivacyDialogPage {
           Button('同意并继续')
             .width('100%')
             .height(50)
-            .backgroundColor(this.agreed ? '#1976D2' : '#BDBDBD')
+            .backgroundColor(this.agreed ? COLORS.PRIMARY : '#BDBDBD')
             .borderRadius(25)
-            .fontColor('#FFFFFF')
+            .fontColor(COLORS.WHITE)
             .fontSize(16)
             .enabled(this.agreed)
             .onClick(() => {

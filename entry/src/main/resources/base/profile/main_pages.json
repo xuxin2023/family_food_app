@@ -21,6 +21,7 @@
     "pages/RecipeCommunityPage",
     "pages/RecipeDetailPage",
     "pages/RecipeCreatePage",
-    "pages/DashboardPage"
+    "pages/DashboardPage",
+    "pages/DeviceDashboardPage"
   ]
 }

@@ -1,7 +1,10 @@
 ﻿// 全局应用状态管理器 - 统一数据访问入口，替代各页面的模拟数据
 
 import { FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig, MealTimes } from './model/FamilyProfile';
-import { HealthSignal, StepLevel, SleepStatus, WeightTrend, BpStatus, BsStatus, DataSource } from './model/HealthSignal';
+import {
+  HealthSignal, StepLevel, SleepStatus, WeightTrend, BpStatus, BsStatus, DataSource,
+  HeartRateZone, SpO2Level, StressLevel
+} from './model/HealthSignal';
 import { FoodLabel, FoodSource, NutritionPer100g } from './model/FoodLabel';
 import { DailyBudget } from './model/DailyBudget';
 import { Recommendation } from './model/Recommendation';
@@ -23,6 +26,8 @@ import { CreateRecipeParams } from './service/RecipeCommunityService';
 import { Recipe, RecipeQueryParams, RecipeComment } from './model/Recipe';
 import { NutritionTrendEngine, DailyNutritionSummary, NutrientTrendData, MealGroup } from './engine/NutritionTrendEngine';
 import { HealthService } from './service/HealthService';
+import { ManualHealthSignalProvider } from './service/health/ManualHealthSignalProvider';
+import { HwHealthSignalProvider } from './service/health/HwHealthSignalProvider';
 import { RecommendationEngine } from './engine/RecommendationEngine';
 import { MealBalanceEngine } from './engine/MealBalanceEngine';
 import { ChildProtectionEngine, MealTimeParams } from './engine/ChildProtectionEngine';
@@ -86,6 +91,8 @@ export class AppState {
 
   // 华为Kit服务
   private healthService: HealthService = new HealthService();
+  /** 是否使用华为健康真实数据源（默认false = 手动模式） */
+  private useHwHealthKit: boolean = false;
 
   // 社交服务
   private authService: AuthService = new AuthService();
@@ -289,6 +296,39 @@ export class AppState {
    */
   updateHealthSignal(signal: HealthSignal): void {
     this.healthSignalsCache.set(signal.memberId, signal);
+  }
+
+  /**
+   * 切换健康数据源到华为 Health Kit
+   * @param context 应用上下文（用于初始化 Health Kit）
+   */
+  async switchToHwHealthKit(context: Context): Promise<boolean> {
+    try {
+      const hwProvider = new HwHealthSignalProvider(context);
+      this.healthService.setProvider(hwProvider);
+      this.useHwHealthKit = true;
+      hilog.info(DOMAIN_ZERO, TAG, 'Switched to HwHealthSignalProvider');
+      return true;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'Switch to HwHealthKit failed: %{public}s', JSON.stringify(error));
+      this.useHwHealthKit = false;
+      return false;
+    }
+  }
+
+  /**
+   * 切换回手动健康数据源
+   */
+  switchToManualProvider(): void {
+    this.healthService.setProvider(new ManualHealthSignalProvider());
+    this.useHwHealthKit = false;
+  }
+
+  /**
+   * 当前是否使用华为健康数据源
+   */
+  isUsingHwHealthKit(): boolean {
+    return this.useHwHealthKit;
   }
 
   /**

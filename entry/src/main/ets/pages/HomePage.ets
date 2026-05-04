@@ -526,6 +526,15 @@ struct HomePage {
               })
             Text('  |  ').fontSize(13).fontColor('#E0E0E0')
           }
+          Text('设备').fontSize(13).fontColor(COLORS.TEXT_GRAY_7575)
+            .onClick(() => {
+              try {
+                router.pushUrl({ url: 'pages/DeviceDashboardPage' })
+              } catch (_e) {
+                // ignore router.pushUrl error
+              }
+            })
+          Text('  |  ').fontSize(13).fontColor('#E0E0E0')
           Text('设置').fontSize(13).fontColor(COLORS.TEXT_GRAY_7575)
             .onClick(() => {
               try {

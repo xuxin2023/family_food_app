@@ -1,7 +1,8 @@
 // 规则引擎 - 核心适配判断逻辑
+// V2.0 增强：利用穿戴设备的精确步数、心率、压力等级等数据做精细调节
 
 import { FamilyProfile, HealthGoal } from '../model/FamilyProfile';
-import { HealthSignal } from '../model/HealthSignal';
+import { HealthSignal, HeartRateZone, StressLevel } from '../model/HealthSignal';
 import { FoodLabel } from '../model/FoodLabel';
 import { DailyBudget } from '../model/DailyBudget';
 import { Recommendation, RecommendLevel, LevelColor } from '../model/Recommendation';
@@ -54,7 +55,7 @@ export class RuleEngine {
     return Math.max(0, (remainingBudget / nutritionPer100g) * 100);
   }
 
-  // 计算动态修正因子
+  // 计算动态修正因子（V2增强：使用穿戴设备精确数据）
   calculateDynamicModifiers(signal: HealthSignal): DynamicModifiers {
     const modifiers: DynamicModifiers = {
       highCalorieFactor: 1.0,
@@ -63,6 +64,8 @@ export class RuleEngine {
       highSugarFactor: 1.0,
       sodiumBudgetFactor: 1.0
     };
+
+    // ===== V1 基础规则（保持兼容） =====
 
     // 步数低/活动热量低 → 高热量、高脂更严格
     if (signal.isLowActivity()) {
@@ -100,6 +103,51 @@ export class RuleEngine {
     // 今天已经吃过偏甜食物 → 高糖再吃更严格
     if (signal.isHighSugarToday()) {
       modifiers.highSugarFactor *= 0.75;
+    }
+
+    // ===== V2 穿戴设备精确数据增强规则 =====
+
+    // 1. 精确步数精细调节（替代粗粒度的 stepLevel）
+    const stepFactor = signal.getStepActivityFactor();
+    if (stepFactor < 1.0) {
+      // 步数不足，收紧热量和脂肪
+      modifiers.highCalorieFactor *= stepFactor;
+      modifiers.highFatFactor *= stepFactor;
+      // 同时收紧钠（活动少代谢低）
+      modifiers.sodiumBudgetFactor *= Math.min(1.0, stepFactor + 0.1);
+    } else if (stepFactor > 1.0) {
+      // 运动充足，适当放宽
+      modifiers.highCalorieFactor *= stepFactor;
+    }
+
+    // 2. 睡眠质量精细调节（使用深睡比例）
+    const sleepQualityFactor = signal.getSleepQualityFactor();
+    if (sleepQualityFactor < 0.9) {
+      // 睡眠差 → 高糖、高脂更严格
+      modifiers.highSugarFactor *= sleepQualityFactor;
+      modifiers.highFatFactor *= sleepQualityFactor;
+    }
+
+    // 3. 心率区间判断运动强度
+    if (signal.isHeartRateHigh()) {
+      // 心率偏高 → 不建议高热量摄入（心脏负担考量）
+      modifiers.highCalorieFactor *= 0.85;
+      if (signal.isStressed()) {
+        // 心率高+压力大 → 进一步收紧高糖
+        modifiers.highSugarFactor *= 0.8;
+      }
+    }
+
+    // 4. 压力状态调节
+    if (signal.isStressed()) {
+      // 压力大时易暴食 → 收紧高热量
+      modifiers.highCalorieFactor *= 0.9;
+    }
+
+    // 5. 血氧偏低 → 总体收紧（身体可能处于疲劳状态）
+    if (!signal.isSpO2Normal()) {
+      modifiers.highCalorieFactor *= 0.85;
+      modifiers.highFatFactor *= 0.85;
     }
 
     return modifiers;
@@ -199,6 +247,22 @@ export class RuleEngine {
       }
     }
 
+    // V2原因增强：穿戴设备数据原因
+    const stepCount = healthSignal.stepCount;
+    if (stepCount > 0) {
+      if (stepCount < 3000) {
+        reasons.push(`今日仅${stepCount}步，活动量偏低，建议减少高热量食物`);
+      } else if (stepCount >= 10000) {
+        reasons.push(`今日步数${stepCount}，活动量充足`);
+      }
+    }
+    if (healthSignal.heartRate > 120) {
+      reasons.push(`当前心率${healthSignal.heartRate}bpm偏高，建议避免高热量负担`);
+    }
+    if (healthSignal.isStressed()) {
+      reasons.push('压力较大时建议选择清淡饮食');
+    }
+
     // 6. 生成提醒
     if (healthSignal.isLowActivity() && (foodLabel.isHighCalorie() || foodLabel.isHighFat())) {
       reminders.push('今日活动量偏低，高热量/高脂食品建议减少');
@@ -217,6 +281,17 @@ export class RuleEngine {
     }
     if (dailyBudget.isSugarExhausted()) {
       reminders.push('今日糖预算已用完，建议不再摄入高糖食品');
+    }
+
+    // V2提醒增强
+    if (stepCount > 0 && stepCount < 3000) {
+      reminders.push('步数不足3000，建议餐后散步增加活动量');
+    }
+    if (stepCount >= 10000) {
+      reminders.push('今日运动达标！注意补充水分和电解质');
+    }
+    if (healthSignal.isStressed()) {
+      reminders.push('压力过大时避免情绪化进食，选择健康的零食如坚果、水果');
     }
 
     // 7. 四级映射

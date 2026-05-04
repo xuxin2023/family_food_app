@@ -16,6 +16,13 @@ export enum MealScenario {
   BUFFET = '自助餐',
   AFTERNOON_TEA = '下午茶',
   LUOSIFEN = '螺蛳粉',
+  MAOCAI = '冒菜',
+  MALAXIANG_GUO = '麻辣香锅',
+  LIGHT_SALAD = '轻食沙拉',
+  PIZZA = '披萨',
+  HAMBURGER = '汉堡',
+  DUMPLINGS = '饺子包子',
+  FRIED_RICE = '炒饭盖饭',
   OTHER = '其他'
 }
 

@@ -2,8 +2,8 @@
 
 import { FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig, MealTimes } from './model/FamilyProfile';
 import {
-  HealthSignal, StepLevel, SleepStatus, WeightTrend, BpStatus, BsStatus, DataSource,
-  HeartRateZone, SpO2Level, StressLevel
+  HealthSignal, StepLevel, SleepStatus, WeightTrend, DataSource,
+  SpO2Level, StressLevel
 } from './model/HealthSignal';
 import { FoodLabel, FoodSource, NutritionPer100g } from './model/FoodLabel';
 import { DailyBudget } from './model/DailyBudget';

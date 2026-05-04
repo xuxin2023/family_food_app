@@ -11,9 +11,42 @@ const TAG = 'CloudStorageProvider';
 const DOMAIN_ZERO = 0;
 
 /**
+ * 认证结果
+ */
+export interface AuthResult {
+  token: string;
+}
+
+/**
+ * 设备注册结果
+ */
+export interface DeviceRegisterResult {
+  deviceRegistered: boolean;
+}
+
+/**
+ * 云端设备信息
+ */
+export interface CloudDeviceInfo {
+  deviceId: string;
+  deviceName: string;
+  lastSyncAt: number;
+}
+
+/**
+ * 同步统计信息
+ */
+export interface SyncStatsResult {
+  totalSyncs: number;
+  totalConflicts: number;
+  lastSyncAt: number;
+  deviceCount: number;
+}
+
+/**
  * 云端操作结果
  */
-export interface CloudOperationResult<T = unknown> {
+export interface CloudOperationResult<T> {
   success: boolean;
   data: T | null;
   errorMessage: string;
@@ -108,25 +141,25 @@ export class CloudStorageProvider {
   /**
    * 用户注册/登录（获取token）
    */
-  async authenticate(uid: string, deviceId: string): Promise<CloudOperationResult<{ token: string }>> {
-    return this.request<{ token: string }>('POST', '/auth/login', {
+  async authenticate(uid: string, deviceId: string): Promise<CloudOperationResult<AuthResult>> {
+    return this.request<AuthResult>('POST', '/auth/login', JSON.stringify({
       uid: uid,
       deviceId: deviceId,
       timestamp: Date.now()
-    });
+    }));
   }
 
   /**
    * 注册设备
    */
   async registerDevice(uid: string, deviceId: string, deviceName: string):
-    Promise<CloudOperationResult<{ deviceRegistered: boolean }>> {
-    return this.request('POST', '/devices/register', {
+    Promise<CloudOperationResult<DeviceRegisterResult>> {
+    return this.request<DeviceRegisterResult>('POST', '/devices/register', JSON.stringify({
       uid: uid,
       deviceId: deviceId,
       deviceName: deviceName,
       platform: 'HarmonyOS'
-    });
+    }));
   }
 
   /**
@@ -134,7 +167,7 @@ export class CloudStorageProvider {
    */
   async uploadBatch(token: string, batch: SyncBatchRequest):
     Promise<CloudOperationResult<SyncBatchResponse>> {
-    return this.request('POST', '/sync/upload', batch, token);
+    return this.request<SyncBatchResponse>('POST', '/sync/upload', JSON.stringify(batch), token);
   }
 
   /**
@@ -142,17 +175,17 @@ export class CloudStorageProvider {
    */
   async fetchChanges(token: string, deviceId: string, lastSyncAt: number):
     Promise<CloudOperationResult<SyncBatchResponse>> {
-    return this.request('GET',
-      `/sync/changes?deviceId=${deviceId}&lastSyncAt=${lastSyncAt}`, null, token);
+    return this.request<SyncBatchResponse>('GET',
+      `/sync/changes?deviceId=${deviceId}&lastSyncAt=${lastSyncAt}`, '', token);
   }
 
   /**
    * 确认同步（标记云端变更为已处理）
    */
   async confirmSync(token: string, syncedIds: string[]): Promise<CloudOperationResult<void>> {
-    return this.request('POST', '/sync/confirm', {
+    return this.request<void>('POST', '/sync/confirm', JSON.stringify({
       syncedIds: syncedIds
-    }, token);
+    }), token);
   }
 
   /**
@@ -160,42 +193,33 @@ export class CloudStorageProvider {
    */
   async resolveConflict(token: string, entityType: string, entityId: string,
     resolution: string, resolvedData: string): Promise<CloudOperationResult<void>> {
-    return this.request('POST', '/sync/resolve-conflict', {
+    return this.request<void>('POST', '/sync/resolve-conflict', JSON.stringify({
       entityType: entityType,
       entityId: entityId,
       resolution: resolution,
       resolvedData: resolvedData
-    }, token);
+    }), token);
   }
 
   /**
    * 获取用户关联的设备列表
    */
-  async getDevices(token: string): Promise<CloudOperationResult<Array<{
-    deviceId: string;
-    deviceName: string;
-    lastSyncAt: number;
-  }>>> {
-    return this.request('GET', '/devices', null, token);
+  async getDevices(token: string): Promise<CloudOperationResult<CloudDeviceInfo[]>> {
+    return this.request<CloudDeviceInfo[]>('GET', '/devices', '', token);
   }
 
   /**
    * 获取同步统计信息
    */
-  async getSyncStats(token: string): Promise<CloudOperationResult<{
-    totalSyncs: number;
-    totalConflicts: number;
-    lastSyncAt: number;
-    deviceCount: number;
-  }>> {
-    return this.request('GET', '/sync/stats', null, token);
+  async getSyncStats(token: string): Promise<CloudOperationResult<SyncStatsResult>> {
+    return this.request<SyncStatsResult>('GET', '/sync/stats', '', token);
   }
 
   // ========== 内部HTTP请求封装 ==========
 
   private async request<T>(
     method: string, path: string,
-    body: unknown | null, token?: string
+    bodyStr: string, token?: string
   ): Promise<CloudOperationResult<T>> {
     const url = `${this.config.baseUrl}${this.config.apiVersion}${path}`;
 
@@ -204,21 +228,25 @@ export class CloudStorageProvider {
       const header: Record<string, string> = {
         'Content-Type': 'application/json'
       };
-      if (token && token.length > 0) {
+      if (token !== undefined && token.length > 0) {
         header['Authorization'] = `Bearer ${token}`;
       }
 
-      const result = await this.httpClient.request(url, {
-        method: method === 'GET' ? http.RequestMethod.GET : http.RequestMethod.POST,
+      const requestMethod: http.RequestMethod = method === 'GET' ? http.RequestMethod.GET : http.RequestMethod.POST;
+      const requestOptions: http.HttpRequestOptions = {
+        method: requestMethod,
         header: header,
-        extraData: body ? JSON.stringify(body) : '',
+        extraData: bodyStr,
         connectTimeout: this.config.timeout,
         readTimeout: this.config.timeout
-      });
+      };
 
-      if (result.responseCode === http.ResponseCode.OK ||
-          result.responseCode === http.ResponseCode.CREATED) {
-        const responseData = JSON.parse(result.result as string);
+      const result: http.HttpResponse = await this.httpClient.request(url, requestOptions);
+      const responseCode: number = result.responseCode;
+
+      if (responseCode === http.ResponseCode.OK ||
+          responseCode === http.ResponseCode.CREATED) {
+        const responseData: object = JSON.parse(result.result as string);
         return {
           success: true,
           data: responseData as T,

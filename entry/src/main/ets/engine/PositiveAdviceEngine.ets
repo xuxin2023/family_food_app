@@ -65,6 +65,84 @@ export class PositiveAdviceEngine {
         advice.whyToSupplement = ['夜宵影响睡眠和次日食欲', '需要保证次日早餐营养'];
         advice.howToSupplement = ['睡前喝少量温水', '次日早餐适量，保证蛋白质和蔬菜', '避免连续夜宵'];
         break;
+
+      case MealScenario.MALATANG:
+        advice.whatToSupplement = ['蔬菜', '清淡蛋白', '水分'];
+        advice.whyToSupplement = ['麻辣烫汤底高钠高油', '蔬菜和蛋白可能不足'];
+        advice.howToSupplement = ['下一餐增加绿叶蔬菜', '选择蒸蛋或豆腐等清淡蛋白', '多喝水帮助排钠'];
+        break;
+
+      case MealScenario.BBQ_MEAT:
+        advice.whatToSupplement = ['深色蔬菜', '菌菇类', '水分'];
+        advice.whyToSupplement = ['烤肉蔬菜和膳食纤维不足', '高盐高油后需要蔬菜帮助平衡'];
+        advice.howToSupplement = ['下一餐做凉拌或清炒蔬菜', '搭配菌菇汤', '多喝白开水或淡茶'];
+        break;
+
+      case MealScenario.SUSHI:
+        advice.whatToSupplement = ['温热食物', '维生素C', '膳食纤维'];
+        advice.whyToSupplement = ['日料生食偏凉，对肠胃有负担', '蔬菜和水果可能不足'];
+        advice.howToSupplement = ['下一餐选择温热的味噌汤或蒸蛋', '补一份水果增加维生素C', '增加蔬菜摄入'];
+        break;
+
+      case MealScenario.BUFFET:
+        advice.whatToSupplement = ['水分', '膳食纤维', '益生菌'];
+        advice.whyToSupplement = ['自助餐容易过量，肠胃负担大', '食物种类杂需要帮助消化'];
+        advice.howToSupplement = ['多喝水帮助代谢', '下一餐吃清淡粥类让肠胃休息', '可补充酸奶等益生菌'];
+        break;
+
+      case MealScenario.AFTERNOON_TEA:
+        advice.whatToSupplement = ['蛋白质', '膳食纤维'];
+        advice.whyToSupplement = ['下午茶高糖高热量', '容易影响晚餐营养均衡'];
+        advice.howToSupplement = ['晚餐减少主食增加蔬菜', '确保蛋白质摄入充足', '喝无糖茶代替含糖饮品'];
+        break;
+
+      case MealScenario.LUOSIFEN:
+        advice.whatToSupplement = ['钾', '水分', '膳食纤维'];
+        advice.whyToSupplement = ['螺蛳粉高盐高油', '营养结构单一'];
+        advice.howToSupplement = ['多喝水帮助排钠', '下一餐增加绿叶蔬菜', '选择高钾食物如香蕉、番茄'];
+        break;
+
+      case MealScenario.MAOCAI:
+        advice.whatToSupplement = ['蔬菜', '清淡蛋白', '水分'];
+        advice.whyToSupplement = ['冒菜汤底高钠高油', '蔬菜和蛋白可能不足'];
+        advice.howToSupplement = ['下一餐增加绿叶蔬菜', '选择豆腐或蒸鱼等清淡蛋白', '多喝水帮助排钠'];
+        break;
+
+      case MealScenario.MALAXIANG_GUO:
+        advice.whatToSupplement = ['深色蔬菜', '水分', '清淡蛋白'];
+        advice.whyToSupplement = ['麻辣香锅高油高盐、蔬菜少', '油脂和调料负担重'];
+        advice.howToSupplement = ['下一餐以清淡蔬菜为主', '多喝水或淡茶解腻', '补充豆腐、蛋白等清淡蛋白'];
+        break;
+
+      case MealScenario.LIGHT_SALAD:
+        advice.whatToSupplement = ['优质蛋白', '温热食物', '复合碳水'];
+        advice.whyToSupplement = ['沙拉蛋白质可能不足', '生冷食物对肠胃刺激较大'];
+        advice.howToSupplement = ['下一餐增加煎鱼或鸡胸肉', '搭配温热的汤或杂粮饭', '选择全谷物增加饱腹感'];
+        break;
+
+      case MealScenario.PIZZA:
+        advice.whatToSupplement = ['膳食纤维', '维生素C', '水分'];
+        advice.whyToSupplement = ['披萨蔬菜和纤维不足', '高碳水高热量需要平衡'];
+        advice.howToSupplement = ['下一餐以蔬菜沙拉为主', '餐后吃水果补充维生素', '喝足量水'];
+        break;
+
+      case MealScenario.HAMBURGER:
+        advice.whatToSupplement = ['蔬菜', '水分', '维生素C'];
+        advice.whyToSupplement = ['汉堡蔬菜不足', '高热量高钠需要平衡'];
+        advice.howToSupplement = ['下一餐增加蔬菜沙拉或清炒时蔬', '多喝水帮助代谢', '餐后吃水果代替甜食'];
+        break;
+
+      case MealScenario.DUMPLINGS:
+        advice.whatToSupplement = ['膳食纤维', '维生素C', '优质蛋白'];
+        advice.whyToSupplement = ['饺子包子蔬菜偏少、碳水偏多', '蛋白来源单一'];
+        advice.howToSupplement = ['下一餐增加绿叶蔬菜', '搭配水果补充维生素', '选择清淡蛋白食物'];
+        break;
+
+      case MealScenario.FRIED_RICE:
+        advice.whatToSupplement = ['蔬菜', '膳食纤维', '优质蛋白'];
+        advice.whyToSupplement = ['炒饭盖饭蔬菜偏少', '碳水比例高、蛋白单一'];
+        advice.howToSupplement = ['下一餐以蔬菜为主', '搭配清淡蛋白食物', '减少主食量增加粗粮'];
+        break;
     }
 
     // 结合成员健康目标补充

@@ -47,56 +47,38 @@ struct BalancePage {
       this.isLocked = true
     }
 
-    // 初始化场景选项
-    const bbq = new ScenarioOption();
-    bbq.emoji = '🍖';
-    bbq.label = '烧烤';
-    bbq.value = MealScenario.BBQ;
-    this.scenarios.push(bbq);
-
-    const hotpot = new ScenarioOption();
-    hotpot.emoji = '🍲';
-    hotpot.label = '火锅';
-    hotpot.value = MealScenario.HOTPOT;
-    this.scenarios.push(hotpot);
-
-    const friedChicken = new ScenarioOption();
-    friedChicken.emoji = '🍗';
-    friedChicken.label = '炸鸡';
-    friedChicken.value = MealScenario.FRIED_CHICKEN;
-    this.scenarios.push(friedChicken);
-
-    const milkTea = new ScenarioOption();
-    milkTea.emoji = '🧋';
-    milkTea.label = '奶茶';
-    milkTea.value = MealScenario.MILK_TEA;
-    this.scenarios.push(milkTea);
-
-    const dessert = new ScenarioOption();
-    dessert.emoji = '🍰';
-    dessert.label = '甜品';
-    dessert.value = MealScenario.DESSERT;
-    this.scenarios.push(dessert);
-
-    const luwei = new ScenarioOption();
-    luwei.emoji = '🥘';
-    luwei.label = '卤味';
-    luwei.value = MealScenario.LUWEI;
-    this.scenarios.push(luwei);
-
-    const instantNoodle = new ScenarioOption();
-    instantNoodle.emoji = '🍜';
-    instantNoodle.label = '方便面';
-    instantNoodle.value = MealScenario.INSTANT_NOODLE;
-    this.scenarios.push(instantNoodle);
-
-    const lateNight = new ScenarioOption();
-    lateNight.emoji = '🌙';
-    lateNight.label = '夜宵';
-    lateNight.value = MealScenario.LATE_NIGHT;
-    this.scenarios.push(lateNight);
+    // 初始化场景选项（共21种场景）
+    this.addScenario('🍖', '烧烤', MealScenario.BBQ);
+    this.addScenario('🍲', '火锅', MealScenario.HOTPOT);
+    this.addScenario('🍗', '炸鸡', MealScenario.FRIED_CHICKEN);
+    this.addScenario('🧋', '奶茶', MealScenario.MILK_TEA);
+    this.addScenario('🍰', '甜品', MealScenario.DESSERT);
+    this.addScenario('🥘', '卤味', MealScenario.LUWEI);
+    this.addScenario('🍜', '方便面', MealScenario.INSTANT_NOODLE);
+    this.addScenario('🌙', '夜宵', MealScenario.LATE_NIGHT);
+    this.addScenario('🌶️', '麻辣烫', MealScenario.MALATANG);
+    this.addScenario('🥩', '烤肉', MealScenario.BBQ_MEAT);
+    this.addScenario('🍣', '日料', MealScenario.SUSHI);
+    this.addScenario('🍱', '自助餐', MealScenario.BUFFET);
+    this.addScenario('☕', '下午茶', MealScenario.AFTERNOON_TEA);
+    this.addScenario('🍝', '螺蛳粉', MealScenario.LUOSIFEN);
+    this.addScenario('🫘', '冒菜', MealScenario.MAOCAI);
+    this.addScenario('🌶️', '麻辣香锅', MealScenario.MALAXIANG_GUO);
+    this.addScenario('🥗', '轻食沙拉', MealScenario.LIGHT_SALAD);
+    this.addScenario('🍕', '披萨', MealScenario.PIZZA);
+    this.addScenario('🍔', '汉堡', MealScenario.HAMBURGER);
+    this.addScenario('🥟', '饺子包子', MealScenario.DUMPLINGS);
+    this.addScenario('🍚', '炒饭盖饭', MealScenario.FRIED_RICE);
 
     this.loadData();
+  }
+
+  private addScenario(emoji: string, label: string, value: MealScenario): void {
+    const option = new ScenarioOption();
+    option.emoji = emoji;
+    option.label = label;
+    option.value = value;
+    this.scenarios.push(option);
   }
 
   async loadData() {
@@ -444,6 +426,84 @@ struct BalancePage {
         label.nutrition.sugar = 8
         label.nutrition.calories = 300
         label.nutrition.fat = 13
+        break
+      case MealScenario.MALATANG:
+        label.nutrition.sodium = 1200
+        label.nutrition.sugar = 5
+        label.nutrition.calories = 380
+        label.nutrition.fat = 22
+        break
+      case MealScenario.BBQ_MEAT:
+        label.nutrition.sodium = 1000
+        label.nutrition.sugar = 7
+        label.nutrition.calories = 350
+        label.nutrition.fat = 20
+        break
+      case MealScenario.SUSHI:
+        label.nutrition.sodium = 650
+        label.nutrition.sugar = 6
+        label.nutrition.calories = 280
+        label.nutrition.fat = 8
+        break
+      case MealScenario.BUFFET:
+        label.nutrition.sodium = 1400
+        label.nutrition.sugar = 12
+        label.nutrition.calories = 520
+        label.nutrition.fat = 28
+        break
+      case MealScenario.AFTERNOON_TEA:
+        label.nutrition.sodium = 120
+        label.nutrition.sugar = 18
+        label.nutrition.calories = 260
+        label.nutrition.fat = 10
+        break
+      case MealScenario.LUOSIFEN:
+        label.nutrition.sodium = 1500
+        label.nutrition.sugar = 6
+        label.nutrition.calories = 440
+        label.nutrition.fat = 24
+        break
+      case MealScenario.MAOCAI:
+        label.nutrition.sodium = 1250
+        label.nutrition.sugar = 5
+        label.nutrition.calories = 370
+        label.nutrition.fat = 21
+        break
+      case MealScenario.MALAXIANG_GUO:
+        label.nutrition.sodium = 1350
+        label.nutrition.sugar = 6
+        label.nutrition.calories = 450
+        label.nutrition.fat = 28
+        break
+      case MealScenario.LIGHT_SALAD:
+        label.nutrition.sodium = 350
+        label.nutrition.sugar = 4
+        label.nutrition.calories = 180
+        label.nutrition.fat = 8
+        break
+      case MealScenario.PIZZA:
+        label.nutrition.sodium = 850
+        label.nutrition.sugar = 5
+        label.nutrition.calories = 380
+        label.nutrition.fat = 18
+        break
+      case MealScenario.HAMBURGER:
+        label.nutrition.sodium = 750
+        label.nutrition.sugar = 8
+        label.nutrition.calories = 420
+        label.nutrition.fat = 22
+        break
+      case MealScenario.DUMPLINGS:
+        label.nutrition.sodium = 600
+        label.nutrition.sugar = 3
+        label.nutrition.calories = 320
+        label.nutrition.fat = 12
+        break
+      case MealScenario.FRIED_RICE:
+        label.nutrition.sodium = 700
+        label.nutrition.sugar = 4
+        label.nutrition.calories = 400
+        label.nutrition.fat = 16
         break
       default:
         label.nutrition.sodium = 300

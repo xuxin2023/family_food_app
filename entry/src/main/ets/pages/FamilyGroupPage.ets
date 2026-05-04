@@ -138,10 +138,17 @@ struct FamilyGroupPage {
         Circle()
           .width(48)
           .height(48)
-          .fill(COLORS.PRIMARY_LIGHT)
-          .overlay(Text(summary.group.groupName.substring(0, 1))
+        Stack() {
+          Circle()
+            .width(48)
+            .height(48)
+            .fill(COLORS.PRIMARY_LIGHT)
+          Text(summary.group.groupName.substring(0, 1))
             .fontSize(20)
-            .fontColor(COLORS.PRIMARY))
+            .fontColor(COLORS.PRIMARY)
+        }
+        .width(48)
+        .height(48)
 
         Column() {
           Row() {
@@ -162,13 +169,17 @@ struct FamilyGroupPage {
 
           Row({ space: 4 }) {
             ForEach(summary.members.slice(0, 5), (member: GroupMember) => {
-              Circle()
-                .width(24)
-                .height(24)
-                .fill(COLORS.BORDER_LIGHT)
-                .overlay(Text(member.displayName.substring(0, 1))
+              Stack() {
+                Circle()
+                  .width(24)
+                  .height(24)
+                  .fill(COLORS.BORDER_LIGHT)
+                Text(member.displayName.substring(0, 1))
                   .fontSize(11)
-                  .fontColor(COLORS.TEXT_GRAY_6161))
+                  .fontColor(COLORS.TEXT_GRAY_6161)
+              }
+              .width(24)
+              .height(24)
             })
             if (summary.members.length > 5) {
               Text('+' + (summary.members.length - 5))

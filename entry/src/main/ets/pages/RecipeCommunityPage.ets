@@ -5,6 +5,9 @@ import { router, promptAction } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
 import { Recipe, RecipeCategory, RecipeDifficulty, DietTag, RecipeQueryParams } from '../model/Recipe';
+import {
+  AiRecipeRecommendation, AiRecipeRecommendationResult
+} from '../model/AiModels';
 import { COLORS, RADIUS, SPACING, BUTTON, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
 
 const PAGE_SIZE = 10;
@@ -55,11 +58,39 @@ struct RecipeCommunityPage {
   @State isLoading: boolean = true
   @State selectedCategory: string = ''
   @State sortBy: string = 'latest'
+  @State aiRecommendations: AiRecipeRecommendation[] = []
+  @State isLoadingAi: boolean = false
+  @State showAiRecommend: boolean = false
+  @State aiSummary: string = ''
 
   private appState: AppState = AppState.getInstance()
 
   async aboutToAppear() {
+    // 检查是否从首页以AI推荐模式进入
+    try {
+      const params = router.getParams() as Record<string, Object>;
+      if (params['aiMode'] === 'recommend') {
+        this.showAiRecommend = true
+        await this.loadAiRecommendations()
+      }
+    } catch (_e) { /* ignore */ }
     await this.loadRecipes()
+  }
+
+  async loadAiRecommendations() {
+    this.isLoadingAi = true
+    try {
+      const members = await this.appState.getAllMembers()
+      const memberIds = members.map(m => m.memberId)
+      const result = await this.appState.getAiRecipeRecommendations(
+        memberIds, undefined, undefined, 5
+      )
+      this.aiRecommendations = result.recommendations
+      this.aiSummary = result.overallSummary
+    } catch (e) {
+      hilog.error(0x0000, 'RecipeCommunityPage', 'ai recommend error')
+    }
+    this.isLoadingAi = false
   }
 
   async loadRecipes() {
@@ -104,15 +135,33 @@ struct RecipeCommunityPage {
       // 分类导航
       this.categoryNav()
 
-      // 排序Tab
+      // AI推荐Tab + 排序Tab
       Row({ space: 8 }) {
+        this.sortTab('✨ AI推荐', 'ai')
         this.sortTab('最新', 'latest')
         this.sortTab('热门', 'popular')
       }
       .width('100%')
       .padding({ left: 16, right: 16, bottom: 8 })
 
-      if (this.isLoading) {
+      if (this.sortBy === 'ai') {
+        // AI推荐模式
+        if (this.isLoadingAi) {
+          LoadingProgress()
+            .width(32)
+            .height(32)
+            .margin({ top: 60 })
+        } else if (this.aiRecommendations.length > 0) {
+          this.aiRecommendList()
+        } else {
+          Text('点击刷新获取AI推荐')
+            .fontSize(14)
+            .fontColor(COLORS.TEXT_GRAY_9E9E)
+            .margin({ top: 60 })
+            .width('100%')
+            .textAlign(TextAlign.Center)
+        }
+      } else if (this.isLoading) {
         LoadingProgress()
           .width(32)
           .height(32)
@@ -167,7 +216,11 @@ struct RecipeCommunityPage {
       .fontColor(this.sortBy === value ? COLORS.PRIMARY : COLORS.TEXT_GRAY_9E9E)
       .onClick(() => {
         this.sortBy = value
-        this.loadRecipes()
+        if (value === 'ai') {
+          this.loadAiRecommendations()
+        } else {
+          this.loadRecipes()
+        }
       })
   }
 
@@ -212,6 +265,79 @@ struct RecipeCommunityPage {
     }
     .width('100%')
     .layoutWeight(1)
+    .padding({ left: 16, right: 16 })
+  }
+
+  @Builder
+  aiRecommendList() {
+    Column() {
+      // AI总评卡片
+      Column() {
+        Row({ space: 6 }) {
+          Text('🤖').fontSize(20)
+          Text('AI智能推荐').fontSize(16).fontWeight(FontWeight.Bold).fontColor(COLORS.PRIMARY)
+        }
+        .margin({ bottom: 8 })
+
+        Text(this.aiSummary)
+          .fontSize(13)
+          .fontColor(COLORS.TEXT_GRAY_6161)
+          .textAlign(TextAlign.Start)
+          .width('100%')
+
+        Text('基于家庭成员健康画像个性化匹配')
+          .fontSize(11)
+          .fontColor(COLORS.TEXT_GRAY_9E9E)
+          .margin({ top: 4 })
+      }
+      .width('100%')
+      .padding(16)
+      .backgroundColor(COLORS.BG_WARM_PINK)
+      .borderRadius(RADIUS.LG)
+      .margin({ bottom: 12 })
+
+      // 推荐列表
+      ForEach(this.aiRecommendations, (rec: AiRecipeRecommendation) => {
+        Column() {
+          this.recipeCard(rec.recipe)
+
+          // AI推荐理由
+          if (rec.reason.length > 0) {
+            Row({ space: 4 }) {
+              Text('💡').fontSize(12)
+              Text(rec.reason)
+                .fontSize(12)
+                .fontColor(COLORS.ACCENT_PURPLE)
+                .maxLines(2)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+            }
+            .width('100%')
+            .padding({ left: 12, right: 12, top: 4, bottom: 8 })
+          }
+
+          // 匹配度和营养提示
+          if (rec.nutritionTip.length > 0) {
+            Text('📌 ' + rec.nutritionTip)
+              .fontSize(11)
+              .fontColor(COLORS.TEXT_GRAY_9E9E)
+              .padding({ left: 12, right: 12, bottom: 8 })
+              .width('100%')
+          }
+        }
+        .width('100%')
+        .backgroundColor(COLORS.WHITE)
+        .borderRadius(RADIUS.LG)
+        .margin({ bottom: 12 })
+        .shadow({ radius: 2, color: COLORS.SHADOW_LIGHT, offsetY: 1 })
+        .onClick(() => {
+          router.pushUrl({
+            url: 'pages/RecipeDetailPage',
+            params: { recipeId: rec.recipe.recipeId }
+          })
+        })
+      })
+    }
+    .width('100%')
     .padding({ left: 16, right: 16 })
   }
 

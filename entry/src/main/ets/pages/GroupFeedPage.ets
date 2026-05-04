@@ -116,13 +116,17 @@ struct GroupFeedPage {
     Column() {
       // 发送者信息
       Row() {
-        Circle()
-          .width(36)
-          .height(36)
-          .fill(COLORS.BG_WARM_BLUE)
-          .overlay(Text(feed.senderName.substring(0, 1))
+        Stack() {
+          Circle()
+            .width(36)
+            .height(36)
+            .fill(COLORS.BG_WARM_BLUE)
+          Text(feed.senderName.substring(0, 1))
             .fontSize(16)
-            .fontColor(COLORS.PRIMARY))
+            .fontColor(COLORS.PRIMARY)
+        }
+        .width(36)
+        .height(36)
 
         Column() {
           Text(feed.senderName)

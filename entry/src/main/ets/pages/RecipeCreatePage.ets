@@ -274,11 +274,17 @@ struct RecipeCreatePage {
       ForEach(this.steps, (step: RecipeStep, index: number) => {
         Column() {
           Row() {
-            Circle()
-              .width(24)
-              .height(24)
-              .fill(COLORS.PRIMARY)
-              .overlay(Text(`${index + 1}`).fontSize(12).fontColor(COLORS.WHITE))
+            Stack() {
+              Circle()
+                .width(24)
+                .height(24)
+                .fill(COLORS.PRIMARY)
+              Text(`${index + 1}`)
+                .fontSize(12)
+                .fontColor(COLORS.WHITE)
+            }
+            .width(24)
+            .height(24)
             Text(`步骤 ${index + 1}`)
               .fontSize(14)
               .fontWeight(FontWeight.Medium)

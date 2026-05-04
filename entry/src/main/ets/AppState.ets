@@ -1,4 +1,4 @@
-// 全局应用状态管理器 - 统一数据访问入口，替代各页面的模拟数据
+﻿// 全局应用状态管理器 - 统一数据访问入口，替代各页面的模拟数据
 
 import { FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig, MealTimes } from './model/FamilyProfile';
 import { HealthSignal, StepLevel, SleepStatus, WeightTrend, BpStatus, BsStatus, DataSource } from './model/HealthSignal';
@@ -51,6 +51,12 @@ import {
   TIER_MEMBER_LIMIT,
   TIER_WEEKLY_REPORT_LIMIT
 } from './model/MemberStatus';
+import { AiRecipeRecommenderService } from './service/AiRecipeRecommenderService';
+import { AiNutritionistService } from './service/AiNutritionistService';
+import {
+  AiRecipeRecommendationResult, AiRecipeRequest,
+  AiNutritionAdvice
+} from './model/AiModels';
 
 const TAG = 'AppState';
 const DOMAIN_ZERO = 0;
@@ -86,6 +92,11 @@ export class AppState {
   private groupService: FamilyGroupService | null = null;
   private recipeCommunityService: RecipeCommunityService | null = null;
   private socialInitialized: boolean = false;
+
+  // AI服务
+  private aiRecipeRecommender: AiRecipeRecommenderService = new AiRecipeRecommenderService();
+  private aiNutritionist: AiNutritionistService = new AiNutritionistService();
+  private aiServicesInitialized: boolean = false;
 
   // 内存缓存
   private membersCache: FamilyProfile[] = [];
@@ -157,6 +168,10 @@ export class AppState {
 
       // 设置规则仓库上下文
       this.ruleRepo.setContext(context);
+
+      // 初始化AI服务
+      this.aiRecipeRecommender.setRecipeRepo(this.recipeRepo);
+      this.aiServicesInitialized = true;
 
       // 加载缓存
       this.membersCache = await this.familyRepo.getAllMembers();
@@ -850,5 +865,127 @@ export class AppState {
   /** 获取我的收藏 */
   async getMyRecipeBookmarks(): Promise<string[]> {
     return await this.getRecipeCommunityService().getMyBookmarks();
+  }
+
+// AI methods append for AppState
+
+  // ========== AI智能食谱推荐 ==========
+
+  async getAiRecipeRecommendations(
+    memberIds: string[],
+    mealCategory?: string,
+    preference?: string,
+    limit: number = 5
+  ): Promise<AiRecipeRecommendationResult> {
+    const request: AiRecipeRequest = {
+      memberIds: memberIds,
+      mealCategory: mealCategory,
+      preference: preference,
+      limit: limit
+    };
+    return await this.aiRecipeRecommender.getRecommendations(
+      request,
+      this.membersCache,
+      this.healthSignalsCache,
+      this.dailyBudgetsCache
+    );
+  }
+
+  // ========== AI营养师分析 ==========
+
+  async getAiNutritionAdvice(
+    memberId: string,
+    days: number = 7,
+    includeMealPlan: boolean = false
+  ): Promise<AiNutritionAdvice> {
+    const member = this.membersCache.find(m => m.memberId === memberId);
+    if (!member) {
+      return this.getEmptyNutritionAdvice(memberId);
+    }
+    const signal = this.getHealthSignal(memberId);
+    const budget = this.getDailyBudget(memberId);
+    const endDate = DateUtil.getToday();
+    const d = new Date();
+    d.setDate(d.getDate() - days);
+    const startDate = DateUtil.formatDate(d);
+    const records = await this.historyRepo.getDietRecordsByDateRange(memberId, startDate, endDate);
+    return await this.aiNutritionist.getAdvice(
+      member, signal, budget, records, days, includeMealPlan
+    );
+  }
+
+  hasAiFeatureAccess(): boolean {
+    return hasTierAccess(this.memberStatus.tier, MemberTier.FAMILY);
+  }
+
+  setAiApiKey(key: string): void {
+    this.aiRecipeRecommender.setApiKey(key);
+    this.aiNutritionist.setApiKey(key);
+    hilog.info(DOMAIN_ZERO, TAG, 'AI API key configured');
+  }
+
+  setAiEnabled(enabled: boolean): void {
+    this.aiRecipeRecommender.setEnabled(enabled);
+    this.aiNutritionist.setEnabled(enabled);
+  }
+
+  private getEmptyNutritionAdvice(memberId: string): AiNutritionAdvice {
+    return {
+      memberId: memberId,
+      dateRange: '无效成员',
+      summary: '请先添加家庭成员',
+      mealAnalyses: [],
+      nutrientAnalyses: [],
+      patternAnalysis: {
+        regularityScore: 0,
+        diversityScore: 0,
+        issues: [],
+        highlights: []
+      },
+      suggestions: ['添加家庭成员后即可获得AI营养师分析'],
+      mealPlanSuggestions: [],
+      motivationalMessage: '',
+      isAiGenerated: false
+    };
+  }
+
+  // ========== 付费墙与会员能力检查 ==========
+
+  canAddMember(): boolean {
+    if (this.memberStatus.tier === MemberTier.PREMIUM || this.memberStatus.tier === MemberTier.FAMILY) {
+      return this.memberStatus.familyMembersRemaining > 0;
+    }
+    return false;
+  }
+
+  useFamilyMember(): PaywallTrigger | null {
+    const trigger = getPaywallTriggerForFeature('family_member', this.memberStatus.tier);
+    if (trigger !== null && !hasTierAccess(this.memberStatus.tier, trigger.requiredTier)) {
+      return trigger;
+    }
+    return null;
+  }
+
+  useScan(): PaywallTrigger | null {
+    const trigger = getPaywallTriggerForFeature('scan', this.memberStatus.tier);
+    if (trigger !== null && !hasTierAccess(this.memberStatus.tier, trigger.requiredTier)) {
+      return trigger;
+    }
+    return null;
+  }
+
+  getPaywallTrigger(feature: string): PaywallTrigger | null {
+    const trigger = getPaywallTriggerForFeature(feature, this.memberStatus.tier);
+    if (trigger === null) {
+      return null;
+    }
+    if (hasTierAccess(this.memberStatus.tier, trigger.requiredTier)) {
+      return null;
+    }
+    return trigger;
+  }
+
+  upgradeTier(tier: MemberTier, days: number): void {
+    this.memberStatus = createMemberStatusForTier(tier, days);
   }
 }

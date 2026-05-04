@@ -2,6 +2,7 @@
 // 膳食日记页面 - 按餐次查看每日摄入，查看趋势图表入口
 
 import { router, promptAction } from '@kit.ArkUI';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
 import { DietRecord } from '../repository/HistoryRepository';
 import { FamilyProfile } from '../model/FamilyProfile';
@@ -10,6 +11,7 @@ import { DailyBudget } from '../model/DailyBudget';
 import { DateUtil } from '../utils/DateUtil';
 import { COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, BUTTON } from '../constants/AppTheme';
 import { MealScenario } from '../model/MealBalance';
+import { AiNutritionAdvice } from '../model/AiModels';
 
 // 场景emoji映射
 const SCENARIO_EMOJI: Record<string, string> = {
@@ -18,6 +20,16 @@ const SCENARIO_EMOJI: Record<string, string> = {
   '麻辣烫': '🌶️', '烤肉': '🥩', '日料': '🍣', '自助餐': '🍱',
   '下午茶': '☕', '螺蛳粉': '🍝', '其他': '🍽️'
 };
+
+// AI营养素分析卡片类型（兼容AiModels中的NutrientAnalysis）
+interface NutrientAnalysisItem {
+  name: string;
+  averageDaily: number;
+  target: number;
+  status: 'excellent' | 'good' | 'warning' | 'over';
+  trend: string;
+  insight: string;
+}
 
 @Entry
 @Component
@@ -30,6 +42,9 @@ struct DietDiaryPage {
   @State dateInputText: string = ''
   @State showDatePicker: boolean = false
   @State isLoading: boolean = false
+  @State aiAdvice: AiNutritionAdvice | null = null
+  @State isLoadingAi: boolean = false
+  @State showAiSection: boolean = false
 
   private appState: AppState = AppState.getInstance()
 
@@ -39,7 +54,27 @@ struct DietDiaryPage {
     if (this.familyMembers.length > 0) {
       this.selectedMemberId = this.familyMembers[0].memberId
     }
+    // 检查是否从首页以AI营养师模式进入
+    try {
+      const params = router.getParams() as Record<string, Object>;
+      if (params['aiMode'] === 'nutritionist') {
+        this.showAiSection = true
+      }
+    } catch (_e) { /* ignore */ }
     await this.refreshData()
+  }
+
+  private async loadAiAdvice() {
+    if (this.selectedMemberId.length === 0) return
+    this.isLoadingAi = true
+    try {
+      this.aiAdvice = await this.appState.getAiNutritionAdvice(
+        this.selectedMemberId, 7, true
+      )
+    } catch (e) {
+      hilog.error(0x0000, 'DietDiaryPage', 'ai nutritionist error: ' + JSON.stringify(e))
+    }
+    this.isLoadingAi = false
   }
 
   private async refreshData() {
@@ -84,10 +119,21 @@ struct DietDiaryPage {
           .fontColor(COLORS.TEXT_PRIMARY)
           .margin({ left: SPACING.MD })
         Blank()
+        Text('🤖 AI分析')
+          .fontSize(FONT_SIZE.BODY)
+          .fontColor(COLORS.ACCENT_PURPLE)
+          .fontWeight(FONT_WEIGHT.MEDIUM)
+          .onClick(() => {
+            this.showAiSection = !this.showAiSection
+            if (this.showAiSection && this.aiAdvice === null) {
+              this.loadAiAdvice()
+            }
+          })
         Text('📊 趋势')
           .fontSize(FONT_SIZE.BODY)
           .fontColor(COLORS.PRIMARY)
           .fontWeight(FONT_WEIGHT.MEDIUM)
+          .margin({ left: SPACING.MD })
           .onClick(() => {
             try {
               router.pushUrl({
@@ -193,6 +239,11 @@ struct DietDiaryPage {
         this.buildBudgetBar()
       }
 
+      // AI营养师分析区
+      if (this.showAiSection) {
+        this.buildAiNutritionistSection()
+      }
+
       // 内容区
       if (this.isLoading) {
         LoadingProgress()
@@ -235,6 +286,164 @@ struct DietDiaryPage {
     .width('100%')
     .height('100%')
     .backgroundColor(COLORS.BG_PAGE)
+  }
+
+  @Builder
+  buildAiNutritionistSection() {
+    Column() {
+      if (this.isLoadingAi) {
+        Row({ space: 8 }) {
+          LoadingProgress().width(20).height(20).color(COLORS.ACCENT_PURPLE)
+          Text('AI营养师分析中...')
+            .fontSize(14)
+            .fontColor(COLORS.TEXT_GRAY_6161)
+        }
+        .width('100%')
+        .justifyContent(FlexAlign.Center)
+        .padding(16)
+        .backgroundColor(COLORS.BG_WARM_PURPLE)
+        .borderRadius(RADIUS.LG)
+      } else if (this.aiAdvice !== null) {
+        // 总评卡片
+        Column() {
+          Row({ space: 6 }) {
+            Text('🤖').fontSize(22)
+            Column() {
+              Text('AI营养师分析')
+                .fontSize(16)
+                .fontWeight(FontWeight.Bold)
+                .fontColor(COLORS.PRIMARY_DARK)
+              if (this.aiAdvice.isAiGenerated) {
+                Text('AI增强分析')
+                  .fontSize(10)
+                  .fontColor(COLORS.ACCENT_PURPLE)
+                  .backgroundColor(COLORS.BG_WARM_PURPLE)
+                  .padding({ left: 6, right: 6, top: 2, bottom: 2 })
+                  .borderRadius(8)
+                  .margin({ top: 2 })
+              }
+            }
+            .alignItems(HorizontalAlign.Start)
+            Blank()
+            Text(this.aiAdvice.dateRange)
+              .fontSize(12)
+              .fontColor(COLORS.TEXT_GRAY_9E9E)
+          }
+          .width('100%')
+          .margin({ bottom: 8 })
+
+          Text(this.aiAdvice.summary)
+            .fontSize(14)
+            .fontColor(COLORS.TEXT_PRIMARY)
+            .lineHeight(22)
+            .width('100%')
+
+          // 营养素分析
+          if (this.aiAdvice.nutrientAnalyses.length > 0) {
+            Row({ space: 6 }) {
+              ForEach(this.aiAdvice.nutrientAnalyses, (na: NutrientAnalysisItem) => {
+                this.buildNutrientMiniCard(na)
+              })
+            }
+            .width('100%')
+            .margin({ top: 8 })
+          }
+
+          // 问题与亮点
+          if (this.aiAdvice.patternAnalysis.issues.length > 0) {
+            Column() {
+              Text('⚠️ 需要注意')
+                .fontSize(13)
+                .fontWeight(FontWeight.Medium)
+                .fontColor(COLORS.ORANGE_ACCENT)
+                .margin({ bottom: 4 })
+              ForEach(this.aiAdvice.patternAnalysis.issues, (issue: string) => {
+                Text('· ' + issue)
+                  .fontSize(12)
+                  .fontColor(COLORS.TEXT_GRAY_6161)
+                  .margin({ bottom: 2 })
+              })
+            }
+            .width('100%')
+            .margin({ top: 8 })
+          }
+
+          // 建议列表
+          Row() {
+            Text('💡 ' + this.aiAdvice.suggestions[0])
+              .fontSize(13)
+              .fontColor(COLORS.ACCENT_PURPLE)
+              .maxLines(2)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+          }
+          .width('100%')
+          .padding(10)
+          .backgroundColor(COLORS.BG_WARM_PURPLE)
+          .borderRadius(RADIUS.MD)
+          .margin({ top: 8 })
+
+          // 鼓励语
+          Text(this.aiAdvice.motivationalMessage)
+            .fontSize(12)
+            .fontColor(COLORS.TEXT_GRAY_9E9E)
+            .margin({ top: 8 })
+            .width('100%')
+
+          // 刷新按钮
+          Button('🔄 刷新分析')
+            .height(32)
+            .fontSize(12)
+            .backgroundColor(COLORS.ACCENT_PURPLE)
+            .borderRadius(RADIUS.FULL)
+            .fontColor(COLORS.WHITE)
+            .margin({ top: 8 })
+            .onClick(() => { this.loadAiAdvice() })
+        }
+        .width('100%')
+        .padding(16)
+        .backgroundColor(COLORS.WHITE)
+        .borderRadius(RADIUS.LG)
+        .margin({ bottom: SPACING.MD })
+        .shadow({ radius: 2, color: COLORS.SHADOW_LIGHT, offsetY: 1 })
+      } else {
+        // 未加载状态
+        Button() {
+          Row({ space: 6 }) {
+            Text('🤖').fontSize(18)
+            Text('获取AI营养师分析').fontSize(14).fontColor(COLORS.WHITE)
+          }
+        }
+        .width('100%')
+        .height(44)
+        .backgroundColor(COLORS.ACCENT_PURPLE)
+        .borderRadius(RADIUS.LG)
+        .onClick(() => { this.loadAiAdvice() })
+      }
+    }
+    .width('100%')
+    .padding({ left: SPACING.LG, right: SPACING.LG, bottom: SPACING.SM })
+  }
+
+  @Builder
+  buildNutrientMiniCard(na: NutrientAnalysisItem) {
+    Column() {
+      Text(na.name)
+        .fontSize(10)
+        .fontColor(COLORS.TEXT_GRAY_9E9E)
+      Text(Math.round(na.averageDaily).toString())
+        .fontSize(14)
+        .fontWeight(FontWeight.Bold)
+        .fontColor(na.status === 'over' ? COLORS.ACCENT_RED_F443 :
+          na.status === 'warning' ? COLORS.ORANGE_ACCENT : COLORS.ACCENT_GREEN_4CAF)
+      Text('/' + na.target.toString())
+        .fontSize(9)
+        .fontColor(COLORS.TEXT_GRAY_9E9E)
+    }
+    .layoutWeight(1)
+    .padding(6)
+    .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
+    .borderRadius(RADIUS.SM)
+    .alignItems(HorizontalAlign.Center)
   }
 
   @Builder

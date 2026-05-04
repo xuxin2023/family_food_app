@@ -361,6 +361,52 @@ struct HomePage {
           }
         })
 
+        // 🤖 AI营养师入口
+        Button() {
+          Row({ space: 6 }) {
+            Text('🤖').fontSize(20)
+            Text('AI营养师').fontSize(18).fontColor(COLORS.WHITE).margin({ left: 8 })
+          }
+        }
+        .width('90%')
+        .height(BUTTON.HEIGHT_LG)
+        .backgroundColor(COLORS.ACCENT_PURPLE)
+        .borderRadius(BUTTON.RADIUS_LG)
+        .margin({ bottom: 12 })
+        .onClick(() => {
+          try {
+            router.pushUrl({
+              url: 'pages/DietDiaryPage',
+              params: { memberId: this.selectedMemberId, aiMode: 'nutritionist' }
+            })
+          } catch (_e) {
+            // ignore router.pushUrl error
+          }
+        })
+
+        // ✨ AI智能推荐食谱
+        Button() {
+          Row({ space: 6 }) {
+            Text('✨').fontSize(20)
+            Text('AI推荐食谱').fontSize(18).fontColor(COLORS.WHITE).margin({ left: 8 })
+          }
+        }
+        .width('90%')
+        .height(BUTTON.HEIGHT_LG)
+        .backgroundColor(COLORS.PRIMARY_DARK)
+        .borderRadius(BUTTON.RADIUS_LG)
+        .margin({ bottom: 12 })
+        .onClick(() => {
+          try {
+            router.pushUrl({
+              url: 'pages/RecipeCommunityPage',
+              params: { aiMode: 'recommend' }
+            })
+          } catch (_e) {
+            // ignore router.pushUrl error
+          }
+        })
+
         if (this.appState.hasFamilyAccess()) {
           Button() {
             Row() {

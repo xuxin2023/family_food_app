@@ -292,13 +292,17 @@ struct RecipeDetailPage {
         Text('烹饪步骤').fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
         ForEach(this.recipe!.steps, (step: RecipeStep) => {
           Row() {
-            Circle()
-              .width(28)
-              .height(28)
-              .fill(COLORS.PRIMARY)
-              .overlay(Text(step.stepNumber.toString())
+            Stack() {
+              Circle()
+                .width(28)
+                .height(28)
+                .fill(COLORS.PRIMARY)
+              Text(step.stepNumber.toString())
                 .fontSize(14)
-                .fontColor(COLORS.WHITE))
+                .fontColor(COLORS.WHITE)
+            }
+            .width(28)
+            .height(28)
             Text(step.description)
               .fontSize(14)
               .fontColor(COLORS.TEXT_PRIMARY)
@@ -427,13 +431,17 @@ struct RecipeDetailPage {
             ListItem() {
               Column() {
                 Row() {
-                  Circle()
-                    .width(32)
-                    .height(32)
-                    .fill(COLORS.BG_WARM_BLUE)
-                    .overlay(Text(comment.authorName.substring(0, 1))
+                  Stack() {
+                    Circle()
+                      .width(32)
+                      .height(32)
+                      .fill(COLORS.BG_WARM_BLUE)
+                    Text(comment.authorName.substring(0, 1))
                       .fontSize(14)
-                      .fontColor(COLORS.PRIMARY))
+                      .fontColor(COLORS.PRIMARY)
+                  }
+                  .width(32)
+                  .height(32)
                   Column() {
                     Text(comment.authorName)
                       .fontSize(13)

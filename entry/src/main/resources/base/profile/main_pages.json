@@ -15,6 +15,11 @@
     "pages/SettingsPage",
     "pages/SubscriptionPage",
     "pages/DietDiaryPage",
-    "pages/NutritionTrendPage"
+    "pages/NutritionTrendPage",
+    "pages/FamilyGroupPage",
+    "pages/GroupFeedPage",
+    "pages/RecipeCommunityPage",
+    "pages/RecipeDetailPage",
+    "pages/RecipeCreatePage"
   ]
 }

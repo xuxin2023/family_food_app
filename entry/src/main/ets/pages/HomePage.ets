@@ -402,6 +402,43 @@ struct HomePage {
           }
         })
 
+        // 社交入口：食谱社区 + 家庭群组
+        Row({ space: 10 }) {
+          Button() {
+            Row({ space: 4 }) {
+              Text('🍳').fontSize(16)
+              Text('食谱社区').fontSize(14).fontColor(COLORS.WHITE)
+            }
+          }
+          .layoutWeight(1)
+          .height(BUTTON.HEIGHT_SECONDARY)
+          .backgroundColor(COLORS.ACCENT_PURPLE)
+          .borderRadius(BUTTON.RADIUS_SECONDARY)
+          .onClick(() => {
+            try {
+              router.pushUrl({ url: 'pages/RecipeCommunityPage' })
+            } catch (_e) {}
+          })
+
+          Button() {
+            Row({ space: 4 }) {
+              Text('👨‍👩‍👧‍👦').fontSize(16)
+              Text('家庭群组').fontSize(14).fontColor(COLORS.WHITE)
+            }
+          }
+          .layoutWeight(1)
+          .height(BUTTON.HEIGHT_SECONDARY)
+          .backgroundColor(COLORS.ACCENT_BLUE)
+          .borderRadius(BUTTON.RADIUS_SECONDARY)
+          .onClick(() => {
+            try {
+              router.pushUrl({ url: 'pages/FamilyGroupPage' })
+            } catch (_e) {}
+          })
+        }
+        .width('90%')
+        .margin({ bottom: 12 })
+
         Row() {
           Text('历史').fontSize(13).fontColor(COLORS.TEXT_GRAY_7575)
             .onClick(() => {

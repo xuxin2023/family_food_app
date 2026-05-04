@@ -13,6 +13,14 @@ import { FoodRepository } from './repository/FoodRepository';
 import { HistoryRepository, ScanHistoryRecord, DietRecord } from './repository/HistoryRepository';
 import { RuleRepository } from './repository/RuleRepository';
 import { RuleEngine, RuleEngineParams } from './engine/RuleEngine';
+import { FamilyGroupRepository } from './repository/FamilyGroupRepository';
+import { RecipeRepository } from './repository/RecipeRepository';
+import { FamilyGroupService } from './service/FamilyGroupService';
+import { RecipeCommunityService } from './service/RecipeCommunityService';
+import { AuthService } from './service/AuthService';
+import { GroupSummary, GroupFeed } from './model/FamilyGroup';
+import { CreateRecipeParams } from './service/RecipeCommunityService';
+import { Recipe, RecipeQueryParams, RecipeComment } from './model/Recipe';
 import { NutritionTrendEngine, DailyNutritionSummary, NutrientTrendData, MealGroup } from './engine/NutritionTrendEngine';
 import { HealthService } from './service/HealthService';
 import { RecommendationEngine } from './engine/RecommendationEngine';
@@ -56,6 +64,8 @@ export class AppState {
   private foodRepo: FoodRepository = new FoodRepository();
   private historyRepo: HistoryRepository = new HistoryRepository();
   private ruleRepo: RuleRepository = new RuleRepository();
+  private groupRepo: FamilyGroupRepository = new FamilyGroupRepository();
+  private recipeRepo: RecipeRepository = new RecipeRepository();
 
   // 业务引擎
   private ruleEngine: RuleEngine = new RuleEngine();
@@ -70,6 +80,12 @@ export class AppState {
 
   // 华为Kit服务
   private healthService: HealthService = new HealthService();
+
+  // 社交服务
+  private authService: AuthService = new AuthService();
+  private groupService: FamilyGroupService | null = null;
+  private recipeCommunityService: RecipeCommunityService | null = null;
+  private socialInitialized: boolean = false;
 
   // 内存缓存
   private membersCache: FamilyProfile[] = [];
@@ -124,6 +140,20 @@ export class AppState {
       const rdbStore = await relationalStore.getRdbStore(context, rdbConfig);
       await this.foodRepo.init(rdbStore);
       await this.historyRepo.init(rdbStore);
+
+      // 初始化群组和食谱数据库
+      this.groupRepo.init(rdbStore);
+      await this.groupRepo.createTables();
+      this.recipeRepo.init(rdbStore);
+      await this.recipeRepo.createTables();
+
+      // 初始化认证服务
+      await this.authService.init(context);
+
+      // 初始化社交服务
+      this.groupService = new FamilyGroupService(this.groupRepo, this.authService);
+      this.recipeCommunityService = new RecipeCommunityService(this.recipeRepo, this.authService);
+      this.socialInitialized = true;
 
       // 设置规则仓库上下文
       this.ruleRepo.setContext(context);
@@ -623,85 +653,22 @@ export class AppState {
    * 判断是否有高级版权限（新版，基于 MemberTier）
    */
   hasPremiumAccess(): boolean {
-    return this.memberStatus.tier === MemberTier.PREMIUM;
-  }
-
-  /**
-   * 检查是否可以执行扫描（免费版每日限制）
-   * 返回true表示可以扫描，false表示已达上限
-   */
-  canScanToday(): boolean {
-    this.resetScanCountIfNewDay();
-    if (this.currentTier === SubscriptionTier.FREE) {
-      return this.todayScanCount < 3;
-    }
-    return true; // 付费版无限扫描
-  }
-
-  /**
-   * 记录一次扫描
-   */
-  recordScan(): void {
-    this.resetScanCountIfNewDay();
-    this.todayScanCount++;
+    const tier = this.memberStatus.tier;
+    return tier === MemberTier.PREMIUM;
   }
 
   /**
    * 获取今日剩余扫描次数
    */
   getRemainingScansToday(): number {
-    this.resetScanCountIfNewDay();
-    if (this.currentTier === SubscriptionTier.FREE) {
-      return Math.max(0, 3 - this.todayScanCount);
-    }
-    return -1; // -1表示无限
+    return this.memberStatus.scansRemainingToday;
   }
 
   /**
-   * 检查是否可以添加家庭成员（免费版限制1人）
+   * 确认一次扫描（调用后扣减扫描次数）
    */
-  canAddMember(): boolean {
-    if (this.currentTier === SubscriptionTier.FREE) {
-      return this.membersCache.length < 1;
-    }
-    return true; // 付费版无限制
-  }
-
-  /**
-   * 获取成员数上限（-1表示无限）
-   */
-  getMemberLimit(): number {
-    if (this.currentTier === SubscriptionTier.FREE) {
-      return 1;
-    }
-    return -1;
-  }
-
-  private resetScanCountIfNewDay(): void {
-    const today = DateUtil.getToday();
-    if (this.todayScanDate !== today) {
-      this.todayScanDate = today;
-      this.todayScanCount = 0;
-    }
-  }
-
-  // ========== 新版会员状态操作方法 ==========
-
-  /**
-   * 消耗一次扫码次数
-   * 若剩余次数 > 0 则减1并返回 null
-   * 若已用完则返回一个柔性拦截的 PaywallTrigger
-   * @returns PaywallTrigger | null
-   */
-  useScan(): PaywallTrigger | null {
+  confirmScan(): void {
     const status = this.memberStatus;
-
-    // 无限扫码（付费版）
-    if (status.scansRemainingToday === -1) {
-      return null;
-    }
-
-    // 还有剩余次数
     if (status.scansRemainingToday > 0) {
       const newStatus: MemberStatus = {
         tier: status.tier,
@@ -713,192 +680,18 @@ export class AppState {
         weeklyReportsRemaining: status.weeklyReportsRemaining
       };
       this.memberStatus = newStatus;
-      return null;
     }
-
-    // 已用完，返回付费墙
-    const trigger = getPaywallTriggerForFeature('scan', status.tier);
-    if (trigger !== null) {
-      return {
-        title: trigger.title,
-        message: trigger.message,
-        featureName: trigger.featureName,
-        requiredTier: trigger.requiredTier,
-        cta: trigger.cta,
-        isSoftLimit: true // 扫码限制为柔性拦截
-      };
-    }
-
-    // 兜底文案
-    return {
-      title: '今日扫码已达上限',
-      message: '免费版每天只能扫码3次。升级后全家人都能不限次使用。',
-      featureName: '无限扫码',
-      requiredTier: MemberTier.PERSONAL,
-      cta: '解锁无限扫码',
-      isSoftLimit: true
-    };
   }
 
   /**
-   * 消耗一次家庭成员添加额度
-   * 若剩余额度 > 0 则减1并返回 null
-   * 若已用完则返回一个柔性拦截的 PaywallTrigger
-   * @returns PaywallTrigger | null
+   * 获取可添加的家庭成员数
    */
-  useFamilyMember(): PaywallTrigger | null {
-    const status = this.memberStatus;
-
-    // 无限添加（高级版）
-    if (status.familyMembersRemaining === -1) {
-      return null;
-    }
-
-    // 还有剩余额度
-    if (status.familyMembersRemaining > 0) {
-      const newStatus: MemberStatus = {
-        tier: status.tier,
-        scansRemainingToday: status.scansRemainingToday,
-        familyMembersRemaining: status.familyMembersRemaining - 1,
-        expiryDate: status.expiryDate,
-        isTrialActive: status.isTrialActive,
-        trialRemainingDays: status.trialRemainingDays,
-        weeklyReportsRemaining: status.weeklyReportsRemaining
-      };
-      this.memberStatus = newStatus;
-      return null;
-    }
-
-    // 已用完，返回付费墙
-    const trigger = getPaywallTriggerForFeature('add_member', status.tier);
-    if (trigger !== null) {
-      return {
-        title: trigger.title,
-        message: trigger.message,
-        featureName: trigger.featureName,
-        requiredTier: trigger.requiredTier,
-        cta: trigger.cta,
-        isSoftLimit: true
-      };
-    }
-
-    // 兜底文案
-    return {
-      title: '添加更多家庭成员',
-      message: '免费版和个人版仅支持1位家庭成员。升级家庭版后，全家人都能拥有独立档案。',
-      featureName: '多成员支持',
-      requiredTier: MemberTier.FAMILY,
-      cta: '升级家庭版',
-      isSoftLimit: true
-    };
+  getAvailableMemberSlots(): number {
+    return this.memberStatus.familyMembersRemaining;
   }
 
   /**
-   * 根据功能名返回对应付费墙触发信息
-   * @param feature 功能名（如 'scan', 'add_member', 'weekly_report' 等）
-   * @returns PaywallTrigger（即使当前等级已有权限，也返回付费墙信息用于展示）
-   */
-  getPaywallTrigger(feature: string): PaywallTrigger {
-    const status = this.memberStatus;
-    const trigger = getPaywallTriggerForFeature(feature, status.tier);
-
-    if (trigger !== null) {
-      return trigger;
-    }
-
-    // 当前等级已有权限时返回默认信息
-    const displayName = getTierDisplayName(status.tier);
-    return {
-      title: '功能已解锁',
-      message: `您的${displayName}已包含此功能，尽情使用吧。`,
-      featureName: feature,
-      requiredTier: MemberTier.FREE,
-      cta: '知道了',
-      isSoftLimit: false
-    };
-  }
-
-  /**
-   * 每日重置扫码次数和试用天数
-   * 在 EntryAbility 的 onForeground 中调用
-   */
-  resetDailyScans(): void {
-    const status = this.memberStatus;
-    const scanLimit = TIER_DAILY_SCAN_LIMIT.get(status.tier) || 0;
-    const memberLimit = TIER_MEMBER_LIMIT.get(status.tier) || 0;
-    const reportLimit = TIER_WEEKLY_REPORT_LIMIT.get(status.tier) || 0;
-
-    const newStatus: MemberStatus = {
-      tier: status.tier,
-      scansRemainingToday: scanLimit,
-      familyMembersRemaining: memberLimit - this.addedMemberCount,
-      expiryDate: status.expiryDate,
-      isTrialActive: status.isTrialActive,
-      trialRemainingDays: status.trialRemainingDays,
-      weeklyReportsRemaining: reportLimit
-    };
-
-    // 如有试用天数，每日减少1天
-    if (newStatus.isTrialActive && newStatus.trialRemainingDays > 0) {
-      newStatus.trialRemainingDays = newStatus.trialRemainingDays - 1;
-      if (newStatus.trialRemainingDays <= 0) {
-        newStatus.isTrialActive = false;
-      }
-    }
-
-    this.memberStatus = newStatus;
-    hilog.info(DOMAIN_ZERO, TAG, 'Daily member status reset: scans=%{public}d, trialDays=%{public}d',
-      newStatus.scansRemainingToday, newStatus.trialRemainingDays);
-  }
-
-  /**
-   * 升级会员等级并设置有效期
-   * @param tier 目标会员等级
-   * @param days 有效期天数（如365表示年卡，7表示试用）
-   */
-  upgradeTier(tier: MemberTier, days: number): void {
-    const newStatus = createMemberStatusForTier(tier, days);
-
-    // 保留已添加的家庭成员数量信息
-    const memberLimit = TIER_MEMBER_LIMIT.get(tier) || 0;
-    if (memberLimit === -1) {
-      newStatus.familyMembersRemaining = -1;
-    } else {
-      newStatus.familyMembersRemaining = Math.max(0, memberLimit - this.addedMemberCount);
-    }
-
-    // 同时更新旧版订阅状态以保持兼容
-    if (tier !== MemberTier.FREE) {
-      // 映射到旧版 SubscriptionTier
-      if (tier === MemberTier.PERSONAL) {
-        this.currentTier = SubscriptionTier.PERSONAL_YEAR;
-      } else if (tier === MemberTier.PREMIUM) {
-        this.currentTier = SubscriptionTier.FAMILY_PREMIUM;
-      } else {
-        this.currentTier = SubscriptionTier.FAMILY_STANDARD;
-      }
-    }
-
-    this.memberStatus = newStatus;
-    hilog.info(DOMAIN_ZERO, TAG, 'Tier upgraded to %{public}s, valid for %{public}d days', tier, days);
-  }
-
-  /**
-   * 获取当前等级的每日扫码上限（-1表示无限）
-   */
-  getDailyScanLimitForCurrentTier(): number {
-    return TIER_DAILY_SCAN_LIMIT.get(this.memberStatus.tier) || 0;
-  }
-
-  /**
-   * 获取当前等级的家庭成员上限（-1表示无限）
-   */
-  getMemberLimitForCurrentTier(): number {
-    return TIER_MEMBER_LIMIT.get(this.memberStatus.tier) || 0;
-  }
-
-  /**
-   * 当添加一个家庭成员后调用，更新已添加计数
+   * 新增一个家庭成员后调用，扣减剩余名额
    */
   onMemberAdded(): void {
     this.addedMemberCount++;
@@ -918,7 +711,7 @@ export class AppState {
   }
 
   /**
-   * 当删除一个家庭成员后调用，释放额度
+   * 删除一个家庭成员后调用，释放名额
    */
   onMemberRemoved(): void {
     this.addedMemberCount = Math.max(0, this.addedMemberCount - 1);
@@ -935,5 +728,127 @@ export class AppState {
       };
       this.memberStatus = newStatus;
     }
+  }
+
+  // ========== 社交功能 — 家庭群组 ==========
+
+  /** 获取群组服务实例 */
+  getGroupService(): FamilyGroupService {
+    if (!this.groupService) {
+      throw new Error('FamilyGroupService not initialized. Call init() first.');
+    }
+    return this.groupService;
+  }
+
+  /** 获取食谱社区服务实例 */
+  getRecipeCommunityService(): RecipeCommunityService {
+    if (!this.recipeCommunityService) {
+      throw new Error('RecipeCommunityService not initialized. Call init() first.');
+    }
+    return this.recipeCommunityService;
+  }
+
+  /** 检查社交服务是否已初始化 */
+  isSocialInitialized(): boolean {
+    return this.socialInitialized;
+  }
+
+  // ========== 社交便捷方法 ==========
+
+  /** 创建家庭群组 */
+  async createFamilyGroup(groupName: string, description: string, ownerName: string): Promise<GroupSummary> {
+    return await this.getGroupService().createGroup({ groupName, description, ownerName });
+  }
+
+  /** 通过邀请码加入群组 */
+  async joinFamilyGroup(inviteCode: string, displayName: string): Promise<GroupSummary> {
+    return await this.getGroupService().joinGroupByCode(inviteCode, displayName);
+  }
+
+  /** 获取我的群组列表 */
+  async getMyGroups(): Promise<GroupSummary[]> {
+    return await this.getGroupService().getMyGroups();
+  }
+
+  /** 获取群组详情 */
+  async getGroupDetail(groupId: string): Promise<GroupSummary | null> {
+    return await this.getGroupService().getGroupDetail(groupId);
+  }
+
+  /** 获取群组邀请码 */
+  async getGroupInviteCode(groupId: string): Promise<string> {
+    return await this.getGroupService().getInviteCode(groupId);
+  }
+
+  /** 离开群组 */
+  async leaveGroup(groupId: string): Promise<void> {
+    return await this.getGroupService().leaveGroup(groupId);
+  }
+
+  /** 分享食品扫描结果到群组 */
+  async shareFoodScanToGroup(
+    groupId: string, foodName: string, foodId: string,
+    nutriScore: number, summary: string, memberResults: string
+  ): Promise<void> {
+    return await this.getGroupService().shareFoodScan(
+      groupId, foodName, foodId, nutriScore, summary, memberResults
+    );
+  }
+
+  /** 获取群组动态 */
+  async getGroupFeeds(groupId: string, offset: number, limit: number): Promise<GroupFeed[]> {
+    return await this.getGroupService().getGroupFeeds(groupId, offset, limit);
+  }
+
+  // ========== 社交便捷方法 — 食谱社区 ==========
+
+  /** 发布食谱 */
+  async publishRecipe(params: CreateRecipeParams): Promise<Recipe> {
+    return await this.getRecipeCommunityService().createRecipe(params);
+  }
+
+  /** 获取食谱详情 */
+  async getRecipeDetail(recipeId: string): Promise<Recipe | null> {
+    return await this.getRecipeCommunityService().getRecipeDetail(recipeId);
+  }
+
+  /** 查询社区食谱 */
+  async queryCommunityRecipes(queryParams: RecipeQueryParams): Promise<Recipe[]> {
+    return await this.getRecipeCommunityService().queryRecipes(queryParams);
+  }
+
+  /** 获取我的食谱 */
+  async getMyRecipes(includeDrafts: boolean): Promise<Recipe[]> {
+    return await this.getRecipeCommunityService().getMyRecipes(includeDrafts);
+  }
+
+  /** 点赞/取消点赞食谱 */
+  async toggleRecipeLike(recipeId: string): Promise<boolean> {
+    return await this.getRecipeCommunityService().toggleLike(recipeId);
+  }
+
+  /** 检查是否已点赞 */
+  async hasLikedRecipe(recipeId: string): Promise<boolean> {
+    return await this.getRecipeCommunityService().hasLiked(recipeId);
+  }
+
+  /** 发表评论 */
+  async addRecipeComment(recipeId: string, content: string, parentId: string): Promise<RecipeComment> {
+    return await this.getRecipeCommunityService().addComment(recipeId, content, parentId);
+  }
+
+  /** 获取评论 */
+  async getRecipeComments(recipeId: string): Promise<RecipeComment[]> {
+    return await this.getRecipeCommunityService().getComments(recipeId);
+  }
+
+  /** 收藏/取消收藏 */
+  async toggleRecipeBookmark(recipeId: string, note: string): Promise<boolean> {
+    return await this.getRecipeCommunityService().toggleBookmark(recipeId, note);
+  }
+
+  /** 获取我的收藏 */
+  async getMyRecipeBookmarks(): Promise<string[]> {
+    return await this.getRecipeCommunityService().getMyBookmarks();
   }
 }

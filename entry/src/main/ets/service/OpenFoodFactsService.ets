@@ -356,7 +356,7 @@ export class OpenFoodFactsService {
   /**
    * 获取产品图片
    */
-  async getProductImage(imageUrl: string): Promise<image.PixelMap | null> {
+  getProductImage(imageUrl: string): Promise<image.PixelMap | null> {
     if (imageUrl.length === 0) {
       return null
     }
@@ -494,7 +494,7 @@ export class OpenFoodFactsService {
   /**
    * 执行 HTTP GET 请求
    */
-  private async makeRequest(url: string): Promise<JsonObject | null> {
+  private makeRequest(url: string): Promise<JsonObject | null> {
     return new Promise<JsonObject | null>((resolve: (value: JsonObject | null) => void) => {
       try {
         const httpRequest = http.createHttp()

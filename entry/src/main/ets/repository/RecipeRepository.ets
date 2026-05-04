@@ -27,7 +27,8 @@ export class RecipeRepository {
   async createTables(): Promise<void> {
     if (!this.rdbStore) return;
 
-    const recipeSql = `CREATE TABLE IF NOT EXISTS ${TABLE_RECIPE} (
+    try {
+      const recipeSql = `CREATE TABLE IF NOT EXISTS ${TABLE_RECIPE} (
       recipe_id TEXT PRIMARY KEY,
       title TEXT NOT NULL,
       description TEXT DEFAULT '',
@@ -53,9 +54,9 @@ export class RecipeRepository {
       is_approved INTEGER DEFAULT 0,
       is_draft INTEGER DEFAULT 1
     )`;
-    await this.rdbStore.executeSql(recipeSql);
+      await this.rdbStore.executeSql(recipeSql);
 
-    const commentSql = `CREATE TABLE IF NOT EXISTS ${TABLE_COMMENT} (
+      const commentSql = `CREATE TABLE IF NOT EXISTS ${TABLE_COMMENT} (
       comment_id TEXT PRIMARY KEY,
       recipe_id TEXT NOT NULL,
       author_uid TEXT NOT NULL,
@@ -67,79 +68,86 @@ export class RecipeRepository {
       like_count INTEGER DEFAULT 0,
       is_edited INTEGER DEFAULT 0
     )`;
-    await this.rdbStore.executeSql(commentSql);
+      await this.rdbStore.executeSql(commentSql);
 
-    const likeSql = `CREATE TABLE IF NOT EXISTS ${TABLE_LIKE} (
+      const likeSql = `CREATE TABLE IF NOT EXISTS ${TABLE_LIKE} (
       id TEXT PRIMARY KEY,
       recipe_id TEXT NOT NULL,
       uid TEXT NOT NULL,
       created_at INTEGER NOT NULL
     )`;
-    await this.rdbStore.executeSql(likeSql);
+      await this.rdbStore.executeSql(likeSql);
 
-    const bookmarkSql = `CREATE TABLE IF NOT EXISTS ${TABLE_BOOKMARK} (
+      const bookmarkSql = `CREATE TABLE IF NOT EXISTS ${TABLE_BOOKMARK} (
       id TEXT PRIMARY KEY,
       recipe_id TEXT NOT NULL,
       uid TEXT NOT NULL,
       created_at INTEGER NOT NULL,
       note TEXT DEFAULT ''
     )`;
-    await this.rdbStore.executeSql(bookmarkSql);
+      await this.rdbStore.executeSql(bookmarkSql);
 
-    // 索引
-    await this.rdbStore.executeSql(
-      `CREATE INDEX IF NOT EXISTS idx_recipe_author ON ${TABLE_RECIPE} (author_uid)`
-    );
-    await this.rdbStore.executeSql(
-      `CREATE INDEX IF NOT EXISTS idx_recipe_category ON ${TABLE_RECIPE} (category)`
-    );
-    await this.rdbStore.executeSql(
-      `CREATE INDEX IF NOT EXISTS idx_recipe_created ON ${TABLE_RECIPE} (created_at)`
-    );
-    await this.rdbStore.executeSql(
-      `CREATE INDEX IF NOT EXISTS idx_comment_recipe ON ${TABLE_COMMENT} (recipe_id, created_at)`
-    );
-    await this.rdbStore.executeSql(
-      `CREATE INDEX IF NOT EXISTS idx_like_recipe ON ${TABLE_LIKE} (recipe_id, uid)`
-    );
-    await this.rdbStore.executeSql(
-      `CREATE INDEX IF NOT EXISTS idx_bookmark_user ON ${TABLE_BOOKMARK} (uid)`
-    );
+      // 索引
+      await this.rdbStore.executeSql(
+        `CREATE INDEX IF NOT EXISTS idx_recipe_author ON ${TABLE_RECIPE} (author_uid)`
+      );
+      await this.rdbStore.executeSql(
+        `CREATE INDEX IF NOT EXISTS idx_recipe_category ON ${TABLE_RECIPE} (category)`
+      );
+      await this.rdbStore.executeSql(
+        `CREATE INDEX IF NOT EXISTS idx_recipe_created ON ${TABLE_RECIPE} (created_at)`
+      );
+      await this.rdbStore.executeSql(
+        `CREATE INDEX IF NOT EXISTS idx_comment_recipe ON ${TABLE_COMMENT} (recipe_id, created_at)`
+      );
+      await this.rdbStore.executeSql(
+        `CREATE INDEX IF NOT EXISTS idx_like_recipe ON ${TABLE_LIKE} (recipe_id, uid)`
+      );
+      await this.rdbStore.executeSql(
+        `CREATE INDEX IF NOT EXISTS idx_bookmark_user ON ${TABLE_BOOKMARK} (uid)`
+      );
 
-    hilog.info(DOMAIN_ZERO, TAG, 'Recipe tables created');
+      hilog.info(DOMAIN_ZERO, TAG, 'Recipe tables created');
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'createTables failed: %{public}s', JSON.stringify(error));
+    }
   }
 
   // ========== 食谱 CRUD ==========
 
   async saveRecipe(recipe: Recipe): Promise<void> {
     if (!this.rdbStore) return;
-    const bucket: relationalStore.ValuesBucket = {
-      recipe_id: recipe.recipeId,
-      title: recipe.title,
-      description: recipe.description,
-      cover_image_url: recipe.coverImageUrl,
-      author_uid: recipe.authorUid,
-      author_name: recipe.authorName,
-      author_avatar: recipe.authorAvatar,
-      category: recipe.category,
-      difficulty: recipe.difficulty,
-      total_minutes: recipe.totalMinutes,
-      servings: recipe.servings,
-      ingredients: JSON.stringify(recipe.ingredients),
-      steps: JSON.stringify(recipe.steps),
-      nutrition: recipe.nutrition ? JSON.stringify(recipe.nutrition) : null,
-      diet_tags: JSON.stringify(recipe.dietTags),
-      related_food_id: recipe.relatedFoodId,
-      from_group_id: recipe.fromGroupId,
-      created_at: recipe.createdAt,
-      updated_at: recipe.updatedAt,
-      like_count: recipe.likeCount,
-      comment_count: recipe.commentCount,
-      bookmark_count: recipe.bookmarkCount,
-      is_approved: recipe.isApproved ? 1 : 0,
-      is_draft: recipe.isDraft ? 1 : 0
-    };
-    await this.rdbStore.insert(TABLE_RECIPE, bucket, relationalStore.ConflictResolution.ON_CONFLICT_REPLACE);
+    try {
+      const bucket: relationalStore.ValuesBucket = {
+        recipe_id: recipe.recipeId,
+        title: recipe.title,
+        description: recipe.description,
+        cover_image_url: recipe.coverImageUrl,
+        author_uid: recipe.authorUid,
+        author_name: recipe.authorName,
+        author_avatar: recipe.authorAvatar,
+        category: recipe.category,
+        difficulty: recipe.difficulty,
+        total_minutes: recipe.totalMinutes,
+        servings: recipe.servings,
+        ingredients: JSON.stringify(recipe.ingredients),
+        steps: JSON.stringify(recipe.steps),
+        nutrition: recipe.nutrition ? JSON.stringify(recipe.nutrition) : null,
+        diet_tags: JSON.stringify(recipe.dietTags),
+        related_food_id: recipe.relatedFoodId,
+        from_group_id: recipe.fromGroupId,
+        created_at: recipe.createdAt,
+        updated_at: recipe.updatedAt,
+        like_count: recipe.likeCount,
+        comment_count: recipe.commentCount,
+        bookmark_count: recipe.bookmarkCount,
+        is_approved: recipe.isApproved ? 1 : 0,
+        is_draft: recipe.isDraft ? 1 : 0
+      };
+      await this.rdbStore.insert(TABLE_RECIPE, bucket, relationalStore.ConflictResolution.ON_CONFLICT_REPLACE);
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'saveRecipe failed: %{public}s', JSON.stringify(error));
+    }
   }
 
   async getRecipe(recipeId: string): Promise<Recipe | null> {
@@ -203,50 +211,62 @@ export class RecipeRepository {
 
   async updateRecipe(recipeId: string, updates: Partial<Recipe>): Promise<void> {
     if (!this.rdbStore) return;
-    const bucket: relationalStore.ValuesBucket = {};
-    if (updates.title !== undefined) bucket['title'] = updates.title;
-    if (updates.description !== undefined) bucket['description'] = updates.description;
-    if (updates.coverImageUrl !== undefined) bucket['cover_image_url'] = updates.coverImageUrl;
-    if (updates.ingredients !== undefined) bucket['ingredients'] = JSON.stringify(updates.ingredients);
-    if (updates.steps !== undefined) bucket['steps'] = JSON.stringify(updates.steps);
-    if (updates.nutrition !== undefined) bucket['nutrition'] = JSON.stringify(updates.nutrition);
-    if (updates.dietTags !== undefined) bucket['diet_tags'] = JSON.stringify(updates.dietTags);
-    if (updates.likeCount !== undefined) bucket['like_count'] = updates.likeCount;
-    if (updates.commentCount !== undefined) bucket['comment_count'] = updates.commentCount;
-    if (updates.bookmarkCount !== undefined) bucket['bookmark_count'] = updates.bookmarkCount;
-    if (updates.isApproved !== undefined) bucket['is_approved'] = updates.isApproved ? 1 : 0;
-    if (updates.isDraft !== undefined) bucket['is_draft'] = updates.isDraft ? 1 : 0;
-    bucket['updated_at'] = Date.now();
+    try {
+      const bucket: relationalStore.ValuesBucket = {};
+      if (updates.title !== undefined) bucket['title'] = updates.title;
+      if (updates.description !== undefined) bucket['description'] = updates.description;
+      if (updates.coverImageUrl !== undefined) bucket['cover_image_url'] = updates.coverImageUrl;
+      if (updates.ingredients !== undefined) bucket['ingredients'] = JSON.stringify(updates.ingredients);
+      if (updates.steps !== undefined) bucket['steps'] = JSON.stringify(updates.steps);
+      if (updates.nutrition !== undefined) bucket['nutrition'] = JSON.stringify(updates.nutrition);
+      if (updates.dietTags !== undefined) bucket['diet_tags'] = JSON.stringify(updates.dietTags);
+      if (updates.likeCount !== undefined) bucket['like_count'] = updates.likeCount;
+      if (updates.commentCount !== undefined) bucket['comment_count'] = updates.commentCount;
+      if (updates.bookmarkCount !== undefined) bucket['bookmark_count'] = updates.bookmarkCount;
+      if (updates.isApproved !== undefined) bucket['is_approved'] = updates.isApproved ? 1 : 0;
+      if (updates.isDraft !== undefined) bucket['is_draft'] = updates.isDraft ? 1 : 0;
+      bucket['updated_at'] = Date.now();
 
-    const predicates = new relationalStore.RdbPredicates(TABLE_RECIPE);
-    predicates.equalTo('recipe_id', recipeId);
-    await this.rdbStore.update(bucket, predicates);
+      const predicates = new relationalStore.RdbPredicates(TABLE_RECIPE);
+      predicates.equalTo('recipe_id', recipeId);
+      await this.rdbStore.update(bucket, predicates);
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'updateRecipe failed: %{public}s', JSON.stringify(error));
+    }
   }
 
   async deleteRecipe(recipeId: string): Promise<void> {
     if (!this.rdbStore) return;
-    const predicates = new relationalStore.RdbPredicates(TABLE_RECIPE);
-    predicates.equalTo('recipe_id', recipeId);
-    await this.rdbStore.delete(predicates);
+    try {
+      const predicates = new relationalStore.RdbPredicates(TABLE_RECIPE);
+      predicates.equalTo('recipe_id', recipeId);
+      await this.rdbStore.delete(predicates);
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'deleteRecipe failed: %{public}s', JSON.stringify(error));
+    }
   }
 
   // ========== 评论管理 ==========
 
   async saveComment(comment: RecipeComment): Promise<void> {
     if (!this.rdbStore) return;
-    const bucket: relationalStore.ValuesBucket = {
-      comment_id: comment.commentId,
-      recipe_id: comment.recipeId,
-      author_uid: comment.authorUid,
-      author_name: comment.authorName,
-      author_avatar: comment.authorAvatar,
-      content: comment.content,
-      parent_id: comment.parentId,
-      created_at: comment.createdAt,
-      like_count: comment.likeCount,
-      is_edited: comment.isEdited ? 1 : 0
-    };
-    await this.rdbStore.insert(TABLE_COMMENT, bucket);
+    try {
+      const bucket: relationalStore.ValuesBucket = {
+        comment_id: comment.commentId,
+        recipe_id: comment.recipeId,
+        author_uid: comment.authorUid,
+        author_name: comment.authorName,
+        author_avatar: comment.authorAvatar,
+        content: comment.content,
+        parent_id: comment.parentId,
+        created_at: comment.createdAt,
+        like_count: comment.likeCount,
+        is_edited: comment.isEdited ? 1 : 0
+      };
+      await this.rdbStore.insert(TABLE_COMMENT, bucket);
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'saveComment failed: %{public}s', JSON.stringify(error));
+    }
   }
 
   async getComments(recipeId: string): Promise<RecipeComment[]> {
@@ -278,47 +298,52 @@ export class RecipeRepository {
 
   async toggleLike(recipeId: string, uid: string): Promise<boolean> {
     if (!this.rdbStore) return false;
-    // 检查是否已点赞
-    const predicates = new relationalStore.RdbPredicates(TABLE_LIKE);
-    predicates.equalTo('recipe_id', recipeId);
-    predicates.equalTo('uid', uid);
-    const resultSet = await this.rdbStore.query(predicates);
-    if (resultSet.goToFirstRow()) {
-      // 已点赞，取消
-      const likeId = resultSet.getString(resultSet.getColumnIndex('id'));
+    try {
+      // 检查是否已点赞
+      const predicates = new relationalStore.RdbPredicates(TABLE_LIKE);
+      predicates.equalTo('recipe_id', recipeId);
+      predicates.equalTo('uid', uid);
+      const resultSet = await this.rdbStore.query(predicates);
+      if (resultSet.goToFirstRow()) {
+        // 已点赞，取消
+        const likeId = resultSet.getString(resultSet.getColumnIndex('id'));
+        resultSet.close();
+        const delPredicates = new relationalStore.RdbPredicates(TABLE_LIKE);
+        delPredicates.equalTo('id', likeId);
+        await this.rdbStore.delete(delPredicates);
+        // 减少点赞数
+        const recipe = await this.getRecipe(recipeId);
+        if (recipe) {
+          await this.updateRecipe(recipeId, { likeCount: Math.max(0, recipe.likeCount - 1) });
+        }
+        return false;
+      }
       resultSet.close();
-      const delPredicates = new relationalStore.RdbPredicates(TABLE_LIKE);
-      delPredicates.equalTo('id', likeId);
-      await this.rdbStore.delete(delPredicates);
-      // 减少点赞数
+
+      // 未点赞，添加
+      const like: RecipeLike = {
+        id: `like_${recipeId}_${uid}_${Date.now()}`,
+        recipeId: recipeId,
+        uid: uid,
+        createdAt: Date.now()
+      };
+      const bucket: relationalStore.ValuesBucket = {
+        id: like.id,
+        recipe_id: like.recipeId,
+        uid: like.uid,
+        created_at: like.createdAt
+      };
+      await this.rdbStore.insert(TABLE_LIKE, bucket);
+      // 增加点赞数
       const recipe = await this.getRecipe(recipeId);
       if (recipe) {
-        await this.updateRecipe(recipeId, { likeCount: Math.max(0, recipe.likeCount - 1) });
+        await this.updateRecipe(recipeId, { likeCount: recipe.likeCount + 1 });
       }
+      return true;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'toggleLike failed: %{public}s', JSON.stringify(error));
       return false;
     }
-    resultSet.close();
-
-    // 未点赞，添加
-    const like: RecipeLike = {
-      id: `like_${recipeId}_${uid}_${Date.now()}`,
-      recipeId: recipeId,
-      uid: uid,
-      createdAt: Date.now()
-    };
-    const bucket: relationalStore.ValuesBucket = {
-      id: like.id,
-      recipe_id: like.recipeId,
-      uid: like.uid,
-      created_at: like.createdAt
-    };
-    await this.rdbStore.insert(TABLE_LIKE, bucket);
-    // 增加点赞数
-    const recipe = await this.getRecipe(recipeId);
-    if (recipe) {
-      await this.updateRecipe(recipeId, { likeCount: recipe.likeCount + 1 });
-    }
-    return true;
   }
 
   async hasLiked(recipeId: string, uid: string): Promise<boolean> {
@@ -336,45 +361,50 @@ export class RecipeRepository {
 
   async toggleBookmark(recipeId: string, uid: string, note: string): Promise<boolean> {
     if (!this.rdbStore) return false;
-    const predicates = new relationalStore.RdbPredicates(TABLE_BOOKMARK);
-    predicates.equalTo('recipe_id', recipeId);
-    predicates.equalTo('uid', uid);
-    const resultSet = await this.rdbStore.query(predicates);
-    if (resultSet.goToFirstRow()) {
-      // 已收藏，取消
-      const bookmarkId = resultSet.getString(resultSet.getColumnIndex('id'));
+    try {
+      const predicates = new relationalStore.RdbPredicates(TABLE_BOOKMARK);
+      predicates.equalTo('recipe_id', recipeId);
+      predicates.equalTo('uid', uid);
+      const resultSet = await this.rdbStore.query(predicates);
+      if (resultSet.goToFirstRow()) {
+        // 已收藏，取消
+        const bookmarkId = resultSet.getString(resultSet.getColumnIndex('id'));
+        resultSet.close();
+        const delPredicates = new relationalStore.RdbPredicates(TABLE_BOOKMARK);
+        delPredicates.equalTo('id', bookmarkId);
+        await this.rdbStore.delete(delPredicates);
+        const recipe = await this.getRecipe(recipeId);
+        if (recipe) {
+          await this.updateRecipe(recipeId, { bookmarkCount: Math.max(0, recipe.bookmarkCount - 1) });
+        }
+        return false;
+      }
       resultSet.close();
-      const delPredicates = new relationalStore.RdbPredicates(TABLE_BOOKMARK);
-      delPredicates.equalTo('id', bookmarkId);
-      await this.rdbStore.delete(delPredicates);
+
+      const bookmark: RecipeBookmark = {
+        id: `bm_${recipeId}_${uid}_${Date.now()}`,
+        recipeId: recipeId,
+        uid: uid,
+        createdAt: Date.now(),
+        note: note
+      };
+      const bucket: relationalStore.ValuesBucket = {
+        id: bookmark.id,
+        recipe_id: bookmark.recipeId,
+        uid: bookmark.uid,
+        created_at: bookmark.createdAt,
+        note: bookmark.note
+      };
+      await this.rdbStore.insert(TABLE_BOOKMARK, bucket);
       const recipe = await this.getRecipe(recipeId);
       if (recipe) {
-        await this.updateRecipe(recipeId, { bookmarkCount: Math.max(0, recipe.bookmarkCount - 1) });
+        await this.updateRecipe(recipeId, { bookmarkCount: recipe.bookmarkCount + 1 });
       }
+      return true;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'toggleBookmark failed: %{public}s', JSON.stringify(error));
       return false;
     }
-    resultSet.close();
-
-    const bookmark: RecipeBookmark = {
-      id: `bm_${recipeId}_${uid}_${Date.now()}`,
-      recipeId: recipeId,
-      uid: uid,
-      createdAt: Date.now(),
-      note: note
-    };
-    const bucket: relationalStore.ValuesBucket = {
-      id: bookmark.id,
-      recipe_id: bookmark.recipeId,
-      uid: bookmark.uid,
-      created_at: bookmark.createdAt,
-      note: bookmark.note
-    };
-    await this.rdbStore.insert(TABLE_BOOKMARK, bucket);
-    const recipe = await this.getRecipe(recipeId);
-    if (recipe) {
-      await this.updateRecipe(recipeId, { bookmarkCount: recipe.bookmarkCount + 1 });
-    }
-    return true;
   }
 
   async getUserBookmarks(uid: string): Promise<string[]> {

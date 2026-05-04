@@ -4,8 +4,10 @@ import { describe, it, expect } from '@ohos/hypium';
 import { Driver, ON, Component } from '@kit.TestKit';
 
 function delay(ms: number): Promise<void> {
-  return new Promise<void>((resolve: () => void): void => {
-    setTimeout(resolve, ms);
+  return new Promise<void>((resolve: () => void) => {
+    setTimeout(() => {
+      resolve();
+    }, ms);
   });
 }
 

@@ -21,6 +21,11 @@ import { RecipeRepository } from './repository/RecipeRepository';
 import { FamilyGroupService } from './service/FamilyGroupService';
 import { RecipeCommunityService } from './service/RecipeCommunityService';
 import { AuthService } from './service/AuthService';
+import { CloudAuthService } from './service/CloudAuthService';
+import { SyncService } from './service/sync/SyncService';
+import { NetworkMonitorService } from './service/NetworkMonitorService';
+import { CloudSyncConfig, SyncStrategy, ConflictResolution } from './model/CloudSyncConfig';
+import { SyncChangeType } from './service/sync/Syncable';
 import { GroupSummary, GroupFeed } from './model/FamilyGroup';
 import { CreateRecipeParams } from './service/RecipeCommunityService';
 import { Recipe, RecipeQueryParams, RecipeComment } from './model/Recipe';
@@ -63,6 +68,8 @@ import {
   AiNutritionAdvice
 } from './model/AiModels';
 
+/// 开启后会在数据写入时自动加入同步队列
+const AUTO_ENQUEUE_SYNC = true;
 const TAG = 'AppState';
 const DOMAIN_ZERO = 0;
 
@@ -96,6 +103,12 @@ export class AppState {
 
   // 社交服务
   private authService: AuthService = new AuthService();
+
+  // 云端认证服务（替代AuthService用于同步）
+  private cloudAuthService: CloudAuthService = new CloudAuthService();
+  // 同步服务
+  private syncService: SyncService = SyncService.getInstance();
+
   private groupService: FamilyGroupService | null = null;
   private recipeCommunityService: RecipeCommunityService | null = null;
   private socialInitialized: boolean = false;
@@ -179,6 +192,19 @@ export class AppState {
       // 初始化AI服务
       this.aiRecipeRecommender.setRecipeRepo(this.recipeRepo);
       this.aiServicesInitialized = true;
+
+      // 初始化云端认证和同步服务
+      await this.cloudAuthService.init(context);
+      await this.syncService.init(context);
+
+      // 当同步服务收到远程变更时，刷新本地缓存
+      this.syncService.onEvent((event) => {
+        if (event.type === 'sync_completed' && event.data &&
+            typeof event.data === 'object') {
+          // 远程数据变更，需要刷新缓存
+          this.refreshCache();
+        }
+      });
 
       // 加载缓存
       this.membersCache = await this.familyRepo.getAllMembers();
@@ -1027,5 +1053,78 @@ export class AppState {
 
   upgradeTier(tier: MemberTier, days: number): void {
     this.memberStatus = createMemberStatusForTier(tier, days);
+  }
+
+  // ========== 云同步服务接口 ==========
+
+  /**
+   * 获取同步服务单例
+   */
+  getSyncService(): SyncService {
+    return this.syncService;
+  }
+
+  /**
+   * 获取云端认证服务
+   */
+  getCloudAuthService(): CloudAuthService {
+    return this.cloudAuthService;
+  }
+
+  /**
+   * 获取网络监控服务
+   */
+  getNetworkMonitor(): NetworkMonitorService {
+    return this.syncService.getNetworkMonitor();
+  }
+
+  /**
+   * 获取同步配置
+   */
+  getSyncConfig(): CloudSyncConfig {
+    return this.syncService.getConfig();
+  }
+
+  /**
+   * 更新同步配置
+   */
+  async updateSyncConfig(updates: Partial<CloudSyncConfig>): Promise<void> {
+    await this.syncService.updateConfig(updates);
+  }
+
+  /**
+   * 手动触发同步
+   */
+  async triggerSync(): Promise<void> {
+    await this.syncService.triggerSync();
+  }
+
+  /**
+   * 刷新所有缓存
+   */
+  private async refreshCache(): Promise<void> {
+    try {
+      this.membersCache = await this.familyRepo.getAllMembers();
+      await this.restoreTodayBudgets();
+      hilog.info(DOMAIN_ZERO, TAG, 'Cache refreshed after sync');
+    } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Refresh cache failed: %{public}s',
+        JSON.stringify(error));
+    }
+  }
+
+  /**
+   * 当数据变更时自动加入同步队列
+   */
+  private autoSyncChange(entityType: string, entityId: string, dataJson: string,
+    version: number, changeType?: string): void {
+    if (!AUTO_ENQUEUE_SYNC) return;
+    this.syncService.enqueueChange(
+      entityType,
+      entityId,
+      changeType === 'delete' ? SyncChangeType.DELETE : SyncChangeType.UPDATE,
+      dataJson,
+      version
+    );
   }
 }

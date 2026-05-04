@@ -104,6 +104,12 @@ struct SettingsPage {
             this.confirmClearData()
           })
 
+          this.buildSettingsItem('☁️ 云同步设置', '多端数据同步、云端账户管理', () => {
+            try {
+              router.pushUrl({ url: 'pages/CloudSyncSettingsPage' })
+            } catch (_e) { /* ignore */ }
+          })
+
           // 隐私政策详细内容
           if (this.showPrivacyDetail) {
             Column() {

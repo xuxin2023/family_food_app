@@ -17,7 +17,7 @@ export struct FoodLabelCard {
         .margin({ bottom: 12 })
 
       // 营养成分网格
-      Text('营养成分（每100g）').fontSize(13).fontColor(COLORS.TEXT_GRAY_7575).margin({ bottom: 6 })
+      Text($r('app.string.nutrition_per_100g_label')).fontSize(13).fontColor(COLORS.TEXT_GRAY_7575).margin({ bottom: 6 })
       Grid() {
         GridItem() { this.NutritionItem('钠', `${this.foodLabel.nutrition.sodium}mg`, this.foodLabel.isHighSodium()) }
         GridItem() { this.NutritionItem('糖', `${this.foodLabel.nutrition.sugar}g`, this.foodLabel.isHighSugar()) }
@@ -34,7 +34,7 @@ export struct FoodLabelCard {
 
       // 配料表
       if (this.foodLabel.ingredients.length > 0) {
-        Text('配料').fontSize(13).fontColor(COLORS.TEXT_GRAY_7575).margin({ bottom: 4 })
+        Text($r('app.string.ingredients_label')).fontSize(13).fontColor(COLORS.TEXT_GRAY_7575).margin({ bottom: 4 })
         Text(this.foodLabel.ingredients.join('、'))
           .fontSize(12)
           .fontColor(COLORS.TEXT_GRAY_6161)

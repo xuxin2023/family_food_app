@@ -26,6 +26,8 @@ const AGENT_ARTS_ENDPOINT = 'https://agentarts.cloud.huawei.com/v1/chat/completi
 const AGENT_ARTS_MODEL = 'agentarts-food-polish';
 const CACHE_TTL_MS = 10 * 60 * 1000; // 缓存10分钟
 
+interface AiEnhanceResult { result: AiNutritionAdvice; tokensUsed: number; }
+
 class ChatMessage {
   role: string = '';
   content: string = '';
@@ -84,7 +86,7 @@ export class AiNutritionistService {
     // 2. 尝试AI增强
     if (this.isEnabled && this.apiKey.length > 0 && this.tokensUsed < this.MAX_TOKENS) {
       try {
-        const aiResult = await this.enhanceWithAi(baseResult, member, signal, budget, records, days, includeMealPlan);
+        const aiResult: AiEnhanceResult | null = await this.enhanceWithAi(baseResult, member, signal, budget, records, days, includeMealPlan);
         if (aiResult) {
           this.tokensUsed += aiResult.tokensUsed;
           return aiResult.result;
@@ -178,7 +180,7 @@ export class AiNutritionistService {
     const count = summaries.length || 1;
     const avgSodium = summaries.reduce((s, d) => s + d.sodium, 0) / count;
     const avgSugar = summaries.reduce((s, d) => s + d.sugar, 0) / count;
-    const avgCal = summaries.reduce((s, d) => s + d.calories, 0) / count;
+    const avgCal = summaries.reduce((s: number, d: DailyNutritionSummary) => s + d.calorie, 0) / count;
     const avgFat = summaries.reduce((s, d) => s + d.fat, 0) / count;
 
     const analyses: NutrientAnalysis[] = [];
@@ -342,7 +344,7 @@ export class AiNutritionistService {
     records: DietRecord[],
     days: number,
     includeMealPlan: boolean
-  ): Promise<{ result: AiNutritionAdvice; tokensUsed: number } | null> {
+  ): Promise<AiEnhanceResult | null> {
     const prompt = this.buildNutritionistPrompt(
       baseResult, member, signal, budget, records, days, includeMealPlan
     );
@@ -352,7 +354,7 @@ export class AiNutritionistService {
 
     const enhanced = this.parseAiResponse(aiResult.text, baseResult, member, includeMealPlan);
     if (enhanced) {
-      return { result: enhanced, tokensUsed: aiResult.tokensUsed };
+      return this.makeAiEnhanceResult(enhanced, aiResult.tokensUsed);
     }
     return null;
   }
@@ -367,19 +369,9 @@ export class AiNutritionistService {
     includeMealPlan: boolean
   ): string {
     // 脱敏输入
-    const budgetStatus = {
-      sodiumPct: Math.round(((budget.sodiumBudget - budget.sodiumRemaining) / budget.sodiumBudget) * 100),
-      sugarPct: Math.round(((budget.sugarBudget - budget.sugarRemaining) / budget.sugarBudget) * 100),
-      calPct: Math.round(((budget.calorieBudget - budget.calorieRemaining) / budget.calorieBudget) * 100),
-      fatPct: Math.round(((budget.fatBudget - budget.fatRemaining) / budget.fatBudget) * 100)
-    };
+    const budgetStatus = this.makeBudgetStatusValues(budget);
 
-    const healthStatus = {
-      bp: signal.manualBpStatus,
-      bs: signal.manualBsStatus,
-      sleep: signal.sleepStatus,
-      steps: signal.stepLevel
-    };
+    const healthStatus = this.makePromptHealthStatus(signal);
 
     return `你是一个家庭AI营养师。请根据以下脱敏数据，为家庭成员提供个性化的营养分析和建议。
 
@@ -456,20 +448,15 @@ ${includeMealPlan ? '请包含明日饮食计划建议（3餐+加餐）' : ''}
       const aiMealPlan = parsed['mealPlanSuggestions'] as string[] || [];
 
       // 构建增强的mealAnalyses
-      const mealAnalyses: MealAnalysis[] = aiMealAnalyses.map(a => ({
-        mealType: (a['mealType'] as string) || '',
-        rating: (a['rating'] as 'good' | 'fair' | 'caution') || 'fair',
-        comment: (a['comment'] as string) || '',
-        suggestion: (a['suggestion'] as string) || ''
-      }));
+      const mealAnalyses: MealAnalysis[] = [];
+      for (const a of aiMealAnalyses) {
+        mealAnalyses.push(this.makeMealAnalysis(a));
+      }
 
       // 合并nutrient insight到基础分析
-      const nutrientAnalyses = baseResult.nutrientAnalyses.map(na => {
+      const nutrientAnalyses = baseResult.nutrientAnalyses.map((na: NutrientAnalysis): NutrientAnalysis => {
         const aiInsight = nutrientInsights.find(i => i['name'] === na.name);
-        return {
-          ...na,
-          insight: (aiInsight?.['insight'] as string) || na.insight
-        };
+        return this.makeNutrientAnalysisHelper(na, (aiInsight?.['insight'] as string) || na.insight);
       });
 
       return {
@@ -552,4 +539,75 @@ ${includeMealPlan ? '请包含明日饮食计划建议（3餐+加餐）' : ''}
       return null;
     }
   }
+
+  private makeBudgetStatusValues(budget: DailyBudget): BudgetStatusValues {
+    const s = new BudgetStatusValues();
+    s.sodiumPct = Math.round(((budget.sodiumBudget - budget.sodiumRemaining) / budget.sodiumBudget) * 100);
+    s.sugarPct = Math.round(((budget.sugarBudget - budget.sugarRemaining) / budget.sugarBudget) * 100);
+    s.calPct = Math.round(((budget.calorieBudget - budget.calorieRemaining) / budget.calorieBudget) * 100);
+    s.fatPct = Math.round(((budget.fatBudget - budget.fatRemaining) / budget.fatBudget) * 100);
+    return s;
+  }
+
+  private makeHealthStatusValues(signal: HealthSignal): HealthStatusValues {
+    const s = new HealthStatusValues();
+    s.bp = signal.manualBpStatus;
+    s.bs = signal.manualBsStatus;
+    s.sleep = signal.sleepStatus;
+    s.activity = signal.activityCaloriesLevel;
+    return s;
+  }
+
+  private makeMealAnalysis(a: Record<string, Object>): MealAnalysis {
+    return {
+      mealType: (a['mealType'] as string) || '',
+      rating: (a['rating'] as 'good' | 'fair' | 'caution') || 'fair',
+      comment: (a['comment'] as string) || '',
+      suggestion: (a['suggestion'] as string) || ''
+    };
+  }
+
+  private makeNutrientAnalysisHelper(na: NutrientAnalysis, insight: string): NutrientAnalysis {
+    return {
+      name: na.name,
+      averageDaily: na.averageDaily,
+      target: na.target,
+      trend: na.trend,
+      status: na.status,
+      insight: insight
+    };
+  }
+  private makeAiEnhanceResult(result: AiNutritionAdvice, tokensUsed: number): AiEnhanceResult {
+    return { result: result, tokensUsed: tokensUsed };
+  }
+
+  private makePromptHealthStatus(signal: HealthSignal): PromptHealthStatus {
+    const s = new PromptHealthStatus();
+    s.bp = signal.manualBpStatus;
+    s.bs = signal.manualBsStatus;
+    s.sleep = signal.sleepStatus;
+    s.steps = signal.stepLevel;
+    return s;
+  }
+}
+
+class BudgetStatusValues {
+  sodiumPct: number = 0;
+  sugarPct: number = 0;
+  calPct: number = 0;
+  fatPct: number = 0;
+}
+
+class HealthStatusValues {
+  bp: string = '';
+  bs: string = '';
+  sleep: string = '';
+  activity: string = '';
+}
+
+class PromptHealthStatus {
+  bp: BpStatus = BpStatus.NORMAL;
+  bs: BsStatus = BsStatus.NORMAL;
+  sleep: string = '';
+  steps: string = '';
 }

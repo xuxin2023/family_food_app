@@ -55,7 +55,7 @@ struct SharePage {
             .fontSize(24)
             .fontColor(COLORS.PRIMARY)
             .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
-          Text($r('app.string.share_title'))
+          Text('分享')
             .fontSize(20)
             .fontWeight(FontWeight.Bold)
             .margin({ left: 16 })
@@ -78,7 +78,7 @@ struct SharePage {
 
         // 分享文案
         Column() {
-          Text($r('app.string.share_copy_text'))
+          Text('可复制分享文案')
             .fontSize(17)
             .fontWeight(FontWeight.Bold)
             .margin({ bottom: 8 })
@@ -88,7 +88,7 @@ struct SharePage {
             .fontColor(COLORS.TEXT_GRAY_7575)
             .margin({ bottom: 12 })
 
-          TextArea({ text: this.shareText, placeholder: $r('app.string.share_placeholder') })
+          TextArea({ text: this.shareText, placeholder: '报告生成后，这里会出现可复制文案。' })
             .width('100%')
             .height(180)
             .padding(12)
@@ -97,7 +97,7 @@ struct SharePage {
             .onChange((value: string) => { this.shareText = value })
 
           Row() {
-            Button($r('app.string.share_refresh'))
+            Button('刷新文案')
               .layoutWeight(1)
               .height(BUTTON.HEIGHT_SECONDARY)
               .backgroundColor(COLORS.BG_WARM_BLUE)
@@ -105,7 +105,7 @@ struct SharePage {
               .borderRadius(BUTTON.RADIUS_SECONDARY)
               .onClick(() => { this.refreshShareText() })
 
-            Button($r('app.string.share_copy'))
+            Button('复制说明')
               .layoutWeight(1)
               .height(BUTTON.HEIGHT_SECONDARY)
               .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
@@ -128,18 +128,18 @@ struct SharePage {
 
         // 社交分享区
         Column() {
-          Text($r('app.string.share_to_group_title'))
+          Text('分享到家庭群组')
             .fontSize(16)
             .fontWeight(FontWeight.Bold)
             .margin({ bottom: 12 })
 
           if (this.myGroups.length === 0) {
             Column() {
-              Text($r('app.string.no_group_hint'))
+              Text('你还没有加入任何家庭群组')
                 .fontSize(13)
                 .fontColor(COLORS.TEXT_GRAY_9E9E)
                 .margin({ bottom: 8 })
-              Button($r('app.string.create_or_join_group'))
+              Button('去创建或加入群组')
                 .height(BUTTON.HEIGHT_SMALL)
                 .backgroundColor(COLORS.PRIMARY)
                 .borderRadius(BUTTON.RADIUS_SMALL)
@@ -175,7 +175,7 @@ struct SharePage {
                 }
                 .margin({ left: 10 })
                 .layoutWeight(1)
-                Text($r('app.string.share_to_group_action'))
+                Text('分享')
                   .fontSize(13)
                   .fontColor(COLORS.PRIMARY)
                   .onClick(async () => {
@@ -199,17 +199,17 @@ struct SharePage {
           Row({ space: 10 }) {
             Text('🍳').fontSize(20)
             Column() {
-              Text($r('app.string.publish_as_recipe'))
+              Text('发布为食谱')
                 .fontSize(15)
                 .fontWeight(FontWeight.Medium)
-              Text($r('app.string.publish_to_community'))
+              Text('将这次的适配食品创建为食谱分享到社区')
                 .fontSize(11)
                 .fontColor(COLORS.TEXT_GRAY_9E9E)
             }
             .layoutWeight(1)
             .alignItems(HorizontalAlign.Start)
             Blank()
-            Text($r('app.string.share_go_publish'))
+            Text('去发布')
               .fontSize(13)
               .fontColor(COLORS.PRIMARY)
               .onClick(() => {

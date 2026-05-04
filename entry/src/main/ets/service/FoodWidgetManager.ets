@@ -120,7 +120,7 @@ export class FoodWidgetManager {
     try {
       const rdbConfig: relationalStore.StoreConfig = {
         name: 'food_helper.db',
-        securityLevel: relationalStore.SecurityLevel.S1
+        securityLevel: relationalStore.SecurityLevel.S3
       };
       const store = await relationalStore.getRdbStore(context, rdbConfig);
       const resultSet = await store.querySql(

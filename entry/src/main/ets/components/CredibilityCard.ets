@@ -14,7 +14,7 @@ export struct CredibilityCard {
     Column() {
       // 标题行 + 数据等级
       Row() {
-        Text('生产主体信息')
+        Text($r('app.string.producer_identity'))
           .fontSize(16)
           .fontWeight(FontWeight.Medium)
           .layoutWeight(1)
@@ -37,7 +37,7 @@ export struct CredibilityCard {
       } else {
         // 降级：旧版进度条
         Row() {
-          Text('透明度').fontSize(12).fontColor(COLORS.TEXT_GRAY_7575).margin({ right: 4 })
+          Text($r('app.string.transparency')).fontSize(12).fontColor(COLORS.TEXT_GRAY_7575).margin({ right: 4 })
           Text(`${this.result.score}`).fontSize(20).fontWeight(FontWeight.Bold)
             .fontColor(this.result.score >= 60 ? COLORS.ACCENT_GREEN_4CAF : COLORS.ACCENT_ORANGE)
         }
@@ -110,7 +110,7 @@ export struct CredibilityCard {
         .fontWeight(FontWeight.Bold)
         .fontColor(this.result.score >= 60 ? COLORS.ACCENT_GREEN_4CAF : COLORS.ACCENT_ORANGE)
 
-      Text('信息透明度')
+      Text($r('app.string.info_transparency'))
         .fontSize(11)
         .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ top: 2, bottom: 8 })
@@ -169,7 +169,7 @@ export struct CredibilityCard {
   @Builder
   PublicQuerySection() {
     Column() {
-      Text('公开查询入口')
+      Text($r('app.string.public_query_entry'))
         .fontSize(14)
         .fontWeight(FontWeight.Medium)
         .margin({ top: 12, bottom: 8 })
@@ -190,7 +190,7 @@ export struct CredibilityCard {
           .alignItems(HorizontalAlign.Start)
           .layoutWeight(1)
 
-          Text('复制')
+          Text($r('app.string.copy_label'))
             .fontSize(12)
             .fontColor(COLORS.PRIMARY)
             .padding({ left: 8, right: 8, top: 4, bottom: 4 })

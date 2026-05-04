@@ -9,7 +9,6 @@ import {
   AiRecipeRecommendation, AiRecipeRecommendationResult
 } from '../model/AiModels';
 import { COLORS, RADIUS, SPACING, BUTTON, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
-import { BasicDataSource } from '../utils/BasicDataSource';
 
 const PAGE_SIZE = 10;
 
@@ -55,6 +54,7 @@ function getDietTagLabel(tag: DietTag): string {
 @Entry
 @Component
 struct RecipeCommunityPage {
+  @State recipes: Recipe[] = []
   @State isLoading: boolean = true
   @State selectedCategory: string = ''
   @State sortBy: string = 'latest'
@@ -64,9 +64,6 @@ struct RecipeCommunityPage {
   @State aiSummary: string = ''
 
   private appState: AppState = AppState.getInstance()
-  private recipes: Recipe[] = []
-  private recipeDS = new BasicDataSource<Recipe>()
-  private readonly categoryKeys: string[] = ['breakfast', 'lunch', 'dinner', 'snack', 'beverage', 'dessert', 'soup', 'staple']
 
   async aboutToAppear() {
     // 检查是否从首页以AI推荐模式进入
@@ -106,7 +103,6 @@ struct RecipeCommunityPage {
         sortBy: this.sortBy === 'popular' ? 'popular' : 'latest'
       }
       this.recipes = await this.appState.queryCommunityRecipes(params)
-      this.recipeDS.reload(this.recipes)
     } catch (e) {
       hilog.error(0x0000, 'RecipeCommunityPage', 'load recipes error')
     }
@@ -121,12 +117,12 @@ struct RecipeCommunityPage {
           .fontSize(24)
           .fontColor(COLORS.PRIMARY)
           .onClick(() => { router.back() })
-        Text($r('app.string.recipe_community'))
+        Text('食谱社区')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .margin({ left: 12 })
         Blank()
-        Text($r('app.string.share_publish_recipe'))
+        Text('发布')
           .fontSize(14)
           .fontColor(COLORS.PRIMARY)
           .onClick(() => {
@@ -137,18 +133,7 @@ struct RecipeCommunityPage {
       .padding(16)
 
       // 分类导航
-      Scroll() {
-        Row({ space: 8 }) {
-          this.categoryChip('全部', '')
-          ForEach(this.categoryKeys, (key: string) => {
-            this.categoryChip(getCategoryLabel(key), key)
-          })
-        }
-        .padding({ left: 16, right: 16, bottom: 8 })
-      }
-      .scrollable(ScrollDirection.Horizontal)
-      .width('100%')
-      .height(44)
+      this.categoryNav()
 
       // AI推荐Tab + 排序Tab
       Row({ space: 8 }) {
@@ -169,7 +154,7 @@ struct RecipeCommunityPage {
         } else if (this.aiRecommendations.length > 0) {
           this.aiRecommendList()
         } else {
-          Text($r('app.string.click_refresh_ai'))
+          Text('点击刷新获取AI推荐')
             .fontSize(14)
             .fontColor(COLORS.TEXT_GRAY_9E9E)
             .margin({ top: 60 })
@@ -181,7 +166,7 @@ struct RecipeCommunityPage {
           .width(32)
           .height(32)
           .margin({ top: 100 })
-      } else if (this.recipeDS.totalCount() === 0) {
+      } else if (this.recipes.length === 0) {
         this.emptyState()
       } else {
         this.recipeList()
@@ -190,6 +175,23 @@ struct RecipeCommunityPage {
     .width('100%')
     .height('100%')
     .backgroundColor(COLORS.BG_PAGE)
+  }
+
+  @Builder
+  categoryNav() {
+    Scroll() {
+      Row({ space: 8 }) {
+        this.categoryChip('全部', '')
+        const categoryKeys: string[] = ['breakfast', 'lunch', 'dinner', 'snack', 'beverage', 'dessert', 'soup', 'staple']
+        ForEach(categoryKeys, (key: string) => {
+          this.categoryChip(getCategoryLabel(key), key)
+        })
+      }
+      .padding({ left: 16, right: 16, bottom: 8 })
+    }
+    .scrollable(ScrollDirection.Horizontal)
+    .width('100%')
+    .height(44)
   }
 
   @Builder
@@ -228,11 +230,11 @@ struct RecipeCommunityPage {
       Text('🍳')
         .fontSize(60)
         .margin({ bottom: 16 })
-      Text($r('app.string.no_recipe_yet'))
+      Text('还没有食谱分享')
         .fontSize(16)
         .fontColor(COLORS.TEXT_GRAY_6161)
         .margin({ bottom: 8 })
-      Text($r('app.string.recipe_community_hint'))
+      Text('扫描食品后可以创建食谱分享给社区\n也可以看看别人怎么搭配')
         .fontSize(13)
         .fontColor(COLORS.TEXT_GRAY_9E9E)
         .textAlign(TextAlign.Center)
@@ -255,16 +257,15 @@ struct RecipeCommunityPage {
   @Builder
   recipeList() {
     List() {
-      LazyForEach(this.recipeDS, (recipe: Recipe) => {
+      ForEach(this.recipes, (recipe: Recipe) => {
         ListItem() {
           this.recipeCard(recipe)
         }
-      }, (recipe: Recipe) => `${recipe.recipeId}`)
+      })
     }
     .width('100%')
     .layoutWeight(1)
     .padding({ left: 16, right: 16 })
-    .cachedCount(5)
   }
 
   @Builder
@@ -274,7 +275,7 @@ struct RecipeCommunityPage {
       Column() {
         Row({ space: 6 }) {
           Text('🤖').fontSize(20)
-          Text($r('app.string.ai_recommend')).fontSize(16).fontWeight(FontWeight.Bold).fontColor(COLORS.PRIMARY)
+          Text('AI智能推荐').fontSize(16).fontWeight(FontWeight.Bold).fontColor(COLORS.PRIMARY)
         }
         .margin({ bottom: 8 })
 
@@ -284,7 +285,7 @@ struct RecipeCommunityPage {
           .textAlign(TextAlign.Start)
           .width('100%')
 
-        Text($r('app.string.ai_match_desc'))
+        Text('基于家庭成员健康画像个性化匹配')
           .fontSize(11)
           .fontColor(COLORS.TEXT_GRAY_9E9E)
           .margin({ top: 4 })
@@ -375,7 +376,7 @@ struct RecipeCommunityPage {
         Row({ space: 6 }) {
           if (recipe.dietTags.length > 0) {
             ForEach(recipe.dietTags.slice(0, 2), (tag: DietTag) => {
-              Text(getDietTagLabel(tag))
+              Text(this.getDietTagLabel(tag))
                 .fontSize(10)
                 .fontColor(COLORS.ACCENT_GREEN)
                 .backgroundColor(COLORS.BG_LIGHT_GREEN)

@@ -5,19 +5,22 @@ import { ScanHistoryRecord } from '../repository/HistoryRepository';
 import { DateUtil } from '../utils/DateUtil';
 import { EmptyState } from '../components/EmptyState';
 import { COLORS } from '../constants/AppTheme';
+import { BasicDataSource } from '../utils/BasicDataSource';
 
 @Entry
 @Component
 struct HistoryPage {
   @State familyMembers: FamilyProfile[] = []
-  @State historyRecords: ScanHistoryRecord[] = []
   @State selectedMemberId: string = 'all'
 
   private appState: AppState = AppState.getInstance()
+  private historyRecords: ScanHistoryRecord[] = []
+  private historyDS = new BasicDataSource<ScanHistoryRecord>()
 
   async aboutToAppear() {
     this.familyMembers = await this.appState.getAllMembers()
     this.historyRecords = await this.appState.getRecentScanHistory(100)
+    this.historyDS.reload(this.getVisibleRecords())
   }
 
   build() {
@@ -27,7 +30,7 @@ struct HistoryPage {
           .fontSize(24)
           .fontColor(COLORS.PRIMARY)
           .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
-        Text('历史记录')
+        Text($r('app.string.history_record'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .margin({ left: 16 })
@@ -37,14 +40,17 @@ struct HistoryPage {
 
       Scroll() {
         Row() {
-          Text('全部')
+          Text($r('app.string.all'))
             .fontSize(13)
             .padding({ left: 12, right: 12, top: 6, bottom: 6 })
             .borderRadius(16)
             .backgroundColor(this.selectedMemberId === 'all' ? COLORS.PRIMARY : COLORS.WHITE)
             .fontColor(this.selectedMemberId === 'all' ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
             .margin({ right: 8 })
-            .onClick(() => { this.selectedMemberId = 'all' })
+            .onClick(() => {
+                this.selectedMemberId = 'all'
+                this.historyDS.reload(this.getVisibleRecords())
+              })
 
           ForEach(this.familyMembers, (member: FamilyProfile) => {
             Text(member.nickname)
@@ -54,7 +60,10 @@ struct HistoryPage {
               .backgroundColor(this.selectedMemberId === member.memberId ? COLORS.PRIMARY : COLORS.WHITE)
               .fontColor(this.selectedMemberId === member.memberId ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
               .margin({ right: 8 })
-              .onClick(() => { this.selectedMemberId = member.memberId })
+              .onClick(() => {
+                this.selectedMemberId = member.memberId
+                this.historyDS.reload(this.getVisibleRecords())
+              })
           }, (member: FamilyProfile) => member.memberId)
         }
       }
@@ -63,7 +72,7 @@ struct HistoryPage {
       .padding({ left: 16, right: 16 })
       .margin({ bottom: 14 })
 
-      if (this.getVisibleRecords().length === 0) {
+      if (this.historyDS.totalCount() === 0) {
         EmptyState({
           icon: '📭',
           title: '还没有历史记录',
@@ -71,7 +80,7 @@ struct HistoryPage {
         })
       } else {
         List() {
-          ForEach(this.getVisibleRecords(), (record: ScanHistoryRecord) => {
+          LazyForEach(this.historyDS, (record: ScanHistoryRecord) => {
             ListItem() {
               this.HistoryCard(record)
             }
@@ -80,6 +89,7 @@ struct HistoryPage {
         .width('100%')
         .layoutWeight(1)
         .padding({ left: 16, right: 16 })
+        .cachedCount(5)
       }
     }
     .width('100%')

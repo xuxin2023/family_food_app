@@ -1,23 +1,232 @@
 {
   "string": [
-    { "name": "module_desc", "value": "家庭食品适配助手" },
-    { "name": "ability_desc", "value": "家庭食品适配助手主入口" },
-    { "name": "ability_label", "value": "食品适配助手" },
-    { "name": "camera_reason", "value": "用于拍照识别食品包装标签" },
-    { "name": "internet_reason", "value": "用于可选的AI润色服务" },
-    { "name": "vibrate_reason", "value": "用于扫描食品标签时提供振动反馈" },
-    { "name": "app_name", "value": "食品适配助手" },
-    { "name": "home_title", "value": "今天给谁看？" },
-    { "name": "scan_button", "value": "拍食品标签" },
-    { "name": "balance_button", "value": "记录美食" },
-    { "name": "member_dad", "value": "爸爸" },
-    { "name": "member_mom", "value": "妈妈" },
-    { "name": "member_child", "value": "孩子" },
-    { "name": "member_me", "value": "我" },
-    { "name": "level_suitable", "value": "适合" },
-    { "name": "level_small", "value": "少量可以" },
-    { "name": "level_cautious", "value": "今天谨慎" },
-    { "name": "level_avoid", "value": "建议避免" },
-    { "name": "disclaimer", "value": "本结果基于包装标签识别和健康目标生成，不代表对当前批次进行检测，不替代医生或营养师建议。" }
+    {
+      "name": "module_desc",
+      "value": "家庭食品适配助手"
+    },
+    {
+      "name": "ability_desc",
+      "value": "家庭食品适配助手主入口"
+    },
+    {
+      "name": "ability_label",
+      "value": "食品适配助手"
+    },
+    {
+      "name": "camera_reason",
+      "value": "用于拍照识别食品包装标签"
+    },
+    {
+      "name": "internet_reason",
+      "value": "用于可选的AI润色服务"
+    },
+    {
+      "name": "vibrate_reason",
+      "value": "用于扫描食品标签时提供振动反馈"
+    },
+    {
+      "name": "app_name",
+      "value": "食品适配助手"
+    },
+    {
+      "name": "home_title",
+      "value": "今天给谁看？"
+    },
+    {
+      "name": "scan_button",
+      "value": "拍食品标签"
+    },
+    {
+      "name": "balance_button",
+      "value": "记录美食"
+    },
+    {
+      "name": "member_dad",
+      "value": "爸爸"
+    },
+    {
+      "name": "member_mom",
+      "value": "妈妈"
+    },
+    {
+      "name": "member_child",
+      "value": "孩子"
+    },
+    {
+      "name": "member_me",
+      "value": "我"
+    },
+    {
+      "name": "level_suitable",
+      "value": "适合"
+    },
+    {
+      "name": "level_small",
+      "value": "少量可以"
+    },
+    {
+      "name": "level_cautious",
+      "value": "今天谨慎"
+    },
+    {
+      "name": "level_avoid",
+      "value": "建议避免"
+    },
+    {
+      "name": "disclaimer",
+      "value": "本结果基于包装标签识别和健康目标生成，不代表对当前批次进行检测，不替代医生或营养师建议。"
+    },
+    {
+      "name": "join_group",
+      "value": "加入群组"
+    },
+    {
+      "name": "dashboard_title",
+      "value": "营养仪表盘"
+    },
+    {
+      "name": "period_7_days",
+      "value": "7天"
+    },
+    {
+      "name": "period_30_days",
+      "value": "30天"
+    },
+    {
+      "name": "no_family_diet_data",
+      "value": "暂无家庭成员的饮食数据"
+    },
+    {
+      "name": "no_family_diet_hint",
+      "value": "先添加家庭成员并记录饮食后，再来查看仪表盘"
+    },
+    {
+      "name": "health_score_insufficient",
+      "value": "数据不足"
+    },
+    {
+      "name": "health_score_excellent",
+      "value": "优秀"
+    },
+    {
+      "name": "health_score_good",
+      "value": "良好"
+    },
+    {
+      "name": "health_score_fair",
+      "value": "注意"
+    },
+    {
+      "name": "health_score_poor",
+      "value": "需要改善"
+    },
+    {
+      "name": "insight_sodium_high",
+      "value": "钠摄入偏高"
+    },
+    {
+      "name": "insight_sodium_mid",
+      "value": "钠摄入略高"
+    },
+    {
+      "name": "insight_sodium_good",
+      "value": "钠控制良好"
+    },
+    {
+      "name": "insight_sugar_high",
+      "value": "糖摄入偏高"
+    },
+    {
+      "name": "insight_sugar_good",
+      "value": "糖控制优秀"
+    },
+    {
+      "name": "insight_keep_recording",
+      "value": "坚持记录"
+    },
+    {
+      "name": "insight_keep_it_up",
+      "value": "继续保持！饮食非常均衡"
+    },
+    {
+      "name": "insight_good_improve",
+      "value": "整体不错，仍有改善空间"
+    },
+    {
+      "name": "insight_balanced",
+      "value": "饮食均衡，继续保持"
+    },
+    {
+      "name": "insight_keep_recording_hint",
+      "value": "持续记录饮食后可获得更准确的健康评分"
+    },
+    {
+      "name": "trend_stable",
+      "value": "趋于平稳"
+    },
+    {
+      "name": "trend_upward",
+      "value": "呈上升趋势"
+    },
+    {
+      "name": "trend_downward",
+      "value": "呈下降趋势"
+    },
+    {
+      "name": "avg_daily_kcal",
+      "value": "日均kcal"
+    },
+    {
+      "name": "macronutrient_composition",
+      "value": "宏量营养素构成"
+    },
+    {
+      "name": "daily_avg",
+      "value": "日均"
+    },
+    {
+      "name": "health_evaluation",
+      "value": "健康评估"
+    },
+    {
+      "name": "day_unit",
+      "value": "天"
+    },
+    {
+      "name": "record_unit",
+      "value": "条"
+    },
+    {
+      "name": "report_default_title",
+      "value": "适配报告"
+    },
+    {
+      "name": "alternative_section_title",
+      "value": "更优替代推荐"
+    },
+    {
+      "name": "unlock",
+      "value": "解锁"
+    },
+    {
+      "name": "unlock_alt_desc",
+      "value": "升级后可查看更健康的替代选择"
+    },
+    {
+      "name": "share_text_title",
+      "value": "可复制分享文案"
+    },
+    {
+      "name": "share_text_hint",
+      "value": "点击复制按钮复制文案到剪贴板"
+    },
+    {
+      "name": "share_to_group_action",
+      "value": "分享"
+    },
+    {
+      "name": "group_member_count",
+      "value": "%s位成员"
+    }
   ]
 }

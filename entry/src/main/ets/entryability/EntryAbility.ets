@@ -7,6 +7,7 @@ import { window } from '@kit.ArkUI';
 import { fileIo } from '@kit.CoreFileKit';
 import { AppState } from '../AppState';
 import { DataSource } from '../model/HealthSignal';
+import { MemberTier } from '../model/MemberStatus';
 import { preferences } from '@kit.ArkData';
 
 const TAG = 'EntryAbility';
@@ -25,15 +26,22 @@ export default class EntryAbility extends UIAbility {
     // ===== 崩溃监控初始化 =====
     this.initCrashMonitor();
 
-    // 初始化全局AppState（数据库+规则+默认成员）
+    // 标记初始化进行中
+    AppStorage.setOrCreate('appStateReady', false);
+
+    // 异步初始化（不阻塞UI线程，但页面需等待 ready 标记）
     this.appState.init(this.context)
-      .then(() => {
+      .then(async () => {
         hilog.info(DOMAIN_ZERO, TAG, 'AppState init success');
         // 恢复订阅状态
-        this.restoreSubscriptionState();
+        await this.restoreSubscriptionState();
+        // 标记初始化完成
+        AppStorage.setOrCreate('appStateReady', true);
       })
       .catch((err: Error) => {
         hilog.error(DOMAIN_ZERO, TAG, 'AppState init failed: %{public}s', err.message);
+        // 即使失败也标记完成（使用默认数据兜底）
+        AppStorage.setOrCreate('appStateReady', true);
       });
 
     // 将context存入AppStorage供隐私弹窗使用
@@ -54,7 +62,9 @@ export default class EntryAbility extends UIAbility {
     }
 
     // 保存应用状态到Preferences
-    this.persistAppState();
+    this.persistAppState().catch((err: Error) => {
+      hilog.warn(DOMAIN_ZERO, TAG, 'persistAppState onDestroy failed: %{public}s', JSON.stringify(err));
+    });
 
     // 注销崩溃观察器
     if (this.crashObserverId !== -1) {
@@ -192,17 +202,29 @@ export default class EntryAbility extends UIAbility {
    * 恢复订阅状态
    * 从Preferences读取上次保存的订阅版本
    */
-  private restoreSubscriptionState(): void {
+  private async restoreSubscriptionState(): Promise<void> {
     try {
-      // import { preferences } from '@kit.ArkData';
-      // const prefs = await preferences.getPreferences(this.context, 'app_state');
-      // const tierStr = prefs.getSync('subscription_tier', 'FREE') as string;
-      // const tier = SubscriptionTier[tierStr] || SubscriptionTier.FREE;
-      // this.appState.setTier(tier);
-
-      hilog.info(DOMAIN_ZERO, TAG, 'Subscription state restored');
+      const prefs = await preferences.getPreferences(this.context, 'app_state');
+      const tierStr = prefs.getSync('subscription_tier', MemberTier.FREE) as string;
+      // 兼容旧值：从字符串映射到 MemberTier 枚举
+      const restoredTier = this.parseTier(tierStr);
+      this.appState.memberStatus.tier = restoredTier;
+      hilog.info(DOMAIN_ZERO, TAG, 'Subscription state restored: %{public}s', restoredTier);
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Restore subscription failed: %{public}s', JSON.stringify(error));
+    }
+  }
+
+  private parseTier(value: string): MemberTier {
+    switch (value) {
+      case MemberTier.PERSONAL:
+        return MemberTier.PERSONAL;
+      case MemberTier.FAMILY:
+        return MemberTier.FAMILY;
+      case MemberTier.PREMIUM:
+        return MemberTier.PREMIUM;
+      default:
+        return MemberTier.FREE;
     }
   }
 
@@ -210,14 +232,12 @@ export default class EntryAbility extends UIAbility {
    * 持久化应用状态
    * 保存订阅版本、扫描计数等到Preferences
    */
-  private persistAppState(): void {
+  private async persistAppState(): Promise<void> {
     try {
-      // import { preferences } from '@kit.ArkData';
-      // const prefs = await preferences.getPreferences(this.context, 'app_state');
-      // prefs.putSync('subscription_tier', this.appState.getCurrentTier());
-      // prefs.putSync('last_save_time', Date.now().toString());
-      // await prefs.flush();
-
+      const prefs = await preferences.getPreferences(this.context, 'app_state');
+      prefs.putSync('subscription_tier', this.appState.memberStatus.tier);
+      prefs.putSync('last_save_time', Date.now().toString());
+      await prefs.flush();
       hilog.info(DOMAIN_ZERO, TAG, 'App state persisted');
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Persist app state failed: %{public}s', JSON.stringify(error));

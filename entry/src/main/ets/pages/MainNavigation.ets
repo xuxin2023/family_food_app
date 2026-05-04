@@ -1,19 +1,15 @@
 // MainNavigation.ets
-// 主导航入口 - 引导完成后跳转到首页
-
-import { router } from '@kit.ArkUI';
+// (已废弃) 不再使用此页面作为跳转中介
+// Index.ets 现在直接通过 router.replaceUrl 跳转到 HomePage
+// 此文件暂保留避免构建报错，后续可移除
 
 @Entry
 @Component
 export struct MainNavigation {
   build() {
     Column() {
-      // 直接跳转到首页
     }
     .width('100%')
     .height('100%')
-    .onAppear(() => {
-      router.replaceUrl({ url: 'pages/HomePage' })
-    })
   }
 }

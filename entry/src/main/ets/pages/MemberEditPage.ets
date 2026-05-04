@@ -64,7 +64,7 @@ struct MemberEditPage {
           Row() {
             Text('←').fontSize(24).fontColor(COLORS.PRIMARY)
               .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
-            Text('编辑成员').fontSize(20).fontWeight(FontWeight.Bold)
+            Text($r('app.string.member_manage'))
               .margin({ left: 16 })
           }
           .width('100%')
@@ -72,7 +72,7 @@ struct MemberEditPage {
 
           // 昵称
           Column() {
-            Text('昵称').fontSize(14).fontColor(COLORS.TEXT_GRAY_7575).margin({ bottom: 8 })
+            Text($r('app.string.nickname_label')).fontSize(14).fontColor(COLORS.TEXT_GRAY_7575).margin({ bottom: 8 })
             TextInput({ placeholder: '如：爸爸、妈妈、孩子' })
               .width('100%')
               .height(BUTTON.HEIGHT_MD)
@@ -86,7 +86,7 @@ struct MemberEditPage {
 
         // 年龄段
         Column() {
-          Text('年龄段').fontSize(14).fontColor(COLORS.TEXT_GRAY_7575).margin({ bottom: 8 })
+          Text($r('app.string.age_group_label')).fontSize(14).fontColor(COLORS.TEXT_GRAY_7575).margin({ bottom: 8 })
           Flex({ wrap: FlexWrap.Wrap }) {
             ForEach(this.ageGroups, (group: string, index: number) => {
               Text(group)
@@ -106,7 +106,7 @@ struct MemberEditPage {
 
         // 健康目标（多选）
         Column() {
-          Text('健康目标（可多选）').fontSize(14).fontColor(COLORS.TEXT_GRAY_7575).margin({ bottom: 8 })
+          Text($r('app.string.health_goal_label')).fontSize(14).fontColor(COLORS.TEXT_GRAY_7575).margin({ bottom: 8 })
           Flex({ wrap: FlexWrap.Wrap }) {
             ForEach(this.healthGoals, (goal: string, index: number) => {
               Text(goal)
@@ -128,7 +128,7 @@ struct MemberEditPage {
 
         // 过敏原
         Column() {
-          Text('过敏原').fontSize(14).fontColor(COLORS.TEXT_GRAY_7575).margin({ bottom: 8 })
+          Text($r('app.string.allergen_nuts')).fontSize(14).fontColor(COLORS.TEXT_GRAY_7575).margin({ bottom: 8 })
           Flex({ wrap: FlexWrap.Wrap }) {
             ForEach(this.commonAllergens, (allergen: string, index: number) => {
               Text(allergen)
@@ -158,11 +158,11 @@ struct MemberEditPage {
 
         // 今日健康状态
         Column() {
-          Text('今日健康状态').fontSize(16).fontWeight(FontWeight.Medium).margin({ bottom: 12 })
+          Text($r('app.string.save_today_status')).fontSize(16).fontWeight(FontWeight.Medium).margin({ bottom: 12 })
 
           // 活动量
           Row() {
-            Text('活动量：').fontSize(14).width(70)
+            Text($r('app.string.activity_label')).fontSize(14).width(70)
             ForEach(this.stepLevels, (level: string, index: number) => {
               Text(level)
                 .fontSize(13)
@@ -178,7 +178,7 @@ struct MemberEditPage {
 
           // 睡眠
           Row() {
-            Text('睡眠：').fontSize(14).width(70)
+            Text($r('app.string.sleep_label')).fontSize(14).width(70)
             ForEach(this.sleepStatuses, (status: string, index: number) => {
               Text(status)
                 .fontSize(13)
@@ -194,7 +194,7 @@ struct MemberEditPage {
 
           // 血压状态
           Row() {
-            Text('血压：').fontSize(14).width(70)
+            Text($r('app.string.bp_label')).fontSize(14).width(70)
             ForEach(this.bpStatuses, (status: string, index: number) => {
               Text(status)
                 .fontSize(13)
@@ -210,7 +210,7 @@ struct MemberEditPage {
 
           // 血糖状态
           Row() {
-            Text('血糖：').fontSize(14).width(70)
+            Text($r('app.string.bg_label')).fontSize(14).width(70)
             ForEach(this.bsStatuses, (status: string, index: number) => {
               Text(status)
                 .fontSize(13)

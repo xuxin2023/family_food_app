@@ -1,28 +1,31 @@
 // Index.ets
-// 应用入口页面 - 判断引导状态后进入主导航
+// 应用入口页面 - 判断引导状态后进入主页面
 // V2增强：三屏引导内容具体化
 
+import { router } from '@kit.ArkUI';
 import { AppState } from '../AppState';
-import { MainNavigation } from './MainNavigation';
 import { COLORS } from '../constants/AppTheme';
 
 @Entry
 @Component
 struct Index {
   @State showGuide: boolean = false;
+  @State isReady: boolean = false;
 
   aboutToAppear(): void {
     const state = AppState.getInstance();
     this.showGuide = !state.hasShownGuide;
+    if (!this.showGuide) {
+      this.navigateToHome();
+    }
   }
 
   build() {
     Stack() {
       if (this.showGuide) {
         GuidePage({ onComplete: () => this.onGuideComplete() })
-      } else {
-        MainNavigation()
       }
+      // 引导完成后或无需引导时，渲染空白页后立即跳转
     }
     .width('100%')
     .height('100%')
@@ -31,7 +34,11 @@ struct Index {
   private onGuideComplete(): void {
     const state = AppState.getInstance();
     state.hasShownGuide = true;
-    this.showGuide = false;
+    this.navigateToHome();
+  }
+
+  private navigateToHome(): void {
+    router.replaceUrl({ url: 'pages/HomePage' });
   }
 }
 
@@ -44,7 +51,7 @@ struct GuidePage {
     Column() {
       Row() {
         Blank()
-        Text('跳过')
+        Text($r('app.string.skip'))
           .fontSize(14)
           .fontColor(COLORS.TEXT_TERTIARY)
           .padding({ left: 16, right: 16, top: 8, bottom: 8 })
@@ -77,7 +84,7 @@ struct GuidePage {
         }
         .margin({ bottom: 24 })
 
-        Button(this.currentPage < 2 ? '下一步' : '开始使用')
+        Button(this.currentPage < 2 ? $r('app.string.next_step') : $r('app.string.start_use'))
           .width('80%')
           .height(48)
           .backgroundColor(COLORS.PRIMARY)
@@ -107,7 +114,7 @@ struct GuidePage {
         .fontSize(80)
         .margin({ bottom: 24 })
 
-      Text('为全家建立健康档案')
+      Text($r('app.string.setup_health_profile'))
         .fontSize(22)
         .fontWeight(FontWeight.Bold)
         .fontColor(COLORS.TEXT_PRIMARY)
@@ -115,16 +122,16 @@ struct GuidePage {
 
       // 四个成员头像
       Row() {
-        this.buildMemberAvatar('👨', '爸爸', '控压')
-        this.buildMemberAvatar('👩', '妈妈', '减脂')
-        this.buildMemberAvatar('👶', '孩子', '儿童')
-        this.buildMemberAvatar('🧑', '我', '控糖')
+        this.buildMemberAvatar('👨', $r('app.string.member_dad'), $r('app.string.goal_control_bp'))
+        this.buildMemberAvatar('👩', $r('app.string.member_mom'), $r('app.string.goal_lose_fat'))
+        this.buildMemberAvatar('👶', $r('app.string.member_child'), $r('app.string.goal_child'))
+        this.buildMemberAvatar('🧑', $r('app.string.member_me'), $r('app.string.goal_control_sugar'))
       }
       .width('100%')
       .padding({ left: 24, right: 24 })
       .margin({ bottom: 16 })
 
-      Text('为每位家庭成员设置健康目标，\n后续扫码就能看到「同一食品，不同建议」')
+      Text($r('app.string.setup_profile_hint'))
         .fontSize(14)
         .fontColor(COLORS.TEXT_SECONDARY)
         .textAlign(TextAlign.Center)
@@ -136,7 +143,7 @@ struct GuidePage {
   }
 
   @Builder
-  buildMemberAvatar(emoji: string, name: string, goal: string) {
+  buildMemberAvatar(emoji: ResourceStr, name: ResourceStr, goal: ResourceStr) {
     Column() {
       Text(emoji)
         .fontSize(32)
@@ -160,21 +167,21 @@ struct GuidePage {
         .height(100)
         .margin({ bottom: 24 })
 
-      Text('三种方式，快速识别')
+      Text($r('app.string.three_ways_scan'))
         .fontSize(22)
         .fontWeight(FontWeight.Bold)
         .fontColor(COLORS.TEXT_PRIMARY)
         .margin({ bottom: 16 })
 
       Column() {
-        this.buildMethodRow('📷', '拍照识别', '拍食品包装或配料表，自动提取营养信息')
-        this.buildMethodRow('📱', '扫码查询', '扫描条形码，从全球数据库获取食品数据')
-        this.buildMethodRow('🔗', '粘贴链接', '从电商App复制商品链接，自动解析分析')
+        this.buildMethodRow('📷', $r('app.string.method_photo'), $r('app.string.method_photo_desc'))
+        this.buildMethodRow('📱', $r('app.string.method_barcode'), $r('app.string.method_barcode_desc'))
+        this.buildMethodRow('🔗', $r('app.string.method_link'), $r('app.string.method_link_desc'))
       }
       .width('100%')
       .padding({ left: 32, right: 32 })
 
-      Text('无论哪种方式，结果都一样精准')
+      Text($r('app.string.result_same_accurate'))
         .fontSize(13)
         .fontColor(COLORS.TEXT_TERTIARY)
         .margin({ top: 16 })
@@ -184,7 +191,7 @@ struct GuidePage {
   }
 
   @Builder
-  buildMethodRow(icon: string, title: string, desc: string) {
+  buildMethodRow(icon: ResourceStr, title: ResourceStr, desc: ResourceStr) {
     Row() {
       Text(icon)
         .fontSize(24)
@@ -215,7 +222,7 @@ struct GuidePage {
         .fontSize(80)
         .margin({ bottom: 24 })
 
-      Text('全家报告，一目了然')
+      Text($r('app.string.family_report_overview'))
         .fontSize(22)
         .fontWeight(FontWeight.Bold)
         .fontColor(COLORS.TEXT_PRIMARY)
@@ -223,16 +230,16 @@ struct GuidePage {
 
       // 示例报告卡片
       Column() {
-        Text('辣味牛肉干')
+        Text($r('app.string.example_food'))
           .fontSize(16)
           .fontWeight(FontWeight.Bold)
           .fontColor(COLORS.TEXT_PRIMARY)
           .margin({ bottom: 12 })
 
-        this.buildExampleRow('👨', '爸爸', '今天谨慎', COLORS.LEVEL_ORANGE, '最多50g')
-        this.buildExampleRow('👩', '妈妈', '少量可以', COLORS.LEVEL_YELLOW, '最多30g')
-        this.buildExampleRow('👶', '孩子', '建议避免', COLORS.LEVEL_RED, '')
-        this.buildExampleRow('🧑', '我', '适合食用', COLORS.LEVEL_GREEN, '最多80g')
+        this.buildExampleRow('👨', $r('app.string.member_dad'), $r('app.string.level_cautious'), COLORS.LEVEL_ORANGE, '最多50g')
+        this.buildExampleRow('👩', $r('app.string.member_mom'), $r('app.string.level_small'), COLORS.LEVEL_YELLOW, '最多30g')
+        this.buildExampleRow('👶', $r('app.string.member_child'), $r('app.string.level_avoid'), COLORS.LEVEL_RED, '')
+        this.buildExampleRow('🧑', $r('app.string.member_me'), $r('app.string.level_suitable'), COLORS.LEVEL_GREEN, '最多80g')
       }
       .width('85%')
       .padding(16)
@@ -241,7 +248,7 @@ struct GuidePage {
       .shadow({ radius: 8, color: COLORS.SHADOW_LIGHT, offsetY: 4 })
       .margin({ bottom: 16 })
 
-      Text('同一款食品，全家建议都不同')
+      Text($r('app.string.same_food_diff_advice'))
         .fontSize(14)
         .fontColor(COLORS.TEXT_SECONDARY)
     }
@@ -250,7 +257,7 @@ struct GuidePage {
   }
 
   @Builder
-  buildExampleRow(emoji: string, name: string, level: string, color: string, amount: string) {
+  buildExampleRow(emoji: ResourceStr, name: ResourceStr, level: ResourceStr, color: string, amount: string) {
     Row() {
       Text(emoji)
         .fontSize(16)

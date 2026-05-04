@@ -23,7 +23,7 @@ export interface SyncEvent {
         'queue_changed' | 'network_changed';
   message: string;
   timestamp: number;
-  data?: unknown;
+  data?: Object;
 }
 
 export class SyncService {
@@ -38,7 +38,6 @@ export class SyncService {
   /** 是否正在同步 */
   private isSyncing: boolean = false;
   /** 定时同步定时器ID */
-  private syncTimerId: number = -1;
   /** 是否已初始化 */
   private isInitialized: boolean = false;
   /** 应用上下文 */
@@ -95,7 +94,7 @@ export class SyncService {
           type: 'network_changed',
           message: `网络状态变化: ${state.isConnected ? '已连接' : '断开'}`,
           timestamp: Date.now(),
-          data: state
+          data: 'network_state'
         });
 
         if (state.isConnected && state.isValidated && this.config.enabled) {
@@ -121,15 +120,15 @@ export class SyncService {
    * 获取同步配置
    */
   getConfig(): CloudSyncConfig {
-    return { ...this.config };
+    return this.cloneConfig(this.config);
   }
 
   /**
    * 更新同步配置
    */
-  async updateConfig(updates: Partial<CloudSyncConfig>): Promise<void> {
+  async updateConfig(updates: CloudSyncConfig): Promise<void> {
     const prevEnabled = this.config.enabled;
-    Object.assign(this.config, updates);
+    this.applyConfigUpdates(updates);
     await this.persistConfig();
 
     // 启用/停用时处理定时器
@@ -189,11 +188,12 @@ export class SyncService {
 
     this.config.pendingCount = this.getPendingCount();
     this.persistQueue();
+    const eventData: Record<string, Object> = { 'pendingCount': this.config.pendingCount };
     this.notifyEvent({
       type: 'queue_changed',
       message: `新增同步: ${entityType}:${entityId}`,
       timestamp: Date.now(),
-      data: { pendingCount: this.config.pendingCount }
+      data: eventData
     });
 
     // 如果同步已启用且网络OK，立即触发同步
@@ -357,21 +357,12 @@ export class SyncService {
     }
 
     try {
-      const uploadItems: SyncBatchItem[] = pendingItems.map(r => ({
-        entityType: r.entityType,
-        entityId: r.entityId,
-        changeType: r.changeType,
-        data: r.dataJson,
-        version: r.version,
-        changedAt: r.changedAt
-      }));
+      const uploadItems: SyncBatchItem[] = [];
+      for (const r of pendingItems) {
+        uploadItems.push(this.makeBatchItem(r));
+      }
 
-      const batchRequest: SyncBatchRequest = {
-        token: this.authToken,
-        deviceId: this.deviceId,
-        lastSyncAt: this.lastSyncAt,
-        uploads: uploadItems
-      };
+      const batchRequest = this.makeBatchRequest(this.authToken, this.deviceId, this.lastSyncAt, uploadItems);
 
       // 2. 上传变更 + 拉取远程变更（合并请求）
       const uploadResult = await this.cloudProvider.uploadBatch(this.authToken, batchRequest);
@@ -465,28 +456,27 @@ export class SyncService {
 
   private resolveWithRemoteData(entityType: string, entityId: string, remoteData: string): void {
     // 通知上层应用以远程数据覆盖本地
+    const resolveData: Record<string, Object> = { 'entityType': entityType, 'entityId': entityId, 'remoteData': remoteData };
     this.notifyEvent({
       type: 'sync_completed',
       message: `冲突自动解决(REMOTE_WINS): ${entityType}:${entityId}`,
       timestamp: Date.now(),
-      data: { entityType, entityId, remoteData }
+      data: resolveData
     });
   }
 
   private startAutoSync(): void {
     this.stopAutoSync();
     const intervalMs = this.config.syncIntervalMinutes * 60 * 1000;
-    this.syncTimerId = setInterval(() => {
-      this.triggerSync();
-    }, intervalMs);
+    this.startTimer(intervalMs);
     hilog.info(DOMAIN_ZERO, TAG, 'Auto sync started, interval: %{public}s min',
       this.config.syncIntervalMinutes.toString());
   }
 
   private stopAutoSync(): void {
-    if (this.syncTimerId !== -1) {
-      clearInterval(this.syncTimerId);
-      this.syncTimerId = -1;
+    if (this.syncTimer !== -1) {
+      this.stopTimer();
+      this.syncTimer = -1;
       hilog.info(DOMAIN_ZERO, TAG, 'Auto sync stopped');
     }
   }
@@ -512,7 +502,7 @@ export class SyncService {
       const prefs = await preferences.getPreferences(this.context, PREF_SYNC_CONFIG);
       const savedConfig = prefs.getSync('config', '') as string;
       if (savedConfig.length > 0) {
-        const parsed = JSON.parse(savedConfig) as Partial<CloudSyncConfig>;
+        const parsed = JSON.parse(savedConfig) as CloudSyncConfig;
         // 只合并有效字段
         if (parsed.enabled !== undefined) this.config.enabled = parsed.enabled;
         if (parsed.strategy !== undefined) this.config.strategy = parsed.strategy;
@@ -581,6 +571,68 @@ export class SyncService {
         hilog.error(DOMAIN_ZERO, TAG, 'Event listener error: %{public}s',
           JSON.stringify(err));
       }
+    }
+  }
+
+  private cloneConfig(config: CloudSyncConfig): CloudSyncConfig {
+    return {
+      enabled: config.enabled,
+      strategy: config.strategy,
+      conflictResolution: config.conflictResolution,
+      syncIntervalMinutes: config.syncIntervalMinutes,
+      batchSize: config.batchSize,
+      lastFullSyncAt: config.lastFullSyncAt,
+      pendingCount: config.pendingCount,
+      maxRetries: config.maxRetries,
+      retryBaseIntervalSeconds: config.retryBaseIntervalSeconds
+    };
+  }
+
+  private makeBatchItem(r: SyncChangeRecord): SyncBatchItem {
+    return {
+      entityType: r.entityType,
+      entityId: r.entityId,
+      changeType: r.changeType,
+      data: r.dataJson,
+      version: r.version,
+      changedAt: r.changedAt
+    };
+  }
+
+  private makeBatchRequest(token: string, deviceId: string, lastSyncAt: number, uploads: SyncBatchItem[]): SyncBatchRequest {
+    return {
+      token: token,
+      deviceId: deviceId,
+      lastSyncAt: lastSyncAt,
+      uploads: uploads
+    };
+  }
+
+  private applyConfigUpdates(updates: CloudSyncConfig): void {
+    this.config.enabled = updates.enabled;
+    this.config.strategy = updates.strategy;
+    this.config.conflictResolution = updates.conflictResolution;
+    this.config.syncIntervalMinutes = updates.syncIntervalMinutes;
+    this.config.batchSize = updates.batchSize;
+    this.config.maxRetries = updates.maxRetries;
+    this.config.retryBaseIntervalSeconds = updates.retryBaseIntervalSeconds;
+    this.config.lastFullSyncAt = updates.lastFullSyncAt;
+    this.config.pendingCount = updates.pendingCount;
+  }
+
+  private syncTimer: number = -1;
+
+  private startTimer(intervalMs: number): void {
+    this.stopTimer();
+    this.syncTimer = setTimeout((): void => {
+      this.triggerSync();
+    }, intervalMs);
+  }
+
+  private stopTimer(): void {
+    if (this.syncTimer !== -1) {
+      clearTimeout(this.syncTimer);
+      this.syncTimer = -1;
     }
   }
 }

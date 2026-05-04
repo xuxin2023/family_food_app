@@ -47,7 +47,7 @@ struct SettingsPage {
             .fontSize(24)
             .fontColor(COLORS.PRIMARY)
             .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
-          Text('设置')
+          Text($r('app.string.settings'))
             .fontSize(20)
             .fontWeight(FontWeight.Bold)
             .margin({ left: 16 })
@@ -56,11 +56,11 @@ struct SettingsPage {
         .padding({ left: 16, right: 16, top: 16, bottom: 16 })
 
         Column() {
-          Text('P0 MVP 只使用本地手动状态')
+          Text($r('app.string.mvp_hint'))
             .fontSize(16)
             .fontWeight(FontWeight.Bold)
             .margin({ bottom: 6 })
-          Text('当前不接真实 Health Kit，不接真实订阅付费。你可以为每个家庭成员手动设置今天的活动、睡眠和偏咸/偏甜状态。')
+          Text($r('app.string.mvp_detail'))
             .fontSize(12)
             .fontColor(COLORS.TEXT_GRAY_6161)
             .lineHeight(18)
@@ -85,7 +85,7 @@ struct SettingsPage {
 
         // ---- 隐私与合规区域 ----
         Column() {
-          Text('隐私与合规')
+          Text($r('app.string.privacy_and_compliance'))
             .fontSize(17)
             .fontWeight(FontWeight.Bold)
             .margin({ bottom: 12 })
@@ -114,7 +114,7 @@ struct SettingsPage {
           if (this.showPrivacyDetail) {
             Column() {
               Row() {
-                Text('← 收起')
+                Text($r('app.string.collapse'))
                   .fontSize(13)
                   .fontColor(COLORS.PRIMARY)
                   .onClick(() => {
@@ -142,7 +142,7 @@ struct SettingsPage {
           if (this.showAgreementDetail) {
             Column() {
               Row() {
-                Text('← 收起')
+                Text($r('app.string.collapse'))
                   .fontSize(13)
                   .fontColor(COLORS.PRIMARY)
                   .onClick(() => {
@@ -166,7 +166,7 @@ struct SettingsPage {
             .margin({ top: 8 })
           }
 
-          Text('当前版本 v4.0.0')
+          Text($r('app.string.version_label'))
             .fontSize(12)
             .fontColor(COLORS.TEXT_GRAY_9E9E)
             .width('100%')
@@ -191,7 +191,7 @@ struct SettingsPage {
   @Builder
   MemberSelector() {
     Column() {
-      Text('设置谁的今日状态')
+      Text($r('app.string.save_today_status'))
         .fontSize(14)
         .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ bottom: 8 })
@@ -222,12 +222,12 @@ struct SettingsPage {
   @Builder
   ManualHealthPanel() {
     Column() {
-      Text('手动今日状态')
+      Text($r('app.string.today_status'))
         .fontSize(17)
         .fontWeight(FontWeight.Bold)
         .margin({ bottom: 12 })
 
-      Text('活动量')
+      Text($r('app.string.activity'))
         .fontSize(13)
         .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ bottom: 8 })
@@ -238,7 +238,7 @@ struct SettingsPage {
       }
       .margin({ bottom: 14 })
 
-      Text('睡眠')
+      Text($r('app.string.health_signal_fair'))
         .fontSize(13)
         .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ bottom: 8 })
@@ -249,7 +249,7 @@ struct SettingsPage {
       }
       .margin({ bottom: 14 })
 
-      Text('今天已经吃过')
+      Text($r('app.string.today_tags_label'))
         .fontSize(13)
         .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ bottom: 8 })
@@ -258,7 +258,7 @@ struct SettingsPage {
         this.OptionChip('高糖', this.hadHighSugarToday, () => { this.hadHighSugarToday = !this.hadHighSugarToday })
       }
 
-      Text('这些状态会直接影响今天的适配报告和美食额度判断。')
+      Text($r('app.string.status_affect_hint'))
         .fontSize(12)
         .fontColor(COLORS.TEXT_GRAY_9E9E)
         .margin({ top: 12 })

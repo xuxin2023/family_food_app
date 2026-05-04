@@ -98,7 +98,7 @@ struct BalancePage {
               .fontSize(24)
               .fontColor(COLORS.PRIMARY)
               .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
-            Text('记录美食')
+            Text($r('app.string.record_meal'))
               .fontSize(20)
               .fontWeight(FontWeight.Bold)
               .margin({ left: 16 })
@@ -120,7 +120,7 @@ struct BalancePage {
           this.MemberSelector()
           this.BudgetCard()
 
-          Text('今天吃了什么')
+          Text($r('app.string.balance_advice'))
             .fontSize(14)
             .fontColor(COLORS.TEXT_GRAY_7575)
             .width('92%')
@@ -198,7 +198,7 @@ struct BalancePage {
   @Builder
   MemberSelector() {
     Column() {
-      Text('谁吃了')
+      Text($r('app.string.family_members'))
         .fontSize(14)
         .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ bottom: 8 })
@@ -229,7 +229,7 @@ struct BalancePage {
   @Builder
   BudgetCard() {
     Column() {
-      Text('今日美食额度')
+      Text($r('app.string.sub_today_budget'))
         .fontSize(17)
         .fontWeight(FontWeight.Bold)
         .margin({ bottom: 10 })
@@ -280,7 +280,7 @@ struct BalancePage {
   PositiveAdviceCard(advice: PositiveAdvice | null) {
     if (advice !== null) {
       Column() {
-        Text('建议补什么')
+        Text($r('app.string.advice_for_you'))
           .fontSize(16)
           .fontWeight(FontWeight.Bold)
           .fontColor('#2E7D32')
@@ -294,7 +294,7 @@ struct BalancePage {
         }, (item: string, index: number) => `${index}`)
 
         if (advice.howToSupplement.length > 0) {
-          Text('下一餐建议')
+          Text($r('app.string.next_meal_suggestion'))
             .fontSize(13)
             .fontColor(COLORS.TEXT_GRAY_7575)
             .margin({ top: 8, bottom: 6 })

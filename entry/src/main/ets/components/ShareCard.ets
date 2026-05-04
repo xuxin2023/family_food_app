@@ -405,7 +405,7 @@ export struct ShareCard {
   build() {
     Column() {
       Column() {
-        Text('食品适配助手')
+        Text($r('app.string.food_adapt_assistant'))
           .fontSize(11)
           .fontColor(COLORS.TEXT_GRAY_9E9E)
           .margin({ bottom: 4 })
@@ -437,7 +437,7 @@ export struct ShareCard {
           .fontSize(11)
           .fontColor(COLORS.TEXT_GRAY_9E9E)
           .margin({ top: 12, bottom: 4 })
-        Text('扫码查食品，全家更安心')
+        Text($r('app.string.scan_food_peace_mind'))
           .fontSize(11)
           .fontColor(COLORS.PRIMARY)
       }

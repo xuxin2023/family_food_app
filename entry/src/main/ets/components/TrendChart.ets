@@ -12,7 +12,7 @@ export struct TrendChart {
   build() {
     if (this.data === null) {
       Column() {
-        Text('暂无趋势数据')
+        Text($r('app.string.no_trend_data'))
           .fontSize(FONT_SIZE.SMALL)
           .fontColor(COLORS.TEXT_GRAY_9E9E)
       }

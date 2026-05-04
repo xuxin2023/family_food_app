@@ -1,9 +1,11 @@
+// GroupFeedPage.ets
+// 群组动态页面 — 群内分享流
+
 import { router, promptAction } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
 import { GroupFeed, FeedType, FoodScanFeedContent } from '../model/FamilyGroup';
 import { COLORS, RADIUS, SPACING, BUTTON, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
-import { BasicDataSource } from '../utils/BasicDataSource';
 
 const PAGE_SIZE = 20;
 
@@ -12,11 +14,10 @@ const PAGE_SIZE = 20;
 struct GroupFeedPage {
   @State groupId: string = ''
   @State groupName: string = ''
+  @State feeds: GroupFeed[] = []
   @State isLoading: boolean = true
 
   private appState: AppState = AppState.getInstance()
-  private feeds: GroupFeed[] = []
-  private feedDS = new BasicDataSource<GroupFeed>()
 
   async aboutToAppear() {
     const params = router.getParams() as Record<string, Object>
@@ -31,7 +32,6 @@ struct GroupFeedPage {
     this.isLoading = true
     try {
       this.feeds = await this.appState.getGroupFeeds(this.groupId, 0, PAGE_SIZE)
-      this.feedDS.reload(this.feeds)
     } catch (e) {
       hilog.error(0x0000, 'GroupFeedPage', 'load feeds error')
     }
@@ -51,7 +51,7 @@ struct GroupFeedPage {
           .fontWeight(FontWeight.Bold)
           .margin({ left: 12 })
         Blank()
-        Text($r('app.string.group_info'))
+        Text('群信息')
           .fontSize(14)
           .fontColor(COLORS.PRIMARY)
           .onClick(() => {
@@ -66,7 +66,7 @@ struct GroupFeedPage {
           .width(32)
           .height(32)
           .margin({ top: 100 })
-      } else if (this.feedDS.totalCount() === 0) {
+      } else if (this.feeds.length === 0) {
         this.emptyFeed()
       } else {
         this.feedList()
@@ -83,11 +83,11 @@ struct GroupFeedPage {
       Text('📭')
         .fontSize(60)
         .margin({ bottom: 16 })
-      Text($r('app.string.group_empty'))
+      Text('群组动态空空如也')
         .fontSize(16)
         .fontColor(COLORS.TEXT_GRAY_6161)
         .margin({ bottom: 8 })
-      Text($r('app.string.group_empty_hint'))
+      Text('在首页扫描食品后可以分享到群组\n让家人一起了解适配情况')
         .fontSize(13)
         .fontColor(COLORS.TEXT_GRAY_9E9E)
         .textAlign(TextAlign.Center)
@@ -100,16 +100,15 @@ struct GroupFeedPage {
   @Builder
   feedList() {
     List() {
-      LazyForEach(this.feedDS, (feed: GroupFeed) => {
+      ForEach(this.feeds, (feed: GroupFeed) => {
         ListItem() {
           this.feedItem(feed)
         }
-      }, (feed: GroupFeed) => `${feed.feedId}`)
+      })
     }
     .width('100%')
     .layoutWeight(1)
     .padding({ left: 16, right: 16 })
-    .cachedCount(5)
   }
 
   @Builder
@@ -142,14 +141,14 @@ struct GroupFeedPage {
         Blank()
 
         if (feed.feedType === FeedType.SYSTEM) {
-          Text($r('app.string.system_msg'))
+          Text('系统消息')
             .fontSize(11)
             .fontColor(COLORS.TEXT_GRAY_9E9E)
             .backgroundColor(COLORS.BG_DIVIDER)
             .padding({ left: 8, right: 8, top: 2, bottom: 2 })
             .borderRadius(8)
         } else if (feed.feedType === FeedType.FOOD_SCAN_SHARE) {
-          Text($r('app.string.food_share'))
+          Text('食品分享')
             .fontSize(11)
             .fontColor(COLORS.WHITE)
             .backgroundColor(COLORS.PRIMARY)
@@ -161,10 +160,7 @@ struct GroupFeedPage {
 
       // 内容
       if (feed.feedType === FeedType.FOOD_SCAN_SHARE) {
-        Text('📦 食品扫描分享')
-          .fontSize(15)
-          .fontWeight(FontWeight.Medium)
-          .margin({ top: 12, bottom: 8 })
+        this.foodScanContent(feed)
       } else if (feed.feedType === FeedType.SYSTEM) {
         Text(feed.content)
           .fontSize(14)
@@ -195,6 +191,45 @@ struct GroupFeedPage {
     .backgroundColor(COLORS.WHITE)
     .borderRadius(RADIUS.LG)
     .margin({ bottom: 12 })
+  }
+
+  @Builder
+  foodScanContent(feed: GroupFeed) {
+    let content: FoodScanFeedContent | null = null
+    try {
+      content = JSON.parse(feed.content) as FoodScanFeedContent
+    } catch (e) {
+      // ignore
+    }
+
+    if (content) {
+      Column() {
+        Text('📦 ' + content.foodName)
+          .fontSize(15)
+          .fontWeight(FontWeight.Medium)
+          .margin({ top: 12, bottom: 8 })
+
+        if (content.summary.length > 0) {
+          Text(content.summary)
+            .fontSize(13)
+            .fontColor(COLORS.TEXT_SECONDARY)
+            .lineHeight(20)
+            .maxLines(3)
+        }
+
+        Row({ space: 8 }) {
+          Text('营养评分：')
+            .fontSize(12)
+            .fontColor(COLORS.TEXT_GRAY_9E9E)
+          Text(`${content.nutriScore}`)
+            .fontSize(16)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(COLORS.ACCENT_GREEN)
+        }
+        .margin({ top: 8 })
+      }
+      .width('100%')
+    }
   }
 
   private showGroupInfo() {

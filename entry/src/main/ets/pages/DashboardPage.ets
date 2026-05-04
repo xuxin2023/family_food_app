@@ -1,7 +1,6 @@
 // DashboardPage.ets
 // 数据可视化仪表盘主页
 // 整合各维度营养数据的可视化概览：均衡概览、趋势折线、构成分析、收支预算
-
 import { router, promptAction, curves } from '@kit.ArkUI';
 import { AppState } from '../AppState';
 import { FamilyProfile } from '../model/FamilyProfile';
@@ -12,21 +11,19 @@ import { COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT } from '../constants/Ap
 import { DateUtil } from '../utils/DateUtil';
 
 // 导入图表组件
-import { RadarChart, RadarAxis } from '../components/RadarChart';
-import { RingChart, RingData } from '../components/RingChart';
-import { LineChart, LineChartData, LineSeries, LinePoint } from '../components/LineChart';
 import { DonutChart, DonutSegment } from '../components/DonutChart';
-import { NutrientRadarPanel, NutrientRadarData } from '../components/NutrientRadarPanel';
+import { NutrientRadarPanel, NutrientScores } from '../components/NutrientRadarPanel';
 
 // 时间范围选项
 interface PeriodOption {
-  label: string;
+  label: Resource;
   days: number;
 }
 
+// $r() 不能在文件顶层使用，使用字符串替代，在build时通过 $r 动态设置
 const PERIOD_OPTIONS: PeriodOption[] = [
-  { label: '7天', days: 7 },
-  { label: '30天', days: 30 }
+  { label: $r('app.string.period_7_days'), days: 7 },
+  { label: $r('app.string.period_30_days'), days: 30 }
 ];
 
 // 家庭成员选择和导航状态
@@ -45,11 +42,10 @@ struct DashboardPage {
   @State isLoading: boolean = true
 
   // 仪表盘数据
-  @State radarData: NutrientRadarData | null = null
   @State trendsData: NutrientTrendData[] = []
   @State summaries: DailyNutritionSummary[] = []
   @State donutSegments: DonutSegment[] = []
-  @State periodLabel: string = '近7天'
+  @State periodLabel: Resource = $r('app.string.period_7_days')
 
   // 概览统计
   @State overviewRecords: number = 0
@@ -57,9 +53,9 @@ struct DashboardPage {
   @State overviewAvgCalorie: number = 0
   @State overviewHighSodiumDays: number = 0
 
-  // 健康星评分
+  // 健康星级评分
   @State healthScore: number = 85
-  @State healthScoreLabel: string = '良好'
+  @State healthScoreLabel: Resource = $r('app.string.health_score_good')
   @State healthScoreColor: string = COLORS.ACCENT_GREEN_4CAF
   @State healthInsight: string = ''
 
@@ -72,7 +68,6 @@ struct DashboardPage {
         this.selectedMemberId = params['memberId'] as string;
       }
     } catch (_e) { /* ignore */ }
-
     await this.loadMembers()
     await this.refreshDashboard()
   }
@@ -89,49 +84,21 @@ struct DashboardPage {
       this.isLoading = false
       return
     }
-
     this.isLoading = true
     const days = PERIOD_OPTIONS[this.selectedPeriodIndex].days
-    this.periodLabel = '近' + days + '天'
+    this.periodLabel = PERIOD_OPTIONS[this.selectedPeriodIndex].label
 
     // 并行加载数据
     this.trendsData = await this.appState.getNutritionTrends(this.selectedMemberId, days)
     this.summaries = await this.appState.getDailySummaries(this.selectedMemberId, days)
 
-    // 构建成员雷达数据
-    this.buildRadarData()
-
     // 构建圆环构成数据（最近一天或平均构成）
     this.buildDonutData()
-
     // 计算概览统计数据
     this.computeOverview()
-
     // 计算健康评分
     this.computeHealthScore()
-
     this.isLoading = false
-  }
-
-  private buildRadarData() {
-    const member = this.findMember(this.selectedMemberId)
-    if (member === null) return
-
-    const todaySummary = this.summaries.length > 0 ? this.summaries[this.summaries.length - 1] : null
-    const budget = this.appState.getDailyBudget(this.selectedMemberId)
-
-    const data: NutrientRadarData = {
-      memberId: this.selectedMemberId,
-      memberName: member.nickname,
-      memberEmoji: this.getMemberEmoji(member),
-      summary: todaySummary,
-      budgetSodium: budget.sodiumBudget,
-      budgetSugar: budget.sugarBudget,
-      budgetCalorie: budget.calorieBudget,
-      budgetFat: budget.fatBudget,
-      trends: this.trendsData
-    }
-    this.radarData = data
   }
 
   private buildDonutData() {
@@ -147,6 +114,7 @@ struct DashboardPage {
     let avgSugar = 0
     let avgFat = 0
     let avgProtein = 0
+
     for (let i = 0; i < this.summaries.length; i++) {
       const s = this.summaries[i]
       avgCalorie += s.calorie
@@ -156,6 +124,7 @@ struct DashboardPage {
       // 从趋势数据中提取蛋白质值（暂使用固定比例估算）
       avgProtein += s.calorie * 0.12 / 4 // 假设12%热量来自蛋白质
     }
+
     avgCalorie /= days
     avgSodium /= days
     avgSugar /= days
@@ -187,7 +156,6 @@ struct DashboardPage {
         highSodiumCount++
       }
     }
-
     this.overviewDays = this.summaries.length
     this.overviewRecords = totalRecords
     this.overviewAvgCalorie = this.overviewDays > 0 ? totalCalorie / this.overviewDays : 0
@@ -197,9 +165,9 @@ struct DashboardPage {
   private computeHealthScore() {
     if (this.summaries.length < 2) {
       this.healthScore = 75
-      this.healthScoreLabel = '数据不足'
+      this.healthScoreLabel = $r('app.string.health_score_insufficient')
       this.healthScoreColor = COLORS.TEXT_GRAY_9E9E
-      this.healthInsight = '持续记录膳食后可获得更准确的健康评分'
+      this.healthInsight = '持续记录饮食后可获得更准确的健康评分'
       return
     }
 
@@ -243,25 +211,27 @@ struct DashboardPage {
     score = Math.max(30, Math.min(100, score))
 
     this.healthScore = score
+
     if (score >= 85) {
-      this.healthScoreLabel = '优秀'
+      this.healthScoreLabel = $r('app.string.health_score_excellent')
       this.healthScoreColor = COLORS.ACCENT_GREEN_4CAF
       if (insights.length === 0) {
         insights.push('继续保持！饮食非常均衡')
       }
     } else if (score >= 70) {
-      this.healthScoreLabel = '良好'
+      this.healthScoreLabel = $r('app.string.health_score_good')
       this.healthScoreColor = COLORS.ORANGE_ACCENT
       if (insights.length === 0) {
         insights.push('整体不错，仍有改善空间')
       }
     } else if (score >= 50) {
-      this.healthScoreLabel = '注意'
+      this.healthScoreLabel = $r('app.string.health_score_fair')
       this.healthScoreColor = COLORS.ORANGE_DEEP
     } else {
-      this.healthScoreLabel = '需要改善'
+      this.healthScoreLabel = $r('app.string.health_score_poor')
       this.healthScoreColor = COLORS.ACCENT_RED_F443
     }
+
     this.healthInsight = insights.length > 0 ? insights.join(' · ') : '饮食均衡，继续保持'
   }
 
@@ -288,16 +258,16 @@ struct DashboardPage {
     if (member.healthGoals !== undefined && member.healthGoals.length > 0) {
       const goals = member.healthGoals as string[]
       if (goals.includes('control_bp') || goals.includes('control_fat')) {
-        return '👨'
+        return '🧮'
       }
       if (goals.includes('child')) {
-        return '👶'
+        return '🧚'
       }
       if (goals.includes('control_sugar') || goals.includes('control_weight')) {
-        return '👩'
+        return '🧇'
       }
     }
-    return '👤'
+    return '🧁'
   }
 
   build() {
@@ -315,14 +285,13 @@ struct DashboardPage {
         .justifyContent(FlexAlign.Center)
         .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
 
-        Text('营养仪表盘')
+        Text($r('app.string.dashboard_title'))
           .fontSize(FONT_SIZE.TITLE)
           .fontWeight(FONT_WEIGHT.BOLD)
           .fontColor(COLORS.TEXT_PRIMARY)
           .margin({ left: SPACING.SM })
 
         Blank()
-
         // 周期切换
         Row({ space: 4 }) {
           ForEach(PERIOD_OPTIONS, (opt: PeriodOption, idx: number) => {
@@ -350,13 +319,13 @@ struct DashboardPage {
       } else if (this.familyMembers.length === 0) {
         // 无成员状态
         Column() {
-          Text('📊')
+          Text('🍓')
             .fontSize(56)
-          Text('暂无家庭成员的饮食数据')
+          Text($r('app.string.no_family_diet_data'))
             .fontSize(FONT_SIZE.LG)
             .fontColor(COLORS.TEXT_GRAY_9E9E)
             .margin({ top: SPACING.MD })
-          Text('先添加家庭成员并记录膳食后，再来查看仪表盘')
+          Text($r('app.string.no_family_diet_hint'))
             .fontSize(FONT_SIZE.SMALL)
             .fontColor(COLORS.TEXT_GRAY_BDBD)
             .margin({ top: SPACING.SM })
@@ -369,29 +338,24 @@ struct DashboardPage {
       } else {
         Scroll() {
           Column() {
-            // ═══ ① 成员选择器 ═══
+            // ─══─①─ 成员选择器 ─══─
             this.buildMemberSelector()
-
-            // ═══ ② 健康概览卡片（左侧评分 + 右侧统计） ═══
+            // ─══─②─ 健康概览卡片（左侧评分 + 右侧统计）─══─
             this.buildHealthOverviewCard()
-
-            // ═══ ③ 营养均衡雷达图面板 ═══
+            // ─══─③─ 营养均衡雷达图面板 ─══─
             NutrientRadarPanel({
-              data: this.radarData,
-              compact: false
+              scores: this.buildNutrientScores(),
+              showLabels: true,
+              chartSize: 200
             })
             .padding({ left: SPACING.LG, right: SPACING.LG })
             .margin({ bottom: SPACING.MD })
-
-            // ═══ ④ 趋势折线图 ═══
+            // ─══─④─ 趋势折线图 ─══─
             this.buildTrendSection()
-
-            // ═══ ⑤ 宏量营养素构成分析 ═══
+            // ─══─⑤─ 宏量营养素构成分析 ─══─
             this.buildDonutSection()
-
-            // ═══ ⑥ 每日明细列表 ═══
+            // ─══─⑥─ 每日明细列表 ─══─
             this.buildDailyListSection()
-
             // 底部留白
             Column()
               .height(40)
@@ -408,21 +372,20 @@ struct DashboardPage {
     .backgroundColor(COLORS.WHITE)
   }
 
-  // ═══ 成员选择器 ═══
+  // ─══─成员选择器─══─
   @Builder
   buildMemberSelector() {
     Scroll() {
       Row({ space: SPACING.SM }) {
         ForEach(this.familyMembers, (member: FamilyProfile) => {
-          const isSelected = this.selectedMemberId === member.memberId
           Column() {
             Text(this.getMemberEmoji(member))
               .fontSize(FONT_SIZE.XXL)
               .margin({ bottom: 2 })
             Text(member.nickname)
               .fontSize(FONT_SIZE.TINY)
-              .fontColor(isSelected ? COLORS.WHITE : COLORS.TEXT_GRAY_6161)
-              .fontWeight(isSelected ? FONT_WEIGHT.BOLD : FONT_WEIGHT.REGULAR)
+              .fontColor(this.selectedMemberId === member.memberId ? COLORS.WHITE : COLORS.TEXT_GRAY_6161)
+              .fontWeight(this.selectedMemberId === member.memberId ? FONT_WEIGHT.BOLD : FONT_WEIGHT.REGULAR)
               .maxLines(1)
           }
           .width(60)
@@ -430,7 +393,7 @@ struct DashboardPage {
           .justifyContent(FlexAlign.Center)
           .alignItems(HorizontalAlign.Center)
           .borderRadius(RADIUS.MD)
-          .backgroundColor(isSelected ? COLORS.PRIMARY : COLORS.BG_LIGHT_GRAY_F5)
+          .backgroundColor(this.selectedMemberId === member.memberId ? COLORS.PRIMARY : COLORS.BG_LIGHT_GRAY_F5)
           .onClick(() => { this.switchMember(member.memberId) })
         })
       }
@@ -443,7 +406,7 @@ struct DashboardPage {
     .margin({ bottom: SPACING.MD })
   }
 
-  // ═══ 健康概览卡片 ═══
+  // ─══─健康概览卡片─══─
   @Builder
   buildHealthOverviewCard() {
     Row() {
@@ -456,7 +419,6 @@ struct DashboardPage {
           .stroke(this.healthScoreColor)
           .strokeWidth(4)
           .opacity(0.3)
-
         Shape() {
           Path()
             .commands(this.buildArcPath(36, 36, 32, 0, (this.healthScore / 100) * 360))
@@ -467,7 +429,6 @@ struct DashboardPage {
         }
         .width(72)
         .height(72)
-
         Column() {
           Text(this.healthScore.toFixed(0))
             .fontSize(FONT_SIZE.XL)
@@ -484,13 +445,19 @@ struct DashboardPage {
         .height(72)
       }
 
-      // 中间：洞察文字
+      // 中间：洞见文字
       Column() {
-        Text(this.periodLabel + '健康评估')
-          .fontSize(FONT_SIZE.SMALL)
-          .fontWeight(FONT_WEIGHT.MEDIUM)
-          .fontColor(COLORS.TEXT_PRIMARY)
-          .margin({ bottom: 4 })
+        Row() {
+          Text(this.periodLabel)
+            .fontSize(FONT_SIZE.SMALL)
+            .fontWeight(FONT_WEIGHT.MEDIUM)
+            .fontColor(COLORS.TEXT_PRIMARY)
+          Text($r('app.string.health_evaluation'))
+            .fontSize(FONT_SIZE.SMALL)
+            .fontWeight(FONT_WEIGHT.MEDIUM)
+            .fontColor(COLORS.TEXT_PRIMARY)
+        }
+        .margin({ bottom: 4 })
         Text(this.healthInsight)
           .fontSize(FONT_SIZE.TINY)
           .fontColor(COLORS.TEXT_GRAY_9E9E)
@@ -509,11 +476,11 @@ struct DashboardPage {
             .fontSize(FONT_SIZE.LG)
             .fontWeight(FONT_WEIGHT.BOLD)
             .fontColor(COLORS.PRIMARY)
-          Text('天')
+          Text($r('app.string.day_unit'))
             .fontSize(8)
             .fontColor(COLORS.TEXT_GRAY_9E9E)
         }
-        Text('记录天数')
+        Text($r('app.string.record_days'))
           .fontSize(8)
           .fontColor(COLORS.TEXT_GRAY_BDBD)
       }
@@ -526,11 +493,11 @@ struct DashboardPage {
             .fontSize(FONT_SIZE.LG)
             .fontWeight(FONT_WEIGHT.BOLD)
             .fontColor(COLORS.ACCENT_PURPLE_9C27)
-          Text('条')
+          Text($r('app.string.record_unit'))
             .fontSize(8)
             .fontColor(COLORS.TEXT_GRAY_9E9E)
         }
-        Text('总记录')
+        Text($r('app.string.total_records'))
           .fontSize(8)
           .fontColor(COLORS.TEXT_GRAY_BDBD)
       }
@@ -545,19 +512,15 @@ struct DashboardPage {
     .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
   }
 
-  // ═══ 趋势折线图 ═══
+  // ─══─趋势折线图─══─
   @Builder
   buildTrendSection() {
-    if (this.trendsData.length === 0) {
-      return
-    }
-
     Column() {
       Row() {
-        Text('📈')
+        Text('📱')
           .fontSize(FONT_SIZE.LG)
           .margin({ right: 6 })
-        Text('营养素趋势')
+        Text($r('app.string.nutrition_trend'))
           .fontSize(FONT_SIZE.LG)
           .fontWeight(FONT_WEIGHT.BOLD)
           .fontColor(COLORS.TEXT_PRIMARY)
@@ -584,21 +547,27 @@ struct DashboardPage {
               .fontColor(COLORS.TEXT_GRAY_9E9E)
               .margin({ left: 2 })
               .alignSelf(ItemAlign.End)
-            Text(this.getTrendArrow(trend.trend))
+            Text(trend.trend === TrendDirection.UP ? '↑' : (trend.trend === TrendDirection.DOWN ? '↓' : '→'))
               .fontSize(FONT_SIZE.LG)
               .margin({ left: SPACING.XS })
           }
           .width('100%')
           .padding({ left: SPACING.SM, right: SPACING.SM, bottom: SPACING.XS })
 
-          // 折线图
-          LineChart({
-            data: this.buildLineChartData(trend),
-            chartHeight: 140,
-            showArea: true,
-            showDots: true,
-            showGrid: true
-          })
+          // 进度条（折线图组件待补充）
+          Row() {
+            Row()
+              .width(trend.targetValue > 0 ? (Math.min(100, Math.round((trend.currentValue / trend.targetValue) * 100)).toString() + '%') : '50%')
+              .height(8)
+              .borderRadius(4)
+              .backgroundColor(trend.color)
+            Blank()
+            Text(trend.dailyValues.length > 0 ? (trend.trend === TrendDirection.STABLE ? $r('app.string.trend_stable') : (trend.trend === TrendDirection.UP ? $r('app.string.trend_upward') : $r('app.string.trend_downward'))) : $r('app.string.no_data'))
+              .fontSize(FONT_SIZE.TINY)
+              .fontColor(COLORS.TEXT_GRAY_9E9E)
+          }
+          .width('100%')
+          .padding({ left: SPACING.SM, right: SPACING.SM })
         }
         .width('100%')
         .padding(SPACING.MD)
@@ -610,24 +579,23 @@ struct DashboardPage {
     }
   }
 
-  // ═══ 宏量营养素构成 ═══
+  // ─══─宏量营养素构成─══─
   @Builder
   buildDonutSection() {
-    if (this.donutSegments.length === 0) {
-      return
-    }
-
     Column() {
       Row() {
-        Text('🥗')
+        Text('🛜')
           .fontSize(FONT_SIZE.LG)
           .margin({ right: 6 })
-        Text('宏量营养素构成')
+        Text($r('app.string.macronutrient_composition'))
           .fontSize(FONT_SIZE.LG)
           .fontWeight(FONT_WEIGHT.BOLD)
           .fontColor(COLORS.TEXT_PRIMARY)
         Blank()
-        Text(this.periodLabel + '日均')
+        Text(this.periodLabel)
+          .fontSize(FONT_SIZE.TINY)
+          .fontColor(COLORS.TEXT_GRAY_9E9E)
+        Text($r('app.string.daily_avg'))
           .fontSize(FONT_SIZE.TINY)
           .fontColor(COLORS.TEXT_GRAY_9E9E)
       }
@@ -641,15 +609,13 @@ struct DashboardPage {
           chartSize: 140,
           thickness: 22,
           centerText: Math.round(this.overviewAvgCalorie).toString(),
-          centerSubText: '日均kcal',
+          centerSubText: $r('app.string.avg_daily_kcal'),
           showLegend: false
         })
 
         // 右侧详细百分比
         Column({ space: SPACING.SM }) {
           ForEach(this.donutSegments, (seg: DonutSegment) => {
-            const total = this.donutSegments.reduce((s, d) => s + d.value, 0)
-            const pct = total > 0 ? Math.round((seg.value / total) * 100) : 0
             Column() {
               Row() {
                 Row()
@@ -662,16 +628,15 @@ struct DashboardPage {
                   .fontSize(FONT_SIZE.BODY)
                   .fontColor(COLORS.TEXT_GRAY_6161)
                 Blank()
-                Text(pct + '%')
+                Text(this.getDonutPercent(seg).toString() + '%')
                   .fontSize(FONT_SIZE.BODY)
                   .fontWeight(FONT_WEIGHT.BOLD)
                   .fontColor(COLORS.TEXT_PRIMARY)
               }
               .width('100%')
-
               // 进度条
               Row()
-                .width(pct + '%')
+                .width(this.getDonutPercent(seg).toString() + '%')
                 .height(4)
                 .borderRadius(2)
                 .backgroundColor(seg.color)
@@ -692,19 +657,15 @@ struct DashboardPage {
     .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
   }
 
-  // ═══ 每日明细列表 ═══
+  // ─══─每日明细列表─══─
   @Builder
   buildDailyListSection() {
-    if (this.summaries.length === 0) {
-      return
-    }
-
     Column() {
       Row() {
-        Text('📋')
+        Text('🕵')
           .fontSize(FONT_SIZE.LG)
           .margin({ right: 6 })
-        Text('每日摄入明细')
+        Text($r('app.string.daily_intake'))
           .fontSize(FONT_SIZE.LG)
           .fontWeight(FONT_WEIGHT.BOLD)
           .fontColor(COLORS.TEXT_PRIMARY)
@@ -714,26 +675,26 @@ struct DashboardPage {
 
       // 表头
       Row() {
-        Text('日期')
+        Text($r('app.string.col_date'))
           .fontSize(FONT_SIZE.TINY)
           .fontColor(COLORS.TEXT_GRAY_9E9E)
           .layoutWeight(1)
-        Text('钠')
+        Text($r('app.string.col_sodium'))
           .fontSize(FONT_SIZE.TINY)
           .fontColor(COLORS.ACCENT_RED_F443)
           .width(48)
           .textAlign(TextAlign.End)
-        Text('糖')
+        Text($r('app.string.col_sugar'))
           .fontSize(FONT_SIZE.TINY)
           .fontColor(COLORS.ORANGE_ACCENT)
           .width(44)
           .textAlign(TextAlign.End)
-        Text('热量')
+        Text($r('app.string.col_calorie'))
           .fontSize(FONT_SIZE.TINY)
           .fontColor(COLORS.ACCENT_GREEN_66BB)
           .width(52)
           .textAlign(TextAlign.End)
-        Text('脂肪')
+        Text($r('app.string.col_fat'))
           .fontSize(FONT_SIZE.TINY)
           .fontColor(COLORS.ACCENT_PURPLE_9C27)
           .width(44)
@@ -747,45 +708,39 @@ struct DashboardPage {
       // 数据行
       ForEach(this.summaries, (summary: DailyNutritionSummary) => {
         Row() {
-          Text(this.formatShortDate(summary.date))
+          Text(summary.date.length >= 10 ? summary.date.substring(5, 10) : summary.date)
             .fontSize(FONT_SIZE.SMALL)
             .fontColor(COLORS.TEXT_PRIMARY)
             .layoutWeight(1)
           Text(Math.round(summary.sodium).toString())
             .fontSize(FONT_SIZE.SMALL)
-            .fontColor(this.getOverColor(summary.sodium, 2000))
+            .fontColor(summary.sodium > 2000 ? COLORS.ACCENT_RED_F443 : (summary.sodium > 1500 ? COLORS.ORANGE_ACCENT : COLORS.ACCENT_GREEN_4CAF))
             .width(48)
             .textAlign(TextAlign.End)
-            .fontWeight(this.getOverWeight(summary.sodium, 2000))
+            .fontWeight(summary.sodium > 2000 ? FONT_WEIGHT.BOLD : FONT_WEIGHT.REGULAR)
           Text(summary.sugar.toFixed(1))
             .fontSize(FONT_SIZE.SMALL)
-            .fontColor(this.getOverColor(summary.sugar, 50))
+            .fontColor(summary.sugar > 50 ? COLORS.ACCENT_RED_F443 : (summary.sugar > 40 ? COLORS.ORANGE_ACCENT : COLORS.ACCENT_GREEN_4CAF))
             .width(44)
             .textAlign(TextAlign.End)
-            .fontWeight(this.getOverWeight(summary.sugar, 50))
+            .fontWeight(summary.sugar > 50 ? FONT_WEIGHT.BOLD : FONT_WEIGHT.REGULAR)
           Text(Math.round(summary.calorie).toString())
             .fontSize(FONT_SIZE.SMALL)
-            .fontColor(this.getOverColor(summary.calorie, 2000))
+            .fontColor(summary.calorie > 2200 ? COLORS.ACCENT_RED_F443 : (summary.calorie > 1800 ? COLORS.ORANGE_ACCENT : COLORS.ACCENT_GREEN_4CAF))
             .width(52)
             .textAlign(TextAlign.End)
-            .fontWeight(this.getOverWeight(summary.calorie, 2000))
+            .fontWeight(summary.calorie > 2200 ? FONT_WEIGHT.BOLD : FONT_WEIGHT.REGULAR)
           Text(summary.fat.toFixed(1))
             .fontSize(FONT_SIZE.SMALL)
-            .fontColor(this.getOverColor(summary.fat, 65))
+            .fontColor(summary.fat > 65 ? COLORS.ACCENT_RED_F443 : (summary.fat > 50 ? COLORS.ORANGE_ACCENT : COLORS.ACCENT_GREEN_4CAF))
             .width(44)
             .textAlign(TextAlign.End)
-            .fontWeight(this.getOverWeight(summary.fat, 65))
-
-          // 超限标记
-          if (this.isOverLimit(summary)) {
-            Text('⚠')
-              .fontSize(FONT_SIZE.SMALL)
-              .width(20)
-              .textAlign(TextAlign.Center)
-          } else {
-            Row()
-              .width(20)
-          }
+            .fontWeight(summary.fat > 65 ? FONT_WEIGHT.BOLD : FONT_WEIGHT.REGULAR)
+          // 警告标记
+          Text(summary.sodium > 2000 || summary.sugar > 50 || summary.calorie > 2000 || summary.fat > 65 ? '⚠' : '')
+            .fontSize(FONT_SIZE.SMALL)
+            .width(20)
+            .textAlign(TextAlign.Center)
         }
         .width('100%')
         .padding({ left: SPACING.MD, right: SPACING.MD, top: SPACING.SM, bottom: SPACING.SM })
@@ -800,39 +755,41 @@ struct DashboardPage {
     .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
   }
 
-  // ===== 工具方法 =====
+  // ===== 辅助函数 =====
 
-  private buildLineChartData(trend: NutrientTrendData): LineChartData {
-    const points: LinePoint[] = []
-    for (let i = 0; i < trend.dailyValues.length; i++) {
-      const dp = trend.dailyValues[i]
-      points.push({ date: dp.date, value: dp.value })
+  // 将雷达数据转换为 NutrientScores 格式
+  private buildNutrientScores(): NutrientScores {
+    const summary = this.summaries.length > 0 ? this.summaries[this.summaries.length - 1] : null
+    if (summary === null) {
+      return { protein: 70, fiber: 50, vitamins: 80, minerals: 60, healthyFats: 65 }
     }
-
-    const series: LineSeries = {
-      name: trend.nutrientName,
-      points: points,
-      color: trend.color,
-      fillColor: trend.color
-    }
-
-    // 计算合适的最大值和最小值
-    let maxVal = trend.targetValue
-    let minVal = 0
-    for (let i = 0; i < points.length; i++) {
-      if (points[i].value > maxVal) maxVal = points[i].value
-      if (i === 0 || points[i].value < minVal) minVal = points[i].value
-    }
-    maxVal = Math.max(maxVal * 1.15, trend.targetValue)
-    minVal = Math.max(0, minVal * 0.85)
-
+    const budget = this.appState.getDailyBudget(this.selectedMemberId)
+    // 根据实际摄入/预算比例计算各维度分数（0-100）
+    const proteinScore = Math.min(100, Math.round((summary.calorie * 0.12 / 4 / 60) * 100))
+    const fiberScore = summary.calorie > 0 ? Math.min(100, Math.round((summary.calorie / 2000) * 70)) : 50
+    const vitaminsScore = summary.sodium > 0 ? Math.min(100, Math.round((1 - summary.sodium / 3000) * 100)) : 70
+    const mineralsScore = summary.sugar > 0 ? Math.min(100, Math.round((1 - summary.sugar / 60) * 100)) : 70
+    const fatScore = budget.fatBudget > 0 ? Math.min(100, Math.round((1 - Math.abs(summary.fat - budget.fatBudget) / budget.fatBudget) * 100)) : 60
     return {
-      series: [series],
-      targetValue: trend.targetValue,
-      unit: trend.unit,
-      maxValue: maxVal,
-      minValue: 0  // 从0开始更直观
+      protein: Math.max(10, proteinScore),
+      fiber: Math.max(10, fiberScore),
+      vitamins: Math.max(10, vitaminsScore),
+      minerals: Math.max(10, mineralsScore),
+      healthyFats: Math.max(10, fatScore)
     }
+  }
+
+  private getTrendBarWidth(current: number, target: number): number {
+    if (target <= 0) return 50
+    return Math.min(100, Math.round((current / target) * 100))
+  }
+
+  private getTrendDesc(trend: NutrientTrendData): string {
+    if (trend.dailyValues.length === 0) return '暂无数据'
+    const latest = trend.dailyValues[trend.dailyValues.length - 1]
+    if (trend.trend === TrendDirection.UP) return '↑ 呈上升趋势'
+    if (trend.trend === TrendDirection.DOWN) return '↓ 呈下降趋势'
+    return '→ 趋于平稳'
   }
 
   private getTrendArrow(trend: TrendDirection): string {
@@ -865,7 +822,18 @@ struct DashboardPage {
       summary.calorie > 2000 || summary.fat > 65
   }
 
-  // 构建弧形路径
+  // 计算百分比
+  private getDonutPercent(seg: DonutSegment): number {
+    const total = this.donutSegments.reduce((s, d) => s + d.value, 0)
+    return total > 0 ? Math.round((seg.value / total) * 100) : 0
+  }
+
+  private getTrendBarWidthStr(trend: NutrientTrendData): string {
+    if (trend.targetValue <= 0) return '50%'
+    const pct = Math.min(100, Math.round((trend.currentValue / trend.targetValue) * 100))
+    return pct + '%'
+  }
+
   private buildArcPath(cx: number, cy: number, r: number, startAngle: number, sweepAngle: number): string {
     if (sweepAngle >= 360) {
       return `M${cx} ${cy - r} A${r} ${r} 0 1 1 ${cx - r} ${cy} A${r} ${r} 0 1 1 ${cx} ${cy - r}`

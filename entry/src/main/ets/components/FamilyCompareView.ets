@@ -11,7 +11,7 @@ export struct FamilyCompareView {
 
   build() {
     Column() {
-      Text('一家人不同结论')
+      Text($r('app.string.family_diff_conclusion'))
         .fontSize(16)
         .fontWeight(FontWeight.Medium)
         .fontColor(COLORS.TEXT_GRAY_2121)
@@ -65,7 +65,7 @@ export struct FamilyCompareView {
           .fontWeight(FontWeight.Bold)
           .fontColor(COLORS.TEXT_GRAY_2121)
       } else {
-        Text('避免')
+        Text($r('app.string.avoid_label'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .fontColor(COLORS.ACCENT_RED_F443)

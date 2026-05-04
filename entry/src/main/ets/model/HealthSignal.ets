@@ -92,6 +92,7 @@ export class HealthSignalJson {
   restingHeartRate: number = 0;
 }
 
+@Observed
 export class HealthSignal {
   memberId: string = '';
   date: string = '';

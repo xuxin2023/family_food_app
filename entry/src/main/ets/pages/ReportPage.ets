@@ -172,7 +172,7 @@ struct ReportPage {
       Blank()
 
       // 食品名称
-      Text(this.foodLabel.foodName.length > 0 ? this.foodLabel.foodName : '适配报告')
+      Text(this.foodLabel.foodName.length > 0 ? this.foodLabel.foodName : $r('app.string.report_default_title'))
         .fontSize(FONT_SIZE.LG)
         .fontWeight(FONT_WEIGHT.MEDIUM)
         .fontColor(COLORS.TEXT_PRIMARY)
@@ -221,7 +221,7 @@ struct ReportPage {
           // 最大可吃量行（紧凑突出显示）
           if (this.selectedRec.maxAmount > 0) {
             Row() {
-              Text('今日参考: ')
+              Text($r('app.string.today_ref'))
                 .fontSize(FONT_SIZE.SMALL)
                 .fontColor(COLORS.TEXT_TERTIARY)
               Text(`${this.selectedRec.maxAmount}g`)
@@ -388,11 +388,11 @@ struct ReportPage {
   NutritionQuickSummary() {
     Scroll() {
       Row({ space: SPACING.XS }) {
-        this.NutrientTag('热量', `${this.foodLabel.nutrition.calories}`, 'kcal', this.getNutrientPercentage('热量'))
-        this.NutrientTag('钠', `${this.foodLabel.nutrition.sodium}`, 'mg', this.getNutrientPercentage('钠'))
-        this.NutrientTag('糖', `${this.foodLabel.nutrition.sugar}`, 'g', this.getNutrientPercentage('糖'))
-        this.NutrientTag('脂肪', `${this.foodLabel.nutrition.fat}`, 'g', this.getNutrientPercentage('脂肪'))
-        this.NutrientTag('蛋白质', `${this.foodLabel.nutrition.protein}`, 'g', this.getNutrientPercentage('蛋白质'))
+        this.NutrientTag($r('app.string.calorie'), `${this.foodLabel.nutrition.calories}`, 'kcal', this.getNutrientPercentage('热量'))
+        this.NutrientTag($r('app.string.sodium'), `${this.foodLabel.nutrition.sodium}`, 'mg', this.getNutrientPercentage('钠'))
+        this.NutrientTag($r('app.string.sugar'), `${this.foodLabel.nutrition.sugar}`, 'g', this.getNutrientPercentage('糖'))
+        this.NutrientTag($r('app.string.fat'), `${this.foodLabel.nutrition.fat}`, 'g', this.getNutrientPercentage('脂肪'))
+        this.NutrientTag($r('app.string.protein'), `${this.foodLabel.nutrition.protein}`, 'g', this.getNutrientPercentage('蛋白质'))
       }
       .padding({ left: 16, right: 16 })
     }
@@ -404,7 +404,7 @@ struct ReportPage {
   }
 
   @Builder
-  NutrientTag(label: string, value: string, unit: string, percentage: number = 0) {
+  NutrientTag(label: ResourceStr, value: string, unit: string, percentage: number = 0) {
     Column() {
       Text(label)
         .fontSize(10)
@@ -454,7 +454,7 @@ struct ReportPage {
         Text('\uD83D\uDC65')
           .fontSize(FONT_SIZE.LG)
           .margin({ right: 6 })
-        Text('每个家人的适配建议不同')
+        Text($r('app.string.family_diff_conclusion'))
           .fontSize(FONT_SIZE.LG)
           .fontWeight(FONT_WEIGHT.MEDIUM)
           .fontColor(COLORS.TEXT_PRIMARY)
@@ -599,7 +599,7 @@ struct ReportPage {
 
       // 底部独立性声明
       Column() {
-        Text('本评分与建议仅供参考，不替代医生或营养师建议')
+        Text($r('app.string.disclaimer_report'))
           .fontSize(FONT_SIZE.TINY)
           .fontColor(COLORS.TEXT_TERTIARY)
           .textAlign(TextAlign.Center)
@@ -621,7 +621,7 @@ struct ReportPage {
         Text('\uD83C\uDF1F')
           .fontSize(FONT_SIZE.LG)
           .margin({ right: 6 })
-        Text('更优替代推荐')
+        Text($r('app.string.alternative_section_title'))
           .fontSize(FONT_SIZE.LG)
           .fontWeight(FONT_WEIGHT.MEDIUM)
           .fontColor(COLORS.TEXT_PRIMARY)
@@ -636,17 +636,17 @@ struct ReportPage {
             .fontSize(20)
             .margin({ right: 8 })
           Column() {
-            Text('替代品推荐已锁定')
+            Text($r('app.string.alternative_locked'))
               .fontSize(FONT_SIZE.BODY)
               .fontWeight(FONT_WEIGHT.MEDIUM)
               .fontColor(COLORS.TEXT_PRIMARY)
-            Text('升级后可查看更健康的替代选择')
+            Text($r('app.string.unlock_alt_desc'))
               .fontSize(FONT_SIZE.SMALL)
               .fontColor(COLORS.TEXT_TERTIARY)
               .margin({ top: 2 })
           }
           .layoutWeight(1)
-          Button('解锁', { type: ButtonType.Normal, stateEffect: true })
+          Button($r('app.string.unlock'), { type: ButtonType.Normal, stateEffect: true })
             .fontSize(FONT_SIZE.SMALL)
             .fontColor(COLORS.WHITE)
             .backgroundColor(COLORS.PRIMARY)

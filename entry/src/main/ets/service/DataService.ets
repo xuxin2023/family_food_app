@@ -8,6 +8,7 @@ import { Recommendation, RecommendLevel, LevelColor } from '../model/Recommendat
 import { FamilyProfile } from '../model/FamilyProfile';
 import { AlternativeFood } from '../model/FoodAdapterTypes';
 import { AlternativeFoodRecommender } from '../engine/AlternativeFoodRecommender';
+import { StringRes } from '../constants/StringRes';
 
 /**
  * 完整报告结果
@@ -84,7 +85,7 @@ export class DataService {
     // 简易实现：从图片 URI 构造一个基础 FoodLabel
     const label = new FoodLabel();
     label.foodId = `ocr_${Date.now()}`;
-    label.foodName = 'OCR识别的食品';
+    label.foodName = StringRes.OCR_FOOD;
     label.source = FoodSource.OCR_RECOGNIZE;
     label.identifiedAt = Date.now();
     label.nutrition = new NutritionPer100g();

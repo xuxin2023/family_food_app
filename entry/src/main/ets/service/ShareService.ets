@@ -2,6 +2,7 @@ import { FamilyProfile } from '../model/FamilyProfile';
 import { Recommendation, RecommendLevel } from '../model/Recommendation';
 import { CopyTextProvider } from './share/CopyTextProvider';
 import { ShareActionResult, ShareProvider } from './share/ShareProvider';
+import { StringRes } from '../constants/StringRes';
 
 export class ShareService {
   private provider: ShareProvider;
@@ -48,14 +49,14 @@ export class ShareService {
     for (const recommendation of recommendations) {
       const member = memberMap.get(recommendation.memberId);
       memberResults.push({
-        displayName: member ? this.getDisplayName(member) : '家庭成员',
+        displayName: member ? this.getDisplayName(member) : StringRes.FAMILY_MEMBERS,
         level: recommendation.level,
         maxAmount: recommendation.maxAmount
       });
     }
 
     return {
-      foodName: foodName.length > 0 ? foodName : '未命名食品',
+      foodName: foodName.length > 0 ? foodName : StringRes.UNNAMED_FOOD,
       memberResults
     };
   }
@@ -88,7 +89,7 @@ export class ShareService {
     if (member.nickname.length > 0) {
       return member.nickname;
     }
-    return '家庭成员';
+    return StringRes.FAMILY_MEMBERS;
   }
 
   private buildSummaryLine(memberResults: ShareMemberResult[]): string {

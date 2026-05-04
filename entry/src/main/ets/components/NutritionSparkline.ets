@@ -14,7 +14,7 @@ export struct NutritionSparkline {
     if (this.data === null) {
       // 无数据时的占位
       Row() {
-        Text('营养成分趋势')
+        Text($r('app.string.nutrition_trend_summary'))
           .fontSize(FONT_SIZE.SMALL)
           .fontColor(COLORS.TEXT_GRAY_9E9E)
       }

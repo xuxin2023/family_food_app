@@ -3,8 +3,8 @@
 
 import { router, promptAction } from '@kit.ArkUI';
 import { AppState } from '../AppState';
-import { RecipeCategory, RecipeDifficulty, DietTag, RecipeIngredient, RecipeStep, RecipeNutrition } from '../model/Recipe';
-import { COLORS, RADIUS, BUTTON, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
+import { RecipeCategory, RecipeDifficulty, DietTag, RecipeIngredient, RecipeStep } from '../model/Recipe';
+import { COLORS, RADIUS, BUTTON } from '../constants/AppTheme';
 
 class OptionItem {
   label: string = '';
@@ -68,12 +68,12 @@ struct RecipeCreatePage {
           .fontSize(24)
           .fontColor(COLORS.PRIMARY)
           .onClick(() => { router.back() })
-        Text('发布食谱')
+        Text($r('app.string.create_recipe'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .margin({ left: 12 })
         Blank()
-        Text('发布')
+        Text($r('app.string.save'))
           .fontSize(15)
           .fontColor(COLORS.PRIMARY)
           .fontWeight(FontWeight.Bold)
@@ -125,7 +125,6 @@ struct RecipeCreatePage {
   @Builder
   formCard() {
     Column() {
-      // 标题
       TextInput({ placeholder: '食谱名称', text: this.title })
         .width('100%')
         .height(48)
@@ -134,7 +133,6 @@ struct RecipeCreatePage {
         .padding({ left: 16 })
         .onChange((v: string) => { this.title = v })
 
-      // 简介
       TextArea({ placeholder: '简单描述一下这个食谱（可选）', text: this.description })
         .width('100%')
         .height(80)
@@ -145,9 +143,8 @@ struct RecipeCreatePage {
         .onChange((v: string) => { this.description = v })
 
       Row({ space: 10 }) {
-        // 分类
         Column() {
-          Text('分类').fontSize(12).fontColor(COLORS.TEXT_GRAY_9E9E)
+          Text($r('app.string.category_label')).fontSize(12).fontColor(COLORS.TEXT_GRAY_9E9E)
           Text(this.getCategoryLabel(this.category))
             .fontSize(14)
             .fontWeight(FontWeight.Medium)
@@ -159,9 +156,8 @@ struct RecipeCreatePage {
         .borderRadius(10)
         .alignItems(HorizontalAlign.Center)
 
-        // 难度
         Column() {
-          Text('难度').fontSize(12).fontColor(COLORS.TEXT_GRAY_9E9E)
+          Text($r('app.string.difficulty_label')).fontSize(12).fontColor(COLORS.TEXT_GRAY_9E9E)
           Text(this.getDifficultyLabel(this.difficulty))
             .fontSize(14)
             .fontWeight(FontWeight.Medium)
@@ -173,9 +169,8 @@ struct RecipeCreatePage {
         .borderRadius(10)
         .alignItems(HorizontalAlign.Center)
 
-        // 时间
         Column() {
-          Text('用时(分钟)').fontSize(12).fontColor(COLORS.TEXT_GRAY_9E9E)
+          Text($r('app.string.cook_time_label')).fontSize(12).fontColor(COLORS.TEXT_GRAY_9E9E)
           TextInput({ placeholder: '30', text: `${this.totalMinutes}` })
             .width('100%')
             .height(40)
@@ -192,9 +187,8 @@ struct RecipeCreatePage {
         .borderRadius(10)
         .alignItems(HorizontalAlign.Center)
 
-        // 份数
         Column() {
-          Text('份数').fontSize(12).fontColor(COLORS.TEXT_GRAY_9E9E)
+          Text($r('app.string.servings_label')).fontSize(12).fontColor(COLORS.TEXT_GRAY_9E9E)
           TextInput({ placeholder: '2', text: `${this.servings}` })
             .width('100%')
             .height(40)

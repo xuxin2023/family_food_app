@@ -20,7 +20,7 @@ export struct RadarChart {
   build() {
     if (this.axes.length === 0) {
       Column() {
-        Text('暂无均衡数据')
+        Text($r('app.string.no_balance_data'))
           .fontSize(FONT_SIZE.SMALL)
           .fontColor(COLORS.TEXT_GRAY_9E9E)
       }

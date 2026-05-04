@@ -1,8 +1,11 @@
+// SubscriptionVerifyService.ets
+// 订阅云端校验服务 - 基于 MemberTier
+
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { http } from '@kit.NetworkKit';
 import { common } from '@kit.AbilityKit';
 import { preferences } from '@kit.ArkData';
-import { SubscriptionTier } from '../model/PricingModel';
+import { MemberTier } from '../model/MemberStatus';
 import { AuthService } from './AuthService';
 
 const TAG = 'SubscriptionVerifyService';
@@ -12,7 +15,7 @@ const VERIFY_ENDPOINT = 'https://familyfood-api.cn-north-4.myhuaweicloud.com/sub
 
 export interface SubscriptionVerifyResult {
   valid: boolean;
-  tier: SubscriptionTier;
+  tier: MemberTier;
   expiresAt: number;
   orderId: string;
   verifiedAt: number;
@@ -78,13 +81,13 @@ export class SubscriptionVerifyService {
     return this.lastVerifyResult;
   }
 
-  async verifyAndSync(context: common.Context, localTier: SubscriptionTier,
-    productId: string, purchaseToken: string): Promise<SubscriptionTier> {
+  async verifyAndSync(context: common.Context, localTier: MemberTier,
+    productId: string, purchaseToken: string): Promise<MemberTier> {
     if (!await this.shouldVerify() && this.lastVerifyResult) {
       if (this.lastVerifyResult.valid) {
         return this.lastVerifyResult.tier;
       }
-      return SubscriptionTier.FREE;
+      return MemberTier.FREE;
     }
 
     const result = await this.verifySubscription(productId, purchaseToken);
@@ -96,16 +99,16 @@ export class SubscriptionVerifyService {
       return result.tier;
     }
 
-    if (!result.valid && localTier !== SubscriptionTier.FREE) {
+    if (!result.valid && localTier !== MemberTier.FREE) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Cloud says invalid but local says %{public}s, trusting cloud',
         localTier);
-      return SubscriptionTier.FREE;
+      return MemberTier.FREE;
     }
 
     return result.valid ? result.tier : localTier;
   }
 
-  private async persistVerifiedTier(context: common.Context, tier: SubscriptionTier,
+  private async persistVerifiedTier(context: common.Context, tier: MemberTier,
     expiresAt: number): Promise<void> {
     try {
       const prefs = await preferences.getPreferences(context, 'subscription_verify');
@@ -118,13 +121,13 @@ export class SubscriptionVerifyService {
     }
   }
 
-  async getVerifiedTier(context: common.Context): Promise<SubscriptionTier | null> {
+  async getVerifiedTier(context: common.Context): Promise<MemberTier | null> {
     try {
       const prefs = await preferences.getPreferences(context, 'subscription_verify');
       const tierStr = prefs.getSync('verified_tier', '') as string;
       const expiresAt = parseInt(prefs.getSync('expires_at', '0') as string, 10);
       if (tierStr.length > 0 && expiresAt > Date.now()) {
-        return tierStr as SubscriptionTier;
+        return tierStr as MemberTier;
       }
       return null;
     } catch (_) {
@@ -135,7 +138,7 @@ export class SubscriptionVerifyService {
   private invalidResult(reason: string): SubscriptionVerifyResult {
     return {
       valid: false,
-      tier: SubscriptionTier.FREE,
+      tier: MemberTier.FREE,
       expiresAt: 0,
       orderId: '',
       verifiedAt: Date.now(),

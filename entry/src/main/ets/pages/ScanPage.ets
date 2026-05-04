@@ -284,10 +284,10 @@ struct ScanPage {
       if (this.foodLabel.foodId.length === 0 && this.componentActive) {
         // 超时且未获得结果 → 降级
         this.vibrateError()
-        promptAction.showToast({ message: '未识别到条码，已切换到拍照模式' })
+        promptAction.showToast({ message: $r('app.string.barcode_not_found') })
         this.scanMode = 'camera'
         this.scanPhase = ScanPhase.TIMEOUT
-        this.recognitionHint = '尝试手动对准标签拍照，或手动录入'
+        this.recognitionHint = $r('app.string.scan_manual_hint')
       }
     }, AUTO_SCAN_TIMEOUT_MS)
   }
@@ -355,7 +355,7 @@ struct ScanPage {
               })
             Blank()
             if (this.foodLabel.foodId.length > 0) {
-              Text('已识别').fontSize(FONT_SIZE.TINY).fontColor(COLORS.ACCENT_GREEN)
+              Text($r('app.string.barcode_detected')).fontSize(FONT_SIZE.TINY).fontColor(COLORS.ACCENT_GREEN)
             }
           }
           .width('100%')
@@ -366,7 +366,7 @@ struct ScanPage {
           // ---- 离线提示 ----
           if (this.isOffline) {
             Row() {
-              Text('📡 当前无网络，使用本地识别')
+              Text('📡 ' + $r('app.string.offline_mode'))
                 .fontSize(FONT_SIZE.SMALL)
                 .fontColor(COLORS.WARNING)
             }
@@ -378,7 +378,7 @@ struct ScanPage {
           // ---- 扫描次数 ----
           if (this.appState.memberStatus.scansRemainingToday >= 0) {
             Row() {
-              Text(this.scanLimitReached ? '今日扫描次数已用完' : `今日剩余扫描：${this.remainingScans} 次`)
+              Text(this.scanLimitReached ? $r('app.string.scan_today_used_up') : $r('app.string.scan_today_remaining') + `：${this.remainingScans} 次`)
                 .fontSize(FONT_SIZE.SMALL)
                 .fontColor(this.scanLimitReached ? COLORS.LEVEL_RED : '#F57C00')
             }
@@ -401,7 +401,7 @@ struct ScanPage {
 
           Column() {
             if (this.foodLabel.foodId.length === 0) {
-              Button(this.scanMode === 'barcode' ? '扫码录入' : '拍标签 / 生成草稿')
+              Button(this.scanMode === 'barcode' ? $r('app.string.scan_mode_barcode') : $r('app.string.scan_mode_photo'))
                 .width('90%')
                 .height(52)
                 .backgroundColor(COLORS.PRIMARY)
@@ -409,7 +409,7 @@ struct ScanPage {
                 .onClick(() => { this.startRecognition() })
                 .animation({ duration: 200, curve: curves.springMotion() })
 
-              Button('手动录入')
+              Button($r('app.string.scan_mode_manual'))
                 .width('90%')
                 .height(BUTTON.HEIGHT_MD)
                 .backgroundColor(COLORS.BG_CARD)
@@ -419,7 +419,7 @@ struct ScanPage {
                 .onClick(() => { this.startManualEntry() })
                 .animation({ duration: 200, curve: curves.springMotion() })
             } else {
-              Button('查看适配报告')
+              Button($r('app.string.view_report'))
                 .width('90%')
                 .height(52)
                 .backgroundColor(COLORS.ACCENT_GREEN)
@@ -428,7 +428,7 @@ struct ScanPage {
                 .animation({ duration: 300, curve: curves.springMotion() })
 
               Row() {
-                Button(this.showEditPanel ? '收起修正面板' : '手动修正')
+                Button(this.showEditPanel ? $r('app.string.edit_panel_collapse') : $r('app.string.edit_panel_toggle'))
                   .layoutWeight(1)
                   .height(BUTTON.HEIGHT_SECONDARY)
                   .backgroundColor(COLORS.BG_CARD)
@@ -442,7 +442,7 @@ struct ScanPage {
                   })
                   .animation({ duration: 200, curve: curves.springMotion() })
 
-                Button('保存 FoodLabel')
+                Button($r('app.string.save_food_label'))
                   .layoutWeight(1)
                   .height(BUTTON.HEIGHT_SECONDARY)
                   .backgroundColor(COLORS.BG_WARM_ORANGE)
@@ -493,7 +493,7 @@ struct ScanPage {
   @Builder
   ModeSelector() {
     Row() {
-      Text('拍标签')
+      Text($r('app.string.tab_photo'))
         .fontSize(15)
         .padding({ left: 20, right: 20, top: 8, bottom: 8 })
         .borderRadius(BUTTON.RADIUS_SMALL)
@@ -507,7 +507,7 @@ struct ScanPage {
           }
         })
 
-      Text('扫码')
+      Text($r('app.string.tab_barcode'))
         .fontSize(15)
         .padding({ left: 20, right: 20, top: 8, bottom: 8 })
         .borderRadius(BUTTON.RADIUS_SMALL)
@@ -575,7 +575,7 @@ struct ScanPage {
               .width(48)
               .height(BUTTON.HEIGHT_MD)
               .color(COLORS.ACCENT_BLUE)
-            Text('正在扫描条码…')
+            Text($r('app.string.scanning_barcode'))
               .fontSize(FONT_SIZE.BODY)
               .fontColor(COLORS.TEXT_TERTIARY)
               .margin({ top: SPACING.MD })

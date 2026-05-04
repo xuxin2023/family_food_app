@@ -24,12 +24,34 @@ struct PrivacyDialogPage {
   private agreementController: webview.WebviewController = new webview.WebviewController()
 
   async aboutToAppear() {
+    // 等待 AppState 初始化完成（避免竞态条件）
+    await this.waitForAppStateReady()
+
     // 检查是否已经同意过
     const agreed = await this.checkPrivacyAgreed()
     if (agreed) {
       // 已同意过，直接跳转到首页
       this.navigateToHome()
     }
+  }
+
+  /**
+   * 等待 AppState 初始化就绪
+   */
+  private async waitForAppStateReady(): Promise<void> {
+    let maxWaitMs = 5000 // 最多等待 5 秒
+    const pollInterval = 100
+    while (maxWaitMs > 0) {
+      const ready = AppStorage.get<boolean>('appStateReady')
+      if (ready) return
+      await this.delay(pollInterval)
+      maxWaitMs -= pollInterval
+    }
+    hilog.warn(DOMAIN_ZERO, TAG, 'AppState init wait timeout, proceeding anyway')
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms))
   }
 
   /**
@@ -80,13 +102,13 @@ struct PrivacyDialogPage {
       Column() {
         // 顶部品牌标识
         Column() {
-          Text('家庭饮食平衡助手')
+          Text($r('app.string.privacy_dialog_title'))
             .fontSize(24)
             .fontWeight(FontWeight.Bold)
             .fontColor(COLORS.PRIMARY)
             .margin({ top: 40 })
 
-          Text('欢迎使用')
+          Text($r('app.string.welcome_title'))
             .fontSize(16)
             .fontColor(COLORS.TEXT_GRAY_7575)
             .margin({ top: 8 })
@@ -100,7 +122,7 @@ struct PrivacyDialogPage {
           if (!this.showPrivacyContent && !this.showAgreementContent) {
             // 缩略摘要模式
             Column() {
-              Text('在使用本应用前，请您仔细阅读以下条款：')
+              Text($r('app.string.privacy_terms_desc'))
                 .fontSize(14)
                 .fontColor(COLORS.TEXT_GRAY_3333)
                 .lineHeight(22)
@@ -110,7 +132,7 @@ struct PrivacyDialogPage {
                 Text('1. ')
                   .fontSize(14)
                   .fontColor(COLORS.PRIMARY)
-                Text('我们重视您的隐私保护，所有数据默认仅存储在您的设备本地。')
+                Text($r('app.string.privacy_data_storage'))
                   .fontSize(14)
                   .fontColor(COLORS.TEXT_GRAY_3333)
                   .lineHeight(22)
@@ -123,7 +145,7 @@ struct PrivacyDialogPage {
                 Text('2. ')
                   .fontSize(14)
                   .fontColor(COLORS.PRIMARY)
-                Text('本应用提供的所有建议仅供饮食参考，不构成医疗建议。')
+                Text($r('app.string.privacy_medical_disclaimer'))
                   .fontSize(14)
                   .fontColor(COLORS.TEXT_GRAY_3333)
                   .lineHeight(22)
@@ -136,7 +158,7 @@ struct PrivacyDialogPage {
                 Text('3. ')
                   .fontSize(14)
                   .fontColor(COLORS.PRIMARY)
-                Text('您可随时在设置中查看、导出或删除您的数据。')
+                Text($r('app.string.privacy_data_control'))
                   .fontSize(14)
                   .fontColor(COLORS.TEXT_GRAY_3333)
                   .lineHeight(22)
@@ -146,7 +168,7 @@ struct PrivacyDialogPage {
               .margin({ bottom: 8 })
 
               Row({ space: 16 }) {
-                Text('查看隐私政策')
+                Text($r('app.string.privacy_policy'))
                   .fontSize(14)
                   .fontColor(COLORS.PRIMARY)
                   .decoration({ type: TextDecorationType.Underline })
@@ -155,7 +177,7 @@ struct PrivacyDialogPage {
                     this.showAgreementContent = false
                   })
 
-                Text('查看用户协议')
+                Text($r('app.string.user_agreement'))
                   .fontSize(14)
                   .fontColor(COLORS.PRIMARY)
                   .decoration({ type: TextDecorationType.Underline })
@@ -176,14 +198,14 @@ struct PrivacyDialogPage {
           if (this.showPrivacyContent) {
             Column() {
               Row() {
-                Text('← 返回')
+                Text($r('app.string.back_arrow'))
                   .fontSize(14)
                   .fontColor(COLORS.PRIMARY)
                   .onClick(() => {
                     this.showPrivacyContent = false
                   })
                 Blank()
-                Text('隐私政策')
+                Text($r('app.string.privacy_policy'))
                   .fontSize(16)
                   .fontWeight(FontWeight.Bold)
                   .fontColor(COLORS.TEXT_GRAY_3333)
@@ -207,14 +229,14 @@ struct PrivacyDialogPage {
           if (this.showAgreementContent) {
             Column() {
               Row() {
-                Text('← 返回')
+                Text($r('app.string.back_arrow'))
                   .fontSize(14)
                   .fontColor(COLORS.PRIMARY)
                   .onClick(() => {
                     this.showAgreementContent = false
                   })
                 Blank()
-                Text('用户协议')
+                Text($r('app.string.user_agreement'))
                   .fontSize(16)
                   .fontWeight(FontWeight.Bold)
                   .fontColor(COLORS.TEXT_GRAY_3333)
@@ -246,12 +268,12 @@ struct PrivacyDialogPage {
               .onChange((isSelected: boolean) => {
                 this.agreed = isSelected
               })
-            Text('我已阅读并同意')
+            Text($r('app.string.agree_read'))
               .fontSize(13)
               .fontColor('#666666')
               .margin({ left: 8 })
 
-            Text('《隐私政策》')
+            Text('《' + $r('app.string.privacy_policy') + '》')
               .fontSize(13)
               .fontColor(COLORS.PRIMARY)
               .onClick(() => {
@@ -259,11 +281,11 @@ struct PrivacyDialogPage {
                 this.showAgreementContent = false
               })
 
-            Text('和')
+            Text($r('app.string.and_conjunction'))
               .fontSize(13)
               .fontColor('#666666')
 
-            Text('《用户协议》')
+            Text('《' + $r('app.string.user_agreement') + '》')
               .fontSize(13)
               .fontColor(COLORS.PRIMARY)
               .onClick(() => {
@@ -275,7 +297,7 @@ struct PrivacyDialogPage {
           .alignItems(VerticalAlign.Center)
           .margin({ bottom: 16 })
 
-          Button('同意并继续')
+          Button($r('app.string.agree_continue'))
             .width('100%')
             .height(50)
             .backgroundColor(this.agreed ? COLORS.PRIMARY : '#BDBDBD')

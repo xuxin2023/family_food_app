@@ -47,6 +47,7 @@ import {
   ProductInfo,
   PurchaseResult
 } from '../model/MemberStatus';
+import { StringRes } from '../constants/StringRes';
 
 // ==================== 沙箱测试报告类型 ====================
 
@@ -638,18 +639,18 @@ export class IapService {
 
     const def = PRODUCT_DEFINITIONS.find(d => d.productId === productId);
     if (def === undefined) {
-      return this.failResult(productId, '未知商品');
+      return this.failResult(productId, StringRes.TOAST_UNKNOWN_PRODUCT);
     }
 
     // 防重复购买检查
     if (!this.canPurchase(productId)) {
-      promptAction.showToast({ message: '正在处理上次购买请求，请稍候...', duration: 1500 });
-      return this.failResult(productId, '操作过于频繁，请稍后再试');
+      promptAction.showToast({ message: StringRes.TOAST_PURCHASING, duration: 1500 });
+      return this.failResult(productId, StringRes.TOAST_TOO_FREQUENT);
     }
 
     // 沙箱模式提示
     if (this.isSandboxMode()) {
-      promptAction.showToast({ message: '沙箱测试模式，不会产生真实扣款', duration: 2000 });
+      promptAction.showToast({ message: StringRes.TOAST_SANDBOX_MODE, duration: 2000 });
       hilog.info(DOMAIN_ZERO, TAG, 'Sandbox mode: purchase simulation for %{public}s', productId);
     }
 

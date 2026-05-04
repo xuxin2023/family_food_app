@@ -8,6 +8,9 @@ import { NetworkState } from '../service/NetworkMonitorService';
 import { CloudSyncConfig, SyncStrategy, ConflictResolution, createDefaultSyncConfig } from '../model/CloudSyncConfig';
 import { COLORS } from '../constants/AppTheme';
 
+interface StrategyItem { label: string; value: SyncStrategy; }
+interface ConflictItem { label: string; value: ConflictResolution; }
+
 enum SyncPageTab {
   SETTINGS = 0,
   STATUS = 1
@@ -16,6 +19,15 @@ enum SyncPageTab {
 @Entry
 @Component
 struct CloudSyncSettingsPage {
+  private readonly strategyItems: StrategyItem[] = [
+    { label: '仅WiFi下同步', value: SyncStrategy.WIFI_ONLY },
+    { label: '任何网络均可', value: SyncStrategy.ALWAYS }
+  ]
+  private readonly conflictItems: ConflictItem[] = [
+    { label: '以本地数据为准', value: ConflictResolution.LOCAL_WINS },
+    { label: '以云端数据为准', value: ConflictResolution.REMOTE_WINS },
+    { label: '手动处理冲突', value: ConflictResolution.MANUAL }
+  ]
   @State private currentTab: SyncPageTab = SyncPageTab.SETTINGS;
   @State private syncConfig: CloudSyncConfig = createDefaultSyncConfig();
   @State private isBound: boolean = false;
@@ -51,7 +63,7 @@ struct CloudSyncSettingsPage {
           .fontSize(24)
           .fontColor(COLORS.PRIMARY)
           .onClick(() => { try { router.back() } catch (_e) {} })
-        Text('云同步')
+        Text($r('app.string.cloud_sync'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .margin({ left: 16 })
@@ -108,14 +120,15 @@ struct CloudSyncSettingsPage {
     Scroll() {
       Column() {
         // ---- 云端账户 ----
-        this.SectionCard('云端账户') {
+        Column() {
+            Text('云端账户').fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
           if (this.isBound) {
             Row() {
               Column() {
                 Text(this.accountName.length > 0 ? this.accountName : '已绑定账户')
                   .fontSize(15)
                   .fontWeight(FontWeight.Bold)
-                Text('数据将通过云端在多设备间同步')
+                Text($r('app.string.sync_desc'))
                   .fontSize(12)
                   .fontColor(COLORS.TEXT_GRAY_9E9E)
                   .margin({ top: 2 })
@@ -133,10 +146,10 @@ struct CloudSyncSettingsPage {
             }
           } else {
             Column() {
-              Text('未绑定云端账户')
+              Text($r('app.string.unbind_account'))
                 .fontSize(15)
                 .fontWeight(FontWeight.Bold)
-              Text('绑定后可在多台设备间同步数据')
+              Text($r('app.string.sync_desc'))
                 .fontSize(12)
                 .fontColor(COLORS.TEXT_GRAY_9E9E)
                 .margin({ top: 2, bottom: 12 })
@@ -154,15 +167,16 @@ struct CloudSyncSettingsPage {
         }
 
         // ---- 同步开关 ----
-        this.SectionCard('同步设置') {
+        Column() {
+            Text('同步设置').fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
           Row() {
-            Text('启用云同步')
+            Text($r('app.string.enable_cloud_sync'))
               .fontSize(15)
             Blank()
             Toggle({ type: ToggleType.Switch, isOn: this.syncConfig.enabled })
               .onChange((isOn) => {
                 this.syncConfig.enabled = isOn
-                this.syncService.updateConfig({ enabled: isOn })
+                this.syncService.updateConfig(this.syncConfig)
               })
           }
           .width('100%')
@@ -171,7 +185,7 @@ struct CloudSyncSettingsPage {
           if (this.syncConfig.enabled) {
             // 同步策略
             Row() {
-              Text('同步策略')
+              Text($r('app.string.sync_strategy'))
                 .fontSize(14)
                 .fontColor('#757575')
               Blank()
@@ -190,16 +204,13 @@ struct CloudSyncSettingsPage {
 
             if (this.showStrategyPicker) {
               Column() {
-                ForEach([
-                  { label: '仅WiFi下同步', value: SyncStrategy.WIFI_ONLY },
-                  { label: '任何网络均可', value: SyncStrategy.ALWAYS }
-                ], (item: { label: string; value: SyncStrategy }) => {
+                ForEach(this.strategyItems, (item: StrategyItem) => {
                   Row() {
                     Radio({ value: item.value, group: 'strategy' })
                       .checked(this.syncConfig.strategy === item.value)
                       .onChange(() => {
-                        this.syncService.updateConfig({ strategy: item.value })
                         this.syncConfig.strategy = item.value
+                        this.syncService.updateConfig(this.syncConfig)
                       })
                     Text(item.label)
                       .fontSize(14)
@@ -227,7 +238,7 @@ struct CloudSyncSettingsPage {
 
             // 冲突策略
             Row() {
-              Text('冲突解决')
+              Text($r('app.string.conflict_resolution'))
                 .fontSize(14)
                 .fontColor('#757575')
               Blank()
@@ -247,17 +258,13 @@ struct CloudSyncSettingsPage {
 
             if (this.showConflictPicker) {
               Column() {
-                ForEach([
-                  { label: '以本地数据为准', value: ConflictResolution.LOCAL_WINS },
-                  { label: '以云端数据为准', value: ConflictResolution.REMOTE_WINS },
-                  { label: '手动处理冲突', value: ConflictResolution.MANUAL }
-                ], (item: { label: string; value: ConflictResolution }) => {
+                ForEach(this.conflictItems, (item: ConflictItem) => {
                   Row() {
                     Radio({ value: item.value, group: 'conflict' })
                       .checked(this.syncConfig.conflictResolution === item.value)
                       .onChange(() => {
-                        this.syncService.updateConfig({ conflictResolution: item.value })
                         this.syncConfig.conflictResolution = item.value
+                        this.syncService.updateConfig(this.syncConfig)
                       })
                     Text(item.label)
                       .fontSize(14)
@@ -285,7 +292,7 @@ struct CloudSyncSettingsPage {
 
             // 同步间隔
             Row() {
-              Text('同步间隔')
+              Text($r('app.string.sync_interval'))
                 .fontSize(14)
                 .fontColor('#757575')
               Blank()
@@ -300,7 +307,8 @@ struct CloudSyncSettingsPage {
 
         // ---- 手动操作 ----
         if (this.syncConfig.enabled && this.isBound) {
-          this.SectionCard('操作') {
+          Column() {
+            Text('操作').fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
             Button(this.isSyncing ? '同步中...' : '立即同步')
               .width('100%')
               .height(44)
@@ -326,14 +334,15 @@ struct CloudSyncSettingsPage {
         }
 
         // ---- 设备信息 ----
-        this.SectionCard('设备信息') {
+        Column() {
+            Text('设备信息').fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
           this.InfoRow('设备标识', this.deviceId.length > 0 ?
             this.deviceId.substring(0, 20) + '...' : '获取中...')
           this.InfoRow('网络状态', this.getNetworkStatusText())
           this.InfoRow('待同步项', `${this.pendingCount} 条`)
         }
 
-        Text('数据通过加密通道传输，我们不会收集您的个人信息')
+        Text($r('app.string.encrypt_transport'))
           .fontSize(11)
           .fontColor(COLORS.TEXT_GRAY_9E9E)
           .width('92%')
@@ -351,7 +360,8 @@ struct CloudSyncSettingsPage {
     Scroll() {
       Column() {
         // ---- 同步状态概览 ----
-        this.SectionCard('同步状态') {
+        Column() {
+            Text('同步状态').fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
           Row() {
             this.StatusItem(this.isConnected ? '🟢' : '🔴', '网络',
               this.isConnected ? '已连接' : '离线')
@@ -365,7 +375,7 @@ struct CloudSyncSettingsPage {
           .margin({ bottom: 16 })
 
           Row() {
-            Text('最近同步')
+            Text($r('app.string.last_sync'))
               .fontSize(14)
               .fontColor('#757575')
             Blank()
@@ -377,7 +387,7 @@ struct CloudSyncSettingsPage {
           .margin({ bottom: 8 })
 
           Row() {
-            Text('待同步数据')
+            Text($r('app.string.pending_sync'))
               .fontSize(14)
               .fontColor('#757575')
             Blank()
@@ -389,7 +399,8 @@ struct CloudSyncSettingsPage {
         }
 
         // ---- 同步日志 ----
-        this.SectionCard('同步日志') {
+        Column() {
+            Text('同步日志').fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
           if (this.syncLog.length === 0) {
             Text('暂无同步记录')
               .fontSize(13)
@@ -416,22 +427,6 @@ struct CloudSyncSettingsPage {
   }
 
   @Builder
-  SectionCard(title: string, content: () => void) {
-    Column() {
-      Text(title)
-        .fontSize(16)
-        .fontWeight(FontWeight.Bold)
-        .margin({ bottom: 12 })
-      content()
-    }
-    .width('92%')
-    .padding(16)
-    .backgroundColor(Color.White)
-    .borderRadius(16)
-    .alignItems(HorizontalAlign.Start)
-    .margin({ bottom: 12 })
-  }
-
   @Builder
   InfoRow(label: string, value: string) {
     Row() {
@@ -512,7 +507,7 @@ struct CloudSyncSettingsPage {
         fontColor: '#E53935',
         action: async () => {
           await this.cloudAuth.unbindCloudAccount();
-          await this.syncService.updateConfig({ enabled: false });
+          await this.syncService.updateConfig(this.syncConfig);
           await this.refreshAllState();
           this.addLog('云端账户已解绑');
           promptAction.showToast({ message: '已解绑云端账户' });

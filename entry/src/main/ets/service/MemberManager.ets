@@ -17,6 +17,7 @@
 // | 品牌信用等级           | ❌        | ❌       | ❌       | ✅       |
 
 import { MemberTier, PaywallTrigger, hasTierAccess, getTierDisplayName } from '../model/MemberStatus';
+import { StringRes } from '../constants/StringRes';
 
 const TAG = 'MemberManager';
 const DOMAIN_ZERO = 0;
@@ -52,18 +53,18 @@ interface FeatureMatrixEntry {
  * 功能权限矩阵
  */
 const FEATURE_MATRIX: FeatureMatrixEntry[] = [
-  { featureName: 'scan',               featureLabel: '扫码',           requiredTier: MemberTier.FREE,     freeLimitDesc: '每天3次' },
-  { featureName: 'family_member',      featureLabel: '家庭成员',       requiredTier: MemberTier.FREE,     freeLimitDesc: '最多1人' },
-  { featureName: 'history',            featureLabel: '历史记录',       requiredTier: MemberTier.FREE,     freeLimitDesc: '' },
-  { featureName: 'alternative',        featureLabel: '替代品推荐',     requiredTier: MemberTier.PERSONAL, freeLimitDesc: '功能锁定' },
-  { featureName: 'basket_check',       featureLabel: '购物篮检查',     requiredTier: MemberTier.PERSONAL, freeLimitDesc: '功能锁定' },
-  { featureName: 'child_protection',   featureLabel: '儿童正餐保护',   requiredTier: MemberTier.FREE,     freeLimitDesc: '' },
-  { featureName: 'meal_balance',       featureLabel: '美食平衡',       requiredTier: MemberTier.FREE,     freeLimitDesc: '每天3次' },
-  { featureName: 'weekly_report',      featureLabel: '周报',           requiredTier: MemberTier.PERSONAL, freeLimitDesc: '功能锁定' },
-  { featureName: 'family_weekly_report', featureLabel: '家庭周报',     requiredTier: MemberTier.FAMILY,   freeLimitDesc: '功能锁定' },
-  { featureName: 'transparency_report', featureLabel: '透明度深度报告', requiredTier: MemberTier.FAMILY,   freeLimitDesc: '功能锁定' },
-  { featureName: 'takeout_transparency', featureLabel: '外卖透明度',   requiredTier: MemberTier.PREMIUM,  freeLimitDesc: '功能锁定' },
-  { featureName: 'brand_credibility',  featureLabel: '品牌信用等级',   requiredTier: MemberTier.PREMIUM,  freeLimitDesc: '功能锁定' },
+  { featureName: 'scan',               featureLabel: StringRes.FEATURE_SCAN,           requiredTier: MemberTier.FREE,     freeLimitDesc: StringRes.LIMIT_DAILY_3 },
+  { featureName: 'family_member',      featureLabel: StringRes.FEATURE_FAMILY_MEMBER,  requiredTier: MemberTier.FREE,     freeLimitDesc: StringRes.LIMIT_MAX_1 },
+  { featureName: 'history',            featureLabel: StringRes.FEATURE_HISTORY,        requiredTier: MemberTier.FREE,     freeLimitDesc: '' },
+  { featureName: 'alternative',        featureLabel: StringRes.FEATURE_ALTERNATIVE,    requiredTier: MemberTier.PERSONAL, freeLimitDesc: StringRes.LIMIT_LOCKED },
+  { featureName: 'basket_check',       featureLabel: StringRes.FEATURE_BASKET,         requiredTier: MemberTier.PERSONAL, freeLimitDesc: StringRes.LIMIT_LOCKED },
+  { featureName: 'child_protection',   featureLabel: StringRes.FEATURE_CHILD_PROTECTION, requiredTier: MemberTier.FREE,   freeLimitDesc: '' },
+  { featureName: 'meal_balance',       featureLabel: StringRes.FEATURE_MEAL_BALANCE,   requiredTier: MemberTier.FREE,     freeLimitDesc: StringRes.LIMIT_DAILY_3 },
+  { featureName: 'weekly_report',      featureLabel: StringRes.FEATURE_WEEKLY_REPORT,  requiredTier: MemberTier.PERSONAL, freeLimitDesc: StringRes.LIMIT_LOCKED },
+  { featureName: 'family_weekly_report', featureLabel: '家庭周报',                      requiredTier: MemberTier.FAMILY,   freeLimitDesc: StringRes.LIMIT_LOCKED },
+  { featureName: 'transparency_report', featureLabel: StringRes.FEATURE_TRANSPARENCY,  requiredTier: MemberTier.FAMILY,   freeLimitDesc: StringRes.LIMIT_LOCKED },
+  { featureName: 'takeout_transparency', featureLabel: '外卖透明度',                    requiredTier: MemberTier.PREMIUM,  freeLimitDesc: StringRes.LIMIT_LOCKED },
+  { featureName: 'brand_credibility',  featureLabel: '品牌信用等级',                    requiredTier: MemberTier.PREMIUM,  freeLimitDesc: StringRes.LIMIT_LOCKED },
 ];
 
 // ==================== 付费墙配置 ====================
@@ -80,74 +81,74 @@ interface PaywallConfig {
 const PAYWALL_CONFIGS: PaywallConfig[] = [
   {
     featureName: 'scan',
-    title: '今日扫码已达上限',
-    message: '免费版每天只能扫码3次。升级后全家人都能不限次使用，每个人都有自己的专属饮食建议。',
+    title: StringRes.PW_SCAN_TITLE,
+    message: StringRes.PW_SCAN_MSG,
     requiredTier: MemberTier.PERSONAL,
-    cta: '解锁无限扫码',
+    cta: StringRes.PW_SCAN_CTA,
     isSoftLimit: true
   },
   {
     featureName: 'family_member',
-    title: '添加更多家庭成员',
-    message: '免费版和个人版仅支持1位家庭成员。升级家庭版后，全家人都能拥有独立档案和个性化建议。',
+    title: StringRes.PW_FAMILY_TITLE,
+    message: StringRes.PW_FAMILY_MSG,
     requiredTier: MemberTier.FAMILY,
-    cta: '升级家庭版',
+    cta: StringRes.PW_FAMILY_CTA,
     isSoftLimit: true
   },
   {
     featureName: 'alternative',
-    title: '查看替代品推荐',
-    message: '替代品推荐功能需要升级才能使用。发现更健康的选择，帮家人做出更好的饮食决策。',
+    title: StringRes.PW_ALT_TITLE,
+    message: StringRes.PW_ALT_MSG,
     requiredTier: MemberTier.PERSONAL,
-    cta: '开通个人版',
+    cta: StringRes.PW_ALT_CTA,
     isSoftLimit: true
   },
   {
     featureName: 'basket_check',
-    title: '一键购物篮检查',
-    message: '升级后可以一次性检查整个购物篮的食品适配情况，一键了解全家人的适配建议。',
+    title: StringRes.PW_BASKET_TITLE,
+    message: StringRes.PW_BASKET_MSG,
     requiredTier: MemberTier.PERSONAL,
-    cta: '开通个人版',
+    cta: StringRes.PW_BASKET_CTA,
     isSoftLimit: true
   },
   {
     featureName: 'weekly_report',
-    title: '查看饮食周报',
-    message: '周报功能需要升级后才能使用。了解一周饮食趋势，做更科学的饮食调整。',
+    title: StringRes.PW_WEEKLY_TITLE,
+    message: StringRes.PW_WEEKLY_MSG,
     requiredTier: MemberTier.PERSONAL,
-    cta: '开通个人版',
+    cta: StringRes.PW_WEEKLY_CTA,
     isSoftLimit: true
   },
   {
     featureName: 'family_weekly_report',
-    title: '家庭饮食周报',
-    message: '家庭版支持查看全家人的饮食周报，直观了解每位家庭成员的饮食健康状况。',
+    title: StringRes.PW_FAMILY_WEEKLY_TITLE,
+    message: StringRes.PW_FAMILY_WEEKLY_MSG,
     requiredTier: MemberTier.FAMILY,
-    cta: '升级家庭版',
+    cta: StringRes.PW_FAMILY_WEEKLY_CTA,
     isSoftLimit: true
   },
   {
     featureName: 'transparency_report',
-    title: '深度可信度报告',
-    message: '透明度深度报告需要家庭版以上才能查看。了解每款食品的数据来源和评分依据。',
+    title: StringRes.PW_TRANSPARENCY_TITLE,
+    message: StringRes.PW_TRANSPARENCY_MSG,
     requiredTier: MemberTier.FAMILY,
-    cta: '升级家庭版',
+    cta: StringRes.PW_TRANSPARENCY_CTA,
     isSoftLimit: false
   },
   {
     featureName: 'takeout_transparency',
-    title: '外卖食品透明度',
-    message: '高级版专属功能。查看外卖食品的营养数据和添加剂信息，在外卖场景也能吃得明白。',
+    title: StringRes.PW_TAKEOUT_TITLE,
+    message: StringRes.PW_TAKEOUT_MSG,
     requiredTier: MemberTier.PREMIUM,
-    cta: '升级高级版',
+    cta: StringRes.PW_TAKEOUT_CTA,
     isSoftLimit: false
   },
   {
     featureName: 'brand_credibility',
-    title: '品牌信用等级',
-    message: '高级版专属功能。查看品牌生产信息、SC证书编号、委托商信息等溯源数据。',
+    title: StringRes.PW_BRAND_TITLE,
+    message: StringRes.PW_BRAND_MSG,
     requiredTier: MemberTier.PREMIUM,
-    cta: '升级高级版',
+    cta: StringRes.PW_BRAND_CTA,
     isSoftLimit: false
   }
 ];

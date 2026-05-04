@@ -34,7 +34,7 @@ export struct HotFoodGuideCard {
       }
 
       Column() {
-        Text('🔥 热门食品')
+        Text($r('app.string.hot_foods'))
           .fontSize(FONT_SIZE.SUBTITLE)
           .fontWeight(FONT_WEIGHT.BOLD)
           .fontColor(COLORS.TEXT_PRIMARY)
@@ -60,13 +60,13 @@ export struct HotFoodGuideCard {
   @Builder
   FirstTimeGuide() {
     Column() {
-      Text('👋 第一次使用？')
+      Text($r('app.string.first_time_use'))
         .fontSize(FONT_SIZE.TITLE)
         .fontWeight(FONT_WEIGHT.BOLD)
         .fontColor(COLORS.TEXT_PRIMARY)
         .margin({ bottom: SPACING.SM })
 
-      Text('试试扫一包家里常吃的零食，看看对每位家人意味着什么。')
+      Text($r('app.string.first_time_hint'))
         .fontSize(FONT_SIZE.BODY)
         .fontColor(COLORS.TEXT_SECONDARY)
         .margin({ bottom: SPACING.MD })
@@ -88,7 +88,7 @@ export struct HotFoodGuideCard {
             }
           })
 
-        Text('  或点击下方热门食品快速体验 →')
+        Text($r('app.string.quick_experience'))
           .fontSize(FONT_SIZE.SMALL)
           .fontColor(COLORS.TEXT_TERTIARY)
       }

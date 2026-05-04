@@ -14,6 +14,7 @@ export class DailyBudgetJson {
   fatRemaining: number = 0;
 }
 
+@Observed
 export class DailyBudget {
   memberId: string = '';
   date: string = '';              // YYYY-MM-DD

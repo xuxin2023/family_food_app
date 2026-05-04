@@ -30,7 +30,7 @@ struct MemberPage {
       Row() {
         Text('←').fontSize(24).fontColor(COLORS.PRIMARY)
           .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
-        Text('家庭成员管理').fontSize(20).fontWeight(FontWeight.Bold)
+        Text($r('app.string.member_manage')).fontSize(20).fontWeight(FontWeight.Bold)
           .margin({ left: 16 })
       }
       .width('100%')
@@ -47,7 +47,7 @@ struct MemberPage {
         // 添加成员按钮
         ListItem() {
           Row() {
-            Text('+ 添加家庭成员').fontSize(16).fontColor(COLORS.PRIMARY)
+            Text($r('app.string.add_family_member')).fontSize(16).fontColor(COLORS.PRIMARY)
           }
           .width('100%')
           .height(BUTTON.HEIGHT_LG)
@@ -85,7 +85,7 @@ struct MemberPage {
       .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)
 
-      Text('编辑').fontSize(14).fontColor(COLORS.PRIMARY)
+      Text($r('app.string.edit')).fontSize(14).fontColor(COLORS.PRIMARY)
     }
     .width('100%')
     .padding(16)

@@ -95,7 +95,7 @@ struct NutritionTrendPage {
           .fontSize(28)
           .fontColor(COLORS.PRIMARY)
           .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
-        Text('营养趋势')
+        Text($r('app.string.nutrition_trend'))
           .fontSize(FONT_SIZE.TITLE)
           .fontWeight(FONT_WEIGHT.BOLD)
           .fontColor(COLORS.TEXT_PRIMARY)
@@ -132,11 +132,11 @@ struct NutritionTrendPage {
         Column() {
           Text('📊')
             .fontSize(48)
-          Text('暂无趋势数据')
+          Text($r('app.string.no_nutrition_data'))
             .fontSize(FONT_SIZE.LG)
             .fontColor(COLORS.TEXT_GRAY_9E9E)
             .margin({ top: SPACING.MD })
-          Text('持续记录膳食后，这里会显示营养摄入趋势')
+          Text($r('app.string.nutrition_hint'))
             .fontSize(FONT_SIZE.SMALL)
             .fontColor(COLORS.TEXT_GRAY_BDBD)
             .margin({ top: SPACING.SM })
@@ -157,7 +157,7 @@ struct NutritionTrendPage {
             }
 
             // 4种营养素的趋势图
-            Text('营养素摄入趋势')
+            Text($r('app.string.intake_trend'))
               .fontSize(FONT_SIZE.LG)
               .fontWeight(FONT_WEIGHT.BOLD)
               .fontColor(COLORS.TEXT_PRIMARY)
@@ -170,7 +170,7 @@ struct NutritionTrendPage {
 
             // 每日数值列表
             if (this.summaries.length > 0) {
-              Text('每日摄入明细')
+              Text($r('app.string.daily_intake'))
                 .fontSize(FONT_SIZE.LG)
                 .fontWeight(FONT_WEIGHT.BOLD)
                 .fontColor(COLORS.TEXT_PRIMARY)
@@ -205,7 +205,7 @@ struct NutritionTrendPage {
             .fontSize(FONT_SIZE.BODY)
             .fontWeight(FONT_WEIGHT.BOLD)
             .fontColor(COLORS.PRIMARY)
-          Text('记录天数')
+          Text($r('app.string.record_days'))
             .fontSize(FONT_SIZE.TINY)
             .fontColor(COLORS.TEXT_GRAY_9E9E)
             .margin({ top: 2 })
@@ -218,7 +218,7 @@ struct NutritionTrendPage {
             .fontSize(FONT_SIZE.BODY)
             .fontWeight(FONT_WEIGHT.BOLD)
             .fontColor(COLORS.ACCENT_PURPLE_9C27)
-          Text('总记录')
+          Text($r('app.string.total_records'))
             .fontSize(FONT_SIZE.TINY)
             .fontColor(COLORS.TEXT_GRAY_9E9E)
             .margin({ top: 2 })
@@ -231,7 +231,7 @@ struct NutritionTrendPage {
             .fontSize(FONT_SIZE.BODY)
             .fontWeight(FONT_WEIGHT.BOLD)
             .fontColor(COLORS.ACCENT_RED_F443)
-          Text('日均钠')
+          Text($r('app.string.daily_avg_sodium'))
             .fontSize(FONT_SIZE.TINY)
             .fontColor(COLORS.TEXT_GRAY_9E9E)
             .margin({ top: 2 })
@@ -244,7 +244,7 @@ struct NutritionTrendPage {
             .fontSize(FONT_SIZE.BODY)
             .fontWeight(FONT_WEIGHT.BOLD)
             .fontColor(COLORS.ORANGE_ACCENT)
-          Text('日均糖')
+          Text($r('app.string.daily_avg_sugar'))
             .fontSize(FONT_SIZE.TINY)
             .fontColor(COLORS.TEXT_GRAY_9E9E)
             .margin({ top: 2 })
@@ -267,11 +267,11 @@ struct NutritionTrendPage {
     Column() {
       // 表头
       Row() {
-        Text('日期').fontSize(FONT_SIZE.TINY).fontColor(COLORS.TEXT_GRAY_9E9E).layoutWeight(1)
-        Text('钠').fontSize(FONT_SIZE.TINY).fontColor(COLORS.ACCENT_RED_F443).width(50).textAlign(TextAlign.End)
-        Text('糖').fontSize(FONT_SIZE.TINY).fontColor(COLORS.ORANGE_ACCENT).width(45).textAlign(TextAlign.End)
-        Text('热量').fontSize(FONT_SIZE.TINY).fontColor(COLORS.ACCENT_GREEN_4CAF).width(55).textAlign(TextAlign.End)
-        Text('脂肪').fontSize(FONT_SIZE.TINY).fontColor(COLORS.ACCENT_PURPLE_9C27).width(45).textAlign(TextAlign.End)
+        Text($r('app.string.col_date')).fontSize(FONT_SIZE.TINY).fontColor(COLORS.TEXT_GRAY_9E9E).layoutWeight(1)
+        Text($r('app.string.col_sodium')).fontSize(FONT_SIZE.TINY).fontColor(COLORS.ACCENT_RED_F443).width(50).textAlign(TextAlign.End)
+        Text($r('app.string.col_sugar')).fontSize(FONT_SIZE.TINY).fontColor(COLORS.ORANGE_ACCENT).width(45).textAlign(TextAlign.End)
+        Text($r('app.string.col_calorie')).fontSize(FONT_SIZE.TINY).fontColor(COLORS.ACCENT_GREEN_4CAF).width(55).textAlign(TextAlign.End)
+        Text($r('app.string.col_fat')).fontSize(FONT_SIZE.TINY).fontColor(COLORS.ACCENT_PURPLE_9C27).width(45).textAlign(TextAlign.End)
       }
       .width('100%')
       .padding({ left: SPACING.MD, right: SPACING.MD, bottom: SPACING.SM })

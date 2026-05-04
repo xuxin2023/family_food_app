@@ -16,13 +16,13 @@ export struct DonutChart {
   @Prop chartSize: number = 160
   @Prop thickness: number = 24
   @Prop centerText: string = ''
-  @Prop centerSubText: string = ''
+  @Prop centerSubText: ResourceStr = ''
   @Prop showLegend: boolean = true
 
   build() {
     if (this.segments.length === 0) {
       Column() {
-        Text('暂无构成数据')
+        Text($r('app.string.no_composition_data'))
           .fontSize(FONT_SIZE.SMALL)
           .fontColor(COLORS.TEXT_GRAY_9E9E)
       }
@@ -91,50 +91,51 @@ export struct DonutChart {
 
   @Builder
   BuildSegments() {
+    ForEach(this.segments, (seg: DonutSegment, index: number) => {
+      Path()
+        .commands(this.calcSegmentPath(index))
+        .fill(seg.color)
+        .fillOpacity(0.85)
+        .stroke(COLORS.WHITE)
+        .strokeWidth(1)
+    })
+  }
+
+  private calcSegmentPath(index: number): string {
     const total = this.getTotal();
-    if (total <= 0) return;
+    if (total <= 0) return '';
 
     const cx = this.chartSize / 2;
     const cy = this.chartSize / 2;
     const r = (this.chartSize - this.thickness) / 2;
     let currentAngle = 0;
 
-    for (let i = 0; i < this.segments.length; i++) {
-      const seg = this.segments[i];
-      const sweepAngle = (seg.value / total) * 360;
-      const endAngle = currentAngle + sweepAngle;
-
-      // 生成弧线路径
-      const startRad = (currentAngle - 90) * Math.PI / 180;
-      const endRad = (endAngle - 90) * Math.PI / 180;
-
-      const innerR = r - this.thickness / 2;
-      const outerR = r + this.thickness / 2;
-
-      const sx1 = cx + innerR * Math.cos(startRad);
-      const sy1 = cy + innerR * Math.sin(startRad);
-      const sx2 = cx + outerR * Math.cos(startRad);
-      const sy2 = cy + outerR * Math.sin(startRad);
-      const ex1 = cx + innerR * Math.cos(endRad);
-      const ey1 = cy + innerR * Math.sin(endRad);
-      const ex2 = cx + outerR * Math.cos(endRad);
-      const ey2 = cy + outerR * Math.sin(endRad);
-
-      const largeArc = sweepAngle > 180 ? 1 : 0;
-
-      // 外弧：sx2 -> ex2
-      // 内弧：ex1 -> sx1
-      const pathD = `M${sx2} ${sy2} A${outerR} ${outerR} 0 ${largeArc} 1 ${ex2} ${ey2} L${ex1} ${ey1} A${innerR} ${innerR} 0 ${largeArc} 0 ${sx1} ${sy1} Z`;
-
-      Path()
-        .commands(pathD)
-        .fill(seg.color)
-        .fillOpacity(0.85)
-        .stroke(COLORS.WHITE)
-        .strokeWidth(1)
-
-      currentAngle = endAngle;
+    for (let i = 0; i < index; i++) {
+      currentAngle += (this.segments[i].value / total) * 360;
     }
+
+    const seg = this.segments[index];
+    const sweepAngle = (seg.value / total) * 360;
+    const endAngle = currentAngle + sweepAngle;
+
+    const startRad = (currentAngle - 90) * Math.PI / 180;
+    const endRad = (endAngle - 90) * Math.PI / 180;
+
+    const innerR = r - this.thickness / 2;
+    const outerR = r + this.thickness / 2;
+
+    const sx1 = cx + innerR * Math.cos(startRad);
+    const sy1 = cy + innerR * Math.sin(startRad);
+    const sx2 = cx + outerR * Math.cos(startRad);
+    const sy2 = cy + outerR * Math.sin(startRad);
+    const ex1 = cx + innerR * Math.cos(endRad);
+    const ey1 = cy + innerR * Math.sin(endRad);
+    const ex2 = cx + outerR * Math.cos(endRad);
+    const ey2 = cy + outerR * Math.sin(endRad);
+
+    const largeArc = sweepAngle > 180 ? 1 : 0;
+
+    return `M${sx2} ${sy2} A${outerR} ${outerR} 0 ${largeArc} 1 ${ex2} ${ey2} L${ex1} ${ey1} A${innerR} ${innerR} 0 ${largeArc} 0 ${sx1} ${sy1} Z`;
   }
 
   private getTotal(): number {

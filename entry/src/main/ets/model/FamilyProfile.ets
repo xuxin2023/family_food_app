@@ -20,6 +20,7 @@ export enum HealthGoal {
 }
 
 // 正餐时间
+@Observed
 export class MealTimes {
   breakfast: string = '07:30';  // HH:mm
   lunch: string = '12:00';      // HH:mm
@@ -49,6 +50,7 @@ export class DailyBudgetConfigJson {
 }
 
 // 家庭成员画像
+@Observed
 export class FamilyProfile {
   memberId: string = '';
   nickname: string = '';
@@ -135,6 +137,7 @@ export class FamilyProfile {
 }
 
 // 每日营养预算配置
+@Observed
 export class DailyBudgetConfig {
   sodiumBudget: number = 2000;   // mg
   sugarBudget: number = 50;      // g

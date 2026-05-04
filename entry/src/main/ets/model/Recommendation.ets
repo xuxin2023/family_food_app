@@ -46,6 +46,7 @@ export class RecommendationJson {
   generatedAt: number = 0;
 }
 
+@Observed
 // 适配结论
 export class Recommendation {
   memberId: string = '';
@@ -56,7 +57,7 @@ export class Recommendation {
   maxServings: number = 0;       // 建议最大份数
   reasons: string[] = [];        // 原因列表
   reminders: string[] = [];      // 提醒列表
-  disclaimer: string = '本结果基于包装标签识别和健康目标生成，不代表对当前批次进行检测，不替代医生或营养师建议。';
+  disclaimer: string = '';
   generatedAt: number = 0;
 
   // 是否为建议避免

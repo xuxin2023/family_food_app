@@ -1,6 +1,5 @@
 // 家庭成员数据仓库 - RdbStore (SQLite)
 
-import { common } from '@kit.AbilityKit';
 import { relationalStore } from '@kit.ArkData';
 import { FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig, MealTimes } from '../model/FamilyProfile';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -14,20 +13,15 @@ export class FamilyRepository {
   private rdbStore: relationalStore.RdbStore | null = null;
 
   /**
-   * 初始化数据库
+   * 注入已初始化的 rdbStore 并建表
    */
-  async init(context: common.Context): Promise<void> {
-    const config: relationalStore.StoreConfig = {
-      name: DB_NAME,
-      securityLevel: relationalStore.SecurityLevel.S1
-    };
-
+  async init(rdbStore: relationalStore.RdbStore): Promise<void> {
+    this.rdbStore = rdbStore;
     try {
-      this.rdbStore = await relationalStore.getRdbStore(context, config);
       await this.createTable();
-      hilog.info(DOMAIN_ZERO, TAG, 'Database initialized');
+      hilog.info(DOMAIN_ZERO, TAG, 'FamilyRepository initialized');
     } catch (error) {
-      hilog.error(DOMAIN_ZERO, TAG, 'Database init failed: %{public}s', JSON.stringify(error));
+      hilog.error(DOMAIN_ZERO, TAG, 'FamilyRepository init failed: %{public}s', JSON.stringify(error));
     }
   }
 

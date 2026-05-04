@@ -45,7 +45,7 @@ struct BasketCheckPage {
           Row() {
             Text('←').fontSize(24).fontColor(COLORS.PRIMARY)
               .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
-            Text('购物篮检查').fontSize(20).fontWeight(FontWeight.Bold)
+            Text($r('app.string.basket_button')).fontSize(20).fontWeight(FontWeight.Bold)
               .margin({ left: 16 })
           }
           .width('100%')
@@ -56,9 +56,9 @@ struct BasketCheckPage {
             Text(`🛒 ${this.basketItems.length}款食品`).fontSize(16).fontWeight(FontWeight.Medium)
             Blank()
             if (this.checkResult && this.checkResult.hasRisk()) {
-              Text('需要注意').fontSize(14).fontColor(COLORS.ACCENT_ORANGE).fontWeight(FontWeight.Medium)
+              Text($r('app.string.basket_attention')).fontSize(14).fontColor(COLORS.ACCENT_ORANGE).fontWeight(FontWeight.Medium)
             } else {
-              Text('整体尚可').fontSize(14).fontColor(COLORS.ACCENT_GREEN_4CAF)
+              Text($r('app.string.basket_ok')).fontSize(14).fontColor(COLORS.ACCENT_GREEN_4CAF)
             }
           }
           .width('100%')
@@ -68,7 +68,7 @@ struct BasketCheckPage {
           // 警告列表
           if (this.checkResult && this.checkResult.warnings.length > 0) {
             Column() {
-              Text('⚠ 购物篮提醒').fontSize(16).fontWeight(FontWeight.Medium).margin({ bottom: 8 })
+              Text($r('app.string.basket_warning')).fontSize(16).fontWeight(FontWeight.Medium).margin({ bottom: 8 })
               ForEach(this.checkResult.warnings, (warning: string) => {
                 Row() {
                   Text('•').fontSize(14).fontColor(COLORS.ACCENT_ORANGE).margin({ right: 6 })
@@ -89,7 +89,7 @@ struct BasketCheckPage {
           // 采购建议
           if (this.checkResult && this.checkResult.suggestions.length > 0) {
             Column() {
-              Text('💡 采购建议').fontSize(16).fontWeight(FontWeight.Medium).margin({ bottom: 8 })
+              Text($r('app.string.basket_suggestion')).fontSize(16).fontWeight(FontWeight.Medium).margin({ bottom: 8 })
               ForEach(this.checkResult.suggestions, (suggestion: string) => {
                 Row() {
                   Text('•').fontSize(14).fontColor(COLORS.ACCENT_GREEN_4CAF).margin({ right: 6 })
@@ -108,7 +108,7 @@ struct BasketCheckPage {
           }
 
           // 食品列表
-          Text('篮内食品').fontSize(14).fontColor(COLORS.TEXT_GRAY_7575)
+          Text($r('app.string.basket_items')).fontSize(14).fontColor(COLORS.TEXT_GRAY_7575)
             .margin({ left: 16, top: 8, bottom: 8 })
 
           ForEach(this.basketItems, (item: FoodLabel) => {
@@ -116,9 +116,9 @@ struct BasketCheckPage {
               Column() {
                 Text(item.foodName).fontSize(14).fontWeight(FontWeight.Medium)
                 Row() {
-                  if (item.isHighSodium()) { Text('高盐').fontSize(11).fontColor(COLORS.WHITE).backgroundColor(COLORS.ACCENT_ORANGE).padding({ left: 6, right: 6, top: 2, bottom: 2 }).borderRadius(8).margin({ right: 4 }) }
-                  if (item.isHighSugar()) { Text('高糖').fontSize(11).fontColor(COLORS.WHITE).backgroundColor('#FF9800').padding({ left: 6, right: 6, top: 2, bottom: 2 }).borderRadius(8).margin({ right: 4 }) }
-                  if (item.isHighFat()) { Text('高脂').fontSize(11).fontColor(COLORS.WHITE).backgroundColor('#F44336').padding({ left: 6, right: 6, top: 2, bottom: 2 }).borderRadius(8) }
+                  if (item.isHighSodium()) { Text($r('app.string.risk_high_salt')).fontSize(11).fontColor(COLORS.WHITE).backgroundColor(COLORS.ACCENT_ORANGE).padding({ left: 6, right: 6, top: 2, bottom: 2 }).borderRadius(8).margin({ right: 4 }) }
+                  if (item.isHighSugar()) { Text($r('app.string.risk_high_sugar')).fontSize(11).fontColor(COLORS.WHITE).backgroundColor('#FF9800').padding({ left: 6, right: 6, top: 2, bottom: 2 }).borderRadius(8).margin({ right: 4 }) }
+                  if (item.isHighFat()) { Text($r('app.string.risk_high_fat')).fontSize(11).fontColor(COLORS.WHITE).backgroundColor('#F44336').padding({ left: 6, right: 6, top: 2, bottom: 2 }).borderRadius(8) }
                 }
                 .margin({ top: 4 })
               }

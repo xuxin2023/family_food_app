@@ -42,7 +42,7 @@ import { WeeklyReportEngine, WeeklyDietData, WeeklyReport } from './engine/Weekl
 import { ElderFriendlyEngine, ElderFriendlyReport } from './engine/ElderFriendlyEngine';
 import { PositiveAdviceEngine, PositiveAdvice } from './engine/PositiveAdviceEngine';
 import { DateUtil } from './utils/DateUtil';
-import { SubscriptionTier } from './model/PricingModel';
+import { CacheManager } from './utils/CacheManager';
 import { common } from '@kit.AbilityKit';
 import { relationalStore } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -118,29 +118,37 @@ export class AppState {
   private aiNutritionist: AiNutritionistService = new AiNutritionistService();
   private aiServicesInitialized: boolean = false;
 
-  // 内存缓存
-  private membersCache: FamilyProfile[] = [];
-  private healthSignalsCache: Map<string, HealthSignal> = new Map();
-  private dailyBudgetsCache: Map<string, DailyBudget> = new Map();
-  private isInitialized: boolean = false;
-
   // 购物篮（内存中暂存）
   private basketItems: FoodLabel[] = [];
 
-  // 订阅状态（旧版，保持兼容）
-  private currentTier: SubscriptionTier = SubscriptionTier.FREE;
-  private todayScanCount: number = 0;
-  private todayScanDate: string = '';
   // 引导状态
   hasShownGuide: boolean = false;
 
-  // ========== 新版会员状态管理 ==========
+  // ========== 会员状态管理 ==========
 
   /** 会员状态 */
   memberStatus: MemberStatus = createDefaultMemberStatus();
 
   /** 已添加的家庭成员数量（用于计算剩余可添加数） */
   private addedMemberCount: number = 0;
+
+  /** 缓存管理器 */
+  cache: CacheManager = new CacheManager();
+
+  private isInitialized: boolean = false;
+
+  // ========== 缓存向后兼容属性（委托给 CacheManager） ==========
+  // 旧代码通过 this.membersCache 等读取/写入，实际委托到 this.cache
+  // 新代码应直接使用 this.cache
+
+  private get membersCache(): FamilyProfile[] { return this.cache.membersCache; }
+  private set membersCache(val: FamilyProfile[]) { this.cache.membersCache = val; }
+
+  private get healthSignalsCache(): Map<string, HealthSignal> { return this.cache.healthSignalsSnapshot; }
+  private set healthSignalsCache(val: Map<string, HealthSignal>) { /* 只读兼容 */ }
+
+  private get dailyBudgetsCache(): Map<string, DailyBudget> { return this.cache.dailyBudgetsSnapshot; }
+  private set dailyBudgetsCache(_val: Map<string, DailyBudget>) { /* 只读兼容 */ }
 
   private constructor() {}
 
@@ -161,14 +169,15 @@ export class AppState {
     if (this.isInitialized) return;
 
     try {
-      // 初始化数据库
-      await this.familyRepo.init(context);
-
+      // 统一使用 S3 安全等级创建数据库连接
       const rdbConfig: relationalStore.StoreConfig = {
         name: 'food_helper.db',
-        securityLevel: relationalStore.SecurityLevel.S1
+        securityLevel: relationalStore.SecurityLevel.S3
       };
       const rdbStore = await relationalStore.getRdbStore(context, rdbConfig);
+
+      // 注入到所有仓库（共用同一连接）
+      await this.familyRepo.init(rdbStore);
       await this.foodRepo.init(rdbStore);
       await this.historyRepo.init(rdbStore);
 
@@ -694,32 +703,11 @@ export class AppState {
   /**
    * 获取当前订阅版本
    */
-  getCurrentTier(): SubscriptionTier {
-    return this.currentTier;
-  }
-
   /**
-   * 设置订阅版本（购买成功后调用）
+   * 获取当前会员等级（兼容旧版调用）
    */
-  setTier(tier: SubscriptionTier): void {
-    this.currentTier = tier;
-  }
-
-  /**
-   * 判断功能是否可访问（旧版，基于 SubscriptionTier）
-   */
-  canAccess(requiredTier: SubscriptionTier): boolean {
-    const tierOrder = [
-      SubscriptionTier.FREE,
-      SubscriptionTier.TRIAL_7DAY,
-      SubscriptionTier.PERSONAL_YEAR,
-      SubscriptionTier.FAMILY_EARLY,
-      SubscriptionTier.FAMILY_STANDARD,
-      SubscriptionTier.FAMILY_PREMIUM
-    ];
-    const currentIndex = tierOrder.indexOf(this.currentTier);
-    const requiredIndex = tierOrder.indexOf(requiredTier);
-    return currentIndex >= requiredIndex;
+  getCurrentMemberTier(): MemberTier {
+    return this.memberStatus.tier;
   }
 
   /**
@@ -1088,7 +1076,7 @@ export class AppState {
   /**
    * 更新同步配置
    */
-  async updateSyncConfig(updates: Partial<CloudSyncConfig>): Promise<void> {
+  async updateSyncConfig(updates: CloudSyncConfig): Promise<void> {
     await this.syncService.updateConfig(updates);
   }
 

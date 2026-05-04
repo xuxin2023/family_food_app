@@ -5,6 +5,7 @@ import { textRecognition } from '@kit.CoreVisionKit';
 import { image } from '@kit.ImageKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FoodLabel, FoodSource, NutritionPer100g } from '../model/FoodLabel';
+import { StringRes } from '../constants/StringRes';
 
 const TAG = 'OcrService';
 const DOMAIN_ZERO = 0;
@@ -149,7 +150,7 @@ export class OcrService {
       // OCR失败，返回空标签
       const label = new FoodLabel();
       label.foodId = `food_${Date.now()}`;
-      label.foodName = '识别失败，请手动输入';
+      label.foodName = StringRes.OCR_FAILED_FOOD;
       label.source = FoodSource.USER_UPLOAD;
       label.identifiedAt = Date.now();
       return label;
@@ -252,7 +253,7 @@ export class OcrService {
     if (lines.length > 0) {
       return lines[0].trim().substring(0, 30);
     }
-    return '未知食品';
+    return StringRes.UNKNOWN_FOOD;
   }
 
   // 提取营养成分

@@ -35,7 +35,7 @@ export struct RecommendationCard {
             .fontWeight(FontWeight.Medium)
             .margin({ left: 12 })
         } else {
-          Text('建议避免')
+          Text($r('app.string.suggest_avoid'))
             .fontSize(14)
             .fontColor(COLORS.ACCENT_RED_F443)
             .fontWeight(FontWeight.Medium)

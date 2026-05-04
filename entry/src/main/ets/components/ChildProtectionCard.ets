@@ -11,7 +11,7 @@ export struct ChildProtectionCard {
     Column() {
       // 标题
       Row() {
-        Text('👶 儿童保护提醒')
+        Text($r('app.string.child_protection_tip'))
           .fontSize(16)
           .fontWeight(FontWeight.Bold)
           .layoutWeight(1)
@@ -24,7 +24,7 @@ export struct ChildProtectionCard {
         Row() {
           Text('🍽').fontSize(16).margin({ right: 8 })
           Column() {
-            Text('正餐保护').fontSize(12).fontColor(COLORS.ORANGE_ACCENT).margin({ bottom: 2 })
+            Text($r('app.string.meal_protection')).fontSize(12).fontColor(COLORS.ORANGE_ACCENT).margin({ bottom: 2 })
             Text(this.protection.mealProtection)
               .fontSize(13)
               .fontColor(COLORS.TEXT_GRAY_2121)
@@ -42,7 +42,7 @@ export struct ChildProtectionCard {
         Row() {
           Text('🌙').fontSize(16).margin({ right: 8 })
           Column() {
-            Text('睡前保护').fontSize(12).fontColor(COLORS.ACCENT_PURPLE_9C27).margin({ bottom: 2 })
+            Text($r('app.string.bedtime_protection')).fontSize(12).fontColor(COLORS.ACCENT_PURPLE_9C27).margin({ bottom: 2 })
             Text(this.protection.bedtimeProtection)
               .fontSize(13)
               .fontColor(COLORS.TEXT_GRAY_2121)
@@ -60,7 +60,7 @@ export struct ChildProtectionCard {
         Row() {
           Text('👅').fontSize(16).margin({ right: 8 })
           Column() {
-            Text('口味保护').fontSize(12).fontColor(COLORS.ACCENT_GREEN_4CAF).margin({ bottom: 2 })
+            Text($r('app.string.taste_protection')).fontSize(12).fontColor(COLORS.ACCENT_GREEN_4CAF).margin({ bottom: 2 })
             Text(this.protection.tasteProtection)
               .fontSize(13)
               .fontColor(COLORS.TEXT_GRAY_2121)
@@ -77,7 +77,7 @@ export struct ChildProtectionCard {
       if (this.protection.counteractReminder) {
         Row() {
           Text('⚠').fontSize(16).margin({ right: 8 })
-          Text('不建议用"不吃饭"来抵消甜食')
+          Text($r('app.string.no_meal_offset_tip'))
             .fontSize(13)
             .fontColor(COLORS.ACCENT_ORANGE)
             .fontWeight(FontWeight.Medium)

@@ -250,9 +250,8 @@ struct DeviceDashboardPage {
 
   @Builder
   buildMetricsGrid() {
-    const cards: MetricCardData[] = this.getHealthMetricsInner()
     Grid() {
-      ForEach(cards, (card: MetricCardData) => {
+      ForEach(this.getHealthMetricsInner(), (card: MetricCardData) => {
         GridItem() {
           Column() {
             Text(card.icon)
@@ -354,23 +353,6 @@ struct DeviceDashboardPage {
 
   @Builder
   buildDietImpactCard() {
-    const impactTexts: string[] = []
-    if (this.healthSignal.stepCount > 0 && this.healthSignal.stepCount < 3000) {
-      impactTexts.push(`步数 ${this.healthSignal.stepCount} 步 → 活动不足，高热量/高脂建议量收紧`)
-    }
-    if (this.healthSignal.stepCount >= 10000) {
-      impactTexts.push(`步数 ${this.healthSignal.stepCount} 步 → 活动充足，热量可适当放宽`)
-    }
-    if (this.healthSignal.isPoorSleep()) {
-      impactTexts.push('睡眠质量差 → 高糖食品建议量减少')
-    }
-    if (this.healthSignal.isStressed()) {
-      impactTexts.push('压力较大 → 建议选择清淡饮食')
-    }
-    if (this.healthSignal.heartRate > 120) {
-      impactTexts.push(`心率 ${this.healthSignal.heartRate}bpm → 偏高，收紧高热量`)
-    }
-
     Column() {
       Text('📊 穿戴数据对饮食建议的影响')
         .fontSize(14)
@@ -378,8 +360,8 @@ struct DeviceDashboardPage {
         .fontColor(COLORS.TEXT_PRIMARY)
         .margin({ bottom: 8 })
 
-      if (impactTexts.length > 0) {
-        ForEach(impactTexts, (text: string) => {
+      if (this.getImpactTexts().length > 0) {
+        ForEach(this.getImpactTexts(), (text: string) => {
           Row() {
             Text(`• ${text}`)
               .fontSize(12)
@@ -531,4 +513,25 @@ struct DeviceDashboardPage {
       promptAction.showToast({ message: '连接失败，请稍后重试' })
     }
   }
+
+  private getImpactTexts(): string[] {
+    const texts: string[] = []
+    if (this.healthSignal.stepCount > 0 && this.healthSignal.stepCount < 3000) {
+      texts.push(`步数 ${this.healthSignal.stepCount} 步 → 活动不足，高热量/高脂肪建议量收紧`)
+    }
+    if (this.healthSignal.stepCount >= 10000) {
+      texts.push(`步数 ${this.healthSignal.stepCount} 步 → 活动充足，热量可适当放宽`)
+    }
+    if (this.healthSignal.isPoorSleep()) {
+      texts.push('睡眠质量差 → 高糖食品建议量减少')
+    }
+    if (this.healthSignal.isStressed()) {
+      texts.push('压力较大 → 建议选择清淡饮食')
+    }
+    if (this.healthSignal.heartRate > 120) {
+      texts.push(`心率 ${this.healthSignal.heartRate}bpm → 偏高，收紧高热量`)
+    }
+    return texts
+  }
+
 }

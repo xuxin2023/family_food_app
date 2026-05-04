@@ -61,7 +61,7 @@ struct WeeklyReportPage {
               .fontSize(24)
               .fontColor(COLORS.PRIMARY)
               .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
-            Text('家庭周报')
+            Text($r('app.string.weekly_report'))
               .fontSize(20)
               .fontWeight(FontWeight.Bold)
               .margin({ left: 16 })
@@ -83,12 +83,12 @@ struct WeeklyReportPage {
             Column() {
               Text('🔒')
                 .fontSize(48)
-              Text('周报功能已锁定')
+              Text($r('app.string.feature_locked'))
                 .fontSize(18)
                 .fontWeight(FontWeight.Bold)
                 .fontColor(COLORS.TEXT_GRAY_4242)
                 .margin({ top: 16 })
-              Text('升级后可查看全家人的饮食周报，了解一周饮食趋势')
+              Text($r('app.string.upgrade_for_weekly'))
                 .fontSize(14)
                 .fontColor(COLORS.TEXT_GRAY_9E9E)
                 .margin({ top: 8 })
@@ -146,7 +146,7 @@ struct WeeklyReportPage {
         .margin({ bottom: 10 })
 
       if (report.highlights.length > 0) {
-        Text('本周重点')
+        Text($r('app.string.weekly_focus'))
           .fontSize(13)
           .fontColor(COLORS.TEXT_GRAY_7575)
           .margin({ bottom: 6 })
@@ -159,7 +159,7 @@ struct WeeklyReportPage {
       }
 
       if (report.suggestions.length > 0) {
-        Text('下周建议')
+        Text($r('app.string.next_week_advice'))
           .fontSize(13)
           .fontColor(COLORS.TEXT_GRAY_7575)
           .margin({ top: 8, bottom: 6 })
@@ -172,7 +172,7 @@ struct WeeklyReportPage {
       }
 
       if (report.buyLess.length > 0 || report.buyMore.length > 0) {
-        Text('采购建议')
+        Text($r('app.string.shopping_recommend'))
           .fontSize(13)
           .fontColor(COLORS.TEXT_GRAY_7575)
           .margin({ top: 8, bottom: 6 })

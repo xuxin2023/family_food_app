@@ -1,264 +1,185 @@
 // NutrientRadarPanel.ets
-// 营养素均衡雷达面板 - 整合雷达图与概览数据的仪表板卡片
-// 展示单个成员的营养素均衡状况、当前预算完成度
+// 营养雷达图组件 — 使用 Canvas 绘制五维营养评分
 
-import { DailyNutritionSummary, NutrientTrendData } from '../engine/NutritionTrendEngine';
-import { RadarChart, RadarAxis } from './RadarChart';
-import { RingChart, RingData } from './RingChart';
-import { COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT } from '../constants/AppTheme';
-
-export interface NutrientRadarData {
-  memberId: string;
-  memberName: string;
-  memberEmoji: string;
-  summary: DailyNutritionSummary | null;
-  budgetSodium: number;
-  budgetSugar: number;
-  budgetCalorie: number;
-  budgetFat: number;
-  trends: NutrientTrendData[];
+export interface NutrientScores {
+  protein: number;    // 0-100
+  fiber: number;      // 0-100
+  vitamins: number;   // 0-100
+  minerals: number;   // 0-100
+  healthyFats: number; // 0-100
 }
 
 @Component
 export struct NutrientRadarPanel {
-  @Prop data: NutrientRadarData | null = null
-  @Prop compact: boolean = false
+  @Prop scores: NutrientScores = {
+    protein: 70,
+    fiber: 50,
+    vitamins: 80,
+    minerals: 60,
+    healthyFats: 65
+  }
+  @Prop showLabels: boolean = true
+  @Prop chartSize: number = 200
 
-  build() {
-    if (this.data === null) {
-      Column() {
-        Text('暂无数据')
-          .fontSize(FONT_SIZE.SMALL)
-          .fontColor(COLORS.TEXT_GRAY_9E9E)
-      }
-      .width('100%')
-      .padding(SPACING.LG)
-      .backgroundColor(COLORS.WHITE)
-      .borderRadius(RADIUS.LG)
-    } else {
-      Column() {
-        // 成员标题
-        Row() {
-          Text(this.data.memberEmoji)
-            .fontSize(FONT_SIZE.XXL)
-            .margin({ right: SPACING.SM })
-          Text(this.data.memberName + ' 的营养均衡')
-            .fontSize(FONT_SIZE.LG)
-            .fontWeight(FONT_WEIGHT.BOLD)
-            .fontColor(COLORS.TEXT_PRIMARY)
-        }
-        .width('100%')
-        .margin({ bottom: SPACING.MD })
+  private readonly labels: string[] = ['蛋白质', '膳食纤维', '维生素', '矿物质', '健康脂肪']
 
-        if (this.compact) {
-          // 紧凑模式：横向环形进度 + 雷达
-          Row({ space: SPACING.MD }) {
-            // 环形进度环 2x2
-            Column({ space: SPACING.SM }) {
-              Row({ space: SPACING.SM }) {
-                RingChart({
-                  data: this.buildRingData('钠', this.data.summary?.sodium || 0, this.data.budgetSodium, 'mg', COLORS.ACCENT_RED_F443, COLORS.BG_LIGHT_GRAY_F5),
-                  ringSize: 64,
-                  strokeWidth: 6,
-                  showLabel: true
-                })
-                RingChart({
-                  data: this.buildRingData('糖', this.data.summary?.sugar || 0, this.data.budgetSugar, 'g', COLORS.ORANGE_ACCENT, COLORS.BG_LIGHT_GRAY_F5),
-                  ringSize: 64,
-                  strokeWidth: 6,
-                  showLabel: true
-                })
-              }
-              Row({ space: SPACING.SM }) {
-                RingChart({
-                  data: this.buildRingData('热量', this.data.summary?.calorie || 0, this.data.budgetCalorie, 'kcal', COLORS.ACCENT_GREEN_66BB, COLORS.BG_LIGHT_GRAY_F5),
-                  ringSize: 64,
-                  strokeWidth: 6,
-                  showLabel: true
-                })
-                RingChart({
-                  data: this.buildRingData('脂肪', this.data.summary?.fat || 0, this.data.budgetFat, 'g', COLORS.ACCENT_PURPLE_9C27, COLORS.BG_LIGHT_GRAY_F5),
-                  ringSize: 64,
-                  strokeWidth: 6,
-                  showLabel: true
-                })
-              }
-            }
-
-            // 雷达图
-            RadarChart({
-              axes: this.buildRadarAxes(),
-              chartSize: 150,
-              showLabels: true
-            })
-          }
-          .width('100%')
-          .justifyContent(FlexAlign.Center)
-        } else {
-          // 完整模式
-          Column() {
-            // 环形进度四象限
-            Row({ space: SPACING.MD }) {
-              RingChart({
-                data: this.buildRingData('钠', this.data.summary?.sodium || 0,
-                  this.data.budgetSodium, 'mg', COLORS.ACCENT_RED_F443, COLORS.BG_LIGHT_GRAY_F5),
-                ringSize: 72,
-                strokeWidth: 7,
-                showLabel: true
-              })
-              RingChart({
-                data: this.buildRingData('糖', this.data.summary?.sugar || 0,
-                  this.data.budgetSugar, 'g', COLORS.ORANGE_ACCENT, COLORS.BG_LIGHT_GRAY_F5),
-                ringSize: 72,
-                strokeWidth: 7,
-                showLabel: true
-              })
-              RingChart({
-                data: this.buildRingData('热量', this.data.summary?.calorie || 0,
-                  this.data.budgetCalorie, 'kcal', COLORS.ACCENT_GREEN_66BB, COLORS.BG_LIGHT_GRAY_F5),
-                ringSize: 72,
-                strokeWidth: 7,
-                showLabel: true
-              })
-              RingChart({
-                data: this.buildRingData('脂肪', this.data.summary?.fat || 0,
-                  this.data.budgetFat, 'g', COLORS.ACCENT_PURPLE_9C27, COLORS.BG_LIGHT_GRAY_F5),
-                ringSize: 72,
-                strokeWidth: 7,
-                showLabel: true
-              })
-            }
-            .width('100%')
-            .justifyContent(FlexAlign.SpaceEvenly)
-            .padding({ bottom: SPACING.MD })
-
-            // 均衡雷达图
-            RadarChart({
-              axes: this.buildRadarAxes(),
-              chartSize: 180,
-              showLabels: true
-            })
-          }
-          .width('100%')
-        }
-
-        // 均衡评分摘要
-        this.buildBalanceSummary()
-      }
-      .width('100%')
-      .padding(SPACING.LG)
-      .backgroundColor(COLORS.WHITE)
-      .borderRadius(RADIUS.LG)
-      .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
-    }
+  // 工具方法 — 注意这些不能在 @Builder 中使用非UI语法
+  private getScore(key: string): number {
+    const map: Map<string, number> = new Map()
+    map.set('protein', this.scores.protein)
+    map.set('fiber', this.scores.fiber)
+    map.set('vitamins', this.scores.vitamins)
+    map.set('minerals', this.scores.minerals)
+    map.set('healthyFats', this.scores.healthyFats)
+    return map.get(key) ?? 0
   }
 
-  @Builder
-  buildBalanceSummary() {
-    if (this.data === null || this.data.summary === null) {
-      return
-    }
-    // 计算四维均衡度评分（越接近100%越好，但不超过120%最佳）
-    const scores: number[] = [];
-    const targets = [
-      this.data.budgetSodium, this.data.budgetSugar,
-      this.data.budgetCalorie, this.data.budgetFat
-    ];
-    const actuals = [
-      this.data.summary.sodium, this.data.summary.sugar,
-      this.data.summary.calorie, this.data.summary.fat
-    ];
-    let avgScore = 0;
-    for (let i = 0; i < targets.length; i++) {
-      if (targets[i] > 0) {
-        const ratio = actuals[i] / targets[i];
-        // 60%~100%为绿色，超过100%扣分
-        if (ratio <= 0.6) {
-          scores.push(60 + ratio * 40);
-        } else if (ratio <= 1.0) {
-          scores.push(100);
-        } else if (ratio <= 1.2) {
-          scores.push(100 - (ratio - 1.0) * 100);
-        } else {
-          scores.push(60);
-        }
-      }
-    }
-    if (scores.length > 0) {
-      let sum = 0;
-      for (let i = 0; i < scores.length; i++) {
-        sum += scores[i];
-      }
-      avgScore = sum / scores.length;
-    }
+  private getScoreColor(score: number): string {
+    if (score >= 75) return '#4CAF50'
+    if (score >= 50) return '#FF9800'
+    return '#F44336'
+  }
 
-    const scoreColor = avgScore >= 85 ? COLORS.ACCENT_GREEN_4CAF :
-      avgScore >= 70 ? COLORS.ORANGE_ACCENT : COLORS.ACCENT_RED_F443;
-    const scoreLabel = avgScore >= 85 ? '优秀' :
-      avgScore >= 70 ? '良好' : '注意';
+  private buildScoreData(): ScoreDataItem[] {
+    const keys: string[] = ['protein', 'fiber', 'vitamins', 'minerals', 'healthyFats']
+    const result: ScoreDataItem[] = []
+    for (let i = 0; i < keys.length; i++) {
+      const score = this.getScore(keys[i])
+      const item: ScoreDataItem = {
+        label: this.labels[i],
+        value: score / 100,
+        score: score,
+        color: this.getScoreColor(score)
+      }
+      result.push(item)
+    }
+    return result
+  }
 
-    Row() {
-      Text('均衡评分')
-        .fontSize(FONT_SIZE.SMALL)
-        .fontColor(COLORS.TEXT_GRAY_9E9E)
-      Blank()
-      Row() {
-        Text(avgScore.toFixed(0))
-          .fontSize(FONT_SIZE.BODY)
-          .fontWeight(FONT_WEIGHT.BOLD)
-          .fontColor(scoreColor)
-        Text('分')
-          .fontSize(FONT_SIZE.TINY)
-          .fontColor(COLORS.TEXT_GRAY_9E9E)
-          .margin({ left: 2 })
-          .alignSelf(ItemAlign.End)
-        Text(scoreLabel)
-          .fontSize(FONT_SIZE.SMALL)
-          .fontColor(scoreColor)
-          .margin({ left: SPACING.SM })
-          .backgroundColor(scoreColor === COLORS.ACCENT_GREEN_4CAF ? COLORS.BG_LIGHT_GREEN :
-            scoreColor === COLORS.ORANGE_ACCENT ? COLORS.BG_WARM_YELLOW : COLORS.BG_WARM_PINK)
-          .padding({ left: SPACING.SM, right: SPACING.SM, top: 2, bottom: 2 })
-          .borderRadius(RADIUS.FULL)
+  build() {
+    Column({ space: 8 }) {
+      if (this.chartSize > 0) {
+        // 使用 Canvas 绘制雷达图
+        Canvas(this.contextReady.bind(this))
+          .width(this.chartSize)
+          .height(this.chartSize)
+      }
+
+      if (this.showLabels) {
+        // 图例和分数显示（用 @Builder 外数据）
+        ForEach(this.buildScoreData(), (item: ScoreDataItem) => {
+          Row({ space: 6 }) {
+            Circle()
+              .width(8)
+              .height(8)
+              .fill(item.color as ResourceColor)
+            Text(`${item.label}: ${item.score}`)
+              .fontSize(12)
+              .fontColor('#333333')
+          }
+          .justifyContent(FlexAlign.Center)
+        })
       }
     }
     .width('100%')
-    .padding({ top: SPACING.SM })
+    .alignItems(HorizontalAlign.Center)
   }
 
-  private buildRingData(label: string, current: number, target: number,
-    unit: string, color: string, bgColor: string): RingData {
-    const d: RingData = {
-      label: label,
-      current: current,
-      target: target || 1,
-      unit: unit,
-      color: color,
-      bgColor: bgColor
-    };
-    return d;
+  private contextReady(ctx: CanvasRenderingContext2D) {
+    if (!ctx) {
+      return
+    }
+    this.drawRadarChart(ctx)
   }
 
-  private buildRadarAxes(): RadarAxis[] {
-    if (this.data === null || this.data.summary === null) {
-      return [];
+  private drawRadarChart(ctx: CanvasRenderingContext2D) {
+    const w = this.chartSize
+    const h = this.chartSize
+    const cx = w / 2
+    const cy = h / 2
+    const radius = Math.min(cx, cy) * 0.75
+    const sides = 5
+    const angleStep = (Math.PI * 2) / sides
+
+    ctx.clearRect(0, 0, w, h)
+
+    // 绘制背景网格（同心多边形）
+    for (let ring = 1; ring <= 4; ring++) {
+      const r = (radius * ring) / 4
+      ctx.beginPath()
+      for (let i = 0; i <= sides; i++) {
+        const angle = angleStep * i - Math.PI / 2
+        const x = cx + r * Math.cos(angle)
+        const y = cy + r * Math.sin(angle)
+        if (i === 0) ctx.moveTo(x, y)
+        else ctx.lineTo(x, y)
+      }
+      ctx.closePath()
+      ctx.strokeStyle = '#e0e0e0'
+      ctx.lineWidth = 1
+      ctx.stroke()
     }
-    const axes: RadarAxis[] = [];
-    const pairs: [string, number, number, string][] = [
-      ['钠', this.data.summary.sodium, this.data.budgetSodium, COLORS.ACCENT_RED_F443],
-      ['糖', this.data.summary.sugar, this.data.budgetSugar, COLORS.ORANGE_ACCENT],
-      ['热量', this.data.summary.calorie, this.data.budgetCalorie, COLORS.ACCENT_GREEN_66BB],
-      ['脂肪', this.data.summary.fat, this.data.budgetFat, COLORS.ACCENT_PURPLE_9C27]
-    ];
-    for (let i = 0; i < pairs.length; i++) {
-      const pair = pairs[i];
-      axes.push({
-        label: pair[0],
-        value: Math.min(pair[1], pair[2]),
-        maxValue: pair[2] || 1,
-        color: pair[3]
-      });
+
+    // 绘制轴线
+    for (let i = 0; i < sides; i++) {
+      const angle = angleStep * i - Math.PI / 2
+      ctx.beginPath()
+      ctx.moveTo(cx, cy)
+      ctx.lineTo(cx + radius * Math.cos(angle), cy + radius * Math.sin(angle))
+      ctx.strokeStyle = '#e0e0e0'
+      ctx.lineWidth = 1
+      ctx.stroke()
     }
-    return axes;
+
+    // 获取分数数据
+    const items = this.buildScoreData()
+
+    // 绘制数据多边形
+    ctx.beginPath()
+    for (let i = 0; i <= sides; i++) {
+      const idx = i % sides
+      const angle = angleStep * idx - Math.PI / 2
+      const r = radius * items[idx].value
+      const x = cx + r * Math.cos(angle)
+      const y = cy + r * Math.sin(angle)
+      if (i === 0) ctx.moveTo(x, y)
+      else ctx.lineTo(x, y)
+    }
+    ctx.closePath()
+    ctx.fillStyle = 'rgba(76, 175, 80, 0.2)'
+    ctx.fill()
+    ctx.strokeStyle = '#4CAF50'
+    ctx.lineWidth = 2
+    ctx.stroke()
+
+    // 绘制数据点
+    for (let i = 0; i < sides; i++) {
+      const angle = angleStep * i - Math.PI / 2
+      const r = radius * items[i].value
+      const x = cx + r * Math.cos(angle)
+      const y = cy + r * Math.sin(angle)
+
+      ctx.beginPath()
+      ctx.arc(x, y, 4, 0, Math.PI * 2)
+      ctx.fillStyle = items[i].color as string
+      ctx.fill()
+
+      // 绘制标签
+      const labelR = radius + 20
+      const lx = cx + labelR * Math.cos(angle)
+      const ly = cy + labelR * Math.sin(angle)
+      ctx.font = '12px HarmonyOS Sans'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillStyle = '#666666'
+      ctx.fillText(`${items[i].label}`, lx, ly)
+    }
   }
+}
+
+interface ScoreDataItem {
+  label: string
+  value: number
+  score: number
+  color: string
 }

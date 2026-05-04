@@ -1,4 +1,5 @@
 // 每100g营养成分
+@Observed
 export class NutritionPer100g {
   sodium: number = 0;       // 钠 mg
   sugar: number = 0;        // 糖 g
@@ -36,6 +37,7 @@ export class FoodLabelJson {
 }
 
 // 食品标签
+@Observed
 export class FoodLabel {
   foodId: string = '';
   foodName: string = '';

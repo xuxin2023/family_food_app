@@ -358,10 +358,12 @@ export class OpenFoodFactsService {
    */
   getProductImage(imageUrl: string): Promise<image.PixelMap | null> {
     if (imageUrl.length === 0) {
-      return null
+      return new Promise<image.PixelMap | null>((resolve) => {
+        resolve(null)
+      })
     }
 
-    return new Promise<ArrayBuffer>((resolve) => {
+    return new Promise<image.PixelMap | null>((resolve) => {
       try {
         const httpRequest = http.createHttp()
         httpRequest.request(imageUrl, {
@@ -386,7 +388,7 @@ export class OpenFoodFactsService {
           const result = data.result
           if (result instanceof ArrayBuffer) {
             try {
-              const imageSource = image.createImageSource(result)
+              const imageSource = image.createImageSource(result as ArrayBuffer)
               const pixelMap = await imageSource.createPixelMap()
               imageSource.release()
               resolve(pixelMap)

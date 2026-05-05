@@ -12,12 +12,33 @@ struct Index {
   @State showGuide: boolean = false;
   @State isReady: boolean = false;
 
-  aboutToAppear(): void {
+  async aboutToAppear(): Promise<void> {
+    // 等待 AppState 初始化完成，避免跳转到首页时数据未就绪
+    await this.waitForAppStateReady()
     const state = AppState.getInstance();
     this.showGuide = !state.hasShownGuide;
     if (!this.showGuide) {
       this.navigateToHome();
     }
+  }
+
+  /**
+   * 等待 AppState 初始化就绪
+   */
+  private async waitForAppStateReady(): Promise<void> {
+    let maxWaitMs = 5000
+    const pollInterval = 100
+    while (maxWaitMs > 0) {
+      const ready = AppStorage.get<boolean>('appStateReady')
+      if (ready) return
+      await this.delay(pollInterval)
+      maxWaitMs -= pollInterval
+    }
+    // 超时后仍然继续（AppState init 有兜底逻辑）
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms))
   }
 
   build() {

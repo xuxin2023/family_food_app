@@ -1,6 +1,7 @@
 // 购物篮检查页 - 连续扫描后检查一篮子食品
 
 import { router } from '@kit.ArkUI';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FoodLabel, FoodSource, NutritionPer100g } from '../model/FoodLabel';
 import { BasketCheckResult } from '../engine/BasketCheckEngine';
 import { AppState } from '../AppState';
@@ -141,17 +142,9 @@ struct BasketCheckPage {
             .margin({ top: 16, bottom: 32 })
             .onClick(() => {
               try {
-
                 router.pushUrl({ url: 'pages/ScanPage' })
-
               } catch (_e) {
-
-                try {
-                // ignore router.pushUrl error
-                } catch (_e) {
-                  // ignore router.pushUrl error
-                }
-
+                hilog.warn(0x0000, 'BasketCheckPage', 'router.pushUrl failed: ' + JSON.stringify(_e))
               }
             })
         }

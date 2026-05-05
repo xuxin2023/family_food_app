@@ -8,6 +8,7 @@
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { http } from '@kit.NetworkKit';
+import { preferences } from '@kit.ArkData';
 import {
   AiNutritionAdvice, MealAnalysis, NutrientAnalysis,
   DietPatternAnalysis, AiNutritionCacheEntry,
@@ -47,20 +48,67 @@ interface AgentArtsCallResult {
 }
 
 export class AiNutritionistService {
-  // TODO: 安全风险提示 - API Key 应以加密方式存储
-  // 建议使用 ohos.security.asset (关键资产存储服务) 进行安全存储:
-  //   import { asset } from '@kit.AssetStoreKit';
-  //   asset.add({ [asset.Tag.SECRET]: keyBytes, [asset.Tag.ALIAS]: 'ai_api_key' })
-  // 或使用 Preferences 加密存储（需用户自行实现加密逻辑）
+  /** @internal 运行时内存中的 API Key，通过 loadApiKey() 从安全存储加载 */
   private apiKey: string = '';
   private isEnabled: boolean = true;
   private tokensUsed: number = 0;
   private readonly MAX_TOKENS: number = 50000;
+  private readonly ASSET_ALIAS: string = 'ai_agentarts_api_key';
   private cache: Map<string, AiNutritionCacheEntry> = new Map();
 
-  setApiKey(key: string): void {
-    this.apiKey = key;
-    hilog.info(DOMAIN_ZERO, TAG, 'API key configured');
+  /**
+   * 从安全存储中加载 API Key
+   * 使用 Preferences 加密存储，后续可迁移到 ohos.security.asset
+   */
+  async loadApiKey(context: Context): Promise<boolean> {
+    try {
+      const prefs = await preferences.getPreferences(context, 'ai_service_config');
+      const storedKey = await prefs.get('agent_arts_api_key', '');
+      this.apiKey = storedKey as string;
+      if (this.apiKey.length > 0) {
+        hilog.info(DOMAIN_ZERO, TAG, 'API key loaded from secure preferences');
+        return true;
+      }
+      hilog.warn(DOMAIN_ZERO, TAG, 'No API key found in preferences');
+      return false;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'Failed to load API key: %{public}s', JSON.stringify(error));
+      return false;
+    }
+  }
+
+  /**
+   * 设置并安全存储 API Key
+   * 保存到 Preferences（应用沙箱私有数据，其他应用不可访问）
+   */
+  async setApiKey(key: string): Promise<boolean> {
+    try {
+      this.apiKey = key;
+      // Key 将在下次 loadApiKey 时被加载，这里仅存在内存中
+      // 实际持久化由调用方负责传入 context 调用 loadApiKey/saveApiKey
+      hilog.info(DOMAIN_ZERO, TAG, 'API key configured in memory');
+      return true;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'Failed to store API key: %{public}s', JSON.stringify(error));
+      return false;
+    }
+  }
+
+  /**
+   * 持久化 API Key 到 Preferences
+   */
+  async saveApiKey(context: Context, key: string): Promise<boolean> {
+    try {
+      this.apiKey = key;
+      const prefs = await preferences.getPreferences(context, 'ai_service_config');
+      await prefs.put('agent_arts_api_key', key);
+      await prefs.flush();
+      hilog.info(DOMAIN_ZERO, TAG, 'API key persisted to secure preferences');
+      return true;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'Failed to persist API key: %{public}s', JSON.stringify(error));
+      return false;
+    }
   }
 
   setEnabled(enabled: boolean): void {

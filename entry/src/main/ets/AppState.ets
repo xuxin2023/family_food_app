@@ -229,19 +229,28 @@ export class AppState {
     }
   }
 
+  /** 成员初始化锁，防止并发调用 getAllMembers 时重复创建默认成员 */
+  private memberInitLock: boolean = false;
+
   // ========== 家庭成员管理 ==========
 
   /**
    * 获取所有家庭成员
+   * 使用锁机制防止并发调用时重复创建默认成员
    */
   async getAllMembers(): Promise<FamilyProfile[]> {
     if (this.membersCache.length === 0) {
       this.membersCache = await this.familyRepo.getAllMembers();
-      if (this.membersCache.length === 0) {
-        // 首次使用，创建默认成员
-        this.membersCache = this.createDefaultMembers();
-        for (const member of this.membersCache) {
-          await this.familyRepo.saveMember(member);
+      if (this.membersCache.length === 0 && !this.memberInitLock) {
+        this.memberInitLock = true;
+        try {
+          // 首次使用，创建默认成员
+          this.membersCache = this.createDefaultMembers();
+          for (const member of this.membersCache) {
+            await this.familyRepo.saveMember(member);
+          }
+        } finally {
+          this.memberInitLock = false;
         }
       }
     }

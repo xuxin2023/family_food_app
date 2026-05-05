@@ -455,14 +455,38 @@ export class SyncService {
   }
 
   private resolveWithRemoteData(entityType: string, entityId: string, remoteData: string): void {
-    // 通知上层应用以远程数据覆盖本地
-    const resolveData: Record<string, Object> = { 'entityType': entityType, 'entityId': entityId, 'remoteData': remoteData };
+    // 在同步队列中查找本地冲突项，用远程数据覆盖本地
+    const localItem = this.syncQueue.find(r =>
+      r.entityType === entityType && r.entityId === entityId
+    );
+    if (localItem) {
+      // 用远程数据替换本地数据
+      localItem.dataJson = remoteData;
+      // 标记为待同步（下次会上传覆盖云端）
+      localItem.syncStatus = SyncStatus.PENDING;
+      localItem.conflictDataJson = '';
+      localItem.retryCount = 0;
+      localItem.changedAt = Date.now();
+      localItem.lastAttemptAt = 0;
+      hilog.info(DOMAIN_ZERO, TAG, 'Conflict resolved REMOTE_WINS for %{public}s:%{public}s', entityType, entityId);
+    }
+
+    // 通知上层应用
+    const resolveData: Record<string, Object> = {
+      'entityType': entityType,
+      'entityId': entityId,
+      'remoteData': remoteData,
+      'resolved': true
+    };
     this.notifyEvent({
       type: 'sync_completed',
       message: `冲突自动解决(REMOTE_WINS): ${entityType}:${entityId}`,
       timestamp: Date.now(),
       data: resolveData
     });
+
+    // 持久化更新后的队列
+    this.persistQueue();
   }
 
   private startAutoSync(): void {
@@ -622,16 +646,26 @@ export class SyncService {
 
   private syncTimer: number = -1;
 
+  /**
+   * 启动定时同步（间隔执行）
+   * 使用 setInterval 实现周期性自动同步
+   */
   private startTimer(intervalMs: number): void {
     this.stopTimer();
-    this.syncTimer = setTimeout((): void => {
+    // 先立即执行一次同步
+    this.triggerSync();
+    // 然后按间隔周期性执行
+    this.syncTimer = setInterval((): void => {
       this.triggerSync();
     }, intervalMs);
   }
 
+  /**
+   * 停止定时同步
+   */
   private stopTimer(): void {
     if (this.syncTimer !== -1) {
-      clearTimeout(this.syncTimer);
+      clearInterval(this.syncTimer);
       this.syncTimer = -1;
     }
   }

@@ -3,6 +3,8 @@
 //
 // ⚠️ 颜色定义以 resources/base/element/color.json 为准
 // 此文件仅做 ArkTS 层的便捷引用映射，避免重复定义
+// ✅ 注意：修改颜色时请同步更新 color.json 和本文件对应值
+// ✅ color.json 用于系统级引用（启动背景色等），本文件用于代码中使用
 
 export class COLORS {
   // ===== 主色 =====

@@ -274,14 +274,21 @@ export default class EntryAbility extends UIAbility {
     }
   }
 
+  /** 最多保留的崩溃日志文件数 */
+  private readonly MAX_CRASH_LOGS: number = 20;
+
   /**
    * 将崩溃日志写入本地文件
    * 文件路径: {filesDir}/crash_logs/crash_YYYY-MM-DD_HH-MM-SS.log
+   * 自动清理超过 MAX_CRASH_LOGS 数量的旧日志文件
    */
   private writeCrashLog(content: string): void {
     try {
       // 确保目录存在
       fileIo.mkdirSync(this.crashLogDir, true);
+
+      // 写入前清理旧日志，防止文件无限增长
+      this.cleanupOldCrashLogs();
 
       const now = new Date();
       const dateStr =
@@ -301,6 +308,44 @@ export default class EntryAbility extends UIAbility {
       hilog.info(DOMAIN_ZERO, TAG, 'Crash log written: %{public}s', filePath);
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'Write crash log failed: %{public}s', JSON.stringify(e));
+    }
+  }
+
+  /**
+   * 清理旧崩溃日志，确保文件数不超过 MAX_CRASH_LOGS
+   * 按文件名排序（包含时间戳），删除最旧的多余文件
+   */
+  private cleanupOldCrashLogs(): void {
+    try {
+      // 使用 listFileSync 列出目录下所有文件名
+      const entries: string[] = fileIo.listFileSync(this.crashLogDir);
+      const fileList: string[] = [];
+
+      for (let i = 0; i < entries.length; i++) {
+        const name: string = entries[i];
+        if (name.endsWith('.log')) {
+          fileList.push(name);
+        }
+      }
+
+      if (fileList.length <= this.MAX_CRASH_LOGS) {
+        return;
+      }
+
+      // 按文件名排序（文件名包含时间戳，旧的在前面）
+      fileList.sort();
+      const filesToDelete = fileList.length - this.MAX_CRASH_LOGS;
+      for (let i = 0; i < filesToDelete; i++) {
+        try {
+          const oldPath = this.crashLogDir + fileList[i];
+          fileIo.unlinkSync(oldPath);
+          hilog.info(DOMAIN_ZERO, TAG, 'Removed old crash log: %{public}s', oldPath);
+        } catch (_e) {
+          // 单个文件删除失败不影响其他文件
+        }
+      }
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Cleanup crash logs failed: %{public}s', JSON.stringify(e));
     }
   }
 }

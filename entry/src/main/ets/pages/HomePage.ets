@@ -39,7 +39,6 @@ struct HomePage {
 
   private appState: AppState = AppState.getInstance()
   private milestoneService: MilestoneService = MilestoneService.getInstance()
-  private shoppingParser: OnlineShoppingParser = OnlineShoppingParser.getInstance()
 
   private slogans: ResourceStr[] = [
     $r('app.string.slogan_1'),
@@ -61,7 +60,7 @@ struct HomePage {
     try {
       this.milestones = await this.milestoneService.checkMilestones()
     } catch (_error) {
-      // 静默失败
+      hilog.warn(0x0000, 'HomePage', 'refreshMilestones failed: ' + JSON.stringify(_error))
     }
   }
 
@@ -112,21 +111,21 @@ struct HomePage {
     this.showLinkInput = false
 
     try {
-      const result = await this.shoppingParser.parseUrl(url.trim())
+      // 合并为一次调用：parseUrlToLabel 内部已调用 parseUrl 获取商品数据
+      const parser = OnlineShoppingParser.getInstance()
+      const parseResult = await parser.parseUrlToLabel(url.trim())
 
-      if (!result.parseSuccess) {
+      if (!parseResult.success || !parseResult.label) {
         // 解析失败
-        promptAction.showToast({ message: result.errorMessage || $r('app.string.parse_failed') })
+        promptAction.showToast({ message: parseResult.errorMessage || $r('app.string.parse_failed') })
         this.isParsingLink = false
         return
       }
 
-      // 解析成功 → 构造简洁FoodLabel跳转到报告页
-      promptAction.showToast({ message: $r('app.string.parse_success') + `${result.platform}：${result.productName}` })
-
-      // 构造FoodLabel跳转到ReportPage
-      const parser = OnlineShoppingParser.getInstance()
-      const parseResult = await parser.parseUrlToLabel(url.trim())
+      // 解析成功 → 构造FoodLabel跳转到报告页
+      const sourceName: string = parseResult.source
+      const productName: string = parseResult.label.foodName
+      promptAction.showToast({ message: $r('app.string.parse_success') + `${sourceName}：${productName}` })
 
       router.pushUrl({
         url: 'pages/ReportPage',
@@ -138,7 +137,7 @@ struct HomePage {
           nutriScore: 50,
           credibilityResult: {
             overallScore: 60,
-            dataSource: result.platform,
+            dataSource: sourceName,
             reliability: 'medium',
             warnings: [$r('app.string.data_from_ecommerce')]
           },

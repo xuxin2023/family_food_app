@@ -23,6 +23,7 @@ import { common } from '@kit.AbilityKit';
 import { router, promptAction, curves } from '@kit.ArkUI';
 import { connection } from '@kit.NetworkKit';
 import { vibrator } from '@kit.SensorServiceKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FoodLabel } from '../model/FoodLabel';
 import { AppState } from '../AppState';
 import { FoodInputResult, FoodInputService } from '../service/FoodInputService';
@@ -266,6 +267,7 @@ struct ScanPage {
       const hasNet = caps.bearerTypes.length > 0
       this.isOffline = !hasNet
     } catch (err) {
+      hilog.warn(0x0000, 'ScanPage', 'checkNetworkStatus failed: ' + JSON.stringify(err))
       // 获取网络状态失败，保守地认为有网络
       this.isOffline = false
     }

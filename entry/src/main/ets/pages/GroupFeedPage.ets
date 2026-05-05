@@ -6,8 +6,9 @@ import { AppState } from '../AppState';
 import { GroupFeed, FeedType, FoodScanFeedContent } from '../model/FamilyGroup';
 import { COLORS, RADIUS, SPACING, BUTTON, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
 import { BasicDataSource } from '../utils/BasicDataSource';
+import { PAGE_SIZE_CONFIG } from '../constants/AppConfig';
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = PAGE_SIZE_CONFIG.GROUP_FEED_PAGE_SIZE;
 
 @Entry
 @Component
@@ -207,7 +208,7 @@ struct GroupFeedPage {
         value: '复制群组ID',
         action: () => {
           try {
-            const data = pasteboard.createData(pasteboard.MimeType.TEXT_PLAIN, this.groupId)
+            const data = pasteboard.createData('text/plain', this.groupId)
             pasteboard.getSystemPasteboard().setData(data)
             promptAction.showToast({ message: '群组ID已复制到剪贴板' })
           } catch (_e) {

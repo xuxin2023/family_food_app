@@ -159,6 +159,18 @@ struct ScanPage {
     }
   }
 
+  /**
+   * 重置扫码状态，以便连续扫码
+   */
+  private resetScan(): void {
+    this.foodLabel = new FoodLabel();
+    this.scanPhase = ScanPhase.IDLE;
+    this.scanMode = 'barcode';
+    this.autoScanTimer = -1;
+    this.retryTimer = -1;
+    this.recognitionHint = $r('app.string.first_time_hint');
+  }
+
   aboutToDisappear(): void {
     this.componentActive = false
     // 清理自动扫码定时器，防止内存泄漏

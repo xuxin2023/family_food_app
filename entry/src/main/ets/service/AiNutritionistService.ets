@@ -19,13 +19,14 @@ import { DailyBudget } from '../model/DailyBudget';
 import { HealthSignal, BpStatus, BsStatus } from '../model/HealthSignal';
 import { DietRecord } from '../repository/HistoryRepository';
 import { NutritionTrendEngine, DailyNutritionSummary, MealGroup } from '../engine/NutritionTrendEngine';
+import { AI_CACHE_CONFIG, API_TIMEOUT_CONFIG } from '../constants/AppConfig';
 
 const TAG = 'AiNutritionistService';
 const DOMAIN_ZERO = 0;
 
 const AGENT_ARTS_ENDPOINT = 'https://agentarts.cloud.huawei.com/v1/chat/completions';
 const AGENT_ARTS_MODEL = 'agentarts-food-polish';
-const CACHE_TTL_MS = 10 * 60 * 1000; // 缓存10分钟
+const CACHE_TTL_MS = AI_CACHE_CONFIG.NUTRITIONIST_CACHE_TTL_MS; // 缓存10分钟
 
 interface AiEnhanceResult { result: AiNutritionAdvice; tokensUsed: number; }
 
@@ -38,8 +39,8 @@ class HttpRequestOptions {
   method: http.RequestMethod = http.RequestMethod.POST;
   header: Record<string, string> = {};
   extraData: string | Object = '';
-  connectTimeout: number = 15000;
-  readTimeout: number = 20000;
+  connectTimeout: number = API_TIMEOUT_CONFIG.AI_CONNECT_TIMEOUT_MS;
+  readTimeout: number = API_TIMEOUT_CONFIG.AI_READ_TIMEOUT_MS;
 }
 
 interface AgentArtsCallResult {
@@ -564,8 +565,8 @@ ${includeMealPlan ? '请包含明日饮食计划建议（3餐+加餐）' : ''}
         method: http.RequestMethod.POST,
         header: reqHeaders,
         extraData: requestBody,
-        connectTimeout: 15000,
-        readTimeout: 25000
+        connectTimeout: API_TIMEOUT_CONFIG.AI_CONNECT_TIMEOUT_MS,
+        readTimeout: API_TIMEOUT_CONFIG.AI_READ_TIMEOUT_MS
       };
 
       const response = await httpRequest.request(AGENT_ARTS_ENDPOINT, reqOptions);

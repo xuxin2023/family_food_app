@@ -4,16 +4,17 @@ import ruleEngineTest from './RuleEngineTest';
 import mealBalanceEngineTest from './MealBalanceEngineTest';
 import childProtectionEngineTest from './ChildProtectionEngineTest';
 import credibilityEngineTest from './CredibilityEngineTest';
+import nutriscoreEngineTest from './NutriScoreEngineTest';
 import positiveAdviceEngineTest from './PositiveAdviceEngineTest';
 import basketCheckEngineTest from './engine/BasketCheckEngineTest';
 
-// 新增引擎单元测试
+// 引擎单元测试
 import foodAdapterEngineTest from './engine/FoodAdapterEngineTest';
 import recommendationEngineTest from './engine/RecommendationEngineTest';
 import elderFriendlyEngineTest from './engine/ElderFriendlyEngineTest';
-import scanOrchestratorTest from './engine/ScanOrchestratorTest';import weeklyReportEngineTest from './engine/WeeklyReportEngineTest';
+import weeklyReportEngineTest from './engine/WeeklyReportEngineTest';
 
-// 新增模型单元测试
+// 模型单元测试
 import familyProfileTest from './model/FamilyProfileTest';
 import foodLabelTest from './model/FoodLabelTest';
 import dailyBudgetTest from './model/DailyBudgetTest';
@@ -26,20 +27,20 @@ export default function tests() {
   mealBalanceEngineTest();
   childProtectionEngineTest();
   credibilityEngineTest();
+  nutriscoreEngineTest();
   positiveAdviceEngineTest();
   basketCheckEngineTest();
 
-  // 新增引擎测试
+  // 引擎测试
   foodAdapterEngineTest();
   recommendationEngineTest();
   elderFriendlyEngineTest();
-  scanOrchestratorTest();  weeklyReportEngineTest();
+  weeklyReportEngineTest();
 
-  // 新增模型测试
+  // 模型测试
   familyProfileTest();
   foodLabelTest();
   dailyBudgetTest();
   healthSignalTest();
   recommendationModelTest();
 }
-

@@ -11,8 +11,9 @@ import {
 } from '../model/AiModels';
 import { COLORS, RADIUS, SPACING, BUTTON, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
 import { BasicDataSource } from '../utils/BasicDataSource';
+import { PAGE_SIZE_CONFIG } from '../constants/AppConfig';
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = PAGE_SIZE_CONFIG.RECIPE_COMMUNITY_PAGE_SIZE;
 
 function getCategoryLabel(key: string): string {
   const map: Map<string, string> = new Map()

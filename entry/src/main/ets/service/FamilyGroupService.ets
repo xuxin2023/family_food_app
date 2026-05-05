@@ -10,17 +10,18 @@ import {
 } from '../model/FamilyGroup';
 import { AuthService } from './AuthService';
 import { FamilyProfile } from '../model/FamilyProfile';
+import { GROUP_CONFIG } from '../constants/AppConfig';
 
 const TAG = 'FamilyGroupService';
 const DOMAIN_ZERO = 0;
 
 /** 邀请码字符集 */
 const INVITE_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-const INVITE_CODE_LENGTH = 6;
+const INVITE_CODE_LENGTH = GROUP_CONFIG.INVITE_CODE_LENGTH;
 
 /** 免费版群组创建限制 */
-const FREE_GROUP_LIMIT = 1;
-const FREE_MEMBER_LIMIT = 4;
+const FREE_GROUP_LIMIT = GROUP_CONFIG.FREE_GROUP_LIMIT;
+const FREE_MEMBER_LIMIT = GROUP_CONFIG.FREE_GROUP_MEMBER_LIMIT;
 
 export interface CreateGroupParams {
   groupName: string;

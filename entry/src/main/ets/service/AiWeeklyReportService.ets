@@ -2,6 +2,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { http } from '@kit.NetworkKit';
 import { WeeklyReport, WeeklyDietData } from '../engine/WeeklyReportEngine';
 import { FamilyProfile } from '../model/FamilyProfile';
+import { API_TIMEOUT_CONFIG } from '../constants/AppConfig';
 
 // AgentArts API响应内部结构
 class AgentArtsChoiceMessage {
@@ -47,8 +48,8 @@ class HttpRequestOptions {
   method: http.RequestMethod = http.RequestMethod.POST;
   header: Record<string, string> = {};
   extraData: string | Object = '';
-  connectTimeout: number = 15000;
-  readTimeout: number = 20000;
+  connectTimeout: number = API_TIMEOUT_CONFIG.AI_CONNECT_TIMEOUT_MS;
+  readTimeout: number = API_TIMEOUT_CONFIG.AI_READ_TIMEOUT_MS;
 }
 
 const TAG = 'AiWeeklyReportService';
@@ -205,8 +206,8 @@ export class AiWeeklyReportService {
         method: http.RequestMethod.POST,
         header: reqHeaders,
         extraData: requestBody,
-        connectTimeout: 15000,
-        readTimeout: 20000
+        connectTimeout: API_TIMEOUT_CONFIG.AI_CONNECT_TIMEOUT_MS,
+        readTimeout: API_TIMEOUT_CONFIG.AI_READ_TIMEOUT_MS
       };
 
       const response = await httpRequest.request(AGENT_ARTS_ENDPOINT, reqOptions);

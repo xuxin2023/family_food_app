@@ -413,10 +413,10 @@ struct SettingsPage {
       promptAction.showToast({ message: '本地数据已清除，应用将重启' })
 
       // 5. 延迟重启应用以重新初始化数据库
+      // 注意：router 没有 clear() API，使用 replaceUrl 跳到首页
       this.restartTimer = setTimeout(() => {
         try {
-          router.clear()
-          router.pushUrl({ url: 'pages/Index' })
+          router.replaceUrl({ url: 'pages/Index' })
         } catch (_navErr) {
           hilog.warn(0x0000, 'SettingsPage', 'restart navigation failed')
         }

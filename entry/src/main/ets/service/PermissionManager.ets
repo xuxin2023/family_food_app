@@ -23,14 +23,24 @@ export enum PermissionStatus {
 /**
  * 敏感权限清单
  */
-export const SENSITIVE_PERMISSIONS = {
-  /** 分布式数据同步 - 用于云同步功能 */
-  DISTRIBUTED_DATASYNC: 'ohos.permission.DISTRIBUTED_DATASYNC' as Permissions,
-  /** 活动运动数据 - 用于华为健康数据读取 */
-  ACTIVITY_MOTION: 'ohos.permission.ACTIVITY_MOTION' as Permissions,
-  /** 摄像头 - 用于扫码 */
-  CAMERA: 'ohos.permission.CAMERA' as Permissions,
-} as const;
+class SensitivePermissionItem {
+  readonly key: string;
+  readonly value: Permissions;
+
+  constructor(key: string, value: Permissions) {
+    this.key = key;
+    this.value = value;
+  }
+}
+
+/**
+ * 敏感权限清单
+ */
+export class SENSITIVE_PERMISSIONS {
+  static readonly DISTRIBUTED_DATASYNC: Permissions = 'ohos.permission.DISTRIBUTED_DATASYNC';
+  static readonly ACTIVITY_MOTION: Permissions = 'ohos.permission.ACTIVITY_MOTION';
+  static readonly CAMERA: Permissions = 'ohos.permission.CAMERA';
+}
 
 export class PermissionManager {
   private static instance: PermissionManager;
@@ -78,9 +88,9 @@ export class PermissionManager {
 
     try {
       const atManager = abilityAccessCtrl.createAtManager();
-      const result = await atManager.checkAccessToken(
-        { tokenId: 0, permissionName: permission }
-      );
+      // checkAccessToken 需要两个参数: tokenID 和 permissionName
+      const tokenId = 0;
+      const result = await atManager.checkAccessToken(tokenId, permission);
       const status = result === abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED
         ? PermissionStatus.GRANTED
         : PermissionStatus.DENIED;
@@ -94,9 +104,6 @@ export class PermissionManager {
 
   /**
    * 请求单个权限（带用户友好提示）
-   * @param permission 权限名
-   * @param rationale 用户友好解释（当权限被拒绝时展示）
-   * @returns 是否已授予
    */
   async requestPermission(
     permission: Permissions,

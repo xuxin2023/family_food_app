@@ -3,6 +3,7 @@
 
 import { Recipe } from './Recipe';
 import { FamilyProfile, HealthGoal } from './FamilyProfile';
+import { AI_CACHE_CONFIG } from '../constants/AppConfig';
 
 // ==================== AI食谱推荐 ====================
 
@@ -135,7 +136,7 @@ export class AiRecommendationCacheEntry {
     this.timestamp = Date.now();
   }
 
-  isExpired(maxAgeMs: number = 5 * 60 * 1000): boolean {
+  isExpired(maxAgeMs: number = AI_CACHE_CONFIG.AI_DATA_EXPIRY_MS): boolean {
     return Date.now() - this.timestamp > maxAgeMs;
   }
 }
@@ -154,7 +155,7 @@ export class AiNutritionCacheEntry {
     this.timestamp = Date.now();
   }
 
-  isExpired(maxAgeMs: number = 10 * 60 * 1000): boolean {
+  isExpired(maxAgeMs: number = AI_CACHE_CONFIG.AI_ADVICE_EXPIRY_MS): boolean {
     return Date.now() - this.timestamp > maxAgeMs;
   }
 }

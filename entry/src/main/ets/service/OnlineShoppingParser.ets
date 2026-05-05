@@ -9,6 +9,7 @@ import { http } from '@kit.NetworkKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FoodLabel, NutritionPer100g, FoodSource } from '../model/FoodLabel';
 import { OcrService } from './OcrService';
+import { API_TIMEOUT_CONFIG } from '../constants/AppConfig';
 
 const TAG = 'OnlineShoppingParser';
 const DOMAIN_ZERO = 0;
@@ -497,8 +498,8 @@ export class OnlineShoppingParser {
           'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
         } as Record<string, string>,
         extraData: bodyStr,
-        connectTimeout: 10000,
-        readTimeout: 15000
+        connectTimeout: API_TIMEOUT_CONFIG.DEFAULT_CONNECT_TIMEOUT_MS,
+        readTimeout: API_TIMEOUT_CONFIG.DEFAULT_READ_TIMEOUT_MS
       }).then((response: http.HttpResponse) => {
         if (response.responseCode === 200) {
           const resultStr = response.result as string;

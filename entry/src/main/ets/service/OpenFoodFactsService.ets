@@ -8,6 +8,7 @@ import { http } from '@kit.NetworkKit';
 import { image } from '@kit.ImageKit';
 import { FoodLabel, NutritionPer100g, FoodSource } from '../model/FoodLabel';
 import { JsonObject } from '../model/JsonTypes';
+import { API_TIMEOUT_CONFIG } from '../constants/AppConfig';
 
 // ===== 公开的营养数据接口（替代已移除的 FoodAdapterTypes.FoodNutrition） =====
 
@@ -39,7 +40,7 @@ export interface OffFoodNutrition {
 const OFF_BASE_URL: string = 'https://world.openfoodfacts.org/api/v2/';
 
 /** 请求超时时间（毫秒） */
-const REQUEST_TIMEOUT: number = 10000;
+const REQUEST_TIMEOUT: number = API_TIMEOUT_CONFIG.DEFAULT_CONNECT_TIMEOUT_MS;
 
 /** User-Agent 标识 */
 const USER_AGENT: string = 'FamilyFoodApp/1.0';

@@ -28,7 +28,7 @@ struct MemberPage {
     Column() {
       // 顶部导航
       Row() {
-        Text('←').fontSize(24).fontColor(COLORS.PRIMARY)
+        Text($r('app.string.back_arrow')).fontSize(24).fontColor(COLORS.PRIMARY)
           .onClick(() => { safeBack() })
         Text($r('app.string.member_manage')).fontSize(20).fontWeight(FontWeight.Bold)
           .margin({ left: 16 })

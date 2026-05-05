@@ -42,7 +42,7 @@ import { HealthSignal, BpStatus, BsStatus } from '../model/HealthSignal';
 
 import { RecipeRepository } from '../repository/RecipeRepository';
 
-
+import { AI_CACHE_CONFIG, API_TIMEOUT_CONFIG } from '../constants/AppConfig';
 
 const TAG = 'AiRecipeRecommenderService';
 
@@ -54,7 +54,7 @@ const AGENT_ARTS_ENDPOINT = 'https://agentarts.cloud.huawei.com/v1/chat/completi
 
 const AGENT_ARTS_MODEL = 'agentarts-food-polish';
 
-const CACHE_TTL_MS = 5 * 60 * 1000; // 缓存5分钟
+const CACHE_TTL_MS = AI_CACHE_CONFIG.RECIPE_RECOMMENDER_CACHE_TTL_MS; // 缓存5分钟
 
 
 
@@ -78,9 +78,9 @@ class HttpRequestOptions {
 
   extraData: string | Object = '';
 
-  connectTimeout: number = 15000;
+  connectTimeout: number = API_TIMEOUT_CONFIG.AI_CONNECT_TIMEOUT_MS;
 
-  readTimeout: number = 20000;
+  readTimeout: number = API_TIMEOUT_CONFIG.AI_READ_TIMEOUT_MS;
 
 }
 
@@ -1104,9 +1104,9 @@ ${request.preference ? `额外偏好：${request.preference}` : ''}
 
         extraData: requestBody,
 
-        connectTimeout: 15000,
+        connectTimeout: API_TIMEOUT_CONFIG.AI_CONNECT_TIMEOUT_MS,
 
-        readTimeout: 25000
+        readTimeout: API_TIMEOUT_CONFIG.AI_READ_TIMEOUT_MS
 
       };
 

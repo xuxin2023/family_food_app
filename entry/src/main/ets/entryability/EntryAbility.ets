@@ -11,9 +11,10 @@ import { PermissionManager } from '../service/PermissionManager';
 import { DataSource } from '../model/HealthSignal';
 import { MemberTier } from '../model/MemberStatus';
 import { preferences } from '@kit.ArkData';
+import { TIME_INTERVAL_CONFIG, CRASH_LOG_CONFIG, HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'EntryAbility';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 export default class EntryAbility extends UIAbility {
   private appState: AppState = AppState.getInstance();
@@ -121,7 +122,7 @@ export default class EntryAbility extends UIAbility {
     this.lastForegroundTime = now;
 
     // 刷新健康数据（仅家庭版及以上，且距上次超过5分钟）
-    if (this.appState.hasFamilyAccess() && timeSinceLastForeground > 5 * 60 * 1000) {
+    if (this.appState.hasFamilyAccess() && timeSinceLastForeground > TIME_INTERVAL_CONFIG.HEALTH_REFRESH_THRESHOLD_MS) {
       this.refreshHealthData();
     }
 
@@ -132,7 +133,7 @@ export default class EntryAbility extends UIAbility {
     if (this.healthRefreshInterval === -1 && this.appState.hasFamilyAccess()) {
       this.healthRefreshInterval = setInterval(() => {
         this.refreshHealthData();
-      }, 30 * 60 * 1000);
+      }, TIME_INTERVAL_CONFIG.HEALTH_REFRESH_INTERVAL_MS);
     }
   }
 
@@ -284,7 +285,7 @@ export default class EntryAbility extends UIAbility {
   }
 
   /** 最多保留的崩溃日志文件数 */
-  private readonly MAX_CRASH_LOGS: number = 20;
+  private readonly MAX_CRASH_LOGS: number = CRASH_LOG_CONFIG.MAX_CRASH_LOGS;
 
   /**
    * 将崩溃日志写入本地文件

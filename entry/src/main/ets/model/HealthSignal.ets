@@ -2,15 +2,17 @@
 //
 // V2新增：心率、血氧饱和度、压力等级、精确步数、心率区间、体温
 
+import { HEALTH_CONFIG } from '../constants/AppConfig';
+
 // ===== 常量定义 =====
 /** 推荐日行步数目标 */
-export const DAILY_STEP_GOAL = 8000;
+export const DAILY_STEP_GOAL = HEALTH_CONFIG.DAILY_STEP_GOAL;
 /** 血氧正常阈值（百分比） */
-export const SPO2_NORMAL_THRESHOLD = 95;
+export const SPO2_NORMAL_THRESHOLD = HEALTH_CONFIG.SPO2_NORMAL_THRESHOLD;
 /** 静息心率偏高阈值（bpm） */
-export const RESTING_HEART_RATE_HIGH = 100;
+export const RESTING_HEART_RATE_HIGH = HEALTH_CONFIG.RESTING_HEART_RATE_HIGH;
 /** 运动心率偏高阈值（bpm） */
-export const ACTIVE_HEART_RATE_HIGH = 140;
+export const ACTIVE_HEART_RATE_HIGH = HEALTH_CONFIG.ACTIVE_HEART_RATE_HIGH;
 
 export enum StepLevel {
   LOW = '低',
@@ -115,6 +117,8 @@ export class HealthSignal {
   hadHighSodiumToday: boolean = false;
   hadHighSugarToday: boolean = false;
   source: DataSource = DataSource.MANUAL;
+  /** 数据最后更新时间戳（用于缓存过期判断） */
+  lastUpdated: number = 0;
 
   // ===== V2 穿戴设备扩展字段 =====
   /** 精确步数（穿戴设备采集） */
@@ -301,6 +305,7 @@ export class HealthSignal {
     signal.lightSleepMinutes = Number(json.lightSleepMinutes || 0);
     signal.totalSleepMinutes = Number(json.totalSleepMinutes || 0);
     signal.restingHeartRate = Number(json.restingHeartRate || 0);
+    signal.lastUpdated = Number(json.lastUpdated || 0);
     return signal;
   }
 }

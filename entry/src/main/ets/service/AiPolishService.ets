@@ -9,6 +9,7 @@
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { http } from '@kit.NetworkKit';
+import { AI_CACHE_CONFIG, API_TIMEOUT_CONFIG } from '../constants/AppConfig';
 
 const TAG = 'AiPolishService';
 const DOMAIN_ZERO = 0;
@@ -16,7 +17,7 @@ const DOMAIN_ZERO = 0;
 // AgentArts配置
 const AGENT_ARTS_ENDPOINT = 'https://agentarts.cloud.huawei.com/v1/chat/completions';
 const AGENT_ARTS_MODEL = 'agentarts-food-polish';  // 预配置的润色Agent
-const FREE_TOKEN_QUOTA = 2000000;  // 200万tokens免费额度
+const FREE_TOKEN_QUOTA = AI_CACHE_CONFIG.FREE_TOKEN_QUOTA;  // 200万tokens免费额度
 
 // 润色输入（已脱敏）
 export interface PolishInput {
@@ -175,8 +176,8 @@ export class AiPolishService {
           'Authorization': `Bearer ${this.apiKey}`
         },
         extraData: requestBody,
-        connectTimeout: 10000,
-        readTimeout: 15000
+        connectTimeout: API_TIMEOUT_CONFIG.DEFAULT_CONNECT_TIMEOUT_MS,
+        readTimeout: API_TIMEOUT_CONFIG.DEFAULT_READ_TIMEOUT_MS
       });
 
       httpRequest.destroy();

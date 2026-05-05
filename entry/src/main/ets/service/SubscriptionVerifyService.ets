@@ -4,6 +4,7 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { http } from '@kit.NetworkKit';
 import { common } from '@kit.AbilityKit';
+import { TIME_INTERVAL_CONFIG, API_TIMEOUT_CONFIG } from '../constants/AppConfig';
 import { preferences } from '@kit.ArkData';
 import { MemberTier } from '../model/MemberStatus';
 import { AuthService } from './AuthService';
@@ -26,7 +27,7 @@ export class SubscriptionVerifyService {
   private authService: AuthService = new AuthService();
   private lastVerifyResult: SubscriptionVerifyResult | null = null;
   private lastVerifyTime: number = 0;
-  private verifyInterval: number = 4 * 60 * 60 * 1000;
+  private verifyInterval: number = TIME_INTERVAL_CONFIG.SUBSCRIPTION_VERIFY_INTERVAL_MS;
 
   async init(authService: AuthService): Promise<void> {
     this.authService = authService;
@@ -51,8 +52,8 @@ export class SubscriptionVerifyService {
         method: http.RequestMethod.POST,
         header: { 'Content-Type': 'application/json' },
         extraData: payload,
-        connectTimeout: 10000,
-        readTimeout: 10000
+        connectTimeout: API_TIMEOUT_CONFIG.DEFAULT_CONNECT_TIMEOUT_MS,
+        readTimeout: API_TIMEOUT_CONFIG.DEFAULT_READ_TIMEOUT_MS
       });
       httpRequest.destroy();
 

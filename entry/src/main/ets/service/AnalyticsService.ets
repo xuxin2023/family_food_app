@@ -4,21 +4,23 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
 import { relationalStore } from '@kit.ArkData';
+import { AppState } from '../AppState';
 import {
   AnalyticsEvent,
   EventType,
   ANALYTICS_TABLE_NAME,
   ANALYTICS_COLUMNS
 } from '../model/AnalyticsRecord';
+import { TIME_INTERVAL_CONFIG } from '../constants/AppConfig';
 
 const TAG = 'AnalyticsService';
 const DOMAIN_ZERO = 0;
 
 /** 内存队列最大容量，达到此数量触发自动 flush */
-const FLUSH_BATCH_SIZE = 30;
+const FLUSH_BATCH_SIZE = TIME_INTERVAL_CONFIG.ANALYTICS_BATCH_SIZE;
 
 /** 自动 flush 的间隔（毫秒） */
-const FLUSH_INTERVAL_MS = 5 * 60 * 1000; // 5 分钟
+const FLUSH_INTERVAL_MS = TIME_INTERVAL_CONFIG.ANALYTICS_FLUSH_INTERVAL_MS; // 5 分钟
 
 let analyticsServiceInstance: AnalyticsService | null = null;
 

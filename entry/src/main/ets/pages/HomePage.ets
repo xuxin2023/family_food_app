@@ -27,7 +27,6 @@ struct HomePage {
   @State familyMembers: FamilyProfile[] = []
   @State selectedMemberId: string = ''
   @State currentSloganIndex: number = 0
-  @State refreshToggle: boolean = false
   @State milestones: Milestone[] = []
   @State showLinkInput: boolean = false
   @State linkInputText: string = ''
@@ -36,6 +35,19 @@ struct HomePage {
   @State memberStatusColors: Map<string, string> = new Map()
   @State remainingScans: number = 0
   @State todayDate: string = ''
+
+  // ===== 响应式状态：AppStorage 版本号绑定 =====
+  // 当 AppState 中相应数据变更时，这些值会自动递增，触发 UI 刷新
+  @StorageProp('memberVersion') memberVersion: number = 0
+  @StorageProp('tierVersion') tierVersion: number = 0
+  @StorageProp('scanVersion') scanVersion: number = 0
+  @StorageProp('dietVersion') dietVersion: number = 0
+
+  // 记录上次加载时的版号，避免重复刷新
+  private lastMemberVersion: number = -1
+  private lastTierVersion: number = -1
+  private lastScanVersion: number = -1
+  private lastDietVersion: number = -1
 
   private appState: AppState = AppState.getInstance()
   private milestoneService: MilestoneService = MilestoneService.getInstance()
@@ -51,9 +63,57 @@ struct HomePage {
   async aboutToAppear() {
     this.currentSloganIndex = Math.floor(Math.random() * this.slogans.length)
     this.todayDate = this.getTodayDate()
+    await this.refreshAll()
+  }
+
+  /** onPageShow：每次页面变为可见时触发 — 响应式增量刷新 */
+  async onPageShow() {
+    await this.refreshIfNeeded()
+  }
+
+  /**
+   * 增量刷新：仅对比版号，只刷新有变化的数据
+   * 避免每次 onPageShow 都全量加载
+   */
+  private async refreshIfNeeded(): Promise<void> {
+    let needsRefresh = false
+
+    // 会员等级变更 → 刷新剩余扫码次数
+    if (this.tierVersion !== this.lastTierVersion) {
+      this.remainingScans = this.appState.getRemainingScans()
+      this.refreshMemberStatuses()
+      this.lastTierVersion = this.tierVersion
+      needsRefresh = true
+    }
+    // 成员数据变更 → 重载成员列表
+    if (this.memberVersion !== this.lastMemberVersion) {
+      await this.loadFamilyMembers()
+      this.lastMemberVersion = this.memberVersion
+      needsRefresh = true
+    }
+    // 扫码记录变更 → 刷新当天的状态
+    if (this.scanVersion !== this.lastScanVersion) {
+      this.refreshMemberStatuses()
+      this.lastScanVersion = this.scanVersion
+      needsRefresh = true
+    }
+    // 膳食记录变更
+    if (this.dietVersion !== this.lastDietVersion) {
+      this.refreshMemberStatuses()
+      this.lastDietVersion = this.dietVersion
+      needsRefresh = true
+    }
+  }
+
+  private async refreshAll(): Promise<void> {
     await this.loadFamilyMembers()
     this.refreshMemberStatuses()
     await this.refreshMilestones()
+    // 记录当前版号
+    this.lastMemberVersion = this.memberVersion
+    this.lastTierVersion = this.tierVersion
+    this.lastScanVersion = this.scanVersion
+    this.lastDietVersion = this.dietVersion
   }
 
   private async refreshMilestones() {
@@ -742,13 +802,6 @@ struct HomePage {
           .fontWeight(FontWeight.Medium)
           .fontColor(COLORS.TEXT_PRIMARY)
         Blank()
-        Text('点击刷新')
-          .fontSize(11)
-          .fontColor(COLORS.ACCENT_BLUE)
-          .onClick(() => {
-            this.refreshToggle = !this.refreshToggle
-            this.refreshMemberStatuses()
-          })
       }
       .width('100%')
       .margin({ bottom: 8 })

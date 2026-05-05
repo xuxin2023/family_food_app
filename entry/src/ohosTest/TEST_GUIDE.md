@@ -147,12 +147,17 @@ cd entry
 
 | 测试文件 | 测试数 | 核心测试点 |
 |----------|--------|------------|
+| RuleEngineTest.ets | 27 | 过敏红线、动态修正、四级映射、原因生成、批量计算 |
+| NutriScoreEngineTest.ets | 22 | 满分/扣分/加分、边界值、真实场景(纯净水/可乐/鸡胸肉) |
+| CredibilityEngineTest.ets | 8 | 高/低/无信息评分、OEM识别、雷达维度、公开查询 |
 | FoodAdapterEngineTest.ets | 10 | 基础预算计算、步数调整、睡眠调整、扫描衰减、过敏红线、连续扫描关联风险 |
 | RecommendationEngineTest.ets | 6 | 单成员适配、家庭对比、摘要生成 |
 | ElderFriendlyEngineTest.ets | 9 | 低活动量、睡眠差、血压高、血糖高、多因素叠加、低风险 |
-| ScanOrchestratorTest.ets | 8 | 扫码流程编排、回调处理 |
 | WeeklyReportEngineTest.ets | 5 | 周报生成、趋势分析 |
-| RuleEngineTest.ets | (已有) | 过敏红线、动态修正、四级映射 |
+| MealBalanceEngineTest.ets | (已有) | 美食平衡引擎 |
+| ChildProtectionEngineTest.ets | (已有) | 儿童保护引擎 |
+| PositiveAdviceEngineTest.ets | (已有) | 正面建议引擎 |
+| BasketCheckEngineTest.ets | (已有) | 购物篮检查引擎 |
 
 ### 模型测试概览
 

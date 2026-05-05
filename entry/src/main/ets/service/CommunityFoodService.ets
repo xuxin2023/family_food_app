@@ -3,6 +3,7 @@ import { http } from '@kit.NetworkKit';
 import { common } from '@kit.AbilityKit';
 import { FoodLabel, FoodSource, NutritionPer100g } from '../model/FoodLabel';
 import { AuthService } from './AuthService';
+import { API_TIMEOUT_CONFIG } from '../constants/AppConfig';
 
 const TAG = 'CommunityFoodService';
 const DOMAIN_ZERO = 0;
@@ -81,8 +82,8 @@ export class CommunityFoodService {
       const response = await httpRequest.request(url, {
         method: http.RequestMethod.GET,
         header: { 'Content-Type': 'application/json' },
-        connectTimeout: 8000,
-        readTimeout: 8000
+        connectTimeout: API_TIMEOUT_CONFIG.DEFAULT_CONNECT_TIMEOUT_MS,
+        readTimeout: API_TIMEOUT_CONFIG.DEFAULT_READ_TIMEOUT_MS
       });
       httpRequest.destroy();
 
@@ -135,8 +136,8 @@ export class CommunityFoodService {
         method: http.RequestMethod.POST,
         header: { 'Content-Type': 'application/json' },
         extraData: JSON.stringify(payload),
-        connectTimeout: 10000,
-        readTimeout: 10000
+        connectTimeout: API_TIMEOUT_CONFIG.DEFAULT_CONNECT_TIMEOUT_MS,
+        readTimeout: API_TIMEOUT_CONFIG.DEFAULT_READ_TIMEOUT_MS
       });
       httpRequest.destroy();
 

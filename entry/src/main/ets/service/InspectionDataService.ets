@@ -2,6 +2,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { http } from '@kit.NetworkKit';
 import { common } from '@kit.AbilityKit';
 import { preferences } from '@kit.ArkData';
+import { TIME_INTERVAL_CONFIG, API_TIMEOUT_CONFIG } from '../constants/AppConfig';
 
 const TAG = 'InspectionDataService';
 const DOMAIN_ZERO = 0;
@@ -22,8 +23,8 @@ function getObjectKeys(obj: Record<string, Object>): string[] {
 class HttpRequestOption {
   method: http.RequestMethod = http.RequestMethod.GET;
   header: Record<string, string> = {};
-  connectTimeout: number = 10000;
-  readTimeout: number = 10000;
+  connectTimeout: number = API_TIMEOUT_CONFIG.DEFAULT_CONNECT_TIMEOUT_MS;
+  readTimeout: number = API_TIMEOUT_CONFIG.DEFAULT_READ_TIMEOUT_MS;
 }
 
 export interface InspectionRecord {
@@ -50,7 +51,7 @@ export interface InspectionSummary {
 export class InspectionDataService {
   private context: common.Context | null = null;
   private cache: Map<string, InspectionSummary> = new Map();
-  private syncInterval: number = 24 * 60 * 60 * 1000;
+  private syncInterval: number = TIME_INTERVAL_CONFIG.INSPECTION_SYNC_INTERVAL_MS;
 
   async init(context: common.Context): Promise<void> {
     this.context = context;

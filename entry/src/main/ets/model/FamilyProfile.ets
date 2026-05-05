@@ -124,8 +124,14 @@ export class FamilyProfile {
     const profile = new FamilyProfile();
     profile.memberId = json.memberId as string;
     profile.nickname = json.nickname as string;
-    profile.ageGroup = json.ageGroup as string as AgeGroup;
-    profile.healthGoals = json.healthGoals as Object as HealthGoal[];
+    const ageGroupVal = json.ageGroup as string;
+    profile.ageGroup = Object.values(AgeGroup).includes(ageGroupVal as AgeGroup)
+      ? (ageGroupVal as AgeGroup)
+      : AgeGroup.ADULT;
+    const goals = json.healthGoals as Object;
+    profile.healthGoals = Array.isArray(goals)
+      ? (goals as string[]).filter(g => Object.values(HealthGoal).includes(g as HealthGoal)) as HealthGoal[]
+      : [HealthGoal.NONE];
     profile.allergens = json.allergens as string[];
     profile.dailyBudget = DailyBudgetConfig.fromJsonRaw(json.dailyBudget as Record<string, Object>);
     profile.mealTimes = json.mealTimes as Object as MealTimes;

@@ -2,6 +2,16 @@
 //
 // V2新增：心率、血氧饱和度、压力等级、精确步数、心率区间、体温
 
+// ===== 常量定义 =====
+/** 推荐日行步数目标 */
+export const DAILY_STEP_GOAL = 8000;
+/** 血氧正常阈值（百分比） */
+export const SPO2_NORMAL_THRESHOLD = 95;
+/** 静息心率偏高阈值（bpm） */
+export const RESTING_HEART_RATE_HIGH = 100;
+/** 运动心率偏高阈值（bpm） */
+export const ACTIVE_HEART_RATE_HIGH = 140;
+
 export enum StepLevel {
   LOW = '低',
   NORMAL = '正常',
@@ -170,12 +180,12 @@ export class HealthSignal {
 
   /** 步数是否达到推荐日行8000步 */
   isStepGoalMet(): boolean {
-    return this.stepCount >= 8000;
+    return this.stepCount >= DAILY_STEP_GOAL;
   }
 
   /** 血氧是否正常（>= 95%） */
   isSpO2Normal(): boolean {
-    return this.spo2 >= 95 || this.spo2Level === SpO2Level.NORMAL;
+    return this.spo2 >= SPO2_NORMAL_THRESHOLD || this.spo2Level === SpO2Level.NORMAL;
   }
 
   /** 是否处于压力状态 */
@@ -185,7 +195,7 @@ export class HealthSignal {
 
   /** 心率是否偏高（静息>100或当前>140） */
   isHeartRateHigh(): boolean {
-    return this.restingHeartRate > 100 || this.heartRate > 140;
+    return this.restingHeartRate > RESTING_HEART_RATE_HIGH || this.heartRate > ACTIVE_HEART_RATE_HIGH;
   }
 
   /** 是否在燃脂或有氧区间（运动适度） */
@@ -223,7 +233,7 @@ export class HealthSignal {
     if (this.stepCount >= 10000) {
       return 1.15; // 非常活跃，放宽10%
     }
-    if (this.stepCount >= 8000) {
+    if (this.stepCount >= DAILY_STEP_GOAL) {
       return 1.05; // 达标
     }
     if (this.stepCount >= 5000) {

@@ -30,12 +30,20 @@ struct SettingsPage {
   private appState: AppState = AppState.getInstance()
   private privacyController: webview.WebviewController = new webview.WebviewController()
   private agreementController: webview.WebviewController = new webview.WebviewController()
+  private restartTimer: number = -1  // 重启定时器ID，用于防止内存泄漏
 
   async aboutToAppear() {
     this.familyMembers = await this.appState.getAllMembers()
     if (this.familyMembers.length > 0) {
       this.selectedMemberId = this.familyMembers[0].memberId
       this.loadMemberSignal(this.selectedMemberId)
+    }
+  }
+
+  aboutToDisappear(): void {
+    if (this.restartTimer !== -1) {
+      clearTimeout(this.restartTimer)
+      this.restartTimer = -1
     }
   }
 
@@ -395,7 +403,7 @@ struct SettingsPage {
       }
 
       // 3. 重置 AppState 内部缓存
-      this.appState['cache'].clearAll()
+      this.appState.clearAllCache()
 
       // 4. 重置页面状态
       this.familyMembers = []
@@ -404,7 +412,7 @@ struct SettingsPage {
       promptAction.showToast({ message: '本地数据已清除，应用将重启' })
 
       // 5. 延迟重启应用以重新初始化数据库
-      setTimeout(() => {
+      this.restartTimer = setTimeout(() => {
         try {
           router.clear()
           router.pushUrl({ url: 'pages/Index' })

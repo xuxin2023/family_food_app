@@ -44,7 +44,7 @@ import { PositiveAdviceEngine, PositiveAdvice } from './engine/PositiveAdviceEng
 import { DateUtil } from './utils/DateUtil';
 import { CacheManager } from './utils/CacheManager';
 import { common } from '@kit.AbilityKit';
-import { relationalStore } from '@kit.ArkData';
+import { relationalStore, preferences } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import {
   MemberTier,
@@ -176,15 +176,19 @@ export class AppState {
       };
       const rdbStore = await relationalStore.getRdbStore(context, rdbConfig);
 
-      // 注入到所有仓库（共用同一连接）
-      await this.familyRepo.init(rdbStore);
-      await this.foodRepo.init(rdbStore);
-      await this.historyRepo.init(rdbStore);
+      // 注入到所有仓库（共用同一连接）— 并行初始化无依赖的仓库
+      await Promise.all([
+        this.familyRepo.init(rdbStore),
+        this.foodRepo.init(rdbStore),
+        this.historyRepo.init(rdbStore),
+      ]);
 
-      // 初始化群组和食谱数据库
+      // 初始化群组和食谱数据库（有依赖顺序）
       this.groupRepo.init(rdbStore);
-      await this.groupRepo.createTables();
-      this.recipeRepo.init(rdbStore);
+      await Promise.all([
+        this.groupRepo.createTables(),
+        this.recipeRepo.init(rdbStore),
+      ]);
       await this.recipeRepo.createTables();
 
       // 初始化认证服务
@@ -218,6 +222,7 @@ export class AppState {
       // 加载缓存
       this.membersCache = await this.familyRepo.getAllMembers();
       await this.restoreTodayBudgets();
+      await this.restoreHealthSignalsFromPrefs(context);
 
       this.isInitialized = true;
       hilog.info(DOMAIN_ZERO, TAG, 'AppState initialized');
@@ -1130,5 +1135,108 @@ export class AppState {
       dataJson,
       version
     );
+  }
+
+  // ========== 应用生命周期管理 ==========
+
+  /**
+   * 持久化所有成员的健康信号到Preferences
+   * 由 app.ets 在应用销毁时调用，防止重启后 HealthSignal 状态丢失
+   */
+  persistAllHealthSignals(): void {
+    try {
+      const context = AppStorage.get<Object>('appContext') as Context;
+      if (!context) return;
+      // 异步执行但不阻塞
+      this.doPersistHealthSignals(context);
+    } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'persistAllHealthSignals failed: %{public}s', JSON.stringify(error));
+    }
+  }
+
+  private async doPersistHealthSignals(context: Context): Promise<void> {
+    try {
+      const prefs = await preferences.getPreferences(context, 'health_signal_cache');
+      const today = DateUtil.getToday();
+      const entries = Array.from(this.healthSignalsCache.entries());
+      for (let i = 0; i < entries.length; i++) {
+        const entry = entries[i];
+        const memberId = entry[0];
+        const signal = entry[1];
+        if (signal.date === today && signal.source === DataSource.MANUAL) {
+          const key = 'signal_' + memberId + '_' + today;
+          await prefs.put(key, JSON.stringify(signal.toJson()));
+        }
+      }
+      await prefs.flush();
+    } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'doPersistHealthSignals failed: %{public}s', JSON.stringify(error));
+    }
+  }
+
+  /**
+   * 从Preferences恢复今日手动设置的健康信号
+   * 在 init 完成后调用
+   */
+  async restoreHealthSignalsFromPrefs(context: Context): Promise<void> {
+    try {
+      const prefs = await preferences.getPreferences(context, 'health_signal_cache');
+      const today = DateUtil.getToday();
+      for (const member of this.membersCache) {
+        const key = `signal_${member.memberId}_${today}`;
+        const jsonStr = await prefs.get(key, '');
+        if (jsonStr && typeof jsonStr === 'string' && jsonStr.length > 0) {
+          const json = JSON.parse(jsonStr) as Record<string, Object>;
+          const signal = HealthSignal.fromJson(json);
+          this.healthSignalsCache.set(member.memberId, signal);
+        }
+      }
+    } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'restoreHealthSignalsFromPrefs failed: %{public}s', JSON.stringify(error));
+    }
+  }
+
+  /**
+   * 清理非关键缓存（内存压力时调用）
+   * 保留今日预算和今日健康信号，清理历史数据
+   */
+  trimCache(): void {
+    // 保留成员缓存（关键数据）
+    // 清理健康信号中非今日数据
+    this.cache.clearNonCurrentHealthSignals(DateUtil.getToday());
+    hilog.info(DOMAIN_ZERO, TAG, 'Cache trimmed due to memory pressure');
+  }
+
+  /**
+   * 清除所有缓存（用于SettingsPage的清除数据功能）
+   * 替代方括号反射访问的 public 接口
+   */
+  clearAllCache(): void {
+    this.cache.clearAll();
+  }
+
+  /**
+   * 等待 AppState 初始化就绪
+   * 轮询 AppStorage 中的 'appStateReady' 标记
+   * @param timeoutMs 最大等待时间（毫秒，默认5000）
+   */
+  static async waitForReady(timeoutMs: number = 5000): Promise<void> {
+    const pollInterval = 100;
+    let remaining = timeoutMs;
+    while (remaining > 0) {
+      const ready = AppStorage.get('appStateReady') as boolean;
+      if (ready) return;
+      await AppState.delay(pollInterval);
+      remaining -= pollInterval;
+    }
+    hilog.warn(DOMAIN_ZERO, TAG, 'waitForReady timeout, proceeding anyway');
+  }
+
+  private static delay(ms: number): Promise<void> {
+    return new Promise((resolve: Function) => {
+      setTimeout(() => {
+        resolve();
+      }, ms);
+    });
   }
 }

@@ -14,7 +14,7 @@ struct Index {
 
   async aboutToAppear(): Promise<void> {
     // 等待 AppState 初始化完成，避免跳转到首页时数据未就绪
-    await this.waitForAppStateReady()
+    await AppState.waitForReady()
     const state = AppState.getInstance();
     this.showGuide = !state.hasShownGuide;
     if (!this.showGuide) {
@@ -22,23 +22,8 @@ struct Index {
     }
   }
 
-  /**
-   * 等待 AppState 初始化就绪
-   */
-  private async waitForAppStateReady(): Promise<void> {
-    let maxWaitMs = 5000
-    const pollInterval = 100
-    while (maxWaitMs > 0) {
-      const ready = AppStorage.get<boolean>('appStateReady')
-      if (ready) return
-      await this.delay(pollInterval)
-      maxWaitMs -= pollInterval
-    }
-    // 超时后仍然继续（AppState init 有兜底逻辑）
-  }
-
-  private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
+  private navigateToHome(): void {
+    router.replaceUrl({ url: 'pages/HomePage' });
   }
 
   build() {
@@ -56,10 +41,6 @@ struct Index {
     const state = AppState.getInstance();
     state.hasShownGuide = true;
     this.navigateToHome();
-  }
-
-  private navigateToHome(): void {
-    router.replaceUrl({ url: 'pages/HomePage' });
   }
 }
 

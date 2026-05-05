@@ -102,7 +102,15 @@ export class FoodRepository {
 
     try {
       // 去重
-      const uniqueIds = [...new Set(foodIds)];
+      const uniqueMap: Record<string, boolean> = {};
+      const uniqueIds: string[] = [];
+      for (let i = 0; i < foodIds.length; i++) {
+        const id = foodIds[i];
+        if (!uniqueMap[id]) {
+          uniqueMap[id] = true;
+          uniqueIds.push(id);
+        }
+      }
       const predicates = new relationalStore.RdbPredicates(TABLE_NAME);
       predicates.in('food_id', uniqueIds);
       const resultSet = await this.rdbStore.query(predicates);

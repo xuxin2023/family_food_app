@@ -106,6 +106,19 @@ export class CacheManager {
     this._dailyBudgetsCache.clear();
   }
 
+  /** 清除非今日的健康信号缓存（内存压力时调用） */
+  clearNonCurrentHealthSignals(today: string): void {
+    const entries = Array.from(this._healthSignalsCache.entries());
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i];
+      const memberId = entry[0];
+      const signal = entry[1];
+      if (signal.date !== today) {
+        this._healthSignalsCache.delete(memberId);
+      }
+    }
+  }
+
   /** 移除与某个成员相关的所有缓存 */
   removeMemberData(memberId: string): void {
     this.removeMemberFromCache(memberId);

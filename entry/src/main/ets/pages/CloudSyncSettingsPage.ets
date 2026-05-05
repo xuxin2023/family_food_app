@@ -8,7 +8,6 @@ import { PermissionManager } from '../service/PermissionManager';
 import { SyncService, SyncEvent } from '../service/sync/SyncService';
 import { NetworkState } from '../service/NetworkMonitorService';
 import { CloudSyncConfig, SyncStrategy, ConflictResolution, createDefaultSyncConfig } from '../model/CloudSyncConfig';
-import { FEATURE_FLAGS } from '../constants/AppConfig';
 import { COLORS } from '../constants/AppTheme';
 
 interface StrategyItem { label: string; value: SyncStrategy; }
@@ -50,12 +49,6 @@ struct CloudSyncSettingsPage {
   private cloudAuth = this.appState.services.cloudAuthService;
 
   aboutToAppear(): void {
-    // 云同步功能未开放时，显示提示并返回
-    if (!FEATURE_FLAGS.ENABLE_CLOUD_SYNC) {
-      promptAction.showToast({ message: '云同步功能即将上线，敬请期待', duration: 2000 });
-      setTimeout(() => { safeBack(); }, 100);
-      return;
-    }
     this.refreshAllState();
     this.syncService.onEvent(this.onSyncEvent);
   }

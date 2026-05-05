@@ -12,6 +12,20 @@ import {
 import { FamilyProfile } from '../model/FamilyProfile';
 import { COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, BUTTON } from '../constants/AppTheme';
 
+interface ActionMenuButton {
+  text: string;
+  color: string;
+}
+
+class ActionMenuButtonItem implements ActionMenuButton {
+  text: string = '';
+  color: string = '';
+  constructor(text: string, color: string) {
+    this.text = text;
+    this.color = color;
+  }
+}
+
 const TAG = 'AiChatPage';
 const DOMAIN_ZERO = 0;
 
@@ -106,7 +120,7 @@ struct AiChatPage {
 
           // 消息列表
           ForEach(this.messages, (msg: ChatMessage) => {
-            this.MessageBubble({ message: msg })
+            this.MessageBubble(msg)
           }, (msg: ChatMessage) => msg.id)
         }
         .width('100%')
@@ -196,32 +210,32 @@ struct AiChatPage {
 
   // ========== 消息气泡 ==========
   @Builder
-  MessageBubble(message: ChatMessage) {
+  MessageBubble(msg: ChatMessage) {
     Row() {
-      if (message.role === ChatRole.USER) {
+      if (msg.role === ChatRole.USER) {
         // 右侧：用户消息
         Blank()
           .layoutWeight(1)
 
         Column() {
-          Text(message.content)
+          Text(msg.content)
             .fontSize(FONT_SIZE.BODY)
             .fontColor(COLORS.WHITE)
             .lineHeight(22)
 
-          if (message.status === MessageStatus.SENDING) {
+          if (msg.status === MessageStatus.SENDING) {
             Text('发送中...')
               .fontSize(FONT_SIZE.TINY)
               .fontColor(COLORS.WHITE)
               .margin({ top: 4 })
-          } else if (message.status === MessageStatus.FAILED) {
+          } else if (msg.status === MessageStatus.FAILED) {
             Text('发送失败')
               .fontSize(FONT_SIZE.TINY)
               .fontColor(COLORS.LEVEL_RED)
               .margin({ top: 4 })
           }
         }
-        .maxWidth('75%')
+        .constraintSize({ maxWidth: '75%' })
         .padding({ left: SPACING.MD, right: SPACING.MD, top: SPACING.SM, bottom: SPACING.SM })
         .backgroundColor(COLORS.ACCENT_PURPLE)
         .borderRadius(RADIUS.LG)
@@ -238,21 +252,20 @@ struct AiChatPage {
           .width(32)
           .height(32)
           .fill(COLORS.BG_WARM_PURPLE)
-          .overlay(Text('🤖').fontSize(16))
           .margin({ right: SPACING.SM })
 
         Column() {
-          Text(message.content)
+          Text(msg.content)
             .fontSize(FONT_SIZE.BODY)
             .fontColor(COLORS.TEXT_PRIMARY)
             .lineHeight(22)
 
-          Text(this.formatTime(message.timestamp))
+          Text(this.formatTime(msg.timestamp))
             .fontSize(FONT_SIZE.TINY)
             .fontColor(COLORS.TEXT_TERTIARY)
             .margin({ top: 4 })
         }
-        .maxWidth('70%')
+        .constraintSize({ maxWidth: '70%' })
         .padding({ left: SPACING.MD, right: SPACING.MD, top: SPACING.SM, bottom: SPACING.SM })
         .backgroundColor(COLORS.WHITE)
         .borderRadius(RADIUS.LG)
@@ -335,10 +348,22 @@ struct AiChatPage {
       m => m.memberId === this.selectedMemberId
     )
 
+    const btn0 = new ActionMenuButtonItem(items[0], COLORS.TEXT_PRIMARY)
+    const btn1 = items.length > 1 ? new ActionMenuButtonItem(items[1], COLORS.TEXT_PRIMARY) : null
+    const btn2 = items.length > 2 ? new ActionMenuButtonItem(items[2], COLORS.TEXT_PRIMARY) : null
+    const btn3 = items.length > 3 ? new ActionMenuButtonItem(items[3], COLORS.TEXT_PRIMARY) : null
+    const btn4 = items.length > 4 ? new ActionMenuButtonItem(items[4], COLORS.TEXT_PRIMARY) : null
+    const btn5 = items.length > 5 ? new ActionMenuButtonItem(items[5], COLORS.TEXT_PRIMARY) : null
+
     promptAction.showActionMenu({
       title: '切换家庭成员',
-      buttons: items.map((name: string) => ({ text: name, color: COLORS.TEXT_PRIMARY }))
-    }, (index: number) => {
+      buttons: [btn0, btn1, btn2, btn3, btn4, btn5]
+    }, (err: Error, data: promptAction.ActionMenuSuccessResponse) => {
+      if (err) {
+        console.info('showActionMenu err: ' + err);
+        return;
+      }
+      const index = data.index
       if (index >= 0 && index < this.familyMembers.length) {
         const member = this.familyMembers[index]
         this.selectedMemberId = member.memberId

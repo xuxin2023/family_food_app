@@ -7,65 +7,16 @@ import { AppState } from '../AppState';
 import { Recipe, RecipeComment, DietTag, RecipeIngredient, RecipeStep } from '../model/Recipe';
 import { COLORS, RADIUS, BUTTON, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
 import { BasicDataSource } from '../utils/BasicDataSource';
+import {
+  getCategoryLabel,
+  getCategoryEmoji,
+  getDifficultyLabel,
+  getDietTagLabel,
+  formatTime
+} from '../utils/RecipeUtil';
 
 const TAG = 'RecipeDetailPage';
 const DOMAIN_ZERO = 0;
-
-function getCategoryLabel(key: string): string {
-  const map: Map<string, string> = new Map()
-  map.set('breakfast', '早餐')
-  map.set('lunch', '午餐')
-  map.set('dinner', '晚餐')
-  map.set('snack', '零食')
-  map.set('beverage', '饮品')
-  map.set('dessert', '甜品')
-  map.set('soup', '汤羹')
-  map.set('staple', '主食')
-  return map.get(key) || key
-}
-
-function getCategoryEmoji(key: string): string {
-  const map: Map<string, string> = new Map()
-  map.set('breakfast', '🌅')
-  map.set('lunch', '☀️')
-  map.set('dinner', '🌙')
-  map.set('snack', '🍿')
-  map.set('beverage', '🥤')
-  map.set('dessert', '🍰')
-  map.set('soup', '🍲')
-  map.set('staple', '🍚')
-  return map.get(key) || '🍽️'
-}
-
-function getDifficultyLabel(key: string): string {
-  const map: Map<string, string> = new Map()
-  map.set('easy', '简单')
-  map.set('medium', '中等')
-  map.set('hard', '困难')
-  return map.get(key) || key
-}
-
-function getDietTagLabel(tag: DietTag): string {
-  const map: Map<string, string> = new Map()
-  map.set(DietTag.CHILD_FRIENDLY, '👶儿童友好')
-  map.set(DietTag.ELDER_FRIENDLY, '👴老人友好')
-  map.set(DietTag.LOW_SODIUM, '低钠')
-  map.set(DietTag.LOW_SUGAR, '低糖')
-  map.set(DietTag.LOW_FAT, '低脂')
-  map.set(DietTag.HIGH_PROTEIN, '高蛋白')
-  map.set(DietTag.VEGETARIAN, '素食')
-  map.set(DietTag.ALLERGEN_FREE, '无过敏原')
-  return map.get(tag) || tag
-}
-
-function formatTime(timestamp: number): string {
-  const d = new Date(timestamp)
-  const now = new Date()
-  const diff = now.getTime() - d.getTime()
-  if (diff < 3600000) return Math.floor(diff / 60000).toString() + '分钟前'
-  if (diff < 86400000) return Math.floor(diff / 3600000).toString() + '小时前'
-  return (d.getMonth() + 1).toString() + '月' + d.getDate().toString() + '日'
-}
 
 @Entry
 @Component

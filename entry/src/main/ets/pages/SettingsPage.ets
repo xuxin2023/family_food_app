@@ -1,5 +1,4 @@
 import { router, promptAction } from '@kit.ArkUI';
-import { webview } from '@kit.ArkWeb';
 import { AppState } from '../AppState';
 import { safeBack } from '../utils/RouterUtil';
 import { FamilyProfile } from '../model/FamilyProfile';
@@ -15,6 +14,7 @@ import { DateUtil } from '../utils/DateUtil';
 import { relationalStore, preferences } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { COLORS } from '../constants/AppTheme';
+import { getPrivacyPolicyHtml, getUserAgreementHtml } from '../utils/PrivacyContentUtil';
 
 @Entry
 @Component
@@ -27,10 +27,10 @@ struct SettingsPage {
   @State hadHighSugarToday: boolean = false
   @State showPrivacyDetail: boolean = false
   @State showAgreementDetail: boolean = false
+  @State privacyHtml: string = ''
+  @State agreementHtml: string = ''
 
   private appState: AppState = AppState.getInstance()
-  private privacyController: webview.WebviewController = new webview.WebviewController()
-  private agreementController: webview.WebviewController = new webview.WebviewController()
   private restartTimer: number = -1  // 重启定时器ID，用于防止内存泄漏
 
   async aboutToAppear() {
@@ -136,17 +136,25 @@ struct SettingsPage {
               .width('100%')
               .margin({ bottom: 6 })
 
-              Web({ src: $rawfile('privacy_policy.html'), controller: this.privacyController })
+              RichText(this.privacyHtml)
                 .width('100%')
                 .height(300)
-                .domStorageAccess(false)
-                .javaScriptAccess(false)
             }
             .width('100%')
             .padding(8)
             .backgroundColor(COLORS.BG_LIGHT_GRAY_F9)
             .borderRadius(8)
             .margin({ top: 8 })
+            .onAppear(() => {
+              if (this.privacyHtml.length === 0) {
+                const ctx = AppStorage.get<Object>('appContext') as Context
+                if (ctx) {
+                  getPrivacyPolicyHtml(ctx).then(html => {
+                    this.privacyHtml = html
+                  })
+                }
+              }
+            })
           }
 
           // 用户协议详细内容
@@ -164,17 +172,25 @@ struct SettingsPage {
               .width('100%')
               .margin({ bottom: 6 })
 
-              Web({ src: $rawfile('user_agreement.html'), controller: this.agreementController })
+              RichText(this.agreementHtml)
                 .width('100%')
                 .height(300)
-                .domStorageAccess(false)
-                .javaScriptAccess(false)
             }
             .width('100%')
             .padding(8)
             .backgroundColor(COLORS.BG_LIGHT_GRAY_F9)
             .borderRadius(8)
             .margin({ top: 8 })
+            .onAppear(() => {
+              if (this.agreementHtml.length === 0) {
+                const ctx = AppStorage.get<Object>('appContext') as Context
+                if (ctx) {
+                  getUserAgreementHtml(ctx).then(html => {
+                    this.agreementHtml = html
+                  })
+                }
+              }
+            })
           }
 
           Text($r('app.string.version_label'))

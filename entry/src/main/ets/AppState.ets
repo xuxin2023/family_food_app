@@ -5,7 +5,7 @@ import { FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig } from './model/
 import {
   HealthSignal, StepLevel, SleepStatus, WeightTrend, DataSource
 } from './model/HealthSignal';
-import { FoodLabel } from './model/FoodLabel';
+import { FoodLabel, FoodLabelJson } from './model/FoodLabel';
 import { DailyBudget } from './model/DailyBudget';
 import { Recommendation } from './model/Recommendation';
 import { MealBalance, MealScenario } from './model/MealBalance';
@@ -73,8 +73,9 @@ export class AppState {
   // 服务管理器（委托所有服务调用）
   readonly services: ServiceManager = new ServiceManager();
 
-  // 购物篮（内存中暂存）
+  // 购物篮（内存中暂存，通过 preferences 持久化）
   private basketItems: FoodLabel[] = [];
+  private basketContext: common.Context | null = null;
 
   // 引导状态
   hasShownGuide: boolean = false;
@@ -108,14 +109,6 @@ export class AppState {
   private get healthService() { return this.services.healthService; }
   /** @deprecated 使用 services.authService */
   private get authService() { return this.services.authService; }
-  /** @deprecated 使用 services.cloudAuthService */
-  getCloudAuthService() { return this.services.cloudAuthService; }
-  /** @deprecated 使用 services.syncService */
-  getSyncService() { return this.services.syncService; }
-  /** @deprecated 使用 services.groupService */
-  getGroupService(): FamilyGroupService | null { return this.services.groupService; }
-  /** @deprecated 使用 services.recipeCommunityService */
-  getRecipeCommunityService(): RecipeCommunityService | null { return this.services.recipeCommunityService; }
 
   // ========== 向后兼容引擎委托 ==========
 
@@ -174,6 +167,9 @@ export class AppState {
       };
       const rdbStore = await relationalStore.getRdbStore(context, rdbConfig);
 
+      // 保存 context 用于购物篮持久化
+      this.basketContext = context;
+
       // 并行初始化无依赖的仓库
       await Promise.all([
         this.familyRepo.init(rdbStore),
@@ -206,9 +202,13 @@ export class AppState {
 
       // 同步事件监听
       this.services.onSyncEvent((event) => {
-        if (typeof event === 'object' && event !== null &&
-            (event as Record<string, Object>)['type'] === 'sync_completed') {
-          this.refreshCache();
+        try {
+          const eventStr = JSON.stringify(event);
+          if (eventStr.indexOf('sync_completed') >= 0) {
+            this.refreshCache();
+          }
+        } catch (_e) {
+          // ignore parse errors
         }
       });
 
@@ -216,6 +216,7 @@ export class AppState {
       this.membersCache = await this.familyRepo.getAllMembers();
       await this.restoreTodayBudgets();
       await this.restoreHealthSignalsFromPrefs(context);
+      await this.restoreBasketFromPrefs(context);
 
       this.isInitialized = true;
       hilog.info(DOMAIN_ZERO, TAG, 'AppState initialized');
@@ -471,6 +472,8 @@ export class AppState {
 
   addToBasket(item: FoodLabel): void {
     this.basketItems.push(item);
+    // 后台持久化（不等待完成）
+    this.persistBasket();
   }
 
   getBasketItems(): FoodLabel[] {
@@ -479,6 +482,42 @@ export class AppState {
 
   clearBasket(): void {
     this.basketItems = [];
+    this.persistBasket();
+  }
+
+  /** 异步持久化购物篮到 Preferences */
+  private persistBasket(): void {
+    const ctx = this.basketContext;
+    if (ctx === null) {
+      return;
+    }
+    // 异步写入，不阻塞调用方
+    try {
+      const prefs = preferences.getPreferences(ctx, 'basket_cache');
+      prefs.then((pref) => {
+        const jsonArray: FoodLabelJson[] = this.basketItems.map(item => item.toJson());
+        pref.put('items', JSON.stringify(jsonArray)).then(() => {
+          pref.flush();
+        }).catch(() => {});
+      }).catch(() => {});
+    } catch (_e) {
+      // 静默处理持久化失败
+    }
+  }
+
+  /** 从 Preferences 恢复购物篮（应用启动时调用） */
+  private async restoreBasketFromPrefs(context: common.Context): Promise<void> {
+    try {
+      const prefs = await preferences.getPreferences(context, 'basket_cache');
+      const jsonStr: string = prefs.getSync('items', '') as string;
+      if (jsonStr.length > 0) {
+        const rawArray = JSON.parse(jsonStr) as Record<string, Object>[];
+        this.basketItems = rawArray.map(raw => FoodLabel.fromJson(raw));
+      }
+    } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Failed to restore basket: %{public}s', JSON.stringify(error));
+      this.basketItems = [];
+    }
   }
 
   // ========== 历史记录 ==========
@@ -531,13 +570,6 @@ export class AppState {
   }
 
   // ========== 向后兼容方法（委派给 services / engines） ==========
-
-  /**
-   * @deprecated 直接使用 getRemainingScans()
-   */
-  getRemainingScansToday(): number {
-    return this.getRemainingScans();
-  }
 
   /**
    * 获取付费墙触发参数

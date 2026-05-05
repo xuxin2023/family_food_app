@@ -12,47 +12,13 @@ import {
 import { COLORS, RADIUS, SPACING, BUTTON, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
 import { BasicDataSource } from '../utils/BasicDataSource';
 import { PAGE_SIZE_CONFIG } from '../constants/AppConfig';
+import {
+  getCategoryLabel,
+  getCategoryEmoji,
+  getDietTagLabel
+} from '../utils/RecipeUtil';
 
 const PAGE_SIZE = PAGE_SIZE_CONFIG.RECIPE_COMMUNITY_PAGE_SIZE;
-
-function getCategoryLabel(key: string): string {
-  const map: Map<string, string> = new Map()
-  map.set('breakfast', '早餐')
-  map.set('lunch', '午餐')
-  map.set('dinner', '晚餐')
-  map.set('snack', '零食')
-  map.set('beverage', '饮品')
-  map.set('dessert', '甜品')
-  map.set('soup', '汤羹')
-  map.set('staple', '主食')
-  return map.get(key) || key
-}
-
-function getCategoryEmoji(key: string): string {
-  const map: Map<string, string> = new Map()
-  map.set('breakfast', '🌅')
-  map.set('lunch', '☀️')
-  map.set('dinner', '🌙')
-  map.set('snack', '🍿')
-  map.set('beverage', '🥤')
-  map.set('dessert', '🍰')
-  map.set('soup', '🍲')
-  map.set('staple', '🍚')
-  return map.get(key) || '🍽️'
-}
-
-function getDietTagLabel(tag: DietTag): string {
-  const map: Map<string, string> = new Map()
-  map.set(DietTag.CHILD_FRIENDLY, '👶儿童')
-  map.set(DietTag.ELDER_FRIENDLY, '👴老人')
-  map.set(DietTag.LOW_SODIUM, '低钠')
-  map.set(DietTag.LOW_SUGAR, '低糖')
-  map.set(DietTag.LOW_FAT, '低脂')
-  map.set(DietTag.HIGH_PROTEIN, '高蛋白')
-  map.set(DietTag.VEGETARIAN, '素食')
-  map.set(DietTag.ALLERGEN_FREE, '无过敏原')
-  return map.get(tag) || tag
-}
 
 @Entry
 @Component

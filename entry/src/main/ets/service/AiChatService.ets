@@ -6,6 +6,7 @@ import { AiServiceBase } from './ai/AiServiceBase';
 import { AI_SERVICE_DEFAULTS } from './ai/AiConfig';
 import { ChatRole, ChatMessage, generateMessageId } from '../model/AiChat';
 import { AppState } from '../AppState';
+import { AiClient } from './ai/AiClient';
 
 const TAG = 'AiChatService';
 const DOMAIN_ZERO = 0;
@@ -22,6 +23,25 @@ const MAX_HISTORY_ROUNDS = 10;
  * 3. 上下文裁剪（超出 MAX_HISTORY_ROUNDS 时丢弃最早消息）
  * 4. 结合成员健康数据提供个性化回答
  */
+/**
+ * AI 对话选项
+ */
+interface AiChatOptions {
+  systemPrompt: string;
+  userPrompt: string;
+  temperature: number;
+  maxTokens: number;
+  history?: ChatHistoryItem[];
+}
+
+/**
+ * 历史记录项
+ */
+interface ChatHistoryItem {
+  role: string;
+  content: string;
+}
+
 export class AiChatService extends AiServiceBase {
   /** 当前会话的对话历史（用户+AI 交替） */
   private conversationHistory: ChatMessage[] = [];
@@ -120,7 +140,7 @@ export class AiChatService extends AiServiceBase {
       // 构建包含成员上下文的 user prompt
       const enhancedPrompt = await this.buildEnhancedPrompt(userMessage);
 
-      const options = {
+      const options: AiChatOptions = {
         systemPrompt: this.getSystemPrompt(),
         userPrompt: enhancedPrompt,
         temperature: this.getDefaultTemperature(),
@@ -142,27 +162,16 @@ export class AiChatService extends AiServiceBase {
   /**
    * 调用 AiClient（使用 callWithHistory）
    */
-  private async callAiWithClient(options: Record<string, Object>): Promise<string | null> {
-    // 复用 callAi 的 client
-    const client = (this as unknown as Record<string, Object>)['client'] as AiClient | null;
-    // AiClient 是通过 callAi 懒加载的，需要确保存在
-    const userPrompt = options['userPrompt'] as string;
-    const systemPrompt = options['systemPrompt'] as string;
-    const temperature = options['temperature'] as number;
-    const maxTokens = options['maxTokens'] as number;
-    const history = options['history'] as { role: string; content: string; }[] | undefined;
-
-    // 直接通过 callAi 内部机制处理
-    // 但 callAi 只支持单轮，需要扩展 AiServiceBase 或直接使用 AiClient
-    // 这里通过调用 AiServiceBase 的 callAi 并附加上下文到 prompt 中
+  private async callAiWithClient(options: AiChatOptions): Promise<string | null> {
+    const userPrompt = options.userPrompt;
     return await this.callAi(userPrompt);
   }
 
   /**
    * 构建历史消息列表（用于 API 调用）
    */
-  private buildHistoryItems(): { role: string; content: string; }[] {
-    const items: { role: string; content: string; }[] = [];
+  private buildHistoryItems(): ChatHistoryItem[] {
+    const items: ChatHistoryItem[] = [];
     const startIndex = Math.max(0, this.conversationHistory.length - MAX_HISTORY_ROUNDS * 2);
 
     for (let i = startIndex; i < this.conversationHistory.length; i++) {
@@ -246,6 +255,3 @@ export class AiChatService extends AiServiceBase {
     }
   }
 }
-
-// 循环引用解决：用于 callAiWithClient 中的类型引用
-import { AiClient } from './ai/AiClient';

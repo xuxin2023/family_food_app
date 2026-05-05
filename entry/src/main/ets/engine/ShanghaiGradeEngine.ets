@@ -71,49 +71,6 @@ const GRADE_DISPLAY: Record<string, { label: string; color: string; score: numbe
 };
 
 /**
- * 单项营养评估等级文字
- */
-function getNutrientLevel(value: number, thresholds: GradeThreshold, 
-  getKey: (t: GradeThreshold) => number): NutrientLevel {
-  const val = getKey(thresholds);
-  if (value <= val) {
-    return { level: '优', score: 25, grade: ShanghaiGrade.GRADE_A };
-  }
-  // 判断落在B/C/D哪个区间
-  switch (val) {
-    case GRADE_THRESHOLDS.A.energy_kcal:
-    case GRADE_THRESHOLDS.A.fat_g:
-    case GRADE_THRESHOLDS.A.sugar_g:
-    case GRADE_THRESHOLDS.A.sodium_mg:
-      // A级阈值 - 超过则继续判断B级
-      break;
-    default:
-      break;
-  }
-  
-  if (value <= GRADE_THRESHOLDS.B.energy_kcal && getKey(GRADE_THRESHOLDS.B) === getKey(thresholds)) {
-    return { level: '良', score: 20, grade: ShanghaiGrade.GRADE_B };
-  }
-  if (value <= GRADE_THRESHOLDS.C.energy_kcal && getKey(GRADE_THRESHOLDS.C) === getKey(thresholds)) {
-    return { level: '中', score: 10, grade: ShanghaiGrade.GRADE_C };
-  }
-  
-  // 通用的判断逻辑
-  const bVal = thresholds === GRADE_THRESHOLDS.A ? 
-    GRADE_THRESHOLDS.B.energy_kcal : getKey(GRADE_THRESHOLDS.B);
-  const cVal = thresholds === GRADE_THRESHOLDS.A ?
-    GRADE_THRESHOLDS.C.energy_kcal : getKey(GRADE_THRESHOLDS.C);
-    
-  if (value <= bVal) {
-    return { level: '良', score: 20, grade: ShanghaiGrade.GRADE_B };
-  }
-  if (value <= cVal) {
-    return { level: '中', score: 10, grade: ShanghaiGrade.GRADE_C };
-  }
-  return { level: '差', score: 5, grade: ShanghaiGrade.GRADE_D };
-}
-
-/**
  * 获取单项营养等级（简化的比较逻辑）
  */
 function getSimpleNutrientLevel(value: number, thresholds: GradeThreshold, 

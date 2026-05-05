@@ -126,8 +126,9 @@ export class AiClient {
       });
 
       if (response.responseCode === 200) {
-        const rawResult = response.result as string;
-        const parsed = this.parseAgentArtsResponse(rawResult);
+        const rawResult = response.result;
+        const rawStr = typeof rawResult === 'string' ? rawResult : JSON.stringify(rawResult);
+        const parsed = this.parseAgentArtsResponse(rawStr);
         if (parsed !== null) {
           return parsed;
         }
@@ -149,20 +150,26 @@ export class AiClient {
    */
   private parseAgentArtsResponse(rawJson: string): AiCallResponse | null {
     try {
-      const parsed = JSON.parse(rawJson) as AgentArtsResponse;
+      const parsed: AgentArtsResponse = JSON.parse(rawJson) as AgentArtsResponse;
 
-      if (parsed.choices.length === 0) {
+      if (parsed === null || parsed.choices === null || parsed.choices.length === 0) {
         return null;
       }
 
-      const content = parsed.choices[0].message.content;
+      const choice = parsed.choices[0];
+      if (choice === null || choice.message === null || choice.message.content === null) {
+        return null;
+      }
+
+      const content = choice.message.content;
       if (content.length === 0) {
         return null;
       }
 
+      const usage = parsed.usage;
       return {
         text: content,
-        tokensUsed: parsed.usage.total_tokens
+        tokensUsed: (usage !== null && usage !== undefined) ? usage.total_tokens : 0
       };
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'parse AgentArts response failed: %{public}s', JSON.stringify(error));

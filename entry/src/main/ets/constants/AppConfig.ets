@@ -26,9 +26,9 @@ export class FeatureFlags {
   /** 是否启用食谱社区 */
   readonly ENABLE_RECIPE_COMMUNITY: boolean = true;
   /** 是否启用云同步 */
-  readonly ENABLE_CLOUD_SYNC: boolean = false;
+  readonly ENABLE_CLOUD_SYNC: boolean = true;
   /** 是否启用健康数据联动 */
-  readonly ENABLE_HEALTH_KIT: boolean = false;
+  readonly ENABLE_HEALTH_KIT: boolean = true;
 }
 
 export const FEATURE_FLAGS = new FeatureFlags();

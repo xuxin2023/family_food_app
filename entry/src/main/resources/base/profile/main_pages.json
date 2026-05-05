@@ -23,6 +23,7 @@
     "pages/RecipeCreatePage",
     "pages/DashboardPage",
     "pages/DeviceDashboardPage",
-    "pages/CloudSyncSettingsPage"
+    "pages/CloudSyncSettingsPage",
+    "pages/AiChatPage"
   ]
 }

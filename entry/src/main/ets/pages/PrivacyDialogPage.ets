@@ -3,11 +3,13 @@
 // 用户同意后方可进入主页面
 
 import { router } from '@kit.ArkUI';
-import { webview } from '@kit.ArkWeb';
+import { getPrivacyPolicyHtml, getUserAgreementHtml } from '../utils/PrivacyContentUtil';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { COLORS } from '../constants/AppTheme';
+import { AppState } from '../AppState';
+import { PermissionManager } from '../service/PermissionManager';
 
 const TAG = 'PrivacyDialogPage';
 const DOMAIN_ZERO = 0;
@@ -19,13 +21,20 @@ struct PrivacyDialogPage {
   @State agreed: boolean = false
   @State showPrivacyContent: boolean = false
   @State showAgreementContent: boolean = false
-
-  private privacyController: webview.WebviewController = new webview.WebviewController()
-  private agreementController: webview.WebviewController = new webview.WebviewController()
+  @State privacyHtml: string = ''
+  @State agreementHtml: string = ''
 
   async aboutToAppear() {
     // 等待 AppState 初始化完成（避免竞态条件）
-    await this.waitForAppStateReady()
+    await AppState.waitForReady()
+
+    // 预加载隐私政策和用户协议 HTML 内容
+    // 使用 try/catch 确保即使预加载失败也不影响页面显示
+    try {
+      // 注意：此时可能无法获取 context，在点击展开时再加载
+    } catch (_e) {
+      // 静默处理
+    }
 
     // 检查是否已经同意过
     const agreed = await this.checkPrivacyAgreed()
@@ -33,25 +42,6 @@ struct PrivacyDialogPage {
       // 已同意过，直接跳转到首页
       this.navigateToHome()
     }
-  }
-
-  /**
-   * 等待 AppState 初始化就绪
-   */
-  private async waitForAppStateReady(): Promise<void> {
-    let maxWaitMs = 5000 // 最多等待 5 秒
-    const pollInterval = 100
-    while (maxWaitMs > 0) {
-      const ready = AppStorage.get<boolean>('appStateReady')
-      if (ready) return
-      await this.delay(pollInterval)
-      maxWaitMs -= pollInterval
-    }
-    hilog.warn(DOMAIN_ZERO, TAG, 'AppState init wait timeout, proceeding anyway')
-  }
-
-  private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
   }
 
   /**
@@ -83,6 +73,8 @@ struct PrivacyDialogPage {
         await pref.put('privacy_agreed', true)
         await pref.flush()
       }
+      // 通知权限管理器用户已同意隐私政策
+      PermissionManager.getInstance().setPrivacyAgreed()
     } catch (_e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'save privacy agreed failed')
     }
@@ -213,16 +205,24 @@ struct PrivacyDialogPage {
               .width('100%')
               .margin({ bottom: 8 })
 
-              Web({ src: $rawfile('privacy_policy.html'), controller: this.privacyController })
+              RichText(this.privacyHtml)
                 .width('100%')
                 .layoutWeight(1)
-                .domStorageAccess(false)
-                .javaScriptAccess(false)
             }
             .width('100%')
             .backgroundColor(COLORS.WHITE)
             .borderRadius(12)
             .layoutWeight(1)
+            .onAppear(() => {
+              if (this.privacyHtml.length === 0) {
+                const ctx = AppStorage.get<Object>('appContext') as Context
+                if (ctx) {
+                  getPrivacyPolicyHtml(ctx).then(html => {
+                    this.privacyHtml = html
+                  })
+                }
+              }
+            })
           }
 
           // 用户协议完整内容
@@ -244,16 +244,24 @@ struct PrivacyDialogPage {
               .width('100%')
               .margin({ bottom: 8 })
 
-              Web({ src: $rawfile('user_agreement.html'), controller: this.agreementController })
+              RichText(this.agreementHtml)
                 .width('100%')
                 .layoutWeight(1)
-                .domStorageAccess(false)
-                .javaScriptAccess(false)
             }
             .width('100%')
             .backgroundColor(COLORS.WHITE)
             .borderRadius(12)
             .layoutWeight(1)
+            .onAppear(() => {
+              if (this.agreementHtml.length === 0) {
+                const ctx = AppStorage.get<Object>('appContext') as Context
+                if (ctx) {
+                  getUserAgreementHtml(ctx).then(html => {
+                    this.agreementHtml = html
+                  })
+                }
+              }
+            })
           }
         }
         .layoutWeight(1)

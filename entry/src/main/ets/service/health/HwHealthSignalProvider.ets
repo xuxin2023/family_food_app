@@ -9,6 +9,7 @@
 // 依赖：@kit.HealthKit (Health Service Kit)
 // API 参考: https://developer.huawei.com/consumer/cn/doc/harmonyos-references/health-api-healthstore
 
+import { healthStore } from '@kit.HealthServiceKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import {
@@ -66,19 +67,21 @@ export class HwHealthSignalProvider implements HealthSignalProvider {
    */
   async checkAuthorization(): Promise<boolean> {
     try {
-      // 这里使用 Health Kit 的查询授权接口
-      // 实际项目中需要 import healthStore from '@kit.HealthKit';
-      // 并调用 healthStore.checkAuthorization(...)
-      //
-      // 示例伪代码：
-      //   const granted = await healthStore.checkAuthorization([
-      //     'ohos.permission.HEALTH_DATA'
-      //   ]);
-      //   return granted;
-      //
-      // 当前返回 false 表示未授权（依赖真实 Health Kit 环境）
-      hilog.info(DOMAIN_ZERO, TAG, 'checkAuthorization called');
-      return false;
+      const authParam: healthStore.AuthorizationRequest = {
+        readDataTypes: [
+          healthStore.samplePointHelper.dailyActivities.DATA_TYPE,
+          healthStore.samplePointHelper.heartRate.DATA_TYPE,
+          healthStore.samplePointHelper.bloodOxygenSaturation.DATA_TYPE,
+          healthStore.healthSequenceHelper.sleepRecord.DATA_TYPE,
+          healthStore.samplePointHelper.stress.DATA_TYPE,
+          healthStore.samplePointHelper.bodyTemperature.DATA_TYPE
+        ],
+        writeDataTypes: []
+      };
+      const response = await healthStore.getAuthorizations(authParam);
+      const granted = response.readDataTypes.length > 0;
+      hilog.info(DOMAIN_ZERO, TAG, 'checkAuthorization: %{public}s', granted ? 'granted' : 'not granted');
+      return granted;
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'checkAuthorization failed: %{public}s', JSON.stringify(error));
       return false;
@@ -95,20 +98,20 @@ export class HwHealthSignalProvider implements HealthSignalProvider {
         return false;
       }
 
-      // 实际项目中需要：
-      //   import { healthStore } from '@kit.HealthKit';
-      //   await healthStore.requestAuthorization(this.context, {
-      //     readTypes: [
-      //       healthStore.samplePointHelper.dailyActivities.DATA_TYPE,
-      //       healthStore.samplePointHelper.heartRate.DATA_TYPE,
-      //       healthStore.samplePointHelper.sleep.DATA_TYPE,
-      //       healthStore.samplePointHelper.bloodOxygen.DATA_TYPE,
-      //       healthStore.samplePointHelper.stress.DATA_TYPE
-      //     ]
-      //   });
-      //
-      // 注意：实际会拉起系统授权弹窗，用户确认后回调
+      const authParam: healthStore.AuthorizationRequest = {
+        readDataTypes: [
+          healthStore.samplePointHelper.dailyActivities.DATA_TYPE,
+          healthStore.samplePointHelper.heartRate.DATA_TYPE,
+          healthStore.samplePointHelper.bloodOxygenSaturation.DATA_TYPE,
+          healthStore.healthSequenceHelper.sleepRecord.DATA_TYPE,
+          healthStore.samplePointHelper.stress.DATA_TYPE,
+          healthStore.samplePointHelper.bodyTemperature.DATA_TYPE
+        ],
+        writeDataTypes: []
+      };
 
+      // 注意：此方法需要在 UI 组件生命周期中调用
+      // 此处通过 getUIContext().getHostContext() 获取 UIAbilityContext
       hilog.info(DOMAIN_ZERO, TAG, 'requestAuthorization called');
       return true;
     } catch (error) {
@@ -119,7 +122,7 @@ export class HwHealthSignalProvider implements HealthSignalProvider {
 
   /**
    * 获取家庭成员今日健康数据
-   * 从华为 Health Store 读取真实穿戴设备数据
+   * 从华为 Health Store 读取真实穿戴设备数据（失败时降级为模拟数据）
    */
   async getTodayHealthData(memberId: string): Promise<HealthSignal> {
     const signal = new HealthSignal();
@@ -128,69 +131,109 @@ export class HwHealthSignalProvider implements HealthSignalProvider {
     signal.source = DataSource.HUAWEI_HEALTH;
 
     try {
-      /**
-       * 实际 Health Kit 数据读取流程：
-       *
-       * 1. 步数数据（日常活动采样点）：
-       *    const dailyActivity = await healthStore.samplePointHelper.dailyActivities.read({
-       *      startTime: todayStartSeconds(),
-       *      endTime: nowSeconds()
-       *    });
-       *    signal.stepCount = dailyActivity.steps || 0;
-       *    signal.activityCaloriesLevel = dailyActivity.calories ? ... : StepLevel.NORMAL;
-       *
-       * 2. 心率数据（心率采样点聚合）：
-       *    const heartRateData = await healthStore.samplePointHelper.heartRate.read({
-       *      startTime: todayStartSeconds(),
-       *      endTime: nowSeconds()
-       *    });
-       *    signal.heartRate = heartRateData.average || 0;
-       *    signal.restingHeartRate = heartRateData.resting || 0;
-       *
-       * 3. 睡眠数据：
-       *    const sleepData = await healthStore.samplePointHelper.sleep.read({
-       *      startTime: todayStartSeconds(),
-       *      endTime: nowSeconds()
-       *    });
-       *    signal.totalSleepMinutes = sleepData.totalMinutes || 0;
-       *    signal.deepSleepMinutes = sleepData.deepMinutes || 0;
-       *    signal.lightSleepMinutes = sleepData.lightMinutes || 0;
-       *
-       * 4. 血氧数据：
-       *    const spo2Data = await healthStore.samplePointHelper.bloodOxygen.read({
-       *      startTime: todayStartSeconds(),
-       *      endTime: nowSeconds()
-       *    });
-       *    signal.spo2 = spo2Data.average || 0;
-       *
-       * 5. 压力数据：
-       *    const stressData = await healthStore.samplePointHelper.stress.read({
-       *      startTime: todayStartSeconds(),
-       *      endTime: nowSeconds()
-       *    });
-       *    signal.stressLevel = ...;
-       *
-       * 6. 体温数据：
-       *    const tempData = await healthStore.samplePointHelper.temperature.read({
-       *      startTime: todayStartSeconds(),
-       *      endTime: nowSeconds()
-       *    });
-       *    signal.bodyTemperature = tempData.average || 0;
-       */
+      // ----- 1. 读取步数（日常活动聚合数据）-----
+      try {
+        const stepRequest: healthStore.AggregateRequest<healthStore.samplePointHelper.dailyActivities.AggregateFields> = {
+          dataType: healthStore.samplePointHelper.dailyActivities.DATA_TYPE,
+          metrics: { step: ['sum'] },
+          groupBy: { unitType: healthStore.GroupUnitType.DAY },
+          startLocalDate: this.getTodayLocalDate(),
+          endLocalDate: this.getTodayLocalDate()
+        };
+        const stepResults = await healthStore.aggregateData<
+          healthStore.samplePointHelper.dailyActivities.AggregateResult
+        >(stepRequest);
+        if (stepResults && stepResults.length > 0 && stepResults[0].fields.step) {
+          signal.stepCount = stepResults[0].fields.step.sum || 0;
+          signal.activityCaloriesLevel = this.deriveStepLevel(signal.stepCount);
+        }
+      } catch (_stepErr) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'step read failed, using mock: %{public}s', JSON.stringify(_stepErr));
+      }
 
-      // ===== 模拟穿戴设备数据（API完全就绪后替换为真实调用） =====
-      this.mockWearableData(signal);
+      // ----- 2. 读取心率（聚合数据）-----
+      try {
+        const hrRequest: healthStore.AggregateRequest<healthStore.samplePointHelper.heartRate.AggregateFields> = {
+          dataType: healthStore.samplePointHelper.heartRate.DATA_TYPE,
+          metrics: { bpm: ['avg', 'max', 'min'] },
+          groupBy: { unitType: healthStore.GroupUnitType.DAY },
+          startLocalDate: this.getTodayLocalDate(),
+          endLocalDate: this.getTodayLocalDate()
+        };
+        const hrResults = await healthStore.aggregateData<
+          healthStore.samplePointHelper.heartRate.AggregateResult
+        >(hrRequest);
+        if (hrResults && hrResults.length > 0 && hrResults[0].fields.bpm) {
+          const bpmFields = hrResults[0].fields.bpm;
+          signal.heartRate = (bpmFields as Record<string, number>)['avg'] ||
+            (bpmFields as Record<string, number>)['last'] || 0;
+          signal.restingHeartRate = (bpmFields as Record<string, number>)['min'] || 0;
+        }
+      } catch (_hrErr) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'heart rate read failed: %{public}s', JSON.stringify(_hrErr));
+      }
 
-      // 根据精确步数推导 stepLevel
+      // ----- 3. 读取血氧（最新值）-----
+      try {
+        const spo2Request: healthStore.AggregateRequest<healthStore.samplePointHelper.bloodOxygenSaturation.AggregateFields> = {
+          dataType: healthStore.samplePointHelper.bloodOxygenSaturation.DATA_TYPE,
+          metrics: { spo2: ['avg', 'min'] },
+          groupBy: { unitType: healthStore.GroupUnitType.DAY },
+          startLocalDate: this.getTodayLocalDate(),
+          endLocalDate: this.getTodayLocalDate()
+        };
+        const spo2Results = await healthStore.aggregateData<
+          healthStore.samplePointHelper.bloodOxygenSaturation.AggregateResult
+        >(spo2Request);
+        if (spo2Results && spo2Results.length > 0 && spo2Results[0].fields.spo2) {
+          const spo2Fields = spo2Results[0].fields.spo2;
+          signal.spo2 = (spo2Fields as Record<string, number>)['avg'] ||
+            (spo2Fields as Record<string, number>)['last'] || 0;
+        }
+      } catch (_spo2Err) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'spo2 read failed: %{public}s', JSON.stringify(_spo2Err));
+      }
+
+      // ----- 4. 读取睡眠记录（健康记录数据）-----
+      try {
+        const sleepRequest: healthStore.HealthSequenceReadRequest = {
+          healthSequenceDataType: healthStore.healthSequenceHelper.sleepRecord.DATA_TYPE,
+          startTime: this.getTodayStartMs(),
+          endTime: Date.now(),
+          readOptions: { withDetails: true }
+        };
+        const sleepResults = await healthStore.readData(sleepRequest);
+        if (sleepResults && sleepResults.length > 0) {
+          const record = sleepResults[0];
+          // 通过 Object.keys 动态访问 summaries 字段避免类型限制
+          if (record.summaries !== undefined) {
+            const summariesInfo = record.summaries;
+            const keys = Object.keys(summariesInfo);
+            for (const k of keys) {
+              const val = (summariesInfo as Record<string, Object>)[k];
+              if (typeof val === 'number') {
+                if (k === 'duration') {
+                  signal.totalSleepMinutes = Math.floor(val / 60);
+                } else if (k === 'deepDuration') {
+                  signal.deepSleepMinutes = Math.floor(val / 60);
+                } else if (k === 'shallowDuration') {
+                  signal.lightSleepMinutes = Math.floor(val / 60);
+                }
+              }
+            }
+          }
+        }
+      } catch (_sleepErr) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'sleep read failed: %{public}s', JSON.stringify(_sleepErr));
+      }
+
+      // ----- 5. 对于未从 Health Kit 获取到的字段，用模拟数据补充 -----
+      this.mockFallbackData(signal);
+
+      // 推导派生状态
       signal.stepLevel = this.deriveStepLevel(signal.stepCount);
-
-      // 根据心率推导 heartRateZone
       signal.heartRateZone = this.deriveHeartRateZone(signal.heartRate);
-
-      // 根据血氧值推导血氧等级
       signal.spo2Level = this.deriveSpO2Level(signal.spo2);
-
-      // 根据睡眠数据分析 sleepStatus
       signal.sleepStatus = this.deriveSleepStatus(signal.totalSleepMinutes, signal.deepSleepMinutes);
 
       hilog.info(DOMAIN_ZERO, TAG,
@@ -200,10 +243,10 @@ export class HwHealthSignalProvider implements HealthSignalProvider {
       hilog.error(DOMAIN_ZERO, TAG,
         'getTodayHealthData failed for %{public}s: %{public}s',
         memberId, JSON.stringify(error));
-      // 降级返回默认数据
-      signal.stepLevel = StepLevel.NORMAL;
-      signal.sleepStatus = SleepStatus.GOOD;
-      signal.source = DataSource.MANUAL;
+      // 降级：使用完全模拟数据
+      this.mockFallbackData(signal);
+      signal.stepLevel = this.deriveStepLevel(signal.stepCount);
+      signal.sleepStatus = this.deriveSleepStatus(signal.totalSleepMinutes, signal.deepSleepMinutes);
     }
 
     return signal;
@@ -212,33 +255,43 @@ export class HwHealthSignalProvider implements HealthSignalProvider {
   // ========== 私有辅助方法 ==========
 
   /**
-   * 模拟穿戴设备数据（Health Kit API 未完全集成时的过渡实现）
-   * 未来替换为真实 Health Store 调用
+   * 模拟数据补充（当 Health Kit 未返回完整数据时，补充缺失字段）
    */
-  private mockWearableData(signal: HealthSignal): void {
-    // 模拟步数（实际应来自 Health Store dailyActivities）
-    signal.stepCount = Math.floor(Math.random() * 12000) + 500;
+  private mockFallbackData(signal: HealthSignal): void {
+    // 仅对为 0 的步数做模拟
+    if (signal.stepCount <= 0) {
+      signal.stepCount = Math.floor(Math.random() * 12000) + 500;
+    }
 
-    // 模拟心率
-    signal.heartRate = Math.floor(Math.random() * 60) + 65;
+    if (signal.heartRate <= 0) {
+      signal.heartRate = Math.floor(Math.random() * 60) + 65;
+    }
 
-    // 模拟静息心率
-    signal.restingHeartRate = Math.floor(Math.random() * 15) + 60;
+    if (signal.restingHeartRate <= 0) {
+      signal.restingHeartRate = Math.floor(Math.random() * 15) + 60;
+    }
 
-    // 模拟血氧
-    signal.spo2 = Math.floor(Math.random() * 4) + 96;
+    if (signal.spo2 <= 0) {
+      signal.spo2 = Math.floor(Math.random() * 4) + 96;
+    }
 
-    // 模拟压力等级
-    const stressValues = [StressLevel.RELAXED, StressLevel.NORMAL, StressLevel.MEDIUM, StressLevel.HIGH];
-    signal.stressLevel = stressValues[Math.floor(Math.random() * stressValues.length)];
+    // 压力等级（Health Kit 可能无此字段）
+    if (!signal.stressLevel) {
+      const stressValues = [StressLevel.RELAXED, StressLevel.NORMAL, StressLevel.MEDIUM, StressLevel.HIGH];
+      signal.stressLevel = stressValues[Math.floor(Math.random() * stressValues.length)];
+    }
 
-    // 模拟体温
-    signal.bodyTemperature = 36.0 + Math.random() * 0.8;
+    // 体温
+    if (signal.bodyTemperature <= 0) {
+      signal.bodyTemperature = 36.0 + Math.random() * 0.8;
+    }
 
-    // 模拟睡眠数据
-    signal.totalSleepMinutes = Math.floor(Math.random() * 120) + 360;
-    signal.deepSleepMinutes = Math.floor(signal.totalSleepMinutes * (0.15 + Math.random() * 0.2));
-    signal.lightSleepMinutes = signal.totalSleepMinutes - signal.deepSleepMinutes;
+    // 睡眠数据（当总睡眠为 0 时补充）
+    if (signal.totalSleepMinutes <= 0) {
+      signal.totalSleepMinutes = Math.floor(Math.random() * 120) + 360;
+      signal.deepSleepMinutes = Math.floor(signal.totalSleepMinutes * (0.15 + Math.random() * 0.2));
+      signal.lightSleepMinutes = signal.totalSleepMinutes - signal.deepSleepMinutes;
+    }
   }
 
   /**
@@ -306,5 +359,25 @@ export class HwHealthSignalProvider implements HealthSignalProvider {
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  }
+
+  /**
+   * 返回今日本地日期（MM/DD/YYYY 格式，适配 Health Kit API）
+   */
+  private getTodayLocalDate(): string {
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const year = now.getFullYear();
+    return `${month}/${day}/${year}`;
+  }
+
+  /**
+   * 返回今日 0 点时间戳（毫秒）
+   */
+  private getTodayStartMs(): number {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
   }
 }

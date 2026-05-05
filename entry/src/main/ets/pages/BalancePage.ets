@@ -1,4 +1,5 @@
-import { router, promptAction } from '@kit.ArkUI';
+import { promptAction } from '@kit.ArkUI';
+import { safeBack } from '../utils/RouterUtil';
 import { AppState } from '../AppState';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { DailyBudget } from '../model/DailyBudget';
@@ -97,7 +98,7 @@ struct BalancePage {
             Text('<')
               .fontSize(24)
               .fontColor(COLORS.PRIMARY)
-              .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
+              .onClick(() => { safeBack() })
             Text($r('app.string.record_meal'))
               .fontSize(20)
               .fontWeight(FontWeight.Bold)

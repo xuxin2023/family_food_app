@@ -59,7 +59,9 @@ export class COLORS {
   static readonly BG_WARM_YELLOW: string = '#FFF8E1';
   static readonly BG_LIGHT_GREEN: string = '#E8F5E9';
 
-  // ===== 兼容别名（已被复用/归一化的颜色，保持向后兼容） =====
+  // ===== 🔴 兼容别名（已废弃 — 新代码请使用上方规范命名） =====
+  // 说明：向后兼容旧版颜色名，新代码应直接使用 TEXT_PRIMARY/BG_LIGHT 等规范名
+  // 迁移计划：当所有引用替换为规范名后删除此区块
   static readonly TEXT_GRAY_2121: string = COLORS.TEXT_PRIMARY;
   static readonly TEXT_GRAY_6161: string = COLORS.TEXT_SECONDARY;
   static readonly TEXT_GRAY_9E9E: string = COLORS.TEXT_TERTIARY;

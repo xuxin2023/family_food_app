@@ -21,6 +21,7 @@
 
 import { common } from '@kit.AbilityKit';
 import { router, promptAction, curves } from '@kit.ArkUI';
+import { safeBack, safePushUrl } from '../utils/RouterUtil';
 import { connection } from '@kit.NetworkKit';
 import { vibrator } from '@kit.SensorServiceKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -365,13 +366,7 @@ struct ScanPage {
             Text('‹ 返回')
               .fontSize(FONT_SIZE.BODY)
               .fontColor(COLORS.PRIMARY)
-              .onClick(() => {
-                try {
-                  router.back()
-                } catch (_e) {
-                  // ignore router error
-                }
-              })
+              .onClick(() => { safeBack() })
             Blank()
             if (this.foodLabel.foodId.length > 0) {
               Text($r('app.string.barcode_detected')).fontSize(FONT_SIZE.TINY).fontColor(COLORS.ACCENT_GREEN)
@@ -427,6 +422,8 @@ struct ScanPage {
                 .borderRadius(BUTTON.RADIUS_PRIMARY)
                 .onClick(() => { this.startRecognition() })
                 .animation({ duration: 200, curve: curves.springMotion() })
+                .accessibilityText($r('app.string.scan_identify'))
+                .accessibilityDescription('开始扫描食品信息')
 
               Button($r('app.string.scan_mode_manual'))
                 .width('90%')
@@ -715,7 +712,7 @@ struct ScanPage {
           .fontSize(15)
           .fontColor(COLORS.TEXT_TERTIARY)
           .textAlign(TextAlign.Center)
-        Text('P0 版支持扫码命中本地库，或先生成草稿后手动修正')
+        Text($r('app.string.scan_mode_barcode') + ' ' + $r('app.string.scan_today_remaining') + '...')
           .fontSize(FONT_SIZE.SMALL)
           .fontColor(COLORS.TEXT_TERTIARY)
           .textAlign(TextAlign.Center)
@@ -1046,13 +1043,11 @@ struct ScanPage {
       return
     }
     try {
-      router.pushUrl({
-        url: 'pages/ReportPage',
-        params: {
-          memberId: this.memberId,
-          foodId: this.foodLabel.foodId
-        }
-      })
+      try {
+        router.pushUrl({ url: 'pages/ReportPage', params: { memberId: this.memberId, foodId: this.foodLabel.foodId } })
+      } catch (_e) {
+        // ignore
+      }
     } catch (_e) {
       // ignore router.pushUrl error
     }

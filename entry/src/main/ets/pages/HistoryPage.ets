@@ -1,4 +1,4 @@
-import { router } from '@kit.ArkUI';
+import { safeBack } from '../utils/RouterUtil';
 import { AppState } from '../AppState';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { ScanHistoryRecord } from '../repository/HistoryRepository';
@@ -29,7 +29,7 @@ struct HistoryPage {
         Text('<')
           .fontSize(24)
           .fontColor(COLORS.PRIMARY)
-          .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
+          .onClick(() => { safeBack() })
         Text($r('app.string.history_record'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)

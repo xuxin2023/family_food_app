@@ -1,6 +1,7 @@
 import { router, promptAction } from '@kit.ArkUI';
 import { webview } from '@kit.ArkWeb';
 import { AppState } from '../AppState';
+import { safeBack } from '../utils/RouterUtil';
 import { FamilyProfile } from '../model/FamilyProfile';
 import {
   HealthSignal,
@@ -54,7 +55,7 @@ struct SettingsPage {
           Text('<')
             .fontSize(24)
             .fontColor(COLORS.PRIMARY)
-            .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
+            .onClick(() => { safeBack() })
           Text($r('app.string.settings'))
             .fontSize(20)
             .fontWeight(FontWeight.Bold)

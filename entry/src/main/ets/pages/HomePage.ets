@@ -193,6 +193,8 @@ struct HomePage {
         .height(BUTTON.HEIGHT_SECONDARY)
         .borderRadius(BUTTON.RADIUS_SECONDARY)
         .backgroundColor(COLORS.PRIMARY)
+        .accessibilityText($r('app.string.scan_identify'))
+        .accessibilityDescription('打开相机扫描食品条码或识别食品标签')
         .onClick(() => {
           try {
             router.pushUrl({

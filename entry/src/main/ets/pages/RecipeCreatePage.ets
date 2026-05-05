@@ -2,6 +2,7 @@
 // 创建食谱页面 — 发布新食谱到社区
 
 import { router, promptAction } from '@kit.ArkUI';
+import { safeBack } from '../utils/RouterUtil';
 import { AppState } from '../AppState';
 import { RecipeCategory, RecipeDifficulty, DietTag, RecipeIngredient, RecipeStep } from '../model/Recipe';
 import { COLORS, RADIUS, BUTTON } from '../constants/AppTheme';
@@ -67,7 +68,7 @@ struct RecipeCreatePage {
         Text('<')
           .fontSize(24)
           .fontColor(COLORS.PRIMARY)
-          .onClick(() => { router.back() })
+          .onClick(() => { safeBack() })
         Text($r('app.string.create_recipe'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
@@ -448,7 +449,7 @@ struct RecipeCreatePage {
       })
 
       promptAction.showToast({ message: '食谱发布成功！' })
-      router.back()
+      safeBack()
     } catch (e) {
       promptAction.showToast({ message: `发布失败：${(e as Error).message}` })
     }

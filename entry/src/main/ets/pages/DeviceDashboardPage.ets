@@ -3,7 +3,8 @@
 // 展示来自华为穿戴设备的步数、心率、血氧、睡眠、压力等健康数据
 // 以及与饮食建议的联动效果
 
-import { router, promptAction } from '@kit.ArkUI';
+import { promptAction } from '@kit.ArkUI';
+import { safeBack, safePushUrl } from '../utils/RouterUtil';
 import { AppState } from '../AppState';
 import { FamilyProfile } from '../model/FamilyProfile';
 import {
@@ -100,7 +101,7 @@ struct DeviceDashboardPage {
         .fontSize(28)
         .fontColor(COLORS.PRIMARY)
         .onClick(() => {
-          try { router.back() } catch (_e) { /* ignore */ }
+          try { safeBack() } catch (_e) { /* ignore */ }
         })
       Column() {
         Text('设备联动')
@@ -158,9 +159,7 @@ struct DeviceDashboardPage {
           .padding({ left: 12, right: 12, top: 6, bottom: 6 })
           .backgroundColor('#FFFFFF30')
           .borderRadius(16)
-          .onClick(() => {
-            try { router.pushUrl({ url: 'pages/PricingPage' }) } catch (_e) { /* ignore */ }
-          })
+          .onClick(() => { safePushUrl('pages/PricingPage') })
       }
       .padding(12)
       .backgroundColor(COLORS.PRIMARY_DARK)

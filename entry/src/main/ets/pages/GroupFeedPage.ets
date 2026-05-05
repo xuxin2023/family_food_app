@@ -1,4 +1,5 @@
 import { router, promptAction } from '@kit.ArkUI';
+import { safeBack } from '../utils/RouterUtil';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
 import { GroupFeed, FeedType, FoodScanFeedContent } from '../model/FamilyGroup';
@@ -45,7 +46,7 @@ struct GroupFeedPage {
         Text('<')
           .fontSize(24)
           .fontColor(COLORS.PRIMARY)
-          .onClick(() => { router.back() })
+          .onClick(() => { safeBack() })
         Text(this.groupName)
           .fontSize(20)
           .fontWeight(FontWeight.Bold)

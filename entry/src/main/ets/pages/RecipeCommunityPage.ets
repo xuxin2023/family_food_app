@@ -2,6 +2,7 @@
 // 食谱社区页面 — 浏览热门/最新食谱、分类筛选
 
 import { router, promptAction } from '@kit.ArkUI';
+import { safeBack, safePushUrl } from '../utils/RouterUtil';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
 import { Recipe, RecipeCategory, RecipeDifficulty, DietTag, RecipeQueryParams } from '../model/Recipe';
@@ -120,7 +121,7 @@ struct RecipeCommunityPage {
         Text('<')
           .fontSize(24)
           .fontColor(COLORS.PRIMARY)
-          .onClick(() => { router.back() })
+          .onClick(() => { safeBack() })
         Text($r('app.string.recipe_community'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
@@ -130,7 +131,7 @@ struct RecipeCommunityPage {
           .fontSize(14)
           .fontColor(COLORS.PRIMARY)
           .onClick(() => {
-            router.pushUrl({ url: 'pages/RecipeCreatePage' })
+            safePushUrl('pages/RecipeCreatePage')
           })
       }
       .width('100%')
@@ -329,10 +330,11 @@ struct RecipeCommunityPage {
         .margin({ bottom: 12 })
         .shadow({ radius: 2, color: COLORS.SHADOW_LIGHT, offsetY: 1 })
         .onClick(() => {
-          router.pushUrl({
-            url: 'pages/RecipeDetailPage',
-            params: { recipeId: rec.recipe.recipeId }
-          })
+          try {
+            router.pushUrl({ url: 'pages/RecipeDetailPage', params: { recipeId: rec.recipe.recipeId } })
+          } catch (_e) {
+            // ignore
+          }
         })
       })
     }
@@ -416,10 +418,7 @@ struct RecipeCommunityPage {
     .onClick(() => {
       const navParams: Record<string, Object> = new Object() as Record<string, Object>
       navParams['recipeId'] = recipe.recipeId
-      router.pushUrl({
-        url: 'pages/RecipeDetailPage',
-        params: navParams
-      })
+      safePushUrl('pages/RecipeDetailPage', navParams)
     })
   }
 

@@ -1,6 +1,6 @@
 // 成员管理页 - 家庭成员列表
 
-import { router } from '@kit.ArkUI';
+import { safeBack, safePushUrl } from '../utils/RouterUtil';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { AppState } from '../AppState';
 import { BUTTON, COLORS } from '../constants/AppTheme';
@@ -29,7 +29,7 @@ struct MemberPage {
       // 顶部导航
       Row() {
         Text('←').fontSize(24).fontColor(COLORS.PRIMARY)
-          .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
+          .onClick(() => { safeBack() })
         Text($r('app.string.member_manage')).fontSize(20).fontWeight(FontWeight.Bold)
           .margin({ left: 16 })
       }
@@ -55,15 +55,7 @@ struct MemberPage {
           .backgroundColor(COLORS.BG_CARD_HIGHLIGHT)
           .borderRadius(12)
           .margin({ top: 8 })
-          .onClick(() => {
-            try {
-
-              router.pushUrl({ url: 'pages/MemberEditPage' })
-
-            } catch (_e) {
-              // ignore router.pushUrl error
-            }
-          })
+          .onClick(() => { safePushUrl('pages/MemberEditPage') })
         }
       }
       .width('100%')
@@ -93,14 +85,7 @@ struct MemberPage {
     .borderRadius(12)
     .margin({ top: 8 })
     .onClick(() => {
-      try {
-      router.pushUrl({
-        url: 'pages/MemberEditPage',
-        params: { memberId: member.memberId }
-      })
-      } catch (_e) {
-        // ignore router.pushUrl error
-      }
+      safePushUrl('pages/MemberEditPage')
     })
   }
 }

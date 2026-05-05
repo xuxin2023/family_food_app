@@ -1,6 +1,7 @@
 // 成员编辑页 - 创建/编辑家庭成员画像
 
 import { router } from '@kit.ArkUI';
+import { safeBack } from '../utils/RouterUtil';
 import { FamilyProfile, AgeGroup, HealthGoal } from '../model/FamilyProfile';
 import { HealthSignal, StepLevel, SleepStatus, BpStatus, BsStatus } from '../model/HealthSignal';
 import { AppState } from '../AppState';
@@ -63,7 +64,7 @@ struct MemberEditPage {
           // 顶部导航
           Row() {
             Text('←').fontSize(24).fontColor(COLORS.PRIMARY)
-              .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
+              .onClick(() => { safeBack() })
             Text($r('app.string.member_manage'))
               .margin({ left: 16 })
           }

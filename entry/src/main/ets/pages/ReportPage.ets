@@ -3,6 +3,7 @@
 // 三段式布局：顶部评测区 | 家庭矩阵区 | 辅助信息区
 
 import { router, promptAction, curves } from '@kit.ArkUI';
+import { safeBack } from '../utils/RouterUtil';
 import { common } from '@kit.AbilityKit';
 import { AppState } from '../AppState';
 import { FamilyProfile } from '../model/FamilyProfile';
@@ -177,7 +178,9 @@ struct ReportPage {
       .height(BUTTON.HEIGHT_SMALL)
       .justifyContent(FlexAlign.Center)
       .alignItems(VerticalAlign.Center)
-      .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
+      .onClick(() => { safeBack() })
+      .accessibilityText('返回')
+      .accessibilityDescription('返回上一页')
       .margin({ left: 4 })
 
       Blank()
@@ -871,7 +874,7 @@ struct ReportPage {
 
         if (this.foodLabel.scNumber.length > 0) {
           Row() {
-            Text('SC编号: ')
+            Text($r('app.string.producer_info') + ': ')
               .fontSize(FONT_SIZE.BODY)
               .fontColor(COLORS.TEXT_TERTIARY)
             Text(this.foodLabel.scNumber)

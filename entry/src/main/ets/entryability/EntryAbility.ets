@@ -6,6 +6,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
 import { fileIo } from '@kit.CoreFileKit';
 import { AppState } from '../AppState';
+import { AnalyticsService } from '../service/AnalyticsService';
 import { DataSource } from '../model/HealthSignal';
 import { MemberTier } from '../model/MemberStatus';
 import { preferences } from '@kit.ArkData';
@@ -78,6 +79,9 @@ export default class EntryAbility extends UIAbility {
 
     // 释放OCR资源
     // OcrService.release() 在AppState中管理
+
+    // 停止 AnalyticsService 定时器并刷出剩余数据
+    AnalyticsService.getInstance().destroy();
   }
 
   onWindowStageCreate(windowStage: window.WindowStage): void {

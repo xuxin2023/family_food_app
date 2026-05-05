@@ -1,6 +1,6 @@
 // 购物篮检查页 - 连续扫描后检查一篮子食品
 
-import { router } from '@kit.ArkUI';
+import { safeBack, safePushUrl } from '../utils/RouterUtil';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FoodLabel, FoodSource, NutritionPer100g } from '../model/FoodLabel';
 import { BasketCheckResult } from '../engine/BasketCheckEngine';
@@ -45,7 +45,7 @@ struct BasketCheckPage {
           // 顶部导航
           Row() {
             Text('←').fontSize(24).fontColor(COLORS.PRIMARY)
-              .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
+              .onClick(() => { safeBack() })
             Text($r('app.string.basket_button')).fontSize(20).fontWeight(FontWeight.Bold)
               .margin({ left: 16 })
           }
@@ -140,13 +140,7 @@ struct BasketCheckPage {
             .backgroundColor(COLORS.PRIMARY)
             .borderRadius(BUTTON.RADIUS_MD)
             .margin({ top: 16, bottom: 32 })
-            .onClick(() => {
-              try {
-                router.pushUrl({ url: 'pages/ScanPage' })
-              } catch (_e) {
-                hilog.warn(0x0000, 'BasketCheckPage', 'router.pushUrl failed: ' + JSON.stringify(_e))
-              }
-            })
+            .onClick(() => { safePushUrl('pages/ScanPage') })
         }
         .width('100%')
       }

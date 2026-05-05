@@ -1,7 +1,8 @@
 // CloudSyncSettingsPage.ets
 // 云同步设置页面 - 管理云端账户绑定、同步开关、策略选择
 
-import { router, promptAction } from '@kit.ArkUI';
+import { promptAction } from '@kit.ArkUI';
+import { safeBack } from '../utils/RouterUtil';
 import { AppState } from '../AppState';
 import { SyncService, SyncEvent } from '../service/sync/SyncService';
 import { NetworkState } from '../service/NetworkMonitorService';
@@ -62,7 +63,7 @@ struct CloudSyncSettingsPage {
         Text('<')
           .fontSize(24)
           .fontColor(COLORS.PRIMARY)
-          .onClick(() => { try { router.back() } catch (_e) {} })
+          .onClick(() => { safeBack() })
         Text($r('app.string.cloud_sync'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)

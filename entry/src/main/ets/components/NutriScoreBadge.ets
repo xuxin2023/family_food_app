@@ -48,6 +48,7 @@ export struct NutriScoreBadge {
   @Prop score: number = 50;        // 评分 0-100
   @Prop diameter: number = 120;    // 徽章直径
   @Prop animating: boolean = true; // 是否播放入场动效
+  private hoverTimer: number = -1
 
   // 嵌入的 LevelBadge 信息
   @Prop levelText: string = '';     // 适配等级文本（如"适合"）
@@ -176,10 +177,17 @@ export struct NutriScoreBadge {
         animateTo({ duration: 200 }, () => {
           this.overlayScale = 0;
         });
-        setTimeout(() => {
+        this.hoverTimer = setTimeout(() => {
           this.isHovered = false;
         }, 200);
       }
     })
+  }
+
+  aboutToDisappear(): void {
+    if (this.hoverTimer !== -1) {
+      clearTimeout(this.hoverTimer)
+      this.hoverTimer = -1
+    }
   }
 }

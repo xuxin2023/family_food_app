@@ -1,4 +1,5 @@
 import { router, promptAction } from '@kit.ArkUI';
+import { safeBack, safePushUrl } from '../utils/RouterUtil';
 import { Recommendation } from '../model/Recommendation';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { ShareCard } from '../components/ShareCard';
@@ -54,7 +55,7 @@ struct SharePage {
           Text('<')
             .fontSize(24)
             .fontColor(COLORS.PRIMARY)
-            .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
+            .onClick(() => { safeBack() })
           Text($r('app.string.share_title'))
             .fontSize(20)
             .fontWeight(FontWeight.Bold)
@@ -146,7 +147,7 @@ struct SharePage {
                 .fontColor(COLORS.WHITE)
                 .fontSize(13)
                 .onClick(() => {
-                  router.pushUrl({ url: 'pages/FamilyGroupPage' })
+                  safePushUrl('pages/FamilyGroupPage')
                 })
             }
             .width('100%')
@@ -215,10 +216,7 @@ struct SharePage {
               .onClick(() => {
                 const publishParams: Record<string, Object> = new Object() as Record<string, Object>
                 publishParams['relatedFoodId'] = this.foodName
-                router.pushUrl({
-                  url: 'pages/RecipeCreatePage',
-                  params: publishParams
-                })
+                safePushUrl('pages/RecipeCreatePage', publishParams)
               })
           }
           .width('100%')

@@ -1,4 +1,4 @@
-import { router } from '@kit.ArkUI';
+import { safeBack } from '../utils/RouterUtil';
 import { AppState } from '../AppState';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { MealScenario } from '../model/MealBalance';
@@ -60,7 +60,7 @@ struct WeeklyReportPage {
             Text('<')
               .fontSize(24)
               .fontColor(COLORS.PRIMARY)
-              .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
+              .onClick(() => { safeBack() })
             Text($r('app.string.weekly_report'))
               .fontSize(20)
               .fontWeight(FontWeight.Bold)

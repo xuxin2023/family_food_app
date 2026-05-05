@@ -1,63 +1,15 @@
+// AiWeeklyReportService.ets
+// AI 周报服务 - 为每周饮食报告生成个性化总结和建议
+
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { http } from '@kit.NetworkKit';
 import { WeeklyReport, WeeklyDietData } from '../engine/WeeklyReportEngine';
 import { FamilyProfile } from '../model/FamilyProfile';
-import { API_TIMEOUT_CONFIG } from '../constants/AppConfig';
+import { AiServiceBase } from './ai/AiServiceBase';
+import { AI_SERVICE_DEFAULTS } from './ai/AiConfig';
 import { AssetKeyManager, KeyAlias } from '../utils/AssetKeyManager';
-
-// AgentArts API响应内部结构
-class AgentArtsChoiceMessage {
-  content: string = '';
-}
-
-class AgentArtsChoice {
-  message: AgentArtsChoiceMessage = new AgentArtsChoiceMessage();
-}
-
-class AgentArtsUsage {
-  total_tokens: number = 0;
-}
-
-class AgentArtsResponse {
-  choices: AgentArtsChoice[] = [];
-  usage: AgentArtsUsage = new AgentArtsUsage();
-}
-
-// AI调用结果
-class AiCallResult {
-  text: string = '';
-  tokensUsed: number = 0;
-}
-
-// AiWeeklyReportResult 实现类
-class AiWeeklyReportResultImpl implements AiWeeklyReportResult {
-  summary: string = '';
-  highlights: string[] = [];
-  suggestions: string[] = [];
-  personalizedTip: string = '';
-  motivationalMessage: string = '';
-}
-
-// 消息条目
-class ChatMessage {
-  role: string = '';
-  content: string = '';
-}
-
-// HTTP请求选项
-class HttpRequestOptions {
-  method: http.RequestMethod = http.RequestMethod.POST;
-  header: Record<string, string> = {};
-  extraData: string | Object = '';
-  connectTimeout: number = API_TIMEOUT_CONFIG.AI_CONNECT_TIMEOUT_MS;
-  readTimeout: number = API_TIMEOUT_CONFIG.AI_READ_TIMEOUT_MS;
-}
 
 const TAG = 'AiWeeklyReportService';
 const DOMAIN_ZERO = 0;
-
-const AGENT_ARTS_ENDPOINT = 'https://agentarts.cloud.huawei.com/v1/chat/completions';
-const AGENT_ARTS_MODEL = 'agentarts-food-polish';
 
 export interface AiWeeklyReportResult {
   summary: string;
@@ -67,24 +19,29 @@ export interface AiWeeklyReportResult {
   motivationalMessage: string;
 }
 
-export class AiWeeklyReportService {
-  private apiKey: string = '';
-  private isEnabled: boolean = true;
-  private tokensUsed: number = 0;
-  private readonly MAX_WEEKLY_TOKENS: number = 50000;
+export class AiWeeklyReportService extends AiServiceBase {
+  protected getTag(): string {
+    return TAG;
+  }
 
-  /**
-   * 设置API密钥（写入内存 + Asset 安全存储）
-   */
+  protected getDefaultTemperature(): number {
+    return AI_SERVICE_DEFAULTS.WEEKLY_TEMPERATURE;
+  }
+
+  protected getDefaultMaxTokens(): number {
+    return AI_SERVICE_DEFAULTS.WEEKLY_MAX_TOKENS;
+  }
+
+  protected getSystemPrompt(): string {
+    return '你是家庭饮食周报润色助手。输出必须是合法JSON。语气温和鼓励，不恐吓。';
+  }
+
   async setApiKey(key: string): Promise<void> {
     this.apiKey = key;
     await AssetKeyManager.getInstance().saveKey(KeyAlias.AGENT_ARTS, key);
     hilog.info(DOMAIN_ZERO, TAG, 'API key configured and persisted to Asset Kit');
   }
 
-  /**
-   * 从 Asset 安全存储加载 API Key
-   */
   async loadApiKey(): Promise<boolean> {
     const key = await AssetKeyManager.getInstance().getKey(KeyAlias.AGENT_ARTS);
     if (key.length > 0) {
@@ -96,26 +53,21 @@ export class AiWeeklyReportService {
     return false;
   }
 
-  setEnabled(enabled: boolean): void {
-    this.isEnabled = enabled;
-  }
-
   async enhanceWeeklyReport(
     report: WeeklyReport,
     data: WeeklyDietData,
     profile: FamilyProfile
   ): Promise<AiWeeklyReportResult> {
-    if (!this.isEnabled || this.apiKey.length === 0 || this.tokensUsed >= this.MAX_WEEKLY_TOKENS) {
+    if (!this.shouldUseAi()) {
       return this.buildFallbackResult(report);
     }
 
     try {
       const prompt = this.buildWeeklyPrompt(report, data, profile);
-      const aiResult = await this.callAgentArts(prompt);
+      const aiText = await this.callAi(prompt);
 
-      if (aiResult && aiResult.text.length > 0) {
-        this.tokensUsed += aiResult.tokensUsed;
-        return this.parseAiResponse(aiResult.text, report);
+      if (aiText !== null && aiText.length > 0) {
+        return this.parseAiResponse(aiText, report);
       }
 
       return this.buildFallbackResult(report);
@@ -170,16 +122,17 @@ export class AiWeeklyReportService {
   private parseAiResponse(text: string, fallback: WeeklyReport): AiWeeklyReportResult {
     try {
       const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
+      if (jsonMatch === null) {
         return this.buildFallbackResult(fallback);
       }
       const parsed = JSON.parse(jsonMatch[0]) as Record<string, Object>;
-      const result = new AiWeeklyReportResultImpl();
-      result.summary = (parsed.summary as string) || fallback.summary;
-      result.highlights = (parsed.highlights as string[]) || fallback.highlights;
-      result.suggestions = (parsed.suggestions as string[]) || fallback.suggestions;
-      result.personalizedTip = (parsed.personalizedTip as string) || '';
-      result.motivationalMessage = (parsed.motivationalMessage as string) || '坚持记录，全家更安心';
+      const result: AiWeeklyReportResult = {
+        summary: (parsed.summary as string) || fallback.summary,
+        highlights: (parsed.highlights as string[]) || fallback.highlights,
+        suggestions: (parsed.suggestions as string[]) || fallback.suggestions,
+        personalizedTip: (parsed.personalizedTip as string) || '',
+        motivationalMessage: (parsed.motivationalMessage as string) || '坚持记录，全家更安心'
+      };
       return result;
     } catch (error) {
       return this.buildFallbackResult(fallback);
@@ -187,70 +140,12 @@ export class AiWeeklyReportService {
   }
 
   private buildFallbackResult(report: WeeklyReport): AiWeeklyReportResult {
-    const result = new AiWeeklyReportResultImpl();
-    result.summary = report.summary;
-    result.highlights = report.highlights;
-    result.suggestions = report.suggestions;
-    result.personalizedTip = '';
-    result.motivationalMessage = '坚持记录，全家更安心';
-    return result;
-  }
-
-  private async callAgentArts(prompt: string): Promise<AiCallResult | null> {
-    try {
-      const httpRequest = http.createHttp();
-
-      const systemMsg = new ChatMessage();
-      systemMsg.role = 'system';
-      systemMsg.content = '你是家庭饮食周报润色助手。输出必须是合法JSON。语气温和鼓励，不恐吓。';
-
-      const userMsg = new ChatMessage();
-      userMsg.role = 'user';
-      userMsg.content = prompt;
-
-      const messages: ChatMessage[] = [systemMsg, userMsg];
-
-      const requestBody = JSON.stringify({
-        model: AGENT_ARTS_MODEL,
-        messages: messages,
-        temperature: 0.6,
-        max_tokens: 500
-      });
-
-      const reqHeaders: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.apiKey}`
-      };
-
-      const reqOptions: HttpRequestOptions = {
-        method: http.RequestMethod.POST,
-        header: reqHeaders,
-        extraData: requestBody,
-        connectTimeout: API_TIMEOUT_CONFIG.AI_CONNECT_TIMEOUT_MS,
-        readTimeout: API_TIMEOUT_CONFIG.AI_READ_TIMEOUT_MS
-      };
-
-      const response = await httpRequest.request(AGENT_ARTS_ENDPOINT, reqOptions);
-      httpRequest.destroy();
-
-      if (response.responseCode === 200) {
-        const parsedResult = JSON.parse(response.result as string) as Record<string, Object>;
-        const choices = parsedResult['choices'] as Record<string, Object>[] ?? [];
-        if (choices.length > 0) {
-          const firstChoice = choices[0];
-          const message = firstChoice['message'] as Record<string, Object> ?? {};
-          const usage = parsedResult['usage'] as Record<string, Object> ?? {};
-
-          const callResult = new AiCallResult();
-          callResult.text = message['content'] as string ?? '';
-          callResult.tokensUsed = usage['total_tokens'] as number ?? 0;
-          return callResult;
-        }
-      }
-      return null;
-    } catch (error) {
-      hilog.error(DOMAIN_ZERO, TAG, 'AgentArts call failed: %{public}s', JSON.stringify(error));
-      return null;
-    }
+    return {
+      summary: report.summary,
+      highlights: report.highlights,
+      suggestions: report.suggestions,
+      personalizedTip: '',
+      motivationalMessage: '坚持记录，全家更安心'
+    };
   }
 }

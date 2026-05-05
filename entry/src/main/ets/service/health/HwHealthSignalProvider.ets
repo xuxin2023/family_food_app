@@ -54,6 +54,13 @@ export class HwHealthSignalProvider implements HealthSignalProvider {
     this.context = context;
   }
 
+  /** 释放资源（切换 provider 时调用） */
+  release(): void {
+    this.healthStore = null;
+    this.context = null;
+    this.isInitialized = false;
+  }
+
   /**
    * 检查是否已获得健康数据授权
    */

@@ -12,6 +12,14 @@ export class HealthService {
   }
 
   setProvider(provider: HealthSignalProvider): void {
+    // 调用旧 provider 的可选 release() 释放资源
+    if (this.provider.release !== undefined) {
+      try {
+        this.provider.release();
+      } catch (_e) {
+        // 释放失败不影响主流程
+      }
+    }
     this.provider = provider;
   }
 

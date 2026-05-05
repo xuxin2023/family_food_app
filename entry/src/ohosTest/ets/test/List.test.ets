@@ -21,6 +21,11 @@ import dailyBudgetTest from './model/DailyBudgetTest';
 import healthSignalTest from './model/HealthSignalTest';
 import recommendationModelTest from './model/RecommendationTest';
 
+// AI 服务层单元测试
+import aiClientTest from './AiClientTest';
+import aiConfigTest from './AiConfigTest';
+import aiServiceBaseTest from './AiServiceBaseTest';
+
 export default function tests() {
   // 原有引擎测试
   ruleEngineTest();
@@ -43,4 +48,9 @@ export default function tests() {
   dailyBudgetTest();
   healthSignalTest();
   recommendationModelTest();
+
+  // AI 服务层测试
+  aiClientTest();
+  aiConfigTest();
+  aiServiceBaseTest();
 }

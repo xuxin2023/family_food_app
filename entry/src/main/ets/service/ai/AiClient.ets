@@ -1,0 +1,172 @@
+// AiClient.ets
+// 统一的 AgentArts HTTP 调用客户端
+// 封装：HTTP 通信、JSON 解析、Token 计数、错误处理
+
+import { http } from '@kit.NetworkKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+import { AGENT_ARTS_ENDPOINT, AGENT_ARTS_MODEL } from './AiConfig';
+import { API_TIMEOUT_CONFIG } from '../../constants/AppConfig';
+
+const TAG = 'AiClient';
+const DOMAIN_ZERO = 0;
+
+/**
+ * AI 调用请求参数
+ */
+export interface AiRequestOptions {
+  /** system prompt */
+  systemPrompt: string;
+  /** user prompt */
+  userPrompt: string;
+  /** 温度参数 */
+  temperature: number;
+  /** 最大输出 Token 数 */
+  maxTokens: number;
+}
+
+/**
+ * AI 调用响应
+ */
+export interface AiCallResponse {
+  text: string;
+  tokensUsed: number;
+}
+
+/** AgentArts API 消息结构 */
+class ChatMessage {
+  role: string = '';
+  content: string = '';
+}
+
+/** AgentArts API 响应结构 */
+class AgentArtsResponse {
+  choices: AgentArtsChoice[] = [];
+  usage: AgentArtsUsage = new AgentArtsUsage();
+}
+
+class AgentArtsChoice {
+  message: AgentArtsChoiceMessage = new AgentArtsChoiceMessage();
+}
+
+class AgentArtsChoiceMessage {
+  content: string = '';
+}
+
+class AgentArtsUsage {
+  total_tokens: number = 0;
+}
+
+/**
+ * 统一的 AgentArts HTTP 调用客户端
+ *
+ * 用法：
+ *   const client = new AiClient();
+ *   const result = await client.call({
+ *     systemPrompt: '你是一名营养师...',
+ *     userPrompt: '请分析...',
+ *     temperature: 0.5,
+ *     maxTokens: 1000
+ *   });
+ */
+export class AiClient {
+  private apiKey: string = '';
+
+  setApiKey(key: string): void {
+    this.apiKey = key;
+  }
+
+  getApiKey(): string {
+    return this.apiKey;
+  }
+
+  hasApiKey(): boolean {
+    return this.apiKey.length > 0;
+  }
+
+  /**
+   * 调用 AgentArts API
+   * @param options 请求参数
+   * @returns AI 响应，失败返回 null
+   */
+  async call(options: AiRequestOptions): Promise<AiCallResponse | null> {
+    if (this.apiKey.length === 0) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'No API key configured');
+      return null;
+    }
+
+    const httpRequest = http.createHttp();
+
+    try {
+      const systemMsg = new ChatMessage();
+      systemMsg.role = 'system';
+      systemMsg.content = options.systemPrompt;
+
+      const userMsg = new ChatMessage();
+      userMsg.role = 'user';
+      userMsg.content = options.userPrompt;
+
+      const messages: ChatMessage[] = [systemMsg, userMsg];
+
+      const requestBody = JSON.stringify({
+        model: AGENT_ARTS_MODEL,
+        messages: messages,
+        temperature: options.temperature,
+        max_tokens: options.maxTokens
+      });
+
+      const response = await httpRequest.request(AGENT_ARTS_ENDPOINT, {
+        method: http.RequestMethod.POST,
+        header: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.apiKey}`
+        },
+        extraData: requestBody,
+        connectTimeout: API_TIMEOUT_CONFIG.AI_CONNECT_TIMEOUT_MS,
+        readTimeout: API_TIMEOUT_CONFIG.AI_READ_TIMEOUT_MS
+      });
+
+      if (response.responseCode === 200) {
+        const rawResult = response.result as string;
+        const parsed = this.parseAgentArtsResponse(rawResult);
+        if (parsed !== null) {
+          return parsed;
+        }
+      } else {
+        hilog.error(DOMAIN_ZERO, TAG, 'AgentArts API error: %{public}d', response.responseCode);
+      }
+
+      return null;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'AgentArts call failed: %{public}s', JSON.stringify(error));
+      return null;
+    } finally {
+      httpRequest.destroy();
+    }
+  }
+
+  /**
+   * 解析 AgentArts 响应 JSON
+   */
+  private parseAgentArtsResponse(rawJson: string): AiCallResponse | null {
+    try {
+      const parsed = JSON.parse(rawJson) as AgentArtsResponse;
+
+      if (parsed.choices.length === 0) {
+        return null;
+      }
+
+      const content = parsed.choices[0].message.content;
+      if (content.length === 0) {
+        return null;
+      }
+
+      return {
+        text: content,
+        tokensUsed: parsed.usage.total_tokens
+      };
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'parse AgentArts response failed: %{public}s', JSON.stringify(error));
+      return null;
+    }
+  }
+}

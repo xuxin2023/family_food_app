@@ -1,0 +1,127 @@
+// AiServiceBase.ets
+// AI 服务基类 — 统一管理 API Key、Token 配额、功能开关
+// 各 AI 服务继承此类，只需实现 buildPrompt() 和 parseResponse() 即可
+
+import { hilog } from '@kit.PerformanceAnalysisKit';
+import { AssetKeyManager, KeyAlias } from '../../utils/AssetKeyManager';
+import { AiClient, AiRequestOptions } from './AiClient';
+
+const TAG = 'AiServiceBase';
+const DOMAIN_ZERO = 0;
+
+/**
+ * AI 服务基类
+ *
+ * 子类只需实现：
+ * - getTag(): string          — 日志标签
+ * - getDefaultTemperature(): number — 默认温度
+ * - getDefaultMaxTokens(): number   — 默认最大 Token
+ * - getSystemPrompt(): string       — system prompt
+ *
+ * 框架自动提供：
+ * - setApiKey / loadApiKey / setEnabled
+ * - shouldUseAi() 降级条件判断
+ * - callAi(prompt) 统一调用入口
+ * - Token 配额管理
+ */
+export abstract class AiServiceBase {
+  protected apiKey: string = '';
+  protected isEnabled: boolean = true;
+  protected tokensUsed: number = 0;
+  protected readonly MAX_TOKENS: number = 50000;
+
+  private client: AiClient | null = null;
+
+  /** 子类需返回日志 TAG */
+  protected abstract getTag(): string;
+
+  /** 子类需返回默认 temperature 参数 */
+  protected abstract getDefaultTemperature(): number;
+
+  /** 子类需返回默认 max_tokens 参数 */
+  protected abstract getDefaultMaxTokens(): number;
+
+  /** 子类需返回 system prompt 模板 */
+  protected abstract getSystemPrompt(): string;
+
+  /** 设置 API Key（同步模式，用于外部注入） */
+  setApiKey(key: string): void {
+    this.apiKey = key;
+    if (this.client !== null) {
+      this.client.setApiKey(key);
+    }
+    hilog.info(DOMAIN_ZERO, this.getTag(), 'API key configured');
+  }
+
+  /** 从 Asset Kit 安全存储加载 API Key */
+  async loadApiKey(): Promise<boolean> {
+    const key = await AssetKeyManager.getInstance().getKey(KeyAlias.AGENT_ARTS);
+    if (key.length > 0) {
+      this.apiKey = key;
+      if (this.client !== null) {
+        this.client.setApiKey(key);
+      }
+      hilog.info(DOMAIN_ZERO, this.getTag(), 'API key loaded from Asset Kit');
+      return true;
+    }
+    hilog.warn(DOMAIN_ZERO, this.getTag(), 'No API key found in Asset Kit');
+    return false;
+  }
+
+  /** 设置是否启用 AI 功能 */
+  setEnabled(enabled: boolean): void {
+    this.isEnabled = enabled;
+    hilog.info(DOMAIN_ZERO, this.getTag(), 'AI %{public}s', enabled ? 'enabled' : 'disabled');
+  }
+
+  /** 获取已用 Token 数 */
+  getTokensUsed(): number {
+    return this.tokensUsed;
+  }
+
+  /** 设置 Token 使用数（用于恢复计数） */
+  setTokensUsed(count: number): void {
+    this.tokensUsed = count;
+  }
+
+  /** 检查是否应使用 AI（条件满足返回 true） */
+  protected shouldUseAi(): boolean {
+    return this.isEnabled && this.apiKey.length > 0 && this.tokensUsed < this.MAX_TOKENS;
+  }
+
+  /**
+   * 统一 AI 调用入口
+   * @param userPrompt user prompt 内容
+   * @returns AI 响应文本；降级或失败时返回 null
+   */
+  protected async callAi(userPrompt: string): Promise<string | null> {
+    if (!this.shouldUseAi()) {
+      return null;
+    }
+
+    // 懒加载 AiClient
+    if (this.client === null) {
+      this.client = new AiClient();
+      this.client.setApiKey(this.apiKey);
+    }
+
+    const options: AiRequestOptions = {
+      systemPrompt: this.getSystemPrompt(),
+      userPrompt: userPrompt,
+      temperature: this.getDefaultTemperature(),
+      maxTokens: this.getDefaultMaxTokens()
+    };
+
+    try {
+      const result = await this.client.call(options);
+      if (result !== null && result.text.length > 0) {
+        this.tokensUsed += result.tokensUsed;
+        return result.text;
+      }
+      return null;
+    } catch (error) {
+      hilog.warn(DOMAIN_ZERO, this.getTag(), 'AI call failed: %{public}s', JSON.stringify(error));
+      return null;
+    }
+  }
+}

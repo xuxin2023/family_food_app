@@ -1,0 +1,30 @@
+{
+  "forms": [
+    {
+      "name": "FoodTrackerCard",
+      "description": "饮食追踪卡片 - 查看今日营养摄入",
+      "src": "./ets/widget/FoodTrackerCard.ets",
+      "uiSyntax": "arkts",
+      "window": {
+        "designWidth": 720,
+        "autoDesignWidth": true
+      },
+      "colorMode": "auto",
+      "isDefault": true,
+      "updateEnabled": true,
+      "scheduledUpdateTime": "08:00",
+      "updateDuration": 2,
+      "defaultDimension": "2*2",
+      "supportDimensions": [
+        "2*2",
+        "2*4"
+      ],
+      "metadata": [
+        {
+          "name": "cardType",
+          "value": "nutritionTracker"
+        }
+      ]
+    }
+  ]
+}

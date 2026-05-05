@@ -7,7 +7,6 @@
 // 4. 网络不可用时自动降级，不影响核心功能
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { http } from '@kit.NetworkKit';
 import {
   AiNutritionAdvice, MealAnalysis, NutrientAnalysis,
   DietPatternAnalysis, AiNutritionCacheEntry,
@@ -15,52 +14,38 @@ import {
 } from '../model/AiModels';
 import { FamilyProfile, HealthGoal } from '../model/FamilyProfile';
 import { DailyBudget } from '../model/DailyBudget';
-import { HealthSignal, BpStatus, BsStatus } from '../model/HealthSignal';
+import { HealthSignal, BpStatus, BsStatus, SleepStatus } from '../model/HealthSignal';
 import { DietRecord } from '../repository/HistoryRepository';
 import { NutritionTrendEngine, DailyNutritionSummary, MealGroup } from '../engine/NutritionTrendEngine';
-import { AI_CACHE_CONFIG, API_TIMEOUT_CONFIG } from '../constants/AppConfig';
+import { AI_CACHE_CONFIG } from '../constants/AppConfig';
 import { AssetKeyManager, KeyAlias } from '../utils/AssetKeyManager';
+import { AiServiceBase } from './ai/AiServiceBase';
+import { AI_SERVICE_DEFAULTS } from './ai/AiConfig';
 
 const TAG = 'AiNutritionistService';
 const DOMAIN_ZERO = 0;
-
-const AGENT_ARTS_ENDPOINT = 'https://agentarts.cloud.huawei.com/v1/chat/completions';
-const AGENT_ARTS_MODEL = 'agentarts-food-polish';
 const CACHE_TTL_MS = AI_CACHE_CONFIG.NUTRITIONIST_CACHE_TTL_MS; // 缓存10分钟
 
-interface AiEnhanceResult { result: AiNutritionAdvice; tokensUsed: number; }
-
-class ChatMessage {
-  role: string = '';
-  content: string = '';
-}
-
-class HttpRequestOptions {
-  method: http.RequestMethod = http.RequestMethod.POST;
-  header: Record<string, string> = {};
-  extraData: string | Object = '';
-  connectTimeout: number = API_TIMEOUT_CONFIG.AI_CONNECT_TIMEOUT_MS;
-  readTimeout: number = API_TIMEOUT_CONFIG.AI_READ_TIMEOUT_MS;
-}
-
-interface AgentArtsCallResult {
-  text: string;
-  tokensUsed: number;
-}
-
-export class AiNutritionistService {
-  /** @internal 运行时内存中的 API Key，通过 AssetKeyManager 安全加载 */
-  private apiKey: string = '';
-  private isEnabled: boolean = true;
-  private tokensUsed: number = 0;
-  private readonly MAX_TOKENS: number = 50000;
+export class AiNutritionistService extends AiServiceBase {
   private cache: Map<string, AiNutritionCacheEntry> = new Map();
 
-  /**
-   * 从 Asset 安全存储中加载 API Key
-   * 使用 Asset Store Kit 提供系统级加密保护
-   */
-  async loadApiKey(_context: Context): Promise<boolean> {
+  protected getTag(): string {
+    return TAG;
+  }
+
+  protected getDefaultTemperature(): number {
+    return AI_SERVICE_DEFAULTS.NUTRITIONIST_TEMPERATURE;
+  }
+
+  protected getDefaultMaxTokens(): number {
+    return AI_SERVICE_DEFAULTS.NUTRITIONIST_MAX_TOKENS;
+  }
+
+  protected getSystemPrompt(): string {
+    return '你是家庭AI营养师。输出必须是合法JSON。语气温和鼓励，不恐吓。';
+  }
+
+  async loadApiKey(): Promise<boolean> {
     try {
       const key = await AssetKeyManager.getInstance().getKey(KeyAlias.AGENT_ARTS);
       if (key.length > 0) {
@@ -76,9 +61,6 @@ export class AiNutritionistService {
     }
   }
 
-  /**
-   * 设置 API Key（写入内存 + 持久化到 Asset 安全存储）
-   */
   async setApiKey(key: string): Promise<boolean> {
     try {
       this.apiKey = key;
@@ -91,17 +73,8 @@ export class AiNutritionistService {
     }
   }
 
-  /**
-   * 持久化 API Key 到 Asset 安全存储
-   * 兼容旧调用方（saveApiKey 等同于 setApiKey）
-   */
   async saveApiKey(_context: Context, key: string): Promise<boolean> {
     return this.setApiKey(key);
-  }
-
-  setEnabled(enabled: boolean): void {
-    this.isEnabled = enabled;
-    hilog.info(DOMAIN_ZERO, TAG, 'AI nutritionist %{public}s', enabled ? 'enabled' : 'disabled');
   }
 
   /**
@@ -125,12 +98,11 @@ export class AiNutritionistService {
     const baseResult = this.buildBaseAnalysis(member, signal, budget, records, days);
 
     // 2. 尝试AI增强
-    if (this.isEnabled && this.apiKey.length > 0 && this.tokensUsed < this.MAX_TOKENS) {
+    if (this.shouldUseAi()) {
       try {
-        const aiResult: AiEnhanceResult | null = await this.enhanceWithAi(baseResult, member, signal, budget, records, days, includeMealPlan);
-        if (aiResult) {
-          this.tokensUsed += aiResult.tokensUsed;
-          return aiResult.result;
+        const enhanced = await this.enhanceWithAi(baseResult, member, signal, budget, records, days, includeMealPlan);
+        if (enhanced !== null) {
+          return enhanced;
         }
       } catch (error) {
         hilog.warn(DOMAIN_ZERO, TAG, 'AI enhance failed, use rule-based: %{public}s', JSON.stringify(error));
@@ -226,25 +198,21 @@ export class AiNutritionistService {
 
     const analyses: NutrientAnalysis[] = [];
 
-    // 钠
     analyses.push(this.nutrientHelper(
       '钠', avgSodium, budget.sodiumBudget,
       avgSodium > budget.sodiumBudget ? 'over' : avgSodium > budget.sodiumBudget * 0.8 ? 'warning' : 'good'
     ));
 
-    // 糖
     analyses.push(this.nutrientHelper(
       '糖', avgSugar, budget.sugarBudget,
       avgSugar > budget.sugarBudget ? 'over' : avgSugar > budget.sugarBudget * 0.8 ? 'warning' : 'good'
     ));
 
-    // 热量
     analyses.push(this.nutrientHelper(
       '热量', avgCal, budget.calorieBudget,
       avgCal > budget.calorieBudget ? 'over' : avgCal > budget.calorieBudget * 0.8 ? 'warning' : 'good'
     ));
 
-    // 脂肪
     analyses.push(this.nutrientHelper(
       '脂肪', avgFat, budget.fatBudget,
       avgFat > budget.fatBudget ? 'over' : avgFat > budget.fatBudget * 0.8 ? 'warning' : 'good'
@@ -257,19 +225,28 @@ export class AiNutritionistService {
     name: string, avg: number, target: number, status: 'excellent' | 'good' | 'warning' | 'over'
   ): NutrientAnalysis {
     const unit = name === '钠' ? 'mg' : name === '热量' ? 'kcal' : 'g';
-    const insightMap: Record<string, string> = {
-      'excellent': `${name}摄入控制得很好，继续保持`,
-      'good': `${name}摄入在合理范围内`,
-      'warning': `${name}摄入偏高了，要注意控制`,
-      'over': `${name}摄入超标了，建议减少高${name}食物`
-    };
+    let insight = '';
+    switch (status) {
+      case 'excellent':
+        insight = `${name}摄入控制得很好，继续保持`;
+        break;
+      case 'good':
+        insight = `${name}摄入在合理范围内`;
+        break;
+      case 'warning':
+        insight = `${name}摄入偏高了，要注意控制`;
+        break;
+      case 'over':
+        insight = `${name}摄入超标了，建议减少高${name}食物`;
+        break;
+    }
     return {
       name: name,
       averageDaily: Math.round(avg * 10) / 10,
       target: target,
       trend: 'stable',
       status: status,
-      insight: insightMap[status] || `${name}摄入情况正常`
+      insight: insight
     };
   }
 
@@ -385,19 +362,17 @@ export class AiNutritionistService {
     records: DietRecord[],
     days: number,
     includeMealPlan: boolean
-  ): Promise<AiEnhanceResult | null> {
+  ): Promise<AiNutritionAdvice | null> {
     const prompt = this.buildNutritionistPrompt(
       baseResult, member, signal, budget, records, days, includeMealPlan
     );
-    const aiResult = await this.callAgentArts(prompt);
+    const aiText = await this.callAi(prompt);
 
-    if (!aiResult || aiResult.text.length === 0) return null;
-
-    const enhanced = this.parseAiResponse(aiResult.text, baseResult, member, includeMealPlan);
-    if (enhanced) {
-      return this.makeAiEnhanceResult(enhanced, aiResult.tokensUsed);
+    if (aiText === null || aiText.length === 0) {
+      return null;
     }
-    return null;
+
+    return this.parseAiResponse(aiText, baseResult, member, includeMealPlan);
   }
 
   private buildNutritionistPrompt(
@@ -409,9 +384,7 @@ export class AiNutritionistService {
     days: number,
     includeMealPlan: boolean
   ): string {
-    // 脱敏输入
     const budgetStatus = this.makeBudgetStatusValues(budget);
-
     const healthStatus = this.makePromptHealthStatus(signal);
 
     return `你是一个家庭AI营养师。请根据以下脱敏数据，为家庭成员提供个性化的营养分析和建议。
@@ -476,17 +449,18 @@ ${includeMealPlan ? '请包含明日饮食计划建议（3餐+加餐）' : ''}
   ): AiNutritionAdvice | null {
     try {
       const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) return null;
+      if (jsonMatch === null) {
+        return null;
+      }
 
       const parsed = JSON.parse(jsonMatch[0]) as Record<string, Object>;
 
-      // 合并AI结果和规则基础结果
-      const aiMealAnalyses = parsed['mealAnalyses'] as Record<string, Object>[] || [];
-      const nutrientInsights = parsed['nutrientInsights'] as Record<string, Object>[] || [];
-      const aiPatternIssues = parsed['patternIssues'] as string[] || [];
-      const aiPatternHighlights = parsed['patternHighlights'] as string[] || [];
-      const aiSuggestions = parsed['suggestions'] as string[] || [];
-      const aiMealPlan = parsed['mealPlanSuggestions'] as string[] || [];
+      const aiMealAnalyses = (parsed['mealAnalyses'] as Record<string, Object>[]) || [];
+      const nutrientInsights = (parsed['nutrientInsights'] as Record<string, Object>[]) || [];
+      const aiPatternIssues = (parsed['patternIssues'] as string[]) || [];
+      const aiPatternHighlights = (parsed['patternHighlights'] as string[]) || [];
+      const aiSuggestions = (parsed['suggestions'] as string[]) || [];
+      const aiMealPlan = (parsed['mealPlanSuggestions'] as string[]) || [];
 
       // 构建增强的mealAnalyses
       const mealAnalyses: MealAnalysis[] = [];
@@ -495,7 +469,7 @@ ${includeMealPlan ? '请包含明日饮食计划建议（3餐+加餐）' : ''}
       }
 
       // 合并nutrient insight到基础分析
-      const nutrientAnalyses = baseResult.nutrientAnalyses.map((na: NutrientAnalysis): NutrientAnalysis => {
+      const nutrientAnalyses: NutrientAnalysis[] = baseResult.nutrientAnalyses.map(na => {
         const aiInsight = nutrientInsights.find(i => i['name'] === na.name);
         return this.makeNutrientAnalysisHelper(na, (aiInsight?.['insight'] as string) || na.insight);
       });
@@ -522,63 +496,24 @@ ${includeMealPlan ? '请包含明日饮食计划建议（3餐+加餐）' : ''}
     }
   }
 
-  private async callAgentArts(prompt: string): Promise<AgentArtsCallResult | null> {
-    try {
-      const httpRequest = http.createHttp();
+  private makeMealAnalysis(aiItem: Record<string, Object>): MealAnalysis {
+    return {
+      mealType: (aiItem['mealType'] as string) || '',
+      rating: (aiItem['rating'] as 'good' | 'fair' | 'caution') || 'good',
+      comment: (aiItem['comment'] as string) || '',
+      suggestion: (aiItem['suggestion'] as string) || ''
+    };
+  }
 
-      const systemMsg = new ChatMessage();
-      systemMsg.role = 'system';
-      systemMsg.content = '你是家庭AI营养师。输出必须是合法JSON。语气温和鼓励，不恐吓。';
-
-      const userMsg = new ChatMessage();
-      userMsg.role = 'user';
-      userMsg.content = prompt;
-
-      const messages: ChatMessage[] = [systemMsg, userMsg];
-
-      const requestBody = JSON.stringify({
-        model: AGENT_ARTS_MODEL,
-        messages: messages,
-        temperature: 0.5,
-        max_tokens: 1000
-      });
-
-      const reqHeaders: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.apiKey}`
-      };
-
-      const reqOptions: HttpRequestOptions = {
-        method: http.RequestMethod.POST,
-        header: reqHeaders,
-        extraData: requestBody,
-        connectTimeout: API_TIMEOUT_CONFIG.AI_CONNECT_TIMEOUT_MS,
-        readTimeout: API_TIMEOUT_CONFIG.AI_READ_TIMEOUT_MS
-      };
-
-      const response = await httpRequest.request(AGENT_ARTS_ENDPOINT, reqOptions);
-      httpRequest.destroy();
-
-      if (response.responseCode === 200) {
-        const parsedResult = JSON.parse(response.result as string) as Record<string, Object>;
-        const choices = parsedResult['choices'] as Record<string, Object>[] ?? [];
-        if (choices.length > 0) {
-          const firstChoice = choices[0];
-          const message = firstChoice['message'] as Record<string, Object> ?? {};
-          const usage = parsedResult['usage'] as Record<string, Object> ?? {};
-
-          const callResult: AgentArtsCallResult = {
-            text: message['content'] as string ?? '',
-            tokensUsed: usage['total_tokens'] as number ?? 0
-          };
-          return callResult;
-        }
-      }
-      return null;
-    } catch (error) {
-      hilog.error(DOMAIN_ZERO, TAG, 'AgentArts call failed: %{public}s', JSON.stringify(error));
-      return null;
-    }
+  private makeNutrientAnalysisHelper(base: NutrientAnalysis, insight: string): NutrientAnalysis {
+    return {
+      name: base.name,
+      averageDaily: base.averageDaily,
+      target: base.target,
+      trend: base.trend,
+      status: base.status,
+      insight: insight
+    };
   }
 
   private makeBudgetStatusValues(budget: DailyBudget): BudgetStatusValues {
@@ -592,43 +527,42 @@ ${includeMealPlan ? '请包含明日饮食计划建议（3餐+加餐）' : ''}
 
   private makeHealthStatusValues(signal: HealthSignal): HealthStatusValues {
     const s = new HealthStatusValues();
-    s.bp = signal.manualBpStatus;
-    s.bs = signal.manualBsStatus;
-    s.sleep = signal.sleepStatus;
-    s.activity = signal.activityCaloriesLevel;
+    s.bp = this.getBpLabel(signal.manualBpStatus);
+    s.bs = this.getBsLabel(signal.manualBsStatus);
+    s.sleep = signal.sleepStatus === SleepStatus.POOR ? '不足' : '正常';
+    s.steps = signal.stepCount > 6000 ? '较活跃' : '偏少';
     return s;
-  }
-
-  private makeMealAnalysis(a: Record<string, Object>): MealAnalysis {
-    return {
-      mealType: (a['mealType'] as string) || '',
-      rating: (a['rating'] as 'good' | 'fair' | 'caution') || 'fair',
-      comment: (a['comment'] as string) || '',
-      suggestion: (a['suggestion'] as string) || ''
-    };
-  }
-
-  private makeNutrientAnalysisHelper(na: NutrientAnalysis, insight: string): NutrientAnalysis {
-    return {
-      name: na.name,
-      averageDaily: na.averageDaily,
-      target: na.target,
-      trend: na.trend,
-      status: na.status,
-      insight: insight
-    };
-  }
-  private makeAiEnhanceResult(result: AiNutritionAdvice, tokensUsed: number): AiEnhanceResult {
-    return { result: result, tokensUsed: tokensUsed };
   }
 
   private makePromptHealthStatus(signal: HealthSignal): PromptHealthStatus {
-    const s = new PromptHealthStatus();
-    s.bp = signal.manualBpStatus;
-    s.bs = signal.manualBsStatus;
-    s.sleep = signal.sleepStatus;
-    s.steps = signal.stepLevel;
-    return s;
+    return {
+      bp: this.getBpLabel(signal.manualBpStatus),
+      bs: this.getBsLabel(signal.manualBsStatus),
+      sleep: signal.sleepStatus === SleepStatus.POOR ? '不足' : '正常',
+      steps: signal.stepCount > 6000 ? '较活跃' : '偏少'
+    };
+  }
+
+  private getBpLabel(status: BpStatus): string {
+    switch (status) {
+      case BpStatus.HIGH:
+        return '偏高';
+      case BpStatus.ELEVATED:
+        return '偏高';
+      default:
+        return '正常';
+    }
+  }
+
+  private getBsLabel(status: BsStatus): string {
+    switch (status) {
+      case BsStatus.HIGH:
+        return '偏高';
+      case BsStatus.ELEVATED:
+        return '偏高';
+      default:
+        return '正常';
+    }
   }
 }
 
@@ -643,12 +577,12 @@ class HealthStatusValues {
   bp: string = '';
   bs: string = '';
   sleep: string = '';
-  activity: string = '';
+  steps: string = '';
 }
 
-class PromptHealthStatus {
-  bp: BpStatus = BpStatus.NORMAL;
-  bs: BsStatus = BsStatus.NORMAL;
-  sleep: string = '';
-  steps: string = '';
+interface PromptHealthStatus {
+  bp: string;
+  bs: string;
+  sleep: string;
+  steps: string;
 }

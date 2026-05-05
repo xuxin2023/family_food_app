@@ -1,0 +1,46 @@
+// AiClientTest.ets
+// AiClient 单元测试 - 验证统一的 AgentArts HTTP 调用客户端
+
+import { describe, it, expect } from '@ohos/hypium';
+import { AiClient, AiCallResponse } from '../../../../src/main/ets/service/ai/AiClient';
+
+export default function aiClientTest() {
+  describe('AiClientTest', () => {
+    let client: AiClient;
+
+    beforeEach(() => {
+      client = new AiClient();
+    });
+
+    it('should_set_and_get_api_key', 0, () => {
+      client.setApiKey('test_key_123');
+      expect(client.getApiKey()).assertEqual('test_key_123');
+    });
+
+    it('should_report_no_api_key_when_empty', 0, () => {
+      expect(client.hasApiKey()).assertFalse();
+    });
+
+    it('should_report_api_key_exists', 0, () => {
+      client.setApiKey('valid_key');
+      expect(client.hasApiKey()).assertTrue();
+    });
+
+    it('should_update_api_key', 0, () => {
+      client.setApiKey('key1');
+      expect(client.getApiKey()).assertEqual('key1');
+      client.setApiKey('key2');
+      expect(client.getApiKey()).assertEqual('key2');
+    });
+
+    it('should_return_null_when_no_api_key', 0, async () => {
+      const result = await client.call({
+        systemPrompt: 'test system',
+        userPrompt: 'test user',
+        temperature: 0.5,
+        maxTokens: 100
+      });
+      expect(result).assertNull();
+    });
+  });
+}

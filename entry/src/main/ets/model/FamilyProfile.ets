@@ -190,3 +190,20 @@ export class DailyBudgetConfig {
     return config;
   }
 }
+
+/**
+ * 创建默认家庭成员列表（首次启动时使用）
+ * 生成一个默认的成人成员
+ */
+export function createDefaultMembers(): FamilyProfile[] {
+  const defaultMembers: FamilyProfile[] = [];
+  const adult = new FamilyProfile();
+  adult.memberId = 'default_adult';
+  adult.nickname = '我';
+  adult.ageGroup = AgeGroup.ADULT;
+  adult.healthGoals = [HealthGoal.NONE];
+  adult.allergens = [];
+  adult.dailyBudget = new DailyBudgetConfig();
+  defaultMembers.push(adult);
+  return defaultMembers;
+}

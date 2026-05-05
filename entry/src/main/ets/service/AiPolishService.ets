@@ -1,24 +1,19 @@
-// AI润色服务 - 集成华为AgentArts（可选）
-// API参考：https://developer.huawei.com/consumer/cn/doc/harmonyos-references-V5/agentarts-V5
+// AiPolishService.ets
+// AI 润色服务 - 集成华为 AgentArts（可选）
 //
 // 设计原则：
-// 1. AI只做润色，不做判断（所有判断由本地规则引擎完成）
+// 1. AI 只做润色，不做判断（所有判断由本地规则引擎完成）
 // 2. 输入必须脱敏：只发送健康目标+风险等级+建议量，不发送原始血压/血糖和身份信息
-// 3. 免费额度200万tokens，超出后自动降级为规则引擎原始输出
+// 3. 免费额度用完后自动降级为规则引擎原始输出
 // 4. 网络不可用时自动降级，不影响核心功能
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { http } from '@kit.NetworkKit';
-import { AI_CACHE_CONFIG, API_TIMEOUT_CONFIG } from '../constants/AppConfig';
+import { AiServiceBase } from './ai/AiServiceBase';
+import { AI_SERVICE_DEFAULTS } from './ai/AiConfig';
 import { AssetKeyManager, KeyAlias } from '../utils/AssetKeyManager';
 
 const TAG = 'AiPolishService';
 const DOMAIN_ZERO = 0;
-
-// AgentArts配置
-const AGENT_ARTS_ENDPOINT = 'https://agentarts.cloud.huawei.com/v1/chat/completions';
-const AGENT_ARTS_MODEL = 'agentarts-food-polish';  // 预配置的润色Agent
-const FREE_TOKEN_QUOTA = AI_CACHE_CONFIG.FREE_TOKEN_QUOTA;  // 200万tokens免费额度
 
 // 润色输入（已脱敏）
 export interface PolishInput {
@@ -29,55 +24,31 @@ export interface PolishInput {
   reminders: string[];   // 提醒列表
 }
 
-// AgentArts响应
-interface ChoiceMessage {
-  content: string;
-}
+export class AiPolishService extends AiServiceBase {
+  private freeTokensRemaining: number = 50000;
 
-interface Choice {
-  message: ChoiceMessage;
-  finish_reason: string;
-}
+  protected getTag(): string {
+    return TAG;
+  }
 
-interface UsageInfo {
-  prompt_tokens: number;
-  completion_tokens: number;
-  total_tokens: number;
-}
+  protected getDefaultTemperature(): number {
+    return AI_SERVICE_DEFAULTS.POLISH_TEMPERATURE;
+  }
 
-interface AgentArtsResponse {
-  choices: Choice[];
-  usage: UsageInfo;
-}
+  protected getDefaultMaxTokens(): number {
+    return AI_SERVICE_DEFAULTS.POLISH_MAX_TOKENS;
+  }
 
-interface ChatMessage {
-  role: string;
-  content: string;
-}
+  protected getSystemPrompt(): string {
+    return '你是一个食品健康建议润色助手。语气温和、生活化，不使用恐吓式表达，不使用绝对化表述（如"一定有害""放心吃"）。输出简洁，不超过100字。';
+  }
 
-// API调用返回结果
-interface PolishResult {
-  text: string;
-  tokensUsed: number;
-}
-
-export class AiPolishService {
-  private freeTokensRemaining: number = FREE_TOKEN_QUOTA;
-  private apiKey: string = '';  // 从 Asset 安全存储加载
-  private isEnabled: boolean = true;  // 用户可在设置中关闭
-
-  /**
-   * 设置API密钥（写入内存 + Asset 安全存储）
-   */
   async setApiKey(key: string): Promise<void> {
     this.apiKey = key;
     await AssetKeyManager.getInstance().saveKey(KeyAlias.AGENT_ARTS, key);
     hilog.info(DOMAIN_ZERO, TAG, 'API key configured and persisted to Asset Kit');
   }
 
-  /**
-   * 从 Asset 安全存储加载 API Key
-   */
   async loadApiKey(): Promise<boolean> {
     const key = await AssetKeyManager.getInstance().getKey(KeyAlias.AGENT_ARTS);
     if (key.length > 0) {
@@ -89,17 +60,6 @@ export class AiPolishService {
     return false;
   }
 
-  /**
-   * 设置是否启用AI润色
-   */
-  setEnabled(enabled: boolean): void {
-    this.isEnabled = enabled;
-    hilog.info(DOMAIN_ZERO, TAG, 'AI polish %{public}s', enabled ? 'enabled' : 'disabled');
-  }
-
-  /**
-   * 获取剩余免费tokens
-   */
   getRemainingTokens(): number {
     return this.freeTokensRemaining;
   }
@@ -111,19 +71,16 @@ export class AiPolishService {
    * @returns 润色后的用户可读文本
    */
   async polishReport(input: PolishInput): Promise<string> {
-    // 检查是否启用
     if (!this.isEnabled) {
       hilog.info(DOMAIN_ZERO, TAG, 'AI polish disabled, returning raw text');
       return this.buildRawText(input);
     }
 
-    // 检查免费额度
     if (this.freeTokensRemaining <= 0) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Free tokens exhausted, returning raw text');
       return this.buildRawText(input);
     }
 
-    // 检查API密钥
     if (this.apiKey.length === 0) {
       hilog.warn(DOMAIN_ZERO, TAG, 'No API key, returning raw text');
       return this.buildRawText(input);
@@ -131,17 +88,15 @@ export class AiPolishService {
 
     try {
       const prompt = this.buildPrompt(input);
-      const result = await this.callAgentArts(prompt);
+      const aiText = await this.callAi(prompt);
 
-      if (result && result.text.length > 0) {
-        // 扣减tokens
-        this.freeTokensRemaining -= result.tokensUsed;
-        hilog.info(DOMAIN_ZERO, TAG, 'AI polish success, tokens used: %{public}d, remaining: %{public}d',
-          result.tokensUsed, this.freeTokensRemaining);
-        return result.text;
+      if (aiText !== null && aiText.length > 0) {
+        // 扣减 tokens（估算）
+        this.freeTokensRemaining -= Math.ceil(aiText.length / 4);
+        hilog.info(DOMAIN_ZERO, TAG, 'AI polish success');
+        return aiText;
       }
 
-      // AI返回空，降级
       return this.buildRawText(input);
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'AI polish failed: %{public}s', JSON.stringify(error));
@@ -158,69 +113,6 @@ export class AiPolishService {
     return {};
   }
 
-  // ========== 内部方法 ==========
-
-  /**
-   * 调用AgentArts API
-   */
-  private async callAgentArts(prompt: string): Promise<PolishResult | null> {
-    try {
-      const httpRequest = http.createHttp();
-
-      const messages: ChatMessage[] = [
-        {
-          role: 'system',
-          content: '你是一个食品健康建议润色助手。语气温和、生活化，不使用恐吓式表达，不使用绝对化表述（如"一定有害""放心吃"）。输出简洁，不超过100字。'
-        } as ChatMessage,
-        {
-          role: 'user',
-          content: prompt
-        } as ChatMessage
-      ];
-
-      const requestBody = JSON.stringify({
-        model: AGENT_ARTS_MODEL,
-        messages: messages,
-        temperature: 0.7,
-        max_tokens: 200
-      });
-
-      const response = await httpRequest.request(AGENT_ARTS_ENDPOINT, {
-        method: http.RequestMethod.POST,
-        header: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`
-        },
-        extraData: requestBody,
-        connectTimeout: API_TIMEOUT_CONFIG.DEFAULT_CONNECT_TIMEOUT_MS,
-        readTimeout: API_TIMEOUT_CONFIG.DEFAULT_READ_TIMEOUT_MS
-      });
-
-      httpRequest.destroy();
-
-      if (response.responseCode === 200) {
-        const result = JSON.parse(response.result as string) as AgentArtsResponse;
-        if (result.choices && result.choices.length > 0) {
-          const polishResult: PolishResult = {
-            text: result.choices[0].message.content,
-            tokensUsed: result.usage?.total_tokens || 0
-          };
-          return polishResult;
-        }
-      } else {
-        hilog.error(DOMAIN_ZERO, TAG, 'AgentArts API error: %{public}d', response.responseCode);
-      }
-
-      return null;
-    } catch (error) {
-      hilog.error(DOMAIN_ZERO, TAG, 'AgentArts call failed: %{public}s', JSON.stringify(error));
-      return null;
-    }
-  }
-
-  /**
-   * 构建脱敏后的原始文本（降级输出）
-   */
   private buildRawText(input: PolishInput): string {
     const parts: string[] = [];
     parts.push(`${input.healthGoal}模式：${input.level}。`);
@@ -236,9 +128,6 @@ export class AiPolishService {
     return parts.join('');
   }
 
-  /**
-   * 构建AI提示词（脱敏）
-   */
   private buildPrompt(input: PolishInput): string {
     return `请将以下规则引擎输出润色为用户友好的建议文本。
 要求：语气温和、生活化，不使用恐吓式表达，不使用绝对化表述。

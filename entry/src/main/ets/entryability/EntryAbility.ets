@@ -26,6 +26,9 @@ export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
     hilog.info(DOMAIN_ZERO, TAG, 'onCreate');
 
+    // ===== 处理来自卡片的 router 跳转 =====
+    this.handleCardWant(want);
+
     // ===== 崩溃监控初始化 =====
     this.initCrashMonitor();
 
@@ -176,6 +179,24 @@ export default class EntryAbility extends UIAbility {
   }
 
   // ========== 私有方法 ==========
+
+  /**
+   * 处理来自卡片的 router 跳转参数
+   * 如果是卡片点击进入，将目标存储到 AppStorage 供页面使用
+   */
+  private handleCardWant(want: Want): void {
+    try {
+      if (want?.parameters?.params) {
+        const params = JSON.parse(want.parameters.params as string) as Record<string, Object>;
+        if (params['target']) {
+          AppStorage.setOrCreate('cardRouterTarget', params['target'] as string);
+          hilog.info(DOMAIN_ZERO, TAG, 'Card router target: %{public}s', params['target'] as string);
+        }
+      }
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'handleCardWant parse failed: %{public}s', JSON.stringify(e));
+    }
+  }
 
   /**
    * 刷新健康数据

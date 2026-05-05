@@ -4,8 +4,9 @@
 import { router, promptAction } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
-import { Recipe, RecipeComment, RecipeCategory, RecipeDifficulty, DietTag, RecipeIngredient, RecipeStep } from '../model/Recipe';
+import { Recipe, RecipeComment, DietTag, RecipeIngredient, RecipeStep } from '../model/Recipe';
 import { COLORS, RADIUS, BUTTON, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
+import { BasicDataSource } from '../utils/BasicDataSource';
 
 const TAG = 'RecipeDetailPage';
 const DOMAIN_ZERO = 0;
@@ -57,11 +58,19 @@ function getDietTagLabel(tag: DietTag): string {
   return map.get(tag) || tag
 }
 
+function formatTime(timestamp: number): string {
+  const d = new Date(timestamp)
+  const now = new Date()
+  const diff = now.getTime() - d.getTime()
+  if (diff < 3600000) return Math.floor(diff / 60000).toString() + '分钟前'
+  if (diff < 86400000) return Math.floor(diff / 3600000).toString() + '小时前'
+  return (d.getMonth() + 1).toString() + '月' + d.getDate().toString() + '日'
+}
+
 @Entry
 @Component
 struct RecipeDetailPage {
   @State recipe: Recipe | null = null
-  @State comments: RecipeComment[] = []
   @State hasLiked: boolean = false
   @State hasBookmarked: boolean = false
   @State isLoading: boolean = true
@@ -69,6 +78,8 @@ struct RecipeDetailPage {
   @State selectedSection: string = 'detail'
 
   private appState: AppState = AppState.getInstance()
+  private comments: RecipeComment[] = []
+  private commentDS = new BasicDataSource<RecipeComment>()
   private recipeId: string = ''
 
   async aboutToAppear() {
@@ -86,6 +97,7 @@ struct RecipeDetailPage {
       this.recipe = await this.appState.getRecipeDetail(this.recipeId)
       if (this.recipe) {
         this.comments = await this.appState.getRecipeComments(this.recipeId)
+        this.commentDS.reload(this.comments)
         this.hasLiked = await this.appState.hasLikedRecipe(this.recipeId)
       }
     } catch (e) {
@@ -102,7 +114,7 @@ struct RecipeDetailPage {
           .fontSize(24)
           .fontColor(COLORS.PRIMARY)
           .onClick(() => { router.back() })
-        Text('食谱详情')
+        Text($r('app.string.recipe_detail'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .margin({ left: 12 })
@@ -113,7 +125,7 @@ struct RecipeDetailPage {
       if (this.isLoading) {
         LoadingProgress().width(32).height(32).margin({ top: 100 })
       } else if (!this.recipe) {
-        Text('食谱未找到').fontSize(16).fontColor(COLORS.TEXT_GRAY_6161).margin({ top: 100 })
+        Text($r('app.string.recipe_not_found')).fontSize(16).fontColor(COLORS.TEXT_GRAY_6161).margin({ top: 100 })
       } else {
         Scroll() {
           Column() {
@@ -191,8 +203,14 @@ struct RecipeDetailPage {
         Text(this.recipe!.likeCount.toString()).fontSize(14).fontColor(COLORS.TEXT_SECONDARY)
       }
       .onClick(async () => {
-        this.hasLiked = await this.appState.toggleRecipeLike(this.recipeId)
-        await this.loadRecipe()
+        const newState = await this.appState.toggleRecipeLike(this.recipeId)
+        // 本地乐观更新点赞数，避免全量刷新
+        if (this.recipe) {
+          if (newState !== this.hasLiked) {
+            this.recipe.likeCount += newState ? 1 : -1
+          }
+        }
+        this.hasLiked = newState
       })
       .padding({ left: 12, right: 12, top: 6, bottom: 6 })
       .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
@@ -200,7 +218,7 @@ struct RecipeDetailPage {
 
       Row({ space: 6 }) {
         Text(this.hasBookmarked ? '🔖' : '🏷️').fontSize(20)
-        Text('收藏').fontSize(14).fontColor(COLORS.TEXT_SECONDARY)
+        Text($r('app.string.favorite')).fontSize(14).fontColor(COLORS.TEXT_SECONDARY)
       }
       .onClick(async () => {
         this.hasBookmarked = await this.appState.toggleRecipeBookmark(this.recipeId, '')
@@ -251,7 +269,7 @@ struct RecipeDetailPage {
       // 描述
       if (this.recipe!.description.length > 0) {
         Column() {
-          Text('简介').fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 8 })
+          Text($r('app.string.intro_label')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 8 })
           Text(this.recipe!.description).fontSize(14).fontColor(COLORS.TEXT_SECONDARY).lineHeight(22)
         }
         .width('100%')
@@ -263,7 +281,7 @@ struct RecipeDetailPage {
 
       // 食材
       Column() {
-        Text('食材清单').fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
+        Text($r('app.string.ingredient_list')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
         ForEach(this.recipe!.ingredients, (ing: RecipeIngredient) => {
           Row() {
             Text('•').fontSize(14).fontColor(COLORS.PRIMARY).margin({ right: 8 })
@@ -289,7 +307,7 @@ struct RecipeDetailPage {
 
       // 步骤
       Column() {
-        Text('烹饪步骤').fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
+        Text($r('app.string.cook_steps')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
         ForEach(this.recipe!.steps, (step: RecipeStep) => {
           Row() {
             Stack() {
@@ -324,7 +342,7 @@ struct RecipeDetailPage {
       // 营养信息
       if (this.recipe!.nutrition) {
         Column() {
-          Text('营养信息（每份）').fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
+          Text($r('app.string.nutrition_per_serving')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
           this.nutritionRow('热量', this.recipe!.nutrition!.calories.toString() + ' kcal')
           this.nutritionRow('蛋白质', this.recipe!.nutrition!.protein)
           this.nutritionRow('脂肪', this.recipe!.nutrition!.fat)
@@ -342,7 +360,7 @@ struct RecipeDetailPage {
       // 适配标签
       if (this.recipe!.dietTags.length > 0) {
         Column() {
-          Text('适合人群').fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 8 })
+          Text($r('app.string.suitable_persons')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 8 })
           Row({ space: 8 }) {
             ForEach(this.recipe!.dietTags, (tag: DietTag) => {
               Text(getDietTagLabel(tag))
@@ -408,6 +426,7 @@ struct RecipeDetailPage {
             await this.appState.addRecipeComment(this.recipeId, this.commentText.trim(), '')
             this.commentText = ''
             this.comments = await this.appState.getRecipeComments(this.recipeId)
+            this.commentDS.reload(this.comments)
             promptAction.showToast({ message: '评论已发送' })
           })
       }
@@ -416,9 +435,9 @@ struct RecipeDetailPage {
       .backgroundColor(COLORS.WHITE)
 
       // 评论列表
-      if (this.comments.length === 0) {
+      if (this.commentDS.totalCount() === 0) {
         Column() {
-          Text('暂无评论，来说点什么吧')
+          Text($r('app.string.no_comments_yet'))
             .fontSize(14)
             .fontColor(COLORS.TEXT_GRAY_9E9E)
             .margin({ top: 40 })
@@ -427,7 +446,7 @@ struct RecipeDetailPage {
         .alignItems(HorizontalAlign.Center)
       } else {
         List() {
-          ForEach(this.comments, (comment: RecipeComment) => {
+          LazyForEach(this.commentDS, (comment: RecipeComment) => {
             ListItem() {
               Column() {
                 Row() {
@@ -446,7 +465,7 @@ struct RecipeDetailPage {
                     Text(comment.authorName)
                       .fontSize(13)
                       .fontWeight(FontWeight.Medium)
-                    Text(this.formatTime(comment.createdAt))
+                    Text(formatTime(comment.createdAt))
                       .fontSize(11)
                       .fontColor(COLORS.TEXT_GRAY_9E9E)
                   }
@@ -465,21 +484,13 @@ struct RecipeDetailPage {
               .borderRadius(RADIUS.MD)
               .margin({ bottom: 8 })
             }
-          })
+          }, (comment: RecipeComment) => `${comment.commentId}`)
         }
         .width('100%')
         .layoutWeight(1)
+        .cachedCount(5)
       }
     }
     .width('100%')
-  }
-
-  private formatTime(timestamp: number): string {
-    const d = new Date(timestamp)
-    const now = new Date()
-    const diff = now.getTime() - d.getTime()
-    if (diff < 3600000) return Math.floor(diff / 60000).toString() + '分钟前'
-    if (diff < 86400000) return Math.floor(diff / 3600000).toString() + '小时前'
-    return (d.getMonth() + 1).toString() + '月' + d.getDate().toString() + '日'
   }
 }

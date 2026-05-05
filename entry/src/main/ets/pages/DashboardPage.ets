@@ -132,14 +132,23 @@ struct DashboardPage {
     avgProtein /= days
 
     // 基于热量构成显示宏量营养素分布
-    const carbCalorie = avgCalorie * 0.55 // 假设55%碳水
-    const proteinCalorie = avgCalorie * 0.12 // 假设12%蛋白质
-    const fatCalorie = avgCalorie * 0.33 // 假设33%脂肪
+    // 注意：由于目前膳食记录未单独记录碳水/蛋白质摄入量，
+    // 所以根据中国居民膳食指南推荐比例进行估算（55%碳水、12%蛋白质、33%脂肪）
+    // 脂肪部分使用实际记录的脂肪数据换算，更接近真实情况
+    const fatCalFromRecord = avgFat * 9 // 1g脂肪=9kcal
+    const totalMacroCal = Math.max(avgCalorie, 1)
+    const fatPct = Math.round(fatCalFromRecord / totalMacroCal * 100)
+    const proteinPct = 12 // 推荐比例
+    const carbPct = Math.max(0, 100 - fatPct - proteinPct)
+
+    const carbCalorie = avgCalorie * carbPct / 100
+    const proteinCalorie = avgCalorie * proteinPct / 100
+    const fatCalorieRecord = avgCalorie * fatPct / 100
 
     this.donutSegments = [
       { label: '碳水', value: Math.round(carbCalorie), color: '#FFB74D' },
       { label: '蛋白质', value: Math.round(proteinCalorie), color: '#4FC3F7' },
-      { label: '脂肪', value: Math.round(fatCalorie), color: '#BA68C8' }
+      { label: '脂肪', value: Math.round(fatCalorieRecord), color: '#BA68C8' }
     ]
   }
 

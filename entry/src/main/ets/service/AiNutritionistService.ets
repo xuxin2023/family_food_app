@@ -47,6 +47,11 @@ interface AgentArtsCallResult {
 }
 
 export class AiNutritionistService {
+  // TODO: 安全风险提示 - API Key 应以加密方式存储
+  // 建议使用 ohos.security.asset (关键资产存储服务) 进行安全存储:
+  //   import { asset } from '@kit.AssetStoreKit';
+  //   asset.add({ [asset.Tag.SECRET]: keyBytes, [asset.Tag.ALIAS]: 'ai_api_key' })
+  // 或使用 Preferences 加密存储（需用户自行实现加密逻辑）
   private apiKey: string = '';
   private isEnabled: boolean = true;
   private tokensUsed: number = 0;

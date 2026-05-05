@@ -11,7 +11,7 @@ import {
   DataSource
 } from '../model/HealthSignal';
 import { DateUtil } from '../utils/DateUtil';
-import { preferences } from '@kit.ArkData';
+import { relationalStore, preferences } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { COLORS } from '../constants/AppTheme';
 
@@ -128,8 +128,8 @@ struct SettingsPage {
               Web({ src: $rawfile('privacy_policy.html'), controller: this.privacyController })
                 .width('100%')
                 .height(300)
-                .domStorageAccess(true)
-                .javaScriptAccess(true)
+                .domStorageAccess(false)
+                .javaScriptAccess(false)
             }
             .width('100%')
             .padding(8)
@@ -156,8 +156,8 @@ struct SettingsPage {
               Web({ src: $rawfile('user_agreement.html'), controller: this.agreementController })
                 .width('100%')
                 .height(300)
-                .domStorageAccess(true)
-                .javaScriptAccess(true)
+                .domStorageAccess(false)
+                .javaScriptAccess(false)
             }
             .width('100%')
             .padding(8)
@@ -367,19 +367,53 @@ struct SettingsPage {
 
   /**
    * 执行清除本地数据
+   * 删除数据库文件、偏好设置，并重置应用状态
    */
   private async executeClearData(): Promise<void> {
     try {
-      // 清除隐私设置（重置首次启动标记）
       const context = AppStorage.get<Object>('appContext') as Context
-      if (context) {
+      if (!context) {
+        promptAction.showToast({ message: '清除数据失败：无法获取上下文' })
+        return
+      }
+
+      // 1. 删除关系型数据库（food_helper.db 及相关表）
+      try {
+        await relationalStore.deleteRdbStore(context, 'food_helper.db')
+      } catch (_dbErr) {
+        // 如果数据库不存在或已删除，忽略错误
+        hilog.warn(0x0000, 'SettingsPage', 'deleteRdbStore ignore: ' + JSON.stringify(_dbErr))
+      }
+
+      // 2. 清除隐私设置（重置首次启动标记）
+      try {
         const pref = await preferences.getPreferences(context, 'privacy_settings')
         await pref.put('privacy_agreed', false)
         await pref.flush()
+      } catch (_prefErr) {
+        hilog.warn(0x0000, 'SettingsPage', 'clear preferences failed: ' + JSON.stringify(_prefErr))
       }
-      promptAction.showToast({ message: '本地数据已清除' })
+
+      // 3. 重置 AppState 内部缓存
+      this.appState['cache'].clearAll()
+
+      // 4. 重置页面状态
+      this.familyMembers = []
+      this.selectedMemberId = ''
+
+      promptAction.showToast({ message: '本地数据已清除，应用将重启' })
+
+      // 5. 延迟重启应用以重新初始化数据库
+      setTimeout(() => {
+        try {
+          router.clear()
+          router.pushUrl({ url: 'pages/Index' })
+        } catch (_navErr) {
+          hilog.warn(0x0000, 'SettingsPage', 'restart navigation failed')
+        }
+      }, 500)
     } catch (_e) {
-      hilog.warn(0x0000, 'SettingsPage', 'clearData failed')
+      hilog.warn(0x0000, 'SettingsPage', 'clearData failed: ' + JSON.stringify(_e))
       promptAction.showToast({ message: '清除数据失败，请重试' })
     }
   }

@@ -468,6 +468,13 @@ export class AppState {
     return await this.foodRepo.findById(foodId);
   }
 
+  /**
+   * 批量查找食品标签（解决N+1查询问题）
+   */
+  async findFoodByIds(foodIds: string[]): Promise<Map<string, FoodLabel>> {
+    return await this.foodRepo.findByIds(foodIds);
+  }
+
   async getRecentScanHistory(limit: number = 50): Promise<ScanHistoryRecord[]> {
     return await this.historyRepo.getRecentScanHistory(limit);
   }

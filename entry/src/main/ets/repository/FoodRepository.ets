@@ -94,6 +94,32 @@ export class FoodRepository {
   }
 
   /**
+   * 根据foodId列表批量查找（解决N+1查询问题）
+   */
+  async findByIds(foodIds: string[]): Promise<Map<string, FoodLabel>> {
+    const resultMap = new Map<string, FoodLabel>();
+    if (!this.rdbStore || foodIds.length === 0) return resultMap;
+
+    try {
+      // 去重
+      const uniqueIds = [...new Set(foodIds)];
+      const predicates = new relationalStore.RdbPredicates(TABLE_NAME);
+      predicates.in('food_id', uniqueIds);
+      const resultSet = await this.rdbStore.query(predicates);
+
+      while (resultSet.goToNextRow()) {
+        const label = this.fromResultSet(resultSet);
+        resultMap.set(label.foodId, label);
+      }
+
+      resultSet.close();
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'Batch find by ids failed: %{public}s', JSON.stringify(error));
+    }
+    return resultMap;
+  }
+
+  /**
    * 根据foodId查找
    */
   async findById(foodId: string): Promise<FoodLabel | null> {

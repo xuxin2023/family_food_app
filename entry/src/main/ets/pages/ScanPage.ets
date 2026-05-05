@@ -85,7 +85,7 @@ struct ScanPage {
   @State scanLimitReached: boolean = false
   @State remainingScans: number = 3
   @State recognizedText: string = ''
-  @State recognitionHint: string = ''
+  @State recognitionHint: ResourceStr = ''
   @State ocrConfidence: number = 1
   @State isOffline: boolean = false
 
@@ -124,6 +124,7 @@ struct ScanPage {
   private appState: AppState = AppState.getInstance()
   private foodInputService: FoodInputService = new FoodInputService()
   private autoScanTimer: number = -1
+  private retryTimer: number = -1  // 重试定时器ID，用于防止内存泄漏
   private componentActive: boolean = true
 
   // ==================== 生命周期 ====================
@@ -150,7 +151,7 @@ struct ScanPage {
 
   aboutToDisappear(): void {
     this.componentActive = false
-    // 清理定时器，防止内存泄漏
+    // 清理自动扫码定时器，防止内存泄漏
     if (this.autoScanTimer !== -1) {
       try {
         clearTimeout(this.autoScanTimer)
@@ -158,6 +159,15 @@ struct ScanPage {
         // ignore clearTimeout error
       }
       this.autoScanTimer = -1
+    }
+    // 清理重试定时器，防止组件销毁后回调执行
+    if (this.retryTimer !== -1) {
+      try {
+        clearTimeout(this.retryTimer)
+      } catch (_e) {
+        // ignore clearTimeout error
+      }
+      this.retryTimer = -1
     }
   }
 
@@ -226,8 +236,9 @@ struct ScanPage {
       this.retryCount++
       if (this.retryCount <= MAX_RETRY_COUNT && this.componentActive) {
         this.showErrorBanner = true
-        // 自动重试
-        setTimeout(() => {
+        // 自动重试（记录定时器ID，以便在组件销毁时清理）
+        this.retryTimer = setTimeout(() => {
+          this.retryTimer = -1
           if (this.componentActive) {
             this.isLoadingRetry = true
             this.safeExecute(action, errorMessage).then(() => {
@@ -298,16 +309,19 @@ struct ScanPage {
     try {
       const records = await this.appState.getRecentScanHistory(50)
       const foodIds = new Set<string>()
-      const items: FoodLabel[] = []
       for (const record of records) {
-        const foodId = record.foodId
-        if (foodId && !foodIds.has(foodId)) {
-          foodIds.add(foodId)
-          const foodLabel = await this.appState.findFoodById(foodId)
-          if (foodLabel && foodLabel.foodName.length > 0) {
-            items.push(foodLabel)
-            if (items.length >= 8) break
-          }
+        if (record.foodId) {
+          foodIds.add(record.foodId)
+        }
+      }
+      // 批量查询，避免N+1
+      const foodMap = await this.appState.findFoodByIds(Array.from(foodIds))
+      const items: FoodLabel[] = []
+      for (const foodId of foodIds) {
+        const foodLabel = foodMap.get(foodId)
+        if (foodLabel && foodLabel.foodName.length > 0) {
+          items.push(foodLabel)
+          if (items.length >= 8) break
         }
       }
       this.frequentItems = items
@@ -322,9 +336,12 @@ struct ScanPage {
   private async loadRecentScans() {
     try {
       const records = await this.appState.getRecentScanHistory(RECENT_SCAN_SHOW_COUNT)
+      const foodIds = records.map(r => r.foodId).filter(id => id.length > 0)
+      // 批量查询，避免N+1
+      const foodMap = await this.appState.findFoodByIds(foodIds)
       const items: FoodLabel[] = []
       for (const record of records) {
-        const foodLabel = await this.appState.findFoodById(record.foodId)
+        const foodLabel = foodMap.get(record.foodId)
         if (foodLabel && foodLabel.foodName.length > 0) {
           items.push(foodLabel)
         }
@@ -726,7 +743,7 @@ struct ScanPage {
           .fontWeight(FONT_WEIGHT.BOLD)
           .margin({ bottom: SPACING.SM })
 
-        if (this.recognitionHint.length > 0) {
+        if (typeof this.recognitionHint === 'string' && this.recognitionHint.length > 0) {
           Text(this.recognitionHint)
             .fontSize(FONT_SIZE.SMALL)
             .fontColor(COLORS.PRIMARY)

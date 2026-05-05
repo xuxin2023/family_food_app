@@ -18,7 +18,10 @@ const SCENARIO_EMOJI: Record<string, string> = {
   '烧烤': '🔥', '火锅': '🍲', '炸鸡': '🍗', '奶茶': '🧋',
   '甜品': '🍰', '卤味': '🥘', '方便面': '🍜', '夜宵': '🌙',
   '麻辣烫': '🌶️', '烤肉': '🥩', '日料': '🍣', '自助餐': '🍱',
-  '下午茶': '☕', '螺蛳粉': '🍝', '其他': '🍽️'
+  '下午茶': '☕', '螺蛳粉': '🍝',
+  '冒菜': '🫘', '麻辣香锅': '🌶️', '轻食沙拉': '🥗', '披萨': '🍕',
+  '汉堡': '🍔', '饺子包子': '🥟', '炒饭盖饭': '🍚',
+  '其他': '🍽️'
 };
 
 // AI营养素分析卡片类型（兼容AiModels中的NutrientAnalysis）
@@ -88,9 +91,21 @@ struct DietDiaryPage {
   }
 
   private changeDate(delta: number): void {
+    const today = DateUtil.getToday()
+    // 禁止导航到未来日期
+    if (delta > 0 && this.currentDate === today) {
+      return
+    }
     const d = new Date(this.currentDate)
     d.setDate(d.getDate() + delta)
-    this.currentDate = DateUtil.formatDate(d)
+
+    // 再次检查确保不超过今天
+    const candidate = DateUtil.formatDate(d)
+    if (candidate > today) {
+      this.currentDate = today
+    } else {
+      this.currentDate = candidate
+    }
     this.refreshData()
   }
 
@@ -113,13 +128,13 @@ struct DietDiaryPage {
           .fontSize(28)
           .fontColor(COLORS.PRIMARY)
           .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
-        Text('膳食日记')
+        Text($r('app.string.diet_diary'))
           .fontSize(FONT_SIZE.TITLE)
           .fontWeight(FONT_WEIGHT.BOLD)
           .fontColor(COLORS.TEXT_PRIMARY)
           .margin({ left: SPACING.MD })
         Blank()
-        Text('🤖 AI分析')
+        Text($r('app.string.ai_analysis'))
           .fontSize(FONT_SIZE.BODY)
           .fontColor(COLORS.ACCENT_PURPLE)
           .fontWeight(FONT_WEIGHT.MEDIUM)
@@ -129,7 +144,7 @@ struct DietDiaryPage {
               this.loadAiAdvice()
             }
           })
-        Text('📊 趋势')
+        Text($r('app.string.trend_tab'))
           .fontSize(FONT_SIZE.BODY)
           .fontColor(COLORS.PRIMARY)
           .fontWeight(FONT_WEIGHT.MEDIUM)
@@ -256,11 +271,11 @@ struct DietDiaryPage {
         Column() {
           Text('📝')
             .fontSize(48)
-          Text('暂无膳食记录')
+          Text($r('app.string.no_content'))
             .fontSize(FONT_SIZE.LG)
             .fontColor(COLORS.TEXT_GRAY_9E9E)
             .margin({ top: SPACING.MD })
-          Text('去首页扫描食品标签后自动记录')
+          Text($r('app.string.go_scan_tip'))
             .fontSize(FONT_SIZE.SMALL)
             .fontColor(COLORS.TEXT_GRAY_BDBD)
             .margin({ top: SPACING.SM })
@@ -294,7 +309,7 @@ struct DietDiaryPage {
       if (this.isLoadingAi) {
         Row({ space: 8 }) {
           LoadingProgress().width(20).height(20).color(COLORS.ACCENT_PURPLE)
-          Text('AI营养师分析中...')
+          Text($r('app.string.ai_analyzing'))
             .fontSize(14)
             .fontColor(COLORS.TEXT_GRAY_6161)
         }
@@ -309,12 +324,12 @@ struct DietDiaryPage {
           Row({ space: 6 }) {
             Text('🤖').fontSize(22)
             Column() {
-              Text('AI营养师分析')
+              Text($r('app.string.ai_analysis_title'))
                 .fontSize(16)
                 .fontWeight(FontWeight.Bold)
                 .fontColor(COLORS.PRIMARY_DARK)
               if (this.aiAdvice.isAiGenerated) {
-                Text('AI增强分析')
+                Text($r('app.string.ai_enhanced'))
                   .fontSize(10)
                   .fontColor(COLORS.ACCENT_PURPLE)
                   .backgroundColor(COLORS.BG_WARM_PURPLE)
@@ -352,7 +367,7 @@ struct DietDiaryPage {
           // 问题与亮点
           if (this.aiAdvice.patternAnalysis.issues.length > 0) {
             Column() {
-              Text('⚠️ 需要注意')
+              Text($r('app.string.need_attention'))
                 .fontSize(13)
                 .fontWeight(FontWeight.Medium)
                 .fontColor(COLORS.ORANGE_ACCENT)
@@ -410,7 +425,7 @@ struct DietDiaryPage {
         Button() {
           Row({ space: 6 }) {
             Text('🤖').fontSize(18)
-            Text('获取AI营养师分析').fontSize(14).fontColor(COLORS.WHITE)
+            Text($r('app.string.ai_analysis'))
           }
         }
         .width('100%')
@@ -450,10 +465,10 @@ struct DietDiaryPage {
   buildBudgetBar() {
     Row() {
       // 4 种营养素的进度条
-      this.buildMiniProgress('🧂 钠', this.getSodiumPercent(), COLORS.ACCENT_RED_F443)
-      this.buildMiniProgress('🍬 糖', this.getSugarPercent(), COLORS.ORANGE_ACCENT)
-      this.buildMiniProgress('🔥 热量', this.getCaloriePercent(), COLORS.ACCENT_GREEN_4CAF)
-      this.buildMiniProgress('🥩 脂肪', this.getFatPercent(), COLORS.ACCENT_PURPLE_9C27)
+      this.buildMiniProgress('🧂 钠', this.budget?.sodiumUsagePercent() || 0, COLORS.ACCENT_RED_F443)
+      this.buildMiniProgress('🍬 糖', this.budget?.sugarUsagePercent() || 0, COLORS.ORANGE_ACCENT)
+      this.buildMiniProgress('🔥 热量', this.budget?.calorieUsagePercent() || 0, COLORS.ACCENT_GREEN_4CAF)
+      this.buildMiniProgress('🥩 脂肪', this.budget?.fatUsagePercent() || 0, COLORS.ACCENT_PURPLE_9C27)
     }
     .width('100%')
     .padding({ left: SPACING.LG, right: SPACING.LG, top: SPACING.SM, bottom: SPACING.SM })
@@ -591,21 +606,5 @@ struct DietDiaryPage {
 
   private getScenarioEmoji(scenario: string): string {
     return SCENARIO_EMOJI[scenario] || '🍽️'
-  }
-
-  private getSodiumPercent(): number {
-    return this.budget?.sodiumUsagePercent() || 0;
-  }
-
-  private getSugarPercent(): number {
-    return this.budget?.sugarUsagePercent() || 0;
-  }
-
-  private getCaloriePercent(): number {
-    return this.budget?.calorieUsagePercent() || 0;
-  }
-
-  private getFatPercent(): number {
-    return this.budget?.fatUsagePercent() || 0;
   }
 }

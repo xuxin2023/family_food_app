@@ -4,8 +4,9 @@
 import { router, promptAction } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
-import { FamilyGroup, GroupMember, GroupRole, GroupSummary } from '../model/FamilyGroup';
-import { COLORS, RADIUS, SPACING, BUTTON, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
+import { GroupMember, GroupRole, GroupSummary } from '../model/FamilyGroup';
+import { COLORS, RADIUS, BUTTON } from '../constants/AppTheme';
+import { BasicDataSource } from '../utils/BasicDataSource';
 
 const TAG = 'FamilyGroupPage';
 const DOMAIN_ZERO = 0;
@@ -13,7 +14,6 @@ const DOMAIN_ZERO = 0;
 @Entry
 @Component
 struct FamilyGroupPage {
-  @State groupSummaries: GroupSummary[] = [];
   @State isLoading: boolean = true;
   @State createGroupName: string = '';
   @State createDescription: string = '';
@@ -21,15 +21,22 @@ struct FamilyGroupPage {
   @State displayNameInput: string = '';
 
   private appState: AppState = AppState.getInstance();
+  private groupSummaries: GroupSummary[] = [];
+  private groupDS = new BasicDataSource<GroupSummary>();
 
   async aboutToAppear() {
-    await this.loadGroups();
+    try {
+      await this.loadGroups();
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'aboutToAppear error: %{public}s', JSON.stringify(e));
+    }
   }
 
   async loadGroups() {
     this.isLoading = true;
     try {
       this.groupSummaries = await this.appState.getMyGroups();
+      this.groupDS.reload(this.groupSummaries);
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'load groups error: %{public}s', JSON.stringify(e));
     }
@@ -44,12 +51,12 @@ struct FamilyGroupPage {
           .fontSize(24)
           .fontColor(COLORS.PRIMARY)
           .onClick(() => { router.back() })
-        Text('家庭群组')
+        Text($r('app.string.family_group'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .margin({ left: 12 })
         Blank()
-        Text('创建群组')
+        Text($r('app.string.create_group'))
           .fontSize(14)
           .fontColor(COLORS.PRIMARY)
           .onClick(() => {
@@ -64,7 +71,7 @@ struct FamilyGroupPage {
           .width(32)
           .height(32)
           .margin({ top: 100 })
-      } else if (this.groupSummaries.length === 0) {
+      } else if (this.groupDS.totalCount() === 0) {
         this.emptyState()
       } else {
         this.groupList()
@@ -76,7 +83,7 @@ struct FamilyGroupPage {
           Text('+')
             .fontSize(20)
             .fontColor(COLORS.WHITE)
-          Text('加入家庭群组')
+          Text('加入群组')
             .fontSize(15)
             .fontColor(COLORS.WHITE)
         }
@@ -101,11 +108,11 @@ struct FamilyGroupPage {
       Text('🏠')
         .fontSize(60)
         .margin({ bottom: 16 })
-      Text('还没有加入任何家庭群组')
+      Text($r('app.string.share_no_family'))
         .fontSize(16)
         .fontColor(COLORS.TEXT_GRAY_6161)
         .margin({ bottom: 8 })
-      Text('创建群组后可以共享食品适配报告\n方便全家人一起管理饮食')
+      Text($r('app.string.create_group_hint'))
         .fontSize(13)
         .fontColor(COLORS.TEXT_GRAY_9E9E)
         .textAlign(TextAlign.Center)
@@ -119,15 +126,17 @@ struct FamilyGroupPage {
   @Builder
   groupList() {
     List() {
-      ForEach(this.groupSummaries, (summary: GroupSummary) => {
+      LazyForEach(this.groupDS, (summary: GroupSummary) => {
         ListItem() {
           this.groupCard(summary)
         }
-      })
+      }, (summary: GroupSummary) => `${summary.group.groupId}`)
     }
     .width('100%')
+    .height('100%')
     .layoutWeight(1)
     .padding({ left: 16, right: 16 })
+    .cachedCount(5)
   }
 
   @Builder
@@ -203,7 +212,7 @@ struct FamilyGroupPage {
 
       if (summary.myRole === GroupRole.OWNER || summary.myRole === GroupRole.ADMIN) {
         Row() {
-          Text('邀请码：')
+          Text('邀请码')
             .fontSize(12)
             .fontColor(COLORS.TEXT_GRAY_9E9E)
           Text(summary.group.inviteCode)
@@ -211,7 +220,7 @@ struct FamilyGroupPage {
             .fontWeight(FontWeight.Bold)
             .fontColor(COLORS.PRIMARY)
           Blank()
-          Text('管理成员')
+          Text($r('app.string.edit'))
             .fontSize(12)
             .fontColor(COLORS.PRIMARY)
             .onClick(() => {
@@ -304,7 +313,8 @@ struct FamilyGroupPage {
         '我'
       )
       promptAction.showToast({ message: '群组创建成功！' })
-      await this.loadGroups()
+      this.groupSummaries = await this.appState.getMyGroups()
+      this.groupDS.reload(this.groupSummaries)
     } catch (e) {
       promptAction.showToast({ message: '创建失败：' + (e as Error).message })
     }
@@ -322,7 +332,8 @@ struct FamilyGroupPage {
         displayName
       )
       promptAction.showToast({ message: '加入群组成功！' })
-      await this.loadGroups()
+      this.groupSummaries = await this.appState.getMyGroups()
+      this.groupDS.reload(this.groupSummaries)
     } catch (e) {
       promptAction.showToast({ message: '加入失败：' + (e as Error).message })
     }

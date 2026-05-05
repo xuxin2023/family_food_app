@@ -216,8 +216,8 @@ struct PrivacyDialogPage {
               Web({ src: $rawfile('privacy_policy.html'), controller: this.privacyController })
                 .width('100%')
                 .layoutWeight(1)
-                .domStorageAccess(true)
-                .javaScriptAccess(true)
+                .domStorageAccess(false)
+                .javaScriptAccess(false)
             }
             .width('100%')
             .backgroundColor(COLORS.WHITE)
@@ -247,8 +247,8 @@ struct PrivacyDialogPage {
               Web({ src: $rawfile('user_agreement.html'), controller: this.agreementController })
                 .width('100%')
                 .layoutWeight(1)
-                .domStorageAccess(true)
-                .javaScriptAccess(true)
+                .domStorageAccess(false)
+                .javaScriptAccess(false)
             }
             .width('100%')
             .backgroundColor(COLORS.WHITE)

@@ -13,7 +13,7 @@ export struct ManufacturerInfoCard {
       // 标题
       Row() {
         Text($r('app.string.producer_info'))
-          .fontSize(FONT_SIZE.MD)
+          .fontSize(FONT_SIZE.BODY)
           .fontWeight(FONT_WEIGHT.MEDIUM)
           .fontColor(COLORS.TEXT_GRAY_4242)
         Blank()

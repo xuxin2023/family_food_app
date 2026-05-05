@@ -24,12 +24,59 @@ interface ScanRecord {
   fat_g: number;
 }
 
-/**
- * 全局扫描记录缓存，按memberId分组
- */
-const scanHistoryCache: Map<string, ScanRecord[]> = new Map();
+/** 扫描记录缓存最大条目数（每成员） */
+const MAX_RECORDS_PER_MEMBER: number = 50;
+/** 扫描记录保留天数 */
+const RECORD_RETENTION_DAYS: number = 1;
 
 export class FoodAdapterEngine {
+  /**
+   * 实例级扫描记录缓存，按memberId分组
+   * 使用 Map 并附加时间戳用于淘汰
+   */
+  private static scanHistoryCache: Map<string, { records: ScanRecord[]; date: string }> = new Map();
+
+  /**
+   * 获取当前日期字符串（YYYY-MM-DD）
+   */
+  private static getTodayDateStr(): string {
+    const now = new Date();
+    return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+  }
+
+  /**
+   * 获取成员扫描记录，自动清理过期数据
+   */
+  private static getMemberRecords(memberId: string): ScanRecord[] {
+    const today = FoodAdapterEngine.getTodayDateStr();
+    const entry = FoodAdapterEngine.scanHistoryCache.get(memberId);
+
+    if (!entry || entry.date !== today) {
+      // 过期或无记录，重置
+      FoodAdapterEngine.scanHistoryCache.set(memberId, { records: [], date: today });
+      return [];
+    }
+    return entry.records;
+  }
+
+  /**
+   * 添加扫描记录，自动控制容量
+   */
+  private static addMemberRecord(memberId: string, record: ScanRecord): void {
+    const today = FoodAdapterEngine.getTodayDateStr();
+    let entry = FoodAdapterEngine.scanHistoryCache.get(memberId);
+
+    if (!entry || entry.date !== today) {
+      entry = { records: [], date: today };
+      FoodAdapterEngine.scanHistoryCache.set(memberId, entry);
+    }
+
+    entry.records.push(record);
+    // 容量控制：超出上限时移除最早的记录
+    if (entry.records.length > MAX_RECORDS_PER_MEMBER) {
+      entry.records.splice(0, entry.records.length - MAX_RECORDS_PER_MEMBER);
+    }
+  }
   /**
    * 动态适配矩阵计算
    * @param member 家庭成员简档
@@ -87,7 +134,7 @@ export class FoodAdapterEngine {
     const finalFatBudget: number = adjustedFatBudget * scanDecayFactor;
 
     // 5. 记录本次扫描
-    const todayRecords: ScanRecord[] = scanHistoryCache.get(member.id) || [];
+    const todayRecords: ScanRecord[] = FoodAdapterEngine.getMemberRecords(member.id);
     const newRecord: ScanRecord = {
       foodName: food.productName,
       sodium_mg: food.sodium_mg,
@@ -96,7 +143,7 @@ export class FoodAdapterEngine {
       fat_g: food.fat_g
     };
     todayRecords.push(newRecord);
-    scanHistoryCache.set(member.id, todayRecords);
+    FoodAdapterEngine.addMemberRecord(member.id, newRecord);
 
     // 6. 关联风险识别 - 高钠食品连续扫描
     let riskWarning: string = '';
@@ -242,14 +289,14 @@ export class FoodAdapterEngine {
    * 重置今日扫描记录（用于新的一天）
    */
   static resetTodayScanRecords(): void {
-    scanHistoryCache.clear();
+    FoodAdapterEngine.scanHistoryCache.clear();
   }
 
   /**
    * 获取今日已扫描的高钠食品数量
    */
   static getHighSodiumScanCount(memberId: string): number {
-    const records: ScanRecord[] = scanHistoryCache.get(memberId) || [];
+    const records: ScanRecord[] = FoodAdapterEngine.getMemberRecords(memberId);
     return records.filter(r => r.sodium_mg >= HIGH_SODIUM_THRESHOLD).length;
   }
 
@@ -257,7 +304,23 @@ export class FoodAdapterEngine {
    * 为指定成员清理扫描记录
    */
   static clearMemberRecords(memberId: string): void {
-    scanHistoryCache.delete(memberId);
+    FoodAdapterEngine.scanHistoryCache.delete(memberId);
+  }
+
+  /**
+   * 清理所有超过保留天数的缓存记录
+   */
+  static cleanExpiredRecords(): void {
+    const today = FoodAdapterEngine.getTodayDateStr();
+    const keysToDelete: string[] = [];
+    FoodAdapterEngine.scanHistoryCache.forEach((entry, key) => {
+      if (entry.date !== today) {
+        keysToDelete.push(key);
+      }
+    });
+    for (const key of keysToDelete) {
+      FoodAdapterEngine.scanHistoryCache.delete(key);
+    }
   }
 }
 

@@ -38,6 +38,7 @@ export class SyncService {
   /** 是否正在同步 */
   private isSyncing: boolean = false;
   /** 定时同步定时器ID */
+  private syncTimer: number = -1;
   /** 是否已初始化 */
   private isInitialized: boolean = false;
   /** 应用上下文 */
@@ -643,8 +644,6 @@ export class SyncService {
     this.config.lastFullSyncAt = updates.lastFullSyncAt;
     this.config.pendingCount = updates.pendingCount;
   }
-
-  private syncTimer: number = -1;
 
   /**
    * 启动定时同步（间隔执行）

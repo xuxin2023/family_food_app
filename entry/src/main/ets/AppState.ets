@@ -1,11 +1,11 @@
-﻿// 全局应用状态管理器 - 统一数据访问入口，替代各页面的模拟数据
+// 全局应用状态管理器 - 统一数据访问入口
+// V2: 将引擎和服务管理委托给 EngineManager / ServiceManager
 
-import { FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig, MealTimes } from './model/FamilyProfile';
+import { FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig } from './model/FamilyProfile';
 import {
-  HealthSignal, StepLevel, SleepStatus, WeightTrend, DataSource,
-  SpO2Level, StressLevel
+  HealthSignal, StepLevel, SleepStatus, WeightTrend, DataSource
 } from './model/HealthSignal';
-import { FoodLabel, FoodSource, NutritionPer100g } from './model/FoodLabel';
+import { FoodLabel } from './model/FoodLabel';
 import { DailyBudget } from './model/DailyBudget';
 import { Recommendation } from './model/Recommendation';
 import { MealBalance, MealScenario } from './model/MealBalance';
@@ -15,34 +15,22 @@ import { FamilyRepository } from './repository/FamilyRepository';
 import { FoodRepository } from './repository/FoodRepository';
 import { HistoryRepository, ScanHistoryRecord, DietRecord } from './repository/HistoryRepository';
 import { RuleRepository } from './repository/RuleRepository';
-import { RuleEngine, RuleEngineParams } from './engine/RuleEngine';
 import { FamilyGroupRepository } from './repository/FamilyGroupRepository';
 import { RecipeRepository } from './repository/RecipeRepository';
 import { FamilyGroupService } from './service/FamilyGroupService';
 import { RecipeCommunityService } from './service/RecipeCommunityService';
-import { AuthService } from './service/AuthService';
-import { CloudAuthService } from './service/CloudAuthService';
 import { SyncService } from './service/sync/SyncService';
-import { NetworkMonitorService } from './service/NetworkMonitorService';
-import { CloudSyncConfig, SyncStrategy, ConflictResolution } from './model/CloudSyncConfig';
-import { SyncChangeType } from './service/sync/Syncable';
-import { GroupSummary, GroupFeed } from './model/FamilyGroup';
+import { GroupSummary, GroupFeed, FeedType } from './model/FamilyGroup';
 import { CreateRecipeParams } from './service/RecipeCommunityService';
 import { Recipe, RecipeQueryParams, RecipeComment } from './model/Recipe';
 import { NutritionTrendEngine, DailyNutritionSummary, NutrientTrendData, MealGroup } from './engine/NutritionTrendEngine';
-import { HealthService } from './service/HealthService';
-import { ManualHealthSignalProvider } from './service/health/ManualHealthSignalProvider';
-import { HwHealthSignalProvider } from './service/health/HwHealthSignalProvider';
-import { RecommendationEngine } from './engine/RecommendationEngine';
-import { MealBalanceEngine } from './engine/MealBalanceEngine';
-import { ChildProtectionEngine, MealTimeParams } from './engine/ChildProtectionEngine';
-import { CredibilityEngine } from './engine/CredibilityEngine';
-import { BasketCheckEngine, BasketCheckResult } from './engine/BasketCheckEngine';
-import { WeeklyReportEngine, WeeklyDietData, WeeklyReport } from './engine/WeeklyReportEngine';
-import { ElderFriendlyEngine, ElderFriendlyReport } from './engine/ElderFriendlyEngine';
-import { PositiveAdviceEngine, PositiveAdvice } from './engine/PositiveAdviceEngine';
+import { BasketCheckResult } from './engine/BasketCheckEngine';
+import { ElderFriendlyReport } from './engine/ElderFriendlyEngine';
+import { PositiveAdvice } from './engine/PositiveAdviceEngine';
 import { DateUtil } from './utils/DateUtil';
 import { CacheManager } from './utils/CacheManager';
+import { EngineManager } from './EngineManager';
+import { ServiceManager } from './ServiceManager';
 import { common } from '@kit.AbilityKit';
 import { relationalStore, preferences } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -50,8 +38,6 @@ import {
   MemberTier,
   MemberStatus,
   PaywallTrigger,
-  ProductInfo,
-  PurchaseResult,
   createDefaultMemberStatus,
   createMemberStatusForTier,
   getPaywallTriggerForFeature,
@@ -61,15 +47,11 @@ import {
   TIER_MEMBER_LIMIT,
   TIER_WEEKLY_REPORT_LIMIT
 } from './model/MemberStatus';
-import { AiRecipeRecommenderService } from './service/AiRecipeRecommenderService';
-import { AiNutritionistService } from './service/AiNutritionistService';
 import {
   AiRecipeRecommendationResult, AiRecipeRequest,
   AiNutritionAdvice
 } from './model/AiModels';
 
-/// 开启后会在数据写入时自动加入同步队列
-const AUTO_ENQUEUE_SYNC = true;
 const TAG = 'AppState';
 const DOMAIN_ZERO = 0;
 
@@ -85,38 +67,11 @@ export class AppState {
   private groupRepo: FamilyGroupRepository = new FamilyGroupRepository();
   private recipeRepo: RecipeRepository = new RecipeRepository();
 
-  // 业务引擎
-  private ruleEngine: RuleEngine = new RuleEngine();
-  private recEngine: RecommendationEngine = new RecommendationEngine();
-  private mealBalanceEngine: MealBalanceEngine = new MealBalanceEngine();
-  private childProtectionEngine: ChildProtectionEngine = new ChildProtectionEngine();
-  private credibilityEngine: CredibilityEngine = new CredibilityEngine();
-  private basketCheckEngine: BasketCheckEngine = new BasketCheckEngine();
-  private weeklyReportEngine: WeeklyReportEngine = new WeeklyReportEngine();
-  private elderFriendlyEngine: ElderFriendlyEngine = new ElderFriendlyEngine();
-  private positiveAdviceEngine: PositiveAdviceEngine = new PositiveAdviceEngine();
+  // 引擎管理器（委托所有引擎调用）
+  readonly engines: EngineManager = new EngineManager();
 
-  // 华为Kit服务
-  private healthService: HealthService = new HealthService();
-  /** 是否使用华为健康真实数据源（默认false = 手动模式） */
-  private useHwHealthKit: boolean = false;
-
-  // 社交服务
-  private authService: AuthService = new AuthService();
-
-  // 云端认证服务（替代AuthService用于同步）
-  private cloudAuthService: CloudAuthService = new CloudAuthService();
-  // 同步服务
-  private syncService: SyncService = SyncService.getInstance();
-
-  private groupService: FamilyGroupService | null = null;
-  private recipeCommunityService: RecipeCommunityService | null = null;
-  private socialInitialized: boolean = false;
-
-  // AI服务
-  private aiRecipeRecommender: AiRecipeRecommenderService = new AiRecipeRecommenderService();
-  private aiNutritionist: AiNutritionistService = new AiNutritionistService();
-  private aiServicesInitialized: boolean = false;
+  // 服务管理器（委托所有服务调用）
+  readonly services: ServiceManager = new ServiceManager();
 
   // 购物篮（内存中暂存）
   private basketItems: FoodLabel[] = [];
@@ -138,28 +93,72 @@ export class AppState {
   private isInitialized: boolean = false;
 
   // ========== 缓存向后兼容属性（委托给 CacheManager） ==========
-  // 旧代码通过 this.membersCache 等读取/写入，实际委托到 this.cache
-  // 新代码应直接使用 this.cache
-
   private get membersCache(): FamilyProfile[] { return this.cache.membersCache; }
   private set membersCache(val: FamilyProfile[]) { this.cache.membersCache = val; }
 
   private get healthSignalsCache(): Map<string, HealthSignal> { return this.cache.healthSignalsSnapshot; }
-  private set healthSignalsCache(val: Map<string, HealthSignal>) { /* 只读兼容 */ }
+  private set healthSignalsCache(_val: Map<string, HealthSignal>) { /* 只读兼容 */ }
 
   private get dailyBudgetsCache(): Map<string, DailyBudget> { return this.cache.dailyBudgetsSnapshot; }
   private set dailyBudgetsCache(_val: Map<string, DailyBudget>) { /* 只读兼容 */ }
 
+  // ========== 向后兼容属性委托 ==========
+
+  /** @deprecated 使用 services.healthService */
+  private get healthService() { return this.services.healthService; }
+  /** @deprecated 使用 services.authService */
+  private get authService() { return this.services.authService; }
+  /** @deprecated 使用 services.cloudAuthService */
+  getCloudAuthService() { return this.services.cloudAuthService; }
+  /** @deprecated 使用 services.syncService */
+  getSyncService() { return this.services.syncService; }
+  /** @deprecated 使用 services.groupService */
+  getGroupService(): FamilyGroupService | null { return this.services.groupService; }
+  /** @deprecated 使用 services.recipeCommunityService */
+  getRecipeCommunityService(): RecipeCommunityService | null { return this.services.recipeCommunityService; }
+
+  // ========== 向后兼容引擎委托 ==========
+
+  /** @deprecated 使用 engines.ruleEngine */
+  private get ruleEngine() { return this.engines.ruleEngine; }
+  /** @deprecated 使用 engines.mealBalanceEngine */
+  private get mealBalanceEngine() { return this.engines.mealBalanceEngine; }
+  /** @deprecated 使用 engines.childProtectionEngine */
+  private get childProtectionEngine() { return this.engines.childProtectionEngine; }
+  /** @deprecated 使用 engines.credibilityEngine */
+  private get credibilityEngine() { return this.engines.credibilityEngine; }
+  /** @deprecated 使用 engines.basketCheckEngine */
+  private get basketCheckEngine() { return this.engines.basketCheckEngine; }
+  /** @deprecated 使用 engines.elderFriendlyEngine */
+  private get elderFriendlyEngine() { return this.engines.elderFriendlyEngine; }
+  /** @deprecated 使用 engines.positiveAdviceEngine */
+  private get positiveAdviceEngine() { return this.engines.positiveAdviceEngine; }
+
   private constructor() {}
 
-  /**
-   * 获取全局单例
-   */
   static getInstance(): AppState {
     if (!appStateInstance) {
       appStateInstance = new AppState();
     }
     return appStateInstance;
+  }
+
+  /**
+   * 等待 AppState 初始化完成
+   */
+  static waitForReady(): Promise<void> {
+    const state = AppState.getInstance();
+    if (state.isInitialized) return Promise.resolve();
+    return new Promise((resolve) => {
+      const check = (): void => {
+        if (state.isInitialized) {
+          resolve();
+        } else {
+          setTimeout(check, 50);
+        }
+      };
+      check();
+    });
   }
 
   /**
@@ -169,21 +168,20 @@ export class AppState {
     if (this.isInitialized) return;
 
     try {
-      // 统一使用 S3 安全等级创建数据库连接
       const rdbConfig: relationalStore.StoreConfig = {
         name: 'food_helper.db',
         securityLevel: relationalStore.SecurityLevel.S3
       };
       const rdbStore = await relationalStore.getRdbStore(context, rdbConfig);
 
-      // 注入到所有仓库（共用同一连接）— 并行初始化无依赖的仓库
+      // 并行初始化无依赖的仓库
       await Promise.all([
         this.familyRepo.init(rdbStore),
         this.foodRepo.init(rdbStore),
         this.historyRepo.init(rdbStore),
       ]);
 
-      // 初始化群组和食谱数据库（有依赖顺序）
+      // 群组和食谱数据库
       this.groupRepo.init(rdbStore);
       await Promise.all([
         this.groupRepo.createTables(),
@@ -191,30 +189,25 @@ export class AppState {
       ]);
       await this.recipeRepo.createTables();
 
-      // 初始化认证服务
-      await this.authService.init(context);
+      // 认证服务
+      await this.services.initAuth(context);
 
-      // 初始化社交服务
-      this.groupService = new FamilyGroupService(this.groupRepo, this.authService);
-      this.recipeCommunityService = new RecipeCommunityService(this.recipeRepo, this.authService);
-      this.socialInitialized = true;
+      // 社交服务
+      this.services.initSocial(this.groupRepo, this.recipeRepo);
 
-      // 设置规则仓库上下文
+      // 规则仓库
       this.ruleRepo.setContext(context);
 
-      // 初始化AI服务
-      this.aiRecipeRecommender.setRecipeRepo(this.recipeRepo);
-      this.aiServicesInitialized = true;
+      // AI服务
+      this.services.initAiServices(this.recipeRepo);
 
-      // 初始化云端认证和同步服务
-      await this.cloudAuthService.init(context);
-      await this.syncService.init(context);
+      // 云端同步
+      await this.services.initCloudSync(context);
 
-      // 当同步服务收到远程变更时，刷新本地缓存
-      this.syncService.onEvent((event) => {
-        if (event.type === 'sync_completed' && event.data &&
-            typeof event.data === 'object') {
-          // 远程数据变更，需要刷新缓存
+      // 同步事件监听
+      this.services.onSyncEvent((event) => {
+        if (typeof event === 'object' && event !== null &&
+            (event as Record<string, Object>)['type'] === 'sync_completed') {
           this.refreshCache();
         }
       });
@@ -228,28 +221,22 @@ export class AppState {
       hilog.info(DOMAIN_ZERO, TAG, 'AppState initialized');
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'AppState init failed: %{public}s', JSON.stringify(error));
-      // 初始化失败时使用默认数据
       this.membersCache = this.createDefaultMembers();
       this.isInitialized = true;
     }
   }
 
-  /** 成员初始化锁，防止并发调用 getAllMembers 时重复创建默认成员 */
+  /** 成员初始化锁 */
   private memberInitLock: boolean = false;
 
   // ========== 家庭成员管理 ==========
 
-  /**
-   * 获取所有家庭成员
-   * 使用锁机制防止并发调用时重复创建默认成员
-   */
   async getAllMembers(): Promise<FamilyProfile[]> {
     if (this.membersCache.length === 0) {
       this.membersCache = await this.familyRepo.getAllMembers();
       if (this.membersCache.length === 0 && !this.memberInitLock) {
         this.memberInitLock = true;
         try {
-          // 首次使用，创建默认成员
           this.membersCache = this.createDefaultMembers();
           for (const member of this.membersCache) {
             await this.familyRepo.saveMember(member);
@@ -262,12 +249,8 @@ export class AppState {
     return this.membersCache;
   }
 
-  /**
-   * 保存成员
-   */
   async saveMember(profile: FamilyProfile): Promise<void> {
     await this.familyRepo.saveMember(profile);
-    // 更新缓存
     const index = this.membersCache.findIndex(m => m.memberId === profile.memberId);
     if (index >= 0) {
       this.membersCache[index] = profile;
@@ -276,9 +259,6 @@ export class AppState {
     }
   }
 
-  /**
-   * 删除成员
-   */
   async deleteMember(memberId: string): Promise<void> {
     await this.familyRepo.deleteMember(memberId);
     this.membersCache = this.membersCache.filter(m => m.memberId !== memberId);
@@ -288,10 +268,6 @@ export class AppState {
 
   // ========== 健康信号管理 ==========
 
-  /**
-   * 获取成员今日健康信号
-   * 优先从华为健康App读取，未授权则使用缓存/默认值
-   */
   async getHealthSignalAsync(memberId: string): Promise<HealthSignal> {
     const today = DateUtil.getToday();
     const cached = this.healthSignalsCache.get(memberId);
@@ -299,7 +275,6 @@ export class AppState {
       return cached;
     }
 
-    // 尝试从华为健康App读取
     try {
       const signal = await this.healthService.getTodayHealthData(memberId);
       if (signal.source === DataSource.HUAWEI_HEALTH) {
@@ -310,16 +285,12 @@ export class AppState {
       hilog.warn(DOMAIN_ZERO, TAG, 'Health Service read failed, using cache');
     }
 
-    // 回退到缓存或默认值
     if (cached && cached.date === today) {
       return cached;
     }
     return this.getDefaultHealthSignal(memberId);
   }
 
-  /**
-   * 获取成员今日健康信号（同步版本，用于非async上下文）
-   */
   getHealthSignal(memberId: string): HealthSignal {
     const today = DateUtil.getToday();
     const cached = this.healthSignalsCache.get(memberId);
@@ -340,65 +311,32 @@ export class AppState {
     return signal;
   }
 
-  /**
-   * 更新成员健康信号
-   */
   updateHealthSignal(signal: HealthSignal): void {
     this.healthSignalsCache.set(signal.memberId, signal);
   }
 
-  /**
-   * 切换健康数据源到华为 Health Kit
-   * @param context 应用上下文（用于初始化 Health Kit）
-   */
-  async switchToHwHealthKit(context: Context): Promise<boolean> {
-    try {
-      const hwProvider = new HwHealthSignalProvider(context);
-      this.healthService.setProvider(hwProvider);
-      this.useHwHealthKit = true;
-      hilog.info(DOMAIN_ZERO, TAG, 'Switched to HwHealthSignalProvider');
-      return true;
-    } catch (error) {
-      hilog.error(DOMAIN_ZERO, TAG, 'Switch to HwHealthKit failed: %{public}s', JSON.stringify(error));
-      this.useHwHealthKit = false;
-      return false;
-    }
+  async switchToHwHealthKit(context: common.Context): Promise<boolean> {
+    return await this.services.switchToHwHealthKit(context);
   }
 
-  /**
-   * 切换回手动健康数据源
-   */
   switchToManualProvider(): void {
-    this.healthService.setProvider(new ManualHealthSignalProvider());
-    this.useHwHealthKit = false;
+    this.services.switchToManualProvider();
   }
 
-  /**
-   * 当前是否使用华为健康数据源
-   */
   isUsingHwHealthKit(): boolean {
-    return this.useHwHealthKit;
+    return this.services.useHwHealthKit;
   }
 
-  /**
-   * 请求华为健康数据授权
-   */
   async requestHealthAuthorization(): Promise<boolean> {
-    return await this.healthService.requestAuthorization();
+    return await this.services.requestHealthAuthorization();
   }
 
-  /**
-   * 检查华为健康数据授权状态
-   */
   async checkHealthAuthorization(): Promise<boolean> {
-    return await this.healthService.checkAuthorization();
+    return await this.services.checkHealthAuthorization();
   }
 
   // ========== 今日预算管理 ==========
 
-  /**
-   * 获取成员今日预算
-   */
   getDailyBudget(memberId: string): DailyBudget {
     const today = DateUtil.getToday();
     const cached = this.dailyBudgetsCache.get(memberId);
@@ -448,9 +386,6 @@ export class AppState {
     }
   }
 
-  /**
-   * 扣减摄入量
-   */
   deductIntake(memberId: string, sodium: number, sugar: number, calories: number, fat: number): void {
     const budget = this.getDailyBudget(memberId);
     budget.deductIntake(sodium, sugar, calories, fat);
@@ -458,9 +393,6 @@ export class AppState {
 
   // ========== 食品标签管理 ==========
 
-  /**
-   * 保存食品标签
-   */
   async saveFoodLabel(label: FoodLabel): Promise<void> {
     if (label.foodId.length === 0) {
       label.foodId = `food_${Date.now()}`;
@@ -471,9 +403,6 @@ export class AppState {
     await this.foodRepo.saveFoodLabel(label);
   }
 
-  /**
-   * 根据条码查找
-   */
   async findFoodByBarcode(barcode: string): Promise<FoodLabel | null> {
     return await this.foodRepo.findByBarcode(barcode);
   }
@@ -482,9 +411,6 @@ export class AppState {
     return await this.foodRepo.findById(foodId);
   }
 
-  /**
-   * 批量查找食品标签（解决N+1查询问题）
-   */
   async findFoodByIds(foodIds: string[]): Promise<Map<string, FoodLabel>> {
     return await this.foodRepo.findByIds(foodIds);
   }
@@ -497,77 +423,48 @@ export class AppState {
     return await this.historyRepo.getDietRecordsByDateRange(memberId, startDate, endDate);
   }
 
-  // ========== 核心业务计算 ==========
+  // ========== 核心业务计算（委托给 EngineManager） ==========
 
-  /**
-   * 计算单个成员适配结论
-   */
   calculateRecommendation(memberId: string, foodLabel: FoodLabel): Recommendation {
     const profile = this.membersCache.find(m => m.memberId === memberId) || new FamilyProfile();
     const signal = this.getHealthSignal(memberId);
     const budget = this.getDailyBudget(memberId);
-    return this.ruleEngine.calculate({ profile, healthSignal: signal, foodLabel, dailyBudget: budget });
+    return this.engines.calculateRecommendation(profile, signal, foodLabel, budget);
   }
 
-  /**
-   * 计算家庭对比
-   */
   calculateFamilyComparison(foodLabel: FoodLabel): Recommendation[] {
-    return this.membersCache.map(member => {
-      return this.calculateRecommendation(member.memberId, foodLabel);
-    });
-  }
-
-  /**
-   * 计算美食平衡
-   */
-  calculateMealBalance(scenario: MealScenario, memberId: string): MealBalance {
-    const profile = this.membersCache.find(m => m.memberId === memberId) || new FamilyProfile();
-    const signal = this.getHealthSignal(memberId);
-    return this.mealBalanceEngine.calculate(scenario, profile, signal);
-  }
-
-  /**
-   * 计算儿童保护
-   */
-  calculateChildProtection(memberId: string, foodLabel: FoodLabel): ChildProtection {
-    const profile = this.membersCache.find(m => m.memberId === memberId) || new FamilyProfile();
-    const mealTimes = new MealTimeParams();
-    return this.childProtectionEngine.calculate(
-      profile, foodLabel, new Date(),
-      mealTimes,
-      '22:00'
+    return this.engines.calculateFamilyComparison(
+      this.membersCache, this.healthSignalsCache, this.dailyBudgetsCache, foodLabel
     );
   }
 
-  /**
-   * 计算食品可信度
-   */
+  calculateMealBalance(scenario: MealScenario, memberId: string): MealBalance {
+    const profile = this.membersCache.find(m => m.memberId === memberId) || new FamilyProfile();
+    const signal = this.getHealthSignal(memberId);
+    return this.engines.calculateMealBalance(scenario, profile, signal);
+  }
+
+  calculateChildProtection(memberId: string, foodLabel: FoodLabel): ChildProtection {
+    const profile = this.membersCache.find(m => m.memberId === memberId) || new FamilyProfile();
+    return this.engines.calculateChildProtection(profile, foodLabel);
+  }
+
   calculateCredibility(foodLabel: FoodLabel): CredibilityResult {
-    return this.credibilityEngine.calculate(foodLabel);
+    return this.engines.calculateCredibility(foodLabel);
   }
 
-  /**
-   * 检查购物篮
-   */
   checkBasket(): BasketCheckResult {
-    return this.basketCheckEngine.check(this.basketItems, this.membersCache);
+    return this.engines.checkBasket(this.basketItems, this.membersCache);
   }
 
-  /**
-   * 生成老人友好报告
-   */
   generateElderFriendlyReport(rec: Recommendation, memberId: string, food: FoodLabel): ElderFriendlyReport {
     const profile = this.membersCache.find(m => m.memberId === memberId) || new FamilyProfile();
-    return this.elderFriendlyEngine.generate(rec, profile, food);
+    return this.engines.generateElderFriendlyReport(rec, profile, food);
   }
 
-  /**
-   * 生成正向补足建议
-   */
   generatePositiveAdvice(scenario: MealScenario, memberId: string): PositiveAdvice {
     const profile = this.membersCache.find(m => m.memberId === memberId) || new FamilyProfile();
-    return this.positiveAdviceEngine.generateForScenario(scenario, profile);
+    return this.engines.generatePositiveAdvice(scenario, profile);
   }
 
   // ========== 购物篮管理 ==========
@@ -586,9 +483,6 @@ export class AppState {
 
   // ========== 历史记录 ==========
 
-  /**
-   * 保存扫描历史
-   */
   async saveScanHistory(memberId: string, foodLabel: FoodLabel, rec: Recommendation): Promise<void> {
     await this.historyRepo.saveScanHistory({
       memberId,
@@ -601,9 +495,6 @@ export class AppState {
     });
   }
 
-  /**
-   * 保存饮食记录
-   */
   async saveDietRecord(memberId: string, scenario: string, mealType: string, foodId: string,
     amountG: number, sodium: number, sugar: number, calories: number, fat: number): Promise<void> {
     await this.historyRepo.saveDietRecord({
@@ -619,624 +510,253 @@ export class AppState {
       fatIntake: fat,
       recordedAt: Date.now()
     });
-    // 同步扣减预算
-    this.deductIntake(memberId, sodium, sugar, calories, fat);
   }
 
-  // ========== 营养追踪 ==========
+  // ========== 会员状态管理 ==========
 
-  /**
-   * 获取某成员某天的膳食记录（按餐次分组）
-   */
-  async getDailyDietGroups(memberId: string, date: string): Promise<MealGroup[]> {
-    const records = await this.historyRepo.getDietRecordsByDate(memberId, date);
-    return NutritionTrendEngine.groupByMealType(records);
+  canAddMember(): boolean {
+    return this.membersCache.length < TIER_MEMBER_LIMIT[this.memberStatus.tier];
   }
 
-  /**
-   * 获取趋势数据（用于 NutritionTrendPage）
-   */
-  async getNutritionTrends(memberId: string, days: number): Promise<NutrientTrendData[]> {
-    const endDate = DateUtil.getToday();
-    const d = new Date();
-    d.setDate(d.getDate() - days);
-    const startDate = DateUtil.formatDate(d);
-
-    const records = await this.historyRepo.getDietRecordsByDateRange(memberId, startDate, endDate);
-    const dailySummaries = NutritionTrendEngine.aggregateDaily(records);
-
-    // 获取该成员的预算目标
-    const budget = this.dailyBudgetsCache.get(memberId);
-    const sTarget = budget?.sodiumBudget || 2000;
-    const suTarget = budget?.sugarBudget || 50;
-    const cTarget = budget?.calorieBudget || 2000;
-    const fTarget = budget?.fatBudget || 65;
-
-    return NutritionTrendEngine.buildNutrientTrends(dailySummaries,
-      sTarget, suTarget, cTarget, fTarget);
+  getRemainingScans(): number {
+    return TIER_DAILY_SCAN_LIMIT[this.memberStatus.tier];
   }
 
-  /**
-   * 获取每日汇总列表（用于趋势图表）
-   */
-  async getDailySummaries(memberId: string, days: number): Promise<DailyNutritionSummary[]> {
-    const endDate = DateUtil.getToday();
-    const d = new Date();
-    d.setDate(d.getDate() - days);
-    const startDate = DateUtil.formatDate(d);
-
-    const records = await this.historyRepo.getDietRecordsByDateRange(memberId, startDate, endDate);
-    return NutritionTrendEngine.aggregateDaily(records);
+  getMemberTierDisplay(): string {
+    return getTierDisplayName(this.memberStatus.tier);
   }
 
-  // ========== 默认数据 ==========
-
-  private createDefaultMembers(): FamilyProfile[] {
-    const members: FamilyProfile[] = [];
-    const now = Date.now();
-
-    const dad = new FamilyProfile();
-    dad.memberId = 'dad'; dad.nickname = '爸爸'; dad.ageGroup = AgeGroup.MIDDLE_OLD;
-    dad.healthGoals = [HealthGoal.CONTROL_BP, HealthGoal.CONTROL_FAT];
-    dad.dailyBudget = new DailyBudgetConfig();
-    dad.dailyBudget.sodiumBudget = 1500; dad.dailyBudget.sugarBudget = 40;
-    dad.dailyBudget.calorieBudget = 1800; dad.dailyBudget.fatBudget = 55;
-    dad.createdAt = now; dad.updatedAt = now;
-    members.push(dad);
-
-    const mom = new FamilyProfile();
-    mom.memberId = 'mom'; mom.nickname = '妈妈'; mom.ageGroup = AgeGroup.ADULT;
-    mom.healthGoals = [HealthGoal.CONTROL_SUGAR];
-    mom.dailyBudget = new DailyBudgetConfig();
-    mom.dailyBudget.sodiumBudget = 2000; mom.dailyBudget.sugarBudget = 25;
-    mom.dailyBudget.calorieBudget = 2000; mom.dailyBudget.fatBudget = 65;
-    mom.createdAt = now; mom.updatedAt = now;
-    members.push(mom);
-
-    const child = new FamilyProfile();
-    child.memberId = 'child'; child.nickname = '孩子'; child.ageGroup = AgeGroup.CHILD;
-    child.healthGoals = [HealthGoal.CHILD]; child.allergens = ['坚果'];
-    child.dailyBudget = new DailyBudgetConfig();
-    child.dailyBudget.sodiumBudget = 1200; child.dailyBudget.sugarBudget = 25;
-    child.dailyBudget.calorieBudget = 1500; child.dailyBudget.fatBudget = 50;
-    child.mealTimes = new MealTimes();
-    child.mealTimes.breakfast = '07:30';
-    child.mealTimes.lunch = '12:00';
-    child.mealTimes.dinner = '18:00';
-    child.bedtime = '22:00';
-    child.createdAt = now; child.updatedAt = now;
-    members.push(child);
-
-    const me = new FamilyProfile();
-    me.memberId = 'me'; me.nickname = '我'; me.ageGroup = AgeGroup.ADULT;
-    me.healthGoals = [HealthGoal.LOSE_FAT];
-    me.dailyBudget = new DailyBudgetConfig();
-    me.dailyBudget.sodiumBudget = 2000; me.dailyBudget.sugarBudget = 50;
-    me.dailyBudget.calorieBudget = 1500; me.dailyBudget.fatBudget = 45;
-    me.createdAt = now; me.updatedAt = now;
-    members.push(me);
-
-    return members;
-  }
-
-  // ========== 订阅与功能门控 ==========
-
-  /**
-   * 获取当前订阅版本
-   */
-  /**
-   * 获取当前会员等级（兼容旧版调用）
-   */
-  getCurrentMemberTier(): MemberTier {
-    return this.memberStatus.tier;
-  }
-
-  /**
-   * 判断是否有家庭版及以上权限（新版，基于 MemberTier）
-   */
-  hasFamilyAccess(): boolean {
-    const tier = this.memberStatus.tier;
-    return tier === MemberTier.FAMILY || tier === MemberTier.PREMIUM;
-  }
-
-  /**
-   * 判断是否有高级版权限（新版，基于 MemberTier）
-   */
   hasPremiumAccess(): boolean {
-    const tier = this.memberStatus.tier;
-    return tier === MemberTier.PREMIUM;
+    return hasTierAccess(this.memberStatus.tier, MemberTier.PREMIUM);
   }
 
+  // ========== 向后兼容方法（委派给 services / engines） ==========
+
   /**
-   * 获取今日剩余扫描次数
+   * @deprecated 直接使用 getRemainingScans()
    */
   getRemainingScansToday(): number {
-    return this.memberStatus.scansRemainingToday;
+    return this.getRemainingScans();
   }
 
   /**
-   * 确认一次扫描（调用后扣减扫描次数）
+   * 获取付费墙触发参数
    */
-  confirmScan(): void {
-    const status = this.memberStatus;
-    if (status.scansRemainingToday > 0) {
-      const newStatus: MemberStatus = {
-        tier: status.tier,
-        scansRemainingToday: status.scansRemainingToday - 1,
-        familyMembersRemaining: status.familyMembersRemaining,
-        expiryDate: status.expiryDate,
-        isTrialActive: status.isTrialActive,
-        trialRemainingDays: status.trialRemainingDays,
-        weeklyReportsRemaining: status.weeklyReportsRemaining
-      };
-      this.memberStatus = newStatus;
-    }
+  getPaywallTrigger(feature: string): PaywallTrigger | null {
+    return getPaywallTriggerForFeature(feature, this.memberStatus.tier);
   }
 
   /**
-   * 获取可添加的家庭成员数
+   * 使用一次扫描名额（返回触发参数）
    */
-  getAvailableMemberSlots(): number {
-    return this.memberStatus.familyMembersRemaining;
+  useScan(): PaywallTrigger | null {
+    return getPaywallTriggerForFeature('scan', this.memberStatus.tier);
   }
 
   /**
-   * 新增一个家庭成员后调用，扣减剩余名额
+   * 使用一次家庭成员名额（返回触发参数）
+   */
+  useFamilyMember(): PaywallTrigger | null {
+    return getPaywallTriggerForFeature('add_member', this.memberStatus.tier);
+  }
+
+  /**
+   * 家庭成员添加完成后调用
    */
   onMemberAdded(): void {
     this.addedMemberCount++;
-    const status = this.memberStatus;
-    if (status.familyMembersRemaining > 0) {
-      const newStatus: MemberStatus = {
-        tier: status.tier,
-        scansRemainingToday: status.scansRemainingToday,
-        familyMembersRemaining: status.familyMembersRemaining - 1,
-        expiryDate: status.expiryDate,
-        isTrialActive: status.isTrialActive,
-        trialRemainingDays: status.trialRemainingDays,
-        weeklyReportsRemaining: status.weeklyReportsRemaining
-      };
-      this.memberStatus = newStatus;
-    }
   }
 
   /**
-   * 删除一个家庭成员后调用，释放名额
+   * 是否有家庭群组功能访问权限
    */
-  onMemberRemoved(): void {
-    this.addedMemberCount = Math.max(0, this.addedMemberCount - 1);
-    const status = this.memberStatus;
-    if (status.familyMembersRemaining >= 0) {
-      const newStatus: MemberStatus = {
-        tier: status.tier,
-        scansRemainingToday: status.scansRemainingToday,
-        familyMembersRemaining: status.familyMembersRemaining + 1,
-        expiryDate: status.expiryDate,
-        isTrialActive: status.isTrialActive,
-        trialRemainingDays: status.trialRemainingDays,
-        weeklyReportsRemaining: status.weeklyReportsRemaining
-      };
-      this.memberStatus = newStatus;
-    }
-  }
-
-  // ========== 社交功能 — 家庭群组 ==========
-
-  /** 获取群组服务实例 */
-  getGroupService(): FamilyGroupService {
-    if (!this.groupService) {
-      throw new Error('FamilyGroupService not initialized. Call init() first.');
-    }
-    return this.groupService;
-  }
-
-  /** 获取食谱社区服务实例 */
-  getRecipeCommunityService(): RecipeCommunityService {
-    if (!this.recipeCommunityService) {
-      throw new Error('RecipeCommunityService not initialized. Call init() first.');
-    }
-    return this.recipeCommunityService;
-  }
-
-  /** 检查社交服务是否已初始化 */
-  isSocialInitialized(): boolean {
-    return this.socialInitialized;
-  }
-
-  // ========== 社交便捷方法 ==========
-
-  /** 创建家庭群组 */
-  async createFamilyGroup(groupName: string, description: string, ownerName: string): Promise<GroupSummary> {
-    return await this.getGroupService().createGroup({ groupName, description, ownerName });
-  }
-
-  /** 通过邀请码加入群组 */
-  async joinFamilyGroup(inviteCode: string, displayName: string): Promise<GroupSummary> {
-    return await this.getGroupService().joinGroupByCode(inviteCode, displayName);
-  }
-
-  /** 获取我的群组列表 */
-  async getMyGroups(): Promise<GroupSummary[]> {
-    return await this.getGroupService().getMyGroups();
-  }
-
-  /** 获取群组详情 */
-  async getGroupDetail(groupId: string): Promise<GroupSummary | null> {
-    return await this.getGroupService().getGroupDetail(groupId);
-  }
-
-  /** 获取群组邀请码 */
-  async getGroupInviteCode(groupId: string): Promise<string> {
-    return await this.getGroupService().getInviteCode(groupId);
-  }
-
-  /** 离开群组 */
-  async leaveGroup(groupId: string): Promise<void> {
-    return await this.getGroupService().leaveGroup(groupId);
-  }
-
-  /** 分享食品扫描结果到群组 */
-  async shareFoodScanToGroup(
-    groupId: string, foodName: string, foodId: string,
-    nutriScore: number, summary: string, memberResults: string
-  ): Promise<void> {
-    return await this.getGroupService().shareFoodScan(
-      groupId, foodName, foodId, nutriScore, summary, memberResults
-    );
-  }
-
-  /** 获取群组动态 */
-  async getGroupFeeds(groupId: string, offset: number, limit: number): Promise<GroupFeed[]> {
-    return await this.getGroupService().getGroupFeeds(groupId, offset, limit);
-  }
-
-  // ========== 社交便捷方法 — 食谱社区 ==========
-
-  /** 发布食谱 */
-  async publishRecipe(params: CreateRecipeParams): Promise<Recipe> {
-    return await this.getRecipeCommunityService().createRecipe(params);
-  }
-
-  /** 获取食谱详情 */
-  async getRecipeDetail(recipeId: string): Promise<Recipe | null> {
-    return await this.getRecipeCommunityService().getRecipeDetail(recipeId);
-  }
-
-  /** 查询社区食谱 */
-  async queryCommunityRecipes(queryParams: RecipeQueryParams): Promise<Recipe[]> {
-    return await this.getRecipeCommunityService().queryRecipes(queryParams);
-  }
-
-  /** 获取我的食谱 */
-  async getMyRecipes(includeDrafts: boolean): Promise<Recipe[]> {
-    return await this.getRecipeCommunityService().getMyRecipes(includeDrafts);
-  }
-
-  /** 点赞/取消点赞食谱 */
-  async toggleRecipeLike(recipeId: string): Promise<boolean> {
-    return await this.getRecipeCommunityService().toggleLike(recipeId);
-  }
-
-  /** 检查是否已点赞 */
-  async hasLikedRecipe(recipeId: string): Promise<boolean> {
-    return await this.getRecipeCommunityService().hasLiked(recipeId);
-  }
-
-  /** 发表评论 */
-  async addRecipeComment(recipeId: string, content: string, parentId: string): Promise<RecipeComment> {
-    return await this.getRecipeCommunityService().addComment(recipeId, content, parentId);
-  }
-
-  /** 获取评论 */
-  async getRecipeComments(recipeId: string): Promise<RecipeComment[]> {
-    return await this.getRecipeCommunityService().getComments(recipeId);
-  }
-
-  /** 收藏/取消收藏 */
-  async toggleRecipeBookmark(recipeId: string, note: string): Promise<boolean> {
-    return await this.getRecipeCommunityService().toggleBookmark(recipeId, note);
-  }
-
-  /** 获取我的收藏 */
-  async getMyRecipeBookmarks(): Promise<string[]> {
-    return await this.getRecipeCommunityService().getMyBookmarks();
-  }
-
-// AI methods append for AppState
-
-  // ========== AI智能食谱推荐 ==========
-
-  async getAiRecipeRecommendations(
-    memberIds: string[],
-    mealCategory?: string,
-    preference?: string,
-    limit: number = 5
-  ): Promise<AiRecipeRecommendationResult> {
-    const request: AiRecipeRequest = {
-      memberIds: memberIds,
-      mealCategory: mealCategory,
-      preference: preference,
-      limit: limit
-    };
-    return await this.aiRecipeRecommender.getRecommendations(
-      request,
-      this.membersCache,
-      this.healthSignalsCache,
-      this.dailyBudgetsCache
-    );
-  }
-
-  // ========== AI营养师分析 ==========
-
-  async getAiNutritionAdvice(
-    memberId: string,
-    days: number = 7,
-    includeMealPlan: boolean = false
-  ): Promise<AiNutritionAdvice> {
-    const member = this.membersCache.find(m => m.memberId === memberId);
-    if (!member) {
-      return this.getEmptyNutritionAdvice(memberId);
-    }
-    const signal = this.getHealthSignal(memberId);
-    const budget = this.getDailyBudget(memberId);
-    const endDate = DateUtil.getToday();
-    const d = new Date();
-    d.setDate(d.getDate() - days);
-    const startDate = DateUtil.formatDate(d);
-    const records = await this.historyRepo.getDietRecordsByDateRange(memberId, startDate, endDate);
-    return await this.aiNutritionist.getAdvice(
-      member, signal, budget, records, days, includeMealPlan
-    );
-  }
-
-  hasAiFeatureAccess(): boolean {
+  hasFamilyAccess(): boolean {
     return hasTierAccess(this.memberStatus.tier, MemberTier.FAMILY);
   }
 
-  setAiApiKey(key: string): void {
-    this.aiRecipeRecommender.setApiKey(key);
-    this.aiNutritionist.setApiKey(key);
-    hilog.info(DOMAIN_ZERO, TAG, 'AI API key configured');
-  }
-
-  setAiEnabled(enabled: boolean): void {
-    this.aiRecipeRecommender.setEnabled(enabled);
-    this.aiNutritionist.setEnabled(enabled);
-  }
-
-  private getEmptyNutritionAdvice(memberId: string): AiNutritionAdvice {
-    return {
-      memberId: memberId,
-      dateRange: '无效成员',
-      summary: '请先添加家庭成员',
-      mealAnalyses: [],
-      nutrientAnalyses: [],
-      patternAnalysis: {
-        regularityScore: 0,
-        diversityScore: 0,
-        issues: [],
-        highlights: []
-      },
-      suggestions: ['添加家庭成员后即可获得AI营养师分析'],
-      mealPlanSuggestions: [],
-      motivationalMessage: '',
-      isAiGenerated: false
-    };
-  }
-
-  // ========== 付费墙与会员能力检查 ==========
-
-  canAddMember(): boolean {
-    if (this.memberStatus.tier === MemberTier.PREMIUM || this.memberStatus.tier === MemberTier.FAMILY) {
-      return this.memberStatus.familyMembersRemaining > 0;
-    }
-    return false;
-  }
-
-  useFamilyMember(): PaywallTrigger | null {
-    const trigger = getPaywallTriggerForFeature('family_member', this.memberStatus.tier);
-    if (trigger !== null && !hasTierAccess(this.memberStatus.tier, trigger.requiredTier)) {
-      return trigger;
-    }
-    return null;
-  }
-
-  useScan(): PaywallTrigger | null {
-    const trigger = getPaywallTriggerForFeature('scan', this.memberStatus.tier);
-    if (trigger !== null && !hasTierAccess(this.memberStatus.tier, trigger.requiredTier)) {
-      return trigger;
-    }
-    return null;
-  }
-
-  getPaywallTrigger(feature: string): PaywallTrigger | null {
-    const trigger = getPaywallTriggerForFeature(feature, this.memberStatus.tier);
-    if (trigger === null) {
-      return null;
-    }
-    if (hasTierAccess(this.memberStatus.tier, trigger.requiredTier)) {
-      return null;
-    }
-    return trigger;
-  }
-
-  upgradeTier(tier: MemberTier, days: number): void {
-    this.memberStatus = createMemberStatusForTier(tier, days);
-  }
-
-  // ========== 云同步服务接口 ==========
-
   /**
-   * 获取同步服务单例
+   * 升级会员等级
    */
-  getSyncService(): SyncService {
-    return this.syncService;
+  upgradeTier(tier: MemberTier, _days: number): void {
+    this.memberStatus = createMemberStatusForTier(tier, _days);
   }
 
   /**
-   * 获取云端认证服务
-   */
-  getCloudAuthService(): CloudAuthService {
-    return this.cloudAuthService;
-  }
-
-  /**
-   * 获取网络监控服务
-   */
-  getNetworkMonitor(): NetworkMonitorService {
-    return this.syncService.getNetworkMonitor();
-  }
-
-  /**
-   * 获取同步配置
-   */
-  getSyncConfig(): CloudSyncConfig {
-    return this.syncService.getConfig();
-  }
-
-  /**
-   * 更新同步配置
-   */
-  async updateSyncConfig(updates: CloudSyncConfig): Promise<void> {
-    await this.syncService.updateConfig(updates);
-  }
-
-  /**
-   * 手动触发同步
-   */
-  async triggerSync(): Promise<void> {
-    await this.syncService.triggerSync();
-  }
-
-  /**
-   * 刷新所有缓存
-   */
-  private async refreshCache(): Promise<void> {
-    try {
-      this.membersCache = await this.familyRepo.getAllMembers();
-      await this.restoreTodayBudgets();
-      hilog.info(DOMAIN_ZERO, TAG, 'Cache refreshed after sync');
-    } catch (error) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'Refresh cache failed: %{public}s',
-        JSON.stringify(error));
-    }
-  }
-
-  /**
-   * 当数据变更时自动加入同步队列
-   */
-  private autoSyncChange(entityType: string, entityId: string, dataJson: string,
-    version: number, changeType?: string): void {
-    if (!AUTO_ENQUEUE_SYNC) return;
-    this.syncService.enqueueChange(
-      entityType,
-      entityId,
-      changeType === 'delete' ? SyncChangeType.DELETE : SyncChangeType.UPDATE,
-      dataJson,
-      version
-    );
-  }
-
-  // ========== 应用生命周期管理 ==========
-
-  /**
-   * 持久化所有成员的健康信号到Preferences
-   * 由 app.ets 在应用销毁时调用，防止重启后 HealthSignal 状态丢失
-   */
-  persistAllHealthSignals(): void {
-    try {
-      const context = AppStorage.get<Object>('appContext') as Context;
-      if (!context) return;
-      // 异步执行但不阻塞
-      this.doPersistHealthSignals(context);
-    } catch (error) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'persistAllHealthSignals failed: %{public}s', JSON.stringify(error));
-    }
-  }
-
-  private async doPersistHealthSignals(context: Context): Promise<void> {
-    try {
-      const prefs = await preferences.getPreferences(context, 'health_signal_cache');
-      const today = DateUtil.getToday();
-      const entries = Array.from(this.healthSignalsCache.entries());
-      for (let i = 0; i < entries.length; i++) {
-        const entry = entries[i];
-        const memberId = entry[0];
-        const signal = entry[1];
-        if (signal.date === today && signal.source === DataSource.MANUAL) {
-          const key = 'signal_' + memberId + '_' + today;
-          await prefs.put(key, JSON.stringify(signal.toJson()));
-        }
-      }
-      await prefs.flush();
-    } catch (error) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'doPersistHealthSignals failed: %{public}s', JSON.stringify(error));
-    }
-  }
-
-  /**
-   * 从Preferences恢复今日手动设置的健康信号
-   * 在 init 完成后调用
-   */
-  async restoreHealthSignalsFromPrefs(context: Context): Promise<void> {
-    try {
-      const prefs = await preferences.getPreferences(context, 'health_signal_cache');
-      const today = DateUtil.getToday();
-      for (const member of this.membersCache) {
-        const key = `signal_${member.memberId}_${today}`;
-        const jsonStr = await prefs.get(key, '');
-        if (jsonStr && typeof jsonStr === 'string' && jsonStr.length > 0) {
-          const json = JSON.parse(jsonStr) as Record<string, Object>;
-          const signal = HealthSignal.fromJson(json);
-          this.healthSignalsCache.set(member.memberId, signal);
-        }
-      }
-    } catch (error) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'restoreHealthSignalsFromPrefs failed: %{public}s', JSON.stringify(error));
-    }
-  }
-
-  /**
-   * 清理非关键缓存（内存压力时调用）
-   * 保留今日预算和今日健康信号，清理历史数据
-   */
-  trimCache(): void {
-    // 保留成员缓存（关键数据）
-    // 清理健康信号中非今日数据
-    this.cache.clearNonCurrentHealthSignals(DateUtil.getToday());
-    hilog.info(DOMAIN_ZERO, TAG, 'Cache trimmed due to memory pressure');
-  }
-
-  /**
-   * 清除所有缓存（用于SettingsPage的清除数据功能）
-   * 替代方括号反射访问的 public 接口
+   * 清除所有缓存
    */
   clearAllCache(): void {
     this.cache.clearAll();
   }
 
-  /**
-   * 等待 AppState 初始化就绪
-   * 轮询 AppStorage 中的 'appStateReady' 标记
-   * @param timeoutMs 最大等待时间（毫秒，默认5000）
-   */
-  static async waitForReady(timeoutMs: number = 5000): Promise<void> {
-    const pollInterval = 100;
-    let remaining = timeoutMs;
-    while (remaining > 0) {
-      const ready = AppStorage.get('appStateReady') as boolean;
-      if (ready) return;
-      await AppState.delay(pollInterval);
-      remaining -= pollInterval;
-    }
-    hilog.warn(DOMAIN_ZERO, TAG, 'waitForReady timeout, proceeding anyway');
+  // ========== 群组服务委派 ==========
+
+  async getMyGroups(): Promise<GroupSummary[]> {
+    if (!this.services.groupService) return [];
+    return await this.services.groupService.getMyGroups();
   }
 
-  private static delay(ms: number): Promise<void> {
-    return new Promise((resolve: Function) => {
-      setTimeout(() => {
-        resolve();
-      }, ms);
-    });
+  async createFamilyGroup(name: string, description: string, creatorName: string): Promise<GroupSummary> {
+    if (!this.services.groupService) return {} as GroupSummary;
+    return await this.services.groupService.createGroup({ groupName: name, description, ownerName: creatorName });
+  }
+
+  async joinFamilyGroup(inviteCode: string, displayName: string): Promise<GroupSummary> {
+    if (!this.services.groupService) return {} as GroupSummary;
+    return await this.services.groupService.joinGroupByCode(inviteCode, displayName);
+  }
+
+  async getGroupFeeds(groupId: string, offset: number, limit: number): Promise<GroupFeed[]> {
+    return await this.groupRepo.getFeeds(groupId, offset, limit);
+  }
+
+  async shareFoodScanToGroup(groupId: string, foodName: string, _type: string,
+    _amount: number, message: string, _imageUri: string): Promise<void> {
+    const feed: GroupFeed = {
+      feedId: `feed_${Date.now()}`,
+      groupId: groupId,
+      feedType: FeedType.FOOD_SCAN_SHARE,
+      senderUid: '',
+      senderName: '',
+      content: JSON.stringify({ foodName, summary: message }),
+      createdAt: Date.now(),
+      commentCount: 0,
+      likeCount: 0
+    };
+    await this.groupRepo.saveFeed(feed);
+  }
+
+  // ========== 食谱服务委派 ==========
+
+  async queryCommunityRecipes(params: RecipeQueryParams): Promise<Recipe[]> {
+    if (!this.services.recipeCommunityService) return [];
+    return await this.services.recipeCommunityService.queryRecipes(params);
+  }
+
+  async getRecipeDetail(recipeId: string): Promise<Recipe | null> {
+    if (!this.services.recipeCommunityService) return null;
+    return await this.services.recipeCommunityService.getRecipeDetail(recipeId);
+  }
+
+  async getRecipeComments(recipeId: string): Promise<RecipeComment[]> {
+    if (!this.services.recipeCommunityService) return [];
+    return await this.services.recipeCommunityService.getComments(recipeId);
+  }
+
+  async hasLikedRecipe(recipeId: string): Promise<boolean> {
+    if (!this.services.recipeCommunityService) return false;
+    return await this.services.recipeCommunityService.hasLiked(recipeId);
+  }
+
+  async toggleRecipeLike(recipeId: string): Promise<boolean> {
+    if (!this.services.recipeCommunityService) return false;
+    return await this.services.recipeCommunityService.toggleLike(recipeId);
+  }
+
+  async toggleRecipeBookmark(recipeId: string, note: string): Promise<boolean> {
+    if (!this.services.recipeCommunityService) return false;
+    return await this.services.recipeCommunityService.toggleBookmark(recipeId, note);
+  }
+
+  async addRecipeComment(recipeId: string, content: string, parentId: string): Promise<RecipeComment> {
+    if (!this.services.recipeCommunityService) return {} as RecipeComment;
+    return await this.services.recipeCommunityService.addComment(recipeId, content, parentId);
+  }
+
+  async publishRecipe(params: CreateRecipeParams): Promise<string> {
+    if (!this.services.recipeCommunityService) return '';
+    const recipe = await this.services.recipeCommunityService.createRecipe(params);
+    return recipe.recipeId || '';
+  }
+
+  async getAiRecipeRecommendations(memberIds: string[], _prefs: undefined,
+    _exclude: undefined, _count: number): Promise<AiRecipeRecommendationResult> {
+    return await this.services.aiRecipeRecommender.getRecommendations(
+      {} as AiRecipeRequest, [], new Map(), new Map());
+  }
+
+  // ========== AI / 营养服务委派 ==========
+
+  async getAiNutritionAdvice(memberId: string, days: number, includeMealPlan: boolean): Promise<AiNutritionAdvice> {
+    const member = this.membersCache.find(m => m.memberId === memberId) || new FamilyProfile();
+    const signal = this.getHealthSignal(memberId);
+    const budget = this.getDailyBudget(memberId);
+    const endDate = DateUtil.getToday();
+    const startDate = this.getDaysAgo(days);
+    const records = await this.historyRepo.getDietRecordsByDateRange(memberId, startDate, endDate);
+    return await this.services.aiNutritionist.getAdvice(member, signal, budget, records, days, includeMealPlan);
+  }
+
+  private getDaysAgo(days: number): string {
+    const date = new Date();
+    date.setDate(date.getDate() - days);
+    return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+  }
+
+  // ========== 趋势分析 ==========
+
+  async getNutritionTrends(memberId: string, days: number): Promise<NutrientTrendData[]> {
+    const endDate = DateUtil.getToday();
+    const startDate = this.getDaysAgo(days);
+    const records = await this.historyRepo.getDietRecordsByDateRange(memberId, startDate, endDate);
+    const member = this.membersCache.find(m => m.memberId === memberId);
+    const targetSodium = member?.dailyBudget.sodiumBudget || 2000;
+    const targetSugar = member?.dailyBudget.sugarBudget || 50;
+    const targetCalorie = member?.dailyBudget.calorieBudget || 2000;
+    const targetFat = member?.dailyBudget.fatBudget || 65;
+    return NutritionTrendEngine.buildNutrientTrends(
+      NutritionTrendEngine.aggregateDaily(records),
+      targetSodium, targetSugar, targetCalorie, targetFat);
+  }
+
+  async getDailySummaries(memberId: string, days: number): Promise<DailyNutritionSummary[]> {
+    const endDate = DateUtil.getToday();
+    const startDate = this.getDaysAgo(days);
+    const records = await this.historyRepo.getDietRecordsByDateRange(memberId, startDate, endDate);
+    return NutritionTrendEngine.aggregateDaily(records);
+  }
+
+  async getDailyDietGroups(memberId: string, date: string): Promise<MealGroup[]> {
+    const records = await this.historyRepo.getDietRecordsByDateRange(memberId, date, date);
+    return NutritionTrendEngine.groupByMealType(records);
+  }
+
+  // ========== 实用工具方法 ==========
+
+  private createDefaultMembers(): FamilyProfile[] {
+    const defaultMembers: FamilyProfile[] = [];
+    if (DateUtil.getToday().length > 0) {
+      const adult = new FamilyProfile();
+      adult.memberId = 'default_adult';
+      adult.nickname = '我';
+      adult.ageGroup = AgeGroup.ADULT;
+      adult.healthGoals = [HealthGoal.NONE];
+      adult.allergens = [];
+      adult.dailyBudget = new DailyBudgetConfig();
+      defaultMembers.push(adult);
+    }
+    return defaultMembers;
+  }
+
+  private async restoreHealthSignalsFromPrefs(context: common.Context): Promise<void> {
+    try {
+      const prefs = await preferences.getPreferences(context, 'health_signals_cache');
+      for (const member of this.membersCache) {
+        const json = prefs.getSync(member.memberId, '') as string;
+        if (json.length > 0) {
+          const signal = HealthSignal.fromJson(JSON.parse(json));
+          this.healthSignalsCache.set(member.memberId, signal);
+        }
+      }
+    } catch (_e) {
+      // 恢复失败不影响主流程
+    }
+  }
+
+  private async refreshCache(): Promise<void> {
+    try {
+      this.membersCache = await this.familyRepo.getAllMembers();
+    } catch (_e) {
+      // 刷新失败不影响主流程
+    }
   }
 }

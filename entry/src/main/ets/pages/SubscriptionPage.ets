@@ -6,7 +6,7 @@ import { router, promptAction, curves } from '@kit.ArkUI';
 import { AppState } from '../AppState';
 import { MemberTier, PurchaseResult } from '../model/MemberStatus';
 import { ProductPlan, PRODUCT_PLANS, getProductPlanForTier } from '../model/PricingModel';
-import { IapService, PurchaseRecord } from '../service/IapService';
+import { IapService } from '../service/IapService';
 import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON } from '../constants/AppTheme';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 

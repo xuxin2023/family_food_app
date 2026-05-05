@@ -181,7 +181,7 @@ struct HomePage {
       .width('100%')
       .alignItems(HorizontalAlign.Center)
 
-      // 快速操作区：扫描 + 粘贴链接
+      // 快速操作区：扫描
       Row({ space: 12 }) {
         Button() {
           Row({ space: 6 }) {
@@ -195,24 +195,13 @@ struct HomePage {
         .backgroundColor(COLORS.PRIMARY)
         .onClick(() => {
           try {
-            router.pushUrl({ url: 'pages/ScanPage' })
+            router.pushUrl({
+              url: 'pages/ScanPage',
+              params: { memberId: this.selectedMemberId }
+            })
           } catch (_e) {
             // ignore router.pushUrl error
           }
-        })
-
-        Button() {
-          Row({ space: 6 }) {
-            Text('🔗').fontSize(16)
-            Text($r('app.string.paste_link')).fontSize(14).fontColor(COLORS.WHITE)
-          }
-        }
-        .width('45%')
-        .height(BUTTON.HEIGHT_SECONDARY)
-        .borderRadius(BUTTON.RADIUS_SECONDARY)
-        .backgroundColor(COLORS.PURPLE_ACCENT)
-        .onClick(() => {
-          this.showLinkInput = true
         })
       }
       .margin({ bottom: 16 })

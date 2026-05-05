@@ -79,6 +79,18 @@ export function safeBackToIndex(index: number): void {
 }
 
 /**
+ * 获取当前页面传递的参数
+ * @returns 参数字典
+ */
+export function getPageParams(): Record<string, Object> {
+  try {
+    return router.getParams() as Record<string, Object>;
+  } catch (_e) {
+    return {};
+  }
+}
+
+/**
  * 清空路由栈并跳转到首页
  */
 export function clearToHome(): void {

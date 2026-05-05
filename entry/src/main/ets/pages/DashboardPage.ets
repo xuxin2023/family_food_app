@@ -1,7 +1,8 @@
-// DashboardPage.ets
+﻿// DashboardPage.ets
 // 数据可视化仪表盘主页
 // 整合各维度营养数据的可视化概览：均衡概览、趋势折线、构成分析、收支预算
-import { router, promptAction, curves } from '@kit.ArkUI';
+import { promptAction, curves } from '@kit.ArkUI';
+import { safeBack, safePushUrl, getPageParams } from '../utils/RouterUtil';
 import { AppState } from '../AppState';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { DailyNutritionSummary, NutrientTrendData, TrendDirection } from '../engine/NutritionTrendEngine';
@@ -63,7 +64,7 @@ struct DashboardPage {
 
   async aboutToAppear() {
     try {
-      const params = router.getParams() as Record<string, Object>;
+      const params = getPageParams() as Record<string, Object>;
       if (params['memberId'] !== undefined) {
         this.selectedMemberId = params['memberId'] as string;
       }
@@ -292,7 +293,7 @@ struct DashboardPage {
         .width(40)
         .height(40)
         .justifyContent(FlexAlign.Center)
-        .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
+        .onClick(() => { try { safeBack() } catch (_e) { /* ignore */ } })
 
         Text($r('app.string.dashboard_title'))
           .fontSize(FONT_SIZE.TITLE)

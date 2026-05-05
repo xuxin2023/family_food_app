@@ -192,143 +192,133 @@ struct SubscriptionPage {
         // 徽章
         if (this.currentTier === plan.tier) {
           Text($r('app.string.current_plan'))
-            .fontSize(FONT_SIZE.SMALL)
-            .fontColor(COLORS.TEXT_WHITE)
-            .padding({ left: 12, right: 12, top: 4, bottom: 4 })
+            .fontSize(FONT_SIZE.TINY)
+            .fontColor(COLORS.WHITE)
             .backgroundColor(COLORS.SUCCESS)
-            .borderRadius(RADIUS.SM)
-            .shadow({ radius: 6, color: '#3300C853' })
-        } else if (plan.badge.length > 0) {
-          Text(plan.badge)
-            .fontSize(FONT_SIZE.SMALL)
-            .fontColor(COLORS.TEXT_WHITE)
-            .padding({ left: 12, right: 12, top: 4, bottom: 4 })
-            .backgroundColor(COLORS.ACCENT_ORANGE)
-            .borderRadius(RADIUS.SM)
-            .shadow({ radius: 8, color: '#44FF5722' })
+            .borderRadius(4)
+            .padding({ left: 6, right: 6, top: 2, bottom: 2 })
         }
       }
       .width('100%')
+      .margin({ bottom: 12 })
 
-      // ---- 权益列表 ----
-      Column() {
-        ForEach(plan.features, (feature: string) => {
-          Row() {
-            Text('✓')
-              .fontSize(FONT_SIZE.BODY)
-              .fontColor(COLORS.SUCCESS)
-              .margin({ right: 8 })
-            Text(feature)
-              .fontSize(FONT_SIZE.BODY)
-              .fontColor(COLORS.TEXT_SECONDARY)
-          }
-          .margin({ bottom: 4 })
-        }, (feature: string) => feature)
+      // ---- 功能列表 ----
+      ForEach(plan.features, (feature: string) => {
+        Row() {
+          Text('✓')
+            .fontSize(FONT_SIZE.BODY)
+            .fontColor(COLORS.SUCCESS)
+            .margin({ right: 8 })
+          Text(feature)
+            .fontSize(FONT_SIZE.SMALL)
+            .fontColor(COLORS.TEXT_SECONDARY)
+        }
+        .margin({ bottom: 4 })
+      })
+
+      // ---- 购买按钮 ----
+      Button() {
+        Text(plan.price === '免费' ? '当前方案' : '立即订阅')
+          .fontSize(FONT_SIZE.BODY)
+          .fontColor(COLORS.WHITE)
+          .fontWeight(FONT_WEIGHT.MEDIUM)
       }
       .width('100%')
+      .height(44)
+      .backgroundColor(plan.borderColor)
+      .borderRadius(22)
       .margin({ top: 12 })
-      .alignItems(HorizontalAlign.Start)
-
-      // ---- 订阅按钮 ----
-      if (this.currentTier !== plan.tier) {
-        Button((this.isPurchasing && this.selectedPlanIndex === plan.index) ? '处理中...' : '立即订阅')
-          .width('100%')
-          .height(BUTTON.HEIGHT_SECONDARY)
-          .backgroundColor(plan.index === 1 ? COLORS.ACCENT_ORANGE : COLORS.PRIMARY)
-          .fontColor(COLORS.TEXT_WHITE)
-          .borderRadius(RADIUS.XXL)
-          .fontSize(FONT_SIZE.BODY)
-          .margin({ top: 12 })
-          .enabled(!this.isPurchasing)
-          .onClick(() => { this.handlePurchase(plan) })
-      }
+      .onClick(() => { this.handlePurchase(plan.index) })
+      .enabled(!this.isPurchasing)
     }
     .width('90%')
-    .padding(SPACING.LG)
-    .borderRadius(RADIUS.LG)
+    .padding(SPACING.MD)
+    .backgroundColor(plan.cardBg)
+    .borderRadius(RADIUS.MD)
+    .border({ width: 1, color: plan.borderColor })
     .margin({ bottom: 12 })
-    .alignItems(HorizontalAlign.Start)
-    .linearGradient({
-      direction: GradientDirection.Bottom,
-      colors: [[plan.cardBg, 0], [COLORS.WHITE, 1]]
-    })
-    .border({ width: plan.index === 1 ? 2 : 0, color: plan.borderColor })
-    .shadow({ radius: plan.index === 1 ? 12 : 6, color: plan.index === 1 ? '#22FF5722' : COLORS.SHADOW_LIGHT, offsetX: 0, offsetY: 4 })
   }
 
-  // ==================== 逻辑方法 ====================
+  // ==================== 构建方案列表 ====================
 
-  /** 构建展示方案数据 */
   private buildPlanDisplays(): PlanDisplay[] {
-    return [
-      {
-        index: 0,
-        tier: MemberTier.PERSONAL,
-        name: '个人版',
-        price: '29-49元/年',
-        isYearly: true,
-        features: ['无限扫码', '个人历史记录', '今日预算', '饮食平衡建议', '购物清单'],
-        badge: '推荐',
-        borderColor: COLORS.ACCENT_ORANGE,
-        cardBg: COLORS.BG_WARM_ORANGE
-      },
-      {
-        index: 1,
-        tier: MemberTier.FAMILY,
-        name: '家庭版',
-        price: '89-129元/年',
-        isYearly: true,
-        features: ['最多4位家庭成员', '家庭购物清单', '家庭饮食周报', '儿童正餐保护', '美食平衡建议'],
-        badge: '最惠',
-        borderColor: COLORS.PRIMARY,
-        cardBg: COLORS.BG_CARD
-      },
-      {
-        index: 2,
-        tier: MemberTier.PREMIUM,
-        name: '高级版',
-        price: '129-199元/年',
-        isYearly: true,
-        features: ['无限家庭成员', '动态健康数据联动', '深度可信度报告', '个性化周报', '外卖透明度'],
-        badge: '全部功能',
-        borderColor: '#9C27B0',
-        cardBg: '#F3E5F5'
-      }
-    ];
-  }
-
-  private async handlePurchase(plan: PlanDisplay) {
-    const productPlan = getProductPlanForTier(plan.tier);
-    if (productPlan === null || productPlan.productId.length === 0) return;
-
-    this.isPurchasing = true;
-    this.selectedPlanIndex = plan.index;
-
-    const result: PurchaseResult = await this.iapService.purchase(productPlan.productId);
-
-    if (result.success) {
-      this.appState.upgradeTier(plan.tier, 365);
-      this.currentTier = plan.tier;
-      promptAction.showToast({ message: '订阅成功！感谢支持 🎉' });
-      setTimeout(() => {
-        try {
-          router.back();
-        } catch (_e) {
-          hilog.warn(DOMAIN_ZERO, TAG, 'router.back failed after purchase');
-        }
-      }, 1500);
-    } else {
-      promptAction.showToast({ message: result.errorMessage });
+    const tiers: MemberTier[] = [
+      MemberTier.FREE,
+      MemberTier.PERSONAL,
+      MemberTier.FAMILY,
+      MemberTier.PREMIUM
+    ]
+    const result: PlanDisplay[] = []
+    for (let i = 0; i < tiers.length; i++) {
+      const tier = tiers[i]
+      const plan = getProductPlanForTier(tier)
+      if (!plan) continue
+      result.push({
+        index: i,
+        tier: tier,
+        name: this.getTierDisplayName(tier),
+        price: plan.price,
+        isYearly: plan.isYearly,
+        features: plan.features,
+        badge: plan.badge,
+        borderColor: plan.tier === MemberTier.PREMIUM ? '#FFD700' : (plan.tier === MemberTier.FAMILY ? '#4CAF50' : (plan.tier === MemberTier.PERSONAL ? '#2196F3' : '#E0E0E0')),
+        cardBg: plan.tier === MemberTier.PREMIUM ? '#FFFDE7' : (plan.tier === MemberTier.FAMILY ? '#F1F8E9' : (plan.tier === MemberTier.PERSONAL ? '#E3F2FD' : '#FFFFFF'))
+      })
     }
-
-    this.isPurchasing = false;
-    this.selectedPlanIndex = -1;
+    return result
   }
+
+  // ==================== 购买/升级逻辑 ====================
+
+  private async handlePurchase(index: number) {
+    if (index < 0 || index >= this.plans.length) return
+    const plan = this.plans[index]
+    if (plan.tier === this.currentTier) {
+      promptAction.showToast({ message: '已是当前方案' })
+      return
+    }
+    if (this.isPurchasing) return
+    this.isPurchasing = true
+    this.selectedPlanIndex = index
+
+    try {
+      promptAction.showToast({ message: '正在处理...' })
+      const productPlan = getProductPlanForTier(plan.tier)
+      if (!productPlan) {
+        promptAction.showToast({ message: '方案信息加载失败' })
+        return
+      }
+      if (productPlan.price === '免费') {
+        this.appState.upgradeTier(plan.tier, 365)
+        this.currentTier = plan.tier
+        this.plans = this.buildPlanDisplays()
+        promptAction.showToast({ message: '已切换到 ' + plan.name })
+        return
+      }
+      const result: PurchaseResult = await this.iapService.purchase(productPlan.productId)
+      if (result.success) {
+        const days = 365; // 默认 365 天
+        this.appState.upgradeTier(plan.tier, days)
+        this.currentTier = plan.tier
+        this.plans = this.buildPlanDisplays()
+        promptAction.showToast({ message: '升级成功！' })
+      } else {
+        promptAction.showToast({ message: result.errorMessage || '购买失败' })
+      }
+    } catch (_e) {
+      promptAction.showToast({ message: '购买过程异常' })
+    } finally {
+      this.isPurchasing = false
+      this.selectedPlanIndex = -1
+    }
+  }
+
+  // ==================== 恢复购买 ====================
 
   private async handleRestore() {
-    promptAction.showToast({ message: '正在恢复购买记录...' });
-    await this.iapService.restorePurchases();
-    const tierStr = await this.iapService.getSavedPurchaseTier();
+    promptAction.showToast({ message: '正在恢复购买记录...' })
+    await this.iapService.restorePurchases()
+    const tierStr = await this.iapService.getSavedPurchaseTier()
 
     if (tierStr.length > 0 && tierStr !== 'free') {
       let tier: MemberTier = MemberTier.FREE;
@@ -348,6 +338,8 @@ struct SubscriptionPage {
       promptAction.showToast({ message: '未找到有效订阅记录' });
     }
   }
+
+  // ==================== 会员等级显示名称 ====================
 
   private getTierDisplayName(tier: MemberTier): string {
     switch (tier) {

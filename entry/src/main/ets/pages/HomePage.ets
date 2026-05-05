@@ -75,7 +75,7 @@ struct HomePage {
    * 刷新所有成员的状态文本（基于AppState实时预算数据）
    */
   private refreshMemberStatuses(): void {
-    this.remainingScans = this.appState.getRemainingScansToday()
+    this.remainingScans = this.appState.getRemainingScans()
     const newTexts: Map<string, string> = new Map()
     const newColors: Map<string, string> = new Map()
 

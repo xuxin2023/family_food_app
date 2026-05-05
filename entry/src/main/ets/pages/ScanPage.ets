@@ -25,8 +25,9 @@ import { safeBack, safePushUrl } from '../utils/RouterUtil';
 import { connection } from '@kit.NetworkKit';
 import { vibrator } from '@kit.SensorServiceKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { FoodLabel } from '../model/FoodLabel';
+import { FoodLabel, FoodSource } from '../model/FoodLabel';
 import { AppState } from '../AppState';
+import { PermissionManager } from '../service/PermissionManager';
 import { FoodInputResult, FoodInputService } from '../service/FoodInputService';
 import { PaywallTrigger } from '../model/MemberStatus';
 import { NutriScoreBadge } from '../components/NutriScoreBadge';
@@ -149,6 +150,13 @@ struct ScanPage {
 
     // 4. 零点击自动启动识别
     this.triggerAutoScan()
+  }
+
+  async onPageShow() {
+    // 扫码页面再次可见时，自动重置状态以便连续扫码
+    if (this.foodLabel.foodId.length > 0 && this.componentActive) {
+      this.resetScan();
+    }
   }
 
   aboutToDisappear(): void {
@@ -931,12 +939,22 @@ struct ScanPage {
 
     this.scanPhase = ScanPhase.RECOGNIZING;
     try {
+      // 检查并请求摄像头权限（扫码和拍照都需要）
+      const hasCameraPermission = await PermissionManager.getInstance().requestCameraPermission();
+      if (!hasCameraPermission) {
+        promptAction.showToast({ message: '需要摄像头权限才能扫码，请在设置中授予' })
+        this.scanPhase = ScanPhase.ERROR
+        return
+      }
+
       if (this.scanMode === 'barcode') {
         const context = getContext(this) as common.Context
         const result = await this.foodInputService.scanBarcode(context)
         if (result) {
           this.scanPhase = ScanPhase.DB_QUERYING
           this.applyFoodInputResult(result)
+        } else {
+          promptAction.showToast({ message: $r('app.string.barcode_not_found') })
         }
       } else {
         // 拍照模式：直接生成草稿 + 提示后续手动修正

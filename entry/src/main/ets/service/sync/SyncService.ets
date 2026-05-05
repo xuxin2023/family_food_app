@@ -8,6 +8,7 @@ import { SyncChangeType, SyncStatus, SyncChangeRecord, SyncResult, SyncableEntit
 import { CloudStorageProvider, SyncBatchRequest, SyncBatchItem, SyncBatchResponse } from './CloudStorageProvider';
 import { NetworkMonitorService, NetworkState, NetType } from '../NetworkMonitorService';
 import { CloudSyncConfig, SyncStrategy, ConflictResolution, createDefaultSyncConfig } from '../../model/CloudSyncConfig';
+import { API_CONFIG } from '../../constants/AppConfig';
 
 const TAG = 'SyncService';
 const DOMAIN_ZERO = 0;
@@ -63,9 +64,9 @@ export class SyncService {
 
   private constructor() {
     this.cloudProvider = new CloudStorageProvider({
-      baseUrl: 'https://api.familyfood.example.com',
-      apiVersion: '/v1',
-      timeout: 30000
+      baseUrl: API_CONFIG.SYNC_BASE_URL,
+      apiVersion: API_CONFIG.SYNC_API_VERSION,
+      timeout: API_CONFIG.SYNC_TIMEOUT_MS
     });
     this.networkMonitor = new NetworkMonitorService();
   }

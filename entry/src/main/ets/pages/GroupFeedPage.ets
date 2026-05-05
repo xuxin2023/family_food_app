@@ -1,6 +1,7 @@
 import { router, promptAction } from '@kit.ArkUI';
 import { safeBack } from '../utils/RouterUtil';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { pasteboard } from '@kit.BasicServicesKit';
 import { AppState } from '../AppState';
 import { GroupFeed, FeedType, FoodScanFeedContent } from '../model/FamilyGroup';
 import { COLORS, RADIUS, SPACING, BUTTON, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
@@ -203,9 +204,15 @@ struct GroupFeedPage {
       title: '群组信息',
       message: `群组：${this.groupName}\n群组ID：${this.groupId}`,
       primaryButton: {
-        value: '分享群组',
+        value: '复制群组ID',
         action: () => {
-          promptAction.showToast({ message: '群组ID已复制' })
+          try {
+            const data = pasteboard.createData(pasteboard.MimeType.TEXT_PLAIN, this.groupId)
+            pasteboard.getSystemPasteboard().setData(data)
+            promptAction.showToast({ message: '群组ID已复制到剪贴板' })
+          } catch (_e) {
+            promptAction.showToast({ message: '复制失败' })
+          }
         }
       },
       secondaryButton: {

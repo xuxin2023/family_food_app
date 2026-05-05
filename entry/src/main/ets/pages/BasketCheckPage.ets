@@ -22,7 +22,7 @@ struct BasketCheckPage {
   async aboutToAppear() {
     // 检查付费墙 - 购物篮检查需要家庭版以上
     const trigger = this.appState.getPaywallTrigger('basket_check')
-    if (trigger !== null && trigger.requiredTier !== MemberTier.FREE) {
+    if (trigger !== null) {
       // 当前等级无权限，显示付费墙
       this.paywallTrigger = trigger
       this.showPaywallDialog = true

@@ -13,7 +13,7 @@ export struct SyncStatusIndicator {
   @State private isCloudBound: boolean = false;
   @State private syncEnabled: boolean = false;
 
-  private syncService: SyncService = AppState.getInstance().getSyncService();
+  private syncService: SyncService = AppState.getInstance().services.syncService;
 
   aboutToAppear(): void {
     this.refreshState();
@@ -87,7 +87,7 @@ export struct SyncStatusIndicator {
     this.syncEnabled = config.enabled;
     this.pendingCount = config.pendingCount;
     this.isConnected = this.syncService.getNetworkMonitor().isConnected();
-    this.isCloudBound = AppState.getInstance().getCloudAuthService().isCloudAccountBound();
+    this.isCloudBound = AppState.getInstance().services.cloudAuthService.isCloudAccountBound();
   }
 
   private onSyncEvent = (event: SyncEvent): void => {

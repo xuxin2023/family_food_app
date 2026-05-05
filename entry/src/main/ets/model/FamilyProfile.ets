@@ -25,6 +25,19 @@ export class MealTimes {
   breakfast: string = '07:30';  // HH:mm
   lunch: string = '12:00';      // HH:mm
   dinner: string = '18:00';     // HH:mm
+
+  /**
+   * 更新用餐时间并返回新的实例（触发 @Observed 刷新）
+   * @Observed 装饰器对嵌套属性修改不会自动触发UI刷新，
+   * 使用此方法确保返回新实例以触发组件更新
+   */
+  withUpdate(breakfast?: string, lunch?: string, dinner?: string): MealTimes {
+    const updated = new MealTimes();
+    updated.breakfast = breakfast !== undefined ? breakfast : this.breakfast;
+    updated.lunch = lunch !== undefined ? lunch : this.lunch;
+    updated.dinner = dinner !== undefined ? dinner : this.dinner;
+    return updated;
+  }
 }
 
 // FamilyProfile JSON 输出类

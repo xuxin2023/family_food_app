@@ -7,6 +7,7 @@ import { window } from '@kit.ArkUI';
 import { fileIo } from '@kit.CoreFileKit';
 import { AppState } from '../AppState';
 import { AnalyticsService } from '../service/AnalyticsService';
+import { PermissionManager } from '../service/PermissionManager';
 import { DataSource } from '../model/HealthSignal';
 import { MemberTier } from '../model/MemberStatus';
 import { preferences } from '@kit.ArkData';
@@ -27,10 +28,14 @@ export default class EntryAbility extends UIAbility {
     // ===== 崩溃监控初始化 =====
     this.initCrashMonitor();
 
+    // 初始化权限管理器（仅缓存上下文，不请求任何权限）
+    PermissionManager.getInstance().init(this.context);
+
     // 标记初始化进行中
     AppStorage.setOrCreate('appStateReady', false);
 
     // 异步初始化（不阻塞UI线程，但页面需等待 ready 标记）
+    // 注意：init 中不再调用涉及敏感权限的服务（DISTRIBUTED_DATASYNC、ACTIVITY_MOTION等）
     this.appState.init(this.context)
       .then(async () => {
         hilog.info(DOMAIN_ZERO, TAG, 'AppState init success');

@@ -243,11 +243,11 @@ struct MemberEditPage {
           })
       }
       .width('100%')
-    }
-    .width('100%')
-    .height('100%')
-    .backgroundColor('#FAFAFA')
-    .scrollable(ScrollDirection.Vertical)
+      .backgroundColor('#FAFAFA')
+      }
+      .width('100%')
+      .height('100%')
+      .scrollable(ScrollDirection.Vertical)
 
       // 付费墙弹窗
       if (this.paywallTrigger !== null) {

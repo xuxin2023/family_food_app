@@ -4,6 +4,7 @@
 import { promptAction } from '@kit.ArkUI';
 import { safeBack } from '../utils/RouterUtil';
 import { AppState } from '../AppState';
+import { PermissionManager } from '../service/PermissionManager';
 import { SyncService, SyncEvent } from '../service/sync/SyncService';
 import { NetworkState } from '../service/NetworkMonitorService';
 import { CloudSyncConfig, SyncStrategy, ConflictResolution, createDefaultSyncConfig } from '../model/CloudSyncConfig';
@@ -44,8 +45,8 @@ struct CloudSyncSettingsPage {
   @State private showConflictPicker: boolean = false;
 
   private appState: AppState = AppState.getInstance();
-  private syncService: SyncService = this.appState.getSyncService();
-  private cloudAuth = this.appState.getCloudAuthService();
+  private syncService: SyncService = this.appState.services.syncService;
+  private cloudAuth = this.appState.services.cloudAuthService;
 
   aboutToAppear(): void {
     this.refreshAllState();
@@ -175,7 +176,18 @@ struct CloudSyncSettingsPage {
               .fontSize(15)
             Blank()
             Toggle({ type: ToggleType.Switch, isOn: this.syncConfig.enabled })
-              .onChange((isOn) => {
+              .onChange(async (isOn) => {
+                if (isOn) {
+                  // 启用云同步前检查分布式数据同步权限
+                  const hasPermission = await PermissionManager.getInstance()
+                    .requestDistributedSyncPermission();
+                  if (!hasPermission) {
+                    promptAction.showToast({ message: '需要分布式数据同步权限才能使用云同步功能' });
+                    return;
+                  }
+                  // 检查活动运动权限（如果需要同步健康数据）
+                  await PermissionManager.getInstance().requestActivityMotionPermission();
+                }
                 this.syncConfig.enabled = isOn
                 this.syncService.updateConfig(this.syncConfig)
               })
@@ -427,7 +439,6 @@ struct CloudSyncSettingsPage {
     }
   }
 
-  @Builder
   @Builder
   InfoRow(label: string, value: string) {
     Row() {

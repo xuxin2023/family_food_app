@@ -422,7 +422,5 @@ struct RecipeCommunityPage {
     })
   }
 
-  private getDietTagLabel(tag: DietTag): string {
-    return getDietTagLabel(tag)
-  }
+  // 使用全局函数 getDietTagLabel，避免栈溢出
 }

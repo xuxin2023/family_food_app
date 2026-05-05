@@ -281,6 +281,14 @@ const PAYWALL_CONFIGS: PaywallConfig[] = [
     requiredTier: MemberTier.PREMIUM,
     cta: '升级高级版',
     isSoftLimit: false
+  },
+  {
+    featureName: 'basket_check',
+    title: '购物篮健康检查',
+    message: '购物篮功能可以一次性检查您选购的所有食品，分析整体营养搭配是否均衡。',
+    requiredTier: MemberTier.FAMILY,
+    cta: '升级家庭版',
+    isSoftLimit: true
   }
 ];
 

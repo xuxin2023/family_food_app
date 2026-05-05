@@ -8,7 +8,6 @@
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { http } from '@kit.NetworkKit';
-import { preferences } from '@kit.ArkData';
 import {
   AiNutritionAdvice, MealAnalysis, NutrientAnalysis,
   DietPatternAnalysis, AiNutritionCacheEntry,
@@ -20,6 +19,7 @@ import { HealthSignal, BpStatus, BsStatus } from '../model/HealthSignal';
 import { DietRecord } from '../repository/HistoryRepository';
 import { NutritionTrendEngine, DailyNutritionSummary, MealGroup } from '../engine/NutritionTrendEngine';
 import { AI_CACHE_CONFIG, API_TIMEOUT_CONFIG } from '../constants/AppConfig';
+import { AssetKeyManager, KeyAlias } from '../utils/AssetKeyManager';
 
 const TAG = 'AiNutritionistService';
 const DOMAIN_ZERO = 0;
@@ -49,28 +49,26 @@ interface AgentArtsCallResult {
 }
 
 export class AiNutritionistService {
-  /** @internal 运行时内存中的 API Key，通过 loadApiKey() 从安全存储加载 */
+  /** @internal 运行时内存中的 API Key，通过 AssetKeyManager 安全加载 */
   private apiKey: string = '';
   private isEnabled: boolean = true;
   private tokensUsed: number = 0;
   private readonly MAX_TOKENS: number = 50000;
-  private readonly ASSET_ALIAS: string = 'ai_agentarts_api_key';
   private cache: Map<string, AiNutritionCacheEntry> = new Map();
 
   /**
-   * 从安全存储中加载 API Key
-   * 使用 Preferences 加密存储，后续可迁移到 ohos.security.asset
+   * 从 Asset 安全存储中加载 API Key
+   * 使用 Asset Store Kit 提供系统级加密保护
    */
-  async loadApiKey(context: Context): Promise<boolean> {
+  async loadApiKey(_context: Context): Promise<boolean> {
     try {
-      const prefs = await preferences.getPreferences(context, 'ai_service_config');
-      const storedKey = await prefs.get('agent_arts_api_key', '');
-      this.apiKey = storedKey as string;
-      if (this.apiKey.length > 0) {
-        hilog.info(DOMAIN_ZERO, TAG, 'API key loaded from secure preferences');
+      const key = await AssetKeyManager.getInstance().getKey(KeyAlias.AGENT_ARTS);
+      if (key.length > 0) {
+        this.apiKey = key;
+        hilog.info(DOMAIN_ZERO, TAG, 'API key loaded from Asset Kit');
         return true;
       }
-      hilog.warn(DOMAIN_ZERO, TAG, 'No API key found in preferences');
+      hilog.warn(DOMAIN_ZERO, TAG, 'No API key found in Asset Kit');
       return false;
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Failed to load API key: %{public}s', JSON.stringify(error));
@@ -79,15 +77,13 @@ export class AiNutritionistService {
   }
 
   /**
-   * 设置并安全存储 API Key
-   * 保存到 Preferences（应用沙箱私有数据，其他应用不可访问）
+   * 设置 API Key（写入内存 + 持久化到 Asset 安全存储）
    */
   async setApiKey(key: string): Promise<boolean> {
     try {
       this.apiKey = key;
-      // Key 将在下次 loadApiKey 时被加载，这里仅存在内存中
-      // 实际持久化由调用方负责传入 context 调用 loadApiKey/saveApiKey
-      hilog.info(DOMAIN_ZERO, TAG, 'API key configured in memory');
+      await AssetKeyManager.getInstance().saveKey(KeyAlias.AGENT_ARTS, key);
+      hilog.info(DOMAIN_ZERO, TAG, 'API key configured and persisted to Asset Kit');
       return true;
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Failed to store API key: %{public}s', JSON.stringify(error));
@@ -96,20 +92,11 @@ export class AiNutritionistService {
   }
 
   /**
-   * 持久化 API Key 到 Preferences
+   * 持久化 API Key 到 Asset 安全存储
+   * 兼容旧调用方（saveApiKey 等同于 setApiKey）
    */
-  async saveApiKey(context: Context, key: string): Promise<boolean> {
-    try {
-      this.apiKey = key;
-      const prefs = await preferences.getPreferences(context, 'ai_service_config');
-      await prefs.put('agent_arts_api_key', key);
-      await prefs.flush();
-      hilog.info(DOMAIN_ZERO, TAG, 'API key persisted to secure preferences');
-      return true;
-    } catch (error) {
-      hilog.error(DOMAIN_ZERO, TAG, 'Failed to persist API key: %{public}s', JSON.stringify(error));
-      return false;
-    }
+  async saveApiKey(_context: Context, key: string): Promise<boolean> {
+    return this.setApiKey(key);
   }
 
   setEnabled(enabled: boolean): void {

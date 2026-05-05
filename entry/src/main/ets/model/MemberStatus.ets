@@ -164,7 +164,7 @@ export const TIER_WEEKLY_REPORT_LIMIT: Map<string, number> = new Map([
  * 各等级试用天数
  */
 export const TIER_TRIAL_DAYS: Map<string, number> = new Map([
-  [MemberTier.FREE, 0],
+  [MemberTier.FREE, 3],
   [MemberTier.PERSONAL, 0],
   [MemberTier.FAMILY, 7],
   [MemberTier.PREMIUM, 14]
@@ -174,17 +174,10 @@ export const TIER_TRIAL_DAYS: Map<string, number> = new Map([
 
 /**
  * 创建默认会员状态（免费版初始状态）
+ * 统一委托给 createMemberStatusForTier，确保与配置表一致
  */
 export function createDefaultMemberStatus(): MemberStatus {
-  return {
-    tier: MemberTier.FREE,
-    scansRemainingToday: 3,
-    familyMembersRemaining: 1,
-    expiryDate: null,
-    isTrialActive: true,
-    trialRemainingDays: 3,
-    weeklyReportsRemaining: 0
-  };
+  return createMemberStatusForTier(MemberTier.FREE, 0);
 }
 
 /**

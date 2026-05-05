@@ -78,7 +78,9 @@ struct RecipeCommunityPage {
         this.showAiRecommend = true
         await this.loadAiRecommendations()
       }
-    } catch (_e) { /* ignore */ }
+    } catch (e) {
+      hilog.warn(0x0000, 'RecipeCommunityPage', 'getParams failed: %{public}s', JSON.stringify(e));
+    }
     await this.loadRecipes()
   }
 

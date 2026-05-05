@@ -2,6 +2,7 @@
 // 数据可视化仪表盘主页
 // 整合各维度营养数据的可视化概览：均衡概览、趋势折线、构成分析、收支预算
 import { promptAction, curves } from '@kit.ArkUI';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 import { safeBack, safePushUrl, getPageParams } from '../utils/RouterUtil';
 import { AppState } from '../AppState';
 import { FamilyProfile } from '../model/FamilyProfile';
@@ -68,7 +69,9 @@ struct DashboardPage {
       if (params['memberId'] !== undefined) {
         this.selectedMemberId = params['memberId'] as string;
       }
-    } catch (_e) { /* ignore */ }
+    } catch (e) {
+      hilog.warn(0x0000, 'DashboardPage', 'getPageParams failed: %{public}s', JSON.stringify(e));
+    }
     await this.loadMembers()
     await this.refreshDashboard()
   }
@@ -293,7 +296,13 @@ struct DashboardPage {
         .width(40)
         .height(40)
         .justifyContent(FlexAlign.Center)
-        .onClick(() => { try { safeBack() } catch (_e) { /* ignore */ } })
+        .onClick(() => {
+          try {
+            safeBack();
+          } catch (e) {
+            hilog.warn(0x0000, 'DashboardPage', 'safeBack failed: %{public}s', JSON.stringify(e));
+          }
+        })
 
         Text($r('app.string.dashboard_title'))
           .fontSize(FONT_SIZE.TITLE)

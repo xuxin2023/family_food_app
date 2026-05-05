@@ -115,8 +115,10 @@ struct SettingsPage {
 
           this.buildSettingsItem('☁️ 云同步设置', '多端数据同步、云端账户管理', () => {
             try {
-              router.pushUrl({ url: 'pages/CloudSyncSettingsPage' })
-            } catch (_e) { /* ignore */ }
+              router.pushUrl({ url: 'pages/CloudSyncSettingsPage' });
+            } catch (e) {
+              hilog.warn(0x0000, 'SettingsPage', 'pushUrl CloudSyncSettingsPage failed: %{public}s', JSON.stringify(e));
+            }
           })
 
           // 隐私政策详细内容

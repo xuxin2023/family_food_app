@@ -2,6 +2,7 @@
 // 营养摄入趋势图表页面 - 7天/30天营养素趋势、每日汇总、预算对比
 
 import { router } from '@kit.ArkUI';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 import { safeBack } from '../utils/RouterUtil';
 import { AppState } from '../AppState';
 import { NutrientTrendData, DailyNutritionSummary, TrendDirection } from '../engine/NutritionTrendEngine';
@@ -41,7 +42,9 @@ struct NutritionTrendPage {
     try {
       const params = router.getParams() as Record<string, Object>;
       this.selectedMemberId = params['memberId'] as string || '';
-    } catch (_e) { /* ignore */ }
+    } catch (e) {
+      hilog.warn(0x0000, 'NutritionTrendPage', 'getParams failed: %{public}s', JSON.stringify(e));
+    }
 
     await this.loadData()
   }

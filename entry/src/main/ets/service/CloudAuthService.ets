@@ -134,7 +134,9 @@ export class CloudAuthService {
         prefs.deleteSync('display_name');
         prefs.deleteSync('account_id');
         await prefs.flush();
-      } catch (_) {}
+      } catch (e) {
+        hilog.warn(0x0000, TAG, 'signOut cleanup failed: %{public}s', JSON.stringify(e));
+      }
     }
   }
 

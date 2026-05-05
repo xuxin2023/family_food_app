@@ -512,8 +512,10 @@ struct HomePage {
           .borderRadius(BUTTON.RADIUS_SECONDARY)
           .onClick(() => {
             try {
-              router.pushUrl({ url: 'pages/RecipeCommunityPage' })
-            } catch (_e) {}
+              router.pushUrl({ url: 'pages/RecipeCommunityPage' });
+            } catch (e) {
+              hilog.warn(0x0000, 'HomePage', 'pushUrl RecipeCommunityPage failed: %{public}s', JSON.stringify(e));
+            }
           })
 
           Button() {
@@ -528,8 +530,10 @@ struct HomePage {
           .borderRadius(BUTTON.RADIUS_SECONDARY)
           .onClick(() => {
             try {
-              router.pushUrl({ url: 'pages/FamilyGroupPage' })
-            } catch (_e) {}
+              router.pushUrl({ url: 'pages/FamilyGroupPage' });
+            } catch (e) {
+              hilog.warn(0x0000, 'HomePage', 'pushUrl FamilyGroupPage failed: %{public}s', JSON.stringify(e));
+            }
           })
         }
         .width('90%')

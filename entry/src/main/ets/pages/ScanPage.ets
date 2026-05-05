@@ -33,24 +33,7 @@ import { PaywallTrigger } from '../model/MemberStatus';
 import { NutriScoreBadge } from '../components/NutriScoreBadge';
 import { PaywallDialog } from '../components/PaywallDialog';
 import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON } from '../constants/AppTheme';
-
-/** 自动扫码超时时间（毫秒） */
-const AUTO_SCAN_TIMEOUT_MS = 8000;
-
-/** 最近扫描记录显示条数 */
-const RECENT_SCAN_SHOW_COUNT = 3;
-
-/** 扫码成功时振动时长（毫秒） */
-const VIBRATE_SUCCESS_MS = 80;
-
-/** 扫码失败/超时时振动时长（毫秒） */
-const VIBRATE_ERROR_MS = 200;
-
-/** 重试最大次数 */
-const MAX_RETRY_COUNT = 2;
-
-/** 防崩溃重试间隔（毫秒） */
-const RETRY_INTERVAL_MS = 1500;
+import { SCAN_CONFIG } from '../constants/AppConfig';
 
 // ==================== 加载阶段枚举 ====================
 
@@ -75,6 +58,22 @@ enum ScanPhase {
   TIMEOUT = 'timeout',
   /** 出错 */
   ERROR = 'error'
+}
+
+// 编辑面板数据模型 - 减少单页 @State 变量数
+class EditPanelData {
+  foodName: string = ''
+  sodium: string = '0'
+  sugar: string = '0'
+  calories: string = '0'
+  fat: string = '0'
+  carbohydrate: string = '0'
+  protein: string = '0'
+  ingredients: string = ''
+  manufacturer: string = ''
+  scNumber: string = ''
+  principal: string = ''
+  trustee: string = ''
 }
 
 @Entry
@@ -103,19 +102,8 @@ struct ScanPage {
   @State showPaywallDialog: boolean = false
   @State paywallTrigger: PaywallTrigger | null = null
 
-  // ---- 编辑面板字段 ----
-  @State editFoodName: string = ''
-  @State editSodium: string = '0'
-  @State editSugar: string = '0'
-  @State editCalories: string = '0'
-  @State editFat: string = '0'
-  @State editCarbohydrate: string = '0'
-  @State editProtein: string = '0'
-  @State editIngredients: string = ''
-  @State editManufacturer: string = ''
-  @State editScNumber: string = ''
-  @State editPrincipal: string = ''
-  @State editTrustee: string = ''
+  // ---- 编辑面板字段（合并为 EditPanelData 对象，减少 @State 数量） ----
+  @State editPanel: EditPanelData = new EditPanelData()
 
   // ---- 体验升级：错误恢复与防崩溃 ----
   @State retryCount: number = 0
@@ -202,7 +190,7 @@ struct ScanPage {
     try {
       vibrator.startVibration({
         type: 'time',
-        duration: VIBRATE_SUCCESS_MS
+        duration: SCAN_CONFIG.VIBRATE_SUCCESS_MS
       }, {
         id: 0,
         usage: 'physicalFeedback'
@@ -223,7 +211,7 @@ struct ScanPage {
     try {
       vibrator.startVibration({
         type: 'time',
-        duration: VIBRATE_ERROR_MS
+        duration: SCAN_CONFIG.VIBRATE_ERROR_MS
       }, {
         id: 0,
         usage: 'physicalFeedback'
@@ -256,7 +244,7 @@ struct ScanPage {
       console.error(errMsg)
       this.lastError = errorMessage
       this.retryCount++
-      if (this.retryCount <= MAX_RETRY_COUNT && this.componentActive) {
+      if (this.retryCount <= SCAN_CONFIG.MAX_RETRY_COUNT && this.componentActive) {
         this.showErrorBanner = true
         // 自动重试（记录定时器ID，以便在组件销毁时清理）
         this.retryTimer = setTimeout(() => {
@@ -267,7 +255,7 @@ struct ScanPage {
               this.isLoadingRetry = false
             })
           }
-        }, RETRY_INTERVAL_MS)
+        }, SCAN_CONFIG.RETRY_INTERVAL_MS)
       } else {
         // 超出重试次数，显示永久错误提示
         this.showErrorBanner = true
@@ -323,7 +311,7 @@ struct ScanPage {
         this.scanPhase = ScanPhase.TIMEOUT
         this.recognitionHint = $r('app.string.scan_manual_hint')
       }
-    }, AUTO_SCAN_TIMEOUT_MS)
+    }, SCAN_CONFIG.AUTO_SCAN_TIMEOUT_MS)
   }
 
   // ==================== 数据预加载 ====================
@@ -358,7 +346,7 @@ struct ScanPage {
    */
   private async loadRecentScans() {
     try {
-      const records = await this.appState.getRecentScanHistory(RECENT_SCAN_SHOW_COUNT)
+      const records = await this.appState.getRecentScanHistory(SCAN_CONFIG.RECENT_SCAN_SHOW_COUNT)
       const foodIds = records.map(r => r.foodId).filter(id => id.length > 0)
       // 批量查询，避免N+1
       const foodMap = await this.appState.findFoodByIds(foodIds)
@@ -857,35 +845,35 @@ struct ScanPage {
         .fontWeight(FontWeight.Bold)
         .margin({ bottom: SPACING.MD })
 
-      this.FormInput('食品名称', this.editFoodName, '输入食品名称', (value: string) => { this.editFoodName = value })
-      this.FormInput('钠（mg/100g）', this.editSodium, '0', (value: string) => { this.editSodium = value })
-      this.FormInput('糖（g/100g）', this.editSugar, '0', (value: string) => { this.editSugar = value })
-      this.FormInput('热量（kcal/100g）', this.editCalories, '0', (value: string) => { this.editCalories = value })
-      this.FormInput('脂肪（g/100g）', this.editFat, '0', (value: string) => { this.editFat = value })
-      this.FormInput('碳水（g/100g）', this.editCarbohydrate, '0', (value: string) => { this.editCarbohydrate = value })
-      this.FormInput('蛋白质（g/100g）', this.editProtein, '0', (value: string) => { this.editProtein = value })
+      this.FormInput('食品名称', this.editPanel.foodName, '输入食品名称', (value: string) => { this.editPanel.foodName = value })
+      this.FormInput('钠（mg/100g）', this.editPanel.sodium, '0', (value: string) => { this.editPanel.sodium = value })
+      this.FormInput('糖（g/100g）', this.editPanel.sugar, '0', (value: string) => { this.editPanel.sugar = value })
+      this.FormInput('热量（kcal/100g）', this.editPanel.calories, '0', (value: string) => { this.editPanel.calories = value })
+      this.FormInput('脂肪（g/100g）', this.editPanel.fat, '0', (value: string) => { this.editPanel.fat = value })
+      this.FormInput('碳水（g/100g）', this.editPanel.carbohydrate, '0', (value: string) => { this.editPanel.carbohydrate = value })
+      this.FormInput('蛋白质（g/100g）', this.editPanel.protein, '0', (value: string) => { this.editPanel.protein = value })
 
       Column() {
         Text('配料')
           .fontSize(13)
           .fontColor(COLORS.TEXT_TERTIARY)
           .margin({ bottom: 6 })
-        TextArea({ text: this.editIngredients, placeholder: '一行一个，或用逗号分隔' })
+        TextArea({ text: this.editPanel.ingredients, placeholder: '一行一个，或用逗号分隔' })
           .width('100%')
           .height(100)
           .padding(10)
           .backgroundColor(COLORS.BG_PAGE_LIGHT)
           .borderRadius(12)
-          .onChange((value: string) => { this.editIngredients = value })
+          .onChange((value: string) => { this.editPanel.ingredients = value })
       }
       .width('100%')
       .alignItems(HorizontalAlign.Start)
       .margin({ bottom: SPACING.MD })
 
-      this.FormInput('生产商', this.editManufacturer, '输入生产商', (value: string) => { this.editManufacturer = value })
-      this.FormInput('SC 编号', this.editScNumber, '输入 SC 编号', (value: string) => { this.editScNumber = value })
-      this.FormInput('委托方', this.editPrincipal, '输入委托方', (value: string) => { this.editPrincipal = value })
-      this.FormInput('受托方', this.editTrustee, '输入受托方', (value: string) => { this.editTrustee = value })
+      this.FormInput('生产商', this.editPanel.manufacturer, '输入生产商', (value: string) => { this.editPanel.manufacturer = value })
+      this.FormInput('SC 编号', this.editPanel.scNumber, '输入 SC 编号', (value: string) => { this.editPanel.scNumber = value })
+      this.FormInput('委托方', this.editPanel.principal, '输入委托方', (value: string) => { this.editPanel.principal = value })
+      this.FormInput('受托方', this.editPanel.trustee, '输入受托方', (value: string) => { this.editPanel.trustee = value })
     }
     .width('92%')
     .padding(16)
@@ -991,18 +979,18 @@ struct ScanPage {
   // ==================== 编辑表单 ====================
 
   private loadEditFormFromLabel() {
-    this.editFoodName = this.foodLabel.foodName
-    this.editSodium = `${this.foodLabel.nutrition.sodium}`
-    this.editSugar = `${this.foodLabel.nutrition.sugar}`
-    this.editCalories = `${this.foodLabel.nutrition.calories}`
-    this.editFat = `${this.foodLabel.nutrition.fat}`
-    this.editCarbohydrate = `${this.foodLabel.nutrition.carbohydrate}`
-    this.editProtein = `${this.foodLabel.nutrition.protein}`
-    this.editIngredients = this.foodLabel.ingredients.join('\\n')
-    this.editManufacturer = this.foodLabel.manufacturer
-    this.editScNumber = this.foodLabel.scNumber
-    this.editPrincipal = this.foodLabel.principal
-    this.editTrustee = this.foodLabel.trustee
+    this.editPanel.foodName = this.foodLabel.foodName
+    this.editPanel.sodium = `${this.foodLabel.nutrition.sodium}`
+    this.editPanel.sugar = `${this.foodLabel.nutrition.sugar}`
+    this.editPanel.calories = `${this.foodLabel.nutrition.calories}`
+    this.editPanel.fat = `${this.foodLabel.nutrition.fat}`
+    this.editPanel.carbohydrate = `${this.foodLabel.nutrition.carbohydrate}`
+    this.editPanel.protein = `${this.foodLabel.nutrition.protein}`
+    this.editPanel.ingredients = this.foodLabel.ingredients.join('\\n')
+    this.editPanel.manufacturer = this.foodLabel.manufacturer
+    this.editPanel.scNumber = this.foodLabel.scNumber
+    this.editPanel.principal = this.foodLabel.principal
+    this.editPanel.trustee = this.foodLabel.trustee
   }
 
   private applyEditFormToLabel() {
@@ -1012,21 +1000,21 @@ struct ScanPage {
     if (this.foodLabel.identifiedAt <= 0) {
       this.foodLabel.identifiedAt = Date.now()
     }
-    this.foodLabel.foodName = this.editFoodName.trim()
-    this.foodLabel.nutrition.sodium = this.parseNumber(this.editSodium)
-    this.foodLabel.nutrition.sugar = this.parseNumber(this.editSugar)
-    this.foodLabel.nutrition.calories = this.parseNumber(this.editCalories)
-    this.foodLabel.nutrition.fat = this.parseNumber(this.editFat)
-    this.foodLabel.nutrition.carbohydrate = this.parseNumber(this.editCarbohydrate)
-    this.foodLabel.nutrition.protein = this.parseNumber(this.editProtein)
-    this.foodLabel.ingredients = this.editIngredients
+    this.foodLabel.foodName = this.editPanel.foodName.trim()
+    this.foodLabel.nutrition.sodium = this.parseNumber(this.editPanel.sodium)
+    this.foodLabel.nutrition.sugar = this.parseNumber(this.editPanel.sugar)
+    this.foodLabel.nutrition.calories = this.parseNumber(this.editPanel.calories)
+    this.foodLabel.nutrition.fat = this.parseNumber(this.editPanel.fat)
+    this.foodLabel.nutrition.carbohydrate = this.parseNumber(this.editPanel.carbohydrate)
+    this.foodLabel.nutrition.protein = this.parseNumber(this.editPanel.protein)
+    this.foodLabel.ingredients = this.editPanel.ingredients
       .split(/\\r?\\n|,|，|、/)
       .map(item => item.trim())
       .filter(item => item.length > 0)
-    this.foodLabel.manufacturer = this.editManufacturer.trim()
-    this.foodLabel.scNumber = this.editScNumber.trim()
-    this.foodLabel.principal = this.editPrincipal.trim()
-    this.foodLabel.trustee = this.editTrustee.trim()
+    this.foodLabel.manufacturer = this.editPanel.manufacturer.trim()
+    this.foodLabel.scNumber = this.editPanel.scNumber.trim()
+    this.foodLabel.principal = this.editPanel.principal.trim()
+    this.foodLabel.trustee = this.editPanel.trustee.trim()
   }
 
   private applyFoodInputResult(result: FoodInputResult) {

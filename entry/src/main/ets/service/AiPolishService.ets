@@ -10,6 +10,7 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { http } from '@kit.NetworkKit';
 import { AI_CACHE_CONFIG, API_TIMEOUT_CONFIG } from '../constants/AppConfig';
+import { AssetKeyManager, KeyAlias } from '../utils/AssetKeyManager';
 
 const TAG = 'AiPolishService';
 const DOMAIN_ZERO = 0;
@@ -62,15 +63,30 @@ interface PolishResult {
 
 export class AiPolishService {
   private freeTokensRemaining: number = FREE_TOKEN_QUOTA;
-  private apiKey: string = '';  // 从应用配置读取
+  private apiKey: string = '';  // 从 Asset 安全存储加载
   private isEnabled: boolean = true;  // 用户可在设置中关闭
 
   /**
-   * 设置API密钥（从应用配置或安全存储读取）
+   * 设置API密钥（写入内存 + Asset 安全存储）
    */
-  setApiKey(key: string): void {
+  async setApiKey(key: string): Promise<void> {
     this.apiKey = key;
-    hilog.info(DOMAIN_ZERO, TAG, 'API key configured');
+    await AssetKeyManager.getInstance().saveKey(KeyAlias.AGENT_ARTS, key);
+    hilog.info(DOMAIN_ZERO, TAG, 'API key configured and persisted to Asset Kit');
+  }
+
+  /**
+   * 从 Asset 安全存储加载 API Key
+   */
+  async loadApiKey(): Promise<boolean> {
+    const key = await AssetKeyManager.getInstance().getKey(KeyAlias.AGENT_ARTS);
+    if (key.length > 0) {
+      this.apiKey = key;
+      hilog.info(DOMAIN_ZERO, TAG, 'API key loaded from Asset Kit');
+      return true;
+    }
+    hilog.warn(DOMAIN_ZERO, TAG, 'No API key found in Asset Kit');
+    return false;
   }
 
   /**

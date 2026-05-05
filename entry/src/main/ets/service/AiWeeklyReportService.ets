@@ -3,6 +3,7 @@ import { http } from '@kit.NetworkKit';
 import { WeeklyReport, WeeklyDietData } from '../engine/WeeklyReportEngine';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { API_TIMEOUT_CONFIG } from '../constants/AppConfig';
+import { AssetKeyManager, KeyAlias } from '../utils/AssetKeyManager';
 
 // AgentArts API响应内部结构
 class AgentArtsChoiceMessage {
@@ -72,8 +73,27 @@ export class AiWeeklyReportService {
   private tokensUsed: number = 0;
   private readonly MAX_WEEKLY_TOKENS: number = 50000;
 
-  setApiKey(key: string): void {
+  /**
+   * 设置API密钥（写入内存 + Asset 安全存储）
+   */
+  async setApiKey(key: string): Promise<void> {
     this.apiKey = key;
+    await AssetKeyManager.getInstance().saveKey(KeyAlias.AGENT_ARTS, key);
+    hilog.info(DOMAIN_ZERO, TAG, 'API key configured and persisted to Asset Kit');
+  }
+
+  /**
+   * 从 Asset 安全存储加载 API Key
+   */
+  async loadApiKey(): Promise<boolean> {
+    const key = await AssetKeyManager.getInstance().getKey(KeyAlias.AGENT_ARTS);
+    if (key.length > 0) {
+      this.apiKey = key;
+      hilog.info(DOMAIN_ZERO, TAG, 'API key loaded from Asset Kit');
+      return true;
+    }
+    hilog.warn(DOMAIN_ZERO, TAG, 'No API key found in Asset Kit');
+    return false;
   }
 
   setEnabled(enabled: boolean): void {

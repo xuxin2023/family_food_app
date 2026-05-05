@@ -227,7 +227,9 @@ export class InspectionDataService {
           this.cache.set(key, parsed[key]);
         }
       }
-    } catch (_) {}
+    } catch (e) {
+      hilog.warn(0x0000, TAG, 'loadCache failed: %{public}s', JSON.stringify(e));
+    }
   }
 
   private async persistCache(): Promise<void> {
@@ -239,7 +241,9 @@ export class InspectionDataService {
       prefs.putSync('cache', JSON.stringify(cacheObj));
       prefs.putSync('last_sync', Date.now());
       await prefs.flush();
-    } catch (_) {}
+    } catch (e) {
+      hilog.warn(0x0000, TAG, 'persistCache failed: %{public}s', JSON.stringify(e));
+    }
   }
 }
 

@@ -353,9 +353,12 @@ export class HistoryRepository {
     record.memberId = resultSet.getString(resultSet.getColumnIndex('member_id'));
     record.date = resultSet.getString(resultSet.getColumnIndex('date'));
     record.scenario = resultSet.getString(resultSet.getColumnIndex('scenario'));
-    // 兼容旧数据：meal_type 可能为 null
     let mealTypeCol = -1;
-    try { mealTypeCol = resultSet.getColumnIndex('meal_type'); } catch (_e) { /* ignore */ }
+    try {
+      mealTypeCol = resultSet.getColumnIndex('meal_type');
+    } catch (_e) {
+      // 兼容旧数据：meal_type 列可能不存在
+    }
     if (mealTypeCol >= 0) {
       record.mealType = resultSet.getString(mealTypeCol);
     }

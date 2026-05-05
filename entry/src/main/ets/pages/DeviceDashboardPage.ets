@@ -4,6 +4,7 @@
 // 以及与饮食建议的联动效果
 
 import { promptAction } from '@kit.ArkUI';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 import { safeBack, safePushUrl } from '../utils/RouterUtil';
 import { AppState } from '../AppState';
 import { FamilyProfile } from '../model/FamilyProfile';
@@ -101,7 +102,11 @@ struct DeviceDashboardPage {
         .fontSize(28)
         .fontColor(COLORS.PRIMARY)
         .onClick(() => {
-          try { safeBack() } catch (_e) { /* ignore */ }
+          try {
+            safeBack();
+          } catch (e) {
+            hilog.warn(0x0000, 'DeviceDashboardPage', 'safeBack failed: %{public}s', JSON.stringify(e));
+          }
         })
       Column() {
         Text('设备联动')

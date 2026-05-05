@@ -50,7 +50,6 @@ struct ReportPage {
   private credibilityResult: CredibilityResult = new CredibilityResult()
   private childProtections: ChildProtection[] = []
   private swiperController: SwiperController = new SwiperController()
-  private skeletonTimer: number = -1  // 骨架屏定时器ID，用于防止内存泄漏
   private componentActive: boolean = true
 
   // ==================== 生命周期 ====================
@@ -75,20 +74,13 @@ struct ReportPage {
       this.showAlternativesLocked = true
     }
 
-    // 骨架屏占位
-    this.skeletonTimer = setTimeout(() => {
-      if (!this.componentActive) return
-      this.showSkeleton = false
-      this.showNutriAnim = true
-    }, 200)
+    // 数据就绪后关闭骨架屏、展示内容
+    this.showSkeleton = false
+    this.showNutriAnim = true
   }
 
   aboutToDisappear(): void {
     this.componentActive = false
-    if (this.skeletonTimer !== -1) {
-      clearTimeout(this.skeletonTimer)
-      this.skeletonTimer = -1
-    }
   }
 
   // ==================== 计算属性 ====================

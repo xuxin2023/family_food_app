@@ -22,7 +22,7 @@ export const API_CONFIG = new ApiConfig();
  */
 export class FeatureFlags {
   /** 是否启用 AI 营养师 */
-  readonly ENABLE_AI_NUTRITIONIST: boolean = false;
+  readonly ENABLE_AI_NUTRITIONIST: boolean = true;
   /** 是否启用食谱社区 */
   readonly ENABLE_RECIPE_COMMUNITY: boolean = true;
   /** 是否启用云同步 */

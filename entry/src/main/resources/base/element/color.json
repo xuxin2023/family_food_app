@@ -12,6 +12,18 @@
     { "name": "text_secondary", "value": "#666666" },
     { "name": "background", "value": "#FAFAFA" },
     { "name": "card_background", "value": "#FFFFFF" },
-    { "name": "divider", "value": "#E0E0E0" }
+    { "name": "divider", "value": "#EEEEEE" },
+    { "name": "bg_light", "value": "#F5F5F5" },
+    { "name": "success", "value": "#7EC8A0" },
+    { "name": "warning", "value": "#F0C060" },
+    { "name": "error", "value": "#E88A8A" },
+    { "name": "accent_blue", "value": "#80B8E0" },
+    { "name": "accent_purple", "value": "#B8A0D4" },
+    { "name": "bg_warm_orange", "value": "#FFF3E0" },
+    { "name": "bg_warm_pink", "value": "#FCE4EC" },
+    { "name": "bg_warm_purple", "value": "#F3E5F5" },
+    { "name": "bg_warm_blue", "value": "#E3F2FD" },
+    { "name": "bg_warm_yellow", "value": "#FFF8E1" },
+    { "name": "bg_light_green", "value": "#E8F5E9" }
   ]
 }

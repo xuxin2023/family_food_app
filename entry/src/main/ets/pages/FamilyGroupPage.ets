@@ -19,9 +19,9 @@ struct FamilyGroupPage {
   @State createDescription: string = '';
   @State inviteCodeInput: string = '';
   @State displayNameInput: string = '';
+  @State groupSummaries: GroupSummary[] = [];
 
   private appState: AppState = AppState.getInstance();
-  private groupSummaries: GroupSummary[] = [];
   private groupDS = new BasicDataSource<GroupSummary>();
 
   async aboutToAppear() {

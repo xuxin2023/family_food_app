@@ -61,12 +61,12 @@ export class DailyBudget {
     return this.sugarRemaining <= 0;
   }
 
-  // 扣减摄入量
+  // 扣减摄入量（有下限保护，避免显示负值）
   deductIntake(sodium: number, sugar: number, calories: number, fat: number): void {
-    this.sodiumRemaining -= sodium;
-    this.sugarRemaining -= sugar;
-    this.calorieRemaining -= calories;
-    this.fatRemaining -= fat;
+    this.sodiumRemaining = Math.max(0, this.sodiumRemaining - sodium);
+    this.sugarRemaining = Math.max(0, this.sugarRemaining - sugar);
+    this.calorieRemaining = Math.max(0, this.calorieRemaining - calories);
+    this.fatRemaining = Math.max(0, this.fatRemaining - fat);
   }
 
   toJson(): DailyBudgetJson {

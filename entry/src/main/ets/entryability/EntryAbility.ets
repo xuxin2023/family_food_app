@@ -153,8 +153,10 @@ export default class EntryAbility extends UIAbility {
       this.healthRefreshInterval = -1;
     }
 
-    // 保存当前状态到Preferences
-    this.persistAppState();
+    // 保存当前状态到Preferences（使用Promise确保完成）
+    this.persistAppState().catch((err: Error) => {
+      hilog.warn(DOMAIN_ZERO, TAG, 'persistAppState onBackground failed: %{public}s', JSON.stringify(err));
+    });
   }
 
   /**

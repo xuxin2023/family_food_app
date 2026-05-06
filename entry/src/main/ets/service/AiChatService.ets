@@ -3,10 +3,9 @@
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AiServiceBase } from './ai/AiServiceBase';
-import { AI_SERVICE_DEFAULTS } from './ai/AiConfig';
+import { AI_SERVICE_DEFAULTS, SYSTEM_PROMPTS } from './ai/AiConfig';
 import { ChatRole, ChatMessage, generateMessageId } from '../model/AiChat';
 import { AppState } from '../AppState';
-import { AiClient } from './ai/AiClient';
 
 const TAG = 'AiChatService';
 const DOMAIN_ZERO = 0;
@@ -23,16 +22,6 @@ const MAX_HISTORY_ROUNDS = 10;
  * 3. 上下文裁剪（超出 MAX_HISTORY_ROUNDS 时丢弃最早消息）
  * 4. 结合成员健康数据提供个性化回答
  */
-/**
- * AI 对话选项
- */
-interface AiChatOptions {
-  systemPrompt: string;
-  userPrompt: string;
-  temperature: number;
-  maxTokens: number;
-  history?: ChatHistoryItem[];
-}
 
 /**
  * 历史记录项
@@ -53,22 +42,15 @@ export class AiChatService extends AiServiceBase {
   }
 
   protected getDefaultTemperature(): number {
-    return 0.6; // 对话需要稍高温度以增加多样性
+    return AI_SERVICE_DEFAULTS.CHAT_TEMPERATURE;
   }
 
   protected getDefaultMaxTokens(): number {
-    return AI_SERVICE_DEFAULTS.NUTRITIONIST_MAX_TOKENS;
+    return AI_SERVICE_DEFAULTS.CHAT_MAX_TOKENS;
   }
 
   protected getSystemPrompt(): string {
-    return `你是家庭AI营养师助手，由HarmonyOS驱动。
-你的职责：
-1. 回答关于饮食营养、健康管理的问题
-2. 根据家庭成员的健康目标给出个性化建议
-3. 语气温暖鼓励，使用通俗易懂的语言
-4. 不进行医学诊断，不替代医生建议
-5. 回答简洁明了，每条回复不超过150字
-6. 使用中文回答`;
+    return SYSTEM_PROMPTS.CHAT;
   }
 
   /**
@@ -140,15 +122,12 @@ export class AiChatService extends AiServiceBase {
       // 构建包含成员上下文的 user prompt
       const enhancedPrompt = await this.buildEnhancedPrompt(userMessage);
 
-      const options: AiChatOptions = {
-        systemPrompt: this.getSystemPrompt(),
-        userPrompt: enhancedPrompt,
-        temperature: this.getDefaultTemperature(),
-        maxTokens: this.getDefaultMaxTokens(),
-        history: historyItems.length > 0 ? historyItems : undefined
-      };
+      // 将历史与当前 prompt 拼接
+      const contextPrefix = historyItems.length > 0
+        ? historyItems.map(h => `${h.role === 'user' ? '用户' : 'AI'}：${h.content}`).join('\n') + '\n\n'
+        : '';
 
-      const result = await this.callAiWithClient(options);
+      const result = await this.callAi(contextPrefix + enhancedPrompt);
       if (result !== null && result.length > 0) {
         return result;
       }
@@ -157,14 +136,6 @@ export class AiChatService extends AiServiceBase {
     }
 
     return this.buildFallbackResponse();
-  }
-
-  /**
-   * 调用 AiClient（使用 callWithHistory）
-   */
-  private async callAiWithClient(options: AiChatOptions): Promise<string | null> {
-    const userPrompt = options.userPrompt;
-    return await this.callAi(userPrompt);
   }
 
   /**

@@ -14,6 +14,10 @@ import { HwHealthSignalProvider } from './service/health/HwHealthSignalProvider'
 import { ManualHealthSignalProvider } from './service/health/ManualHealthSignalProvider';
 import { AiNutritionistService } from './service/AiNutritionistService';
 import { AiRecipeRecommenderService } from './service/AiRecipeRecommenderService';
+import { AiChatService } from './service/AiChatService';
+import { AiPolishService } from './service/AiPolishService';
+import { AiWeeklyReportService } from './service/AiWeeklyReportService';
+import { AiServiceBase } from './service/ai/AiServiceBase';
 import { FamilyGroupRepository } from './repository/FamilyGroupRepository';
 import { RecipeRepository } from './repository/RecipeRepository';
 import { FEATURE_FLAGS } from './constants/AppConfig';
@@ -32,9 +36,12 @@ export class ServiceManager {
   groupService: FamilyGroupService | null = null;
   recipeCommunityService: RecipeCommunityService | null = null;
 
-  // ========== AI 服务（延迟初始化） ==========
+  // ========== AI 服务 ==========
   aiNutritionist: AiNutritionistService = new AiNutritionistService();
   aiRecipeRecommender: AiRecipeRecommenderService = new AiRecipeRecommenderService();
+  aiChat: AiChatService = new AiChatService();
+  aiPolish: AiPolishService = new AiPolishService();
+  aiWeeklyReport: AiWeeklyReportService = new AiWeeklyReportService();
 
   // ========== 健康设备开关 ==========
   useHwHealthKit: boolean = false;
@@ -63,17 +70,25 @@ export class ServiceManager {
 
   /**
    * 初始化 AI 服务（异步加载 API Key）
+   * 统一管理所有 AI 服务的生命周期和密钥加载
    */
   async initAiServices(recipeRepo: RecipeRepository): Promise<void> {
     if (FEATURE_FLAGS.ENABLE_AI_NUTRITIONIST) {
       this.aiRecipeRecommender.setRecipeRepo(recipeRepo);
-      // 从 Asset Kit 安全存储加载所有 AI 服务的 API Key
-      const promises: Promise<boolean>[] = [
-        this.aiNutritionist.loadApiKey(),
-        this.aiRecipeRecommender.loadApiKey(),
+
+      // 统一从 Asset Kit 安全存储加载所有 AI 服务的 API Key
+      const allAiServices: AiServiceBase[] = [
+        this.aiNutritionist,
+        this.aiRecipeRecommender,
+        this.aiChat,
+        this.aiPolish,
+        this.aiWeeklyReport
       ];
+
+      const promises = allAiServices.map(s => s.loadApiKey());
       const results = await Promise.allSettled(promises);
       const loadedCount = results.filter(r => r.status === 'fulfilled' && r.value).length;
+
       hilog.info(DOMAIN_ZERO, TAG, 'AI services initialized, %{public}d/%{public}d keys loaded',
         loadedCount, promises.length);
     }

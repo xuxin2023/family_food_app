@@ -54,7 +54,7 @@ struct DeviceDashboardPage {
   async aboutToAppear() {
     this.familyMembers = await this.appState.getAllMembers()
 
-    const trigger = getPaywallTriggerForFeature('health_data_sync', this.appState.memberStatus.tier)
+    const trigger = getPaywallTriggerForFeature('health_data_sync', this.appState.member.memberStatus.tier)
     this.showPaywall = trigger !== null
 
     if (this.familyMembers.length > 0) {

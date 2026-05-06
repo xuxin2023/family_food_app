@@ -21,7 +21,7 @@ struct BasketCheckPage {
 
   async aboutToAppear() {
     // 检查付费墙 - 购物篮检查需要家庭版以上
-    const trigger = this.appState.getPaywallTrigger('basket_check')
+    const trigger = this.appState.member.getPaywallTrigger('basket_check')
     if (trigger !== null) {
       // 当前等级无权限，显示付费墙
       this.paywallTrigger = trigger
@@ -30,7 +30,7 @@ struct BasketCheckPage {
     }
 
     // 从AppState获取购物篮数据
-    this.basketItems = this.appState.getBasketItems()
+    this.basketItems = this.appState.basket.getBasketItems()
     if (this.basketItems.length === 0) {
       // 无数据时使用示例
       this.basketItems = this.createFallbackBasket()

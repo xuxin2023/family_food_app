@@ -172,22 +172,15 @@ export class MemberManager {
   }
 
   /** 持久化扫描计数 */
-  private persistScanQuota(): void {
+  private async persistScanQuota(): Promise<void> {
     const ctx = this.context;
     if (ctx === null) return;
     try {
-      const prefs = preferences.getPreferences(ctx, 'scan_quota');
-      prefs.then((pref) => {
-        pref.put(this.scanQuotaRemainingKey, this.memberStatus.scansRemainingToday).then(() => {
-          pref.flush();
-        }).catch((_e: Error) => {
-          hilog.warn(DOMAIN_ZERO, TAG, 'persistScanQuota put failed');
-        });
-      }).catch((_e: Error) => {
-        hilog.warn(DOMAIN_ZERO, TAG, 'persistScanQuota getPrefs failed');
-      });
+      const pref = await preferences.getPreferences(ctx, 'scan_quota');
+      await pref.put(this.scanQuotaRemainingKey, this.memberStatus.scansRemainingToday);
+      await pref.flush();
     } catch (_e) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'persistScanQuota exception');
+      hilog.warn(DOMAIN_ZERO, TAG, 'persistScanQuota failed');
     }
   }
 }

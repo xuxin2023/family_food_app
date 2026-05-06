@@ -35,9 +35,11 @@ import { PaywallDialog } from '../components/PaywallDialog';
 import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON } from '../constants/AppTheme';
 import { SCAN_CONFIG } from '../constants/AppConfig';
 import { EnhancedFoodRecommendation } from '../model/FoodAdapterTypes';
+import { TodayIntakeInput } from '../engine/FoodAdapterEngine';
 import { BackButton } from '../components/BackButton';
 
 const DOMAIN_ZERO = 0;
+const TAG = 'ScanPage';
 
 // ==================== 加载阶段枚举 ====================
 
@@ -244,7 +246,7 @@ struct ScanPage {
       return result
     } catch (err) {
       const errMsg = `${errorMessage}: ${err}`
-      console.error(errMsg)
+      hilog.error(DOMAIN_ZERO, TAG, errMsg)
       this.lastError = errorMessage
       this.retryCount++
       if (this.retryCount <= SCAN_CONFIG.MAX_RETRY_COUNT && this.componentActive) {
@@ -340,7 +342,7 @@ struct ScanPage {
       }
       this.frequentItems = items
     } catch (error) {
-      console.warn('预加载高频商品失败', error)
+      hilog.warn(DOMAIN_ZERO, TAG, '预加载高频商品失败: %{public}s', JSON.stringify(error))
     }
   }
 
@@ -362,7 +364,7 @@ struct ScanPage {
       }
       this.recentScans = items
     } catch (error) {
-      console.warn('加载最近扫描记录失败', error)
+      hilog.warn(DOMAIN_ZERO, TAG, '加载最近扫描记录失败: %{public}s', JSON.stringify(error))
     }
   }
 
@@ -398,7 +400,7 @@ struct ScanPage {
           }
 
           // ---- 扫描次数 ----
-          if (this.appState.memberStatus.scansRemainingToday >= 0) {
+          if (this.appState.member.memberStatus.scansRemainingToday >= 0) {
             Row() {
               Text(this.scanLimitReached ? $r('app.string.scan_today_used_up') : $r('app.string.scan_today_remaining') + `：${this.remainingScans} 次`)
                 .fontSize(FONT_SIZE.SMALL)
@@ -907,9 +909,9 @@ struct ScanPage {
 
   private refreshScanQuota() {
     this.scanLimitReached = false
-    const remaining = this.appState.getRemainingScans()
+    const remaining = this.appState.member.getRemainingScans()
     this.remainingScans = remaining
-    this.scanLimitReached = remaining <= 0 && TIER_DAILY_SCAN_LIMIT[this.appState.memberStatus.tier] !== -1
+    this.scanLimitReached = remaining <= 0 && TIER_DAILY_SCAN_LIMIT[this.appState.member.memberStatus.tier] !== -1
   }
 
   // ==================== 识别入口 ====================
@@ -930,7 +932,7 @@ struct ScanPage {
     }
 
     // 付费墙拦截
-    const trigger = this.appState.useScan();
+    const trigger = this.appState.member.useScan();
     if (trigger !== null) {
       this.paywallTrigger = trigger;
       this.showPaywallDialog = true;
@@ -1063,8 +1065,18 @@ struct ScanPage {
     }
     try {
       // 调用动态适配增强计算（集成 FoodAdapterEngine）
-      const scanToday = this.appState.getTodayScanCount()
-      const enhanced: EnhancedFoodRecommendation | null = this.appState.calculateEnhancedAdaptation(this.memberId, this.foodLabel, scanToday)
+      const scanToday = this.appState.member.getTodayScanCount()
+      const budget = this.appState.getDailyBudgetSync(this.memberId)
+      const todayIntake: TodayIntakeInput = {
+        sodium_mg: Math.max(0, budget.sodiumBudget - budget.sodiumRemaining),
+        sugar_g: Math.max(0, budget.sugarBudget - budget.sugarRemaining),
+        energy_kcal: Math.max(0, budget.calorieBudget - budget.calorieRemaining),
+        fat_g: Math.max(0, budget.fatBudget - budget.fatRemaining)
+      }
+      const enhanced: EnhancedFoodRecommendation | null = this.appState.engines.calculateEnhancedAdaptation(
+        this.appState.getAllMembersSync()[0], this.foodLabel, this.appState.getHealthSignal(this.memberId),
+        todayIntake, scanToday
+      )
       if (enhanced !== null) {
         hilog.info(DOMAIN_ZERO, 'ScanPage', 'Enhanced adaptation computed for %{public}s', this.foodLabel.foodName)
       }

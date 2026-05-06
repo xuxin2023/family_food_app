@@ -347,7 +347,9 @@ export class SyncService {
       syncedIds: [],
       failedIds: [],
       conflictIds: [],
-      durationMs: 0
+      durationMs: 0,
+      progressPercent: 0,
+      progressPhase: '开始同步...'
     };
 
     // 1. 获取待上传的变更（最多batchSize条）
@@ -356,7 +358,11 @@ export class SyncService {
     ).slice(0, this.config.batchSize);
 
     if (pendingItems.length === 0) {
-      result.durationMs = Date.now() - startTime;
+      result.progressPercent = 100;
+    result.progressPhase = result.success ? '同步完成' : '同步失败';
+    result.durationMs = Date.now() - startTime;
+      result.progressPercent = 100;
+      result.progressPhase = '无待同步数据';
       return result;
     }
 
@@ -365,6 +371,10 @@ export class SyncService {
       item.syncStatus = SyncStatus.SYNCING;
       item.lastAttemptAt = Date.now();
     }
+
+    result.progressPercent = 10;
+    result.progressPhase = '准备上传...';
+    this.notifyProgress(result);
 
     try {
       const uploadItems: SyncBatchItem[] = [];
@@ -392,6 +402,10 @@ export class SyncService {
 
       const response = uploadResult.data as SyncBatchResponse;
 
+      result.progressPercent = 30;
+      result.progressPhase = '上传完成，处理冲突...';
+      this.notifyProgress(result);
+
       // 3. 处理上传成功项
       for (const item of pendingItems) {
         const idx = this.syncQueue.indexOf(item);
@@ -403,6 +417,9 @@ export class SyncService {
 
       // 4. 处理远程冲突
       if (response.conflicts && response.conflicts.length > 0) {
+        result.progressPercent = 50;
+        result.progressPhase = `处理 ${response.conflicts.length} 个冲突...`;
+        this.notifyProgress(result);
         for (const conflict of response.conflicts) {
           const localItem = this.syncQueue.find(r =>
             r.entityType === conflict.entityType && r.entityId === conflict.entityId
@@ -430,8 +447,12 @@ export class SyncService {
       }
 
       // 5. 处理远程变更（需要应用到本地）
+      let progress = 60;
       if (response.downloads && response.downloads.length > 0) {
         for (const remoteItem of response.downloads) {
+          progress = Math.min(90, progress + 5);
+          result.progressPercent = progress;
+          result.progressPhase = `接收远程变更: ${remoteItem.entityType}`;
           // 回调通知上层应用（通过事件监听者处理）
           this.notifyEvent({
             type: 'sync_completed',
@@ -606,6 +627,20 @@ export class SyncService {
           JSON.stringify(err));
       }
     }
+  }
+
+  /** 发射进度事件（供UI层消费） */
+  private notifyProgress(result: SyncResult): void {
+    const progressData: Record<string, Object> = {
+      'percent': result.progressPercent,
+      'phase': result.progressPhase
+    };
+    this.notifyEvent({
+      type: 'sync_started',
+      message: result.progressPhase,
+      timestamp: Date.now(),
+      data: progressData
+    });
   }
 
   private cloneConfig(config: CloudSyncConfig): CloudSyncConfig {

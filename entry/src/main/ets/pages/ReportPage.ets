@@ -58,9 +58,9 @@ struct ReportPage {
 
   async aboutToAppear() {
     // 优先从路由缓存读取（避免 router params 序列化大对象的限制）
-    const cachedFoodLabel = this.appState.consumeReportFoodLabel()
-    const cachedRecs = this.appState.consumeReportRecommendations()
-    const cachedAlts = this.appState.consumeReportAlternatives()
+    const cachedFoodLabel = this.appState.reportCache.consumeFoodLabel()
+    const cachedRecs = this.appState.reportCache.consumeRecommendations()
+    const cachedAlts = this.appState.reportCache.consumeAlternatives()
     
     if (cachedFoodLabel !== null) {
       this.foodLabel = cachedFoodLabel
@@ -81,7 +81,7 @@ struct ReportPage {
     }
 
     // 检查付费墙 — 替代品推荐需要家庭版
-    const altTrigger = this.appState.getPaywallTrigger('upgrade_member')
+    const altTrigger = this.appState.member.getPaywallTrigger('upgrade_member')
     if (altTrigger !== null && altTrigger.requiredTier !== MemberTier.FREE &&
         this.alternatives.length > 0) {
       this.showAlternativesLocked = true
@@ -671,7 +671,7 @@ struct ReportPage {
             .height(32)
             .padding({ left: 16, right: 16 })
             .onClick(() => {
-              this.paywallTrigger = this.appState.getPaywallTrigger('upgrade_member')
+              this.paywallTrigger = this.appState.member.getPaywallTrigger('upgrade_member')
               this.showPaywallDialog = true
             })
         }

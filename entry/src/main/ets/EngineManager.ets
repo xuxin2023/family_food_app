@@ -21,7 +21,9 @@ import { ChildProtectionEngine, MealTimeParams } from './engine/ChildProtectionE
 import { CredibilityEngine } from './engine/CredibilityEngine';
 import { FoodAdapterEngine, FamilyMemberSimpleInput, FoodNutritionInput, 
   HealthSignalInput, TodayIntakeInput } from './engine/FoodAdapterEngine';
+import { NutritionTrendEngine, DailyNutritionSummary, NutrientTrendData, MealGroup } from './engine/NutritionTrendEngine';
 import { EnhancedFoodRecommendation } from './model/FoodAdapterTypes';
+import { HistoryRepository } from './repository/HistoryRepository';
 
 /** 根据 AgeGroup 估算年龄（用于 FoodAdapterEngine 输入） */
 function estimateAgeFromGroup(ageGroup: AgeGroup): number {
@@ -194,5 +196,78 @@ export class EngineManager {
    */
   cleanExpiredEngineCache(): void {
     FoodAdapterEngine.cleanExpiredRecords();
+  }
+
+  // ======== AppState 旧接口兼容桥 ========
+
+  /** 获取餐次平衡 — 桥接到 calculateMealBalance */
+  getMealBalance(profile: FamilyProfile, budget: DailyBudget, scenario: MealScenario, _mealCount: number): MealBalance {
+    return this.mealBalanceEngine.calculate(scenario, profile, new HealthSignal());
+  }
+
+  /** 获取可信度 — 桥接到 calculateCredibility */
+  getCredibility(foodLabel: FoodLabel): CredibilityResult {
+    return this.credibilityEngine.calculate(foodLabel);
+  }
+
+  /** 获取儿童保护 — 桥接到 calculateChildProtection */
+  getChildProtection(profile: FamilyProfile, foodLabel: FoodLabel, _recommendation: Recommendation): ChildProtection {
+    return this.calculateChildProtection(profile, foodLabel);
+  }
+
+  /** 获取老人友好报告 — 桥接到 generateElderFriendlyReport */
+  getElderFriendlyReport(profile: FamilyProfile, foodLabel: FoodLabel): ElderFriendlyReport {
+    const rec = this.recommendationEngine.calculateForMember(profile, new HealthSignal(), foodLabel, new DailyBudget());
+    return this.elderFriendlyEngine.generate(rec, profile, foodLabel);
+  }
+
+  /** 获取正向补足建议 — 桥接到 generatePositiveAdvice */
+  getPositiveAdvice(foodLabel: FoodLabel, _recommendation: Recommendation): PositiveAdvice[] {
+    const profile = new FamilyProfile();
+    return [this.positiveAdviceEngine.generateForScenario(MealScenario.BBQ, profile)];
+  }
+
+  /** 获取 NutriScore 评分 */
+  getNutriScore(foodLabel: FoodLabel): string {
+    // 基于钠含量简化评分
+    const sodiumMg = foodLabel.nutrition.sodium;
+    const sugarG = foodLabel.nutrition.sugar;
+    if (sodiumMg <= 200 && sugarG <= 5) return 'A';
+    if (sodiumMg <= 400 && sugarG <= 15) return 'B';
+    return 'C';
+  }
+
+  /** 获取上海 A/B/C 等级 */
+  getShanghaiGrade(foodLabel: FoodLabel): string {
+    const sodiumMg = foodLabel.nutrition.sodium;
+    if (sodiumMg <= 120) return 'A';
+    if (sodiumMg <= 300) return 'B';
+    return 'C';
+  }
+
+  /** 获取替代食品推荐 */
+  getAlternativeFoods(foodLabel: FoodLabel): EnhancedFoodRecommendation[] {
+    return [];
+  }
+
+  /** 获取营养趋势 */
+  async getNutritionTrend(memberId: string, days: number, historyRepo: HistoryRepository): Promise<DailyNutritionSummary[]> {
+    // 使用静态方法聚合饮食记录
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    const fmt = (d: Date): string => `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+    const records = await historyRepo.getDietRecordsByDateRange(memberId, fmt(startDate), fmt(endDate));
+    return NutritionTrendEngine.aggregateDaily(records);
+  }
+
+  /** 生成周报 */
+  async generateWeeklyReport(
+    memberId: string,
+    _historyRepo: HistoryRepository,
+    _members: FamilyProfile[],
+    _getBudgetFn: (memberId: string) => DailyBudget
+  ): Promise<string> {
+    return '周报生成功能即将上线';
   }
 }

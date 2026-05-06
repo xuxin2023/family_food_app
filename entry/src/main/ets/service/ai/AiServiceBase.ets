@@ -1,10 +1,11 @@
 // AiServiceBase.ets
-// AI 服务基类 — 统一管理 API Key、Token 配额、功能开关
+// AI 服务基类 — 统一管理 API Key、Token 配额、功能开关、重试机制
 // 各 AI 服务继承此类，只需实现 buildPrompt() 和 parseResponse() 即可
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AssetKeyManager, KeyAlias } from '../../utils/AssetKeyManager';
 import { AiClient, AiRequestOptions } from './AiClient';
+import { AI_RETRY_CONFIG } from './AiConfig';
 
 const TAG = 'AiServiceBase';
 const DOMAIN_ZERO = 0;
@@ -21,7 +22,7 @@ const DOMAIN_ZERO = 0;
  * 框架自动提供：
  * - setApiKey / loadApiKey / setEnabled
  * - shouldUseAi() 降级条件判断
- * - callAi(prompt) 统一调用入口
+ * - callAi(prompt) 统一调用入口（含重试）
  * - Token 配额管理
  */
 export abstract class AiServiceBase {
@@ -29,6 +30,9 @@ export abstract class AiServiceBase {
   protected isEnabled: boolean = true;
   protected tokensUsed: number = 0;
   protected readonly MAX_TOKENS: number = 50000;
+
+  /** 并发锁：防止多个调用同时触发 loadApiKey */
+  private loadingKey: boolean = false;
 
   private client: AiClient | null = null;
 
@@ -55,17 +59,26 @@ export abstract class AiServiceBase {
 
   /** 从 Asset Kit 安全存储加载 API Key */
   async loadApiKey(): Promise<boolean> {
-    const key = await AssetKeyManager.getInstance().getKey(KeyAlias.AGENT_ARTS);
-    if (key.length > 0) {
-      this.apiKey = key;
-      if (this.client !== null) {
-        this.client.setApiKey(key);
+    if (this.loadingKey) return false;
+    this.loadingKey = true;
+    try {
+      const key = await AssetKeyManager.getInstance().getKey(KeyAlias.AGENT_ARTS);
+      if (key.length > 0) {
+        this.apiKey = key;
+        if (this.client !== null) {
+          this.client.setApiKey(key);
+        }
+        hilog.info(DOMAIN_ZERO, this.getTag(), 'API key loaded from Asset Kit');
+        return true;
       }
-      hilog.info(DOMAIN_ZERO, this.getTag(), 'API key loaded from Asset Kit');
-      return true;
+      hilog.warn(DOMAIN_ZERO, this.getTag(), 'No API key found in Asset Kit');
+      return false;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, this.getTag(), 'Failed to load API key: %{public}s', JSON.stringify(error));
+      return false;
+    } finally {
+      this.loadingKey = false;
     }
-    hilog.warn(DOMAIN_ZERO, this.getTag(), 'No API key found in Asset Kit');
-    return false;
   }
 
   /** 设置是否启用 AI 功能 */
@@ -90,7 +103,7 @@ export abstract class AiServiceBase {
   }
 
   /**
-   * 统一 AI 调用入口
+   * 统一 AI 调用入口（带指数退避重试）
    * @param userPrompt user prompt 内容
    * @returns AI 响应文本；降级或失败时返回 null
    */
@@ -112,16 +125,41 @@ export abstract class AiServiceBase {
       maxTokens: this.getDefaultMaxTokens()
     };
 
-    try {
-      const result = await this.client.call(options);
-      if (result !== null && result.text.length > 0) {
-        this.tokensUsed += result.tokensUsed;
-        return result.text;
+    const maxRetries = AI_RETRY_CONFIG.MAX_RETRIES;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const result = await this.client.call(options);
+        if (result !== null && result.text.length > 0) {
+          this.tokensUsed += result.tokensUsed;
+          return result.text;
+        }
+        // 返回 null 但无异常 — 可能是 API 错误码，立即降级
+        return null;
+      } catch (error) {
+        if (attempt < maxRetries) {
+          const delay = Math.min(
+            AI_RETRY_CONFIG.RETRY_BASE_INTERVAL_MS * Math.pow(2, attempt),
+            AI_RETRY_CONFIG.RETRY_MAX_INTERVAL_MS
+          );
+          hilog.info(DOMAIN_ZERO, this.getTag(),
+            'AI call attempt %{public}d failed, retrying in %{public}d ms',
+            attempt + 1, delay);
+          await this.sleep(delay);
+        } else {
+          hilog.warn(DOMAIN_ZERO, this.getTag(),
+            'AI call failed after %{public}d retries: %{public}s',
+            maxRetries + 1, JSON.stringify(error));
+          return null;
+        }
       }
-      return null;
-    } catch (error) {
-      hilog.warn(DOMAIN_ZERO, this.getTag(), 'AI call failed: %{public}s', JSON.stringify(error));
-      return null;
     }
+
+    return null;
+  }
+
+  /** 延时辅助 */
+  private sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }

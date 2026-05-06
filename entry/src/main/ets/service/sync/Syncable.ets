@@ -82,4 +82,24 @@ export interface SyncResult {
   conflictIds: string[];
   /** 同步耗时(ms) */
   durationMs: number;
+  /** 同步进度（0~100）— UI 层用于显示进度条 */
+  progressPercent: number;
+  /** 当前同步阶段描述（如 "同步中...", "处理冲突...", "完成"） */
+  progressPhase: string;
+}
+
+/**
+ * 同步进度状态 — 供 UI 层组件（如 SyncStatusBanner）消费
+ */
+export interface SyncProgressState {
+  /** 是否正在同步 */
+  isSyncing: boolean;
+  /** 进度百分比 0~100 */
+  percent: number;
+  /** 阶段描述 */
+  phase: string;
+  /** 待处理记录数 */
+  pendingCount: number;
+  /** 最近一次同步时间戳 */
+  lastSyncAt: number;
 }

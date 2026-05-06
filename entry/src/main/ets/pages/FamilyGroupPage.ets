@@ -305,11 +305,7 @@ struct FamilyGroupPage {
       return
     }
     try {
-      await this.appState.createFamilyGroup(
-        this.createGroupName.trim(),
-        this.createDescription.trim(),
-        '我'
-      )
+      await this.appState.createFamilyGroup(this.createGroupName.trim())
       promptAction.showToast({ message: '群组创建成功！' })
       this.groupSummaries = await this.appState.getMyGroups()
       this.groupDS.reload(this.groupSummaries)
@@ -325,10 +321,7 @@ struct FamilyGroupPage {
     }
     const displayName = this.displayNameInput.trim() || '家庭成员'
     try {
-      await this.appState.joinFamilyGroup(
-        this.inviteCodeInput.trim().toUpperCase(),
-        displayName
-      )
+      await this.appState.joinFamilyGroup(this.inviteCodeInput.trim().toUpperCase())
       promptAction.showToast({ message: '加入群组成功！' })
       this.groupSummaries = await this.appState.getMyGroups()
       this.groupDS.reload(this.groupSummaries)

@@ -9,7 +9,7 @@ import { AppState } from '../AppState';
 import { ErrorFallback } from '../components/ErrorFallback';
 import { Recipe, RecipeCategory, RecipeDifficulty, DietTag, RecipeQueryParams } from '../model/Recipe';
 import {
-  AiRecipeRecommendation, AiRecipeRecommendationResult
+  AiRecipeRecommendation, AiRecipeRecommendationResult, AiRecipeRequest
 } from '../model/AiModels';
 import { COLORS, RADIUS, SPACING, BUTTON, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
 import { BasicDataSource } from '../utils/BasicDataSource';
@@ -59,10 +59,11 @@ struct RecipeCommunityPage {
     this.isLoadingAi = true
     try {
       const members = await this.appState.getAllMembers()
-      const memberIds = members.map(m => m.memberId)
-      const result = await this.appState.getAiRecipeRecommendations(
-        memberIds, undefined, undefined, 5
-      )
+      const request: AiRecipeRequest = {
+        memberIds: members.map(m => m.memberId),
+        limit: 5
+      }
+      const result = await this.appState.getAiRecipeRecommendation(request)
       this.aiRecommendations = result.recommendations
       this.aiSummary = result.overallSummary
     } catch (e) {

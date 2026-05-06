@@ -132,7 +132,7 @@ export default class EntryAbility extends UIAbility {
     this.lastForegroundTime = now;
 
     // 刷新健康数据（仅家庭版及以上，且距上次超过5分钟）
-    if (this.appState.hasFamilyAccess() && timeSinceLastForeground > TIME_INTERVAL_CONFIG.HEALTH_REFRESH_THRESHOLD_MS) {
+    if (this.appState.member.hasFamilyAccess() && timeSinceLastForeground > TIME_INTERVAL_CONFIG.HEALTH_REFRESH_THRESHOLD_MS) {
       this.refreshHealthData();
     }
 
@@ -140,7 +140,7 @@ export default class EntryAbility extends UIAbility {
     this.refreshMembersCache();
 
     // 启动健康数据定时刷新（每30分钟）
-    if (this.healthRefreshInterval === -1 && this.appState.hasFamilyAccess()) {
+    if (this.healthRefreshInterval === -1 && this.appState.member.hasFamilyAccess()) {
       this.healthRefreshInterval = setInterval(() => {
         this.refreshHealthData();
       }, TIME_INTERVAL_CONFIG.HEALTH_REFRESH_INTERVAL_MS);
@@ -248,7 +248,7 @@ export default class EntryAbility extends UIAbility {
       const tierStr = prefs.getSync('subscription_tier', MemberTier.FREE) as string;
       // 兼容旧值：从字符串映射到 MemberTier 枚举
       const restoredTier = this.parseTier(tierStr);
-      this.appState.memberStatus.tier = restoredTier;
+      this.appState.member.memberStatus.tier = restoredTier;
       hilog.info(DOMAIN_ZERO, TAG, 'Subscription state restored: %{public}s', restoredTier);
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Restore subscription failed: %{public}s', JSON.stringify(error));
@@ -275,7 +275,7 @@ export default class EntryAbility extends UIAbility {
   private async persistAppState(): Promise<void> {
     try {
       const prefs = await preferences.getPreferences(this.context, 'app_state');
-      prefs.putSync('subscription_tier', this.appState.memberStatus.tier);
+      prefs.putSync('subscription_tier', this.appState.member.memberStatus.tier);
       prefs.putSync('last_save_time', Date.now().toString());
       await prefs.flush();
       hilog.info(DOMAIN_ZERO, TAG, 'App state persisted');

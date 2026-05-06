@@ -288,12 +288,14 @@ struct MemberEditPage {
   private async saveMember(): Promise<void> {
     // 新建成员时检查付费墙
     if (this.editingMemberId.length === 0) {
-      const trigger = this.appState.useFamilyMember()
+      const trigger = this.appState.member.useFamilyMember()
       if (trigger !== null) {
         // 个性化弹窗文案：显示当前已用/上限信息
-        const status = this.appState.memberStatus
+        const status = this.appState.member.memberStatus
         const tierName = getTierDisplayName(MemberTier.FAMILY)
-        trigger.message = `当前已添加 ${this.appState.memberStatus.familyMembersRemaining} 位家庭成员。升级${tierName}后，可添加无限数量的家庭成员，所有成员均可享受个性化饮食建议。`
+        const allMembers = await this.appState.getAllMembers()
+        const memberCount = allMembers.length
+        trigger.message = `当前已添加 ${memberCount} 位家庭成员。升级${tierName}后，可添加无限数量的家庭成员，所有成员均可享受个性化饮食建议。`
         this.paywallTrigger = trigger
         this.showPaywallDialog = true
         return
@@ -333,7 +335,7 @@ struct MemberEditPage {
 
     // 新建成员后通知会员系统更新额度
     if (this.editingMemberId.length === 0) {
-      this.appState.onMemberAdded()
+      this.appState.member.onMemberAdded()
     }
 
     // 同步更新健康信号

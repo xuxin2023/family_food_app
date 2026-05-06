@@ -38,7 +38,7 @@ struct SubscriptionPage {
   private iapService: IapService = IapService.getInstance()
 
   async aboutToAppear() {
-    this.currentTier = this.appState.memberStatus.tier
+    this.currentTier = this.appState.member.memberStatus.tier
     this.plans = this.buildPlanDisplays()
   }
 
@@ -289,7 +289,7 @@ struct SubscriptionPage {
         return
       }
       if (productPlan.price === '免费') {
-        this.appState.upgradeTier(plan.tier, 365)
+        this.appState.member.upgradeTier(plan.tier, 365)
         this.currentTier = plan.tier
         this.plans = this.buildPlanDisplays()
         promptAction.showToast({ message: '已切换到 ' + plan.name })
@@ -298,7 +298,7 @@ struct SubscriptionPage {
       const result: PurchaseResult = await this.iapService.purchase(productPlan.productId)
       if (result.success) {
         const days = 365; // 默认 365 天
-        this.appState.upgradeTier(plan.tier, days)
+        this.appState.member.upgradeTier(plan.tier, days)
         this.currentTier = plan.tier
         this.plans = this.buildPlanDisplays()
         promptAction.showToast({ message: '升级成功！' })
@@ -327,7 +327,7 @@ struct SubscriptionPage {
       else if (tierStr === 'premium') tier = MemberTier.PREMIUM;
 
       if (tier !== MemberTier.FREE) {
-        this.appState.upgradeTier(tier, 365);
+        this.appState.member.upgradeTier(tier, 365);
         this.currentTier = tier;
         this.plans = this.buildPlanDisplays();
         promptAction.showToast({ message: '已恢复订阅' });

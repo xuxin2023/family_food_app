@@ -14,6 +14,8 @@ import { DateUtil } from '../utils/DateUtil';
 import { COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, BUTTON } from '../constants/AppTheme';
 import { MealScenario } from '../model/MealBalance';
 import { AiNutritionAdvice } from '../model/AiModels';
+import { FoodLabel } from '../model/FoodLabel';
+import { HealthSignal } from '../model/HealthSignal';
 
 const DOMAIN_ZERO = 0;
 
@@ -76,8 +78,9 @@ struct DietDiaryPage {
     if (this.selectedMemberId.length === 0) return
     this.isLoadingAi = true
     try {
+      const member = this.familyMembers.find(m => m.memberId === this.selectedMemberId) || new FamilyProfile()
       this.aiAdvice = await this.appState.getAiNutritionAdvice(
-        this.selectedMemberId, 7, true
+        member, new FoodLabel(), new HealthSignal(), this.selectedMemberId, 7, true
       )
     } catch (e) {
       hilog.error(DOMAIN_ZERO, 'DietDiaryPage', 'ai nutritionist error: ' + JSON.stringify(e))

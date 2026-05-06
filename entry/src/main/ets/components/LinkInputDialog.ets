@@ -109,7 +109,7 @@ export struct LinkInputDialog {
         return
       }
 
-      this.appState.setReportParams(parseResult.label, [], [])
+      this.appState.reportCache.setParams(parseResult.label, [], [])
 
       const sourceName: string = parseResult.source ?? '';
       router.pushUrl({

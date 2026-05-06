@@ -9,8 +9,7 @@
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AiServiceBase } from './ai/AiServiceBase';
-import { AI_SERVICE_DEFAULTS } from './ai/AiConfig';
-import { AssetKeyManager, KeyAlias } from '../utils/AssetKeyManager';
+import { AI_SERVICE_DEFAULTS, SYSTEM_PROMPTS } from './ai/AiConfig';
 
 const TAG = 'AiPolishService';
 const DOMAIN_ZERO = 0;
@@ -25,8 +24,6 @@ export interface PolishInput {
 }
 
 export class AiPolishService extends AiServiceBase {
-  private freeTokensRemaining: number = 50000;
-
   protected getTag(): string {
     return TAG;
   }
@@ -40,28 +37,12 @@ export class AiPolishService extends AiServiceBase {
   }
 
   protected getSystemPrompt(): string {
-    return '你是一个食品健康建议润色助手。语气温和、生活化，不使用恐吓式表达，不使用绝对化表述（如"一定有害""放心吃"）。输出简洁，不超过100字。';
+    return SYSTEM_PROMPTS.POLISH;
   }
 
-  async setApiKey(key: string): Promise<void> {
-    this.apiKey = key;
-    await AssetKeyManager.getInstance().saveKey(KeyAlias.AGENT_ARTS, key);
-    hilog.info(DOMAIN_ZERO, TAG, 'API key configured and persisted to Asset Kit');
-  }
-
-  async loadApiKey(): Promise<boolean> {
-    const key = await AssetKeyManager.getInstance().getKey(KeyAlias.AGENT_ARTS);
-    if (key.length > 0) {
-      this.apiKey = key;
-      hilog.info(DOMAIN_ZERO, TAG, 'API key loaded from Asset Kit');
-      return true;
-    }
-    hilog.warn(DOMAIN_ZERO, TAG, 'No API key found in Asset Kit');
-    return false;
-  }
-
+  /** 获取剩余 Token（从基类统一管理） */
   getRemainingTokens(): number {
-    return this.freeTokensRemaining;
+    return Math.max(0, this.MAX_TOKENS - this.tokensUsed);
   }
 
   /**
@@ -76,11 +57,6 @@ export class AiPolishService extends AiServiceBase {
       return this.buildRawText(input);
     }
 
-    if (this.freeTokensRemaining <= 0) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'Free tokens exhausted, returning raw text');
-      return this.buildRawText(input);
-    }
-
     if (this.apiKey.length === 0) {
       hilog.warn(DOMAIN_ZERO, TAG, 'No API key, returning raw text');
       return this.buildRawText(input);
@@ -91,8 +67,6 @@ export class AiPolishService extends AiServiceBase {
       const aiText = await this.callAi(prompt);
 
       if (aiText !== null && aiText.length > 0) {
-        // 扣减 tokens（估算）
-        this.freeTokensRemaining -= Math.ceil(aiText.length / 4);
         hilog.info(DOMAIN_ZERO, TAG, 'AI polish success');
         return aiText;
       }

@@ -359,7 +359,7 @@ struct AiChatPage {
       buttons: [btn0, btn1, btn2, btn3, btn4, btn5]
     }, (err: Error, data: promptAction.ActionMenuSuccessResponse) => {
       if (err) {
-        console.info('showActionMenu err: ' + err);
+        hilog.warn(0x0000, 'AiChatPage', 'showActionMenu err: %{public}s', JSON.stringify(err));
         return;
       }
       const index = data.index

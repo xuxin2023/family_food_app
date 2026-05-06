@@ -43,7 +43,7 @@ struct BalancePage {
 
   aboutToAppear() {
     // 检查是否有高级美食平衡功能权限
-    const trigger = this.appState.getPaywallTrigger('meal_balance_advanced')
+    const trigger = this.appState.member.getPaywallTrigger('meal_balance_advanced')
     if (trigger !== null && trigger.requiredTier !== MemberTier.FREE) {
       // 当前等级无权限使用高级美食平衡功能
       this.isLocked = true
@@ -330,7 +330,7 @@ struct BalancePage {
     // 检查每日使用次数限制（免费版每天3次）
     if (!this.isLocked && this.dailyUseCount >= this.DAILY_FREE_LIMIT) {
       // 检查是否需要高级美食平衡功能
-      const trigger = this.appState.getPaywallTrigger('meal_balance_advanced')
+      const trigger = this.appState.member.getPaywallTrigger('meal_balance_advanced')
       if (trigger !== null && trigger.requiredTier !== MemberTier.FREE) {
         this.paywallTrigger = trigger
         this.showPaywallDialog = true

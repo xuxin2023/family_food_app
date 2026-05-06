@@ -116,7 +116,7 @@ struct HomePage {
    * 刷新所有成员的状态文本（基于AppState实时预算数据）
    */
   private refreshMemberStatuses(): void {
-    this.remainingScans = this.appState.getRemainingScans()
+    this.remainingScans = this.appState.member.getRemainingScans()
     const newMap: Map<string, StatusResult> = new Map()
 
     for (let i = 0; i < this.familyMembers.length; i++) {
@@ -161,7 +161,7 @@ struct HomePage {
       }
 
       // 解析成功 → 存入路由缓存，只传 foodId
-      this.appState.setReportParams(parseResult.label, [], [])
+      this.appState.reportCache.setParams(parseResult.label, [], [])
 
       const sourceName: string = parseResult.source ?? '';
       router.pushUrl({
@@ -272,9 +272,9 @@ struct HomePage {
 
             Column() {
               Text('+').fontSize(28).fontColor(COLORS.PRIMARY)
-              Text(this.appState.canAddMember() ? $r('app.string.add_member') : $r('app.string.upgrade_unlock'))
+              Text(this.appState.member.canAddMember() ? $r('app.string.add_member') : $r('app.string.upgrade_unlock'))
                 .fontSize(12)
-                .fontColor(this.appState.canAddMember() ? COLORS.PRIMARY : COLORS.ORANGE_ACCENT)
+                .fontColor(this.appState.member.canAddMember() ? COLORS.PRIMARY : COLORS.ORANGE_ACCENT)
                 .margin({ top: 4 })
             }
             .width('45%')
@@ -286,7 +286,7 @@ struct HomePage {
             .border({ width: 1, color: COLORS.BORDER_LIGHT, style: BorderStyle.Dashed, radius: 16 })
             .onClick(() => {
               try {
-                if (this.appState.canAddMember()) {
+                if (this.appState.member.canAddMember()) {
                   router.pushUrl({ url: 'pages/MemberEditPage' })
                 } else {
                   router.pushUrl({ url: 'pages/SettingsPage' })
@@ -362,7 +362,7 @@ struct HomePage {
           }
         })
 
-        if (this.appState.hasFamilyAccess()) {
+        if (this.appState.member.hasFamilyAccess()) {
           FeatureButton({
             icon: '🛒',
             text: $r('app.string.basket_button'),
@@ -455,7 +455,7 @@ struct HomePage {
               }
             })
           Text('  |  ').fontSize(13).fontColor(COLORS.BORDER)
-          if (this.appState.hasFamilyAccess()) {
+          if (this.appState.member.hasFamilyAccess()) {
             Text('周报').fontSize(13).fontColor(COLORS.TEXT_GRAY_7575)
               .onClick(() => {
                 try {

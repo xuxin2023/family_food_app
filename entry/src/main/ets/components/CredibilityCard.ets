@@ -5,6 +5,10 @@ import { CredibilityResult, DataGrade, RadarDimension, PublicQueryEntry } from '
 import { COLORS } from '../constants/AppTheme';
 import { pasteboard } from '@kit.BasicServicesKit';
 import { BusinessError } from '@kit.BasicServicesKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+
+const TAG = 'CredibilityCard';
+const DOMAIN_ZERO = 0;
 
 @Component
 export struct CredibilityCard {
@@ -250,11 +254,11 @@ export struct CredibilityCard {
       systemPasteboard.setData(pasteData).then(() => {
         promptAction.showToast({ message: '已复制到剪贴板', duration: 1500 });
       }).catch((err: BusinessError) => {
-        console.warn('Copy to clipboard failed: ' + err.message);
+        hilog.warn(DOMAIN_ZERO, TAG, 'Copy to clipboard failed: %{public}s', err.message);
         promptAction.showToast({ message: '复制失败', duration: 1500 });
       });
     } catch (error) {
-      console.warn('Copy to clipboard error: ' + JSON.stringify(error));
+      hilog.warn(DOMAIN_ZERO, TAG, 'Copy to clipboard error: %{public}s', JSON.stringify(error));
     }
   }
 }

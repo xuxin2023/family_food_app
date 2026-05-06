@@ -423,7 +423,7 @@ struct SettingsPage {
       }
 
       // 3. 重置 AppState 内部缓存
-      this.appState.clearAllCache()
+      this.appState.cache.clearAll()
 
       // 4. 重置页面状态
       this.familyMembers = []

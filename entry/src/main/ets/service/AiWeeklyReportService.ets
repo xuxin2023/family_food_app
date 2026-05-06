@@ -5,8 +5,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { WeeklyReport, WeeklyDietData } from '../engine/WeeklyReportEngine';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { AiServiceBase } from './ai/AiServiceBase';
-import { AI_SERVICE_DEFAULTS } from './ai/AiConfig';
-import { AssetKeyManager, KeyAlias } from '../utils/AssetKeyManager';
+import { AI_SERVICE_DEFAULTS, SYSTEM_PROMPTS } from './ai/AiConfig';
 
 const TAG = 'AiWeeklyReportService';
 const DOMAIN_ZERO = 0;
@@ -33,24 +32,7 @@ export class AiWeeklyReportService extends AiServiceBase {
   }
 
   protected getSystemPrompt(): string {
-    return '你是家庭饮食周报润色助手。输出必须是合法JSON。语气温和鼓励，不恐吓。';
-  }
-
-  async setApiKey(key: string): Promise<void> {
-    this.apiKey = key;
-    await AssetKeyManager.getInstance().saveKey(KeyAlias.AGENT_ARTS, key);
-    hilog.info(DOMAIN_ZERO, TAG, 'API key configured and persisted to Asset Kit');
-  }
-
-  async loadApiKey(): Promise<boolean> {
-    const key = await AssetKeyManager.getInstance().getKey(KeyAlias.AGENT_ARTS);
-    if (key.length > 0) {
-      this.apiKey = key;
-      hilog.info(DOMAIN_ZERO, TAG, 'API key loaded from Asset Kit');
-      return true;
-    }
-    hilog.warn(DOMAIN_ZERO, TAG, 'No API key found in Asset Kit');
-    return false;
+    return SYSTEM_PROMPTS.WEEKLY;
   }
 
   async enhanceWeeklyReport(

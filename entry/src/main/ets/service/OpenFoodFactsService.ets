@@ -6,9 +6,13 @@
 
 import { http } from '@kit.NetworkKit';
 import { image } from '@kit.ImageKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FoodLabel, NutritionPer100g, FoodSource } from '../model/FoodLabel';
 import { JsonObject } from '../model/JsonTypes';
 import { API_TIMEOUT_CONFIG } from '../constants/AppConfig';
+
+const TAG = 'OpenFoodFactsService';
+const DOMAIN_ZERO = 0;
 
 // ===== 公开的营养数据接口（替代已移除的 FoodAdapterTypes.FoodNutrition） =====
 
@@ -287,7 +291,7 @@ export class OpenFoodFactsService {
    */
   async getProductByBarcode(barcode: string): Promise<OffProduct | null> {
     if (barcode.length === 0) {
-      console.warn('[OpenFoodFactsService] Empty barcode provided')
+      hilog.warn(DOMAIN_ZERO, TAG, 'Empty barcode provided')
       return null
     }
 
@@ -306,7 +310,7 @@ export class OpenFoodFactsService {
 
       return this.parseOffProduct(barcode, productRaw)
     } catch (error) {
-      console.error(`[OpenFoodFactsService] Failed to parse product response: ${JSON.stringify(error)}`)
+      hilog.error(DOMAIN_ZERO, TAG, 'Failed to parse product response: %{public}s', JSON.stringify(error))
       return null
     }
   }
@@ -316,7 +320,7 @@ export class OpenFoodFactsService {
    */
   async searchProducts(keyword: string, page: number, pageSize: number = 20): Promise<OffSearchResult | null> {
     if (keyword.length === 0) {
-      console.warn('[OpenFoodFactsService] Empty search keyword')
+      hilog.warn(DOMAIN_ZERO, TAG, 'Empty search keyword')
       return null
     }
 
@@ -349,7 +353,7 @@ export class OpenFoodFactsService {
         products: products
       }
     } catch (error) {
-      console.error(`[OpenFoodFactsService] Failed to parse search response: ${JSON.stringify(error)}`)
+      hilog.error(DOMAIN_ZERO, TAG, 'Failed to parse search response: %{public}s', JSON.stringify(error))
       return null
     }
   }
@@ -377,12 +381,12 @@ export class OpenFoodFactsService {
         }, async (err, data) => {
           httpRequest.destroy()
           if (err) {
-            console.warn(`[OpenFoodFactsService] Image fetch error: ${JSON.stringify(err)}`)
+            hilog.warn(DOMAIN_ZERO, TAG, 'Image fetch error: %{public}s', JSON.stringify(err))
             resolve(null)
             return
           }
           if (data.responseCode !== 200) {
-            console.warn(`[OpenFoodFactsService] Image fetch failed with status: ${data.responseCode}`)
+            hilog.warn(DOMAIN_ZERO, TAG, 'Image fetch failed with status: %{public}d', data.responseCode)
             resolve(null)
             return
           }
@@ -394,7 +398,7 @@ export class OpenFoodFactsService {
               imageSource.release()
               resolve(pixelMap)
             } catch (imgError) {
-              console.error(`[OpenFoodFactsService] Image processing failed: ${JSON.stringify(imgError)}`)
+              hilog.error(DOMAIN_ZERO, TAG, 'Image processing failed: %{public}s', JSON.stringify(imgError))
               resolve(null)
             }
           } else {
@@ -402,7 +406,7 @@ export class OpenFoodFactsService {
           }
         })
       } catch (error) {
-        console.error(`[OpenFoodFactsService] Image request failed: ${JSON.stringify(error)}`)
+        hilog.error(DOMAIN_ZERO, TAG, 'Image request failed: %{public}s', JSON.stringify(error))
         resolve(null)
       }
     })
@@ -512,12 +516,12 @@ export class OpenFoodFactsService {
         }, (err, data) => {
           httpRequest.destroy()
           if (err) {
-            console.warn(`[OpenFoodFactsService] Request error: ${JSON.stringify(err)}`)
+            hilog.warn(DOMAIN_ZERO, TAG, 'Request error: %{public}s', JSON.stringify(err))
             resolve(null)
             return
           }
           if (data.responseCode !== 200) {
-            console.warn(`[OpenFoodFactsService] HTTP ${data.responseCode} for ${url}`)
+            hilog.warn(DOMAIN_ZERO, TAG, 'HTTP %{public}d for %{public}s', data.responseCode, url)
             resolve(null)
             return
           }
@@ -529,7 +533,7 @@ export class OpenFoodFactsService {
           }
         })
       } catch (error) {
-        console.error(`[OpenFoodFactsService] Request failed: ${JSON.stringify(error)}`)
+        hilog.error(DOMAIN_ZERO, TAG, 'Request failed: %{public}s', JSON.stringify(error))
         resolve(null)
       }
     })

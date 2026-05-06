@@ -30,7 +30,7 @@ struct WeeklyReportPage {
 
   async aboutToAppear() {
     // 检查付费墙 - 周报需要个人版以上
-    const trigger = this.appState.getPaywallTrigger('weekly_report')
+    const trigger = this.appState.member.getPaywallTrigger('weekly_report')
     if (trigger !== null && trigger.requiredTier !== MemberTier.FREE) {
       // 当前等级无权限，显示付费墙
       this.paywallTrigger = trigger

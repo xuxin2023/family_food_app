@@ -447,4 +447,11 @@ struct SettingsPage {
       promptAction.showToast({ message: '清除数据失败，请重试' })
     }
   }
+
+  pageTransition() {
+    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Right)
+    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Left)
+  }
 }

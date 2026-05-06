@@ -6,6 +6,7 @@ import { BackButton } from '../components/BackButton';
 import { safeBack, safePushUrl } from '../utils/RouterUtil';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
+import { ErrorFallback } from '../components/ErrorFallback';
 import { Recipe, RecipeCategory, RecipeDifficulty, DietTag, RecipeQueryParams } from '../model/Recipe';
 import {
   AiRecipeRecommendation, AiRecipeRecommendationResult
@@ -33,6 +34,7 @@ struct RecipeCommunityPage {
   @State isLoadingAi: boolean = false
   @State showAiRecommend: boolean = false
   @State aiSummary: string = ''
+  @State errorMessage: string = ''
 
   private appState: AppState = AppState.getInstance()
   private recipes: Recipe[] = []
@@ -71,6 +73,7 @@ struct RecipeCommunityPage {
 
   async loadRecipes() {
     this.isLoading = true
+    this.errorMessage = ''
     try {
       const params: RecipeQueryParams = {
         offset: 0,
@@ -82,6 +85,7 @@ struct RecipeCommunityPage {
       this.recipeDS.reload(this.recipes)
     } catch (e) {
       hilog.error(DOMAIN_ZERO, 'RecipeCommunityPage', 'load recipes error')
+      this.errorMessage = '食谱加载失败，请检查网络后重试'
     }
     this.isLoading = false
   }
@@ -149,6 +153,12 @@ struct RecipeCommunityPage {
             .width('100%')
             .textAlign(TextAlign.Center)
         }
+      } else if (this.errorMessage.length > 0) {
+        ErrorFallback({
+          message: this.errorMessage,
+          icon: '🍽️',
+          onRetry: () => this.loadRecipes()
+        })
       } else if (this.isLoading) {
         LoadingProgress()
           .width(32)
@@ -395,4 +405,11 @@ struct RecipeCommunityPage {
   }
 
   // 使用全局函数 getDietTagLabel，避免栈溢出
+
+  pageTransition() {
+    PageTransitionEnter({ duration: 300, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Right)
+    PageTransitionExit({ duration: 200, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Left)
+  }
 }

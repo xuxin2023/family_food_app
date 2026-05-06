@@ -5,6 +5,7 @@ import { FamilyProfile } from '../model/FamilyProfile';
 import { ScanHistoryRecord } from '../repository/HistoryRepository';
 import { DateUtil } from '../utils/DateUtil';
 import { EmptyState } from '../components/EmptyState';
+import { LoadingSkeleton } from '../components/SkeletonScreen';
 import { COLORS } from '../constants/AppTheme';
 import { BasicDataSource } from '../utils/BasicDataSource';
 
@@ -13,15 +14,22 @@ import { BasicDataSource } from '../utils/BasicDataSource';
 struct HistoryPage {
   @State familyMembers: FamilyProfile[] = []
   @State selectedMemberId: string = 'all'
+  @State isLoading: boolean = true
 
   private appState: AppState = AppState.getInstance()
   private historyRecords: ScanHistoryRecord[] = []
   private historyDS = new BasicDataSource<ScanHistoryRecord>()
 
   async aboutToAppear() {
-    this.familyMembers = await this.appState.getAllMembers()
-    this.historyRecords = await this.appState.getRecentScanHistory(100)
-    this.historyDS.reload(this.getVisibleRecords())
+    this.isLoading = true
+    try {
+      this.familyMembers = await this.appState.getAllMembers()
+      this.historyRecords = await this.appState.getRecentScanHistory(100)
+      this.historyDS.reload(this.getVisibleRecords())
+    } catch (_e) {
+      // 异常时保留空列表，EmptyState 会展示
+    }
+    this.isLoading = false
   }
 
   build() {
@@ -39,58 +47,63 @@ struct HistoryPage {
       .width('100%')
       .padding({ left: 16, right: 16, top: 16, bottom: 16 })
 
-      Scroll() {
-        Row() {
-          Text($r('app.string.all'))
-            .fontSize(13)
-            .padding({ left: 12, right: 12, top: 6, bottom: 6 })
-            .borderRadius(16)
-            .backgroundColor(this.selectedMemberId === 'all' ? COLORS.PRIMARY : COLORS.WHITE)
-            .fontColor(this.selectedMemberId === 'all' ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
-            .margin({ right: 8 })
-            .onClick(() => {
-                this.selectedMemberId = 'all'
-                this.historyDS.reload(this.getVisibleRecords())
-              })
-
-          ForEach(this.familyMembers, (member: FamilyProfile) => {
-            Text(member.nickname)
+      if (this.isLoading) {
+        LoadingSkeleton({ variant: 'list', rowCount: 6 })
+          .layoutWeight(1)
+      } else {
+        Scroll() {
+          Row() {
+            Text($r('app.string.all'))
               .fontSize(13)
               .padding({ left: 12, right: 12, top: 6, bottom: 6 })
               .borderRadius(16)
-              .backgroundColor(this.selectedMemberId === member.memberId ? COLORS.PRIMARY : COLORS.WHITE)
-              .fontColor(this.selectedMemberId === member.memberId ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
+              .backgroundColor(this.selectedMemberId === 'all' ? COLORS.PRIMARY : COLORS.WHITE)
+              .fontColor(this.selectedMemberId === 'all' ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
               .margin({ right: 8 })
               .onClick(() => {
-                this.selectedMemberId = member.memberId
-                this.historyDS.reload(this.getVisibleRecords())
-              })
-          }, (member: FamilyProfile) => member.memberId)
-        }
-      }
-      .scrollable(ScrollDirection.Horizontal)
-      .width('100%')
-      .padding({ left: 16, right: 16 })
-      .margin({ bottom: 14 })
+                  this.selectedMemberId = 'all'
+                  this.historyDS.reload(this.getVisibleRecords())
+                })
 
-      if (this.historyDS.totalCount() === 0) {
-        EmptyState({
-          icon: '📭',
-          title: '还没有历史记录',
-          subtitle: '先去拍标签或扫码，再回来查看'
-        })
-      } else {
-        List() {
-          LazyForEach(this.historyDS, (record: ScanHistoryRecord) => {
-            ListItem() {
-              this.HistoryCard(record)
-            }
-          }, (record: ScanHistoryRecord) => `${record.id}`)
+            ForEach(this.familyMembers, (member: FamilyProfile) => {
+              Text(member.nickname)
+                .fontSize(13)
+                .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+                .borderRadius(16)
+                .backgroundColor(this.selectedMemberId === member.memberId ? COLORS.PRIMARY : COLORS.WHITE)
+                .fontColor(this.selectedMemberId === member.memberId ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
+                .margin({ right: 8 })
+                .onClick(() => {
+                  this.selectedMemberId = member.memberId
+                  this.historyDS.reload(this.getVisibleRecords())
+                })
+            }, (member: FamilyProfile) => member.memberId)
+          }
         }
+        .scrollable(ScrollDirection.Horizontal)
         .width('100%')
-        .layoutWeight(1)
         .padding({ left: 16, right: 16 })
-        .cachedCount(5)
+        .margin({ bottom: 14 })
+
+        if (this.historyDS.totalCount() === 0) {
+          EmptyState({
+            icon: '📭',
+            title: '还没有历史记录',
+            subtitle: '先去拍标签或扫码，再回来查看'
+          })
+        } else {
+          List() {
+            LazyForEach(this.historyDS, (record: ScanHistoryRecord) => {
+              ListItem() {
+                this.HistoryCard(record)
+              }
+            }, (record: ScanHistoryRecord) => `${record.id}`)
+          }
+          .width('100%')
+          .layoutWeight(1)
+          .padding({ left: 16, right: 16 })
+          .cachedCount(5)
+        }
       }
     }
     .width('100%')
@@ -167,5 +180,12 @@ struct HistoryPage {
     if (level === '今天谨慎') return COLORS.LEVEL_ORANGE
     if (level === '建议避免') return COLORS.LEVEL_RED
     return COLORS.TEXT_GRAY_7575
+  }
+
+  pageTransition() {
+    PageTransitionEnter({ duration: 300, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Right)
+    PageTransitionExit({ duration: 200, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Left)
   }
 }

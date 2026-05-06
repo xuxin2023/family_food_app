@@ -1,9 +1,10 @@
-// 全局应用状态管理器 - 统一数据访问入口
-// V2: 将引擎和服务管理委托给 EngineManager / ServiceManager
+﻿// 鍏ㄥ眬搴旂敤鐘舵€佺鐞嗗櫒 - 缁熶竴鏁版嵁璁块棶鍏ュ彛
+// V2: 灏嗗紩鎿庡拰鏈嶅姟绠＄悊濮旀墭缁?EngineManager / ServiceManager
 
-import { FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig } from './model/FamilyProfile';
+import { FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig, createDefaultMembers } from './model/FamilyProfile';
 import {
-  HealthSignal, StepLevel, SleepStatus, WeightTrend, DataSource
+  HealthSignal, StepLevel, SleepStatus, WeightTrend, DataSource,
+  BpStatus, BsStatus, HeartRateZone, SpO2Level, StressLevel
 } from './model/HealthSignal';
 import { FoodLabel, FoodLabelJson } from './model/FoodLabel';
 import { DailyBudget } from './model/DailyBudget';
@@ -34,6 +35,9 @@ import { DateUtil } from './utils/DateUtil';
 import { CacheManager } from './utils/CacheManager';
 import { EngineManager } from './EngineManager';
 import { ServiceManager } from './ServiceManager';
+import { MemberManager } from './manager/MemberManager';
+import { BasketManager } from './manager/BasketManager';
+import { ReportCacheManager } from './manager/ReportCacheManager';
 import { common } from '@kit.AbilityKit';
 import { relationalStore, preferences } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -58,11 +62,11 @@ import {
 const TAG = 'AppState';
 const DOMAIN_ZERO = 0;
 
-// 全局单例
+// 鍏ㄥ眬鍗曚緥
 let appStateInstance: AppState | null = null;
 
 export class AppState {
-  // 数据仓库
+  // 鏁版嵁浠撳簱
   private familyRepo: FamilyRepository = new FamilyRepository();
   private foodRepo: FoodRepository = new FoodRepository();
   private historyRepo: HistoryRepository = new HistoryRepository();
@@ -70,71 +74,42 @@ export class AppState {
   private groupRepo: FamilyGroupRepository = new FamilyGroupRepository();
   private recipeRepo: RecipeRepository = new RecipeRepository();
 
-  // 引擎管理器（委托所有引擎调用）
+  // 寮曟搸绠＄悊鍣紙濮旀墭鎵€鏈夊紩鎿庤皟鐢級
   readonly engines: EngineManager = new EngineManager();
 
-  // 服务管理器（委托所有服务调用）
+  // 鏈嶅姟绠＄悊鍣紙濮旀墭鎵€鏈夋湇鍔¤皟鐢級
   readonly services: ServiceManager = new ServiceManager();
 
-  // 购物篮（内存中暂存，通过 preferences 持久化）
-  private basketItems: FoodLabel[] = [];
-  private basketContext: common.Context | null = null;
+  // 涓氬姟绠＄悊鍣紙浠?AppState 鎷嗗垎锛岄檷浣?God Class 澶嶆潅搴︼級
+  /** 浼氬憳/璁㈤槄/鎵弿閰嶉绠＄悊 */
+  readonly member: MemberManager = new MemberManager();
+  /** 璐墿绡鐞?*/
+  readonly basket: BasketManager = new BasketManager();
+  /** 鎶ュ憡椤靛弬鏁扮紦瀛?*/
+  readonly reportCache: ReportCacheManager = new ReportCacheManager();
 
-  // 引导状态
+  // 寮曞鐘舵€?
   hasShownGuide: boolean = false;
 
-  // ========== 会员状态管理 ==========
-
-  /** 会员状态 */
-  memberStatus: MemberStatus = createDefaultMemberStatus();
-
-  /** 已添加的家庭成员数量（用于计算剩余可添加数） */
-  private addedMemberCount: number = 0;
-
-  /** 缓存管理器 */
+  /** 缂撳瓨绠＄悊鍣?*/
   cache: CacheManager = new CacheManager();
 
   private isInitialized: boolean = false;
-  /** 初始化就绪 Promise 解析器（事件驱动，替代轮询） */
+  /** 鍒濆鍖栧氨缁?Promise 瑙ｆ瀽鍣紙浜嬩欢椹卞姩锛屾浛浠ｈ疆璇級 */
   private readyResolver: (() => void) | null = null;
-  /** 初始化就绪 Promise（供 waitForReady 等待） */
+  /** 鍒濆鍖栧氨缁?Promise锛堜緵 waitForReady 绛夊緟锛?*/
   private readyPromise: Promise<void> = new Promise((resolve) => {
     this.readyResolver = resolve;
   });
 
-  // ========== 缓存向后兼容属性（委托给 CacheManager） ==========
   private get membersCache(): FamilyProfile[] { return this.cache.membersCache; }
   private set membersCache(val: FamilyProfile[]) { this.cache.membersCache = val; }
 
   private get healthSignalsCache(): Map<string, HealthSignal> { return this.cache.healthSignalsSnapshot; }
-  private set healthSignalsCache(_val: Map<string, HealthSignal>) { /* 只读兼容 */ }
+  private set healthSignalsCache(_val: Map<string, HealthSignal>) { /* 鍙鍏煎 */ }
 
   private get dailyBudgetsCache(): Map<string, DailyBudget> { return this.cache.dailyBudgetsSnapshot; }
-  private set dailyBudgetsCache(_val: Map<string, DailyBudget>) { /* 只读兼容 */ }
-
-  // ========== 向后兼容属性委托 ==========
-
-  /** @deprecated 使用 services.healthService */
-  private get healthService() { return this.services.healthService; }
-  /** @deprecated 使用 services.authService */
-  private get authService() { return this.services.authService; }
-
-  // ========== 向后兼容引擎委托 ==========
-
-  /** @deprecated 使用 engines.ruleEngine */
-  private get ruleEngine() { return this.engines.ruleEngine; }
-  /** @deprecated 使用 engines.mealBalanceEngine */
-  private get mealBalanceEngine() { return this.engines.mealBalanceEngine; }
-  /** @deprecated 使用 engines.childProtectionEngine */
-  private get childProtectionEngine() { return this.engines.childProtectionEngine; }
-  /** @deprecated 使用 engines.credibilityEngine */
-  private get credibilityEngine() { return this.engines.credibilityEngine; }
-  /** @deprecated 使用 engines.basketCheckEngine */
-  private get basketCheckEngine() { return this.engines.basketCheckEngine; }
-  /** @deprecated 使用 engines.elderFriendlyEngine */
-  private get elderFriendlyEngine() { return this.engines.elderFriendlyEngine; }
-  /** @deprecated 使用 engines.positiveAdviceEngine */
-  private get positiveAdviceEngine() { return this.engines.positiveAdviceEngine; }
+  private set dailyBudgetsCache(_val: Map<string, DailyBudget>) { /* 鍙鍏煎 */ }
 
   private constructor() {}
 
@@ -146,7 +121,7 @@ export class AppState {
   }
 
   /**
-   * 等待 AppState 初始化完成（事件驱动，无需轮询）
+   * 绛夊緟 AppState 鍒濆鍖栧畬鎴愶紙浜嬩欢椹卞姩锛屾棤闇€杞锛?
    */
   static waitForReady(): Promise<void> {
     const state = AppState.getInstance();
@@ -155,7 +130,7 @@ export class AppState {
   }
 
   /**
-   * 初始化数据库和规则
+   * 鍒濆鍖栨暟鎹簱鍜岃鍒?
    */
   async init(context: common.Context): Promise<void> {
     if (this.isInitialized) return;
@@ -167,15 +142,16 @@ export class AppState {
       };
       const rdbStore = await relationalStore.getRdbStore(context, rdbConfig);
 
-      // 数据库迁移（非阻塞 — 失败不影响启动）
+      // 鏁版嵁搴撹縼绉伙紙闈為樆濉?鈥?澶辫触涓嶅奖鍝嶅惎鍔級
       migrateDatabase(rdbStore, context).catch((_e: Error) => {
         hilog.warn(DOMAIN_ZERO, TAG, 'DB migration skipped');
       });
 
-      // 保存 context 用于购物篮持久化
-      this.basketContext = context;
+      // 淇濆瓨 context 鐢ㄤ簬璐墿绡?鎵弿閰嶉鎸佷箙鍖?
+      this.basket.setContext(context);
+      this.member.setContext(context);
 
-      // === 第一阶段：并行初始化所有无依赖的仓库和服务 ===
+      // === 绗竴闃舵锛氬苟琛屽垵濮嬪寲鎵€鏈夋棤渚濊禆鐨勪粨搴撳拰鏈嶅姟 ===
       await Promise.all([
         this.familyRepo.init(rdbStore),
         this.foodRepo.init(rdbStore),
@@ -183,17 +159,20 @@ export class AppState {
         (async () => { this.groupRepo.init(rdbStore); await this.groupRepo.createTables(); })(),
         (async () => { this.recipeRepo.init(rdbStore); await this.recipeRepo.createTables(); })(),
         this.services.initAuth(context),
-        // 规则仓库和 service 初始化不需要 await
+        // 瑙勫垯浠撳簱鍜?service 鍒濆鍖栦笉闇€瑕?await
         (async () => { this.ruleRepo.setContext(context); })(),
       ]);
 
-      // === 第二阶段：并行初始化无数据库依赖的服务 ===
+      // === 绗簩闃舵锛氬苟琛屽垵濮嬪寲鏃犳暟鎹簱渚濊禆鐨勬湇鍔?===
       this.services.initSocial(this.groupRepo, this.recipeRepo);
-      this.services.initAiServices(this.recipeRepo);
+      // AI 鏈嶅姟寮傛鍔犺浇 API Key锛堜笉闃诲涓绘祦绋嬶紝澶辫触鏃惰嚜鍔ㄩ檷绾т负鏈湴瑙勫垯寮曟搸锛?
+      this.services.initAiServices(this.recipeRepo).catch((e: Error) => {
+        hilog.warn(DOMAIN_ZERO, TAG, 'AI key loading non-blocking: %{public}s', e.message);
+      });
 
       await Promise.all([
         this.services.initCloudSync(context),
-        // 同步事件监听
+        // 鍚屾浜嬩欢鐩戝惉
         (async () => {
           this.services.onSyncEvent((event) => {
             try {
@@ -208,32 +187,32 @@ export class AppState {
         })(),
       ]);
 
-      // === 第三阶段：并行加载缓存数据 ===
+      // === 绗笁闃舵锛氬苟琛屽姞杞界紦瀛樻暟鎹?===
       const allResults = await Promise.all([
         this.familyRepo.getAllMembers(),
         this.restoreTodayBudgets(),
         this.restoreHealthSignalsFromPrefs(context),
-        this.restoreBasketFromPrefs(context),
-        this.restoreScanQuota(context),
+        this.basket.restoreFromPrefs(context),
+        this.member.restoreScanQuota(context),
       ]);
       const members: FamilyProfile[] = allResults[0] as FamilyProfile[];
       this.membersCache = members;
+      this.member.syncMemberCount(members.length);
 
       this.isInitialized = true;
       this.readyResolver?.();
       hilog.info(DOMAIN_ZERO, TAG, 'AppState initialized');
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'AppState init failed: %{public}s', JSON.stringify(error));
-      this.membersCache = this.createDefaultMembers();
+      this.membersCache = createDefaultMembers();
       this.isInitialized = true;
       this.readyResolver?.();
     }
   }
 
-  /** 成员初始化锁 */
+  /** 鎴愬憳鍒濆鍖栭攣 */
   private memberInitLock: boolean = false;
 
-  // ========== 家庭成员管理 ==========
 
   async getAllMembers(): Promise<FamilyProfile[]> {
     if (this.membersCache.length === 0) {
@@ -241,7 +220,7 @@ export class AppState {
       if (this.membersCache.length === 0 && !this.memberInitLock) {
         this.memberInitLock = true;
         try {
-          this.membersCache = this.createDefaultMembers();
+          this.membersCache = createDefaultMembers();
           for (const member of this.membersCache) {
             await this.familyRepo.saveMember(member);
           }
@@ -270,7 +249,6 @@ export class AppState {
     this.dailyBudgetsCache.delete(memberId);
   }
 
-  // ========== 健康信号管理 ==========
 
   async getHealthSignalAsync(memberId: string): Promise<HealthSignal> {
     const today = DateUtil.getToday();
@@ -280,7 +258,7 @@ export class AppState {
     }
 
     try {
-      const signal = await this.healthService.getTodayHealthData(memberId);
+      const signal = await this.services.healthService.getTodayHealthData(memberId);
       if (signal.source === DataSource.HUAWEI_HEALTH) {
         this.healthSignalsCache.set(memberId, signal);
         return signal;
@@ -339,11 +317,10 @@ export class AppState {
     return await this.services.checkHealthAuthorization();
   }
 
-  // ========== 今日预算管理 ==========
 
   /**
-   * 获取当日预算（同步从缓存读取）
-   * 适用于UI模板渲染等同步场景。缓存由 restoreTodayBudgets() 在启动时填充。
+   * 鑾峰彇褰撴棩棰勭畻锛堝悓姝ヤ粠缂撳瓨璇诲彇锛?
+   * 閫傜敤浜嶶I妯℃澘娓叉煋绛夊悓姝ュ満鏅€傜紦瀛樼敱 restoreTodayBudgets() 鍦ㄥ惎鍔ㄦ椂濉厖銆?
    */
   getDailyBudgetSync(memberId: string): DailyBudget {
     const today = DateUtil.getToday();
@@ -357,8 +334,8 @@ export class AppState {
   }
 
   /**
-   * 获取当日预算（异步，缓存未命中时从膳食记录重建）
-   * 适用于非UI业务逻辑（如AI服务、报告生成）
+   * 鑾峰彇褰撴棩棰勭畻锛堝紓姝ワ紝缂撳瓨鏈懡涓椂浠庤喅椋熻褰曢噸寤猴級
+   * 閫傜敤浜庨潪UI涓氬姟閫昏緫锛堝AI鏈嶅姟銆佹姤鍛婄敓鎴愶級
    */
   async getDailyBudget(memberId: string): Promise<DailyBudget> {
     const today = DateUtil.getToday();
@@ -367,7 +344,7 @@ export class AppState {
       return cached;
     }
     const budget = this.createBudgetForMember(memberId);
-    // 从当天的膳食记录还原已扣除的额度（缓存未命中时重建）
+    // 浠庡綋澶╃殑鑶抽璁板綍杩樺師宸叉墸闄ょ殑棰濆害锛堢紦瀛樻湭鍛戒腑鏃堕噸寤猴級
     try {
       const records = await this.historyRepo.getDietRecordsByDateRange(memberId, today, today);
       for (const record of records) {
@@ -405,6 +382,79 @@ export class AppState {
     return budget;
   }
 
+  /**
+   * 从 Preferences 恢复健康信号缓存（应用启动时调用）
+   * 每个成员存储最近一次的健康信号，避免启动时空白的默认值闪烁
+   */
+  private async restoreHealthSignalsFromPrefs(context: common.Context): Promise<void> {
+    try {
+      const prefs = await preferences.getPreferences(context, 'health_signal_cache');
+      for (const member of this.membersCache) {
+        const jsonStr = prefs.getSync(member.memberId, '') as string;
+        if (jsonStr.length > 0) {
+          const raw = JSON.parse(jsonStr) as Record<string, Object>;
+          const signal = new HealthSignal();
+          // 还原 HealthSignal 的所有属性
+          signal.memberId = (raw['memberId'] as string) || member.memberId;
+          signal.date = (raw['date'] as string) || '';
+          signal.stepLevel = this.parseEnum(raw['stepLevel'] as string === '' ? '' : raw['stepLevel'] as string,
+            StepLevel, StepLevel.NORMAL);
+          signal.sleepStatus = this.parseEnum(raw['sleepStatus'] as string === '' ? '' : raw['sleepStatus'] as string,
+            SleepStatus, SleepStatus.GOOD);
+          signal.weightTrend = this.parseEnum(raw['weightTrend'] as string === '' ? '' : raw['weightTrend'] as string,
+            WeightTrend, WeightTrend.STABLE);
+          signal.activityCaloriesLevel = this.parseEnum(
+            raw['activityCaloriesLevel'] as string === '' ? '' : raw['activityCaloriesLevel'] as string,
+            StepLevel, StepLevel.NORMAL);
+          signal.manualBpStatus = this.parseEnum(
+            raw['manualBpStatus'] as string === '' ? '' : raw['manualBpStatus'] as string,
+            BpStatus, BpStatus.NORMAL);
+          signal.manualBsStatus = this.parseEnum(
+            raw['manualBsStatus'] as string === '' ? '' : raw['manualBsStatus'] as string,
+            BsStatus, BsStatus.NORMAL);
+          signal.hadHighSodiumToday = raw['hadHighSodiumToday'] as boolean || false;
+          signal.hadHighSugarToday = raw['hadHighSugarToday'] as boolean || false;
+          signal.source = this.parseEnum(raw['source'] as string === '' ? '' : raw['source'] as string,
+            DataSource, DataSource.MANUAL);
+          signal.lastUpdated = raw['lastUpdated'] as number || 0;
+          signal.stepCount = raw['stepCount'] as number || 0;
+          signal.heartRate = raw['heartRate'] as number || 0;
+          signal.heartRateZone = this.parseEnum(
+            raw['heartRateZone'] as string === '' ? '' : raw['heartRateZone'] as string,
+            HeartRateZone, HeartRateZone.REST);
+          signal.spo2 = raw['spo2'] as number || 0;
+          signal.spo2Level = this.parseEnum(
+            raw['spo2Level'] as string === '' ? '' : raw['spo2Level'] as string,
+            SpO2Level, SpO2Level.NORMAL);
+          signal.stressLevel = this.parseEnum(
+            raw['stressLevel'] as string === '' ? '' : raw['stressLevel'] as string,
+            StressLevel, StressLevel.NORMAL);
+          signal.bodyTemperature = raw['bodyTemperature'] as number || 0;
+          signal.deepSleepMinutes = raw['deepSleepMinutes'] as number || 0;
+          signal.lightSleepMinutes = raw['lightSleepMinutes'] as number || 0;
+          signal.totalSleepMinutes = raw['totalSleepMinutes'] as number || 0;
+          signal.restingHeartRate = raw['restingHeartRate'] as number || 0;
+          this.healthSignalsCache.set(member.memberId, signal);
+        }
+      }
+    } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Failed to restore health signals: %{public}s', JSON.stringify(error));
+    }
+  }
+
+  private parseEnum<T>(value: string, enumObj: Record<string, T>, defaultValue: T): T {
+    if (value === '') return defaultValue;
+    // 查找 enumObj 中 key 或 value 匹配的值
+    const keys = Object.keys(enumObj);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      if (enumObj[key] === value || key === value) {
+        return enumObj[key] as T;
+      }
+    }
+    return defaultValue;
+  }
+
   private async restoreTodayBudgets(): Promise<void> {
     const today = DateUtil.getToday();
     this.dailyBudgetsCache.clear();
@@ -428,7 +478,6 @@ export class AppState {
     budget.deductIntake(sodium, sugar, calories, fat);
   }
 
-  // ========== 食品标签管理 ==========
 
   async saveFoodLabel(label: FoodLabel): Promise<void> {
     if (label.foodId.length === 0) {
@@ -460,7 +509,6 @@ export class AppState {
     return await this.historyRepo.getDietRecordsByDateRange(memberId, startDate, endDate);
   }
 
-  // ========== 核心业务计算（委托给 EngineManager） ==========
 
   calculateRecommendation(memberId: string, foodLabel: FoodLabel): Recommendation {
     const profile = this.membersCache.find(m => m.memberId === memberId) || new FamilyProfile();
@@ -470,8 +518,8 @@ export class AppState {
   }
 
   /**
-   * 动态适配增强计算（集成 FoodAdapterEngine）
-   * 在已有 Recommendation 基础上，补充连续扫描递减、步数/睡眠影响等动态因子
+   * 鍔ㄦ€侀€傞厤澧炲己璁＄畻锛堥泦鎴?FoodAdapterEngine锛?
+   * 鍦ㄥ凡鏈?Recommendation 鍩虹涓婏紝琛ュ厖杩炵画鎵弿閫掑噺銆佹鏁?鐫＄湢褰卞搷绛夊姩鎬佸洜瀛?
    */
   calculateEnhancedAdaptation(
     memberId: string,
@@ -521,7 +569,7 @@ export class AppState {
   }
 
   checkBasket(): BasketCheckResult {
-    return this.engines.checkBasket(this.basketItems, this.membersCache);
+    return this.engines.checkBasket(this.basket.getBasketItems(), this.membersCache);
   }
 
   generateElderFriendlyReport(rec: Recommendation, memberId: string, food: FoodLabel): ElderFriendlyReport {
@@ -534,55 +582,19 @@ export class AppState {
     return this.engines.generatePositiveAdvice(scenario, profile);
   }
 
-  // ========== 购物篮管理 ==========
 
   addToBasket(item: FoodLabel): void {
-    this.basketItems.push(item);
-    // 后台持久化（不等待完成）
-    this.persistBasket();
+    this.basket.addToBasket(item);
   }
 
   getBasketItems(): FoodLabel[] {
-    return this.basketItems;
+    return this.basket.getBasketItems();
   }
 
   clearBasket(): void {
-    this.basketItems = [];
-    this.persistBasket();
+    this.basket.clearBasket();
   }
 
-  /** 异步持久化购物篮到 Preferences */
-  private async persistBasket(): Promise<void> {
-    const ctx = this.basketContext;
-    if (ctx === null) {
-      return;
-    }
-    try {
-      const pref = await preferences.getPreferences(ctx, 'basket_cache');
-      const jsonArray: FoodLabelJson[] = this.basketItems.map(item => item.toJson());
-      await pref.put('items', JSON.stringify(jsonArray));
-      await pref.flush();
-    } catch (error) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'persistBasket failed: %{public}s', JSON.stringify(error));
-    }
-  }
-
-  /** 从 Preferences 恢复购物篮（应用启动时调用） */
-  private async restoreBasketFromPrefs(context: common.Context): Promise<void> {
-    try {
-      const prefs = await preferences.getPreferences(context, 'basket_cache');
-      const jsonStr: string = prefs.getSync('items', '') as string;
-      if (jsonStr.length > 0) {
-        const rawArray = JSON.parse(jsonStr) as Record<string, Object>[];
-        this.basketItems = rawArray.map(raw => FoodLabel.fromJson(raw));
-      }
-    } catch (error) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'Failed to restore basket: %{public}s', JSON.stringify(error));
-      this.basketItems = [];
-    }
-  }
-
-  // ========== 历史记录 ==========
 
   async saveScanHistory(memberId: string, foodLabel: FoodLabel, rec: Recommendation): Promise<void> {
     await this.historyRepo.saveScanHistory({
@@ -613,388 +625,96 @@ export class AppState {
     });
   }
 
-  // ========== 路由参数缓存（避免 router params 传递大对象） ==========
 
-  /** 跳转 ReportPage 暂存的食品标签数据 */
-  private cachedReportFoodLabel: FoodLabel | null = null;
-  /** 跳转 ReportPage 暂存的推荐数据 */
-  private cachedReportRecommendations: Recommendation[] | null = null;
-  /** 跳转 ReportPage 暂存的替代食品 */
-  private cachedReportAlternatives: object[] | null = null;
-
-  /** 存入 ReportPage 路由参数 */
+  /** 瀛樺叆 ReportPage 璺敱鍙傛暟 */
   setReportParams(foodLabel: FoodLabel, recommendations: Recommendation[], alternatives: object[]): void {
-    this.cachedReportFoodLabel = foodLabel;
-    this.cachedReportRecommendations = recommendations;
-    this.cachedReportAlternatives = alternatives;
+    this.reportCache.setParams(foodLabel, recommendations, alternatives);
   }
 
-  /** 取出 ReportPage 路由参数（消费后清空） */
+  /** 鍙栧嚭 ReportPage 璺敱鍙傛暟锛堟秷璐瑰悗娓呯┖锛?*/
   consumeReportFoodLabel(): FoodLabel | null {
-    const val = this.cachedReportFoodLabel;
-    this.cachedReportFoodLabel = null;
-    return val;
+    return this.reportCache.consumeFoodLabel();
   }
 
   consumeReportRecommendations(): Recommendation[] | null {
-    const val = this.cachedReportRecommendations;
-    this.cachedReportRecommendations = null;
-    return val;
+    return this.reportCache.consumeRecommendations();
   }
 
   consumeReportAlternatives(): object[] | null {
-    const val = this.cachedReportAlternatives;
-    this.cachedReportAlternatives = null;
-    return val;
+    return this.reportCache.consumeAlternatives();
   }
 
-  // ========== 会员状态管理 ==========
+
+  // ========== Member Status (delegated to MemberManager) ==========
 
   canAddMember(): boolean {
-    return this.membersCache.length < (TIER_MEMBER_LIMIT.get(this.memberStatus.tier) ?? 1);
+    return this.member.canAddMember();
   }
 
   getRemainingScans(): number {
-    const limit: number = TIER_DAILY_SCAN_LIMIT.get(this.memberStatus.tier) ?? 3;
-    // -1 表示无限
-    if (limit === -1) {
-      return 999;
-    }
-    return Math.max(0, this.memberStatus.scansRemainingToday);
+    return this.member.getRemainingScans();
   }
 
-  /** 获取今日已扫描次数（用于 FoodAdapterEngine 衰减计算） */
   getTodayScanCount(): number {
-    const limit: number = TIER_DAILY_SCAN_LIMIT.get(this.memberStatus.tier) ?? 3;
-    if (limit === -1) return 0;
-    return limit - Math.max(0, this.memberStatus.scansRemainingToday);
+    return this.member.getTodayScanCount();
   }
 
   getMemberTierDisplay(): string {
-    return getTierDisplayName(this.memberStatus.tier);
+    return this.member.getMemberTierDisplay();
   }
 
   hasPremiumAccess(): boolean {
-    return hasTierAccess(this.memberStatus.tier, MemberTier.PREMIUM);
+    return this.member.hasPremiumAccess();
   }
 
-  /**
-   * 重置每日扫描计数（根据当前等级重新设置）
-   * 每日首次打开 app 时调用
-   */
   resetDailyScanQuota(): void {
-    const limit: number = TIER_DAILY_SCAN_LIMIT.get(this.memberStatus.tier) ?? 3;
-    if (limit !== -1) {
-      this.memberStatus.scansRemainingToday = limit;
-    } else {
-      this.memberStatus.scansRemainingToday = -1;
-    }
-    this.persistScanQuota();
-    // 通知 UI 刷新
-    AppStorage.set<number>('scanVersion', (AppStorage.get<number>('scanVersion') || 0) + 1);
+    this.member.resetDailyScanQuota();
   }
 
-  /** 恢复/持久化扫描计数的 preferences 标识 */
-  private scanQuotaDateKey: string = 'scan_quota_date';
-  private scanQuotaRemainingKey: string = 'scan_quota_remaining';
-
-  /** 从 Preferences 恢复扫描计数（按日期检查是否需要重置） */
-  private async restoreScanQuota(context: common.Context): Promise<void> {
-    try {
-      const prefs = await preferences.getPreferences(context, 'scan_quota');
-      const savedDate: string = prefs.getSync(this.scanQuotaDateKey, '') as string;
-      const today = DateUtil.getToday();
-      if (savedDate !== today) {
-        // 新的一天，重置配额
-        this.resetDailyScanQuota();
-        await prefs.put(this.scanQuotaDateKey, today);
-        await prefs.flush();
-      } else {
-        // 恢复已保存的剩余次数
-        const remaining: number = prefs.getSync(this.scanQuotaRemainingKey,
-          TIER_DAILY_SCAN_LIMIT.get(this.memberStatus.tier) ?? 3) as number;
-        this.memberStatus.scansRemainingToday = remaining;
-      }
-    } catch (error) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'restoreScanQuota failed: %{public}s', JSON.stringify(error));
-      // 降级：用默认值
-      const limit: number = TIER_DAILY_SCAN_LIMIT.get(this.memberStatus.tier) ?? 3;
-      this.memberStatus.scansRemainingToday = limit === -1 ? -1 : limit;
-    }
-  }
-
-  /** 持久化扫描计数 */
-  private persistScanQuota(): void {
-    const ctx = this.basketContext;
-    if (ctx === null) {
-      return;
-    }
-    try {
-      const prefs = preferences.getPreferences(ctx, 'scan_quota');
-      prefs.then((pref) => {
-        pref.put(this.scanQuotaRemainingKey, this.memberStatus.scansRemainingToday).then(() => {
-          pref.flush();
-        }).catch((_e: Error) => {
-          hilog.warn(DOMAIN_ZERO, TAG, 'persistScanQuota put failed');
-        });
-      }).catch((_e: Error) => {
-        hilog.warn(DOMAIN_ZERO, TAG, 'persistScanQuota getPrefs failed');
-      });
-    } catch (_e) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'persistScanQuota exception');
-    }
-  }
-
-  // ========== 向后兼容方法（委派给 services / engines） ==========
-
-  /**
-   * 获取付费墙触发参数
-   */
   getPaywallTrigger(feature: string): PaywallTrigger | null {
-    return getPaywallTriggerForFeature(feature, this.memberStatus.tier);
+    return this.member.getPaywallTrigger(feature);
   }
 
-  /**
-   * 使用一次扫描名额（递减计数 + 返回触发参数）
-   * @returns 达到限制返回付费墙触发信息，否则返回 null
-   */
   useScan(): PaywallTrigger | null {
-    const limit: number = TIER_DAILY_SCAN_LIMIT.get(this.memberStatus.tier) ?? 3;
-    // -1 表示无限扫码，直接放行
-    if (limit === -1) {
-      return null;
-    }
-    // 已用完
-    if (this.memberStatus.scansRemainingToday <= 0) {
-      return getPaywallTriggerForFeature('scan', this.memberStatus.tier);
-    }
-    // 递减并持久化
-    this.memberStatus.scansRemainingToday--;
-    this.persistScanQuota();
-    // 触发 UI 刷新
-    AppStorage.set<number>('scanVersion', (AppStorage.get<number>('scanVersion') || 0) + 1);
-    // 如果归零了，返回付费墙
-    if (this.memberStatus.scansRemainingToday <= 0) {
-      return getPaywallTriggerForFeature('scan', this.memberStatus.tier);
-    }
-    return null;
+    return this.member.useScan();
   }
 
-  /**
-   * 使用一次家庭成员名额（返回触发参数）
-   */
   useFamilyMember(): PaywallTrigger | null {
-    return getPaywallTriggerForFeature('add_member', this.memberStatus.tier);
+    return this.member.useFamilyMember();
   }
 
-  /**
-   * 家庭成员添加完成后调用
-   */
   onMemberAdded(): void {
-    this.addedMemberCount++;
+    this.member.onMemberAdded();
   }
 
-  /**
-   * 是否有家庭群组功能访问权限
-   */
   hasFamilyAccess(): boolean {
-    return hasTierAccess(this.memberStatus.tier, MemberTier.FAMILY);
+    return this.member.hasFamilyAccess();
   }
 
-  /**
-   * 升级会员等级
-   */
-  upgradeTier(tier: MemberTier, _days: number): void {
-    this.memberStatus = createMemberStatusForTier(tier, _days);
+  upgradeTier(tier: MemberTier, days: number): void {
+    this.member.upgradeTier(tier, days);
   }
-
-  /**
-   * 清除所有缓存
-   */
   clearAllCache(): void {
     this.cache.clearAll();
-  }
-
-  // ========== 群组服务委派 ==========
-
-  async getMyGroups(): Promise<GroupSummary[]> {
-    if (!this.services.groupService) return [];
-    return await this.services.groupService.getMyGroups();
-  }
-
-  async createFamilyGroup(name: string, description: string, creatorName: string): Promise<GroupSummary> {
-    if (!this.services.groupService) return {} as GroupSummary;
-    return await this.services.groupService.createGroup({ groupName: name, description, ownerName: creatorName });
-  }
-
-  async joinFamilyGroup(inviteCode: string, displayName: string): Promise<GroupSummary> {
-    if (!this.services.groupService) return {} as GroupSummary;
-    return await this.services.groupService.joinGroupByCode(inviteCode, displayName);
-  }
-
-  async getGroupFeeds(groupId: string, offset: number, limit: number): Promise<GroupFeed[]> {
-    return await this.groupRepo.getFeeds(groupId, offset, limit);
-  }
-
-  async shareFoodScanToGroup(groupId: string, foodName: string, _type: string,
-    _amount: number, message: string, _imageUri: string): Promise<void> {
-    const feed: GroupFeed = {
-      feedId: `feed_${Date.now()}`,
-      groupId: groupId,
-      feedType: FeedType.FOOD_SCAN_SHARE,
-      senderUid: '',
-      senderName: '',
-      content: JSON.stringify({ foodName, summary: message }),
-      createdAt: Date.now(),
-      commentCount: 0,
-      likeCount: 0
-    };
-    await this.groupRepo.saveFeed(feed);
-  }
-
-  // ========== 食谱服务委派 ==========
-
-  async queryCommunityRecipes(params: RecipeQueryParams): Promise<Recipe[]> {
-    if (!this.services.recipeCommunityService) return [];
-    return await this.services.recipeCommunityService.queryRecipes(params);
-  }
-
-  async getRecipeDetail(recipeId: string): Promise<Recipe | null> {
-    if (!this.services.recipeCommunityService) return null;
-    return await this.services.recipeCommunityService.getRecipeDetail(recipeId);
-  }
-
-  async getRecipeComments(recipeId: string): Promise<RecipeComment[]> {
-    if (!this.services.recipeCommunityService) return [];
-    return await this.services.recipeCommunityService.getComments(recipeId);
-  }
-
-  async hasLikedRecipe(recipeId: string): Promise<boolean> {
-    if (!this.services.recipeCommunityService) return false;
-    return await this.services.recipeCommunityService.hasLiked(recipeId);
-  }
-
-  async toggleRecipeLike(recipeId: string): Promise<boolean> {
-    if (!this.services.recipeCommunityService) return false;
-    return await this.services.recipeCommunityService.toggleLike(recipeId);
-  }
-
-  async toggleRecipeBookmark(recipeId: string, note: string): Promise<boolean> {
-    if (!this.services.recipeCommunityService) return false;
-    return await this.services.recipeCommunityService.toggleBookmark(recipeId, note);
-  }
-
-  async addRecipeComment(recipeId: string, content: string, parentId: string): Promise<RecipeComment> {
-    if (!this.services.recipeCommunityService) return {} as RecipeComment;
-    return await this.services.recipeCommunityService.addComment(recipeId, content, parentId);
-  }
-
-  async publishRecipe(params: CreateRecipeParams): Promise<string> {
-    if (!this.services.recipeCommunityService) return '';
-    const recipe = await this.services.recipeCommunityService.createRecipe(params);
-    return recipe.recipeId || '';
-  }
-
-  async getAiRecipeRecommendations(memberIds: string[], _prefs: undefined,
-    _exclude: undefined, _count: number): Promise<AiRecipeRecommendationResult> {
-    return await this.services.aiRecipeRecommender.getRecommendations(
-      {} as AiRecipeRequest, [], new Map(), new Map());
-  }
-
-  // ========== AI / 营养服务委派 ==========
-
-  async getAiNutritionAdvice(memberId: string, days: number, includeMealPlan: boolean): Promise<AiNutritionAdvice> {
-    const member = this.membersCache.find(m => m.memberId === memberId) || new FamilyProfile();
-    const signal = this.getHealthSignal(memberId);
-    const budget = this.getDailyBudgetSync(memberId);
-    const endDate = DateUtil.getToday();
-    const startDate = this.getDaysAgo(days);
-    const records = await this.historyRepo.getDietRecordsByDateRange(memberId, startDate, endDate);
-    return await this.services.aiNutritionist.getAdvice(member, signal, budget, records, days, includeMealPlan);
-  }
-
-  private getDaysAgo(days: number): string {
-    const date = new Date();
-    date.setDate(date.getDate() - days);
-    return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-  }
-
-  // ========== 趋势分析 ==========
-
-  async getNutritionTrends(memberId: string, days: number): Promise<NutrientTrendData[]> {
-    const endDate = DateUtil.getToday();
-    const startDate = this.getDaysAgo(days);
-    const records = await this.historyRepo.getDietRecordsByDateRange(memberId, startDate, endDate);
-    const member = this.membersCache.find(m => m.memberId === memberId);
-    const targetSodium = member?.dailyBudget.sodiumBudget || 2000;
-    const targetSugar = member?.dailyBudget.sugarBudget || 50;
-    const targetCalorie = member?.dailyBudget.calorieBudget || 2000;
-    const targetFat = member?.dailyBudget.fatBudget || 65;
-    return NutritionTrendEngine.buildNutrientTrends(
-      NutritionTrendEngine.aggregateDaily(records),
-      targetSodium, targetSugar, targetCalorie, targetFat);
-  }
-
-  async getDailySummaries(memberId: string, days: number): Promise<DailyNutritionSummary[]> {
-    const endDate = DateUtil.getToday();
-    const startDate = this.getDaysAgo(days);
-    const records = await this.historyRepo.getDietRecordsByDateRange(memberId, startDate, endDate);
-    return NutritionTrendEngine.aggregateDaily(records);
-  }
-
-  async getDailyDietGroups(memberId: string, date: string): Promise<MealGroup[]> {
-    const records = await this.historyRepo.getDietRecordsByDateRange(memberId, date, date);
-    return NutritionTrendEngine.groupByMealType(records);
-  }
-
-  // ========== 实用工具方法 ==========
-
-  private createDefaultMembers(): FamilyProfile[] {
-    const defaultMembers: FamilyProfile[] = [];
-    if (DateUtil.getToday().length > 0) {
-      const adult = new FamilyProfile();
-      adult.memberId = 'default_adult';
-      adult.nickname = '我';
-      adult.ageGroup = AgeGroup.ADULT;
-      adult.healthGoals = [HealthGoal.NONE];
-      adult.allergens = [];
-      adult.dailyBudget = new DailyBudgetConfig();
-      defaultMembers.push(adult);
-    }
-    return defaultMembers;
-  }
-
-  private async restoreHealthSignalsFromPrefs(context: common.Context): Promise<void> {
-    try {
-      const prefs = await preferences.getPreferences(context, 'health_signals_cache');
-      for (const member of this.membersCache) {
-        const json = prefs.getSync(member.memberId, '') as string;
-        if (json.length > 0) {
-          const signal = HealthSignal.fromJson(JSON.parse(json) as Record<string, Object>);
-          this.healthSignalsCache.set(member.memberId, signal);
-        }
-      }
-    } catch (_e) {
-      // 恢复失败不影响主流程
-    }
   }
 
   private async refreshCache(): Promise<void> {
     try {
       this.membersCache = await this.familyRepo.getAllMembers();
     } catch (_e) {
-      // 刷新失败不影响主流程
+      // 鍒锋柊澶辫触涓嶅奖鍝嶄富娴佺▼
     }
   }
 
   /**
-   * 清理引擎层过期缓存（定时/事件驱动时调用）
+   * 娓呯悊寮曟搸灞傝繃鏈熺紦瀛橈紙瀹氭椂/浜嬩欢椹卞姩鏃惰皟鐢級
    */
   cleanExpiredEngineCache(): void {
     try {
       this.engines.cleanExpiredEngineCache();
     } catch (_e) {
-      // 清理失败不影响主流程
+      // 娓呯悊澶辫触涓嶅奖鍝嶄富娴佺▼
     }
   }
 }
+

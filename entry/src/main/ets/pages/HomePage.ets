@@ -10,6 +10,7 @@ import { AppState } from '../AppState';
 import { MilestoneService, Milestone } from '../service/MilestoneService';
 import { OnlineShoppingParser } from '../service/OnlineShoppingParser';
 import { DailyBudget } from '../model/DailyBudget';
+import { LoadingSkeleton } from '../components/SkeletonScreen';
 import { COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, BUTTON } from '../constants/AppTheme';
 
 const DOMAIN_ZERO = 0;
@@ -37,6 +38,7 @@ struct HomePage {
   @State memberStatusColors: Map<string, string> = new Map()
   @State remainingScans: number = 0
   @State todayDate: string = ''
+  @State isLoading: boolean = true
 
   // ===== AppStorage 版本号绑定 =====
   // scanVersion 在扫码后递增，驱动 UI 增量刷新
@@ -85,11 +87,13 @@ struct HomePage {
   }
 
   private async refreshAll(): Promise<void> {
+    this.isLoading = true
     await this.loadFamilyMembers()
     this.refreshMemberStatuses()
     await this.refreshMilestones()
     // 记录当前版号
     this.lastScanVersion = this.scanVersion
+    this.isLoading = false
   }
 
   private async refreshMilestones() {
@@ -243,57 +247,63 @@ struct HomePage {
       }
 
       // 家庭成员选择
-      Text($r('app.string.home_title'))
-        .fontSize(18)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(COLORS.TEXT_GRAY_2121)
-        .margin({ left: 16, bottom: 8 })
+      if (this.isLoading) {
+        LoadingSkeleton({ variant: 'card', rowCount: 2 })
+          .layoutWeight(1)
+          .margin({ top: 8 })
+      } else {
+        Text($r('app.string.home_title'))
+          .fontSize(18)
+          .fontWeight(FontWeight.Medium)
+          .fontColor(COLORS.TEXT_GRAY_2121)
+          .margin({ left: 16, bottom: 8 })
 
-      Scroll() {
-        Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start, alignItems: ItemAlign.Start }) {
-          ForEach(this.familyMembers, (member: FamilyProfile) => {
+        Scroll() {
+          Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start, alignItems: ItemAlign.Start }) {
+            ForEach(this.familyMembers, (member: FamilyProfile) => {
+              Column() {
+                MemberCard({
+                  member: member,
+                  isSelected: this.selectedMemberId === member.memberId,
+                  onSelect: (id: string) => { this.selectedMemberId = id }
+                })
+              }
+              .width('45%')
+              .margin(8)
+            }, (member: FamilyProfile) => member.memberId)
+
             Column() {
-              MemberCard({
-                member: member,
-                isSelected: this.selectedMemberId === member.memberId,
-                onSelect: (id: string) => { this.selectedMemberId = id }
-              })
+              Text('+').fontSize(28).fontColor(COLORS.PRIMARY)
+              Text(this.appState.canAddMember() ? $r('app.string.add_member') : $r('app.string.upgrade_unlock'))
+                .fontSize(12)
+                .fontColor(this.appState.canAddMember() ? COLORS.PRIMARY : COLORS.ORANGE_ACCENT)
+                .margin({ top: 4 })
             }
             .width('45%')
+            .height(100)
             .margin(8)
-          }, (member: FamilyProfile) => member.memberId)
-
-          Column() {
-            Text('+').fontSize(28).fontColor(COLORS.PRIMARY)
-            Text(this.appState.canAddMember() ? $r('app.string.add_member') : $r('app.string.upgrade_unlock'))
-              .fontSize(12)
-              .fontColor(this.appState.canAddMember() ? COLORS.PRIMARY : COLORS.ORANGE_ACCENT)
-              .margin({ top: 4 })
-          }
-          .width('45%')
-          .height(100)
-          .margin(8)
-          .borderRadius(16)
-          .justifyContent(FlexAlign.Center)
-          .alignItems(HorizontalAlign.Center)
-          .border({ width: 1, color: COLORS.BORDER_LIGHT, style: BorderStyle.Dashed, radius: 16 })
-          .onClick(() => {
-            try {
-              if (this.appState.canAddMember()) {
-                router.pushUrl({ url: 'pages/MemberEditPage' })
-              } else {
-                router.pushUrl({ url: 'pages/SettingsPage' })
+            .borderRadius(16)
+            .justifyContent(FlexAlign.Center)
+            .alignItems(HorizontalAlign.Center)
+            .border({ width: 1, color: COLORS.BORDER_LIGHT, style: BorderStyle.Dashed, radius: 16 })
+            .onClick(() => {
+              try {
+                if (this.appState.canAddMember()) {
+                  router.pushUrl({ url: 'pages/MemberEditPage' })
+                } else {
+                  router.pushUrl({ url: 'pages/SettingsPage' })
+                }
+              } catch (_e) {
+                hilog.warn(DOMAIN_ZERO, 'HomePage', 'pushUrl member/add failed: %{public}s', JSON.stringify(_e));
               }
-            } catch (_e) {
-              hilog.warn(DOMAIN_ZERO, 'HomePage', 'pushUrl member/add failed: %{public}s', JSON.stringify(_e));
-            }
-          })
+            })
+          }
+          .width('100%')
+          .padding({ left: 16, right: 16 })
         }
-        .width('100%')
-        .padding({ left: 16, right: 16 })
+        .scrollable(ScrollDirection.Vertical)
+        .layoutWeight(1)
       }
-      .scrollable(ScrollDirection.Vertical)
-      .layoutWeight(1)
 
       // 底部操作区
       Column() {
@@ -898,5 +908,12 @@ struct HomePage {
         COLORS.LEVEL_RED
 
     return new StatusResult(text, color)
+  }
+
+  pageTransition() {
+    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Right)
+    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Left)
   }
 }

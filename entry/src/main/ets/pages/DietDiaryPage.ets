@@ -9,6 +9,7 @@ import { DietRecord } from '../repository/HistoryRepository';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { NutritionTrendEngine, MealGroup } from '../engine/NutritionTrendEngine';
 import { DailyBudget } from '../model/DailyBudget';
+import { ErrorFallback } from '../components/ErrorFallback';
 import { DateUtil } from '../utils/DateUtil';
 import { COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, BUTTON } from '../constants/AppTheme';
 import { MealScenario } from '../model/MealBalance';
@@ -48,6 +49,7 @@ struct DietDiaryPage {
   @State dateInputText: string = ''
   @State showDatePicker: boolean = false
   @State isLoading: boolean = false
+  @State errorMessage: string = ''
   @State aiAdvice: AiNutritionAdvice | null = null
   @State isLoadingAi: boolean = false
   @State showAiSection: boolean = false
@@ -86,9 +88,15 @@ struct DietDiaryPage {
   private async refreshData() {
     if (this.selectedMemberId.length === 0) return
     this.isLoading = true
+    this.errorMessage = ''
 
-    this.mealGroups = await this.appState.getDailyDietGroups(this.selectedMemberId, this.currentDate)
-    this.budget = this.appState.getDailyBudgetSync(this.selectedMemberId)
+    try {
+      this.mealGroups = await this.appState.getDailyDietGroups(this.selectedMemberId, this.currentDate)
+      this.budget = this.appState.getDailyBudgetSync(this.selectedMemberId)
+    } catch (_e) {
+      hilog.error(DOMAIN_ZERO, 'DietDiaryPage', 'refreshData failed: %{public}s', JSON.stringify(_e))
+      this.errorMessage = '数据加载失败，请重试'
+    }
 
     this.isLoading = false
   }
@@ -263,7 +271,14 @@ struct DietDiaryPage {
       }
 
       // 内容区
-      if (this.isLoading) {
+      if (this.errorMessage.length > 0) {
+        ErrorFallback({
+          message: this.errorMessage,
+          icon: '📊',
+          onRetry: () => this.refreshData()
+        })
+        .layoutWeight(1)
+      } else if (this.isLoading) {
         LoadingProgress()
           .width(32)
           .height(32)

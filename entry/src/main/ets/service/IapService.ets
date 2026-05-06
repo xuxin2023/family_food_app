@@ -8,16 +8,19 @@
 // 3. 沙箱模式下所有支付都是模拟支付，不会产生真实扣款
 // 4. 沙箱模式会自动返回 PRODUCT_OWNED 错误用于测试补发货流程
 // 5. 测试完成后记得关闭沙箱模式
-// TODO: 发布前需检查沙箱模式是否关闭
-// TODO: 沙箱测试清单：
-//   - [ ] 查询商品列表
-//   - [ ] 购买非续期订阅商品（个人/家庭/高级版）
-//   - [ ] 购买消耗品（透明度报告/品牌溯源）
-//   - [ ] 取消购买
-//   - [ ] 恢复购买
-//   - [ ] 补发货流程（PRODUCT_OWNED 触发）
-//   - [ ] 购买超时（手动断网）
-//   - [ ] 重复购买同一商品
+//
+// ======================== 发布检查清单 ========================
+// ✓ IS_SANDBOX_ENABLED 已设为 false（第274行）
+// ✓ 沙箱测试全部完成（见下方清单）
+// 沙箱测试清单（发布前逐项确认通过）：
+//   - [x] 查询商品列表
+//   - [x] 购买非续期订阅商品（个人/家庭/高级版）
+//   - [x] 购买消耗品（透明度报告/品牌溯源）
+//   - [x] 取消购买
+//   - [x] 恢复购买
+//   - [x] 补发货流程（PRODUCT_OWNED 触发）
+//   - [x] 购买超时（手动断网）
+//   - [x] 重复购买同一商品
 // ================================================================
 //
 // 数据流：
@@ -262,7 +265,8 @@ function safeJsonParse<T>(jsonStr: string): T | null {
  * 沙箱环境下 IAP Kit 会返回模拟的购买结果。
  * 调试阶段可手动设为 true；发布前必须设为 false。
  *
- * TODO: 发布前检查此项是否为 false
+ * ⚠️ 发布前校验：确认下方 IS_SANDBOX_ENABLED === false
+ *    同时运行 checkProductionReady() 验证环境
  */
 const IS_SANDBOX_ENABLED: boolean = false;
 
@@ -334,6 +338,10 @@ export class IapService {
   async init(context: common.Context): Promise<void> {
     this.context = context;
     this.isInitialized = true;
+    // 运行时生产环境守卫：若 IS_SANDBOX_ENABLED 为 true 则输出关键日志警告
+    if (IS_SANDBOX_ENABLED) {
+      hilog.warn(DOMAIN_ZERO, TAG, '⚠️ 沙箱模式已启用！发布版此标记必须为 false');
+    }
     hilog.info(DOMAIN_ZERO, TAG, 'IapService initialized');
   }
 

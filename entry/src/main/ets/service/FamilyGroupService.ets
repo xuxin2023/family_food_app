@@ -343,11 +343,31 @@ export class FamilyGroupService {
 
   /**
    * 删除动态（仅发送者或群主/管理员）
+   * 权限校验：动态的 senderUid === 当前用户，或当前用户在群组中为 OWNER/ADMIN
    */
   async deleteFeed(feedId: string): Promise<void> {
     const uid = this.authService.getUid();
-    // TODO: 权限检查需要查询feed的所属群组和角色
-    await this.groupRepo.deleteFeed(feedId);
+    // 1. 查询动态详情（获取 groupId 和 senderUid）
+    const feed = await this.groupRepo.getFeedById(feedId);
+    if (!feed) {
+      throw new Error('动态不存在或已被删除');
+    }
+
+    // 2. 发送者本人可直接删除
+    if (feed.senderUid === uid) {
+      await this.groupRepo.deleteFeed(feedId);
+      return;
+    }
+
+    // 3. 非发送者：检查在群组中的角色
+    const members = await this.groupRepo.getGroupMembers(feed.groupId);
+    const me = members.find(m => m.uid === uid);
+    if (me && (me.role === GroupRole.OWNER || me.role === GroupRole.ADMIN)) {
+      await this.groupRepo.deleteFeed(feedId);
+      return;
+    }
+
+    throw new Error('无权限删除此动态，仅发送者或群管理员可操作');
   }
 
   // ========== 获取群组的邀请码 ==========

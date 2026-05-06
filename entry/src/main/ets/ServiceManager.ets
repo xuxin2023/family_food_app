@@ -62,12 +62,20 @@ export class ServiceManager {
   }
 
   /**
-   * 初始化 AI 服务
+   * 初始化 AI 服务（异步加载 API Key）
    */
-  initAiServices(recipeRepo: RecipeRepository): void {
+  async initAiServices(recipeRepo: RecipeRepository): Promise<void> {
     if (FEATURE_FLAGS.ENABLE_AI_NUTRITIONIST) {
       this.aiRecipeRecommender.setRecipeRepo(recipeRepo);
-      hilog.info(DOMAIN_ZERO, TAG, 'AI services initialized');
+      // 从 Asset Kit 安全存储加载所有 AI 服务的 API Key
+      const promises: Promise<boolean>[] = [
+        this.aiNutritionist.loadApiKey(),
+        this.aiRecipeRecommender.loadApiKey(),
+      ];
+      const results = await Promise.allSettled(promises);
+      const loadedCount = results.filter(r => r.status === 'fulfilled' && r.value).length;
+      hilog.info(DOMAIN_ZERO, TAG, 'AI services initialized, %{public}d/%{public}d keys loaded',
+        loadedCount, promises.length);
     }
   }
 

@@ -3,8 +3,8 @@
 //
 // 注意：本引擎使用独立的自包含参数类型，与主数据体系（FamilyProfile/FoodLabel/HealthSignal）隔离。
 // 此为设计决策——保证主模型变更不会影响此引擎，反之亦然。
-// 当前生产适配功能由 RuleEngine 提供。此引擎为下一版增强预留。
-// 可通过对应字段映射直接使用 FoodLabel.nutrition 等属性传入。
+// 通过 EngineManager.calculateEnhancedAdaptation() 完成输入输出转换后，已集成至 Scan→Report 主流程。
+// 当前在 ScanPage 中通过 AppState.calculateEnhancedAdaptation() 调用，结果可用于 ReportPage 展示增强建议。
 
 import { EnhancedFoodRecommendation,
   RecommendationLevel } from '../model/FoodAdapterTypes';

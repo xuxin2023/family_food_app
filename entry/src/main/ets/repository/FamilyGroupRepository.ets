@@ -375,6 +375,28 @@ export class FamilyGroupRepository {
     await this.rdbStore.delete(predicates);
   }
 
+  /**
+   * 根据 feedId 查询单条动态
+   */
+  async getFeedById(feedId: string): Promise<GroupFeed | null> {
+    if (!this.rdbStore) return null;
+    const predicates = new relationalStore.RdbPredicates(TABLE_GROUP_FEED);
+    predicates.equalTo('feed_id', feedId);
+    let resultSet: relationalStore.ResultSet | null = null;
+    try {
+      resultSet = await this.rdbStore.query(predicates);
+      if (resultSet.goToFirstRow()) {
+        return this.parseFeed(resultSet);
+      }
+      return null;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'getFeedById failed: %{public}s', JSON.stringify(error));
+      return null;
+    } finally {
+      if (resultSet) resultSet.close();
+    }
+  }
+
   // ========== 内部解析方法 ==========
 
   private parseGroup(resultSet: relationalStore.ResultSet): FamilyGroup {

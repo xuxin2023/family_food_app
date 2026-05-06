@@ -1081,4 +1081,11 @@ struct ReportPage {
   private getMemberLevelColor(rec: Recommendation): string {
     return getLevelColorValue(rec.levelColor)
   }
+
+  pageTransition() {
+    PageTransitionEnter({ duration: 400, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Right)
+    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Left)
+  }
 }

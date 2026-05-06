@@ -106,7 +106,7 @@
         }
       },
       {
-        "name": "ohos.permission.health_data",
+        "name": "ohos.permission.READ_HEALTH_DATA",
         "reason": "$string:health_data_reason",
         "usedScene": {
           "abilities": [

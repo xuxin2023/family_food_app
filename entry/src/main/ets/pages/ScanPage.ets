@@ -1078,4 +1078,11 @@ struct ScanPage {
       hilog.warn(DOMAIN_ZERO, 'ScanPage', 'viewReport pushUrl failed');
     }
   }
+
+  pageTransition() {
+    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Right)
+    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Left)
+  }
 }

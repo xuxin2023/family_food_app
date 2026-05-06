@@ -1,7 +1,10 @@
 // 信息透明度卡组件 - V4升级：5维雷达图 + A-E数据等级 + 公开查询入口
+// V5: 实现剪贴板复制功能
 
 import { CredibilityResult, DataGrade, RadarDimension, PublicQueryEntry } from '../model/CredibilityResult';
 import { COLORS } from '../constants/AppTheme';
+import { pasteboard } from '@kit.BasicServicesKit';
+import { BusinessError } from '@kit.BasicServicesKit';
 
 @Component
 export struct CredibilityCard {
@@ -197,7 +200,7 @@ export struct CredibilityCard {
             .borderRadius(8)
             .backgroundColor('#E3F2FD')
             .onClick(() => {
-              // TODO: 复制到剪贴板
+              this.copyToClipboard(entry.keyword);
             })
         }
         .width('100%')
@@ -233,5 +236,25 @@ export struct CredibilityCard {
 
   private getDimensionColor(dim: RadarDimension): string {
     return this.getGradeColor(dim.grade)
+  }
+
+  /**
+   * 复制文本到系统剪贴板
+   */
+  private copyToClipboard(text: string): void {
+    try {
+      const pasteData: pasteboard.PasteData = pasteboard.createData(
+        pasteboard.MIMETYPE_TEXT_PLAIN, text
+      );
+      const systemPasteboard: pasteboard.SystemPasteboard = pasteboard.getSystemPasteboard();
+      systemPasteboard.setData(pasteData).then(() => {
+        promptAction.showToast({ message: '已复制到剪贴板', duration: 1500 });
+      }).catch((err: BusinessError) => {
+        console.warn('Copy to clipboard failed: ' + err.message);
+        promptAction.showToast({ message: '复制失败', duration: 1500 });
+      });
+    } catch (error) {
+      console.warn('Copy to clipboard error: ' + JSON.stringify(error));
+    }
   }
 }

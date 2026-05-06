@@ -3,11 +3,16 @@
 import { relationalStore } from '@kit.ArkData';
 import { FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig, MealTimes } from '../model/FamilyProfile';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import {
+  TABLE_FAMILY_PROFILE, COL_MEMBER_ID, COL_NICKNAME, COL_AGE_GROUP,
+  COL_HEALTH_GOALS, COL_ALLERGENS, COL_SODIUM_BUDGET, COL_SUGAR_BUDGET,
+  COL_CALORIE_BUDGET, COL_FAT_BUDGET, COL_MEAL_TIMES, COL_BEDTIME,
+  COL_CREATED_AT, COL_UPDATED_AT
+} from '../constants/DbSchema';
 
 const TAG = 'FamilyRepository';
 const DOMAIN_ZERO = 0;
 const DB_NAME = 'food_helper.db';
-const TABLE_NAME = 'family_profile';
 
 export class FamilyRepository {
   private rdbStore: relationalStore.RdbStore | null = null;
@@ -31,20 +36,20 @@ export class FamilyRepository {
   private async createTable(): Promise<void> {
     if (!this.rdbStore) return;
 
-    const sql = `CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
-      member_id TEXT PRIMARY KEY,
-      nickname TEXT NOT NULL,
-      age_group TEXT NOT NULL,
-      health_goals TEXT NOT NULL,
-      allergens TEXT,
-      sodium_budget REAL,
-      sugar_budget REAL,
-      calorie_budget REAL,
-      fat_budget REAL,
-      meal_times TEXT,
-      bedtime TEXT,
-      created_at INTEGER NOT NULL,
-      updated_at INTEGER NOT NULL
+    const sql = `CREATE TABLE IF NOT EXISTS ${TABLE_FAMILY_PROFILE} (
+      ${COL_MEMBER_ID} TEXT PRIMARY KEY,
+      ${COL_NICKNAME} TEXT NOT NULL,
+      ${COL_AGE_GROUP} TEXT NOT NULL,
+      ${COL_HEALTH_GOALS} TEXT NOT NULL,
+      ${COL_ALLERGENS} TEXT,
+      ${COL_SODIUM_BUDGET} REAL,
+      ${COL_SUGAR_BUDGET} REAL,
+      ${COL_CALORIE_BUDGET} REAL,
+      ${COL_FAT_BUDGET} REAL,
+      ${COL_MEAL_TIMES} TEXT,
+      ${COL_BEDTIME} TEXT,
+      ${COL_CREATED_AT} INTEGER NOT NULL,
+      ${COL_UPDATED_AT} INTEGER NOT NULL
     )`;
 
     await this.rdbStore.executeSql(sql);
@@ -73,7 +78,7 @@ export class FamilyRepository {
     };
 
     try {
-      await this.rdbStore.insert(TABLE_NAME, valueBucket,
+      await this.rdbStore.insert(TABLE_FAMILY_PROFILE, valueBucket,
         relationalStore.ConflictResolution.ON_CONFLICT_REPLACE);
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Save member failed: %{public}s', JSON.stringify(error));
@@ -88,35 +93,35 @@ export class FamilyRepository {
 
     let resultSet: relationalStore.ResultSet | null = null;
     try {
-      const predicates = new relationalStore.RdbPredicates(TABLE_NAME);
+      const predicates = new relationalStore.RdbPredicates(TABLE_FAMILY_PROFILE);
       resultSet = await this.rdbStore.query(predicates);
       const members: FamilyProfile[] = [];
 
       while (resultSet.goToNextRow()) {
         const profile = new FamilyProfile();
-        profile.memberId = resultSet.getString(resultSet.getColumnIndex('member_id'));
-        profile.nickname = resultSet.getString(resultSet.getColumnIndex('nickname'));
-        profile.ageGroup = resultSet.getString(resultSet.getColumnIndex('age_group')) as string as AgeGroup;
+        profile.memberId = resultSet.getString(resultSet.getColumnIndex(COL_MEMBER_ID));
+        profile.nickname = resultSet.getString(resultSet.getColumnIndex(COL_NICKNAME));
+        profile.ageGroup = resultSet.getString(resultSet.getColumnIndex(COL_AGE_GROUP)) as string as AgeGroup;
         try {
-          profile.healthGoals = JSON.parse(resultSet.getString(resultSet.getColumnIndex('health_goals'))) as Object as HealthGoal[];
+          profile.healthGoals = JSON.parse(resultSet.getString(resultSet.getColumnIndex(COL_HEALTH_GOALS))) as Object as HealthGoal[];
         } catch (e) {
           profile.healthGoals = [];
         }
         try {
-          profile.allergens = JSON.parse(resultSet.getString(resultSet.getColumnIndex('allergens')) || '[]') as string[];
+          profile.allergens = JSON.parse(resultSet.getString(resultSet.getColumnIndex(COL_ALLERGENS)) || '[]') as string[];
         } catch (e) {
           profile.allergens = [];
         }
 
         // 回填每日预算
         profile.dailyBudget = new DailyBudgetConfig();
-        profile.dailyBudget.sodiumBudget = resultSet.getDouble(resultSet.getColumnIndex('sodium_budget'));
-        profile.dailyBudget.sugarBudget = resultSet.getDouble(resultSet.getColumnIndex('sugar_budget'));
-        profile.dailyBudget.calorieBudget = resultSet.getDouble(resultSet.getColumnIndex('calorie_budget'));
-        profile.dailyBudget.fatBudget = resultSet.getDouble(resultSet.getColumnIndex('fat_budget'));
+        profile.dailyBudget.sodiumBudget = resultSet.getDouble(resultSet.getColumnIndex(COL_SODIUM_BUDGET));
+        profile.dailyBudget.sugarBudget = resultSet.getDouble(resultSet.getColumnIndex(COL_SUGAR_BUDGET));
+        profile.dailyBudget.calorieBudget = resultSet.getDouble(resultSet.getColumnIndex(COL_CALORIE_BUDGET));
+        profile.dailyBudget.fatBudget = resultSet.getDouble(resultSet.getColumnIndex(COL_FAT_BUDGET));
 
         // 回填用餐时间和就寝时间
-        const mealTimesStr = resultSet.getString(resultSet.getColumnIndex('meal_times'));
+        const mealTimesStr = resultSet.getString(resultSet.getColumnIndex(COL_MEAL_TIMES));
         if (mealTimesStr && mealTimesStr.length > 0) {
           try {
             const parsed = JSON.parse(mealTimesStr) as Record<string, string>;
@@ -128,10 +133,10 @@ export class FamilyRepository {
             profile.mealTimes = new MealTimes();
           }
         }
-        profile.bedtime = resultSet.getString(resultSet.getColumnIndex('bedtime')) || '';
+        profile.bedtime = resultSet.getString(resultSet.getColumnIndex(COL_BEDTIME)) || '';
 
-        profile.createdAt = resultSet.getLong(resultSet.getColumnIndex('created_at'));
-        profile.updatedAt = resultSet.getLong(resultSet.getColumnIndex('updated_at'));
+        profile.createdAt = resultSet.getLong(resultSet.getColumnIndex(COL_CREATED_AT));
+        profile.updatedAt = resultSet.getLong(resultSet.getColumnIndex(COL_UPDATED_AT));
         members.push(profile);
       }
       return members;
@@ -152,8 +157,8 @@ export class FamilyRepository {
     if (!this.rdbStore) return;
 
     try {
-      const predicates = new relationalStore.RdbPredicates(TABLE_NAME);
-      predicates.equalTo('member_id', memberId);
+      const predicates = new relationalStore.RdbPredicates(TABLE_FAMILY_PROFILE);
+      predicates.equalTo(COL_MEMBER_ID, memberId);
       await this.rdbStore.delete(predicates);
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Delete member failed: %{public}s', JSON.stringify(error));

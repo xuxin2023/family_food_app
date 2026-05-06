@@ -63,16 +63,15 @@ export function getStackSize(): number {
 }
 
 /**
- * 返回到指定索引的页面 (0=首页)
+ * 返回到指定索引的页面（router 索引从 1 开始，1=首页）
+ * 使用 router.back(index, params) 重载：index 为页面栈中的位置序号（从1开始），
+ * 当 index 大于当前栈长度时回退到首页
+ * @param index 目标页面索引（0=首页，内部转换为 router 的 1-based 索引）
+ * @param params 可选参数，回退时传递给目标页面
  */
-export function safeBackToIndex(index: number): void {
+export function safeBackToIndex(index: number, params?: Record<string, Object>): void {
   try {
-    router.back({ url: '', params: {} });
-    // 多次 back 直到索引达到
-    const currentLen = router.getLength();
-    if (Number(currentLen) > index + 1) {
-      router.back({ url: '', params: {} });
-    }
+    router.back(index + 1, params ?? undefined);
   } catch (_e) {
     // 静默处理
   }

@@ -3,7 +3,7 @@
 // 用于 HomePage 底部操作区
 
 import { router } from '@kit.ArkUI';
-import { COLORS, BUTTON, FONT_SIZE } from '../constants/AppTheme';
+import { COLORS, BUTTON } from '../constants/AppTheme';
 
 @Component
 export struct FeatureButton {
@@ -12,17 +12,17 @@ export struct FeatureButton {
   /** 按钮文本 */
   private text: ResourceStr = ''
   /** 按钮背景色 */
-  private bgColor: string = COLORS.PRIMARY
+  private btnBg: string = COLORS.PRIMARY
   /** 文本颜色 */
   private textColor: string = COLORS.WHITE
   /** 按钮高度 */
-  private height: number = BUTTON.HEIGHT_LG
+  private btnHeight: number = BUTTON.HEIGHT_LG
   /** 按钮圆角 */
-  private borderRadius: number = BUTTON.RADIUS_LG
-  /** 跳转目标页面URL */
+  private btnRadius: number = BUTTON.RADIUS_LG
+  /** 跳转目标页面URL（无参数跳转；需参数时使用 onCustomClick） */
   private targetUrl: string = ''
-  /** 跳转参数（可选） */
-  private targetParams: Record<string, Object> = {}
+  /** 自定义点击回调（优先级高于 targetUrl） */
+  onCustomClick: () => void = () => {}
 
   build() {
     Button() {
@@ -36,16 +36,16 @@ export struct FeatureButton {
       }
     }
     .width('90%')
-    .height(this.height)
-    .backgroundColor(this.bgColor)
-    .borderRadius(this.borderRadius)
+    .height(this.btnHeight)
+    .backgroundColor(this.btnBg)
+    .borderRadius(this.btnRadius)
     .margin({ bottom: 12 })
     .onClick(() => {
       try {
-        if (Object.keys(this.targetParams).length > 0) {
-          router.pushUrl({ url: this.targetUrl, params: this.targetParams });
-        } else {
+        if (this.targetUrl.length > 0) {
           router.pushUrl({ url: this.targetUrl });
+        } else {
+          this.onCustomClick();
         }
       } catch (_e) {
         // ignore router error
@@ -63,7 +63,6 @@ export struct NavLinkText {
   private color: string = COLORS.TEXT_GRAY_7575
   private fontWeight: number = 400
   private targetUrl: string = ''
-  private targetParams: Record<string, Object> = {}
 
   build() {
     Text(this.text)
@@ -72,11 +71,7 @@ export struct NavLinkText {
       .fontWeight(this.fontWeight as FontWeight)
       .onClick(() => {
         try {
-          if (Object.keys(this.targetParams).length > 0) {
-            router.pushUrl({ url: this.targetUrl, params: this.targetParams });
-          } else {
-            router.pushUrl({ url: this.targetUrl });
-          }
+          router.pushUrl({ url: this.targetUrl });
         } catch (_e) {
           // ignore router error
         }

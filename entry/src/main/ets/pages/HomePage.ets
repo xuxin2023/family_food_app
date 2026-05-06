@@ -6,6 +6,8 @@ import { router, promptAction } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FamilyProfile, HealthGoal } from '../model/FamilyProfile';
 import { MemberCard } from '../components/MemberCard';
+import { FeatureButton, NavLinkText } from '../components/FeatureButton';
+import { LinkInputDialog } from '../components/LinkInputDialog';
 import { AppState } from '../AppState';
 import { MilestoneService, Milestone } from '../service/MilestoneService';
 import { OnlineShoppingParser } from '../service/OnlineShoppingParser';
@@ -29,15 +31,12 @@ export class StatusResult {
 struct HomePage {
   @State familyMembers: FamilyProfile[] = []
   @State selectedMemberId: string = ''
-  @State currentSloganIndex: number = 0
   @State milestones: Milestone[] = []
   @State showLinkInput: boolean = false
   @State linkInputText: string = ''
   @State isParsingLink: boolean = false
-  @State memberStatusTexts: Map<string, string> = new Map()
-  @State memberStatusColors: Map<string, string> = new Map()
+  @State memberStatusMap: Map<string, StatusResult> = new Map()
   @State remainingScans: number = 0
-  @State todayDate: string = ''
   @State isLoading: boolean = true
 
   // ===== AppStorage 版本号绑定 =====
@@ -49,6 +48,8 @@ struct HomePage {
 
   private appState: AppState = AppState.getInstance()
   private milestoneService: MilestoneService = MilestoneService.getInstance()
+  private currentSloganIndex: number = 0
+  private todayDate: string = ''
 
   private slogans: ResourceStr[] = [
     $r('app.string.slogan_1'),
@@ -116,19 +117,16 @@ struct HomePage {
    */
   private refreshMemberStatuses(): void {
     this.remainingScans = this.appState.getRemainingScans()
-    const newTexts: Map<string, string> = new Map()
-    const newColors: Map<string, string> = new Map()
+    const newMap: Map<string, StatusResult> = new Map()
 
     for (let i = 0; i < this.familyMembers.length; i++) {
       const member = this.familyMembers[i]
       const budget = this.appState.getDailyBudgetSync(member.memberId)
       const result = this.computeStatusFromBudget(member, budget)
-      newTexts.set(member.memberId, result.text)
-      newColors.set(member.memberId, result.color)
+      newMap.set(member.memberId, result)
     }
 
-    this.memberStatusTexts = newTexts
-    this.memberStatusColors = newColors
+    this.memberStatusMap = newMap
   }
 
   private getTodayDate(): string {
@@ -308,170 +306,82 @@ struct HomePage {
       // 底部操作区
       Column() {
         // 粘贴电商链接按钮
-        Button() {
-          Row() {
-            Text('🔗').fontSize(20)
-            Text($r('app.string.paste_link')).fontSize(18).fontColor(COLORS.WHITE).margin({ left: 8 })
-          }
-        }
-        .width('90%')
-        .height(BUTTON.HEIGHT_MD)
-        .backgroundColor(COLORS.PURPLE_ACCENT)
-        .borderRadius(BUTTON.RADIUS_MD)
-        .margin({ bottom: 10 })
-        .onClick(() => { this.openLinkInput() })
-        Button() {
-          Row() {
-            Text('📷').fontSize(20)
-            Text($r('app.string.scan_button')).fontSize(18).fontColor(COLORS.WHITE).margin({ left: 8 })
-          }
-        }
-        .width('90%')
-        .height(BUTTON.HEIGHT_LG)
-        .backgroundColor(COLORS.PRIMARY)
-        .borderRadius(BUTTON.RADIUS_LG)
-        .margin({ bottom: 12 })
-        .onClick(() => {
-          try {
-            router.pushUrl({
-              url: 'pages/ScanPage',
-              params: { memberId: this.selectedMemberId }
-            })
-          } catch (_e) {
-            // ignore router.pushUrl error
+        FeatureButton({
+          icon: '🔗',
+          text: $r('app.string.paste_link'),
+          btnBg: COLORS.PURPLE_ACCENT,
+          btnHeight: BUTTON.HEIGHT_MD,
+          btnRadius: BUTTON.RADIUS_MD,
+          onCustomClick: () => { this.openLinkInput() }
+        })
+
+        FeatureButton({
+          icon: '📷',
+          text: $r('app.string.scan_button'),
+          btnBg: COLORS.PRIMARY,
+          onCustomClick: () => {
+            router.pushUrl({ url: 'pages/ScanPage', params: { memberId: this.selectedMemberId } })
           }
         })
 
-        Button() {
-          Row() {
-            Text('🍽').fontSize(20)
-            Text($r('app.string.balance_button')).fontSize(18).fontColor(COLORS.PRIMARY).margin({ left: 8 })
-          }
-        }
-        .width('90%')
-        .height(BUTTON.HEIGHT_LG)
-        .backgroundColor(COLORS.BG_WARM_BLUE)
-        .borderRadius(BUTTON.RADIUS_LG)
-        .margin({ bottom: 12 })
-        .onClick(() => {
-          try {
-            router.pushUrl({
-              url: 'pages/BalancePage',
-              params: { memberId: this.selectedMemberId }
-            })
-          } catch (_e) {
-            // ignore router.pushUrl error
+        FeatureButton({
+          icon: '🍽',
+          text: $r('app.string.balance_button'),
+          btnBg: COLORS.BG_WARM_BLUE,
+          textColor: COLORS.PRIMARY,
+          onCustomClick: () => {
+            router.pushUrl({ url: 'pages/BalancePage', params: { memberId: this.selectedMemberId } })
           }
         })
 
-        // 📊 膳食日记入口
-        Button() {
-          Row({ space: 6 }) {
-            Text('📊').fontSize(20)
-            Text($r('app.string.diet_diary')).fontSize(18).fontColor(COLORS.ACCENT_GREEN_66BB).margin({ left: 8 })
-          }
-        }
-        .width('90%')
-        .height(BUTTON.HEIGHT_LG)
-        .backgroundColor(COLORS.BG_LIGHT_GREEN)
-        .borderRadius(BUTTON.RADIUS_LG)
-        .margin({ bottom: 12 })
-        .onClick(() => {
-          try {
-            router.pushUrl({
-              url: 'pages/DietDiaryPage',
-              params: { memberId: this.selectedMemberId }
-            })
-          } catch (_e) {
-            // ignore router.pushUrl error
+        FeatureButton({
+          icon: '📊',
+          text: $r('app.string.diet_diary'),
+          btnBg: COLORS.BG_LIGHT_GREEN,
+          textColor: COLORS.ACCENT_GREEN_66BB,
+          onCustomClick: () => {
+            router.pushUrl({ url: 'pages/DietDiaryPage', params: { memberId: this.selectedMemberId } })
           }
         })
 
-        // 🤖 AI营养师入口
-        Button() {
-          Row({ space: 6 }) {
-            Text('🤖').fontSize(20)
-            Text($r('app.string.ai_nutritionist')).fontSize(18).fontColor(COLORS.WHITE).margin({ left: 8 })
-          }
-        }
-        .width('90%')
-        .height(BUTTON.HEIGHT_LG)
-        .backgroundColor(COLORS.ACCENT_PURPLE)
-        .borderRadius(BUTTON.RADIUS_LG)
-        .margin({ bottom: 12 })
-        .onClick(() => {
-          try {
-            router.pushUrl({
-              url: 'pages/DietDiaryPage',
-              params: { memberId: this.selectedMemberId, aiMode: 'nutritionist' }
-            })
-          } catch (_e) {
-            // ignore router.pushUrl error
+        FeatureButton({
+          icon: '🤖',
+          text: $r('app.string.ai_nutritionist'),
+          btnBg: COLORS.ACCENT_PURPLE,
+          onCustomClick: () => {
+            router.pushUrl({ url: 'pages/DietDiaryPage', params: { memberId: this.selectedMemberId, aiMode: 'nutritionist' } })
           }
         })
 
-        // ✨ AI智能推荐食谱
-        Button() {
-          Row({ space: 6 }) {
-            Text('✨').fontSize(20)
-            Text($r('app.string.ai_recommend_recipe')).fontSize(18).fontColor(COLORS.WHITE).margin({ left: 8 })
-          }
-        }
-        .width('90%')
-        .height(BUTTON.HEIGHT_LG)
-        .backgroundColor(COLORS.PRIMARY_DARK)
-        .borderRadius(BUTTON.RADIUS_LG)
-        .margin({ bottom: 12 })
-        .onClick(() => {
-          try {
-            router.pushUrl({
-              url: 'pages/RecipeCommunityPage',
-              params: { aiMode: 'recommend' }
-            })
-          } catch (_e) {
-            // ignore router.pushUrl error
+        FeatureButton({
+          icon: '✨',
+          text: $r('app.string.ai_recommend_recipe'),
+          btnBg: COLORS.PRIMARY_DARK,
+          onCustomClick: () => {
+            router.pushUrl({ url: 'pages/RecipeCommunityPage', params: { aiMode: 'recommend' } })
           }
         })
 
         if (this.appState.hasFamilyAccess()) {
-          Button() {
-            Row() {
-              Text('🛒').fontSize(20)
-              Text($r('app.string.basket_button')).fontSize(18).fontColor(COLORS.ORANGE_ACCENT).margin({ left: 8 })
-            }
-          }
-          .width('90%')
-          .height(BUTTON.HEIGHT_MD)
-          .backgroundColor(COLORS.BG_WARM_ORANGE)
-          .borderRadius(BUTTON.RADIUS_MD)
-          .margin({ bottom: 12 })
-          .onClick(() => {
-            try {
-              router.pushUrl({ url: 'pages/BasketCheckPage' })
-            } catch (_e) {
-              hilog.warn(DOMAIN_ZERO, 'HomePage', 'pushUrl failed: %{public}s', JSON.stringify(_e));
-            }
+          FeatureButton({
+            icon: '🛒',
+            text: $r('app.string.basket_button'),
+            btnBg: COLORS.BG_WARM_ORANGE,
+            textColor: COLORS.ORANGE_ACCENT,
+            btnHeight: BUTTON.HEIGHT_MD,
+            btnRadius: BUTTON.RADIUS_MD,
+            targetUrl: 'pages/BasketCheckPage'
           })
         }
 
-        // 🛡️ 查品牌/商家透明度（无门控，所有用户可用）
-        Button() {
-          Row() {
-            Text('🛡️').fontSize(20)
-            Text($r('app.string.brand_transparency')).fontSize(18).fontColor(COLORS.PURPLE_ACCENT).margin({ left: 8 })
-          }
-        }
-        .width('90%')
-        .height(BUTTON.HEIGHT_MD)
-        .backgroundColor(COLORS.BG_WARM_PURPLE)
-        .borderRadius(BUTTON.RADIUS_MD)
-        .margin({ bottom: 12 })
-        .onClick(() => {
-          try {
-            router.pushUrl({ url: 'pages/SettingsPage' })
-          } catch (_e) {
-            // ignore router.pushUrl error
-          }
+        FeatureButton({
+          icon: '🛡️',
+          text: $r('app.string.brand_transparency'),
+          btnBg: COLORS.BG_WARM_PURPLE,
+          textColor: COLORS.PURPLE_ACCENT,
+          btnHeight: BUTTON.HEIGHT_MD,
+          btnRadius: BUTTON.RADIUS_MD,
+          targetUrl: 'pages/SettingsPage'
         })
 
         // 社交入口：食谱社区 + 家庭群组
@@ -829,17 +739,17 @@ struct HomePage {
   }
 
   private getMemberStatusText(member: FamilyProfile): string {
-    const cached = this.memberStatusTexts.get(member.memberId)
+    const cached = this.memberStatusMap.get(member.memberId)
     if (cached !== undefined) {
-      return cached
+      return cached.text
     }
     return this.computeStatusFromBudget(member, undefined).text
   }
 
   private getMemberStatusColor(member: FamilyProfile): string {
-    const cached = this.memberStatusColors.get(member.memberId)
+    const cached = this.memberStatusMap.get(member.memberId)
     if (cached !== undefined) {
-      return cached
+      return cached.color
     }
     return this.computeStatusFromBudget(member, undefined).color
   }

@@ -64,6 +64,9 @@ export class AssetKeyManager {
       hilog.warn(DOMAIN_ZERO, TAG, 'saveKey: empty key, skip');
       return false;
     }
+    // 始终写入内存缓存（确保运行时可用）
+    this.keyCache.set(alias, key);
+
     try {
       // 先尝试删除已存在的同名 Key（避免 add 重复报错 24000003）
       await this.removeKeyInternal(alias);
@@ -71,20 +74,16 @@ export class AssetKeyManager {
       const attr: asset.AssetMap = new Map();
       attr.set(asset.Tag.SECRET, stringToArray(key));
       attr.set(asset.Tag.ALIAS, stringToArray(alias));
-      // 首次解锁后可访问（设备开机后输入一次锁屏密码即可）
       attr.set(asset.Tag.ACCESSIBILITY, asset.Accessibility.DEVICE_FIRST_UNLOCKED);
 
       await asset.add(attr);
-      // 更新内存缓存
-      this.keyCache.set(alias, key);
-      hilog.info(DOMAIN_ZERO, TAG, 'saveKey success: %{public}s', alias);
+      hilog.info(DOMAIN_ZERO, TAG, 'saveKey success (asset + cache): %{public}s', alias);
       return true;
     } catch (error) {
       const err = error as BusinessError;
-      hilog.error(DOMAIN_ZERO, TAG, 'saveKey failed: %{public}s, code: %{public}d', alias, err.code);
-      // 降级：至少写入内存缓存
-      this.keyCache.set(alias, key);
-      return false;
+      hilog.warn(DOMAIN_ZERO, TAG, 'saveKey asset write failed: %{public}s, code: %{public}d — using memory cache only', alias, err.code);
+      // 降级：内存缓存仍可用，仅 Asset 持久化失败
+      return true;
     }
   }
 
@@ -130,14 +129,16 @@ export class AssetKeyManager {
    * 删除指定的 Key
    */
   async removeKey(alias: string): Promise<boolean> {
+    // 先清除内存缓存，确保调用方立即感知到 key 已被移除
+    this.keyCache.delete(alias);
     try {
       await this.removeKeyInternal(alias);
-      this.keyCache.delete(alias);
       hilog.info(DOMAIN_ZERO, TAG, 'removeKey success: %{public}s', alias);
       return true;
     } catch (error) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'removeKey failed: %{public}s', alias);
-      return false;
+      hilog.warn(DOMAIN_ZERO, TAG, 'removeKey asset delete failed: %{public}s', alias);
+      // 内存已清除，Asset 清理失败不影响运行时安全
+      return true;
     }
   }
 

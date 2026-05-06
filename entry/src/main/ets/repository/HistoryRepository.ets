@@ -2,6 +2,14 @@
 
 import { relationalStore } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import {
+  TABLE_SCAN_HISTORY, TABLE_DIET_RECORD,
+  COL_ID, COL_MEMBER_ID, COL_FOOD_ID, COL_FOOD_NAME,
+  COL_LEVEL, COL_MAX_AMOUNT, COL_REASONS, COL_SCANNED_AT,
+  COL_DATE, COL_SCENARIO, COL_MEAL_TYPE, COL_AMOUNT_G,
+  COL_SODIUM_INTAKE, COL_SUGAR_INTAKE, COL_CALORIE_INTAKE,
+  COL_FAT_INTAKE, COL_RECORDED_AT
+} from '../constants/DbSchema';
 
 const TAG = 'HistoryRepository';
 const DOMAIN_ZERO = 0;
@@ -74,31 +82,31 @@ export class HistoryRepository {
 
     try {
       // 扫描历史表
-      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS scan_history (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        member_id TEXT NOT NULL,
-        food_id TEXT NOT NULL,
-        food_name TEXT NOT NULL,
-        level TEXT NOT NULL,
-        max_amount REAL NOT NULL,
-        reasons TEXT NOT NULL,
-        scanned_at INTEGER NOT NULL
+      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_SCAN_HISTORY} (
+        ${COL_ID} INTEGER PRIMARY KEY AUTOINCREMENT,
+        ${COL_MEMBER_ID} TEXT NOT NULL,
+        ${COL_FOOD_ID} TEXT NOT NULL,
+        ${COL_FOOD_NAME} TEXT NOT NULL,
+        ${COL_LEVEL} TEXT NOT NULL,
+        ${COL_MAX_AMOUNT} REAL NOT NULL,
+        ${COL_REASONS} TEXT NOT NULL,
+        ${COL_SCANNED_AT} INTEGER NOT NULL
       )`);
 
       // 饮食记录表
-      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS diet_record (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        member_id TEXT NOT NULL,
-        date TEXT NOT NULL,
-        scenario TEXT,
-        meal_type TEXT DEFAULT 'breakfast',
-        food_id TEXT,
-        amount_g REAL,
-        sodium_intake REAL,
-        sugar_intake REAL,
-        calorie_intake REAL,
-        fat_intake REAL,
-        recorded_at INTEGER NOT NULL
+      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_DIET_RECORD} (
+        ${COL_ID} INTEGER PRIMARY KEY AUTOINCREMENT,
+        ${COL_MEMBER_ID} TEXT NOT NULL,
+        ${COL_DATE} TEXT NOT NULL,
+        ${COL_SCENARIO} TEXT,
+        ${COL_MEAL_TYPE} TEXT DEFAULT 'breakfast',
+        ${COL_FOOD_ID} TEXT,
+        ${COL_AMOUNT_G} REAL,
+        ${COL_SODIUM_INTAKE} REAL,
+        ${COL_SUGAR_INTAKE} REAL,
+        ${COL_CALORIE_INTAKE} REAL,
+        ${COL_FAT_INTAKE} REAL,
+        ${COL_RECORDED_AT} INTEGER NOT NULL
       )`);
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Init tables failed: %{public}s', JSON.stringify(error));
@@ -122,7 +130,7 @@ export class HistoryRepository {
     };
 
     try {
-      await this.rdbStore.insert('scan_history', valueBucket);
+      await this.rdbStore.insert(TABLE_SCAN_HISTORY, valueBucket);
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Save scan history failed: %{public}s', JSON.stringify(error));
     }
@@ -149,7 +157,7 @@ export class HistoryRepository {
     };
 
     try {
-      await this.rdbStore.insert('diet_record', valueBucket);
+      await this.rdbStore.insert(TABLE_DIET_RECORD, valueBucket);
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Save diet record failed: %{public}s', JSON.stringify(error));
     }
@@ -164,8 +172,8 @@ export class HistoryRepository {
     const today = this.getTodayDate();
     let resultSet: relationalStore.ResultSet | null = null;
     try {
-      const predicates = new relationalStore.RdbPredicates('diet_record');
-      predicates.equalTo('member_id', memberId).equalTo('date', today);
+      const predicates = new relationalStore.RdbPredicates(TABLE_DIET_RECORD);
+      predicates.equalTo(COL_MEMBER_ID, memberId).equalTo(COL_DATE, today);
       resultSet = await this.rdbStore.query(predicates);
       const records: DietRecord[] = [];
 
@@ -191,8 +199,8 @@ export class HistoryRepository {
 
     let resultSet: relationalStore.ResultSet | null = null;
     try {
-      const predicates = new relationalStore.RdbPredicates('scan_history');
-      predicates.orderByDesc('scanned_at');
+      const predicates = new relationalStore.RdbPredicates(TABLE_SCAN_HISTORY);
+      predicates.orderByDesc(COL_SCANNED_AT);
       predicates.limitAs(limit);
       resultSet = await this.rdbStore.query(predicates);
       const records: ScanHistoryRecord[] = [];
@@ -219,9 +227,9 @@ export class HistoryRepository {
 
     let resultSet: relationalStore.ResultSet | null = null;
     try {
-      const predicates = new relationalStore.RdbPredicates('scan_history');
-      predicates.equalTo('member_id', memberId);
-      predicates.orderByDesc('scanned_at');
+      const predicates = new relationalStore.RdbPredicates(TABLE_SCAN_HISTORY);
+      predicates.equalTo(COL_MEMBER_ID, memberId);
+      predicates.orderByDesc(COL_SCANNED_AT);
       predicates.limitAs(limit);
       resultSet = await this.rdbStore.query(predicates);
       const records: ScanHistoryRecord[] = [];
@@ -248,10 +256,10 @@ export class HistoryRepository {
 
     let resultSet: relationalStore.ResultSet | null = null;
     try {
-      const predicates = new relationalStore.RdbPredicates('diet_record');
-      predicates.equalTo('member_id', memberId);
-      predicates.equalTo('date', date);
-      predicates.orderByAsc('recorded_at');
+      const predicates = new relationalStore.RdbPredicates(TABLE_DIET_RECORD);
+      predicates.equalTo(COL_MEMBER_ID, memberId);
+      predicates.equalTo(COL_DATE, date);
+      predicates.orderByAsc(COL_RECORDED_AT);
       resultSet = await this.rdbStore.query(predicates);
       const records: DietRecord[] = [];
 
@@ -277,11 +285,11 @@ export class HistoryRepository {
 
     let resultSet: relationalStore.ResultSet | null = null;
     try {
-      const predicates = new relationalStore.RdbPredicates('diet_record');
-      predicates.equalTo('member_id', memberId);
-      predicates.greaterThanOrEqualTo('date', startDate);
-      predicates.lessThanOrEqualTo('date', endDate);
-      predicates.orderByAsc('date');
+      const predicates = new relationalStore.RdbPredicates(TABLE_DIET_RECORD);
+      predicates.equalTo(COL_MEMBER_ID, memberId);
+      predicates.greaterThanOrEqualTo(COL_DATE, startDate);
+      predicates.lessThanOrEqualTo(COL_DATE, endDate);
+      predicates.orderByAsc(COL_DATE);
       resultSet = await this.rdbStore.query(predicates);
       const records: DietRecord[] = [];
 
@@ -332,8 +340,8 @@ export class HistoryRepository {
     if (!this.rdbStore) return 0;
 
     try {
-      const predicates = new relationalStore.RdbPredicates('scan_history');
-      predicates.lessThan('scanned_at', timestamp);
+      const predicates = new relationalStore.RdbPredicates(TABLE_SCAN_HISTORY);
+      predicates.lessThan(COL_SCANNED_AT, timestamp);
       return await this.rdbStore.delete(predicates);
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Delete old scan history failed: %{public}s', JSON.stringify(error));
@@ -346,44 +354,44 @@ export class HistoryRepository {
   private scanRecordFromResultSet(resultSet: relationalStore.ResultSet): ScanHistoryRecord {
     let reasons: string[] = [];
     try {
-      reasons = JSON.parse(resultSet.getString(resultSet.getColumnIndex('reasons')) || '[]') as string[];
+      reasons = JSON.parse(resultSet.getString(resultSet.getColumnIndex(COL_REASONS)) || '[]') as string[];
     } catch (e) {
       reasons = [];
     }
     const record = new ScanHistoryRecord();
-    record.id = resultSet.getLong(resultSet.getColumnIndex('id'));
-    record.memberId = resultSet.getString(resultSet.getColumnIndex('member_id'));
-    record.foodId = resultSet.getString(resultSet.getColumnIndex('food_id'));
-    record.foodName = resultSet.getString(resultSet.getColumnIndex('food_name'));
-    record.level = resultSet.getString(resultSet.getColumnIndex('level'));
-    record.maxAmount = resultSet.getDouble(resultSet.getColumnIndex('max_amount'));
+    record.id = resultSet.getLong(resultSet.getColumnIndex(COL_ID));
+    record.memberId = resultSet.getString(resultSet.getColumnIndex(COL_MEMBER_ID));
+    record.foodId = resultSet.getString(resultSet.getColumnIndex(COL_FOOD_ID));
+    record.foodName = resultSet.getString(resultSet.getColumnIndex(COL_FOOD_NAME));
+    record.level = resultSet.getString(resultSet.getColumnIndex(COL_LEVEL));
+    record.maxAmount = resultSet.getDouble(resultSet.getColumnIndex(COL_MAX_AMOUNT));
     record.reasons = reasons;
-    record.scannedAt = resultSet.getLong(resultSet.getColumnIndex('scanned_at'));
+    record.scannedAt = resultSet.getLong(resultSet.getColumnIndex(COL_SCANNED_AT));
     return record;
   }
 
   private dietRecordFromResultSet(resultSet: relationalStore.ResultSet): DietRecord {
     const record = new DietRecord();
-    record.id = resultSet.getLong(resultSet.getColumnIndex('id'));
-    record.memberId = resultSet.getString(resultSet.getColumnIndex('member_id'));
-    record.date = resultSet.getString(resultSet.getColumnIndex('date'));
-    record.scenario = resultSet.getString(resultSet.getColumnIndex('scenario'));
+    record.id = resultSet.getLong(resultSet.getColumnIndex(COL_ID));
+    record.memberId = resultSet.getString(resultSet.getColumnIndex(COL_MEMBER_ID));
+    record.date = resultSet.getString(resultSet.getColumnIndex(COL_DATE));
+    record.scenario = resultSet.getString(resultSet.getColumnIndex(COL_SCENARIO));
     let mealTypeCol = -1;
     try {
-      mealTypeCol = resultSet.getColumnIndex('meal_type');
+      mealTypeCol = resultSet.getColumnIndex(COL_MEAL_TYPE);
     } catch (_e) {
       // 兼容旧数据：meal_type 列可能不存在
     }
     if (mealTypeCol >= 0) {
       record.mealType = resultSet.getString(mealTypeCol);
     }
-    record.foodId = resultSet.getString(resultSet.getColumnIndex('food_id'));
-    record.amountG = resultSet.getDouble(resultSet.getColumnIndex('amount_g'));
-    record.sodiumIntake = resultSet.getDouble(resultSet.getColumnIndex('sodium_intake'));
-    record.sugarIntake = resultSet.getDouble(resultSet.getColumnIndex('sugar_intake'));
-    record.calorieIntake = resultSet.getDouble(resultSet.getColumnIndex('calorie_intake'));
-    record.fatIntake = resultSet.getDouble(resultSet.getColumnIndex('fat_intake'));
-    record.recordedAt = resultSet.getLong(resultSet.getColumnIndex('recorded_at'));
+    record.foodId = resultSet.getString(resultSet.getColumnIndex(COL_FOOD_ID));
+    record.amountG = resultSet.getDouble(resultSet.getColumnIndex(COL_AMOUNT_G));
+    record.sodiumIntake = resultSet.getDouble(resultSet.getColumnIndex(COL_SODIUM_INTAKE));
+    record.sugarIntake = resultSet.getDouble(resultSet.getColumnIndex(COL_SUGAR_INTAKE));
+    record.calorieIntake = resultSet.getDouble(resultSet.getColumnIndex(COL_CALORIE_INTAKE));
+    record.fatIntake = resultSet.getDouble(resultSet.getColumnIndex(COL_FAT_INTAKE));
+    record.recordedAt = resultSet.getLong(resultSet.getColumnIndex(COL_RECORDED_AT));
     return record;
   }
 

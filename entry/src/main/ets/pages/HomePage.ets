@@ -12,6 +12,8 @@ import { OnlineShoppingParser } from '../service/OnlineShoppingParser';
 import { DailyBudget } from '../model/DailyBudget';
 import { COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, BUTTON } from '../constants/AppTheme';
 
+const DOMAIN_ZERO = 0;
+
 export class StatusResult {
   text: string = ''
   color: string = ''
@@ -120,7 +122,7 @@ struct HomePage {
     try {
       this.milestones = await this.milestoneService.checkMilestones()
     } catch (_error) {
-      hilog.warn(0x0000, 'HomePage', 'refreshMilestones failed: ' + JSON.stringify(_error))
+      hilog.warn(DOMAIN_ZERO, 'HomePage', 'refreshMilestones failed: ' + JSON.stringify(_error))
     }
   }
 
@@ -141,7 +143,7 @@ struct HomePage {
 
     for (let i = 0; i < this.familyMembers.length; i++) {
       const member = this.familyMembers[i]
-      const budget = this.appState.getDailyBudget(member.memberId)
+      const budget = this.appState.getDailyBudgetSync(member.memberId)
       const result = this.computeStatusFromBudget(member, budget)
       newTexts.set(member.memberId, result.text)
       newColors.set(member.memberId, result.color)
@@ -182,31 +184,21 @@ struct HomePage {
         return
       }
 
-      // 解析成功 → 构造FoodLabel跳转到报告页
-      const sourceName: string = parseResult.source
-      const productName: string = parseResult.label.foodName
-      promptAction.showToast({ message: $r('app.string.parse_success') + `${sourceName}：${productName}` })
+      // 解析成功 → 存入路由缓存，只传 foodId
+      this.appState.setReportParams(parseResult.label, [], [])
 
+      const sourceName: string = parseResult.source ?? '';
       router.pushUrl({
         url: 'pages/ReportPage',
         params: {
-          foodLabel: parseResult.label,
-          recommendations: [],
-          members: this.familyMembers,
-          alternatives: [],
-          nutriScore: 50,
-          credibilityResult: {
-            overallScore: 60,
-            dataSource: sourceName,
-            reliability: 'medium',
-            warnings: [$r('app.string.data_from_ecommerce')]
-          },
-          childProtection: []
+          foodLabelId: parseResult.label.foodId,
+          sourceName: sourceName,
+          fromEcommerce: true
         }
       })
     } catch (error) {
       promptAction.showToast({ message: $r('app.string.parse_exception') })
-      hilog.error(0x0000, 'HomePage', 'parseLink error: ' + JSON.stringify(error))
+      hilog.error(DOMAIN_ZERO, 'HomePage', 'parseLink error: ' + JSON.stringify(error))
     } finally {
       this.isParsingLink = false
     }
@@ -262,7 +254,7 @@ struct HomePage {
               params: { memberId: this.selectedMemberId }
             })
           } catch (_e) {
-            // ignore router.pushUrl error
+            hilog.warn(DOMAIN_ZERO, 'HomePage', 'pushUrl ScanPage failed: %{public}s', JSON.stringify(_e));
           }
         })
       }
@@ -319,7 +311,7 @@ struct HomePage {
                 router.pushUrl({ url: 'pages/SettingsPage' })
               }
             } catch (_e) {
-              // ignore router.pushUrl error
+              hilog.warn(DOMAIN_ZERO, 'HomePage', 'pushUrl member/add failed: %{public}s', JSON.stringify(_e));
             }
           })
         }
@@ -473,7 +465,7 @@ struct HomePage {
             try {
               router.pushUrl({ url: 'pages/BasketCheckPage' })
             } catch (_e) {
-              // ignore router.pushUrl error
+              hilog.warn(DOMAIN_ZERO, 'HomePage', 'pushUrl failed: %{public}s', JSON.stringify(_e));
             }
           })
         }
@@ -514,7 +506,7 @@ struct HomePage {
             try {
               router.pushUrl({ url: 'pages/RecipeCommunityPage' });
             } catch (e) {
-              hilog.warn(0x0000, 'HomePage', 'pushUrl RecipeCommunityPage failed: %{public}s', JSON.stringify(e));
+              hilog.warn(DOMAIN_ZERO, 'HomePage', 'pushUrl RecipeCommunityPage failed: %{public}s', JSON.stringify(e));
             }
           })
 
@@ -532,7 +524,7 @@ struct HomePage {
             try {
               router.pushUrl({ url: 'pages/FamilyGroupPage' });
             } catch (e) {
-              hilog.warn(0x0000, 'HomePage', 'pushUrl FamilyGroupPage failed: %{public}s', JSON.stringify(e));
+              hilog.warn(DOMAIN_ZERO, 'HomePage', 'pushUrl FamilyGroupPage failed: %{public}s', JSON.stringify(e));
             }
           })
         }
@@ -695,7 +687,7 @@ struct HomePage {
             try {
               router.pushUrl({ url: 'pages/SettingsPage' })
             } catch (_e) {
-              // ignore router.pushUrl error
+              hilog.warn(DOMAIN_ZERO, 'HomePage', 'pushUrl failed: %{public}s', JSON.stringify(_e));
             }
           })
       }
@@ -879,7 +871,19 @@ struct HomePage {
    */
   private computeStatusFromBudget(member: FamilyProfile, budget: DailyBudget | undefined): StatusResult {
     if (budget === undefined) {
-      budget = this.appState.getDailyBudget(member.memberId)
+      // 后备：从成员配置构建一个完整的预算（refreshMemberStatuses 已异步加载缓存）
+      // 此路径仅在模板渲染时缓存尚未填充的情况下触发
+      budget = new DailyBudget()
+      budget.memberId = member.memberId
+      budget.date = this.getTodayDate()
+      budget.sodiumBudget = member.dailyBudget.sodiumBudget
+      budget.sugarBudget = member.dailyBudget.sugarBudget
+      budget.calorieBudget = member.dailyBudget.calorieBudget
+      budget.fatBudget = member.dailyBudget.fatBudget
+      budget.sodiumRemaining = budget.sodiumBudget
+      budget.sugarRemaining = budget.sugarBudget
+      budget.calorieRemaining = budget.calorieBudget
+      budget.fatRemaining = budget.fatBudget
     }
     const goal: HealthGoal = member.healthGoals.length > 0 ? member.healthGoals[0] : HealthGoal.NONE
 

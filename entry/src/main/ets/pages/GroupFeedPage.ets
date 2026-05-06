@@ -9,6 +9,7 @@ import { BasicDataSource } from '../utils/BasicDataSource';
 import { PAGE_SIZE_CONFIG } from '../constants/AppConfig';
 
 const PAGE_SIZE = PAGE_SIZE_CONFIG.GROUP_FEED_PAGE_SIZE;
+const DOMAIN_ZERO = 0;
 
 @Entry
 @Component
@@ -36,7 +37,7 @@ struct GroupFeedPage {
       this.feeds = await this.appState.getGroupFeeds(this.groupId, 0, PAGE_SIZE)
       this.feedDS.reload(this.feeds)
     } catch (e) {
-      hilog.error(0x0000, 'GroupFeedPage', 'load feeds error')
+      hilog.error(DOMAIN_ZERO, 'GroupFeedPage', 'load feeds error')
     }
     this.isLoading = false
   }

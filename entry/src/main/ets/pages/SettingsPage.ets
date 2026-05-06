@@ -16,6 +16,8 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { COLORS } from '../constants/AppTheme';
 import { getPrivacyPolicyHtml, getUserAgreementHtml } from '../utils/PrivacyContentUtil';
 
+const DOMAIN_ZERO = 0;
+
 @Entry
 @Component
 struct SettingsPage {
@@ -117,7 +119,7 @@ struct SettingsPage {
             try {
               router.pushUrl({ url: 'pages/CloudSyncSettingsPage' });
             } catch (e) {
-              hilog.warn(0x0000, 'SettingsPage', 'pushUrl CloudSyncSettingsPage failed: %{public}s', JSON.stringify(e));
+              hilog.warn(DOMAIN_ZERO, 'SettingsPage', 'pushUrl CloudSyncSettingsPage failed: %{public}s', JSON.stringify(e));
             }
           })
 
@@ -409,7 +411,7 @@ struct SettingsPage {
         await relationalStore.deleteRdbStore(context, 'food_helper.db')
       } catch (_dbErr) {
         // 如果数据库不存在或已删除，忽略错误
-        hilog.warn(0x0000, 'SettingsPage', 'deleteRdbStore ignore: ' + JSON.stringify(_dbErr))
+        hilog.warn(DOMAIN_ZERO, 'SettingsPage', 'deleteRdbStore ignore: ' + JSON.stringify(_dbErr))
       }
 
       // 2. 清除隐私设置（重置首次启动标记）
@@ -418,7 +420,7 @@ struct SettingsPage {
         await pref.put('privacy_agreed', false)
         await pref.flush()
       } catch (_prefErr) {
-        hilog.warn(0x0000, 'SettingsPage', 'clear preferences failed: ' + JSON.stringify(_prefErr))
+        hilog.warn(DOMAIN_ZERO, 'SettingsPage', 'clear preferences failed: ' + JSON.stringify(_prefErr))
       }
 
       // 3. 重置 AppState 内部缓存
@@ -436,11 +438,11 @@ struct SettingsPage {
         try {
           router.replaceUrl({ url: 'pages/Index' })
         } catch (_navErr) {
-          hilog.warn(0x0000, 'SettingsPage', 'restart navigation failed')
+          hilog.warn(DOMAIN_ZERO, 'SettingsPage', 'restart navigation failed')
         }
       }, 500)
     } catch (_e) {
-      hilog.warn(0x0000, 'SettingsPage', 'clearData failed: ' + JSON.stringify(_e))
+      hilog.warn(DOMAIN_ZERO, 'SettingsPage', 'clearData failed: ' + JSON.stringify(_e))
       promptAction.showToast({ message: '清除数据失败，请重试' })
     }
   }

@@ -106,6 +106,38 @@ export class CacheManager {
     this._dailyBudgetsCache.clear();
   }
 
+  /**
+   * 内存压力回调 — 根据级别释放缓存
+   * 调用方：EntryAbility.onMemoryLevel()
+   * @param level 内存压力等级（数值越大越紧急）
+   *   - 1: 低压力，仅清理过期健康信号
+   *   - 2: 中压力，清理所有健康信号和预算缓存
+   *   - 3: 高压力，清理所有缓存（成员保留基础数据）
+   */
+  onMemoryLevel(level: number): void {
+    if (level <= 0) return;
+
+    if (level >= 1) {
+      // 低压力：清理非今日健康信号
+      const today = new Date();
+      const dateStr = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
+      this.clearNonCurrentHealthSignals(dateStr);
+    }
+
+    if (level >= 2) {
+      // 中压力：清理全部健康信号和预算缓存
+      this._healthSignalsCache.clear();
+      this._dailyBudgetsCache.clear();
+    }
+
+    if (level >= 3) {
+      // 高压力：清理所有缓存
+      this._membersCache = [];
+      this._healthSignalsCache.clear();
+      this._dailyBudgetsCache.clear();
+    }
+  }
+
   /** 清除非今日的健康信号缓存（内存压力时调用） */
   clearNonCurrentHealthSignals(today: string): void {
     const entries = Array.from(this._healthSignalsCache.entries());

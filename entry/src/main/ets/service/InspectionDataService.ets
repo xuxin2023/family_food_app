@@ -228,7 +228,7 @@ export class InspectionDataService {
         }
       }
     } catch (e) {
-      hilog.warn(0x0000, TAG, 'loadCache failed: %{public}s', JSON.stringify(e));
+      hilog.warn(DOMAIN_ZERO, TAG, 'loadCache failed: %{public}s', JSON.stringify(e));
     }
   }
 
@@ -242,7 +242,7 @@ export class InspectionDataService {
       prefs.putSync('last_sync', Date.now());
       await prefs.flush();
     } catch (e) {
-      hilog.warn(0x0000, TAG, 'persistCache failed: %{public}s', JSON.stringify(e));
+      hilog.warn(DOMAIN_ZERO, TAG, 'persistCache failed: %{public}s', JSON.stringify(e));
     }
   }
 }

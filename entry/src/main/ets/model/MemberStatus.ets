@@ -14,22 +14,24 @@ export enum MemberTier {
 
 /**
  * 会员当前状态
+ * 使用 @Observed 装饰以确保 UI 响应式刷新
  */
-export interface MemberStatus {
+@Observed
+export class MemberStatus {
   /** 当前会员等级 */
-  tier: MemberTier;
+  tier: MemberTier = MemberTier.FREE;
   /** 今日剩余扫码次数（-1表示无限） */
-  scansRemainingToday: number;
+  scansRemainingToday: number = 3;
   /** 剩余可添加家庭成员数（-1表示无限） */
-  familyMembersRemaining: number;
+  familyMembersRemaining: number = 1;
   /** 会员到期时间戳（null表示永久有效或免费版） */
-  expiryDate: number | null;
+  expiryDate: number | null = null;
   /** 试用期是否激活 */
-  isTrialActive: boolean;
+  isTrialActive: boolean = false;
   /** 试用剩余天数 */
-  trialRemainingDays: number;
+  trialRemainingDays: number = 0;
   /** 本周剩余周报生成次数（-1表示无限） */
-  weeklyReportsRemaining: number;
+  weeklyReportsRemaining: number = 0;
 }
 
 /**
@@ -196,15 +198,15 @@ export function createMemberStatusForTier(tier: MemberTier, expiryDays: number):
     expiryDate = Date.now() + expiryDays * 24 * 60 * 60 * 1000;
   }
 
-  return {
-    tier: tier,
-    scansRemainingToday: scanLimit,
-    familyMembersRemaining: memberLimit,
-    expiryDate: expiryDate,
-    isTrialActive: trialDays > 0,
-    trialRemainingDays: trialDays,
-    weeklyReportsRemaining: reportLimit
-  };
+  const status = new MemberStatus();
+  status.tier = tier;
+  status.scansRemainingToday = scanLimit;
+  status.familyMembersRemaining = memberLimit;
+  status.expiryDate = expiryDate;
+  status.isTrialActive = trialDays > 0;
+  status.trialRemainingDays = trialDays;
+  status.weeklyReportsRemaining = reportLimit;
+  return status;
 }
 
 // ==================== 付费墙配置 ====================
@@ -281,6 +283,22 @@ const PAYWALL_CONFIGS: PaywallConfig[] = [
     message: '购物篮功能可以一次性检查您选购的所有食品，分析整体营养搭配是否均衡。',
     requiredTier: MemberTier.FAMILY,
     cta: '升级家庭版',
+    isSoftLimit: true
+  },
+  {
+    featureName: 'upgrade_member',
+    title: '解锁更多推荐',
+    message: '升级会员后可获取更详细的食品适配分析和替代品推荐，帮助全家做出更健康的饮食选择。',
+    requiredTier: MemberTier.PERSONAL,
+    cta: '升级会员',
+    isSoftLimit: true
+  },
+  {
+    featureName: 'meal_balance_advanced',
+    title: '高级餐次平衡分析',
+    message: '高级餐次平衡功能可提供更全面的膳食搭配建议，包括营养互补、时序优化等深度分析。',
+    requiredTier: MemberTier.PERSONAL,
+    cta: '解锁高级分析',
     isSoftLimit: true
   }
 ];

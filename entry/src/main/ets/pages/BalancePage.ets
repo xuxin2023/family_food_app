@@ -320,7 +320,7 @@ struct BalancePage {
     if (this.selectedMemberId.length === 0) {
       return
     }
-    this.currentBudget = this.appState.getDailyBudget(this.selectedMemberId)
+    this.currentBudget = this.appState.getDailyBudgetSync(this.selectedMemberId)
   }
 
   private async handleScenarioSelection(scenario: MealScenario) {

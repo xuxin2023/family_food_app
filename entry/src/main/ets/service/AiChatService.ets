@@ -207,7 +207,7 @@ export class AiChatService extends AiServiceBase {
         return userMessage;
       }
 
-      const budget = appState.getDailyBudget(this.currentMemberId);
+      const budget = appState.getDailyBudgetSync(this.currentMemberId);
       const signal = appState.getHealthSignal(this.currentMemberId);
 
       const contextParts: string[] = [];

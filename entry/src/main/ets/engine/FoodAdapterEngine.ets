@@ -1,9 +1,10 @@
 // FoodAdapterEngine.ets
 // 动态适配矩阵V3 - 连续扫描递减、步数/睡眠精确影响、关联风险识别
 //
-// 注意：本引擎使用独立的参数类型，未集成主数据体系。
-// 如需启用，请通过 ModelConverter 将 FamilyProfile/FoodLabel/HealthSignal
-// 转换为对应输入类型后再调用。
+// 注意：本引擎使用独立的自包含参数类型，与主数据体系（FamilyProfile/FoodLabel/HealthSignal）隔离。
+// 此为设计决策——保证主模型变更不会影响此引擎，反之亦然。
+// 当前生产适配功能由 RuleEngine 提供。此引擎为下一版增强预留。
+// 可通过对应字段映射直接使用 FoodLabel.nutrition 等属性传入。
 
 import { EnhancedFoodRecommendation,
   RecommendationLevel } from '../model/FoodAdapterTypes';
@@ -24,7 +25,16 @@ interface ScanRecord {
   fat_g: number;
 }
 
-/** 扫描记录缓存最大条目数（每成员） */
+/**
+ * 扫描记录缓存条目
+ */
+interface ScanHistoryEntry {
+  records: ScanRecord[];
+  date: string;
+}
+
+/**
+ * 扫描记录缓存最大条目数（每成员） */
 const MAX_RECORDS_PER_MEMBER: number = 50;
 /** 扫描记录保留天数 */
 const RECORD_RETENTION_DAYS: number = 1;
@@ -34,7 +44,7 @@ export class FoodAdapterEngine {
    * 实例级扫描记录缓存，按memberId分组
    * 使用 Map 并附加时间戳用于淘汰
    */
-  private static scanHistoryCache: Map<string, { records: ScanRecord[]; date: string }> = new Map();
+  private static scanHistoryCache: Map<string, ScanHistoryEntry> = new Map();
 
   /**
    * 获取当前日期字符串（YYYY-MM-DD）
@@ -49,11 +59,11 @@ export class FoodAdapterEngine {
    */
   private static getMemberRecords(memberId: string): ScanRecord[] {
     const today = FoodAdapterEngine.getTodayDateStr();
-    const entry = FoodAdapterEngine.scanHistoryCache.get(memberId);
+      const entry: ScanHistoryEntry | undefined = FoodAdapterEngine.scanHistoryCache.get(memberId);
 
     if (!entry || entry.date !== today) {
       // 过期或无记录，重置
-      FoodAdapterEngine.scanHistoryCache.set(memberId, { records: [], date: today });
+      FoodAdapterEngine.scanHistoryCache.set(memberId, { records: [], date: today } as ScanHistoryEntry);
       return [];
     }
     return entry.records;
@@ -64,10 +74,10 @@ export class FoodAdapterEngine {
    */
   private static addMemberRecord(memberId: string, record: ScanRecord): void {
     const today = FoodAdapterEngine.getTodayDateStr();
-    let entry = FoodAdapterEngine.scanHistoryCache.get(memberId);
+    let entry: ScanHistoryEntry | undefined = FoodAdapterEngine.scanHistoryCache.get(memberId);
 
     if (!entry || entry.date !== today) {
-      entry = { records: [], date: today };
+      entry = { records: [], date: today } as ScanHistoryEntry;
       FoodAdapterEngine.scanHistoryCache.set(memberId, entry);
     }
 
@@ -335,6 +345,17 @@ export interface TodayIntakeInput {
 }
 
 /**
+ * 每日预算子输入
+ */
+export interface DailyBudgetInput {
+  sodium_mg: number;
+  sugar_g: number;
+  energy_kcal: number;
+  fat_g: number;
+  saturatedFat_g: number;
+}
+
+/**
  * 家庭成员简档输入（自包含类型，替代已移除的 FoodAdapterTypes.FamilyMemberSimple）
  */
 export interface FamilyMemberSimpleInput {
@@ -343,13 +364,7 @@ export interface FamilyMemberSimpleInput {
   role: string;
   age: number;
   healthGoal: string;
-  dailyBudget: {
-    sodium_mg: number;
-    sugar_g: number;
-    energy_kcal: number;
-    fat_g: number;
-    saturatedFat_g: number;
-  };
+  dailyBudget: DailyBudgetInput;
   allergenRedline: string[];
   dislikedAdditives: string[];
 }

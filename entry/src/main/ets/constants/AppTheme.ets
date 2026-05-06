@@ -5,6 +5,87 @@
 // 此文件仅做 ArkTS 层的便捷引用映射，避免重复定义
 // ✅ 注意：修改颜色时请同步更新 color.json 和本文件对应值
 // ✅ color.json 用于系统级引用（启动背景色等），本文件用于代码中使用
+//
+// 暗黑模式：使用 ThemeColors 类根据当前主题返回对应色值
+// 例：const bg = ThemeColors.get(theme).BG_PAGE
+
+class LightThemeColors {
+  PRIMARY: string = '#E8A0BF';
+  PRIMARY_LIGHT: string = '#F5D0E0';
+  PRIMARY_DARK: string = '#C77D9E';
+  SECONDARY: string = '#F5C6A0';
+  SUCCESS: string = '#7EC8A0';
+  WARNING: string = '#F0C060';
+  ERROR: string = '#E88A8A';
+  ACCENT_BLUE: string = '#80B8E0';
+  ACCENT_PURPLE: string = '#B8A0D4';
+  TEXT_PRIMARY: string = '#1A1A1A';
+  TEXT_SECONDARY: string = '#666666';
+  TEXT_TERTIARY: string = '#999999';
+  TEXT_WHITE: string = '#FFFFFF';
+  BG_PAGE: string = '#FAFAFA';
+  BG_CARD: string = '#FFFFFF';
+  BG_CARD_HIGHLIGHT: string = '#FFF5F8';
+  BG_GRADIENT_START: string = '#FDE8F0';
+  BG_GRADIENT_END: string = '#FFF0E0';
+  BG_LIGHT: string = '#F5F5F5';
+  BORDER: string = '#E0E0E0';
+  DIVIDER: string = '#EEEEEE';
+  SHADOW: string = '#1A000000';
+}
+
+class DarkThemeColors {
+  PRIMARY: string = '#E8A0BF';
+  PRIMARY_LIGHT: string = '#6B3A5E';
+  PRIMARY_DARK: string = '#C77D9E';
+  SECONDARY: string = '#8B6F50';
+  SUCCESS: string = '#4A9E6A';
+  WARNING: string = '#B89040';
+  ERROR: string = '#B85A5A';
+  ACCENT_BLUE: string = '#4080B0';
+  ACCENT_PURPLE: string = '#8060A0';
+  TEXT_PRIMARY: string = '#E0E0E0';
+  TEXT_SECONDARY: string = '#A0A0A0';
+  TEXT_TERTIARY: string = '#707070';
+  TEXT_WHITE: string = '#E0E0E0';
+  BG_PAGE: string = '#121212';
+  BG_CARD: string = '#1E1E1E';
+  BG_CARD_HIGHLIGHT: string = '#2A1E24';
+  BG_GRADIENT_START: string = '#2A1A24';
+  BG_GRADIENT_END: string = '#2A2018';
+  BG_LIGHT: string = '#2C2C2C';
+  BORDER: string = '#383838';
+  DIVIDER: string = '#2E2E2E';
+  SHADOW: string = '#33000000';
+}
+
+export type ThemeMode = 'light' | 'dark';
+
+const LIGHT_INSTANCE: LightThemeColors = new LightThemeColors();
+const DARK_INSTANCE: DarkThemeColors = new DarkThemeColors();
+
+export class ThemeColors {
+  private static currentTheme: ThemeMode = 'light';
+
+  static setTheme(mode: ThemeMode): void {
+    ThemeColors.currentTheme = mode;
+  }
+
+  static getTheme(): ThemeMode {
+    return ThemeColors.currentTheme;
+  }
+
+  static get(mode?: ThemeMode): LightThemeColors {
+    const active = mode ?? ThemeColors.currentTheme;
+    return active === 'dark' ? DARK_INSTANCE : LIGHT_INSTANCE;
+  }
+
+  /** 便捷获取单个色值 */
+  static color(key: string, mode?: ThemeMode): string {
+    const colors: Record<string, string> = ThemeColors.get(mode) as Object as Record<string, string>;
+    return colors[key] ?? '#000000';
+  }
+}
 
 export class COLORS {
   // ===== 主色 =====
@@ -51,34 +132,14 @@ export class COLORS {
   static readonly DOT_INACTIVE: string = '#D0D0D0';
   static readonly SHADOW: string = '#1A000000';
 
-  // ===== 场景背景色 =====
-  static readonly BG_WARM_ORANGE: string = '#FFF3E0';
-  static readonly BG_WARM_PINK: string = '#FCE4EC';
-  static readonly BG_WARM_PURPLE: string = '#F3E5F5';
-  static readonly BG_WARM_BLUE: string = '#E3F2FD';
-  static readonly BG_WARM_YELLOW: string = '#FFF8E1';
-  static readonly BG_LIGHT_GREEN: string = '#E8F5E9';
-
-  // ===== 🔴 兼容别名（已废弃 — 新代码请使用上方规范命名） =====
-  // 说明：向后兼容旧版颜色名，新代码应直接使用 TEXT_PRIMARY/BG_LIGHT 等规范名
-  // 迁移计划：当所有引用替换为规范名后删除此区块
-  static readonly TEXT_GRAY_2121: string = COLORS.TEXT_PRIMARY;
-  static readonly TEXT_GRAY_6161: string = COLORS.TEXT_SECONDARY;
-  static readonly TEXT_GRAY_9E9E: string = COLORS.TEXT_TERTIARY;
-  static readonly TEXT_GRAY_3333: string = COLORS.TEXT_PRIMARY;
-  static readonly TEXT_GRAY_8888: string = COLORS.TEXT_SECONDARY;
-  static readonly TEXT_GRAY_4242: string = COLORS.TEXT_PRIMARY;
+  // ===== 扩展色（供别名引用） =====
   static readonly TEXT_GRAY_7575: string = '#757575';
   static readonly TEXT_GRAY_BDBD: string = '#BDBDBD';
-  static readonly SHADOW_LIGHT: string = COLORS.SHADOW;
-  static readonly BORDER_LIGHT: string = COLORS.BORDER;
   static readonly BORDER_LIGHT_E8: string = '#E8E8E8';
   static readonly BORDER_LIGHT_DD: string = '#DDDDDD';
-  static readonly BG_LIGHT_GRAY_F5: string = COLORS.BG_LIGHT;
   static readonly BG_LIGHT_GRAY_F9: string = '#F9F9F9';
   static readonly BG_LIGHTER_GRAY_F8: string = '#F8F9FA';
   static readonly BG_PAGE_LIGHT: string = '#F7F8FA';
-  static readonly ACCENT_GREEN: string = COLORS.SUCCESS;
   static readonly ACCENT_GREEN_4CAF: string = '#4CAF50';
   static readonly ACCENT_GREEN_66BB: string = '#66BB6A';
   static readonly ACCENT_RED_EF53: string = '#EF5350';
@@ -87,6 +148,28 @@ export class COLORS {
   static readonly ACCENT_ORANGE: string = '#FF5722';
   static readonly ACCENT_PURPLE_9C27: string = '#9C27B0';
   static readonly ORANGE_DEEP: string = '#EF6C00';
+
+  // ===== 场景背景色 =====
+  static readonly BG_WARM_ORANGE: string = '#FFF3E0';
+  static readonly BG_WARM_PINK: string = '#FCE4EC';
+  static readonly BG_WARM_PURPLE: string = '#F3E5F5';
+  static readonly BG_WARM_BLUE: string = '#E3F2FD';
+  static readonly BG_WARM_YELLOW: string = '#FFF8E1';
+  static readonly BG_LIGHT_GREEN: string = '#E8F5E9';
+
+  // ===== 🔴 废弃别名（向后兼容 — 请使用规范名） =====
+  // 说明：以下为旧版颜色名，新代码应使用上方规范名
+  // 迁移计划：当所有引用替换为规范名后删除此区块
+  static readonly TEXT_GRAY_2121: string = COLORS.TEXT_PRIMARY;
+  static readonly TEXT_GRAY_6161: string = COLORS.TEXT_SECONDARY;
+  static readonly TEXT_GRAY_9E9E: string = COLORS.TEXT_TERTIARY;
+  static readonly TEXT_GRAY_3333: string = COLORS.TEXT_PRIMARY;
+  static readonly TEXT_GRAY_8888: string = COLORS.TEXT_SECONDARY;
+  static readonly TEXT_GRAY_4242: string = COLORS.TEXT_PRIMARY;
+  static readonly SHADOW_LIGHT: string = COLORS.SHADOW;
+  static readonly BORDER_LIGHT: string = COLORS.BORDER;
+  static readonly BG_LIGHT_GRAY_F5: string = COLORS.BG_LIGHT;
+  static readonly ACCENT_GREEN: string = COLORS.SUCCESS;
   static readonly BG_DIVIDER: string = COLORS.DIVIDER;
 }
 

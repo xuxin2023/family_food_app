@@ -9,6 +9,8 @@ import { NutrientTrendData, DailyNutritionSummary, TrendDirection } from '../eng
 import { TrendChart } from '../components/TrendChart';
 import { COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT } from '../constants/AppTheme';
 
+const DOMAIN_ZERO = 0;
+
 interface PeriodOption {
   label: string;
   days: number;
@@ -43,7 +45,7 @@ struct NutritionTrendPage {
       const params = router.getParams() as Record<string, Object>;
       this.selectedMemberId = params['memberId'] as string || '';
     } catch (e) {
-      hilog.warn(0x0000, 'NutritionTrendPage', 'getParams failed: %{public}s', JSON.stringify(e));
+      hilog.warn(DOMAIN_ZERO, 'NutritionTrendPage', 'getParams failed: %{public}s', JSON.stringify(e));
     }
 
     await this.loadData()

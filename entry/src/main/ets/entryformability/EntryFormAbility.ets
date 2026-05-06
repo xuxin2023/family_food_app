@@ -12,7 +12,8 @@ import { AppState } from '../AppState';
 
 const TAG = 'EntryFormAbility';
 const DOMAIN_NUMBER = 0xFF00;
-const FORM_STORE_PATH = '/data/storage/el2/base/haps/form_store';
+/** Preferences 存储名称（非文件路径，由系统映射到应用沙箱目录） */
+const FORM_PREFS_NAME = 'form_store';
 
 /**
  * 卡片持久化工具：按 formId 存储/读取卡片配置信息
@@ -25,7 +26,7 @@ async function storeFormInfo(formId: string, formName: string, tempFlag: boolean
     'updateCount': 0,
   };
   try {
-    const storage = await preferences.getPreferences(context, { name: FORM_STORE_PATH });
+    const storage = await preferences.getPreferences(context, { name: FORM_PREFS_NAME });
     await storage.put(formId, JSON.stringify(formInfoData));
     await storage.flush();
     hilog.info(DOMAIN_NUMBER, TAG, `storeFormInfo success, formId: ${formId}`);
@@ -36,7 +37,7 @@ async function storeFormInfo(formId: string, formName: string, tempFlag: boolean
 
 async function deleteFormInfo(formId: string, context: common.FormExtensionContext): Promise<void> {
   try {
-    const storage = await preferences.getPreferences(context, { name: FORM_STORE_PATH });
+    const storage = await preferences.getPreferences(context, { name: FORM_PREFS_NAME });
     await storage.delete(formId);
     await storage.flush();
     hilog.info(DOMAIN_NUMBER, TAG, `deleteFormInfo success, formId: ${formId}`);
@@ -64,7 +65,7 @@ async function buildFormData(context: common.FormExtensionContext): Promise<form
 
     // 取第一位成员作为卡片数据源
     const firstMember = members[0];
-    const budget = state.getDailyBudget(firstMember.memberId);
+    const budget = state.getDailyBudgetSync(firstMember.memberId);
     const calPct = budget.calorieBudget > 0
       ? Math.round(((budget.calorieBudget - budget.calorieRemaining) / budget.calorieBudget) * 100)
       : 0;

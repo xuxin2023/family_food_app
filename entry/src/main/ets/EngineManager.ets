@@ -3,6 +3,7 @@
 // AppState 通过此管理器委托所有引擎调用
 
 import { FamilyProfile } from './model/FamilyProfile';
+import { AgeGroup } from './model/FamilyProfile';
 import { HealthSignal } from './model/HealthSignal';
 import { FoodLabel } from './model/FoodLabel';
 import { DailyBudget } from './model/DailyBudget';
@@ -18,6 +19,21 @@ import { RuleEngine } from './engine/RuleEngine';
 import { MealBalanceEngine } from './engine/MealBalanceEngine';
 import { ChildProtectionEngine, MealTimeParams } from './engine/ChildProtectionEngine';
 import { CredibilityEngine } from './engine/CredibilityEngine';
+import { FoodAdapterEngine, FamilyMemberSimpleInput, FoodNutritionInput, 
+  HealthSignalInput, TodayIntakeInput } from './engine/FoodAdapterEngine';
+import { EnhancedFoodRecommendation } from './model/FoodAdapterTypes';
+
+/** 根据 AgeGroup 估算年龄（用于 FoodAdapterEngine 输入） */
+function estimateAgeFromGroup(ageGroup: AgeGroup): number {
+  switch (ageGroup) {
+    case AgeGroup.CHILD: return 8;
+    case AgeGroup.TEEN: return 15;
+    case AgeGroup.ADULT: return 35;
+    case AgeGroup.MIDDLE_OLD: return 55;
+    case AgeGroup.OLD: return 70;
+    default: return 35;
+  }
+}
 
 export class EngineManager {
   // 规则引擎
@@ -115,5 +131,60 @@ export class EngineManager {
    */
   generatePositiveAdvice(scenario: MealScenario, profile: FamilyProfile): PositiveAdvice {
     return this.positiveAdviceEngine.generateForScenario(scenario, profile);
+  }
+
+  /**
+   * 动态适配增强计算（委托 FoodAdapterEngine）
+   * 在已有 Recommendation 基础上，补充连续扫描递减、步数/睡眠影响等动态因子
+   */
+  calculateEnhancedAdaptation(
+    member: FamilyProfile,
+    food: FoodLabel,
+    signal: HealthSignal,
+    todayIntake: TodayIntakeInput,
+    scanIndex: number
+  ): EnhancedFoodRecommendation {
+    // 转换为主模型 → FoodAdapterEngine 的独立输入类型
+    const memberInput: FamilyMemberSimpleInput = {
+      id: member.memberId,
+      name: member.nickname,
+      role: member.ageGroup,
+      age: estimateAgeFromGroup(member.ageGroup),
+      healthGoal: member.healthGoals.length > 0 ? member.healthGoals[0] : '无特殊',
+      dailyBudget: {
+        sodium_mg: member.dailyBudget.sodiumBudget,
+        sugar_g: member.dailyBudget.sugarBudget,
+        energy_kcal: member.dailyBudget.calorieBudget,
+        fat_g: member.dailyBudget.fatBudget,
+        saturatedFat_g: 0
+      },
+      allergenRedline: member.allergens,
+      dislikedAdditives: []
+    };
+
+    const foodInput: FoodNutritionInput = {
+      productName: food.foodName,
+      brand: food.manufacturer,
+      sodium_mg: food.nutrition.sodium,
+      sugar_g: food.nutrition.sugar,
+      energy_kj: Math.round(food.nutrition.calories * 4.184),
+      fat_g: food.nutrition.fat,
+      saturatedFat_g: food.nutrition.saturatedFat,
+      transFat_g: 0,
+      carbs_g: food.nutrition.carbohydrate,
+      protein_g: food.nutrition.protein,
+      allergens: food.ingredients,
+      manufacturer: food.manufacturer
+    };
+
+    const healthInput: HealthSignalInput = {
+      steps: signal.stepLevel,
+      sleep: signal.sleepStatus,
+      weightTrend: signal.weightTrend,
+      manualBpStatus: signal.manualBpStatus,
+      manualBgStatus: signal.manualBsStatus
+    };
+
+    return FoodAdapterEngine.calculateDynamicIntake(memberInput, foodInput, healthInput, todayIntake, scanIndex);
   }
 }

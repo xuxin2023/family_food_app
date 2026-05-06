@@ -11,21 +11,22 @@ import { DailyBudget } from '../model/DailyBudget';
 import { DietRecord } from '../repository/HistoryRepository';
 import { COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT } from '../constants/AppTheme';
 import { DateUtil } from '../utils/DateUtil';
-
 // 导入图表组件
 import { DonutChart, DonutSegment } from '../components/DonutChart';
 import { NutrientRadarPanel, NutrientScores } from '../components/NutrientRadarPanel';
 
-// 时间范围选项
+const DOMAIN_ZERO = 0;
+
+// 时间范围选项（$r 在组件内动态设置以避免文件顶层使用 $r()）
 interface PeriodOption {
-  label: Resource;
+  /** 资源名称，在 build 时通过 $r('app.string.' + key) 动态解析 */
+  labelKey: string;
   days: number;
 }
 
-// $r() 不能在文件顶层使用，使用字符串替代，在build时通过 $r 动态设置
 const PERIOD_OPTIONS: PeriodOption[] = [
-  { label: $r('app.string.period_7_days'), days: 7 },
-  { label: $r('app.string.period_30_days'), days: 30 }
+  { labelKey: 'period_7_days', days: 7 },
+  { labelKey: 'period_30_days', days: 30 }
 ];
 
 // 家庭成员选择和导航状态
@@ -47,7 +48,7 @@ struct DashboardPage {
   @State trendsData: NutrientTrendData[] = []
   @State summaries: DailyNutritionSummary[] = []
   @State donutSegments: DonutSegment[] = []
-  @State periodLabel: Resource = $r('app.string.period_7_days')
+  @State periodLabel: ResourceStr = '7天'
 
   // 概览统计
   @State overviewRecords: number = 0
@@ -70,7 +71,7 @@ struct DashboardPage {
         this.selectedMemberId = params['memberId'] as string;
       }
     } catch (e) {
-      hilog.warn(0x0000, 'DashboardPage', 'getPageParams failed: %{public}s', JSON.stringify(e));
+      hilog.warn(DOMAIN_ZERO, 'DashboardPage', 'getPageParams failed: %{public}s', JSON.stringify(e));
     }
     await this.loadMembers()
     await this.refreshDashboard()
@@ -90,7 +91,7 @@ struct DashboardPage {
     }
     this.isLoading = true
     const days = PERIOD_OPTIONS[this.selectedPeriodIndex].days
-    this.periodLabel = PERIOD_OPTIONS[this.selectedPeriodIndex].label
+    this.periodLabel = $r('app.string.' + PERIOD_OPTIONS[this.selectedPeriodIndex].labelKey)
 
     // 并行加载数据
     this.trendsData = await this.appState.getNutritionTrends(this.selectedMemberId, days)
@@ -300,7 +301,7 @@ struct DashboardPage {
           try {
             safeBack();
           } catch (e) {
-            hilog.warn(0x0000, 'DashboardPage', 'safeBack failed: %{public}s', JSON.stringify(e));
+            hilog.warn(DOMAIN_ZERO, 'DashboardPage', 'safeBack failed: %{public}s', JSON.stringify(e));
           }
         })
 
@@ -314,7 +315,7 @@ struct DashboardPage {
         // 周期切换
         Row({ space: 4 }) {
           ForEach(PERIOD_OPTIONS, (opt: PeriodOption, idx: number) => {
-            Text(opt.label)
+            Text($r('app.string.' + opt.labelKey))
               .fontSize(FONT_SIZE.SMALL)
               .fontWeight(this.selectedPeriodIndex === idx ? FONT_WEIGHT.BOLD : FONT_WEIGHT.REGULAR)
               .fontColor(this.selectedPeriodIndex === idx ? COLORS.WHITE : COLORS.TEXT_GRAY_6161)
@@ -782,8 +783,7 @@ struct DashboardPage {
     if (summary === null) {
       return { protein: 70, fiber: 50, vitamins: 80, minerals: 60, healthyFats: 65 }
     }
-    const budget = this.appState.getDailyBudget(this.selectedMemberId)
-    // 根据实际摄入/预算比例计算各维度分数（0-100）
+    const budget = this.appState.getDailyBudgetSync(this.selectedMemberId)
     const proteinScore = Math.min(100, Math.round((summary.calorie * 0.12 / 4 / 60) * 100))
     const fiberScore = summary.calorie > 0 ? Math.min(100, Math.round((summary.calorie / 2000) * 70)) : 50
     const vitaminsScore = summary.sodium > 0 ? Math.min(100, Math.round((1 - summary.sodium / 3000) * 100)) : 70

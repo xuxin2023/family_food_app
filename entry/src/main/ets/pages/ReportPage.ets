@@ -20,6 +20,7 @@ import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON } from '../cons
 
 // ===== 页面级别类型 =====
 
+/** ReportPage 路由参数接口（通过 AppState.setReportParams 传入） */
 export interface ReportPageParams {
   foodLabel: FoodLabel;
   recommendations: Recommendation[];
@@ -55,16 +56,27 @@ struct ReportPage {
   // ==================== 生命周期 ====================
 
   async aboutToAppear() {
-    // 读取传参
-    const params = this.getPageParams()
-    if (params !== null) {
-      this.foodLabel = params.foodLabel
-      this.recommendations = params.recommendations
-      this.familyMembers = params.members
-      this.alternatives = params.alternatives
-      this.nutriScore = params.nutriScore
-      this.credibilityResult = params.credibilityResult
-      this.childProtections = params.childProtection
+    // 优先从路由缓存读取（避免 router params 序列化大对象的限制）
+    const cachedFoodLabel = this.appState.consumeReportFoodLabel()
+    const cachedRecs = this.appState.consumeReportRecommendations()
+    const cachedAlts = this.appState.consumeReportAlternatives()
+    
+    if (cachedFoodLabel !== null) {
+      this.foodLabel = cachedFoodLabel
+      if (cachedRecs !== null) this.recommendations = cachedRecs
+      if (cachedAlts !== null) this.alternatives = cachedAlts as AlternativeFood[]
+    } else {
+      // 降级：从 router params 读取（兼容旧跳转）
+      const params = this.getPageParams()
+      if (params !== null) {
+        this.foodLabel = params.foodLabel
+        this.recommendations = params.recommendations
+        this.familyMembers = params.members
+        this.alternatives = params.alternatives
+        this.nutriScore = params.nutriScore
+        this.credibilityResult = params.credibilityResult
+        this.childProtections = params.childProtection
+      }
     }
 
     // 检查付费墙 — 替代品推荐需要家庭版

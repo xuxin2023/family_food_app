@@ -29,11 +29,14 @@ import { FoodLabel, FoodSource } from '../model/FoodLabel';
 import { AppState } from '../AppState';
 import { PermissionManager } from '../service/PermissionManager';
 import { FoodInputResult, FoodInputService } from '../service/FoodInputService';
-import { PaywallTrigger } from '../model/MemberStatus';
+import { PaywallTrigger, TIER_DAILY_SCAN_LIMIT } from '../model/MemberStatus';
 import { NutriScoreBadge } from '../components/NutriScoreBadge';
 import { PaywallDialog } from '../components/PaywallDialog';
 import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON } from '../constants/AppTheme';
 import { SCAN_CONFIG } from '../constants/AppConfig';
+import { EnhancedFoodRecommendation } from '../model/FoodAdapterTypes';
+
+const DOMAIN_ZERO = 0;
 
 // ==================== 加载阶段枚举 ====================
 
@@ -166,7 +169,7 @@ struct ScanPage {
       try {
         clearTimeout(this.autoScanTimer)
       } catch (_e) {
-        // ignore clearTimeout error
+        hilog.warn(DOMAIN_ZERO, 'ScanPage', 'clearTimeout autoScanTimer failed');
       }
       this.autoScanTimer = -1
     }
@@ -175,9 +178,8 @@ struct ScanPage {
       try {
         clearTimeout(this.retryTimer)
       } catch (_e) {
-        // ignore clearTimeout error
+        hilog.warn(DOMAIN_ZERO, 'ScanPage', 'clearTimeout retryTimer failed');
       }
-      this.retryTimer = -1
     }
   }
 
@@ -276,7 +278,7 @@ struct ScanPage {
       const hasNet = caps.bearerTypes.length > 0
       this.isOffline = !hasNet
     } catch (err) {
-      hilog.warn(0x0000, 'ScanPage', 'checkNetworkStatus failed: ' + JSON.stringify(err))
+      hilog.warn(DOMAIN_ZERO, 'ScanPage', 'checkNetworkStatus failed: ' + JSON.stringify(err))
       // 获取网络状态失败，保守地认为有网络
       this.isOffline = false
     }
@@ -907,8 +909,9 @@ struct ScanPage {
 
   private refreshScanQuota() {
     this.scanLimitReached = false
-    const status = this.appState.memberStatus
-    this.remainingScans = status.scansRemainingToday === -1 ? 999 : status.scansRemainingToday
+    const remaining = this.appState.getRemainingScans()
+    this.remainingScans = remaining
+    this.scanLimitReached = remaining <= 0 && TIER_DAILY_SCAN_LIMIT[this.appState.memberStatus.tier] !== -1
   }
 
   // ==================== 识别入口 ====================
@@ -923,7 +926,7 @@ struct ScanPage {
       try {
         clearTimeout(this.autoScanTimer)
       } catch (_e) {
-        // ignore clearTimeout error
+        hilog.warn(DOMAIN_ZERO, 'ScanPage', 'clearTimeout autoScanTimer 2 failed');
       }
       this.autoScanTimer = -1
     }
@@ -1061,13 +1064,19 @@ struct ScanPage {
       return
     }
     try {
+      // 调用动态适配增强计算（集成 FoodAdapterEngine）
+      const scanToday = this.appState.getTodayScanCount()
+      const enhanced: EnhancedFoodRecommendation | null = this.appState.calculateEnhancedAdaptation(this.memberId, this.foodLabel, scanToday)
+      if (enhanced !== null) {
+        hilog.info(DOMAIN_ZERO, 'ScanPage', 'Enhanced adaptation computed for %{public}s', this.foodLabel.foodName)
+      }
       try {
         router.pushUrl({ url: 'pages/ReportPage', params: { memberId: this.memberId, foodId: this.foodLabel.foodId } })
       } catch (_e) {
-        // ignore
+        hilog.warn(DOMAIN_ZERO, 'ScanPage', 'viewReport check failed');
       }
     } catch (_e) {
-      // ignore router.pushUrl error
+      hilog.warn(DOMAIN_ZERO, 'ScanPage', 'viewReport pushUrl failed');
     }
   }
 }

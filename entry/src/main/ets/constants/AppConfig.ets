@@ -178,3 +178,6 @@ export class HilogDomain {
 }
 
 export const HILOG_DOMAIN = new HilogDomain();
+
+/** 数据库 schema 版本号 —— 每次表结构变更时 +1，触发迁移脚本执行 */
+export const DB_SCHEMA_VERSION: number = 1;

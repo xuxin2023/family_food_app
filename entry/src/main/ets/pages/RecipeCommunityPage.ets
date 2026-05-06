@@ -18,6 +18,8 @@ import {
   getDietTagLabel
 } from '../utils/RecipeUtil';
 
+const DOMAIN_ZERO = 0;
+
 const PAGE_SIZE = PAGE_SIZE_CONFIG.RECIPE_COMMUNITY_PAGE_SIZE;
 
 @Entry
@@ -45,7 +47,7 @@ struct RecipeCommunityPage {
         await this.loadAiRecommendations()
       }
     } catch (e) {
-      hilog.warn(0x0000, 'RecipeCommunityPage', 'getParams failed: %{public}s', JSON.stringify(e));
+      hilog.warn(DOMAIN_ZERO, 'RecipeCommunityPage', 'getParams failed: %{public}s', JSON.stringify(e));
     }
     await this.loadRecipes()
   }
@@ -61,7 +63,7 @@ struct RecipeCommunityPage {
       this.aiRecommendations = result.recommendations
       this.aiSummary = result.overallSummary
     } catch (e) {
-      hilog.error(0x0000, 'RecipeCommunityPage', 'ai recommend error')
+      hilog.error(DOMAIN_ZERO, 'RecipeCommunityPage', 'ai recommend error')
     }
     this.isLoadingAi = false
   }
@@ -78,7 +80,7 @@ struct RecipeCommunityPage {
       this.recipes = await this.appState.queryCommunityRecipes(params)
       this.recipeDS.reload(this.recipes)
     } catch (e) {
-      hilog.error(0x0000, 'RecipeCommunityPage', 'load recipes error')
+      hilog.error(DOMAIN_ZERO, 'RecipeCommunityPage', 'load recipes error')
     }
     this.isLoading = false
   }

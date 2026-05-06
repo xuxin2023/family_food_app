@@ -13,6 +13,8 @@ import { COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, BUTTON } from '../cons
 import { MealScenario } from '../model/MealBalance';
 import { AiNutritionAdvice } from '../model/AiModels';
 
+const DOMAIN_ZERO = 0;
+
 // 场景emoji映射
 const SCENARIO_EMOJI: Record<string, string> = {
   '烧烤': '🔥', '火锅': '🍲', '炸鸡': '🍗', '奶茶': '🧋',
@@ -75,7 +77,7 @@ struct DietDiaryPage {
         this.selectedMemberId, 7, true
       )
     } catch (e) {
-      hilog.error(0x0000, 'DietDiaryPage', 'ai nutritionist error: ' + JSON.stringify(e))
+      hilog.error(DOMAIN_ZERO, 'DietDiaryPage', 'ai nutritionist error: ' + JSON.stringify(e))
     }
     this.isLoadingAi = false
   }
@@ -85,7 +87,7 @@ struct DietDiaryPage {
     this.isLoading = true
 
     this.mealGroups = await this.appState.getDailyDietGroups(this.selectedMemberId, this.currentDate)
-    this.budget = this.appState.getDailyBudget(this.selectedMemberId)
+    this.budget = this.appState.getDailyBudgetSync(this.selectedMemberId)
 
     this.isLoading = false
   }

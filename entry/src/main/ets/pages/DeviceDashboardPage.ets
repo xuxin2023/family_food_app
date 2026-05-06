@@ -20,6 +20,8 @@ import {
 import { COLORS, FONT_SIZE, SPACING, RADIUS } from '../constants/AppTheme';
 import { MemberTier, getPaywallTriggerForFeature } from '../model/MemberStatus';
 
+const DOMAIN_ZERO = 0;
+
 interface DetailItem {
   label: string;
   value: string;
@@ -105,7 +107,7 @@ struct DeviceDashboardPage {
           try {
             safeBack();
           } catch (e) {
-            hilog.warn(0x0000, 'DeviceDashboardPage', 'safeBack failed: %{public}s', JSON.stringify(e));
+            hilog.warn(DOMAIN_ZERO, 'DeviceDashboardPage', 'safeBack failed: %{public}s', JSON.stringify(e));
           }
         })
       Column() {

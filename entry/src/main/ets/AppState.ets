@@ -23,6 +23,9 @@ import { SyncService } from './service/sync/SyncService';
 import { GroupSummary, GroupFeed, FeedType } from './model/FamilyGroup';
 import { CreateRecipeParams } from './service/RecipeCommunityService';
 import { Recipe, RecipeQueryParams, RecipeComment } from './model/Recipe';
+import { FoodAdapterEngine, TodayIntakeInput } from './engine/FoodAdapterEngine';
+import { EnhancedFoodRecommendation } from './model/FoodAdapterTypes';
+import { migrateDatabase } from './service/DatabaseMigrationService';
 import { NutritionTrendEngine, DailyNutritionSummary, NutrientTrendData, MealGroup } from './engine/NutritionTrendEngine';
 import { BasketCheckResult } from './engine/BasketCheckEngine';
 import { ElderFriendlyReport } from './engine/ElderFriendlyEngine';
@@ -167,56 +170,57 @@ export class AppState {
       };
       const rdbStore = await relationalStore.getRdbStore(context, rdbConfig);
 
+      // 数据库迁移（非阻塞 — 失败不影响启动）
+      migrateDatabase(rdbStore, context).catch((_e: Error) => {
+        hilog.warn(DOMAIN_ZERO, TAG, 'DB migration skipped');
+      });
+
       // 保存 context 用于购物篮持久化
       this.basketContext = context;
 
-      // 并行初始化无依赖的仓库
+      // === 第一阶段：并行初始化所有无依赖的仓库和服务 ===
       await Promise.all([
         this.familyRepo.init(rdbStore),
         this.foodRepo.init(rdbStore),
         this.historyRepo.init(rdbStore),
+        (async () => { this.groupRepo.init(rdbStore); await this.groupRepo.createTables(); })(),
+        (async () => { this.recipeRepo.init(rdbStore); await this.recipeRepo.createTables(); })(),
+        this.services.initAuth(context),
+        // 规则仓库和 service 初始化不需要 await
+        (async () => { this.ruleRepo.setContext(context); })(),
       ]);
 
-      // 群组和食谱数据库
-      this.groupRepo.init(rdbStore);
-      await Promise.all([
-        this.groupRepo.createTables(),
-        this.recipeRepo.init(rdbStore),
-      ]);
-      await this.recipeRepo.createTables();
-
-      // 认证服务
-      await this.services.initAuth(context);
-
-      // 社交服务
+      // === 第二阶段：并行初始化无数据库依赖的服务 ===
       this.services.initSocial(this.groupRepo, this.recipeRepo);
-
-      // 规则仓库
-      this.ruleRepo.setContext(context);
-
-      // AI服务
       this.services.initAiServices(this.recipeRepo);
 
-      // 云端同步
-      await this.services.initCloudSync(context);
+      await Promise.all([
+        this.services.initCloudSync(context),
+        // 同步事件监听
+        (async () => {
+          this.services.onSyncEvent((event) => {
+            try {
+              const eventStr = JSON.stringify(event);
+              if (eventStr.indexOf('sync_completed') >= 0) {
+                this.refreshCache();
+              }
+            } catch (_e) {
+              hilog.warn(DOMAIN_ZERO, 'AppState', 'sync event parse failed: %{public}s', JSON.stringify(_e));
+            }
+          });
+        })(),
+      ]);
 
-      // 同步事件监听
-      this.services.onSyncEvent((event) => {
-        try {
-          const eventStr = JSON.stringify(event);
-          if (eventStr.indexOf('sync_completed') >= 0) {
-            this.refreshCache();
-          }
-        } catch (_e) {
-          // ignore parse errors
-        }
-      });
-
-      // 加载缓存
-      this.membersCache = await this.familyRepo.getAllMembers();
-      await this.restoreTodayBudgets();
-      await this.restoreHealthSignalsFromPrefs(context);
-      await this.restoreBasketFromPrefs(context);
+      // === 第三阶段：并行加载缓存数据 ===
+      const allResults = await Promise.all([
+        this.familyRepo.getAllMembers(),
+        this.restoreTodayBudgets(),
+        this.restoreHealthSignalsFromPrefs(context),
+        this.restoreBasketFromPrefs(context),
+        this.restoreScanQuota(context),
+      ]);
+      const members: FamilyProfile[] = allResults[0] as FamilyProfile[];
+      this.membersCache = members;
 
       this.isInitialized = true;
       hilog.info(DOMAIN_ZERO, TAG, 'AppState initialized');
@@ -338,13 +342,46 @@ export class AppState {
 
   // ========== 今日预算管理 ==========
 
-  getDailyBudget(memberId: string): DailyBudget {
+  /**
+   * 获取当日预算（同步从缓存读取）
+   * 适用于UI模板渲染等同步场景。缓存由 restoreTodayBudgets() 在启动时填充。
+   */
+  getDailyBudgetSync(memberId: string): DailyBudget {
     const today = DateUtil.getToday();
     const cached = this.dailyBudgetsCache.get(memberId);
     if (cached && cached.date === today) {
       return cached;
     }
     const budget = this.createBudgetForMember(memberId);
+    this.dailyBudgetsCache.set(memberId, budget);
+    return budget;
+  }
+
+  /**
+   * 获取当日预算（异步，缓存未命中时从膳食记录重建）
+   * 适用于非UI业务逻辑（如AI服务、报告生成）
+   */
+  async getDailyBudget(memberId: string): Promise<DailyBudget> {
+    const today = DateUtil.getToday();
+    const cached = this.dailyBudgetsCache.get(memberId);
+    if (cached && cached.date === today) {
+      return cached;
+    }
+    const budget = this.createBudgetForMember(memberId);
+    // 从当天的膳食记录还原已扣除的额度（缓存未命中时重建）
+    try {
+      const records = await this.historyRepo.getDietRecordsByDateRange(memberId, today, today);
+      for (const record of records) {
+        budget.deductIntake(
+          record.sodiumIntake,
+          record.sugarIntake,
+          record.calorieIntake,
+          record.fatIntake
+        );
+      }
+    } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'getDailyBudget: diet records load failed: %{public}s', JSON.stringify(error));
+    }
     this.dailyBudgetsCache.set(memberId, budget);
     return budget;
   }
@@ -388,7 +425,7 @@ export class AppState {
   }
 
   deductIntake(memberId: string, sodium: number, sugar: number, calories: number, fat: number): void {
-    const budget = this.getDailyBudget(memberId);
+    const budget = this.getDailyBudgetSync(memberId);
     budget.deductIntake(sodium, sugar, calories, fat);
   }
 
@@ -429,8 +466,38 @@ export class AppState {
   calculateRecommendation(memberId: string, foodLabel: FoodLabel): Recommendation {
     const profile = this.membersCache.find(m => m.memberId === memberId) || new FamilyProfile();
     const signal = this.getHealthSignal(memberId);
-    const budget = this.getDailyBudget(memberId);
+    const budget = this.getDailyBudgetSync(memberId);
     return this.engines.calculateRecommendation(profile, signal, foodLabel, budget);
+  }
+
+  /**
+   * 动态适配增强计算（集成 FoodAdapterEngine）
+   * 在已有 Recommendation 基础上，补充连续扫描递减、步数/睡眠影响等动态因子
+   */
+  calculateEnhancedAdaptation(
+    memberId: string,
+    foodLabel: FoodLabel,
+    scanIndex: number
+  ): EnhancedFoodRecommendation | null {
+    try {
+      const member = this.membersCache.find(m => m.memberId === memberId);
+      if (!member) return null;
+
+      const signal = this.getHealthSignal(memberId);
+      const budget = this.getDailyBudgetSync(memberId);
+
+      const todayIntake: TodayIntakeInput = {
+        sodium_mg: budget.sodiumBudget - budget.sodiumRemaining,
+        sugar_g: budget.sugarBudget - budget.sugarRemaining,
+        energy_kcal: budget.calorieBudget - budget.calorieRemaining,
+        fat_g: budget.fatBudget - budget.fatRemaining
+      };
+
+      return this.engines.calculateEnhancedAdaptation(member, foodLabel, signal, todayIntake, scanIndex);
+    } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'calculateEnhancedAdaptation failed: %{public}s', JSON.stringify(_e));
+      return null;
+    }
   }
 
   calculateFamilyComparison(foodLabel: FoodLabel): Recommendation[] {
@@ -498,10 +565,14 @@ export class AppState {
         const jsonArray: FoodLabelJson[] = this.basketItems.map(item => item.toJson());
         pref.put('items', JSON.stringify(jsonArray)).then(() => {
           pref.flush();
-        }).catch(() => {});
-      }).catch(() => {});
+        }).catch((_e: Error) => {
+          hilog.warn(DOMAIN_ZERO, TAG, 'persistBasket: flush failed');
+        });
+      }).catch((_e: Error) => {
+        hilog.warn(DOMAIN_ZERO, TAG, 'persistBasket: getPreferences failed');
+      });
     } catch (_e) {
-      // 静默处理持久化失败
+      hilog.warn(DOMAIN_ZERO, TAG, 'persistBasket exception: %{public}s', JSON.stringify(_e));
     }
   }
 
@@ -551,14 +622,61 @@ export class AppState {
     });
   }
 
+  // ========== 路由参数缓存（避免 router params 传递大对象） ==========
+
+  /** 跳转 ReportPage 暂存的食品标签数据 */
+  private cachedReportFoodLabel: FoodLabel | null = null;
+  /** 跳转 ReportPage 暂存的推荐数据 */
+  private cachedReportRecommendations: Recommendation[] | null = null;
+  /** 跳转 ReportPage 暂存的替代食品 */
+  private cachedReportAlternatives: object[] | null = null;
+
+  /** 存入 ReportPage 路由参数 */
+  setReportParams(foodLabel: FoodLabel, recommendations: Recommendation[], alternatives: object[]): void {
+    this.cachedReportFoodLabel = foodLabel;
+    this.cachedReportRecommendations = recommendations;
+    this.cachedReportAlternatives = alternatives;
+  }
+
+  /** 取出 ReportPage 路由参数（消费后清空） */
+  consumeReportFoodLabel(): FoodLabel | null {
+    const val = this.cachedReportFoodLabel;
+    this.cachedReportFoodLabel = null;
+    return val;
+  }
+
+  consumeReportRecommendations(): Recommendation[] | null {
+    const val = this.cachedReportRecommendations;
+    this.cachedReportRecommendations = null;
+    return val;
+  }
+
+  consumeReportAlternatives(): object[] | null {
+    const val = this.cachedReportAlternatives;
+    this.cachedReportAlternatives = null;
+    return val;
+  }
+
   // ========== 会员状态管理 ==========
 
   canAddMember(): boolean {
-    return this.membersCache.length < TIER_MEMBER_LIMIT[this.memberStatus.tier];
+    return this.membersCache.length < (TIER_MEMBER_LIMIT.get(this.memberStatus.tier) ?? 1);
   }
 
   getRemainingScans(): number {
-    return TIER_DAILY_SCAN_LIMIT[this.memberStatus.tier];
+    const limit: number = TIER_DAILY_SCAN_LIMIT.get(this.memberStatus.tier) ?? 3;
+    // -1 表示无限
+    if (limit === -1) {
+      return 999;
+    }
+    return Math.max(0, this.memberStatus.scansRemainingToday);
+  }
+
+  /** 获取今日已扫描次数（用于 FoodAdapterEngine 衰减计算） */
+  getTodayScanCount(): number {
+    const limit: number = TIER_DAILY_SCAN_LIMIT.get(this.memberStatus.tier) ?? 3;
+    if (limit === -1) return 0;
+    return limit - Math.max(0, this.memberStatus.scansRemainingToday);
   }
 
   getMemberTierDisplay(): string {
@@ -567,6 +685,73 @@ export class AppState {
 
   hasPremiumAccess(): boolean {
     return hasTierAccess(this.memberStatus.tier, MemberTier.PREMIUM);
+  }
+
+  /**
+   * 重置每日扫描计数（根据当前等级重新设置）
+   * 每日首次打开 app 时调用
+   */
+  resetDailyScanQuota(): void {
+    const limit: number = TIER_DAILY_SCAN_LIMIT.get(this.memberStatus.tier) ?? 3;
+    if (limit !== -1) {
+      this.memberStatus.scansRemainingToday = limit;
+    } else {
+      this.memberStatus.scansRemainingToday = -1;
+    }
+    this.persistScanQuota();
+    // 通知 UI 刷新
+    AppStorage.set<number>('scanVersion', (AppStorage.get<number>('scanVersion') || 0) + 1);
+  }
+
+  /** 恢复/持久化扫描计数的 preferences 标识 */
+  private scanQuotaDateKey: string = 'scan_quota_date';
+  private scanQuotaRemainingKey: string = 'scan_quota_remaining';
+
+  /** 从 Preferences 恢复扫描计数（按日期检查是否需要重置） */
+  private async restoreScanQuota(context: common.Context): Promise<void> {
+    try {
+      const prefs = await preferences.getPreferences(context, 'scan_quota');
+      const savedDate: string = prefs.getSync(this.scanQuotaDateKey, '') as string;
+      const today = DateUtil.getToday();
+      if (savedDate !== today) {
+        // 新的一天，重置配额
+        this.resetDailyScanQuota();
+        await prefs.put(this.scanQuotaDateKey, today);
+        await prefs.flush();
+      } else {
+        // 恢复已保存的剩余次数
+        const remaining: number = prefs.getSync(this.scanQuotaRemainingKey,
+          TIER_DAILY_SCAN_LIMIT.get(this.memberStatus.tier) ?? 3) as number;
+        this.memberStatus.scansRemainingToday = remaining;
+      }
+    } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'restoreScanQuota failed: %{public}s', JSON.stringify(error));
+      // 降级：用默认值
+      const limit: number = TIER_DAILY_SCAN_LIMIT.get(this.memberStatus.tier) ?? 3;
+      this.memberStatus.scansRemainingToday = limit === -1 ? -1 : limit;
+    }
+  }
+
+  /** 持久化扫描计数 */
+  private persistScanQuota(): void {
+    const ctx = this.basketContext;
+    if (ctx === null) {
+      return;
+    }
+    try {
+      const prefs = preferences.getPreferences(ctx, 'scan_quota');
+      prefs.then((pref) => {
+        pref.put(this.scanQuotaRemainingKey, this.memberStatus.scansRemainingToday).then(() => {
+          pref.flush();
+        }).catch((_e: Error) => {
+          hilog.warn(DOMAIN_ZERO, TAG, 'persistScanQuota put failed');
+        });
+      }).catch((_e: Error) => {
+        hilog.warn(DOMAIN_ZERO, TAG, 'persistScanQuota getPrefs failed');
+      });
+    } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'persistScanQuota exception');
+    }
   }
 
   // ========== 向后兼容方法（委派给 services / engines） ==========
@@ -579,10 +764,29 @@ export class AppState {
   }
 
   /**
-   * 使用一次扫描名额（返回触发参数）
+   * 使用一次扫描名额（递减计数 + 返回触发参数）
+   * @returns 达到限制返回付费墙触发信息，否则返回 null
    */
   useScan(): PaywallTrigger | null {
-    return getPaywallTriggerForFeature('scan', this.memberStatus.tier);
+    const limit: number = TIER_DAILY_SCAN_LIMIT.get(this.memberStatus.tier) ?? 3;
+    // -1 表示无限扫码，直接放行
+    if (limit === -1) {
+      return null;
+    }
+    // 已用完
+    if (this.memberStatus.scansRemainingToday <= 0) {
+      return getPaywallTriggerForFeature('scan', this.memberStatus.tier);
+    }
+    // 递减并持久化
+    this.memberStatus.scansRemainingToday--;
+    this.persistScanQuota();
+    // 触发 UI 刷新
+    AppStorage.set<number>('scanVersion', (AppStorage.get<number>('scanVersion') || 0) + 1);
+    // 如果归零了，返回付费墙
+    if (this.memberStatus.scansRemainingToday <= 0) {
+      return getPaywallTriggerForFeature('scan', this.memberStatus.tier);
+    }
+    return null;
   }
 
   /**
@@ -711,7 +915,7 @@ export class AppState {
   async getAiNutritionAdvice(memberId: string, days: number, includeMealPlan: boolean): Promise<AiNutritionAdvice> {
     const member = this.membersCache.find(m => m.memberId === memberId) || new FamilyProfile();
     const signal = this.getHealthSignal(memberId);
-    const budget = this.getDailyBudget(memberId);
+    const budget = this.getDailyBudgetSync(memberId);
     const endDate = DateUtil.getToday();
     const startDate = this.getDaysAgo(days);
     const records = await this.historyRepo.getDietRecordsByDateRange(memberId, startDate, endDate);
@@ -775,7 +979,7 @@ export class AppState {
       for (const member of this.membersCache) {
         const json = prefs.getSync(member.memberId, '') as string;
         if (json.length > 0) {
-          const signal = HealthSignal.fromJson(JSON.parse(json));
+          const signal = HealthSignal.fromJson(JSON.parse(json) as Record<string, Object>);
           this.healthSignalsCache.set(member.memberId, signal);
         }
       }

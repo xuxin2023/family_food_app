@@ -8,11 +8,13 @@
 
 import { EnhancedFoodRecommendation,
   RecommendationLevel } from '../model/FoodAdapterTypes';
+import { ENGINE_CONFIG } from '../constants/AppConfig';
 
 /**
  * 高钠阈值（每100g钠含量mg）
+ * @see ENGINE_CONFIG.HIGH_SODIUM_THRESHOLD
  */
-const HIGH_SODIUM_THRESHOLD: number = 500;
+const HIGH_SODIUM_THRESHOLD: number = ENGINE_CONFIG.HIGH_SODIUM_THRESHOLD;
 
 /**
  * 今日扫描记录（内存缓存，用于关联风险识别）
@@ -33,11 +35,12 @@ interface ScanHistoryEntry {
   date: string;
 }
 
-/**
- * 扫描记录缓存最大条目数（每成员） */
-const MAX_RECORDS_PER_MEMBER: number = 50;
+/** 扫描记录缓存最大条目数（每成员） */
+const MAX_RECORDS_PER_MEMBER: number = ENGINE_CONFIG.MAX_RECORDS_PER_MEMBER;
 /** 扫描记录保留天数 */
-const RECORD_RETENTION_DAYS: number = 1;
+const RECORD_RETENTION_DAYS: number = ENGINE_CONFIG.RECORD_RETENTION_DAYS;
+/** 缓存 Map 最大成员数上限，超过时淘汰最久未使用成员 */
+const MAX_CACHED_MEMBERS: number = ENGINE_CONFIG.MAX_CACHED_MEMBERS;
 
 export class FoodAdapterEngine {
   /**
@@ -45,6 +48,8 @@ export class FoodAdapterEngine {
    * 使用 Map 并附加时间戳用于淘汰
    */
   private static scanHistoryCache: Map<string, ScanHistoryEntry> = new Map();
+  /** 成员访问顺序记录（毫秒时间戳），用于 LRU 淘汰 */
+  private static accessTimestamps: Map<string, number> = new Map();
 
   /**
    * 获取当前日期字符串（YYYY-MM-DD）
@@ -59,13 +64,16 @@ export class FoodAdapterEngine {
    */
   private static getMemberRecords(memberId: string): ScanRecord[] {
     const today = FoodAdapterEngine.getTodayDateStr();
-      const entry: ScanHistoryEntry | undefined = FoodAdapterEngine.scanHistoryCache.get(memberId);
+    const entry: ScanHistoryEntry | undefined = FoodAdapterEngine.scanHistoryCache.get(memberId);
 
     if (!entry || entry.date !== today) {
       // 过期或无记录，重置
       FoodAdapterEngine.scanHistoryCache.set(memberId, { records: [], date: today } as ScanHistoryEntry);
+      FoodAdapterEngine.evictIfNeeded();
       return [];
     }
+    // 更新访问时间戳
+    FoodAdapterEngine.accessTimestamps.set(memberId, Date.now());
     return entry.records;
   }
 
@@ -79,6 +87,7 @@ export class FoodAdapterEngine {
     if (!entry || entry.date !== today) {
       entry = { records: [], date: today } as ScanHistoryEntry;
       FoodAdapterEngine.scanHistoryCache.set(memberId, entry);
+      FoodAdapterEngine.evictIfNeeded();
     }
 
     entry.records.push(record);
@@ -86,7 +95,10 @@ export class FoodAdapterEngine {
     if (entry.records.length > MAX_RECORDS_PER_MEMBER) {
       entry.records.splice(0, entry.records.length - MAX_RECORDS_PER_MEMBER);
     }
+    // 更新访问时间戳
+    FoodAdapterEngine.accessTimestamps.set(memberId, Date.now());
   }
+
   /**
    * 动态适配矩阵计算
    * @param member 家庭成员简档
@@ -300,6 +312,7 @@ export class FoodAdapterEngine {
    */
   static resetTodayScanRecords(): void {
     FoodAdapterEngine.scanHistoryCache.clear();
+    FoodAdapterEngine.accessTimestamps.clear();
   }
 
   /**
@@ -315,10 +328,32 @@ export class FoodAdapterEngine {
    */
   static clearMemberRecords(memberId: string): void {
     FoodAdapterEngine.scanHistoryCache.delete(memberId);
+    FoodAdapterEngine.accessTimestamps.delete(memberId);
   }
 
   /**
-   * 清理所有超过保留天数的缓存记录
+   * LRU 淘汰：当缓存成员数超过上限时，淘汰最久未访问的成员
+   */
+  private static evictIfNeeded(): void {
+    if (FoodAdapterEngine.scanHistoryCache.size <= MAX_CACHED_MEMBERS) {
+      return;
+    }
+    let oldestId: string | null = null;
+    let oldestTime: number = Infinity;
+    FoodAdapterEngine.accessTimestamps.forEach((timestamp, key) => {
+      if (timestamp < oldestTime) {
+        oldestTime = timestamp;
+        oldestId = key;
+      }
+    });
+    if (oldestId) {
+      FoodAdapterEngine.scanHistoryCache.delete(oldestId);
+      FoodAdapterEngine.accessTimestamps.delete(oldestId);
+    }
+  }
+
+  /**
+   * 清理所有超过保留天数的缓存记录（生产环境由 AppState 定时调用）
    */
   static cleanExpiredRecords(): void {
     const today = FoodAdapterEngine.getTodayDateStr();
@@ -330,7 +365,15 @@ export class FoodAdapterEngine {
     });
     for (const key of keysToDelete) {
       FoodAdapterEngine.scanHistoryCache.delete(key);
+      FoodAdapterEngine.accessTimestamps.delete(key);
     }
+  }
+
+  /**
+   * 获取当前缓存成员数（用于健康监控/日志）
+   */
+  static getCacheSize(): number {
+    return FoodAdapterEngine.scanHistoryCache.size;
   }
 }
 

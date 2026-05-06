@@ -104,6 +104,16 @@
           ],
           "when": "inuse"
         }
+      },
+      {
+        "name": "ohos.permission.health_data",
+        "reason": "$string:health_data_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
       }
     ],
     "extensionAbilities": [

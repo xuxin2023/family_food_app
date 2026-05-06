@@ -98,20 +98,4 @@ export class DailyBudget {
     budget.fatRemaining = json.fatRemaining;
     return budget;
   }
-
-  /** @deprecated 请使用 fromJson(DailyBudgetJson) 替代 */
-  static fromJsonRaw(json: Record<string, Object>): DailyBudget {
-    const budget = new DailyBudget();
-    budget.memberId = json.memberId as string;
-    budget.date = json.date as string;
-    budget.sodiumBudget = json.sodiumBudget as number;
-    budget.sodiumRemaining = json.sodiumRemaining as number;
-    budget.sugarBudget = json.sugarBudget as number;
-    budget.sugarRemaining = json.sugarRemaining as number;
-    budget.calorieBudget = json.calorieBudget as number;
-    budget.calorieRemaining = json.calorieRemaining as number;
-    budget.fatBudget = json.fatBudget as number;
-    budget.fatRemaining = json.fatRemaining as number;
-    return budget;
-  }
 }

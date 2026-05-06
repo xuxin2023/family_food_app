@@ -1,6 +1,6 @@
 // FamilyProfile 单元测试 - 家庭成员画像模型
 import { describe, it, expect } from '@ohos/hypium';
-import { FamilyProfile, FamilyProfileJson, DailyBudgetConfig, DailyBudgetConfigJson, AgeGroup, HealthGoal } from '../../../../../src/main/ets/model/FamilyProfile';
+import { FamilyProfile, FamilyProfileJson, DailyBudgetConfig, DailyBudgetConfigJson, AgeGroup, HealthGoal, MealTimes } from '../../../../../src/main/ets/model/FamilyProfile';
 
 function createProfile(ageGroup: AgeGroup, healthGoals: HealthGoal[], allergens: string[],
   memberId: string, nickname: string): FamilyProfile {
@@ -92,21 +92,30 @@ export default function familyProfileTest() {
     // ========== JSON反序列化 ==========
 
     it('should_deserialize_from_json', 0, () => {
-      const budgetData: object = JSON.parse('{"sodiumBudget":1500,"sugarBudget":30,"calorieBudget":1800,"fatBudget":50}');
-      const mealData: object = JSON.parse('{"breakfast":"07:00","lunch":"12:00","dinner":"18:00"}');
-      const jsonStr = JSON.stringify({
-        memberId: 'test_from_json',
-        nickname: '小明',
-        ageGroup: AgeGroup.CHILD,
-        healthGoals: [HealthGoal.CHILD],
-        allergens: ['鸡蛋'],
-        dailyBudget: budgetData,
-        mealTimes: mealData,
-        bedtime: '21:00',
-        createdAt: 1700000000000,
-        updatedAt: 1700000000000
-      });
-      const profile: FamilyProfile = FamilyProfile.fromJsonRaw(JSON.parse(jsonStr));
+      const budgetData: DailyBudgetConfigJson = new DailyBudgetConfigJson();
+      budgetData.sodiumBudget = 1500;
+      budgetData.sugarBudget = 30;
+      budgetData.calorieBudget = 1800;
+      budgetData.fatBudget = 50;
+
+      const mealData: MealTimes = new MealTimes();
+      mealData.breakfast = '07:00';
+      mealData.lunch = '12:00';
+      mealData.dinner = '18:00';
+
+      const json = new FamilyProfileJson();
+      json.memberId = 'test_from_json';
+      json.nickname = '小明';
+      json.ageGroup = AgeGroup.CHILD;
+      json.healthGoals = [HealthGoal.CHILD];
+      json.allergens = ['鸡蛋'];
+      json.dailyBudget = budgetData;
+      json.mealTimes = mealData;
+      json.bedtime = '21:00';
+      json.createdAt = 1700000000000;
+      json.updatedAt = 1700000000000;
+
+      const profile: FamilyProfile = FamilyProfile.fromJson(json);
 
       expect(profile.memberId).assertEqual('test_from_json');
       expect(profile.nickname).assertEqual('小明');
@@ -145,13 +154,12 @@ export default function familyProfileTest() {
     });
 
     it('should_deserialize_from_json', 0, () => {
-      const jsonStr = JSON.stringify({
-        sodiumBudget: 1800,
-        sugarBudget: 40,
-        calorieBudget: 2200,
-        fatBudget: 70
-      });
-      const config = DailyBudgetConfig.fromJsonRaw(JSON.parse(jsonStr));
+      const json = new DailyBudgetConfigJson();
+      json.sodiumBudget = 1800;
+      json.sugarBudget = 40;
+      json.calorieBudget = 2200;
+      json.fatBudget = 70;
+      const config = DailyBudgetConfig.fromJson(json);
 
       expect(config.sodiumBudget).assertEqual(1800);
       expect(config.sugarBudget).assertEqual(40);

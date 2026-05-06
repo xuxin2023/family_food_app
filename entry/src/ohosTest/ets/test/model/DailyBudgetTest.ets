@@ -131,21 +131,19 @@ export default function dailyBudgetTest() {
     });
 
     it('should_deserialize_from_json', 0, () => {
-      const jsonStr = JSON.stringify({
-        memberId: 'member_test',
-        date: '2025-12-20',
-        sodiumBudget: 1800,
-        sodiumRemaining: 900,
-        sugarBudget: 40,
-        sugarRemaining: 20,
-        calorieBudget: 2200,
-        calorieRemaining: 1100,
-        fatBudget: 70,
-        fatRemaining: 35
-      });
-      const json = JSON.parse(jsonStr) as Record<string, Object>;
+      const json = new DailyBudgetJson();
+      json.memberId = 'member_test';
+      json.date = '2025-12-20';
+      json.sodiumBudget = 1800;
+      json.sodiumRemaining = 900;
+      json.sugarBudget = 40;
+      json.sugarRemaining = 20;
+      json.calorieBudget = 2200;
+      json.calorieRemaining = 1100;
+      json.fatBudget = 70;
+      json.fatRemaining = 35;
 
-      const budget: DailyBudget = DailyBudget.fromJsonRaw(json);
+      const budget: DailyBudget = DailyBudget.fromJson(json);
 
       expect(budget.memberId).assertEqual('member_test');
       expect(budget.date).assertEqual('2025-12-20');

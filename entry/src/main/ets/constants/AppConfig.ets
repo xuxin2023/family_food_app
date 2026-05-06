@@ -208,11 +208,10 @@ export class NutritionLimits {
 export const NUTRITION_LIMITS = new NutritionLimits();
 
 /**
- * 每日扫码配额配置
+ * Preferences 扫描配额持久化键名配置
+ * @note 扫码限额值见 MemberStatus.TIER_DAILY_SCAN_LIMIT（以 MemberStatus 为准）
  */
-export class ScanQuotaConfig {
-  /** 免费用户每日扫码次数上限 */
-  readonly FREE_DAILY_QUOTA: number = 5;
+export class ScanQuotaPrefsConfig {
   /** Preferences 持久化文件名 */
   readonly PREFS_FILE: string = 'scan_quota';
   /** 日期键名 */
@@ -221,4 +220,20 @@ export class ScanQuotaConfig {
   readonly REMAINING_KEY: string = 'scan_quota_remaining';
 }
 
-export const SCAN_QUOTA_CONFIG = new ScanQuotaConfig();
+export const SCAN_QUOTA_PREFS_CONFIG = new ScanQuotaPrefsConfig();
+
+/**
+ * 引擎层可配置参数（替代各引擎中的硬编码 Magic Number）
+ */
+export class EngineConfig {
+  /** 高钠阈值 (mg/100g) — FoodAdapterEngine */
+  readonly HIGH_SODIUM_THRESHOLD: number = 500;
+  /** 每成员最大缓存扫描记录数 — FoodAdapterEngine */
+  readonly MAX_RECORDS_PER_MEMBER: number = 50;
+  /** 扫描缓存保留天数 — FoodAdapterEngine */
+  readonly RECORD_RETENTION_DAYS: number = 1;
+  /** 缓存 Map 最大成员数上限（LRU 淘汰阈值）— FoodAdapterEngine */
+  readonly MAX_CACHED_MEMBERS: number = 20;
+}
+
+export const ENGINE_CONFIG = new EngineConfig();

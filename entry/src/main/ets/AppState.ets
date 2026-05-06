@@ -95,6 +95,12 @@ export class AppState {
   cache: CacheManager = new CacheManager();
 
   private isInitialized: boolean = false;
+  /** 初始化就绪 Promise 解析器（事件驱动，替代轮询） */
+  private readyResolver: (() => void) | null = null;
+  /** 初始化就绪 Promise（供 waitForReady 等待） */
+  private readyPromise: Promise<void> = new Promise((resolve) => {
+    this.readyResolver = resolve;
+  });
 
   // ========== 缓存向后兼容属性（委托给 CacheManager） ==========
   private get membersCache(): FamilyProfile[] { return this.cache.membersCache; }
@@ -140,21 +146,12 @@ export class AppState {
   }
 
   /**
-   * 等待 AppState 初始化完成
+   * 等待 AppState 初始化完成（事件驱动，无需轮询）
    */
   static waitForReady(): Promise<void> {
     const state = AppState.getInstance();
     if (state.isInitialized) return Promise.resolve();
-    return new Promise((resolve) => {
-      const check = (): void => {
-        if (state.isInitialized) {
-          resolve();
-        } else {
-          setTimeout(check, 50);
-        }
-      };
-      check();
-    });
+    return state.readyPromise;
   }
 
   /**
@@ -223,11 +220,13 @@ export class AppState {
       this.membersCache = members;
 
       this.isInitialized = true;
+      this.readyResolver?.();
       hilog.info(DOMAIN_ZERO, TAG, 'AppState initialized');
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'AppState init failed: %{public}s', JSON.stringify(error));
       this.membersCache = this.createDefaultMembers();
       this.isInitialized = true;
+      this.readyResolver?.();
     }
   }
 
@@ -985,6 +984,17 @@ export class AppState {
       this.membersCache = await this.familyRepo.getAllMembers();
     } catch (_e) {
       // 刷新失败不影响主流程
+    }
+  }
+
+  /**
+   * 清理引擎层过期缓存（定时/事件驱动时调用）
+   */
+  cleanExpiredEngineCache(): void {
+    try {
+      this.engines.cleanExpiredEngineCache();
+    } catch (_e) {
+      // 清理失败不影响主流程
     }
   }
 }

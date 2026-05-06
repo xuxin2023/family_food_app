@@ -132,28 +132,6 @@ export class FamilyProfile {
     profile.updatedAt = json.updatedAt;
     return profile;
   }
-
-  /** @deprecated 请使用 fromJson(FamilyProfileJson) 替代 */
-  static fromJsonRaw(json: Record<string, Object>): FamilyProfile {
-    const profile = new FamilyProfile();
-    profile.memberId = json.memberId as string;
-    profile.nickname = json.nickname as string;
-    const ageGroupVal = json.ageGroup as string;
-    profile.ageGroup = Object.values(AgeGroup).includes(ageGroupVal as AgeGroup)
-      ? (ageGroupVal as AgeGroup)
-      : AgeGroup.ADULT;
-    const goals = json.healthGoals as Object;
-    profile.healthGoals = Array.isArray(goals)
-      ? (goals as string[]).filter(g => Object.values(HealthGoal).includes(g as HealthGoal)) as HealthGoal[]
-      : [HealthGoal.NONE];
-    profile.allergens = json.allergens as string[];
-    profile.dailyBudget = DailyBudgetConfig.fromJsonRaw(json.dailyBudget as Record<string, Object>);
-    profile.mealTimes = json.mealTimes as Object as MealTimes;
-    profile.bedtime = json.bedtime as string;
-    profile.createdAt = json.createdAt as number;
-    profile.updatedAt = json.updatedAt as number;
-    return profile;
-  }
 }
 
 // 每日营养预算配置
@@ -179,16 +157,6 @@ export class DailyBudgetConfig {
     config.sugarBudget = json.sugarBudget;
     config.calorieBudget = json.calorieBudget;
     config.fatBudget = json.fatBudget;
-    return config;
-  }
-
-  /** @deprecated 请使用 fromJson(DailyBudgetConfigJson) 替代 */
-  static fromJsonRaw(json: Record<string, Object>): DailyBudgetConfig {
-    const config = new DailyBudgetConfig();
-    config.sodiumBudget = json.sodiumBudget as number;
-    config.sugarBudget = json.sugarBudget as number;
-    config.calorieBudget = json.calorieBudget as number;
-    config.fatBudget = json.fatBudget as number;
     return config;
   }
 }

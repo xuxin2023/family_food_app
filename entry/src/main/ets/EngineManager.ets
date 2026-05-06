@@ -187,4 +187,12 @@ export class EngineManager {
 
     return FoodAdapterEngine.calculateDynamicIntake(memberInput, foodInput, healthInput, todayIntake, scanIndex);
   }
+
+  /**
+   * 清理 FoodAdapterEngine 过期缓存记录
+   * 由 AppState 在刷新缓存时调用
+   */
+  cleanExpiredEngineCache(): void {
+    FoodAdapterEngine.cleanExpiredRecords();
+  }
 }

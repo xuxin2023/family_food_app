@@ -9,6 +9,7 @@
 // 暗黑模式：使用 ThemeColors 类根据当前主题返回对应色值
 // 例：const bg = ThemeColors.get(theme).BG_PAGE
 
+
 class LightThemeColors {
   PRIMARY: string = '#E8A0BF';
   PRIMARY_LIGHT: string = '#F5D0E0';
@@ -69,6 +70,7 @@ export class ThemeColors {
 
   static setTheme(mode: ThemeMode): void {
     ThemeColors.currentTheme = mode;
+    AppStorage.setOrCreate<ThemeMode>('currentThemeMode', mode);
   }
 
   static getTheme(): ThemeMode {
@@ -85,6 +87,17 @@ export class ThemeColors {
     const colors: Record<string, string> = ThemeColors.get(mode) as Object as Record<string, string>;
     return colors[key] ?? '#000000';
   }
+}
+
+/**
+ * 获取当前主题下对应的颜色值（动态版本，会响应主题切换）
+ * 在页面中可配合 @StorageProp('currentThemeMode') 使用
+ * 示例：.fontColor(TC('TEXT_PRIMARY'))
+ */
+export function TC(key: string): string {
+  const stored: ThemeMode | undefined = AppStorage.get<ThemeMode>('currentThemeMode');
+  const mode: ThemeMode = stored !== undefined ? stored : ThemeColors.getTheme();
+  return ThemeColors.color(key, mode);
 }
 
 export class COLORS {

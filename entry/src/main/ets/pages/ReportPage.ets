@@ -175,9 +175,7 @@ struct ReportPage {
     Row() {
       // 返回按钮
       Row() {
-        BackButton()
-          .fontSize(FONT_SIZE.LARGE)
-          .fontColor(COLORS.TEXT_PRIMARY)
+        BackButton({ fontSize: FONT_SIZE.LARGE, fontColor: COLORS.TEXT_PRIMARY })
       }
       .width(40)
       .height(BUTTON.HEIGHT_SMALL)

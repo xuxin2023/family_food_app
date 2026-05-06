@@ -96,9 +96,7 @@ struct BalancePage {
       Scroll() {
         Column() {
           Row() {
-            BackButton()
-              .fontSize(24)
-              .fontColor(COLORS.PRIMARY)
+            BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
               .onClick(() => { safeBack() })
             Text($r('app.string.record_meal'))
               .fontSize(20)

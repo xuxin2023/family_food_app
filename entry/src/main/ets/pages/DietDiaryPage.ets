@@ -72,7 +72,7 @@ struct DietDiaryPage {
     await this.refreshData()
   }
 
-  private async loadAiAdvice() {
+  private async loadAiAdvice(): Promise<void> {
     if (this.selectedMemberId.length === 0) return
     this.isLoadingAi = true
     try {
@@ -85,7 +85,7 @@ struct DietDiaryPage {
     this.isLoadingAi = false
   }
 
-  private async refreshData() {
+  private async refreshData(): Promise<void> {
     if (this.selectedMemberId.length === 0) return
     this.isLoading = true
     this.errorMessage = ''
@@ -135,9 +135,7 @@ struct DietDiaryPage {
     Column() {
       // 导航栏
       Row() {
-        BackButton()
-          .fontSize(28)
-          .fontColor(COLORS.PRIMARY)
+        BackButton({ fontSize: 28, fontColor: COLORS.PRIMARY })
           .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
         Text($r('app.string.diet_diary'))
           .fontSize(FONT_SIZE.TITLE)
@@ -199,9 +197,7 @@ struct DietDiaryPage {
 
       // 日期导航
       Row() {
-        BackButton()
-          .fontSize(24)
-          .fontColor(COLORS.PRIMARY)
+        BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
           .onClick(() => this.changeDate(-1))
         Column() {
           Text(this.getDateLabel())

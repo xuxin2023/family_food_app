@@ -62,9 +62,7 @@ struct CloudSyncSettingsPage {
     Column() {
       // 顶栏
       Row() {
-        BackButton()
-          .fontSize(24)
-          .fontColor(COLORS.PRIMARY)
+        BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
           .onClick(() => { safeBack() })
         Text($r('app.string.cloud_sync'))
           .fontSize(20)

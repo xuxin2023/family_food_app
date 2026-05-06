@@ -98,9 +98,7 @@ struct NutritionTrendPage {
     Column() {
       // 导航栏
       Row() {
-        BackButton()
-          .fontSize(28)
-          .fontColor(COLORS.PRIMARY)
+        BackButton({ fontSize: 28, fontColor: COLORS.PRIMARY })
           .onClick(() => { safeBack() })
         Text($r('app.string.nutrition_trend'))
           .fontSize(FONT_SIZE.TITLE)

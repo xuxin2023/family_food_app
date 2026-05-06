@@ -2,7 +2,8 @@
 // 会员状态管理 - 负责会员等级、扫码配额、订阅相关逻辑
 // 从 AppState 拆分，减少 God Class 负担
 
-import { common, preferences } from '@kit.ArkData';
+import { preferences } from '@kit.ArkData';
+import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { DateUtil } from '../utils/DateUtil';
 import {

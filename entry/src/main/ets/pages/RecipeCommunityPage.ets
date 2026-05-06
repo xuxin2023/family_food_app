@@ -55,7 +55,7 @@ struct RecipeCommunityPage {
     await this.loadRecipes()
   }
 
-  async loadAiRecommendations() {
+  async loadAiRecommendations(): Promise<void> {
     this.isLoadingAi = true
     try {
       const members = await this.appState.getAllMembers()
@@ -71,7 +71,7 @@ struct RecipeCommunityPage {
     this.isLoadingAi = false
   }
 
-  async loadRecipes() {
+  async loadRecipes(): Promise<void> {
     this.isLoading = true
     this.errorMessage = ''
     try {
@@ -94,9 +94,7 @@ struct RecipeCommunityPage {
     Column() {
       // 顶栏
       Row() {
-        BackButton()
-          .fontSize(24)
-          .fontColor(COLORS.PRIMARY)
+        BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
           .onClick(() => { safeBack() })
         Text($r('app.string.recipe_community'))
           .fontSize(20)

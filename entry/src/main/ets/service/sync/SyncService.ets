@@ -6,7 +6,7 @@ import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { SyncChangeType, SyncStatus, SyncChangeRecord, SyncResult, SyncableEntity } from './Syncable';
 import { CloudStorageProvider, SyncBatchRequest, SyncBatchItem, SyncBatchResponse } from './CloudStorageProvider';
-import { NetworkMonitorService, NetworkState, NetType } from '../NetworkMonitorService';
+import { NetworkMonitorService, NetworkState, NetType, NetworkStateChangeCallback } from '../NetworkMonitorService';
 import { CloudSyncConfig, SyncStrategy, ConflictResolution, createDefaultSyncConfig } from '../../model/CloudSyncConfig';
 import { API_CONFIG } from '../../constants/AppConfig';
 

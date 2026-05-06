@@ -1,5 +1,5 @@
-﻿// 鍏ㄥ眬搴旂敤鐘舵€佺鐞嗗櫒 - 缁熶竴鏁版嵁璁块棶鍏ュ彛
-// V2: 灏嗗紩鎿庡拰鏈嶅姟绠＄悊濮旀墭缁?EngineManager / ServiceManager
+﻿// 全局应用状态管理器 - 统一数据访问入口
+// V2: 将引擎和服务管理委托给 EngineManager / ServiceManager
 
 import { FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig, createDefaultMembers } from './model/FamilyProfile';
 import {
@@ -645,55 +645,6 @@ export class AppState {
   }
 
 
-  // ========== Member Status (delegated to MemberManager) ==========
-
-  canAddMember(): boolean {
-    return this.member.canAddMember();
-  }
-
-  getRemainingScans(): number {
-    return this.member.getRemainingScans();
-  }
-
-  getTodayScanCount(): number {
-    return this.member.getTodayScanCount();
-  }
-
-  getMemberTierDisplay(): string {
-    return this.member.getMemberTierDisplay();
-  }
-
-  hasPremiumAccess(): boolean {
-    return this.member.hasPremiumAccess();
-  }
-
-  resetDailyScanQuota(): void {
-    this.member.resetDailyScanQuota();
-  }
-
-  getPaywallTrigger(feature: string): PaywallTrigger | null {
-    return this.member.getPaywallTrigger(feature);
-  }
-
-  useScan(): PaywallTrigger | null {
-    return this.member.useScan();
-  }
-
-  useFamilyMember(): PaywallTrigger | null {
-    return this.member.useFamilyMember();
-  }
-
-  onMemberAdded(): void {
-    this.member.onMemberAdded();
-  }
-
-  hasFamilyAccess(): boolean {
-    return this.member.hasFamilyAccess();
-  }
-
-  upgradeTier(tier: MemberTier, days: number): void {
-    this.member.upgradeTier(tier, days);
-  }
   clearAllCache(): void {
     this.cache.clearAll();
   }
@@ -716,5 +667,203 @@ export class AppState {
       // 娓呯悊澶辫触涓嶅奖鍝嶄富娴佺▼
     }
   }
-}
 
+  // ========== 委派方法：MemberManager ==========
+
+  /** @deprecated 直接使用 member.memberStatus */
+  get memberStatus(): MemberStatus {
+    return this.member.memberStatus;
+  }
+
+  getRemainingScans(): number {
+    return this.member.getRemainingScans();
+  }
+
+  hasFamilyAccess(): boolean {
+    return this.member.hasFamilyAccess();
+  }
+
+  hasPremiumAccess(): boolean {
+    return this.member.hasPremiumAccess();
+  }
+
+  canAddMember(): boolean {
+    return this.member.canAddMember();
+  }
+
+  useFamilyMember(): PaywallTrigger | null {
+    return this.member.useFamilyMember();
+  }
+
+  getMemberTierDisplay(): string {
+    return this.member.getMemberTierDisplay();
+  }
+
+  getTodayScanCount(): number {
+    return this.member.getTodayScanCount();
+  }
+
+  useScan(): PaywallTrigger | null {
+    return this.member.useScan();
+  }
+
+  getPaywallTrigger(feature: string): PaywallTrigger | null {
+    return this.member.getPaywallTrigger(feature);
+  }
+
+  onMemberAdded(): void {
+    this.member.onMemberAdded();
+  }
+
+  upgradeTier(tier: MemberTier, days: number): void {
+    this.member.upgradeTier(tier, days);
+  }
+
+  // ========== 委派方法：社交/群组服务 =========
+
+  async getMyGroups(): Promise<GroupSummary[]> {
+    if (!this.services.groupService) return [];
+    return await this.services.groupService.getMyGroups();
+  }
+
+  async createFamilyGroup(name: string, description: string, ownerName?: string): Promise<boolean> {
+    if (!this.services.groupService) return false;
+    try {
+      const displayName = ownerName || name;
+      await this.services.groupService.createGroup({ groupName: name, description: description, ownerName: displayName });
+      return true;
+    } catch (_e) {
+      return false;
+    }
+  }
+
+  async joinFamilyGroup(inviteCode: string, displayName?: string): Promise<boolean> {
+    if (!this.services.groupService) return false;
+    try {
+      await this.services.groupService.joinGroupByCode(inviteCode, displayName || '');
+      return true;
+    } catch (_e) {
+      return false;
+    }
+  }
+
+  async getGroupFeeds(groupId: string, offset: number, limit: number): Promise<GroupFeed[]> {
+    if (!this.services.groupService) return [];
+    return await this.services.groupService.getGroupFeeds(groupId, offset, limit);
+  }
+
+  async shareFoodScanToGroup(groupId: string, foodName: string, memberId: string,
+    msgType: number, message: string, extraData: string): Promise<boolean> {
+    if (!this.services.groupService) return false;
+    try {
+      await this.services.groupService.shareFoodScan(groupId, foodName, memberId, msgType, message, extraData);
+      return true;
+    } catch (_e) {
+      return false;
+    }
+  }
+
+  // ========== 委派方法：食谱社区服务 ==========
+
+  async queryCommunityRecipes(params: RecipeQueryParams): Promise<Recipe[]> {
+    if (!this.services.recipeCommunityService) return [];
+    return await this.services.recipeCommunityService.queryRecipes(params);
+  }
+
+  async getRecipeDetail(recipeId: string): Promise<Recipe | null> {
+    if (!this.services.recipeCommunityService) return null;
+    return await this.services.recipeCommunityService.getRecipeDetail(recipeId);
+  }
+
+  async getRecipeComments(recipeId: string): Promise<RecipeComment[]> {
+    if (!this.services.recipeCommunityService) return [];
+    return await this.services.recipeCommunityService.getComments(recipeId);
+  }
+
+  async hasLikedRecipe(recipeId: string): Promise<boolean> {
+    if (!this.services.recipeCommunityService) return false;
+    return await this.services.recipeCommunityService.hasLiked(recipeId);
+  }
+
+  async toggleRecipeLike(recipeId: string): Promise<boolean> {
+    if (!this.services.recipeCommunityService) return false;
+    return await this.services.recipeCommunityService.toggleLike(recipeId);
+  }
+
+  async toggleRecipeBookmark(recipeId: string, collectionName: string): Promise<boolean> {
+    if (!this.services.recipeCommunityService) return false;
+    return await this.services.recipeCommunityService.toggleBookmark(recipeId, collectionName);
+  }
+
+  async addRecipeComment(recipeId: string, content: string, parentId: string): Promise<boolean> {
+    if (!this.services.recipeCommunityService) return false;
+    try {
+      await this.services.recipeCommunityService.addComment(recipeId, content, parentId);
+      return true;
+    } catch (_e) {
+      return false;
+    }
+  }
+
+  async publishRecipe(params: CreateRecipeParams): Promise<boolean> {
+    if (!this.services.recipeCommunityService) return false;
+    try {
+      await this.services.recipeCommunityService.createRecipe(params);
+      return true;
+    } catch (_e) {
+      return false;
+    }
+  }
+
+  // ========== 委派方法：AI 服务 ==========
+
+  async getAiRecipeRecommendations(
+    memberIds: string[], category?: string, cuisine?: string, limit?: number
+  ): Promise<AiRecipeRecommendationResult> {
+    return { recommendations: [], overallSummary: '', isAiGenerated: false };
+  }
+
+  async getAiNutritionAdvice(memberId: string, days: number, isRefresh: boolean): Promise<AiNutritionAdvice | null> {
+    const profile = this.membersCache.find(m => m.memberId === memberId);
+    if (!profile) return null;
+    const signal = this.getHealthSignal(memberId);
+    const budget = this.getDailyBudgetSync(memberId);
+    const records = await this.historyRepo.getDietRecordsByDateRange(memberId, DateUtil.getToday(), DateUtil.getToday());
+    return await this.services.aiNutritionist.getAdvice(profile, signal, budget, records, days, true);
+  }
+
+  // ========== 委派方法：营养趋势 ==========
+
+  async getDailyDietGroups(memberId: string, date: string): Promise<MealGroup[]> {
+    const records = await this.historyRepo.getDietRecordsByDateRange(memberId, date, date);
+    return NutritionTrendEngine.groupByMealType(records);
+  }
+
+  async getNutritionTrends(memberId: string, days: number): Promise<NutrientTrendData[]> {
+    const endDate = DateUtil.getToday();
+    const startDate = this.subDays(endDate, days);
+    const records = await this.historyRepo.getDietRecordsByDateRange(memberId, startDate, endDate);
+    const summaries = NutritionTrendEngine.aggregateDaily(records);
+    const profile = this.membersCache.find(m => m.memberId === memberId);
+    const budget = profile ? profile.dailyBudget : undefined;
+    return NutritionTrendEngine.buildNutrientTrends(summaries,
+      budget?.sodiumBudget ?? 2000, budget?.sugarBudget ?? 50,
+      budget?.calorieBudget ?? 2000, budget?.fatBudget ?? 60);
+  }
+
+  async getDailySummaries(memberId: string, days: number): Promise<DailyNutritionSummary[]> {
+    const endDate = DateUtil.getToday();
+    const startDate = this.subDays(endDate, days);
+    const records = await this.historyRepo.getDietRecordsByDateRange(memberId, startDate, endDate);
+    return NutritionTrendEngine.aggregateDaily(records);
+  }
+
+  private subDays(dateStr: string, days: number): string {
+    const d = new Date(dateStr);
+    d.setDate(d.getDate() - days);
+    const y = d.getFullYear();
+    const m = (d.getMonth() + 1).toString().padStart(2, '0');
+    const day = d.getDate().toString().padStart(2, '0');
+    return y + '-' + m + '-' + day;
+  }
+}

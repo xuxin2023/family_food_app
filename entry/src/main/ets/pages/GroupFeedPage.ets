@@ -47,9 +47,7 @@ struct GroupFeedPage {
     Column() {
       // 顶栏
       Row() {
-        BackButton()
-          .fontSize(24)
-          .fontColor(COLORS.PRIMARY)
+        BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
           .onClick(() => { safeBack() })
         Text(this.groupName)
           .fontSize(20)

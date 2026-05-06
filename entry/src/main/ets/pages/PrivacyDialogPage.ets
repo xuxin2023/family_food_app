@@ -28,14 +28,6 @@ struct PrivacyDialogPage {
     // 等待 AppState 初始化完成（避免竞态条件）
     await AppState.waitForReady()
 
-    // 预加载隐私政策和用户协议 HTML 内容
-    // 使用 try/catch 确保即使预加载失败也不影响页面显示
-    try {
-      // 注意：此时可能无法获取 context，在点击展开时再加载
-    } catch (_e) {
-      // 静默处理
-    }
-
     // 检查是否已经同意过
     const agreed = await this.checkPrivacyAgreed()
     if (agreed) {

@@ -101,9 +101,7 @@ struct DeviceDashboardPage {
   @Builder
   buildHeader() {
     Row() {
-      BackButton()
-        .fontSize(28)
-        .fontColor(COLORS.PRIMARY)
+      BackButton({ fontSize: 28, fontColor: COLORS.PRIMARY })
         .onClick(() => {
           try {
             safeBack();

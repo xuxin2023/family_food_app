@@ -151,15 +151,16 @@ struct RecipeDetailPage {
         Text(this.hasLiked ? '❤️' : '🤍').fontSize(20)
         Text(this.recipe!.likeCount.toString()).fontSize(14).fontColor(COLORS.TEXT_SECONDARY)
       }
-      .onClick(async () => {
-        const newState = await this.appState.toggleRecipeLike(this.recipeId)
-        // 本地乐观更新点赞数，避免全量刷新
-        if (this.recipe) {
-          if (newState !== this.hasLiked) {
-            this.recipe.likeCount += newState ? 1 : -1
+      .onClick(() => {
+        this.appState.toggleRecipeLike(this.recipeId).then((newState: boolean) => {
+          // 本地乐观更新点赞数，避免全量刷新
+          if (this.recipe) {
+            if (newState !== this.hasLiked) {
+              this.recipe.likeCount += newState ? 1 : -1
+            }
           }
-        }
-        this.hasLiked = newState
+          this.hasLiked = newState
+        })
       })
       .padding({ left: 12, right: 12, top: 6, bottom: 6 })
       .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
@@ -169,9 +170,11 @@ struct RecipeDetailPage {
         Text(this.hasBookmarked ? '🔖' : '🏷️').fontSize(20)
         Text($r('app.string.favorite')).fontSize(14).fontColor(COLORS.TEXT_SECONDARY)
       }
-      .onClick(async () => {
-        this.hasBookmarked = await this.appState.toggleRecipeBookmark(this.recipeId, '')
-        promptAction.showToast({ message: this.hasBookmarked ? '已收藏' : '已取消收藏' })
+      .onClick(() => {
+        this.appState.toggleRecipeBookmark(this.recipeId, '').then((result: boolean) => {
+          this.hasBookmarked = result
+          promptAction.showToast({ message: result ? '已收藏' : '已取消收藏' })
+        })
       })
       .padding({ left: 12, right: 12, top: 6, bottom: 6 })
       .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
@@ -370,13 +373,16 @@ struct RecipeDetailPage {
           .borderRadius(18)
           .fontSize(13)
           .fontColor(COLORS.WHITE)
-          .onClick(async () => {
+          .onClick(() => {
             if (this.commentText.trim().length === 0) return
-            await this.appState.addRecipeComment(this.recipeId, this.commentText.trim(), '')
-            this.commentText = ''
-            this.comments = await this.appState.getRecipeComments(this.recipeId)
-            this.commentDS.reload(this.comments)
-            promptAction.showToast({ message: '评论已发送' })
+            this.appState.addRecipeComment(this.recipeId, this.commentText.trim(), '').then(() => {
+              this.commentText = ''
+              this.appState.getRecipeComments(this.recipeId).then((comments: RecipeComment[]) => {
+                this.comments = comments
+                this.commentDS.reload(this.comments)
+                promptAction.showToast({ message: '评论已发送' })
+              })
+            })
           })
       }
       .width('100%')

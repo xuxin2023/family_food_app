@@ -290,9 +290,7 @@ struct DashboardPage {
       // 导航栏
       Row() {
         Row() {
-          BackButton()
-            .fontSize(28)
-            .fontColor(COLORS.TEXT_PRIMARY)
+          BackButton({ fontSize: 28, fontColor: COLORS.TEXT_PRIMARY })
             .padding({ right: SPACING.SM })
         }
         .width(40)

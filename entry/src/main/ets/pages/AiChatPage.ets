@@ -77,9 +77,7 @@ struct AiChatPage {
       // ===== 顶部导航栏 =====
       Row() {
         // 返回按钮
-        BackButton()
-          .fontSize(28)
-          .fontColor(COLORS.TEXT_PRIMARY)
+        BackButton({ fontSize: 28, fontColor: COLORS.TEXT_PRIMARY })
           .onClick(() => safeBack())
 
         // 标题 + 当前成员

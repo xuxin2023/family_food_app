@@ -285,7 +285,7 @@ struct MemberEditPage {
     }
   }
 
-  private async saveMember() {
+  private async saveMember(): Promise<void> {
     // 新建成员时检查付费墙
     if (this.editingMemberId.length === 0) {
       const trigger = this.appState.useFamilyMember()

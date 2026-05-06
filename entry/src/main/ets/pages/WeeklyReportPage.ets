@@ -58,9 +58,7 @@ struct WeeklyReportPage {
       Scroll() {
         Column() {
           Row() {
-            BackButton()
-              .fontSize(24)
-              .fontColor(COLORS.PRIMARY)
+            BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
               .onClick(() => { safeBack() })
             Text($r('app.string.weekly_report'))
               .fontSize(20)

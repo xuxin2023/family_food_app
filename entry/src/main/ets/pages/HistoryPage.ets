@@ -35,9 +35,7 @@ struct HistoryPage {
   build() {
     Column() {
       Row() {
-        BackButton()
-          .fontSize(24)
-          .fontColor(COLORS.PRIMARY)
+        BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
           .onClick(() => { safeBack() })
         Text($r('app.string.history_record'))
           .fontSize(20)

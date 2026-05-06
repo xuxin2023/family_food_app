@@ -374,8 +374,7 @@ struct ScanPage {
         Column() {
           // ---- 顶部导航栏 ----
           Row() {
-            BackButton()
-              .fontColor(COLORS.PRIMARY)
+            BackButton({ fontColor: COLORS.PRIMARY })
             Blank()
             if (this.foodLabel.foodId.length > 0) {
               Text($r('app.string.barcode_detected')).fontSize(FONT_SIZE.TINY).fontColor(COLORS.ACCENT_GREEN)

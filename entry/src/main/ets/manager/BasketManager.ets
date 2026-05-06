@@ -2,7 +2,8 @@
 // 购物篮管理 - 负责购物篮的增删改查和 Preferences 持久化
 // 从 AppState 拆分
 
-import { common, preferences } from '@kit.ArkData';
+import { preferences } from '@kit.ArkData';
+import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FoodLabel, FoodLabelJson } from '../model/FoodLabel';
 

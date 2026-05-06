@@ -2,6 +2,7 @@
 // 数据可视化仪表盘主页
 // 整合各维度营养数据的可视化概览：均衡概览、趋势折线、构成分析、收支预算
 import { promptAction, curves } from '@kit.ArkUI';
+import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { safeBack, safePushUrl, getPageParams } from '../utils/RouterUtil';
 import { AppState } from '../AppState';
@@ -289,7 +290,7 @@ struct DashboardPage {
       // 导航栏
       Row() {
         Row() {
-          Text('‹')
+          BackButton()
             .fontSize(28)
             .fontColor(COLORS.TEXT_PRIMARY)
             .padding({ right: SPACING.SM })

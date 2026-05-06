@@ -1,4 +1,5 @@
 import { router, promptAction } from '@kit.ArkUI';
+import { BackButton } from '../components/BackButton';
 import { safeBack } from '../utils/RouterUtil';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { pasteboard } from '@kit.BasicServicesKit';
@@ -46,7 +47,7 @@ struct GroupFeedPage {
     Column() {
       // 顶栏
       Row() {
-        Text('<')
+        BackButton()
           .fontSize(24)
           .fontColor(COLORS.PRIMARY)
           .onClick(() => { safeBack() })

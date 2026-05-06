@@ -38,18 +38,12 @@ struct HomePage {
   @State remainingScans: number = 0
   @State todayDate: string = ''
 
-  // ===== 响应式状态：AppStorage 版本号绑定 =====
-  // 当 AppState 中相应数据变更时，这些值会自动递增，触发 UI 刷新
-  @StorageProp('memberVersion') memberVersion: number = 0
-  @StorageProp('tierVersion') tierVersion: number = 0
+  // ===== AppStorage 版本号绑定 =====
+  // scanVersion 在扫码后递增，驱动 UI 增量刷新
   @StorageProp('scanVersion') scanVersion: number = 0
-  @StorageProp('dietVersion') dietVersion: number = 0
 
   // 记录上次加载时的版号，避免重复刷新
-  private lastMemberVersion: number = -1
-  private lastTierVersion: number = -1
   private lastScanVersion: number = -1
-  private lastDietVersion: number = -1
 
   private appState: AppState = AppState.getInstance()
   private milestoneService: MilestoneService = MilestoneService.getInstance()
@@ -74,36 +68,19 @@ struct HomePage {
   }
 
   /**
-   * 增量刷新：仅对比版号，只刷新有变化的数据
-   * 避免每次 onPageShow 都全量加载
+   * 增量刷新：每次 onPageShow 时执行，只在数据有变化时刷新
+   * - 成员列表由 aboutToAppear 全量加载，onPageShow 不再同步重载（getAllMembers 已有缓存保护）
+   * - scanVersion 变化 → 刷新当日状态
    */
   private async refreshIfNeeded(): Promise<void> {
-    let needsRefresh = false
-
-    // 会员等级变更 → 刷新剩余扫码次数
-    if (this.tierVersion !== this.lastTierVersion) {
-      this.remainingScans = this.appState.getRemainingScans()
-      this.refreshMemberStatuses()
-      this.lastTierVersion = this.tierVersion
-      needsRefresh = true
-    }
-    // 成员数据变更 → 重载成员列表
-    if (this.memberVersion !== this.lastMemberVersion) {
-      await this.loadFamilyMembers()
-      this.lastMemberVersion = this.memberVersion
-      needsRefresh = true
-    }
-    // 扫码记录变更 → 刷新当天的状态
+    // scanVersion 递增 → 刷新当日状态
     if (this.scanVersion !== this.lastScanVersion) {
+      // 确保成员列表与 AppState 缓存一致（内存读取，无数据库查询）
+      if (this.familyMembers.length === 0) {
+        this.familyMembers = await this.appState.getAllMembers()
+      }
       this.refreshMemberStatuses()
       this.lastScanVersion = this.scanVersion
-      needsRefresh = true
-    }
-    // 膳食记录变更
-    if (this.dietVersion !== this.lastDietVersion) {
-      this.refreshMemberStatuses()
-      this.lastDietVersion = this.dietVersion
-      needsRefresh = true
     }
   }
 
@@ -112,10 +89,7 @@ struct HomePage {
     this.refreshMemberStatuses()
     await this.refreshMilestones()
     // 记录当前版号
-    this.lastMemberVersion = this.memberVersion
-    this.lastTierVersion = this.tierVersion
     this.lastScanVersion = this.scanVersion
-    this.lastDietVersion = this.dietVersion
   }
 
   private async refreshMilestones() {

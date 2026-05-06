@@ -111,7 +111,7 @@
         "name": "EntryFormAbility",
         "srcEntry": "./ets/entryformability/EntryFormAbility.ets",
         "label": "$string:app_name",
-        "description": "饮食追踪卡片",
+        "description": "$string:form_desc",
         "type": "form",
         "metadata": [
           {

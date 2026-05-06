@@ -2,6 +2,7 @@
 // 家庭群组页面 — 创建/加入群组、群组列表、成员管理
 
 import { router, promptAction } from '@kit.ArkUI';
+import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
 import { GroupMember, GroupRole, GroupSummary } from '../model/FamilyGroup';
@@ -47,10 +48,7 @@ struct FamilyGroupPage {
     Column() {
       // 顶栏
       Row() {
-        Text('<')
-          .fontSize(24)
-          .fontColor(COLORS.PRIMARY)
-          .onClick(() => { router.back() })
+        BackButton()
         Text($r('app.string.family_group'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)

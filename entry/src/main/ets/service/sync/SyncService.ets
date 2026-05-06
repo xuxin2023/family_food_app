@@ -48,6 +48,9 @@ export class SyncService {
   /** 事件监听器列表 */
   private eventListeners: SyncEventCallback[] = [];
 
+  /** 网络状态变化回调引用（用于取消注册时移除） */
+  private networkStateChangeCb: NetworkStateChangeCallback | null = null;
+
   /** 用户token（从云端认证获取） */
   private authToken: string = '';
   /** 设备唯一标识 */
@@ -91,7 +94,7 @@ export class SyncService {
       // 注册网络监听
       this.networkMonitor.register();
       // 当网络恢复时自动触发同步
-      this.networkMonitor.onStateChange((state: NetworkState) => {
+      this.networkStateChangeCb = (state: NetworkState) => {
         this.notifyEvent({
           type: 'network_changed',
           message: `网络状态变化: ${state.isConnected ? '已连接' : '断开'}`,
@@ -102,7 +105,8 @@ export class SyncService {
         if (state.isConnected && state.isValidated && this.config.enabled) {
           this.triggerSync();
         }
-      });
+      };
+      this.networkMonitor.onStateChange(this.networkStateChangeCb);
 
       this.isInitialized = true;
       hilog.info(DOMAIN_ZERO, TAG, 'SyncService initialized');
@@ -324,6 +328,10 @@ export class SyncService {
    */
   destroy(): void {
     this.stopAutoSync();
+    if (this.networkStateChangeCb) {
+      this.networkMonitor.offStateChange(this.networkStateChangeCb);
+      this.networkStateChangeCb = null;
+    }
     this.networkMonitor.unregister();
     this.eventListeners = [];
     this.isInitialized = false;

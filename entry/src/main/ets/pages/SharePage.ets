@@ -1,4 +1,5 @@
 import { router, promptAction } from '@kit.ArkUI';
+import { BackButton } from '../components/BackButton';
 import { safeBack, safePushUrl } from '../utils/RouterUtil';
 import { Recommendation } from '../model/Recommendation';
 import { FamilyProfile } from '../model/FamilyProfile';
@@ -52,7 +53,7 @@ struct SharePage {
     Scroll() {
       Column() {
         Row() {
-          Text('<')
+          BackButton()
             .fontSize(24)
             .fontColor(COLORS.PRIMARY)
             .onClick(() => { safeBack() })

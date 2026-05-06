@@ -83,13 +83,30 @@ export class PermissionManager {
   /**
    * 检查单个权限状态
    */
+  /**
+   * 获取应用的 accessTokenId
+   */
+  private async getAccessTokenId(): Promise<number> {
+    try {
+      const bundleFlags = bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION;
+      const bundleInfo = await bundleManager.getBundleInfoForSelf(bundleFlags);
+      return bundleInfo.appInfo.accessTokenId;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'getAccessTokenId failed: %{public}s', JSON.stringify(error));
+      return 0;
+    }
+  }
+
   async checkPermission(permission: Permissions): Promise<PermissionStatus> {
     if (!this.context) return PermissionStatus.DENIED;
 
     try {
       const atManager = abilityAccessCtrl.createAtManager();
-      // checkAccessToken 需要两个参数: tokenID 和 permissionName
-      const tokenId = 0;
+      const tokenId = await this.getAccessTokenId();
+      if (tokenId === 0) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'Invalid tokenId, permission check may fail');
+        return PermissionStatus.DENIED;
+      }
       const result = await atManager.checkAccessToken(tokenId, permission);
       const status = result === abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED
         ? PermissionStatus.GRANTED

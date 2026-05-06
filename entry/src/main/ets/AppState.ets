@@ -553,26 +553,18 @@ export class AppState {
   }
 
   /** 异步持久化购物篮到 Preferences */
-  private persistBasket(): void {
+  private async persistBasket(): Promise<void> {
     const ctx = this.basketContext;
     if (ctx === null) {
       return;
     }
-    // 异步写入，不阻塞调用方
     try {
-      const prefs = preferences.getPreferences(ctx, 'basket_cache');
-      prefs.then((pref) => {
-        const jsonArray: FoodLabelJson[] = this.basketItems.map(item => item.toJson());
-        pref.put('items', JSON.stringify(jsonArray)).then(() => {
-          pref.flush();
-        }).catch((_e: Error) => {
-          hilog.warn(DOMAIN_ZERO, TAG, 'persistBasket: flush failed');
-        });
-      }).catch((_e: Error) => {
-        hilog.warn(DOMAIN_ZERO, TAG, 'persistBasket: getPreferences failed');
-      });
-    } catch (_e) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'persistBasket exception: %{public}s', JSON.stringify(_e));
+      const pref = await preferences.getPreferences(ctx, 'basket_cache');
+      const jsonArray: FoodLabelJson[] = this.basketItems.map(item => item.toJson());
+      await pref.put('items', JSON.stringify(jsonArray));
+      await pref.flush();
+    } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'persistBasket failed: %{public}s', JSON.stringify(error));
     }
   }
 

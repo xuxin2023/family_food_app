@@ -3,6 +3,7 @@
 // 三段式布局：顶部评测区 | 家庭矩阵区 | 辅助信息区
 
 import { router, promptAction, curves } from '@kit.ArkUI';
+import { BackButton } from '../components/BackButton';
 import { safeBack } from '../utils/RouterUtil';
 import { common } from '@kit.AbilityKit';
 import { AppState } from '../AppState';
@@ -174,7 +175,7 @@ struct ReportPage {
     Row() {
       // 返回按钮
       Row() {
-        Text('<')
+        BackButton()
           .fontSize(FONT_SIZE.LARGE)
           .fontColor(COLORS.TEXT_PRIMARY)
       }

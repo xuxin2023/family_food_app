@@ -74,22 +74,23 @@ export class FoodRepository {
   async findByBarcode(barcode: string): Promise<FoodLabel | null> {
     if (!this.rdbStore) return null;
 
+    let resultSet: relationalStore.ResultSet | null = null;
     try {
       const predicates = new relationalStore.RdbPredicates(TABLE_NAME);
       predicates.equalTo('barcode', barcode);
-      const resultSet = await this.rdbStore.query(predicates);
+      resultSet = await this.rdbStore.query(predicates);
 
       if (resultSet.goToFirstRow()) {
-        const label = this.fromResultSet(resultSet);
-        resultSet.close();
-        return label;
+        return this.fromResultSet(resultSet);
       }
-
-      resultSet.close();
       return null;
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Find by barcode failed: %{public}s', JSON.stringify(error));
       return null;
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
     }
   }
 
@@ -100,6 +101,7 @@ export class FoodRepository {
     const resultMap = new Map<string, FoodLabel>();
     if (!this.rdbStore || foodIds.length === 0) return resultMap;
 
+    let resultSet: relationalStore.ResultSet | null = null;
     try {
       // 去重
       const uniqueMap: Record<string, boolean> = {};
@@ -113,16 +115,18 @@ export class FoodRepository {
       }
       const predicates = new relationalStore.RdbPredicates(TABLE_NAME);
       predicates.in('food_id', uniqueIds);
-      const resultSet = await this.rdbStore.query(predicates);
+      resultSet = await this.rdbStore.query(predicates);
 
       while (resultSet.goToNextRow()) {
         const label = this.fromResultSet(resultSet);
         resultMap.set(label.foodId, label);
       }
-
-      resultSet.close();
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Batch find by ids failed: %{public}s', JSON.stringify(error));
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
     }
     return resultMap;
   }
@@ -133,22 +137,23 @@ export class FoodRepository {
   async findById(foodId: string): Promise<FoodLabel | null> {
     if (!this.rdbStore) return null;
 
+    let resultSet: relationalStore.ResultSet | null = null;
     try {
       const predicates = new relationalStore.RdbPredicates(TABLE_NAME);
       predicates.equalTo('food_id', foodId);
-      const resultSet = await this.rdbStore.query(predicates);
+      resultSet = await this.rdbStore.query(predicates);
 
       if (resultSet.goToFirstRow()) {
-        const label = this.fromResultSet(resultSet);
-        resultSet.close();
-        return label;
+        return this.fromResultSet(resultSet);
       }
-
-      resultSet.close();
       return null;
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Find by id failed: %{public}s', JSON.stringify(error));
       return null;
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
     }
   }
 
@@ -158,22 +163,25 @@ export class FoodRepository {
   async getRecentLabels(limit: number = 20): Promise<FoodLabel[]> {
     if (!this.rdbStore) return [];
 
+    let resultSet: relationalStore.ResultSet | null = null;
     try {
       const predicates = new relationalStore.RdbPredicates(TABLE_NAME);
       predicates.orderByDesc('identified_at');
       predicates.limitAs(limit);
-      const resultSet = await this.rdbStore.query(predicates);
+      resultSet = await this.rdbStore.query(predicates);
       const labels: FoodLabel[] = [];
 
       while (resultSet.goToNextRow()) {
         labels.push(this.fromResultSet(resultSet));
       }
-
-      resultSet.close();
       return labels;
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Get recent labels failed: %{public}s', JSON.stringify(error));
       return [];
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
     }
   }
 

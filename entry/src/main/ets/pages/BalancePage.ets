@@ -1,4 +1,5 @@
 import { promptAction } from '@kit.ArkUI';
+import { BackButton } from '../components/BackButton';
 import { safeBack } from '../utils/RouterUtil';
 import { AppState } from '../AppState';
 import { FamilyProfile } from '../model/FamilyProfile';
@@ -95,7 +96,7 @@ struct BalancePage {
       Scroll() {
         Column() {
           Row() {
-            Text('<')
+            BackButton()
               .fontSize(24)
               .fontColor(COLORS.PRIMARY)
               .onClick(() => { safeBack() })

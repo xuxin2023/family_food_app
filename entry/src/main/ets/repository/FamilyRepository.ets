@@ -86,9 +86,10 @@ export class FamilyRepository {
   async getAllMembers(): Promise<FamilyProfile[]> {
     if (!this.rdbStore) return [];
 
+    let resultSet: relationalStore.ResultSet | null = null;
     try {
       const predicates = new relationalStore.RdbPredicates(TABLE_NAME);
-      const resultSet = await this.rdbStore.query(predicates);
+      resultSet = await this.rdbStore.query(predicates);
       const members: FamilyProfile[] = [];
 
       while (resultSet.goToNextRow()) {
@@ -133,12 +134,14 @@ export class FamilyRepository {
         profile.updatedAt = resultSet.getLong(resultSet.getColumnIndex('updated_at'));
         members.push(profile);
       }
-
-      resultSet.close();
       return members;
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Query members failed: %{public}s', JSON.stringify(error));
       return [];
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
     }
   }
 

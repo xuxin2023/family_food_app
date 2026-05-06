@@ -99,6 +99,7 @@ export class DailyBudget {
     return budget;
   }
 
+  /** @deprecated 请使用 fromJson(DailyBudgetJson) 替代 */
   static fromJsonRaw(json: Record<string, Object>): DailyBudget {
     const budget = new DailyBudget();
     budget.memberId = json.memberId as string;

@@ -125,28 +125,42 @@ export class FamilyGroupRepository {
     if (!this.rdbStore) return null;
     const predicates = new relationalStore.RdbPredicates(TABLE_GROUP);
     predicates.equalTo('group_id', groupId);
-    const resultSet = await this.rdbStore.query(predicates);
-    if (resultSet.goToFirstRow()) {
-      const group = this.parseGroup(resultSet);
-      resultSet.close();
-      return group;
+    let resultSet: relationalStore.ResultSet | null = null;
+    try {
+      resultSet = await this.rdbStore.query(predicates);
+      if (resultSet.goToFirstRow()) {
+        return this.parseGroup(resultSet);
+      }
+      return null;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'getGroup failed: %{public}s', JSON.stringify(error));
+      return null;
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
     }
-    resultSet.close();
-    return null;
   }
 
   async getGroupByInviteCode(inviteCode: string): Promise<FamilyGroup | null> {
     if (!this.rdbStore) return null;
     const predicates = new relationalStore.RdbPredicates(TABLE_GROUP);
     predicates.equalTo('invite_code', inviteCode);
-    const resultSet = await this.rdbStore.query(predicates);
-    if (resultSet.goToFirstRow()) {
-      const group = this.parseGroup(resultSet);
-      resultSet.close();
-      return group;
+    let resultSet: relationalStore.ResultSet | null = null;
+    try {
+      resultSet = await this.rdbStore.query(predicates);
+      if (resultSet.goToFirstRow()) {
+        return this.parseGroup(resultSet);
+      }
+      return null;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'getGroupByInviteCode failed: %{public}s', JSON.stringify(error));
+      return null;
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
     }
-    resultSet.close();
-    return null;
   }
 
   async getOwnedGroups(uid: string): Promise<FamilyGroup[]> {
@@ -223,14 +237,21 @@ export class FamilyGroupRepository {
     predicates.equalTo('group_id', groupId);
     predicates.equalTo('uid', uid);
     predicates.equalTo('is_left', 0);
-    const resultSet = await this.rdbStore.query(predicates);
-    if (resultSet.goToFirstRow()) {
-      const member = this.parseMember(resultSet);
-      resultSet.close();
-      return member;
+    let resultSet: relationalStore.ResultSet | null = null;
+    try {
+      resultSet = await this.rdbStore.query(predicates);
+      if (resultSet.goToFirstRow()) {
+        return this.parseMember(resultSet);
+      }
+      return null;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'getMemberInGroup failed: %{public}s', JSON.stringify(error));
+      return null;
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
     }
-    resultSet.close();
-    return null;
   }
 
   async updateMemberRole(groupId: string, uid: string, role: GroupRole): Promise<void> {
@@ -325,17 +346,26 @@ export class FamilyGroupRepository {
     const predicates = new relationalStore.RdbPredicates(TABLE_GROUP_FEED);
     predicates.equalTo('group_id', groupId);
     predicates.orderByDesc('created_at');
-    const resultSet = await this.rdbStore.query(predicates);
-    const feeds: GroupFeed[] = [];
-    let currentIndex = 0;
-    while (resultSet.goToNextRow()) {
-      if (currentIndex >= offset && feeds.length < limit) {
-        feeds.push(this.parseFeed(resultSet));
+    let resultSet: relationalStore.ResultSet | null = null;
+    try {
+      resultSet = await this.rdbStore.query(predicates);
+      const feeds: GroupFeed[] = [];
+      let currentIndex = 0;
+      while (resultSet.goToNextRow()) {
+        if (currentIndex >= offset && feeds.length < limit) {
+          feeds.push(this.parseFeed(resultSet));
+        }
+        currentIndex++;
       }
-      currentIndex++;
+      return feeds;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'getFeeds failed: %{public}s', JSON.stringify(error));
+      return [];
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
     }
-    resultSet.close();
-    return feeds;
   }
 
   async deleteFeed(feedId: string): Promise<void> {
@@ -366,13 +396,22 @@ export class FamilyGroupRepository {
 
   private async queryGroups(predicates: relationalStore.RdbPredicates): Promise<FamilyGroup[]> {
     if (!this.rdbStore) return [];
-    const resultSet = await this.rdbStore.query(predicates);
-    const groups: FamilyGroup[] = [];
-    while (resultSet.goToNextRow()) {
-      groups.push(this.parseGroup(resultSet));
+    let resultSet: relationalStore.ResultSet | null = null;
+    try {
+      resultSet = await this.rdbStore.query(predicates);
+      const groups: FamilyGroup[] = [];
+      while (resultSet.goToNextRow()) {
+        groups.push(this.parseGroup(resultSet));
+      }
+      return groups;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'queryGroups failed: %{public}s', JSON.stringify(error));
+      return [];
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
     }
-    resultSet.close();
-    return groups;
   }
 
   private parseMember(resultSet: relationalStore.ResultSet): GroupMember {
@@ -392,13 +431,22 @@ export class FamilyGroupRepository {
 
   private async queryMembers(predicates: relationalStore.RdbPredicates): Promise<GroupMember[]> {
     if (!this.rdbStore) return [];
-    const resultSet = await this.rdbStore.query(predicates);
-    const members: GroupMember[] = [];
-    while (resultSet.goToNextRow()) {
-      members.push(this.parseMember(resultSet));
+    let resultSet: relationalStore.ResultSet | null = null;
+    try {
+      resultSet = await this.rdbStore.query(predicates);
+      const members: GroupMember[] = [];
+      while (resultSet.goToNextRow()) {
+        members.push(this.parseMember(resultSet));
+      }
+      return members;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'queryMembers failed: %{public}s', JSON.stringify(error));
+      return [];
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
     }
-    resultSet.close();
-    return members;
   }
 
   private parseRequest(resultSet: relationalStore.ResultSet): JoinRequest {
@@ -417,13 +465,22 @@ export class FamilyGroupRepository {
 
   private async queryRequests(predicates: relationalStore.RdbPredicates): Promise<JoinRequest[]> {
     if (!this.rdbStore) return [];
-    const resultSet = await this.rdbStore.query(predicates);
-    const requests: JoinRequest[] = [];
-    while (resultSet.goToNextRow()) {
-      requests.push(this.parseRequest(resultSet));
+    let resultSet: relationalStore.ResultSet | null = null;
+    try {
+      resultSet = await this.rdbStore.query(predicates);
+      const requests: JoinRequest[] = [];
+      while (resultSet.goToNextRow()) {
+        requests.push(this.parseRequest(resultSet));
+      }
+      return requests;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'queryRequests failed: %{public}s', JSON.stringify(error));
+      return [];
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
     }
-    resultSet.close();
-    return requests;
   }
 
   private parseFeed(resultSet: relationalStore.ResultSet): GroupFeed {

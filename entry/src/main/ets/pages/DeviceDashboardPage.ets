@@ -4,6 +4,7 @@
 // 以及与饮食建议的联动效果
 
 import { promptAction } from '@kit.ArkUI';
+import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { safeBack, safePushUrl } from '../utils/RouterUtil';
 import { AppState } from '../AppState';
@@ -100,7 +101,7 @@ struct DeviceDashboardPage {
   @Builder
   buildHeader() {
     Row() {
-      Text('‹')
+      BackButton()
         .fontSize(28)
         .fontColor(COLORS.PRIMARY)
         .onClick(() => {

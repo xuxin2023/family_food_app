@@ -35,6 +35,7 @@ import { PaywallDialog } from '../components/PaywallDialog';
 import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON } from '../constants/AppTheme';
 import { SCAN_CONFIG } from '../constants/AppConfig';
 import { EnhancedFoodRecommendation } from '../model/FoodAdapterTypes';
+import { BackButton } from '../components/BackButton';
 
 const DOMAIN_ZERO = 0;
 
@@ -373,10 +374,8 @@ struct ScanPage {
         Column() {
           // ---- 顶部导航栏 ----
           Row() {
-            Text('‹ 返回')
-              .fontSize(FONT_SIZE.BODY)
+            BackButton()
               .fontColor(COLORS.PRIMARY)
-              .onClick(() => { safeBack() })
             Blank()
             if (this.foodLabel.foodId.length > 0) {
               Text($r('app.string.barcode_detected')).fontSize(FONT_SIZE.TINY).fontColor(COLORS.ACCENT_GREEN)

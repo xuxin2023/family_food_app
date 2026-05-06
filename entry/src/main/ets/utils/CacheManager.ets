@@ -72,7 +72,7 @@ export class CacheManager {
   }
 
   get healthSignalsSnapshot(): Map<string, HealthSignal> {
-    return this._healthSignalsCache;
+    return new Map(this._healthSignalsCache);
   }
 
   // ========== 每日预算缓存 ==========
@@ -90,7 +90,7 @@ export class CacheManager {
   }
 
   get dailyBudgetsSnapshot(): Map<string, DailyBudget> {
-    return this._dailyBudgetsCache;
+    return new Map(this._dailyBudgetsCache);
   }
 
   clearAllBudgets(): void {

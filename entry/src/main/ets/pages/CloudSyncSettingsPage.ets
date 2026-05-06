@@ -2,6 +2,7 @@
 // 云同步设置页面 - 管理云端账户绑定、同步开关、策略选择
 
 import { promptAction } from '@kit.ArkUI';
+import { BackButton } from '../components/BackButton';
 import { safeBack } from '../utils/RouterUtil';
 import { AppState } from '../AppState';
 import { PermissionManager } from '../service/PermissionManager';
@@ -61,7 +62,7 @@ struct CloudSyncSettingsPage {
     Column() {
       // 顶栏
       Row() {
-        Text('<')
+        BackButton()
           .fontSize(24)
           .fontColor(COLORS.PRIMARY)
           .onClick(() => { safeBack() })

@@ -2,6 +2,7 @@
 // 营养摄入趋势图表页面 - 7天/30天营养素趋势、每日汇总、预算对比
 
 import { router } from '@kit.ArkUI';
+import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { safeBack } from '../utils/RouterUtil';
 import { AppState } from '../AppState';
@@ -97,7 +98,7 @@ struct NutritionTrendPage {
     Column() {
       // 导航栏
       Row() {
-        Text('‹')
+        BackButton()
           .fontSize(28)
           .fontColor(COLORS.PRIMARY)
           .onClick(() => { safeBack() })

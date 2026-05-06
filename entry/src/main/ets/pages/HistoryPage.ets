@@ -1,4 +1,5 @@
 import { safeBack } from '../utils/RouterUtil';
+import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { ScanHistoryRecord } from '../repository/HistoryRepository';
@@ -26,7 +27,7 @@ struct HistoryPage {
   build() {
     Column() {
       Row() {
-        Text('<')
+        BackButton()
           .fontSize(24)
           .fontColor(COLORS.PRIMARY)
           .onClick(() => { safeBack() })

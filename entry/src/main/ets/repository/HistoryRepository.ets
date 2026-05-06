@@ -162,21 +162,24 @@ export class HistoryRepository {
     if (!this.rdbStore) return [];
 
     const today = this.getTodayDate();
+    let resultSet: relationalStore.ResultSet | null = null;
     try {
       const predicates = new relationalStore.RdbPredicates('diet_record');
       predicates.equalTo('member_id', memberId).equalTo('date', today);
-      const resultSet = await this.rdbStore.query(predicates);
+      resultSet = await this.rdbStore.query(predicates);
       const records: DietRecord[] = [];
 
       while (resultSet.goToNextRow()) {
         records.push(this.dietRecordFromResultSet(resultSet));
       }
-
-      resultSet.close();
       return records;
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Query diet records failed: %{public}s', JSON.stringify(error));
       return [];
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
     }
   }
 
@@ -186,22 +189,25 @@ export class HistoryRepository {
   async getRecentScanHistory(limit: number = 50): Promise<ScanHistoryRecord[]> {
     if (!this.rdbStore) return [];
 
+    let resultSet: relationalStore.ResultSet | null = null;
     try {
       const predicates = new relationalStore.RdbPredicates('scan_history');
       predicates.orderByDesc('scanned_at');
       predicates.limitAs(limit);
-      const resultSet = await this.rdbStore.query(predicates);
+      resultSet = await this.rdbStore.query(predicates);
       const records: ScanHistoryRecord[] = [];
 
       while (resultSet.goToNextRow()) {
         records.push(this.scanRecordFromResultSet(resultSet));
       }
-
-      resultSet.close();
       return records;
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Query scan history failed: %{public}s', JSON.stringify(error));
       return [];
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
     }
   }
 
@@ -211,23 +217,26 @@ export class HistoryRepository {
   async getScanHistoryByMember(memberId: string, limit: number = 20): Promise<ScanHistoryRecord[]> {
     if (!this.rdbStore) return [];
 
+    let resultSet: relationalStore.ResultSet | null = null;
     try {
       const predicates = new relationalStore.RdbPredicates('scan_history');
       predicates.equalTo('member_id', memberId);
       predicates.orderByDesc('scanned_at');
       predicates.limitAs(limit);
-      const resultSet = await this.rdbStore.query(predicates);
+      resultSet = await this.rdbStore.query(predicates);
       const records: ScanHistoryRecord[] = [];
 
       while (resultSet.goToNextRow()) {
         records.push(this.scanRecordFromResultSet(resultSet));
       }
-
-      resultSet.close();
       return records;
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Query scan history by member failed: %{public}s', JSON.stringify(error));
       return [];
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
     }
   }
 
@@ -237,23 +246,26 @@ export class HistoryRepository {
   async getDietRecordsByDate(memberId: string, date: string): Promise<DietRecord[]> {
     if (!this.rdbStore) return [];
 
+    let resultSet: relationalStore.ResultSet | null = null;
     try {
       const predicates = new relationalStore.RdbPredicates('diet_record');
       predicates.equalTo('member_id', memberId);
       predicates.equalTo('date', date);
       predicates.orderByAsc('recorded_at');
-      const resultSet = await this.rdbStore.query(predicates);
+      resultSet = await this.rdbStore.query(predicates);
       const records: DietRecord[] = [];
 
       while (resultSet.goToNextRow()) {
         records.push(this.dietRecordFromResultSet(resultSet));
       }
-
-      resultSet.close();
       return records;
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Query diet records by date failed: %{public}s', JSON.stringify(error));
       return [];
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
     }
   }
 
@@ -263,24 +275,27 @@ export class HistoryRepository {
   async getDietRecordsByDateRange(memberId: string, startDate: string, endDate: string): Promise<DietRecord[]> {
     if (!this.rdbStore) return [];
 
+    let resultSet: relationalStore.ResultSet | null = null;
     try {
       const predicates = new relationalStore.RdbPredicates('diet_record');
       predicates.equalTo('member_id', memberId);
       predicates.greaterThanOrEqualTo('date', startDate);
       predicates.lessThanOrEqualTo('date', endDate);
       predicates.orderByAsc('date');
-      const resultSet = await this.rdbStore.query(predicates);
+      resultSet = await this.rdbStore.query(predicates);
       const records: DietRecord[] = [];
 
       while (resultSet.goToNextRow()) {
         records.push(this.dietRecordFromResultSet(resultSet));
       }
-
-      resultSet.close();
       return records;
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Query diet records by range failed: %{public}s', JSON.stringify(error));
       return [];
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
     }
   }
 

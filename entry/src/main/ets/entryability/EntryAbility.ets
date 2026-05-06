@@ -35,6 +35,13 @@ export default class EntryAbility extends UIAbility {
     // 初始化权限管理器（仅缓存上下文，不请求任何权限）
     PermissionManager.getInstance().init(this.context);
 
+    // 初始化埋点统计服务（不阻塞启动流程）
+    AnalyticsService.getInstance().init(this.context).then(() => {
+      hilog.info(DOMAIN_ZERO, TAG, 'AnalyticsService init success');
+    }).catch((err: Error) => {
+      hilog.warn(DOMAIN_ZERO, TAG, 'AnalyticsService init failed: %{public}s', err.message);
+    });
+
     // 标记初始化进行中
     AppStorage.setOrCreate('appStateReady', false);
 

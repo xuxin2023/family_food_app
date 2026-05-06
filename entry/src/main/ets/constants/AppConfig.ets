@@ -181,3 +181,44 @@ export const HILOG_DOMAIN = new HilogDomain();
 
 /** 数据库 schema 版本号 —— 每次表结构变更时 +1，触发迁移脚本执行 */
 export const DB_SCHEMA_VERSION: number = 1;
+
+/**
+ * 默认营养阈值（用于 DashboardPage 等各处的评分与分析）
+ * 参考来源：《中国居民膳食指南2022》
+ */
+export class NutritionLimits {
+  /** 钠每日推荐上限 (mg) */
+  readonly SODIUM_MAX: number = 2000;
+  /** 钠偏高预警线 (mg) */
+  readonly SODIUM_HIGH_WARN: number = 1500;
+  /** 钠偏低线 (mg) */
+  readonly SODIUM_LOW: number = 800;
+  /** 糖每日推荐上限 (g) */
+  readonly SUGAR_MAX: number = 50;
+  /** 糖偏高预警线 (g) */
+  readonly SUGAR_HIGH_WARN: number = 40;
+  /** 热量每日推荐上限 (kcal) */
+  readonly CALORIE_MAX: number = 2000;
+  /** 脂肪每日推荐上限 (g) */
+  readonly FAT_MAX: number = 65;
+  /** 脂肪偏高预警线 (g) */
+  readonly FAT_HIGH_WARN: number = 50;
+}
+
+export const NUTRITION_LIMITS = new NutritionLimits();
+
+/**
+ * 每日扫码配额配置
+ */
+export class ScanQuotaConfig {
+  /** 免费用户每日扫码次数上限 */
+  readonly FREE_DAILY_QUOTA: number = 5;
+  /** Preferences 持久化文件名 */
+  readonly PREFS_FILE: string = 'scan_quota';
+  /** 日期键名 */
+  readonly DATE_KEY: string = 'scan_quota_date';
+  /** 剩余次数键名 */
+  readonly REMAINING_KEY: string = 'scan_quota_remaining';
+}
+
+export const SCAN_QUOTA_CONFIG = new ScanQuotaConfig();

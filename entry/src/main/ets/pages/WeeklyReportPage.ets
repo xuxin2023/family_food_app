@@ -1,4 +1,5 @@
 import { safeBack } from '../utils/RouterUtil';
+import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { MealScenario } from '../model/MealBalance';
@@ -57,7 +58,7 @@ struct WeeklyReportPage {
       Scroll() {
         Column() {
           Row() {
-            Text('<')
+            BackButton()
               .fontSize(24)
               .fontColor(COLORS.PRIMARY)
               .onClick(() => { safeBack() })

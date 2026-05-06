@@ -2,6 +2,7 @@
 // 创建食谱页面 — 发布新食谱到社区
 
 import { router, promptAction } from '@kit.ArkUI';
+import { BackButton } from '../components/BackButton';
 import { safeBack } from '../utils/RouterUtil';
 import { AppState } from '../AppState';
 import { RecipeCategory, RecipeDifficulty, DietTag, RecipeIngredient, RecipeStep } from '../model/Recipe';
@@ -65,7 +66,7 @@ struct RecipeCreatePage {
     Column() {
       // 顶栏
       Row() {
-        Text('<')
+        BackButton()
           .fontSize(24)
           .fontColor(COLORS.PRIMARY)
           .onClick(() => { safeBack() })

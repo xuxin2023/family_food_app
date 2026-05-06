@@ -133,6 +133,7 @@ export class FamilyProfile {
     return profile;
   }
 
+  /** @deprecated 请使用 fromJson(FamilyProfileJson) 替代 */
   static fromJsonRaw(json: Record<string, Object>): FamilyProfile {
     const profile = new FamilyProfile();
     profile.memberId = json.memberId as string;
@@ -181,6 +182,7 @@ export class DailyBudgetConfig {
     return config;
   }
 
+  /** @deprecated 请使用 fromJson(DailyBudgetConfigJson) 替代 */
   static fromJsonRaw(json: Record<string, Object>): DailyBudgetConfig {
     const config = new DailyBudgetConfig();
     config.sodiumBudget = json.sodiumBudget as number;

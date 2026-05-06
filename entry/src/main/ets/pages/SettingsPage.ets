@@ -1,4 +1,5 @@
 import { router, promptAction } from '@kit.ArkUI';
+import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { safeBack } from '../utils/RouterUtil';
 import { FamilyProfile } from '../model/FamilyProfile';
@@ -54,7 +55,7 @@ struct SettingsPage {
     Scroll() {
       Column() {
         Row() {
-          Text('<')
+          BackButton()
             .fontSize(24)
             .fontColor(COLORS.PRIMARY)
             .onClick(() => { safeBack() })

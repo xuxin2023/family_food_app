@@ -2,6 +2,7 @@
 // AI 营养师对话页面 — 支持多轮对话、成员绑定、快捷提问
 
 import { promptAction } from '@kit.ArkUI';
+import { BackButton } from '../components/BackButton';
 import { safeBack } from '../utils/RouterUtil';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
@@ -76,7 +77,7 @@ struct AiChatPage {
       // ===== 顶部导航栏 =====
       Row() {
         // 返回按钮
-        Text('‹')
+        BackButton()
           .fontSize(28)
           .fontColor(COLORS.TEXT_PRIMARY)
           .onClick(() => safeBack())

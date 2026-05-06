@@ -2,6 +2,7 @@
 // 膳食日记页面 - 按餐次查看每日摄入，查看趋势图表入口
 
 import { router, promptAction } from '@kit.ArkUI';
+import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
 import { DietRecord } from '../repository/HistoryRepository';
@@ -126,7 +127,7 @@ struct DietDiaryPage {
     Column() {
       // 导航栏
       Row() {
-        Text('‹')
+        BackButton()
           .fontSize(28)
           .fontColor(COLORS.PRIMARY)
           .onClick(() => { try { router.back() } catch (_e) { /* ignore */ } })
@@ -190,7 +191,7 @@ struct DietDiaryPage {
 
       // 日期导航
       Row() {
-        Text('‹')
+        BackButton()
           .fontSize(24)
           .fontColor(COLORS.PRIMARY)
           .onClick(() => this.changeDate(-1))

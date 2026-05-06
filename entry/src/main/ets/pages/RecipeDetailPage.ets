@@ -2,6 +2,7 @@
 // 食谱详情页面 — 详情、评论、点赞
 
 import { router, promptAction } from '@kit.ArkUI';
+import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
 import { Recipe, RecipeComment, DietTag, RecipeIngredient, RecipeStep } from '../model/Recipe';
@@ -61,10 +62,7 @@ struct RecipeDetailPage {
     Column() {
       // 顶栏
       Row() {
-        Text('<')
-          .fontSize(24)
-          .fontColor(COLORS.PRIMARY)
-          .onClick(() => { router.back() })
+        BackButton()
         Text($r('app.string.recipe_detail'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)

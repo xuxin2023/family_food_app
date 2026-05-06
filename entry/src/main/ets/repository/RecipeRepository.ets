@@ -154,14 +154,21 @@ export class RecipeRepository {
     if (!this.rdbStore) return null;
     const predicates = new relationalStore.RdbPredicates(TABLE_RECIPE);
     predicates.equalTo('recipe_id', recipeId);
-    const resultSet = await this.rdbStore.query(predicates);
-    if (resultSet.goToFirstRow()) {
-      const recipe = this.parseRecipe(resultSet);
-      resultSet.close();
-      return recipe;
+    let resultSet: relationalStore.ResultSet | null = null;
+    try {
+      resultSet = await this.rdbStore.query(predicates);
+      if (resultSet.goToFirstRow()) {
+        return this.parseRecipe(resultSet);
+      }
+      return null;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'getRecipe failed: %{public}s', JSON.stringify(error));
+      return null;
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
     }
-    resultSet.close();
-    return null;
   }
 
   /** 查询社区食谱（非草稿、已审核） */
@@ -274,40 +281,51 @@ export class RecipeRepository {
     const predicates = new relationalStore.RdbPredicates(TABLE_COMMENT);
     predicates.equalTo('recipe_id', recipeId);
     predicates.orderByAsc('created_at');
-    const resultSet = await this.rdbStore.query(predicates);
-    const comments: RecipeComment[] = [];
-    while (resultSet.goToNextRow()) {
-      comments.push({
-        commentId: resultSet.getString(resultSet.getColumnIndex('comment_id')),
-        recipeId: resultSet.getString(resultSet.getColumnIndex('recipe_id')),
-        authorUid: resultSet.getString(resultSet.getColumnIndex('author_uid')),
-        authorName: resultSet.getString(resultSet.getColumnIndex('author_name')) || '',
-        authorAvatar: resultSet.getString(resultSet.getColumnIndex('author_avatar')) || '',
-        content: resultSet.getString(resultSet.getColumnIndex('content')),
-        parentId: resultSet.getString(resultSet.getColumnIndex('parent_id')) || '',
-        createdAt: resultSet.getLong(resultSet.getColumnIndex('created_at')),
-        likeCount: resultSet.getLong(resultSet.getColumnIndex('like_count')),
-        isEdited: resultSet.getLong(resultSet.getColumnIndex('is_edited')) === 1
-      });
+    let resultSet: relationalStore.ResultSet | null = null;
+    try {
+      resultSet = await this.rdbStore.query(predicates);
+      const comments: RecipeComment[] = [];
+      while (resultSet.goToNextRow()) {
+        comments.push({
+          commentId: resultSet.getString(resultSet.getColumnIndex('comment_id')),
+          recipeId: resultSet.getString(resultSet.getColumnIndex('recipe_id')),
+          authorUid: resultSet.getString(resultSet.getColumnIndex('author_uid')),
+          authorName: resultSet.getString(resultSet.getColumnIndex('author_name')) || '',
+          authorAvatar: resultSet.getString(resultSet.getColumnIndex('author_avatar')) || '',
+          content: resultSet.getString(resultSet.getColumnIndex('content')),
+          parentId: resultSet.getString(resultSet.getColumnIndex('parent_id')) || '',
+          createdAt: resultSet.getLong(resultSet.getColumnIndex('created_at')),
+          likeCount: resultSet.getLong(resultSet.getColumnIndex('like_count')),
+          isEdited: resultSet.getLong(resultSet.getColumnIndex('is_edited')) === 1
+        });
+      }
+      return comments;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'getComments failed: %{public}s', JSON.stringify(error));
+      return [];
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
     }
-    resultSet.close();
-    return comments;
   }
 
   // ========== 点赞管理 ==========
 
   async toggleLike(recipeId: string, uid: string): Promise<boolean> {
     if (!this.rdbStore) return false;
+    let resultSet: relationalStore.ResultSet | null = null;
     try {
       // 检查是否已点赞
       const predicates = new relationalStore.RdbPredicates(TABLE_LIKE);
       predicates.equalTo('recipe_id', recipeId);
       predicates.equalTo('uid', uid);
-      const resultSet = await this.rdbStore.query(predicates);
+      resultSet = await this.rdbStore.query(predicates);
       if (resultSet.goToFirstRow()) {
         // 已点赞，取消
         const likeId = resultSet.getString(resultSet.getColumnIndex('id'));
         resultSet.close();
+        resultSet = null;
         const delPredicates = new relationalStore.RdbPredicates(TABLE_LIKE);
         delPredicates.equalTo('id', likeId);
         await this.rdbStore.delete(delPredicates);
@@ -318,7 +336,10 @@ export class RecipeRepository {
         }
         return false;
       }
-      resultSet.close();
+      if (resultSet) {
+        resultSet.close();
+        resultSet = null;
+      }
 
       // 未点赞，添加
       const like: RecipeLike = {
@@ -343,6 +364,10 @@ export class RecipeRepository {
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'toggleLike failed: %{public}s', JSON.stringify(error));
       return false;
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
     }
   }
 
@@ -351,25 +376,35 @@ export class RecipeRepository {
     const predicates = new relationalStore.RdbPredicates(TABLE_LIKE);
     predicates.equalTo('recipe_id', recipeId);
     predicates.equalTo('uid', uid);
-    const resultSet = await this.rdbStore.query(predicates);
-    const liked = resultSet.goToFirstRow();
-    resultSet.close();
-    return liked;
+    let resultSet: relationalStore.ResultSet | null = null;
+    try {
+      resultSet = await this.rdbStore.query(predicates);
+      return resultSet.goToFirstRow();
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'hasLiked failed: %{public}s', JSON.stringify(error));
+      return false;
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
+    }
   }
 
   // ========== 收藏管理 ==========
 
   async toggleBookmark(recipeId: string, uid: string, note: string): Promise<boolean> {
     if (!this.rdbStore) return false;
+    let resultSet: relationalStore.ResultSet | null = null;
     try {
       const predicates = new relationalStore.RdbPredicates(TABLE_BOOKMARK);
       predicates.equalTo('recipe_id', recipeId);
       predicates.equalTo('uid', uid);
-      const resultSet = await this.rdbStore.query(predicates);
+      resultSet = await this.rdbStore.query(predicates);
       if (resultSet.goToFirstRow()) {
         // 已收藏，取消
         const bookmarkId = resultSet.getString(resultSet.getColumnIndex('id'));
         resultSet.close();
+        resultSet = null;
         const delPredicates = new relationalStore.RdbPredicates(TABLE_BOOKMARK);
         delPredicates.equalTo('id', bookmarkId);
         await this.rdbStore.delete(delPredicates);
@@ -379,7 +414,10 @@ export class RecipeRepository {
         }
         return false;
       }
-      resultSet.close();
+      if (resultSet) {
+        resultSet.close();
+        resultSet = null;
+      }
 
       const bookmark: RecipeBookmark = {
         id: `bm_${recipeId}_${uid}_${Date.now()}`,
@@ -404,6 +442,10 @@ export class RecipeRepository {
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'toggleBookmark failed: %{public}s', JSON.stringify(error));
       return false;
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
     }
   }
 
@@ -412,13 +454,22 @@ export class RecipeRepository {
     const predicates = new relationalStore.RdbPredicates(TABLE_BOOKMARK);
     predicates.equalTo('uid', uid);
     predicates.orderByDesc('created_at');
-    const resultSet = await this.rdbStore.query(predicates);
-    const recipeIds: string[] = [];
-    while (resultSet.goToNextRow()) {
-      recipeIds.push(resultSet.getString(resultSet.getColumnIndex('recipe_id')));
+    let resultSet: relationalStore.ResultSet | null = null;
+    try {
+      resultSet = await this.rdbStore.query(predicates);
+      const recipeIds: string[] = [];
+      while (resultSet.goToNextRow()) {
+        recipeIds.push(resultSet.getString(resultSet.getColumnIndex('recipe_id')));
+      }
+      return recipeIds;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'getUserBookmarks failed: %{public}s', JSON.stringify(error));
+      return [];
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
     }
-    resultSet.close();
-    return recipeIds;
   }
 
   async hasBookmarked(recipeId: string, uid: string): Promise<boolean> {
@@ -426,10 +477,18 @@ export class RecipeRepository {
     const predicates = new relationalStore.RdbPredicates(TABLE_BOOKMARK);
     predicates.equalTo('recipe_id', recipeId);
     predicates.equalTo('uid', uid);
-    const resultSet = await this.rdbStore.query(predicates);
-    const bookmarked = resultSet.goToFirstRow();
-    resultSet.close();
-    return bookmarked;
+    let resultSet: relationalStore.ResultSet | null = null;
+    try {
+      resultSet = await this.rdbStore.query(predicates);
+      return resultSet.goToFirstRow();
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'hasBookmarked failed: %{public}s', JSON.stringify(error));
+      return false;
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
+    }
   }
 
   // ========== 内部方法 ==========
@@ -475,16 +534,25 @@ export class RecipeRepository {
     offset: number, limit: number
   ): Promise<Recipe[]> {
     if (!this.rdbStore) return [];
-    const resultSet = await this.rdbStore.query(predicates);
-    const recipes: Recipe[] = [];
-    let currentIndex = 0;
-    while (resultSet.goToNextRow()) {
-      if (currentIndex >= offset && recipes.length < limit) {
-        recipes.push(this.parseRecipe(resultSet));
+    let resultSet: relationalStore.ResultSet | null = null;
+    try {
+      resultSet = await this.rdbStore.query(predicates);
+      const recipes: Recipe[] = [];
+      let currentIndex = 0;
+      while (resultSet.goToNextRow()) {
+        if (currentIndex >= offset && recipes.length < limit) {
+          recipes.push(this.parseRecipe(resultSet));
+        }
+        currentIndex++;
       }
-      currentIndex++;
+      return recipes;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'queryRecipes failed: %{public}s', JSON.stringify(error));
+      return [];
+    } finally {
+      if (resultSet) {
+        resultSet.close();
+      }
     }
-    resultSet.close();
-    return recipes;
   }
 }

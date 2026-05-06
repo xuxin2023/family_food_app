@@ -2,6 +2,7 @@
 // 食谱社区页面 — 浏览热门/最新食谱、分类筛选
 
 import { router, promptAction } from '@kit.ArkUI';
+import { BackButton } from '../components/BackButton';
 import { safeBack, safePushUrl } from '../utils/RouterUtil';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
@@ -89,7 +90,7 @@ struct RecipeCommunityPage {
     Column() {
       // 顶栏
       Row() {
-        Text('<')
+        BackButton()
           .fontSize(24)
           .fontColor(COLORS.PRIMARY)
           .onClick(() => { safeBack() })

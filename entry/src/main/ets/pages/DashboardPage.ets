@@ -1,6 +1,7 @@
-﻿// DashboardPage.ets
+// DashboardPage.ets
 // 数据可视化仪表盘主页
 // 整合各维度营养数据的可视化概览：均衡概览、趋势折线、构成分析、收支预算
+// V6.1: 引入 NumericTextTransition 数字翻牌动效，提升健康评分变化时的视觉反馈
 import { promptAction, curves } from '@kit.ArkUI';
 import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -15,8 +16,9 @@ import { DateUtil } from '../utils/DateUtil';
 // 导入图表组件
 import { DonutChart, DonutSegment } from '../components/DonutChart';
 import { NutrientRadarPanel, NutrientScores } from '../components/NutrientRadarPanel';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 // 时间范围选项（$r 在组件内动态设置以避免文件顶层使用 $r()）
 interface PeriodOption {
@@ -459,11 +461,17 @@ struct DashboardPage {
         .width(72)
         .height(72)
         Column() {
+          // V6.1: NumericTextTransition 数字翻牌动效
+          // 健康评分变化时自动触发向上翻牌动画，增强数据变化的视觉反馈
+          // 约束：仅支持正整数，healthScore 始终为整数（0-100），完全兼容
           Text(this.healthScore.toFixed(0))
             .fontSize(FONT_SIZE.XL)
             .fontWeight(FONT_WEIGHT.BOLD)
             .fontColor(this.healthScoreColor)
             .lineHeight(20)
+            .contentTransition(new NumericTextTransition({
+              flipDirection: FlipDirection.UP
+            }))
           Text(this.healthScoreLabel)
             .fontSize(8)
             .fontColor(this.healthScoreColor)
@@ -505,6 +513,9 @@ struct DashboardPage {
             .fontSize(FONT_SIZE.LG)
             .fontWeight(FONT_WEIGHT.BOLD)
             .fontColor(COLORS.PRIMARY)
+            .contentTransition(new NumericTextTransition({
+              flipDirection: FlipDirection.UP
+            }))
           Text($r('app.string.day_unit'))
             .fontSize(8)
             .fontColor(COLORS.TEXT_GRAY_9E9E)
@@ -522,6 +533,9 @@ struct DashboardPage {
             .fontSize(FONT_SIZE.LG)
             .fontWeight(FONT_WEIGHT.BOLD)
             .fontColor(COLORS.ACCENT_PURPLE_9C27)
+            .contentTransition(new NumericTextTransition({
+              flipDirection: FlipDirection.UP
+            }))
           Text($r('app.string.record_unit'))
             .fontSize(8)
             .fontColor(COLORS.TEXT_GRAY_9E9E)

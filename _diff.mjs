@@ -1,0 +1,10 @@
+import { readFileSync, writeFileSync } from 'fs';
+const base = JSON.parse(readFileSync('entry/src/main/resources/base/element/string.json', 'utf-8'));
+const zh = JSON.parse(readFileSync('entry/src/main/resources/zh_CN/element/string.json', 'utf-8'));
+const bk = {}, zk = {};
+base.string.forEach(i => bk[i.name] = i.value);
+zh.string.forEach(i => zk[i.name] = i.value);
+const missing = [];
+Object.keys(bk).forEach(k => { if (!zk[k]) missing.push({ name: k, value: bk[k] }); });
+writeFileSync('_missing.json', JSON.stringify({ string: missing }, null, 2), 'utf-8');
+console.log('Done, wrote _missing.json with', missing.length, 'entries');

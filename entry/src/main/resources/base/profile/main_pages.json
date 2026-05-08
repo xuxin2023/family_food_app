@@ -24,6 +24,8 @@
     "pages/DashboardPage",
     "pages/DeviceDashboardPage",
     "pages/CloudSyncSettingsPage",
-    "pages/AiChatPage"
+    "pages/AiChatPage",
+    "pages/V2DemoPage",
+    "pages/MainTabsPage"
   ]
 }

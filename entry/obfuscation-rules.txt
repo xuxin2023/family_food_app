@@ -1,0 +1,40 @@
+# 代码混淆配置文件 — 供 HarmonyOS build-profile.json5 的 obfuscation 属性引用
+# 规则文档：https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/source-obfuscation
+
+# ========== 保留规则 ==========
+
+# 保留 @Entry 装饰的页面组件类（否则无法找到入口）
+-keep class,method,enum **.pages.** {
+  <fields>;
+  <methods>;
+}
+
+# 保留模型类（序列化/反序列化用）
+-keep class,method,enum **.model.** {
+  <fields>;
+  <methods>;
+}
+
+# 保留仓库类（数据库操作）
+-keep class,method,enum **.repository.** {
+  <fields>;
+  <methods>;
+}
+
+# 保留 RdbStore 相关的数据类
+-keep class **.rdb.** { *; }
+
+# 保留 JSON 解析相关的数据字段
+-keepclassmembers class ** {
+  @com.google.gson.annotations.SerializedName <fields>;
+}
+
+# ========== 启用压缩 ==========
+# 移除未使用的代码（减小包体积）
+-enable-obfuscation
+
+# 严格模式（移除不可达分支）
+-enable-strict-mode
+
+# 启用字段混淆
+-enable-field-obfuscation

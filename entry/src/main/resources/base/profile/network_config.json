@@ -1,0 +1,20 @@
+{
+  "cleartextTraffic": false,
+  "securityConfig": {
+    "domainSettings": [
+      {
+        "cleartextPermitted": true,
+        "domains": [
+          {
+            "subDomains": true,
+            "name": "*.openfoodfacts.org"
+          },
+          {
+            "subDomains": true,
+            "name": "*.openbeautyfacts.org"
+          }
+        ]
+      }
+    ]
+  }
+}

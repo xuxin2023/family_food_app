@@ -1,0 +1,47 @@
+{
+  // 鸿蒙代码静态检查规则配置 — 家庭食品适配助手
+  // 参考文档：https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/ide-code-linter-config
+  "enable": true,
+  "profile": "default",
+  "rules": [
+    {
+      "name": "hp-arkui-reduce-view-nest-level",
+      "level": "warn"
+    },
+    {
+      "name": "hp-arkui-use-object-link-to-replace-prop",
+      "level": "warn"
+    },
+    {
+      "name": "hp-arkui-avoid-hardcoded-color",
+      "level": "warn"
+    },
+    {
+      "name": "hp-arkui-use-resource-instead-of-string",
+      "level": "warn"
+    },
+    {
+      "name": "hp-arkui-prefer-column-row-over-flex",
+      "level": "info"
+    },
+    {
+      "name": "hp-arkui-recommend-setting-focusable",
+      "level": "info"
+    },
+    {
+      "name": "hp-arkui-use-for-each",
+      "level": "warn"
+    },
+    {
+      "name": "hp-arkui-exported-function-must-be-async",
+      "level": "error"
+    }
+  ],
+  "exclude": [
+    "**/node_modules/**",
+    "**/oh_modules/**",
+    "**/build/**",
+    "**/.preview/**",
+    "**/*.ts"
+  ]
+}

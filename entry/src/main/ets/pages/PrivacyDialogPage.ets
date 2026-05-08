@@ -10,9 +10,10 @@ import { common } from '@kit.AbilityKit';
 import { COLORS } from '../constants/AppTheme';
 import { AppState } from '../AppState';
 import { PermissionManager } from '../service/PermissionManager';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'PrivacyDialogPage';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 @Entry
 @Component
@@ -75,7 +76,8 @@ struct PrivacyDialogPage {
 
   private navigateToHome(): void {
     try {
-      router.replaceUrl({ url: 'pages/HomePage' })
+      // V6: 跳转到悬浮页签主页 MainTabsPage
+      router.replaceUrl({ url: 'pages/MainTabsPage' })
     } catch (_e) {
       hilog.error(DOMAIN_ZERO, TAG, 'navigateToHome failed')
     }

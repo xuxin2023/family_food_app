@@ -143,8 +143,9 @@ export class DataService {
   private async lookupFromRemoteApi(barcode: string): Promise<FoodLabel | null> {
     if (!barcode) return null;
 
+    const httpRequest = http.createHttp();
     try {
-      const httpResponse = await http.createHttp().request(
+      const httpResponse = await httpRequest.request(
         `https://world.openfoodfacts.org/api/v2/product/${barcode}.json`,
         {
           method: http.RequestMethod.GET,
@@ -167,6 +168,8 @@ export class DataService {
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Remote API lookup failed: %{public}s', JSON.stringify(error));
       return null;
+    } finally {
+      httpRequest.destroy();
     }
   }
 

@@ -16,14 +16,14 @@ const TAG = 'PrivacyDialogPage';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 @Entry
-@Component
+@ComponentV2
 struct PrivacyDialogPage {
-  @State currentTab: number = 0 // 0=隐私政策, 1=用户协议
-  @State agreed: boolean = false
-  @State showPrivacyContent: boolean = false
-  @State showAgreementContent: boolean = false
-  @State privacyHtml: string = ''
-  @State agreementHtml: string = ''
+  @Local currentTab: number = 0 // 0=隐私政策, 1=用户协议
+  @Local agreed: boolean = false
+  @Local showPrivacyContent: boolean = false
+  @Local showAgreementContent: boolean = false
+  @Local privacyHtml: string = ''
+  @Local agreementHtml: string = ''
 
   async aboutToAppear() {
     // 等待 AppState 初始化完成（避免竞态条件）
@@ -42,7 +42,7 @@ struct PrivacyDialogPage {
    */
   private async checkPrivacyAgreed(): Promise<boolean> {
     try {
-      const context = AppStorage.get<Object>('appContext') as Context
+      const context = AppStorage.get<common.Context>('appContext')
       if (!context) {
         return false
       }
@@ -60,7 +60,7 @@ struct PrivacyDialogPage {
    */
   private async onAgreeAndContinue(): Promise<void> {
     try {
-      const context = AppStorage.get<Object>('appContext') as Context
+      const context = AppStorage.get<common.Context>('appContext')
       if (context) {
         const pref = await preferences.getPreferences(context, 'privacy_settings')
         await pref.put('privacy_agreed', true)
@@ -209,7 +209,7 @@ struct PrivacyDialogPage {
             .layoutWeight(1)
             .onAppear(() => {
               if (this.privacyHtml.length === 0) {
-                const ctx = AppStorage.get<Object>('appContext') as Context
+                const ctx = AppStorage.get<common.Context>('appContext')
                 if (ctx) {
                   getPrivacyPolicyHtml(ctx).then(html => {
                     this.privacyHtml = html
@@ -248,7 +248,7 @@ struct PrivacyDialogPage {
             .layoutWeight(1)
             .onAppear(() => {
               if (this.agreementHtml.length === 0) {
-                const ctx = AppStorage.get<Object>('appContext') as Context
+                const ctx = AppStorage.get<common.Context>('appContext')
                 if (ctx) {
                   getUserAgreementHtml(ctx).then(html => {
                     this.agreementHtml = html

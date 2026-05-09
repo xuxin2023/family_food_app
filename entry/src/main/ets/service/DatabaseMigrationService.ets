@@ -10,9 +10,10 @@ import { common } from '@kit.AbilityKit';
 import { preferences } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { DB_SCHEMA_VERSION } from '../constants/AppConfig';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'DBMigration';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 const PREFS_NAME = 'db_migration_prefs';
 const VERSION_KEY = 'schema_version';
 

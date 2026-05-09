@@ -9,9 +9,10 @@ import {
   COL_CALORIE_BUDGET, COL_FAT_BUDGET, COL_MEAL_TIMES, COL_BEDTIME,
   COL_CREATED_AT, COL_UPDATED_AT
 } from '../constants/DbSchema';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'FamilyRepository';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 const DB_NAME = 'food_helper.db';
 
 export class FamilyRepository {
@@ -103,7 +104,7 @@ export class FamilyRepository {
         profile.nickname = resultSet.getString(resultSet.getColumnIndex(COL_NICKNAME));
         profile.ageGroup = resultSet.getString(resultSet.getColumnIndex(COL_AGE_GROUP)) as string as AgeGroup;
         try {
-          profile.healthGoals = JSON.parse(resultSet.getString(resultSet.getColumnIndex(COL_HEALTH_GOALS))) as Object as HealthGoal[];
+          profile.healthGoals = JSON.parse(resultSet.getString(resultSet.getColumnIndex(COL_HEALTH_GOALS))) as HealthGoal[];
         } catch (e) {
           profile.healthGoals = [];
         }

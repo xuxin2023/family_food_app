@@ -6,9 +6,10 @@
 import { http } from '@kit.NetworkKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { HILOG_DOMAIN } from '../../constants/AppConfig';
 
 const TAG = 'CloudStorageProvider';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 /**
  * 认证结果

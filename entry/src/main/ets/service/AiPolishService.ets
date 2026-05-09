@@ -10,9 +10,10 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AiServiceBase } from './ai/AiServiceBase';
 import { AI_SERVICE_DEFAULTS, SYSTEM_PROMPTS } from './ai/AiConfig';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'AiPolishService';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 // 润色输入（已脱敏）
 export interface PolishInput {

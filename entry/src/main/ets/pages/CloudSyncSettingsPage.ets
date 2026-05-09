@@ -10,6 +10,7 @@ import { SyncService, SyncEvent } from '../service/sync/SyncService';
 import { NetworkState } from '../service/NetworkMonitorService';
 import { CloudSyncConfig, SyncStrategy, ConflictResolution, createDefaultSyncConfig } from '../model/CloudSyncConfig';
 import { COLORS } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 interface StrategyItem { label: string; value: SyncStrategy; }
 interface ConflictItem { label: string; value: ConflictResolution; }
@@ -20,7 +21,7 @@ enum SyncPageTab {
 }
 
 @Entry
-@Component
+@ComponentV2
 struct CloudSyncSettingsPage {
   private readonly strategyItems: StrategyItem[] = [
     { label: '仅WiFi下同步', value: SyncStrategy.WIFI_ONLY },
@@ -31,19 +32,19 @@ struct CloudSyncSettingsPage {
     { label: '以云端数据为准', value: ConflictResolution.REMOTE_WINS },
     { label: '手动处理冲突', value: ConflictResolution.MANUAL }
   ]
-  @State private currentTab: SyncPageTab = SyncPageTab.SETTINGS;
-  @State private syncConfig: CloudSyncConfig = createDefaultSyncConfig();
-  @State private isBound: boolean = false;
-  @State private accountName: string = '';
-  @State private deviceId: string = '';
-  @State private isConnected: boolean = false;
-  @State private isWifi: boolean = false;
-  @State private pendingCount: number = 0;
-  @State private isSyncing: boolean = false;
-  @State private lastSyncTime: string = '从未同步';
-  @State private syncLog: string[] = [];
-  @State private showStrategyPicker: boolean = false;
-  @State private showConflictPicker: boolean = false;
+  @Local private currentTab: SyncPageTab = SyncPageTab.SETTINGS;
+  @Local private syncConfig: CloudSyncConfig = createDefaultSyncConfig();
+  @Local private isBound: boolean = false;
+  @Local private accountName: string = '';
+  @Local private deviceId: string = '';
+  @Local private isConnected: boolean = false;
+  @Local private isWifi: boolean = false;
+  @Local private pendingCount: number = 0;
+  @Local private isSyncing: boolean = false;
+  @Local private lastSyncTime: string = '从未同步';
+  @Local private syncLog: string[] = [];
+  @Local private showStrategyPicker: boolean = false;
+  @Local private showConflictPicker: boolean = false;
 
   private appState: AppState = AppState.getInstance();
   private syncService: SyncService = this.appState.services.syncService;

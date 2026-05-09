@@ -4,25 +4,26 @@
 
 import { router } from '@kit.ArkUI';
 import { COLORS, BUTTON } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-@Component
+@ComponentV2
 export struct FeatureButton {
   /** 按钮图标（emoji） */
-  private icon: ResourceStr = ''
+  @Param icon: ResourceStr = ''
   /** 按钮文本 */
-  private text: ResourceStr = ''
+  @Param text: ResourceStr = ''
   /** 按钮背景色 */
-  private btnBg: string = COLORS.PRIMARY
+  @Param btnBg: string = COLORS.PRIMARY
   /** 文本颜色 */
-  private textColor: string = COLORS.WHITE
+  @Param textColor: string = COLORS.WHITE
   /** 按钮高度 */
-  private btnHeight: number = BUTTON.HEIGHT_LG
+  @Param btnHeight: number = BUTTON.HEIGHT_LG
   /** 按钮圆角 */
-  private btnRadius: number = BUTTON.RADIUS_LG
+  @Param btnRadius: number = BUTTON.RADIUS_LG
   /** 跳转目标页面URL（无参数跳转；需参数时使用 onCustomClick） */
-  private targetUrl: string = ''
+  @Param targetUrl: string = ''
   /** 自定义点击回调（优先级高于 targetUrl） */
-  onCustomClick: () => void = () => {}
+  @Event onCustomClick?: () => void
 
   build() {
     Button() {
@@ -40,12 +41,14 @@ export struct FeatureButton {
     .backgroundColor(this.btnBg)
     .borderRadius(this.btnRadius)
     .margin({ bottom: 12 })
+    .accessibilityText(this.text)
+    .accessibilityLevel('yes')
     .onClick(() => {
       try {
         if (this.targetUrl.length > 0) {
           router.pushUrl({ url: this.targetUrl });
         } else {
-          this.onCustomClick();
+          this.onCustomClick?.();
         }
       } catch (_e) {
         // ignore router error
@@ -57,18 +60,20 @@ export struct FeatureButton {
 /**
  * 跳转链接文本组件 - 底部导航区
  */
-@Component
+@ComponentV2
 export struct NavLinkText {
-  private text: ResourceStr = ''
-  private color: string = COLORS.TEXT_GRAY_7575
-  private fontWeight: number = 400
-  private targetUrl: string = ''
+  @Param text: ResourceStr = ''
+  @Param color: string = COLORS.TEXT_GRAY_7575
+  @Param fontWeight: number = 400
+  @Param targetUrl: string = ''
 
   build() {
     Text(this.text)
       .fontSize(13)
       .fontColor(this.color)
       .fontWeight(this.fontWeight as FontWeight)
+      .accessibilityText(this.text)
+      .accessibilityLevel('yes')
       .onClick(() => {
         try {
           router.pushUrl({ url: this.targetUrl });

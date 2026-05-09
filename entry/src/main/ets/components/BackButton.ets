@@ -2,11 +2,12 @@
 // 统一返回按钮组件 - 所有页面使用此组件替代手动 Text('<') / Text('‹')
 import { safeBack } from '../utils/RouterUtil';
 import { COLORS, FONT_SIZE } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-@Component
+@ComponentV2
 export struct BackButton {
-  private fontColor: string = COLORS.TEXT_PRIMARY
-  private fontSize: number = FONT_SIZE.TITLE_LG
+  @Param fontColor: string = COLORS.TEXT_PRIMARY
+  @Param fontSize: number = FONT_SIZE.TITLE_LG
 
   build() {
     Text('‹')
@@ -14,6 +15,8 @@ export struct BackButton {
       .fontColor(this.fontColor)
       .fontWeight(500)
       .padding({ left: 2, right: 6, top: 4, bottom: 4 })
+      .accessibilityText('返回上一页')
+      .accessibilityLevel('yes')
       .onClick(() => {
         safeBack()
       })

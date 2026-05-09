@@ -2,6 +2,7 @@
 // AI视觉识别兜底服务 - 当常规识别失败时，调用AI模型进行视觉分类
 
 import { FoodLabel, NutritionPer100g, FoodSource } from '../model/FoodLabel';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'AiVisionService';
 

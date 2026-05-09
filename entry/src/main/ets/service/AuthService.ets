@@ -1,9 +1,10 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
 import { preferences } from '@kit.ArkData';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'AuthService';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 export interface AuthUser {
   uid: string;

@@ -15,9 +15,10 @@ import { FoodRepository } from '../repository/FoodRepository';
 import { RuleEngine, RuleEngineParams } from '../engine/RuleEngine';
 import { StringRes } from '../constants/StringRes';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'DataService';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 /**
  * 完整报告结果
@@ -155,8 +156,8 @@ export class DataService {
 
       if (httpResponse.responseCode === 200 && httpResponse.result) {
         const data = JSON.parse(httpResponse.result as string) as Record<string, Object>;
-        const product = data['product'] as Record<string, Object> | undefined;
-        const status = data['status'] as number;
+        const product = data.product as Record<string, Object> | undefined;
+        const status = data.status as number;
 
         if (status === 1 && product) {
           return this.parseOpenFoodFactsResponse(product, barcode);
@@ -170,42 +171,55 @@ export class DataService {
   }
 
   /**
+   * 安全获取 Record 中的值（通过 Object.entries 遍历，兼容含连字符的 key）
+   */
+  private static getRecordValue(rec: Record<string, Object>, key: string): Object | undefined {
+    const entries = Object.entries(rec);
+    for (const entry of entries) {
+      if (entry[0] === key) {
+        return entry[1];
+      }
+    }
+    return undefined;
+  }
+
+  /**
    * 解析 Open Food Facts API 响应
    */
   private parseOpenFoodFactsResponse(product: Record<string, Object>, barcode: string): FoodLabel | null {
     try {
       const label = new FoodLabel();
       label.foodId = `remote_${barcode}_${Date.now()}`;
-      label.foodName = (product['product_name'] as string) || (product['product_name_zh'] as string) || '未知食品';
+      label.foodName = (product.product_name as string) || (product.product_name_zh as string) || '未知食品';
       label.barcode = barcode;
       label.source = FoodSource.BARCODE_SCAN;
       label.identifiedAt = Date.now();
 
       // 配料表
-      const ingredientsText = product['ingredients_text'] as string || product['ingredients_text_zh'] as string || '';
+      const ingredientsText = product.ingredients_text as string || product.ingredients_text_zh as string || '';
       if (ingredientsText) {
         label.ingredients = ingredientsText.split(',').map(i => i.trim()).filter(i => i.length > 0);
       }
 
       // 营养数据
-      const nutriments = product['nutriments'] as Record<string, Object> | undefined;
+      const nutriments = product.nutriments as Record<string, Object> | undefined;
       if (nutriments) {
         const nutrition = new NutritionPer100g();
-        nutrition.sodium = DataService.safeParseFloat(nutriments['sodium_100g']);
-        nutrition.sugar = DataService.safeParseFloat(nutriments['sugars_100g']);
-        nutrition.calories = DataService.safeParseFloat(nutriments['energy-kcal_100g']);
-        nutrition.fat = DataService.safeParseFloat(nutriments['fat_100g']);
-        nutrition.saturatedFat = DataService.safeParseFloat(nutriments['saturated-fat_100g']);
-        nutrition.protein = DataService.safeParseFloat(nutriments['proteins_100g']);
-        nutrition.carbohydrate = DataService.safeParseFloat(nutriments['carbohydrates_100g']);
+        nutrition.sodium = DataService.safeParseFloat(nutriments.sodium_100g);
+        nutrition.sugar = DataService.safeParseFloat(nutriments.sugars_100g);
+        nutrition.calories = DataService.safeParseFloat(DataService.getRecordValue(nutriments, 'energy-kcal_100g'));
+        nutrition.fat = DataService.safeParseFloat(nutriments.fat_100g);
+        nutrition.saturatedFat = DataService.safeParseFloat(DataService.getRecordValue(nutriments, 'saturated-fat_100g'));
+        nutrition.protein = DataService.safeParseFloat(nutriments.proteins_100g);
+        nutrition.carbohydrate = DataService.safeParseFloat(nutriments.carbohydrates_100g);
         label.nutrition = nutrition;
       }
 
       // 生产商
-      label.manufacturer = (product['brands'] as string) || '';
+      label.manufacturer = (product.brands as string) || '';
       label.allergenHints = [];
 
-      const allergens = product['allergens_tags'] as string[] | undefined;
+      const allergens = product.allergens_tags as string[] | undefined;
       if (allergens) {
         label.allergenHints = allergens.map(a => a.replace('en:', '').replace('zh:', ''));
       }

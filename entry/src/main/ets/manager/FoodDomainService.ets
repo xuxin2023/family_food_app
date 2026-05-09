@@ -6,6 +6,7 @@ import { FoodRepository } from '../repository/FoodRepository';
 import { CacheManager } from '../utils/CacheManager';
 import { ScanHistoryRecord } from '../repository/HistoryRepository';
 import { RepositoryManager } from '../manager/RepositoryManager';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 export class FoodDomainService {
   private repos: RepositoryManager;

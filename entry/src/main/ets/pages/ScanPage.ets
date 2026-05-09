@@ -37,8 +37,9 @@ import { SCAN_CONFIG } from '../constants/AppConfig';
 import { EnhancedFoodRecommendation } from '../model/FoodAdapterTypes';
 import { TodayIntakeInput } from '../engine/FoodAdapterEngine';
 import { BackButton } from '../components/BackButton';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 const TAG = 'ScanPage';
 
 // ==================== 加载阶段枚举 ====================
@@ -66,7 +67,7 @@ enum ScanPhase {
   ERROR = 'error'
 }
 
-// 编辑面板数据模型 - 减少单页 @State 变量数
+// 编辑面板数据模型 - 减少单页 @Local 变量数
 class EditPanelData {
   foodName: string = ''
   sodium: string = '0'
@@ -83,39 +84,39 @@ class EditPanelData {
 }
 
 @Entry
-@Component
+@ComponentV2
 struct ScanPage {
   // ---- 核心扫描状态 ----
-  @State scanMode: string = 'camera'
-  @State scanPhase: ScanPhase = ScanPhase.IDLE
-  @State foodLabel: FoodLabel = new FoodLabel()
-  @State showEditPanel: boolean = false
-  @State scanLimitReached: boolean = false
-  @State remainingScans: number = 3
-  @State recognizedText: string = ''
-  @State recognitionHint: ResourceStr = ''
-  @State ocrConfidence: number = 1
-  @State isOffline: boolean = false
+  @Local scanMode: string = 'camera'
+  @Local scanPhase: ScanPhase = ScanPhase.IDLE
+  @Local foodLabel: FoodLabel = new FoodLabel()
+  @Local showEditPanel: boolean = false
+  @Local scanLimitReached: boolean = false
+  @Local remainingScans: number = 3
+  @Local recognizedText: string = ''
+  @Local recognitionHint: ResourceStr = ''
+  @Local ocrConfidence: number = 1
+  @Local isOffline: boolean = false
 
   // ---- 预加载与评分 ----
-  @State frequentItems: FoodLabel[] = []
-  @State recentScans: FoodLabel[] = []
-  @State scoreReady: boolean = false
-  @State nutriScore: number = 50
-  @State detailLoading: boolean = false
+  @Local frequentItems: FoodLabel[] = []
+  @Local recentScans: FoodLabel[] = []
+  @Local scoreReady: boolean = false
+  @Local nutriScore: number = 50
+  @Local detailLoading: boolean = false
 
   // ---- 付费墙 ----
-  @State showPaywallDialog: boolean = false
-  @State paywallTrigger: PaywallTrigger | null = null
+  @Local showPaywallDialog: boolean = false
+  @Local paywallTrigger: PaywallTrigger | null = null
 
-  // ---- 编辑面板字段（合并为 EditPanelData 对象，减少 @State 数量） ----
-  @State editPanel: EditPanelData = new EditPanelData()
+  // ---- 编辑面板字段（合并为 EditPanelData 对象，减少 @Local 数量） ----
+  @Local editPanel: EditPanelData = new EditPanelData()
 
   // ---- 体验升级：错误恢复与防崩溃 ----
-  @State retryCount: number = 0
-  @State lastError: string = ''
-  @State showErrorBanner: boolean = false
-  @State isLoadingRetry: boolean = false
+  @Local retryCount: number = 0
+  @Local lastError: string = ''
+  @Local showErrorBanner: boolean = false
+  @Local isLoadingRetry: boolean = false
 
   private memberId: string = ''
   private appState: AppState = AppState.getInstance()
@@ -442,6 +443,8 @@ struct ScanPage {
                 .fontColor(COLORS.PRIMARY)
                 .borderRadius(BUTTON.RADIUS_MD)
                 .margin({ top: 10 })
+                .accessibilityText('手动输入食品信息')
+                .accessibilityLevel('yes')
                 .onClick(() => { this.startManualEntry() })
                 .animation({ duration: 200, curve: curves.springMotion() })
             } else {
@@ -450,6 +453,8 @@ struct ScanPage {
                 .height(52)
                 .backgroundColor(COLORS.ACCENT_GREEN)
                 .borderRadius(BUTTON.RADIUS_PRIMARY)
+                .accessibilityText('查看食品适配报告')
+                .accessibilityLevel('yes')
                 .onClick(() => { this.viewReport() })
                 .animation({ duration: 300, curve: curves.springMotion() })
 
@@ -460,6 +465,8 @@ struct ScanPage {
                   .backgroundColor(COLORS.BG_CARD)
                   .fontColor(COLORS.PRIMARY)
                   .borderRadius(BUTTON.RADIUS_SECONDARY)
+                  .accessibilityText('展开或收起编辑面板')
+                  .accessibilityLevel('yes')
                   .onClick(() => {
                     this.showEditPanel = !this.showEditPanel
                     if (this.showEditPanel) {
@@ -475,6 +482,8 @@ struct ScanPage {
                   .fontColor(COLORS.ORANGE_DEEP)
                   .borderRadius(BUTTON.RADIUS_SECONDARY)
                   .margin({ left: 10 })
+                  .accessibilityText('保存食品标签信息')
+                  .accessibilityLevel('yes')
                   .onClick(() => { this.saveDraft() })
                   .animation({ duration: 200, curve: curves.springMotion() })
               }
@@ -496,7 +505,8 @@ struct ScanPage {
       if (this.paywallTrigger !== null) {
         PaywallDialog({
           trigger: this.paywallTrigger,
-          showDialog: $showPaywallDialog
+          showDialog: this.showPaywallDialog,
+      onUpdateShowDialog: (val: boolean) => { this.showPaywallDialog = val }
         })
       }
     }

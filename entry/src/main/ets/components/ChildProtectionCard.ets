@@ -2,10 +2,11 @@
 
 import { ChildProtection } from '../model/ChildProtection';
 import { COLORS, FONT_SIZE, SPACING, RADIUS } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-@Component
+@ComponentV2
 export struct ChildProtectionCard {
-  @Prop protection: ChildProtection = new ChildProtection();
+  @Param protection: ChildProtection = new ChildProtection();
 
   build() {
     Column() {

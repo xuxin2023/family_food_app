@@ -3,6 +3,7 @@ import { Recommendation, RecommendLevel } from '../model/Recommendation';
 import { CopyTextProvider } from './share/CopyTextProvider';
 import { ShareActionResult, ShareProvider } from './share/ShareProvider';
 import { StringRes } from '../constants/StringRes';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 export class ShareService {
   private provider: ShareProvider;

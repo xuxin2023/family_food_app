@@ -1,6 +1,15 @@
 {
   "apiType": "stageMode",
-  "buildOption": {},
+  "buildOption": {
+  },
+  "buildOptionSet": [
+    {
+      "name": "release"
+    },
+    {
+      "name": "debug"
+    }
+  ],
   "targets": [
     {
       "name": "default",

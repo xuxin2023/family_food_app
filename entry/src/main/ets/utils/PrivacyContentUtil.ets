@@ -4,6 +4,7 @@
 
 import { common } from '@kit.AbilityKit';
 import { util } from '@kit.ArkTS';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'PrivacyContentUtil';
 

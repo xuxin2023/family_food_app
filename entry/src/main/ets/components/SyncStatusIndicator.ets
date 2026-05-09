@@ -4,14 +4,15 @@
 import { SyncService, SyncEvent } from '../service/sync/SyncService';
 import { NetworkState } from '../service/NetworkMonitorService';
 import { AppState } from '../AppState';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-@Component
+@ComponentV2
 export struct SyncStatusIndicator {
-  @State private isSyncing: boolean = false;
-  @State private pendingCount: number = 0;
-  @State private isConnected: boolean = false;
-  @State private isCloudBound: boolean = false;
-  @State private syncEnabled: boolean = false;
+  @Local private isSyncing: boolean = false;
+  @Local private pendingCount: number = 0;
+  @Local private isConnected: boolean = false;
+  @Local private isCloudBound: boolean = false;
+  @Local private syncEnabled: boolean = false;
 
   private syncService: SyncService = AppState.getInstance().services.syncService;
 

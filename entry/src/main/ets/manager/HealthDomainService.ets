@@ -6,6 +6,7 @@ import { DateUtil } from '../utils/DateUtil';
 import { CacheManager } from '../utils/CacheManager';
 import { ServiceManager } from '../ServiceManager';
 import { common } from '@kit.AbilityKit';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 export class HealthDomainService {
   private services: ServiceManager;

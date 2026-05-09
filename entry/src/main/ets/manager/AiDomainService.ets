@@ -10,6 +10,7 @@ import { HistoryRepository } from '../repository/HistoryRepository';
 import { DateUtil } from '../utils/DateUtil';
 import { CacheManager } from '../utils/CacheManager';
 import { ServiceManager } from '../ServiceManager';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 export class AiDomainService {
   private svc: ServiceManager;

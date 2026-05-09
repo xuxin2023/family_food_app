@@ -6,13 +6,14 @@ import { COLORS } from '../constants/AppTheme';
 import { pasteboard } from '@kit.BasicServicesKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'CredibilityCard';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
-@Component
+@ComponentV2
 export struct CredibilityCard {
-  @Prop result: CredibilityResult = new CredibilityResult();
+  @Param result: CredibilityResult = new CredibilityResult();
 
   // 雷达图5个维度名称
   private radarLabels: string[] = ['身份清晰', '许可信息', '追溯入口', '公开查询', '表达边界'];

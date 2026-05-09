@@ -9,9 +9,10 @@ import { CloudStorageProvider, SyncBatchRequest, SyncBatchItem, SyncBatchRespons
 import { NetworkMonitorService, NetworkState, NetType, NetworkStateChangeCallback } from '../NetworkMonitorService';
 import { CloudSyncConfig, SyncStrategy, ConflictResolution, createDefaultSyncConfig } from '../../model/CloudSyncConfig';
 import { API_CONFIG } from '../../constants/AppConfig';
+import { HILOG_DOMAIN } from '../../constants/AppConfig';
 
 const TAG = 'SyncService';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 /** Preferences key */
 const PREF_SYNC_CONFIG = 'cloud_sync_config';

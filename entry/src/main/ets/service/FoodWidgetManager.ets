@@ -1,9 +1,10 @@
 import { formBindingData } from '@kit.FormKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferences, relationalStore } from '@kit.ArkData';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'FoodWidgetManager';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 // 小卡片数据类
 class SmallWidgetData {

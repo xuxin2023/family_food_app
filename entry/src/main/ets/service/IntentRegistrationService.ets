@@ -1,8 +1,9 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'IntentRegistrationService';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 export interface IntentDefinition {
   name: string;

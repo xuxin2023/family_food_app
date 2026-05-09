@@ -10,9 +10,10 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FoodLabel, NutritionPer100g, FoodSource } from '../model/FoodLabel';
 import { OcrService } from './OcrService';
 import { API_TIMEOUT_CONFIG } from '../constants/AppConfig';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'OnlineShoppingParser';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 // ==================== 常量配置 ====================
 

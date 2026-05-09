@@ -12,6 +12,7 @@ import {
 } from '../model/AiChat';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, BUTTON } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 interface ActionMenuButton {
   text: string;
@@ -28,24 +29,26 @@ class ActionMenuButtonItem implements ActionMenuButton {
 }
 
 const TAG = 'AiChatPage';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 @Entry
-@Component
+@ComponentV2
 struct AiChatPage {
-  @State messages: ChatMessage[] = [];
-  @State inputText: string = '';
-  @State isLoading: boolean = false;
-  @State showQuickQuestions: boolean = true;
-  @State familyMembers: FamilyProfile[] = [];
-  @State selectedMemberId: string = '';
-  @State selectedMemberName: string = '全部成员';
+  @Local messages: ChatMessage[] = [];
+  @Local inputText: string = '';
+  @Local isLoading: boolean = false;
+  @Local showQuickQuestions: boolean = true;
+  @Local familyMembers: FamilyProfile[] = [];
+  @Local selectedMemberId: string = '';
+  @Local selectedMemberName: string = '全部成员';
 
   private appState: AppState = AppState.getInstance();
   private aiChatService: AiChatService = new AiChatService();
   private scrollController: Scroller = new Scroller();
+  private componentActive: boolean = true;
 
   async aboutToAppear() {
+    this.componentActive = true;
     try {
       this.familyMembers = await this.appState.getAllMembers();
       // 默认选中第一个成员
@@ -70,6 +73,10 @@ struct AiChatPage {
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'aboutToAppear failed: %{public}s', JSON.stringify(error));
     }
+  }
+
+  aboutToDisappear(): void {
+    this.componentActive = false
   }
 
   build() {

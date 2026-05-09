@@ -15,16 +15,17 @@
 //   }
 
 import { COLORS, SPACING, RADIUS, FONT_SIZE, FONT_WEIGHT, BUTTON } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 /** 错误回退组件 */
-@Component
+@ComponentV2
 export struct ErrorFallback {
   /** 错误提示信息 */
-  private message: ResourceStr = '加载失败，请检查网络后重试'
+  @Param message: ResourceStr = '加载失败，请检查网络后重试'
   /** 错误图示（Emoji） */
-  private icon: string = '😵'
+  @Param icon: string = '😵'
   /** 重试回调 */
-  private onRetry?: () => void
+  @Event onRetry?: () => void
 
   build() {
     Column() {
@@ -67,13 +68,13 @@ export struct ErrorFallback {
 }
 
 /** 空数据提示组件（替代 EmptyState 的轻量版） */
-@Component
+@ComponentV2
 export struct ErrorEmptyState {
-  private icon: string = '📭'
-  private title: ResourceStr = ''
-  private subtitle: ResourceStr = ''
-  private actionText?: ResourceStr
-  private onAction?: () => void
+  @Param icon: string = '📭'
+  @Param title: ResourceStr = ''
+  @Param subtitle: ResourceStr = ''
+  @Param actionText: ResourceStr = ''
+  @Event onAction?: () => void
 
   build() {
     Column() {

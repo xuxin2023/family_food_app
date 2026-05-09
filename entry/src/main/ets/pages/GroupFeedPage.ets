@@ -8,16 +8,17 @@ import { GroupFeed, FeedType, FoodScanFeedContent } from '../model/FamilyGroup';
 import { COLORS, RADIUS, SPACING, BUTTON, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
 import { BasicDataSource } from '../utils/BasicDataSource';
 import { PAGE_SIZE_CONFIG } from '../constants/AppConfig';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const PAGE_SIZE = PAGE_SIZE_CONFIG.GROUP_FEED_PAGE_SIZE;
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 @Entry
-@Component
+@ComponentV2
 struct GroupFeedPage {
-  @State groupId: string = ''
-  @State groupName: string = ''
-  @State isLoading: boolean = true
+  @Local groupId: string = ''
+  @Local groupName: string = ''
+  @Local isLoading: boolean = true
 
   private appState: AppState = AppState.getInstance()
   private feeds: GroupFeed[] = []

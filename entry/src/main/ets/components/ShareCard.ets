@@ -11,9 +11,10 @@ import { Recommendation, getLevelColorValue } from '../model/Recommendation';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { FoodRecommendation, RecommendationLevel } from '../model/FoodAdapterTypes';
 import { COLORS } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'ShareCardGenerator';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 // ===== 分享图片参数类型 =====
 
@@ -396,11 +397,11 @@ export class ShareCardGenerator {
 
 // ===== 组件（原有，兼容旧调用） =====
 
-@Component
+@ComponentV2
 export struct ShareCard {
-  @Prop foodName: string = '';
-  @Prop recommendations: Recommendation[] = [];
-  @Prop members: FamilyProfile[] = [];
+  @Param foodName: string = '';
+  @Param recommendations: Recommendation[] = [];
+  @Param members: FamilyProfile[] = [];
 
   build() {
     Column() {

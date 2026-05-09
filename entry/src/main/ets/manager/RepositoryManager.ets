@@ -1,8 +1,9 @@
 // RepositoryManager.ets
-// 仓库管理�?- 统一管理所有数据仓库的初始化、生命周期和访问
-// �?AppState 提取，减少上帝类负担
+// 仓库管理器 - 统一管理所有数据仓库的初始化、生命周期和访问
+// 从 AppState 提取，减少上帝类负担
 //
-// 鸿蒙6.1 ArkTS 约束�?// - 不使�?undefined 类型，统一使用 null
+// 鸿蒙6.1 ArkTS 约束：
+// - 不使用 undefined 类型，统一使用 null
 
 import { FamilyRepository } from '../repository/FamilyRepository';
 import { FoodRepository } from '../repository/FoodRepository';
@@ -29,7 +30,10 @@ export class RepositoryManager {
   readonly recipe: RecipeRepository = new RecipeRepository();
 
   /**
-   * 初始化所有仓�?   * @param rdbStore 数据库实�?   * @param context  应用上下�?   */
+   * 初始化所有仓库
+   * @param rdbStore 数据库实例
+   * @param context  应用上下文
+   */
   async initAll(rdbStore: relationalStore.RdbStore, context: common.Context): Promise<void> {
     await this.family.init(rdbStore);
     await this.food.init(rdbStore);

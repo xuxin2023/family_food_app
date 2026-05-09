@@ -19,22 +19,23 @@ import {
   getCategoryEmoji,
   getDietTagLabel
 } from '../utils/RecipeUtil';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 const PAGE_SIZE = PAGE_SIZE_CONFIG.RECIPE_COMMUNITY_PAGE_SIZE;
 
 @Entry
-@Component
+@ComponentV2
 struct RecipeCommunityPage {
-  @State isLoading: boolean = true
-  @State selectedCategory: string = ''
-  @State sortBy: string = 'latest'
-  @State aiRecommendations: AiRecipeRecommendation[] = []
-  @State isLoadingAi: boolean = false
-  @State showAiRecommend: boolean = false
-  @State aiSummary: string = ''
-  @State errorMessage: string = ''
+  @Local isLoading: boolean = true
+  @Local selectedCategory: string = ''
+  @Local sortBy: string = 'latest'
+  @Local aiRecommendations: AiRecipeRecommendation[] = []
+  @Local isLoadingAi: boolean = false
+  @Local showAiRecommend: boolean = false
+  @Local aiSummary: string = ''
+  @Local errorMessage: string = ''
 
   private appState: AppState = AppState.getInstance()
   private recipes: Recipe[] = []
@@ -397,7 +398,7 @@ struct RecipeCommunityPage {
     .borderRadius(RADIUS.LG)
     .margin({ bottom: 14 })
     .onClick(() => {
-      const navParams: Record<string, Object> = new Object() as Record<string, Object>
+      const navParams: Record<string, Object> = {} as Record<string, Object>
       navParams['recipeId'] = recipe.recipeId
       safePushUrl('pages/RecipeDetailPage', navParams)
     })

@@ -1,5 +1,6 @@
 // MemberStatus.ets
 // 会员状态底层数据结构 - 定义会员等级枚举、状态接口、付费墙触发信息、商品信息、购买结果
+// V2 状态管理: @ObservedV2 + @Trace
 
 /**
  * 会员等级枚举
@@ -14,24 +15,24 @@ export enum MemberTier {
 
 /**
  * 会员当前状态
- * 使用 @Observed 装饰以确保 UI 响应式刷新
+ * 使用 @ObservedV2 + @Trace 确保 UI 响应式刷新
  */
-@Observed
+@ObservedV2
 export class MemberStatus {
   /** 当前会员等级 */
-  tier: MemberTier = MemberTier.FREE;
+  @Trace tier: MemberTier = MemberTier.FREE;
   /** 今日剩余扫码次数（-1表示无限） */
-  scansRemainingToday: number = 3;
+  @Trace scansRemainingToday: number = 3;
   /** 剩余可添加家庭成员数（-1表示无限） */
-  familyMembersRemaining: number = 1;
+  @Trace familyMembersRemaining: number = 1;
   /** 会员到期时间戳（null表示永久有效或免费版） */
-  expiryDate: number | null = null;
+  @Trace expiryDate: number | null = null;
   /** 试用期是否激活 */
-  isTrialActive: boolean = false;
+  @Trace isTrialActive: boolean = false;
   /** 试用剩余天数 */
-  trialRemainingDays: number = 0;
+  @Trace trialRemainingDays: number = 0;
   /** 本周剩余周报生成次数（-1表示无限） */
-  weeklyReportsRemaining: number = 0;
+  @Trace weeklyReportsRemaining: number = 0;
 }
 
 /**

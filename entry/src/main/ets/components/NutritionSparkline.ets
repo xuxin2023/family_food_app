@@ -3,12 +3,13 @@
 
 import { SPACING, FONT_SIZE, RADIUS, COLORS } from '../constants/AppTheme';
 import { TrendDirection, NutrientTrendData, DailyNutrientPoint } from '../engine/NutritionTrendEngine';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-@Component
+@ComponentV2
 export struct NutritionSparkline {
-  @Prop data: NutrientTrendData | null = null
-  @Prop chartWidth: number = 160
-  @Prop chartHeight: number = 48
+  @Param data: NutrientTrendData | null = null
+  @Param chartWidth: number = 160
+  @Param chartHeight: number = 48
 
   build() {
     if (this.data === null) {

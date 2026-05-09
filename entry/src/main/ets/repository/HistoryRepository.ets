@@ -10,9 +10,10 @@ import {
   COL_SODIUM_INTAKE, COL_SUGAR_INTAKE, COL_CALORIE_INTAKE,
   COL_FAT_INTAKE, COL_RECORDED_AT
 } from '../constants/DbSchema';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'HistoryRepository';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 export class ScanHistoryRecord {
   id: number = 0;

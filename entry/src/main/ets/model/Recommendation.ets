@@ -1,4 +1,5 @@
 // 适配结论数据模型
+// V2 状态管理: @ObservedV2 + @Trace
 
 // 四级建议等级
 export enum RecommendLevel {
@@ -46,19 +47,19 @@ export class RecommendationJson {
   generatedAt: number = 0;
 }
 
-@Observed
 // 适配结论
+@ObservedV2
 export class Recommendation {
-  memberId: string = '';
-  foodId: string = '';
-  level: RecommendLevel = RecommendLevel.SUITABLE;
-  levelColor: LevelColor = LevelColor.GREEN;
-  maxAmount: number = 0;         // 建议最大食用量 g
-  maxServings: number = 0;       // 建议最大份数
-  reasons: string[] = [];        // 原因列表
-  reminders: string[] = [];      // 提醒列表
-  disclaimer: string = '';
-  generatedAt: number = 0;
+  @Trace memberId: string = '';
+  @Trace foodId: string = '';
+  @Trace level: RecommendLevel = RecommendLevel.SUITABLE;
+  @Trace levelColor: LevelColor = LevelColor.GREEN;
+  @Trace maxAmount: number = 0;         // 建议最大食用量 g
+  @Trace maxServings: number = 0;       // 建议最大份数
+  @Trace reasons: string[] = [];        // 原因列表
+  @Trace reminders: string[] = [];      // 提醒列表
+  @Trace disclaimer: string = '';
+  @Trace generatedAt: number = 0;
 
   // 是否为建议避免
   isAvoid(): boolean {
@@ -87,16 +88,16 @@ export class Recommendation {
 
   static fromJson(json: Record<string, Object>): Recommendation {
     const rec = new Recommendation();
-    rec.memberId = json.memberId as string;
-    rec.foodId = json.foodId as string;
-    rec.level = json.level as RecommendLevel;
-    rec.levelColor = json.levelColor as LevelColor;
-    rec.maxAmount = json.maxAmount as number;
-    rec.maxServings = json.maxServings as number;
-    rec.reasons = json.reasons as string[];
-    rec.reminders = json.reminders as string[];
-    rec.disclaimer = json.disclaimer as string;
-    rec.generatedAt = json.generatedAt as number;
+    rec.memberId = (json.memberId as string) ?? '';
+    rec.foodId = (json.foodId as string) ?? '';
+    rec.level = (json.level as RecommendLevel) ?? RecommendLevel.SMALL_OK;
+    rec.levelColor = (json.levelColor as LevelColor) ?? LevelColor.YELLOW;
+    rec.maxAmount = (json.maxAmount as number) ?? 0;
+    rec.maxServings = (json.maxServings as number) ?? 0;
+    rec.reasons = (json.reasons as string[]) ?? [];
+    rec.reminders = (json.reminders as string[]) ?? [];
+    rec.disclaimer = (json.disclaimer as string) ?? '';
+    rec.generatedAt = (json.generatedAt as number) ?? 0;
     return rec;
   }
 }

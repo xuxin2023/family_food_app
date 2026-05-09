@@ -8,9 +8,10 @@ import { TIME_INTERVAL_CONFIG, API_TIMEOUT_CONFIG } from '../constants/AppConfig
 import { preferences } from '@kit.ArkData';
 import { MemberTier } from '../model/MemberStatus';
 import { AuthService } from './AuthService';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'SubscriptionVerifyService';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 const VERIFY_ENDPOINT = 'https://familyfood-api.cn-north-4.myhuaweicloud.com/subscription/verify';
 

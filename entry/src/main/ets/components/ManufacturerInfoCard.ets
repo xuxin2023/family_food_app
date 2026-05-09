@@ -3,10 +3,11 @@
 
 import { FoodLabel } from '../model/FoodLabel';
 import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-@Component
+@ComponentV2
 export struct ManufacturerInfoCard {
-  @Prop label: FoodLabel = new FoodLabel()
+  @Param label: FoodLabel = new FoodLabel()
 
   build() {
     Column() {

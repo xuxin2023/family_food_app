@@ -9,19 +9,20 @@ import { AppState } from '../AppState';
 import { ShareActionResult } from '../service/share/ShareProvider';
 import { GroupSummary } from '../model/FamilyGroup';
 import { BUTTON, COLORS } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 @Entry
-@Component
+@ComponentV2
 struct SharePage {
-  @State foodName: string = ''
-  @State recommendations: Recommendation[] = []
-  @State familyMembers: FamilyProfile[] = []
-  @State shareText: string = ''
-  @State copyHint: string = ''
-  @State isWorking: boolean = false
-  @State myGroups: GroupSummary[] = []
-  @State showGroupPicker: boolean = false
-  @State showRecipePublish: boolean = false
+  @Local foodName: string = ''
+  @Local recommendations: Recommendation[] = []
+  @Local familyMembers: FamilyProfile[] = []
+  @Local shareText: string = ''
+  @Local copyHint: string = ''
+  @Local isWorking: boolean = false
+  @Local myGroups: GroupSummary[] = []
+  @Local showGroupPicker: boolean = false
+  @Local showRecipePublish: boolean = false
 
   private appState: AppState = AppState.getInstance()
   private shareService: ShareService = new ShareService()
@@ -213,7 +214,7 @@ struct SharePage {
               .fontSize(13)
               .fontColor(COLORS.PRIMARY)
               .onClick(() => {
-                const publishParams: Record<string, Object> = new Object() as Record<string, Object>
+                const publishParams: Record<string, Object> = {} as Record<string, Object>
                 publishParams['relatedFoodId'] = this.foodName
                 safePushUrl('pages/RecipeCreatePage', publishParams)
               })

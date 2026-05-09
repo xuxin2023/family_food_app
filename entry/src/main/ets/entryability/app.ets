@@ -5,9 +5,10 @@
  */
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'App';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 export default class App {
   /**

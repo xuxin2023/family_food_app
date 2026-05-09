@@ -2,10 +2,11 @@
 
 import { MealBalance, RiskTag } from '../model/MealBalance';
 import { COLORS } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-@Component
+@ComponentV2
 export struct BalanceAdviceCard {
-  @Prop balance: MealBalance = new MealBalance();
+  @Param balance: MealBalance = new MealBalance();
 
   build() {
     Column() {

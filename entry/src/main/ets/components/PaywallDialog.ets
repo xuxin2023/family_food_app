@@ -2,23 +2,24 @@
 // 通用付费墙弹窗组件 - 半透明遮罩 + 白色圆角卡片
 // 可配合 MemberManager.checkCanAccess() 使用
 //
-// 用法示例：
+// V2 用法示例：
 //   PaywallDialog({
 //     trigger: { title: '升级提示', message: '...', featureName: 'scan',
 //                requiredTier: MemberTier.PERSONAL, cta: '立即升级', isSoftLimit: true },
-//     showDialog: $showPaywallDialog
+//     showDialog: this.showPaywallDialog,
+//     onUpdateShowDialog: (val: boolean) => { this.showPaywallDialog = val }
 //   })
 //
-// 注意：父组件中需要声明 @State showPaywallDialog: boolean = false
-//       调用时传参使用 $showPaywallDialog（单$符，非V2的$$）
+// 注意：父组件中需要声明 @Local showPaywallDialog: boolean = false
 
 import { router } from '@kit.ArkUI';
 import { PaywallTrigger, MemberTier, getTierDisplayName } from '../model/MemberStatus';
 import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-@Component
+@ComponentV2
 export struct PaywallDialog {
-  @Prop trigger: PaywallTrigger = {
+  @Param trigger: PaywallTrigger = {
     title: '',
     message: '',
     featureName: '',
@@ -26,10 +27,16 @@ export struct PaywallDialog {
     cta: '升级会员',
     isSoftLimit: true
   };
-  @Link showDialog: boolean;
+  @Param showDialog: boolean = false;
+  /** V2 替代 @Link: 父组件通过此回调响应 showDialog 的变化 */
+  @Event onUpdateShowDialog?: (val: boolean) => void;
 
   /** 额外提示文字（可选），如 "当前可添加X个成员，升级后可添加Y个" */
-  @Prop extraHint: string = '';
+  @Param extraHint: string = '';
+
+  private closeDialog(): void {
+    this.onUpdateShowDialog?.(false);
+  }
 
   build() {
     if (!this.showDialog) {
@@ -43,7 +50,7 @@ export struct PaywallDialog {
           .backgroundColor('#80000000')
           .onClick(() => {
             if (this.trigger.isSoftLimit) {
-              this.showDialog = false;
+              this.closeDialog();
             }
           })
 
@@ -111,7 +118,7 @@ export struct PaywallDialog {
               .fontSize(FONT_SIZE.LG)
               .fontWeight(FONT_WEIGHT.MEDIUM)
               .onClick(() => {
-                this.showDialog = false;
+                this.closeDialog();
                 // 跳转到订阅页面
                 try {
 
@@ -133,7 +140,7 @@ export struct PaywallDialog {
                 .fontSize(FONT_SIZE.BODY)
                 .margin({ top: 8 })
                 .onClick(() => {
-                  this.showDialog = false;
+                  this.closeDialog();
                 })
             }
           }

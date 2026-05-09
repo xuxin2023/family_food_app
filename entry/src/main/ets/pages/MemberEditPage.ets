@@ -9,23 +9,24 @@ import { DateUtil } from '../utils/DateUtil';
 import { PaywallTrigger, MemberTier, getTierDisplayName } from '../model/MemberStatus';
 import { PaywallDialog } from '../components/PaywallDialog';
 import { BUTTON, COLORS } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 // AgeGroup 枚举值数组
 const AGE_GROUP_VALUES: AgeGroup[] = [AgeGroup.CHILD, AgeGroup.TEEN, AgeGroup.ADULT, AgeGroup.MIDDLE_OLD, AgeGroup.OLD];
 
 @Entry
-@Component
+@ComponentV2
 struct MemberEditPage {
-  @State nickname: string = ''
-  @State selectedAgeGroup: number = 2  // 默认成人
-  @State selectedGoals: boolean[] = [false, false, false, false, false, false]
-  @State allergenInput: string = ''
-  @State stepLevelIndex: number = 1  // 默认正常
-  @State sleepStatusIndex: number = 0  // 默认好
-  @State bpStatusIndex: number = 0  // 默认正常
-  @State bsStatusIndex: number = 0  // 默认正常
-  @State showPaywallDialog: boolean = false
-  @State paywallTrigger: PaywallTrigger | null = null
+  @Local nickname: string = ''
+  @Local selectedAgeGroup: number = 2  // 默认成人
+  @Local selectedGoals: boolean[] = [false, false, false, false, false, false]
+  @Local allergenInput: string = ''
+  @Local stepLevelIndex: number = 1  // 默认正常
+  @Local sleepStatusIndex: number = 0  // 默认好
+  @Local bpStatusIndex: number = 0  // 默认正常
+  @Local bsStatusIndex: number = 0  // 默认正常
+  @Local showPaywallDialog: boolean = false
+  @Local paywallTrigger: PaywallTrigger | null = null
 
   private appState: AppState = AppState.getInstance()
   private editingMemberId: string = ''  // 空表示新建
@@ -37,7 +38,7 @@ struct MemberEditPage {
   private bpStatuses: string[] = ['正常', '偏高', '高']
   private bsStatuses: string[] = ['正常', '偏高', '高']
   private commonAllergens: string[] = ['坚果', '乳制品', '麸质', '鸡蛋', '海鲜', '大豆', '芝麻', '花生']
-  @State selectedAllergens: boolean[] = [false, false, false, false, false, false, false, false]
+  @Local selectedAllergens: boolean[] = [false, false, false, false, false, false, false, false]
 
   // 将 AgeGroup 转换为索引
   private ageGroupToIndex(ageGroup: AgeGroup): number {
@@ -253,7 +254,8 @@ struct MemberEditPage {
       if (this.paywallTrigger !== null) {
         PaywallDialog({
           trigger: this.paywallTrigger,
-          showDialog: $showPaywallDialog
+          showDialog: this.showPaywallDialog,
+      onUpdateShowDialog: (val: boolean) => { this.showPaywallDialog = val }
         })
       }
     }

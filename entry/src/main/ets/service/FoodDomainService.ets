@@ -4,6 +4,7 @@
 
 import { FoodLabel } from '../model/FoodLabel';
 import { FoodRepository } from '../repository/FoodRepository';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'FoodDomainService';
 

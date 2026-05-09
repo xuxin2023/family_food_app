@@ -7,6 +7,7 @@
 
 import { FamilyProfile, AgeGroup, HealthGoal, createDefaultMembers } from '../model/FamilyProfile';
 import { FamilyRepository } from '../repository/FamilyRepository';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'FamilyDomainService';
 

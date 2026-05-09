@@ -13,6 +13,7 @@ import { ChildProtectionCard } from '../components/ChildProtectionCard';
 import { PaywallTrigger, MemberTier } from '../model/MemberStatus';
 import { PaywallDialog } from '../components/PaywallDialog';
 import { COLORS } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 // 美食场景选项
 class ScenarioOption {
@@ -22,19 +23,19 @@ class ScenarioOption {
 }
 
 @Entry
-@Component
+@ComponentV2
 struct BalancePage {
-  @State familyMembers: FamilyProfile[] = []
-  @State selectedMemberId: string = ''
-  @State currentBudget: DailyBudget = new DailyBudget()
-  @State balanceResult: MealBalance | null = null
-  @State childProtection: ChildProtection | null = null
-  @State positiveAdvice: PositiveAdvice | null = null
-  @State selectedScenario: MealScenario | null = null
-  @State showPaywallDialog: boolean = false
-  @State paywallTrigger: PaywallTrigger | null = null
-  @State dailyUseCount: number = 0
-  @State isLocked: boolean = false
+  @Local familyMembers: FamilyProfile[] = []
+  @Local selectedMemberId: string = ''
+  @Local currentBudget: DailyBudget = new DailyBudget()
+  @Local balanceResult: MealBalance | null = null
+  @Local childProtection: ChildProtection | null = null
+  @Local positiveAdvice: PositiveAdvice | null = null
+  @Local selectedScenario: MealScenario | null = null
+  @Local showPaywallDialog: boolean = false
+  @Local paywallTrigger: PaywallTrigger | null = null
+  @Local dailyUseCount: number = 0
+  @Local isLocked: boolean = false
 
   private appState: AppState = AppState.getInstance()
   private readonly DAILY_FREE_LIMIT: number = 3
@@ -187,7 +188,8 @@ struct BalancePage {
       if (this.paywallTrigger !== null) {
         PaywallDialog({
           trigger: this.paywallTrigger,
-          showDialog: $showPaywallDialog
+          showDialog: this.showPaywallDialog,
+      onUpdateShowDialog: (val: boolean) => { this.showPaywallDialog = val }
         })
       }
     }

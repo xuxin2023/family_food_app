@@ -21,9 +21,10 @@ import { AI_CACHE_CONFIG } from '../constants/AppConfig';
 import { AssetKeyManager, KeyAlias } from '../utils/AssetKeyManager';
 import { AiServiceBase } from './ai/AiServiceBase';
 import { AI_SERVICE_DEFAULTS } from './ai/AiConfig';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'AiNutritionistService';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 const CACHE_TTL_MS = AI_CACHE_CONFIG.NUTRITIONIST_CACHE_TTL_MS; // 缓存10分钟
 
 export class AiNutritionistService extends AiServiceBase {

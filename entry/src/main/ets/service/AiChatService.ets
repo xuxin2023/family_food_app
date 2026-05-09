@@ -6,9 +6,10 @@ import { AiServiceBase } from './ai/AiServiceBase';
 import { AI_SERVICE_DEFAULTS, SYSTEM_PROMPTS } from './ai/AiConfig';
 import { ChatRole, ChatMessage, generateMessageId } from '../model/AiChat';
 import { AppState } from '../AppState';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'AiChatService';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 /** 对话历史保留的最大轮数（防止 Token 超限） */
 const MAX_HISTORY_ROUNDS = 10;

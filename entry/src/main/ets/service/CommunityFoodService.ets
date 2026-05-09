@@ -4,9 +4,10 @@ import { common } from '@kit.AbilityKit';
 import { FoodLabel, FoodSource, NutritionPer100g } from '../model/FoodLabel';
 import { AuthService } from './AuthService';
 import { API_TIMEOUT_CONFIG } from '../constants/AppConfig';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'CommunityFoodService';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 const CLOUD_FUNCTION_BASE = 'https://familyfood-api.cn-north-4.myhuaweicloud.com';
 

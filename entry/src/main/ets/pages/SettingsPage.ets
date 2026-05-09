@@ -12,31 +12,35 @@ import {
   DataSource
 } from '../model/HealthSignal';
 import { DateUtil } from '../utils/DateUtil';
-import { relationalStore, preferences } from '@kit.ArkData';
+import { preferences, relationalStore } from '@kit.ArkData';
+import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { COLORS } from '../constants/AppTheme';
+import { COLORS, ThemeColors, ThemeMode } from '../constants/AppTheme';
 import { getPrivacyPolicyHtml, getUserAgreementHtml } from '../utils/PrivacyContentUtil';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 @Entry
-@Component
+@ComponentV2
 struct SettingsPage {
-  @State familyMembers: FamilyProfile[] = []
-  @State selectedMemberId: string = ''
-  @State stepLevel: StepLevel = StepLevel.NORMAL
-  @State sleepStatus: SleepStatus = SleepStatus.GOOD
-  @State hadHighSodiumToday: boolean = false
-  @State hadHighSugarToday: boolean = false
-  @State showPrivacyDetail: boolean = false
-  @State showAgreementDetail: boolean = false
-  @State privacyHtml: string = ''
-  @State agreementHtml: string = ''
+  @Local familyMembers: FamilyProfile[] = []
+  @Local selectedMemberId: string = ''
+  @Local stepLevel: StepLevel = StepLevel.NORMAL
+  @Local sleepStatus: SleepStatus = SleepStatus.GOOD
+  @Local hadHighSodiumToday: boolean = false
+  @Local hadHighSugarToday: boolean = false
+  @Local showPrivacyDetail: boolean = false
+  @Local showAgreementDetail: boolean = false
+  @Local privacyHtml: string = ''
+  @Local agreementHtml: string = ''
+  @Local currentThemeMode: ThemeMode = 'light'
 
   private appState: AppState = AppState.getInstance()
   private restartTimer: number = -1  // 重启定时器ID，用于防止内存泄漏
 
   async aboutToAppear() {
+    this.currentThemeMode = AppStorage.get<ThemeMode>('currentThemeMode') ?? 'light'
     this.familyMembers = await this.appState.getAllMembers()
     if (this.familyMembers.length > 0) {
       this.selectedMemberId = this.familyMembers[0].memberId
@@ -122,6 +126,22 @@ struct SettingsPage {
             }
           })
 
+          // 暗黑模式开关
+          Row() {
+            Text('🌙 ' + (this.currentThemeMode === 'dark' ? '暗黑模式' : '亮色模式'))
+              .fontSize(15)
+              .fontColor(COLORS.TEXT_PRIMARY)
+              .layoutWeight(1)
+            Toggle({ type: ToggleType.Switch, isOn: this.currentThemeMode === 'dark' })
+              .onChange((checked: boolean) => {
+                const newMode: ThemeMode = checked ? 'dark' : 'light';
+                ThemeColors.setTheme(newMode);
+              })
+          }
+          .width('100%')
+          .padding({ top: 12, bottom: 12 })
+          .border({ width: { bottom: 0.5 }, color: COLORS.DIVIDER })
+
           // 隐私政策详细内容
           if (this.showPrivacyDetail) {
             Column() {
@@ -148,7 +168,7 @@ struct SettingsPage {
             .margin({ top: 8 })
             .onAppear(() => {
               if (this.privacyHtml.length === 0) {
-                const ctx = AppStorage.get<Object>('appContext') as Context
+                const ctx = AppStorage.get<common.Context>('appContext')
                 if (ctx) {
                   getPrivacyPolicyHtml(ctx).then(html => {
                     this.privacyHtml = html
@@ -184,7 +204,7 @@ struct SettingsPage {
             .margin({ top: 8 })
             .onAppear(() => {
               if (this.agreementHtml.length === 0) {
-                const ctx = AppStorage.get<Object>('appContext') as Context
+                const ctx = AppStorage.get<common.Context>('appContext')
                 if (ctx) {
                   getUserAgreementHtml(ctx).then(html => {
                     this.agreementHtml = html
@@ -348,11 +368,11 @@ struct SettingsPage {
       Column() {
         Text(title)
           .fontSize(15)
-          .fontColor(COLORS.TEXT_GRAY_2121)
+          .fontColor(COLORS.TEXT_PRIMARY)
           .lineHeight(22)
         Text(subtitle)
           .fontSize(12)
-          .fontColor(COLORS.TEXT_GRAY_9E9E)
+          .fontColor(COLORS.TEXT_TERTIARY)
           .lineHeight(18)
           .margin({ top: 2 })
       }
@@ -361,12 +381,14 @@ struct SettingsPage {
 
       Text('›')
         .fontSize(20)
-        .fontColor('#BDBDBD')
+        .fontColor(COLORS.TEXT_GRAY_BDBD)
         .margin({ left: 8 })
     }
     .width('100%')
     .padding({ top: 12, bottom: 12 })
     .borderRadius(8)
+    .accessibilityText(`${title}，${subtitle}`)
+    .accessibilityLevel('yes')
     .onClick(onClick)
   }
 
@@ -399,7 +421,7 @@ struct SettingsPage {
    */
   private async executeClearData(): Promise<void> {
     try {
-      const context = AppStorage.get<Object>('appContext') as Context
+      const context = AppStorage.get<common.Context>('appContext')
       if (!context) {
         promptAction.showToast({ message: '清除数据失败：无法获取上下文' })
         return

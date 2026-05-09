@@ -1,31 +1,11 @@
 {
   "app": {
     // ========================================================
-    // 发布签名配置说明（请按以下步骤操作）
-    // ========================================================
-    // 1. 生成发布证书 (family_food_release.p12):
-    //    DevEco Studio → Build → Generate Key
-    //    → Key Alias: family_food_key → 有效期: 25年 → 记录密码
-    //
-    // 2. 导出 .cer 并在 AGC 创建证书:
-    //    a. 从 .p12 导出 .cer（可在 DevEco Studio 中操作）
-    //    b. 登录 AppGallery Connect → 用户与访问 → 证书管理
-    //    c. 上传 .cer 创建新证书
-    //
-    // 3. 创建发布 Profile (.p7b):
-    //    AGC → 添加 Profile → HarmonyOS App 发布
-    //    → 选择证书 → 选择设备(phone,tablet) → 下载 .p7b
-    //
-    // 4. 在 DevEco Studio 中配置发布签名:
-    //    File → Project Structure → Signing Configs
-    //    → 取消"Automatically generate signature"
-    //    → 手动填入 .p12/.p7b 路径和密码
-    //
-    // 5. 发布构建: Build → Build HAP(s) → Release
-    //    产出: entry/build/default/outputs/default/entry-default-signed.hap
-    //
-    // 6. 提包（安装 AGC CLI 后）:
-    //    agc app:upload --file <hap> --app-id com.familyfood.helper
+    // ⚠️ 安全提示：以下为自动生成的调试签名凭证（仅用于本地开发）
+    // 生产环境请:
+    //   1. 使用环境变量或外部密钥管理服务存储密码
+    //   2. 将 .p12/.p7b 文件排除出版本控制 (.gitignore)
+    //   3. 发布时在 DevEco Studio → Build → Generate Key 生成正式签名
     // ========================================================
     "signingConfigs": [
       {

@@ -9,6 +9,7 @@ import { FamilyProfile, AgeGroup } from '../model/FamilyProfile';
 import { HealthSignal } from '../model/HealthSignal';
 import { DailyBudget } from '../model/DailyBudget';
 import { FoodLabel } from '../model/FoodLabel';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 import { FoodAdapterEngine, FamilyMemberSimpleInput, FoodNutritionInput,
   HealthSignalInput, TodayIntakeInput } from '../engine/FoodAdapterEngine';
 

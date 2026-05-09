@@ -4,9 +4,10 @@
 
 import { common, abilityAccessCtrl, Permissions, bundleManager } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'PermissionManager';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 /**
  * 权限状态枚举

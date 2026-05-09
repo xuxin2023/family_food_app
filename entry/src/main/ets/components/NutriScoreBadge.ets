@@ -3,6 +3,7 @@
 
 import { curves } from '@kit.ArkUI';
 import { COLORS, FONT_SIZE, FONT_WEIGHT, RADIUS, SPACING } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 /**
  * 根据分数获取背景渐变色 (从绿色#66BB6A到红色#F44336)
@@ -43,21 +44,21 @@ function getGradeTextColor(score: number): string {
   return COLORS.WHITE;
 }
 
-@Component
+@ComponentV2
 export struct NutriScoreBadge {
-  @Prop score: number = 50;        // 评分 0-100
-  @Prop diameter: number = 120;    // 徽章直径
-  @Prop animating: boolean = true; // 是否播放入场动效
+  @Param score: number = 50;        // 评分 0-100
+  @Param diameter: number = 120;    // 徽章直径
+  @Param animating: boolean = true; // 是否播放入场动效
   private hoverTimer: number = -1
 
   // 嵌入的 LevelBadge 信息
-  @Prop levelText: string = '';     // 适配等级文本（如"适合"）
-  @Prop levelBgColor: string = '';  // 适配等级背景色
+  @Param levelText: string = '';     // 适配等级文本（如"适合"）
+  @Param levelBgColor: string = '';  // 适配等级背景色
 
-  @State badgeScale: number = 0.3;
-  @State badgeOpacity: number = 0;
-  @State isHovered: boolean = false;
-  @State overlayScale: number = 0;
+  @Local badgeScale: number = 0.3;
+  @Local badgeOpacity: number = 0;
+  @Local isHovered: boolean = false;
+  @Local overlayScale: number = 0;
 
   aboutToAppear(): void {
     if (this.animating) {

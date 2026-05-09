@@ -255,15 +255,17 @@ export default class EntryAbility extends UIAbility {
     }
   }
 
+  /** 安全解析订阅等级字符串，兼容大小写不匹配 */
   private parseTier(value: string): MemberTier {
-    switch (value) {
-      case MemberTier.PERSONAL:
-        return MemberTier.PERSONAL;
-      case MemberTier.FAMILY:
-        return MemberTier.FAMILY;
-      case MemberTier.PREMIUM:
-        return MemberTier.PREMIUM;
+    const normalized = (value ?? '').toLowerCase();
+    switch (normalized) {
+      case MemberTier.PERSONAL: return MemberTier.PERSONAL;
+      case MemberTier.FAMILY:   return MemberTier.FAMILY;
+      case MemberTier.PREMIUM:  return MemberTier.PREMIUM;
+      // 兼容可能的旧值变体
+      case 'free': return MemberTier.FREE;
       default:
+        hilog.warn(DOMAIN_ZERO, TAG, 'Unknown tier stored in prefs: %{public}s, defaulting to FREE', value);
         return MemberTier.FREE;
     }
   }

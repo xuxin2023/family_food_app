@@ -11,9 +11,10 @@ import {
 import { AuthService } from './AuthService';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { GROUP_CONFIG } from '../constants/AppConfig';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'FamilyGroupService';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 /** 邀请码字符集 */
 const INVITE_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';

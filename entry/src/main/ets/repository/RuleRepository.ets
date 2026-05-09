@@ -4,9 +4,10 @@ import { common } from '@kit.AbilityKit';
 import { resourceManager } from '@kit.LocalizationKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { util } from '@kit.ArkTS';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'RuleRepository';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 // 目标调整因子
 export class GoalAdjustment {
@@ -78,7 +79,7 @@ export class RuleRepository {
   async loadNutritionBudgets(): Promise<NutritionBudgetRule[]> {
     const data = await this.loadJsonFile('nutrition_budgets.json');
     if (data) {
-      const budgetsObj = data['budgets'] as Object as NutritionBudgetRule[];
+      const budgetsObj = data.budgets as NutritionBudgetRule[];
       if (budgetsObj) {
         return budgetsObj;
       }
@@ -100,7 +101,7 @@ export class RuleRepository {
   async loadMealBalanceTemplates(): Promise<MealBalanceTemplate[]> {
     const data = await this.loadJsonFile('meal_balance_templates.json');
     if (data) {
-      const templatesObj = data['templates'] as Object as MealBalanceTemplate[];
+      const templatesObj = data.templates as MealBalanceTemplate[];
       if (templatesObj) {
         return templatesObj;
       }
@@ -122,8 +123,8 @@ export class RuleRepository {
   async loadAllergenKeywords(): Promise<AllergenKeywordMap> {
     const data = await this.loadJsonFile('allergen_keywords.json');
     if (data) {
-      const a2k = data['allergenToKeywords'] as Object as Record<string, string[]>;
-      const ca = data['commonAllergens'] as Object as string[];
+      const a2k = data.allergenToKeywords as Record<string, string[]>;
+      const ca = data.commonAllergens as string[];
       return {
         allergenToKeywords: a2k ?? {},
         commonAllergens: ca ?? []

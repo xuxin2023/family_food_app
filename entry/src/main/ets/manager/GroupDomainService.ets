@@ -1,5 +1,5 @@
 // GroupDomainService.ets
-// 群组领域服务 - �?AppState 剥离的群组相关业务逻辑
+// 群组领域服务 - 从 AppState 剥离的群组相关业务逻辑
 
 import { GroupSummary, GroupFeed, FeedType } from '../model/FamilyGroup';
 import { FamilyGroupService } from '../service/FamilyGroupService';

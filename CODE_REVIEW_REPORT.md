@@ -9,11 +9,11 @@
 ## 一、项目结构概览
 
 ### 文件统计
-| 类型 | 数量 | 说明 |
-|------|------|------|
-| ArkTS源文件 (.ets) | 52 | 核心业务代码 |
-| 配置文件 (.json5) | 5 | 项目配置 |
-| 资源文件 (.json) | 12 | 字符串、颜色等 |
+| 类型               | 数量 | 说明           |
+|--------------------|------|----------------|
+| ArkTS源文件 (.ets) | 52   | 核心业务代码   |
+| 配置文件 (.json5)  | 5    | 项目配置       |
+| 资源文件 (.json)   | 12   | 字符串、颜色等 |
 
 ### 目录结构
 ```
@@ -77,34 +77,34 @@ entry/src/main/ets/
 
 ### ✅ 通过的检查项
 
-| 检查项 | 结果 | 说明 |
-|--------|------|------|
-| 编辑器错误 | ✅ 0个 | 所有52个文件无语法错误 |
-| TypeScript any类型 | ✅ 未使用 | 类型安全性良好 |
-| @ts-ignore 注释 | ✅ 未使用 | 无类型忽略 |
-| console.log 调试 | ✅ 未使用 | 正确使用 hilog |
-| 空catch块 | ✅ 无 | 异常处理完整 |
-| 非空断言操作符 | ✅ 已修复 | 所有 `!` 已替换为安全检查 |
+| 检查项               | 结果     | 说明                 |
+|----------------------|----------|----------------------|
+| 编辑器错误           | ✅ 0个   | 所有52个文件无语法错误 |
+| TypeScript any类型   | ✅ 未使用 | 类型安全性良好       |
+| @ts-ignore 注释      | ✅ 未使用 | 无类型忽略           |
+| console.log 调试     | ✅ 未使用 | 正确使用 hilog       |
+| 空catch块            | ✅ 无    | 异常处理完整         |
+| 非空断言操作符       | ✅ 已修复 | 所有 `!` 已替换为安全检查 |
 
 ### ⚠️ 待处理项 (TODO标记)
 
 共发现 **13处** TODO标记，属于功能待实现：
 
-| 文件 | 行号 | 说明 |
-|------|------|------|
-| ReportPage.ets | 44 | 从FoodRepository获取数据 |
-| ReportPage.ets | 317 | TTS语音播报 |
-| SettingsPage.ets | 22 | 从Preferences读取设置 |
-| SettingsPage.ets | 51 | 手动健康状态设置页 |
-| SettingsPage.ets | 86 | 清除数据确认弹窗 |
-| SettingsPage.ets | 221 | 引导取消授权 |
-| SettingsPage.ets | 252 | 保存AI润色设置 |
-| SettingsPage.ets | 354 | 华为IAP订阅 |
-| ScanPage.ets | 267 | 相机拍照获取图片 |
-| CredibilityCard.ets | 199 | 复制到剪贴板 |
-| HistoryPage.ets | 30 | 历史记录加载 |
-| WeeklyReportPage.ets | 22 | 本周饮食数据 |
-| MemberPage.ets | 12 | 本地数据库加载 |
+| 文件                    | 行号 | 说明                 |
+|-------------------------|------|----------------------|
+| ReportPage.ets          | 44   | 从FoodRepository获取数据 |
+| ReportPage.ets          | 317  | TTS语音播报          |
+| SettingsPage.ets        | 22   | 从Preferences读取设置 |
+| SettingsPage.ets        | 51   | 手动健康状态设置页   |
+| SettingsPage.ets        | 86   | 清除数据确认弹窗     |
+| SettingsPage.ets        | 221  | 引导取消授权         |
+| SettingsPage.ets        | 252  | 保存AI润色设置       |
+| SettingsPage.ets        | 354  | 华为IAP订阅          |
+| ScanPage.ets            | 267  | 相机拍照获取图片     |
+| CredibilityCard.ets     | 199  | 复制到剪贴板         |
+| HistoryPage.ets         | 30   | 历史记录加载         |
+| WeeklyReportPage.ets    | 22   | 本周饮食数据         |
+| MemberPage.ets          | 12   | 本地数据库加载       |
 
 ---
 
@@ -139,11 +139,11 @@ entry/src/main/ets/
 
 ## 六、修复文件清单
 
-| 文件 | 修复类型 | 状态 |
-|------|----------|------|
-| oh-package.json5 | 语法修复 | ✅ |
-| ReportPage.ets | 空指针修复 | ✅ |
-| BalancePage.ets | 空指针修复 | ✅ |
+| 文件               | 修复类型   | 状态 |
+|--------------------|------------|------|
+| oh-package.json5   | 语法修复   | ✅   |
+| ReportPage.ets     | 空指针修复 | ✅   |
+| BalancePage.ets    | 空指针修复 | ✅   |
 
 ---
 

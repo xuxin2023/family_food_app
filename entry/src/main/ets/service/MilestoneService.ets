@@ -7,9 +7,10 @@ import { preferences } from '@kit.ArkData';
 import { promptAction } from '@kit.ArkUI';
 import { AnalyticsService } from './AnalyticsService';
 import { EventType } from '../model/AnalyticsRecord';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'MilestoneService';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 export interface Milestone {
   name: string;

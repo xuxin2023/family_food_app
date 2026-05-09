@@ -18,9 +18,10 @@
 
 import { MemberTier, PaywallTrigger, hasTierAccess, getTierDisplayName } from '../model/MemberStatus';
 import { StringRes } from '../constants/StringRes';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'MemberManager';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 // ==================== 功能权限定义 ====================
 

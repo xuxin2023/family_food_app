@@ -12,9 +12,10 @@ import { AiNutritionAdvice } from '../model/AiModels';
 import { AiNutritionistService } from './AiNutritionistService';
 import { DateUtil } from '../utils/DateUtil';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'NutritionDomainService';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 export class NutritionDomainService {
   private historyRepo: HistoryRepository;

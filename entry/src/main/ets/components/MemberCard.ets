@@ -2,12 +2,13 @@
 
 import { FamilyProfile, HealthGoal } from '../model/FamilyProfile';
 import { COLORS } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-@Component
+@ComponentV2
 export struct MemberCard {
-  @Prop member: FamilyProfile = new FamilyProfile();
-  @Prop isSelected: boolean = false;
-  onSelect: (memberId: string) => void = () => {};
+  @Param member: FamilyProfile = new FamilyProfile();
+  @Param isSelected: boolean = false;
+  @Event onSelect?: (memberId: string) => void;
 
   build() {
     Column() {
@@ -51,8 +52,11 @@ export struct MemberCard {
       radius: 16
     })
     .alignItems(HorizontalAlign.Center)
+    .accessibilityText(`选择成员 ${this.member.nickname}`)
+    .accessibilityDescription(`健康目标: ${this.member.healthGoals.join('、')}`)
+    .accessibilityLevel('yes')
     .onClick(() => {
-      this.onSelect(this.member.memberId);
+      this.onSelect?.(this.member.memberId);
     })
   }
 

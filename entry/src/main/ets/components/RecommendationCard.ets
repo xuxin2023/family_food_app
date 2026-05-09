@@ -2,12 +2,13 @@
 
 import { Recommendation, getLevelColorValue } from '../model/Recommendation';
 import { COLORS } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-@Component
+@ComponentV2
 export struct RecommendationCard {
-  @Prop recommendation: Recommendation = new Recommendation();
-  @Prop memberName: string = '';
-  @Prop showDetails: boolean = true;
+  @Param recommendation: Recommendation = new Recommendation();
+  @Param memberName: string = '';
+  @Param showDetails: boolean = true;
 
   build() {
     Column() {

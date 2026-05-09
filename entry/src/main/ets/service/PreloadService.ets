@@ -4,9 +4,10 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
 import { FoodLabel } from '../model/FoodLabel';
 import { FamilyProfile } from '../model/FamilyProfile';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'PreloadService';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 export interface PreloadCache {
   scanHistory: FoodLabel[];

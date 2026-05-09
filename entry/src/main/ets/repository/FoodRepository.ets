@@ -9,9 +9,10 @@ import {
   COL_MANUFACTURER, COL_SC_NUMBER, COL_PRINCIPAL, COL_TRUSTEE,
   COL_TRACE_CODE, COL_SOURCE, COL_IDENTIFIED_AT
 } from '../constants/DbSchema';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'FoodRepository';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 export class FoodRepository {
   private rdbStore: relationalStore.RdbStore | null = null;

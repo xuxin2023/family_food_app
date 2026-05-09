@@ -1,8 +1,9 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { ShareActionResult, ShareProvider, ShareTarget } from './ShareProvider';
+import { HILOG_DOMAIN } from '../../constants/AppConfig';
 
 const TAG = 'CopyTextProvider';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 export class CopyTextProvider implements ShareProvider {
   getCopyHint(): string {

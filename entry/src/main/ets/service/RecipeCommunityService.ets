@@ -8,9 +8,10 @@ import {
   RecipeDifficulty, RecipeCategory, DietTag, RecipeQueryParams
 } from '../model/Recipe';
 import { AuthService } from './AuthService';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'RecipeCommunityService';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 export interface CreateRecipeParams {
   title: string;

@@ -9,17 +9,17 @@ export interface NutrientScores {
   healthyFats: number; // 0-100
 }
 
-@Component
+@ComponentV2
 export struct NutrientRadarPanel {
-  @Prop scores: NutrientScores = {
+  @Param scores: NutrientScores = {
     protein: 70,
     fiber: 50,
     vitamins: 80,
     minerals: 60,
     healthyFats: 65
   }
-  @Prop showLabels: boolean = true
-  @Prop chartSize: number = 200
+  @Param showLabels: boolean = true
+  @Param chartSize: number = 200
 
   private readonly labels: string[] = ['蛋白质', '膳食纤维', '维生素', '矿物质', '健康脂肪']
 

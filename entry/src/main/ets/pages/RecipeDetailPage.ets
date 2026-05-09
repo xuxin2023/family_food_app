@@ -15,19 +15,20 @@ import {
   getDietTagLabel,
   formatTime
 } from '../utils/RecipeUtil';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'RecipeDetailPage';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 @Entry
-@Component
+@ComponentV2
 struct RecipeDetailPage {
-  @State recipe: Recipe | null = null
-  @State hasLiked: boolean = false
-  @State hasBookmarked: boolean = false
-  @State isLoading: boolean = true
-  @State commentText: string = ''
-  @State selectedSection: string = 'detail'
+  @Local recipe: Recipe | null = null
+  @Local hasLiked: boolean = false
+  @Local hasBookmarked: boolean = false
+  @Local isLoading: boolean = true
+  @Local commentText: string = ''
+  @Local selectedSection: string = 'detail'
 
   private appState: AppState = AppState.getInstance()
   private comments: RecipeComment[] = []

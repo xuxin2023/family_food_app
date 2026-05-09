@@ -7,6 +7,7 @@ import { safeBack } from '../utils/RouterUtil';
 import { AppState } from '../AppState';
 import { RecipeCategory, RecipeDifficulty, DietTag, RecipeIngredient, RecipeStep } from '../model/Recipe';
 import { COLORS, RADIUS, BUTTON } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 class OptionItem {
   label: string = '';
@@ -38,19 +39,19 @@ const DIET_TAG_OPTIONS: OptionItem[] = [
 ];
 
 @Entry
-@Component
+@ComponentV2
 struct RecipeCreatePage {
-  @State title: string = ''
-  @State description: string = ''
-  @State category: RecipeCategory = RecipeCategory.SNACK
-  @State difficulty: RecipeDifficulty = RecipeDifficulty.EASY
-  @State totalMinutes: number = 30
-  @State servings: number = 2
-  @State ingredients: RecipeIngredient[] = [{ name: '', amount: '', alternative: '' }]
-  @State steps: RecipeStep[] = [{ stepNumber: 1, description: '', imageUrl: '', durationMinutes: 0 }]
-  @State selectedDietTags: DietTag[] = []
-  @State showCategoryPicker: boolean = false
-  @State showDifficultyPicker: boolean = false
+  @Local title: string = ''
+  @Local description: string = ''
+  @Local category: RecipeCategory = RecipeCategory.SNACK
+  @Local difficulty: RecipeDifficulty = RecipeDifficulty.EASY
+  @Local totalMinutes: number = 30
+  @Local servings: number = 2
+  @Local ingredients: RecipeIngredient[] = [{ name: '', amount: '', alternative: '' }]
+  @Local steps: RecipeStep[] = [{ stepNumber: 1, description: '', imageUrl: '', durationMinutes: 0 }]
+  @Local selectedDietTags: DietTag[] = []
+  @Local showCategoryPicker: boolean = false
+  @Local showDifficultyPicker: boolean = false
 
   private appState: AppState = AppState.getInstance()
   private relatedFoodId: string = ''

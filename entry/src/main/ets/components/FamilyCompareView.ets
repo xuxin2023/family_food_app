@@ -3,11 +3,12 @@
 import { Recommendation, getLevelColorValue } from '../model/Recommendation';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { COLORS } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-@Component
+@ComponentV2
 export struct FamilyCompareView {
-  @Prop recommendations: Recommendation[] = [];
-  @Prop members: FamilyProfile[] = [];
+  @Param recommendations: Recommendation[] = [];
+  @Param members: FamilyProfile[] = [];
 
   build() {
     Column() {

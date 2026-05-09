@@ -1,8 +1,9 @@
 // MainTabsPage.ets
 // HarmonyOS 6.1 悬浮页签 + 沉浸光感 集成主页面
-// V6: 使用 HdsTabs 替代传统单页滚动，提供底部悬浮导航
+// V6.3: 升级 @ComponentV2 状态管理 — @Local + @Monitor 替代 @Local + @Watch
 // barOverlap + barFloatingStyle 实现毛玻璃悬浮栏，内容区延伸至导航栏背后
 // systemMaterialEffect 自适应沉浸光感材质，系统自动根据设备算力调节渲染精度
+// V6.2: 懒加载优化 — 仅在首次访问时构建 Tab 内容，减少初始渲染开销
 //
 // Tab 结构: 首页 | 饮食 | AI | 社区 | 我的
 
@@ -18,29 +19,44 @@ const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 const TAG = 'MainTabsPage';
 
 @Entry
-@Component
+@ComponentV2
 struct MainTabsPage {
   private tabsController: HdsTabsController = new HdsTabsController();
-  @State @Watch('onTabChange') currentIndex: number = 0;
+  @Local currentIndex: number = 0;
+
+  // 懒加载状态：记录各 Tab 是否已被访问过
+  // Tab 0（首页）始终加载
+  @Local tabLoaded: boolean[] = [true, false, false, false, false];
 
   aboutToAppear() {
     hilog.info(DOMAIN_ZERO, TAG, 'MainTabsPage aboutToAppear');
   }
 
   /**
-   * 页签切换回调 — 可在切换时执行懒加载或数据预取
+   * 页签切换回调 — @Monitor 精细监听（V2 替代 @Watch）
+   * 可获取变更前后的值
    */
-  private onTabChange(): void {
-    hilog.info(DOMAIN_ZERO, TAG, 'Tab switched to: %{public}d', this.currentIndex);
+  @Monitor('currentIndex')
+  onTabChange(monitor: IMonitor) {
+    const idx = monitor.value()?.now as number;
+    if (idx === undefined || idx === null) return;
+    if (!this.tabLoaded[idx]) {
+      this.tabLoaded[idx] = true;
+      this.tabLoaded = [...this.tabLoaded]; // 触发数组引用更新
+      hilog.info(DOMAIN_ZERO, TAG, 'Tab %{public}d first loaded (lazy)', idx);
+    } else {
+      hilog.info(DOMAIN_ZERO, TAG, 'Tab switched to: %{public}d', idx);
+    }
   }
 
   build() {
+    Column() {
     HdsTabs({
       controller: this.tabsController,
       index: this.currentIndex
     }) {
       // ================================================================
-      // Tab 0: 首页 — 嵌入当前 HomePage（保留全部原有功能）
+      // Tab 0: 首页 — 始终加载
       // ================================================================
       TabContent() {
         this.HomePageContent()
@@ -53,10 +69,17 @@ struct MainTabsPage {
       }, $r('app.string.tab_home')))
 
       // ================================================================
-      // Tab 1: 饮食 — 膳食日记入口
+      // Tab 1: 饮食 — 懒加载
       // ================================================================
       TabContent() {
-        this.DietContent()
+        Column() {
+          if (this.tabLoaded[1]) {
+            this.DietContent()
+          } else {
+            this.TabPlaceholder('🍽️ 饮食中心', '首次访问时加载')
+          }
+        }
+        .width('100%').height('100%')
       }
       .tabBar(new BottomTabBarStyle({
         normal: new SymbolGlyphModifier($r('sys.symbol.fork_knife'))
@@ -66,10 +89,17 @@ struct MainTabsPage {
       }, $r('app.string.tab_diet')))
 
       // ================================================================
-      // Tab 2: AI — 智能营养助手
+      // Tab 2: AI — 懒加载
       // ================================================================
       TabContent() {
-        this.AiContent()
+        Column() {
+          if (this.tabLoaded[2]) {
+            this.AiContent()
+          } else {
+            this.TabPlaceholder('🤖 AI 智能助手', '首次访问时加载')
+          }
+        }
+        .width('100%').height('100%')
       }
       .tabBar(new BottomTabBarStyle({
         normal: new SymbolGlyphModifier($r('sys.symbol.wand_and_stars'))
@@ -79,10 +109,17 @@ struct MainTabsPage {
       }, $r('app.string.tab_ai')))
 
       // ================================================================
-      // Tab 3: 社区 — 食谱社区 & 家庭群组
+      // Tab 3: 社区 — 懒加载
       // ================================================================
       TabContent() {
-        this.CommunityContent()
+        Column() {
+          if (this.tabLoaded[3]) {
+            this.CommunityContent()
+          } else {
+            this.TabPlaceholder('👥 社区中心', '首次访问时加载')
+          }
+        }
+        .width('100%').height('100%')
       }
       .tabBar(new BottomTabBarStyle({
         normal: new SymbolGlyphModifier($r('sys.symbol.person_3_fill'))
@@ -92,10 +129,17 @@ struct MainTabsPage {
       }, $r('app.string.tab_community')))
 
       // ================================================================
-      // Tab 4: 我的 — 个人中心
+      // Tab 4: 我的 — 懒加载
       // ================================================================
       TabContent() {
-        this.ProfileContent()
+        Column() {
+          if (this.tabLoaded[4]) {
+            this.ProfileContent()
+          } else {
+            this.TabPlaceholder('⚙️ 个人中心', '首次访问时加载')
+          }
+        }
+        .width('100%').height('100%')
       }
       .tabBar(new BottomTabBarStyle({
         normal: new SymbolGlyphModifier($r('sys.symbol.person_fill'))
@@ -104,16 +148,11 @@ struct MainTabsPage {
           .fontColor([$r('sys.color.ohos_id_color_activated')])
       }, $r('app.string.tab_mine')))
     }
-    // ──── 悬浮页签核心配置 ────
-    .barOverlap(true)   // 内容区延伸至页签栏背后
+    .barOverlap(true)
     .barPosition(BarPosition.End)
     .vertical(false)
     .barFloatingStyle({
-      // 悬浮页签距离屏幕底部的间距（包含安全区处理）
       barBottomMargin: 28,
-      // V6.1 沉浸光感：自适应材质效果
-      // ADAPTIVE 模式：系统自动根据设备性能调节毛玻璃渲染精度
-      // 高端机 → 精致高斯模糊；低端机 → 轻量渲染保证流畅
       systemMaterialEffect: {
         materialType: hdsMaterial.MaterialType.ADAPTIVE,
         materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
@@ -125,15 +164,37 @@ struct MainTabsPage {
     .onChange((index: number) => {
       this.currentIndex = index;
     })
+    }
+    .width('100%')
+    .height('100%')
+  }
+
+  // ──── Tab 占位符（未加载时的空白页面）────
+  @Builder
+  TabPlaceholder(emojiTitle: string, hint: string) {
+    Column() {
+      Column() {
+        Text(emojiTitle)
+          .fontSize(22)
+          .fontWeight(600)
+          .fontColor(COLORS.TEXT_PRIMARY)
+          .margin({ top: 60, bottom: 12 })
+        Text(hint)
+          .fontSize(14)
+          .fontColor(COLORS.TEXT_GRAY_7575)
+      }
+      .width('100%')
+      .alignItems(HorizontalAlign.Center)
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor(COLORS.BG_PAGE)
   }
 
   // ──── Tab 0: 首页内容 ────
   @Builder
   HomePageContent() {
-    // 动态导入避免循环依赖 — 使用命名导入的组件实例
-    // HomePage 可直接在此处使用，因为它在 main_pages 中已注册
     Column() {
-      // 简洁的首页提示 — 完整 HomePage 功能后续逐步迁移
       Text('🏠')
         .fontSize(48)
         .margin({ top: 60 })
@@ -147,7 +208,6 @@ struct MainTabsPage {
         .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ bottom: 24 })
 
-      // 快捷操作入口 — 扫码识别
       Button() {
         Row({ space: 6 }) {
           Text('📷').fontSize(18)
@@ -158,6 +218,8 @@ struct MainTabsPage {
       .height(48)
       .borderRadius(24)
       .backgroundColor(COLORS.PRIMARY)
+      .accessibilityText('扫码识别食品标签')
+      .accessibilityLevel('yes')
       .onClick(() => {
         try {
           router.pushUrl({ url: 'pages/ScanPage' })
@@ -166,7 +228,6 @@ struct MainTabsPage {
         }
       })
 
-      // 进入完整首页
       Button() {
         Row({ space: 6 }) {
           Text('🍽️').fontSize(18)
@@ -179,6 +240,8 @@ struct MainTabsPage {
       .backgroundColor(COLORS.BG_CARD)
       .margin({ top: 12 })
       .border({ width: 1, color: COLORS.PRIMARY_LIGHT, style: BorderStyle.Solid })
+      .accessibilityText('进入完整首页，查看全部功能')
+      .accessibilityLevel('yes')
       .onClick(() => {
         try {
           router.pushUrl({ url: 'pages/HomePage' })
@@ -198,7 +261,6 @@ struct MainTabsPage {
   @Builder
   DietContent() {
     Column() {
-      // 标题栏
       Row() {
         Text('🍽️ 饮食中心')
           .fontSize(22)
@@ -210,23 +272,14 @@ struct MainTabsPage {
 
       Scroll() {
         Column({ space: 12 }) {
-          // 记录美食
           this.QuickEntryCard('📝', '记录美食', '扫描食品标签，自动记录饮食摄入',
             'pages/BalancePage')
-
-          // 膳食日记
           this.QuickEntryCard('📖', '膳食日记', '查看每日饮食明细与营养分析',
             'pages/DietDiaryPage')
-
-          // 历史记录
           this.QuickEntryCard('📋', '历史记录', '回顾过往的饮食扫描记录',
             'pages/HistoryPage')
-
-          // 营养仪表盘
           this.QuickEntryCard('📊', '营养仪表盘', '可视化查看营养摄入趋势与构成',
             'pages/DashboardPage')
-
-          // 购物篮检查
           this.QuickEntryCard('🛒', '购物篮分析', '评估购物篮食品的家庭适配性',
             'pages/BasketCheckPage')
         }
@@ -256,13 +309,10 @@ struct MainTabsPage {
         Column({ space: 12 }) {
           this.QuickEntryCard('💬', 'AI 营养师对话', '与AI营养师对话获取个性化建议',
             'pages/AiChatPage')
-
           this.QuickEntryCard('🍳', 'AI 推荐食谱', '基于家庭健康画像智能推荐食谱',
             'pages/RecipeCommunityPage', { 'aiMode': 'recommend' } as Record<string, Object>)
-
           this.QuickEntryCard('🧪', '营养趋势分析', 'AI驱动的营养趋势预测与洞察',
             'pages/NutritionTrendPage')
-
           this.QuickEntryCard('📈', '周报分析', '查看本周饮食健康周报',
             'pages/WeeklyReportPage')
         }
@@ -292,10 +342,8 @@ struct MainTabsPage {
         Column({ space: 12 }) {
           this.QuickEntryCard('🍳', '食谱社区', '浏览和分享家庭食谱',
             'pages/RecipeCommunityPage')
-
           this.QuickEntryCard('👨‍👩‍👧‍👦', '家庭群组', '创建家庭群组共享饮食信息',
             'pages/FamilyGroupPage')
-
           this.QuickEntryCard('✨', '创建食谱', '发布你的独家食谱到社区',
             'pages/RecipeCreatePage')
         }
@@ -308,11 +356,9 @@ struct MainTabsPage {
     .backgroundColor(COLORS.BG_PAGE)
   }
 
-  // ──── Tab 4: 我的内容 — 委托到 ProfileCenterPage ────
+  // ──── Tab 4: 我的内容 ────
   @Builder
   ProfileContent() {
-    // 通过 router 跳转到独立的 ProfileCenterPage
-    // 此处提供一个简洁的入口面板
     Column() {
       Row() {
         Text('⚙️ 个人中心')
@@ -327,23 +373,16 @@ struct MainTabsPage {
         Column({ space: 12 }) {
           this.QuickEntryCard('👤', '家庭成员管理', '管理和编辑家庭成员信息',
             'pages/MemberPage')
-
           this.QuickEntryCard('📊', '营养仪表盘', '全家人营养数据概览',
             'pages/DashboardPage')
-
           this.QuickEntryCard('🏥', '健康设备', '查看家庭成员健康设备数据',
             'pages/DeviceDashboardPage')
-
           this.QuickEntryCard('💎', '订阅会员', '升级会员解锁更多功能',
             'pages/SubscriptionPage')
-
           this.QuickEntryCard('☁️', '云同步设置', '配置数据同步与备份',
             'pages/CloudSyncSettingsPage')
-
           this.QuickEntryCard('🔧', '设置', '应用设置与品牌透明度查询',
             'pages/SettingsPage')
-
-          // V2 API 演示入口
           this.QuickEntryCard('🧪', 'API 实验室', 'HarmonyOS V2 API 特性演示',
             'pages/V2DemoPage')
         }
@@ -386,6 +425,8 @@ struct MainTabsPage {
     .backgroundColor(COLORS.BG_CARD)
     .borderRadius(12)
     .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
+    .accessibilityText(`${title}，${desc}`)
+    .accessibilityLevel('yes')
     .onClick(() => {
       try {
         const routerParams: Record<string, Object> = extraParams ?? {};

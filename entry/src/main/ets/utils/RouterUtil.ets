@@ -2,6 +2,7 @@
 // 统一导航工具类 - 封装 router API，提供安全导航和路由栈管理
 
 import { router } from '@kit.ArkUI';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'RouterUtil';
 

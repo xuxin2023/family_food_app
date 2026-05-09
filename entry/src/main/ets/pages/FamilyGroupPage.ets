@@ -8,19 +8,20 @@ import { AppState } from '../AppState';
 import { GroupMember, GroupRole, GroupSummary } from '../model/FamilyGroup';
 import { COLORS, RADIUS, BUTTON } from '../constants/AppTheme';
 import { BasicDataSource } from '../utils/BasicDataSource';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'FamilyGroupPage';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 @Entry
-@Component
+@ComponentV2
 struct FamilyGroupPage {
-  @State isLoading: boolean = true;
-  @State createGroupName: string = '';
-  @State createDescription: string = '';
-  @State inviteCodeInput: string = '';
-  @State displayNameInput: string = '';
-  @State groupSummaries: GroupSummary[] = [];
+  @Local isLoading: boolean = true;
+  @Local createGroupName: string = '';
+  @Local createDescription: string = '';
+  @Local inviteCodeInput: string = '';
+  @Local displayNameInput: string = '';
+  @Local groupSummaries: GroupSummary[] = [];
 
   private appState: AppState = AppState.getInstance();
   private groupDS = new BasicDataSource<GroupSummary>();
@@ -235,7 +236,7 @@ struct FamilyGroupPage {
     .margin({ bottom: 12 })
     .onClick(() => {
       // 跳转到群组动态
-      const navParams: Record<string, Object> = new Object() as Record<string, Object>
+      const navParams: Record<string, Object> = {} as Record<string, Object>
       navParams['groupId'] = summary.group.groupId
       navParams['groupName'] = summary.group.groupName
       router.pushUrl({

@@ -3,6 +3,7 @@
 import { HealthSignal } from '../model/HealthSignal';
 import { ManualHealthSignalProvider } from './health/ManualHealthSignalProvider';
 import { HealthSignalProvider } from './health/HealthSignalProvider';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 export class HealthService {
   private provider: HealthSignalProvider;

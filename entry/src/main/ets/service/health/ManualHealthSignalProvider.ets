@@ -9,9 +9,10 @@ import {
   DataSource
 } from '../../model/HealthSignal';
 import { HealthSignalProvider } from './HealthSignalProvider';
+import { HILOG_DOMAIN } from '../../constants/AppConfig';
 
 const TAG = 'ManualHealthSignalProvider';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 export class ManualHealthSignalProvider implements HealthSignalProvider {
   async checkAuthorization(): Promise<boolean> {

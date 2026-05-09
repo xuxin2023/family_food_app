@@ -7,9 +7,10 @@ import { asset } from '@kit.AssetStoreKit';
 import { util } from '@kit.ArkTS';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { BusinessError } from '@kit.BasicServicesKit';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'AssetKeyManager';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 // 工具函数：string <-> Uint8Array
 function stringToArray(str: string): Uint8Array {

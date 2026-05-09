@@ -18,9 +18,10 @@ import {
   TIER_DAILY_SCAN_LIMIT,
   TIER_MEMBER_LIMIT
 } from '../model/MemberStatus';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'MemberManager';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 export class MemberManager {
   /** 会员状态 */

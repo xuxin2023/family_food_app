@@ -5,12 +5,13 @@
 import { router } from '@kit.ArkUI';
 import { AppState } from '../AppState';
 import { COLORS } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 @Entry
-@Component
+@ComponentV2
 struct Index {
-  @State showGuide: boolean = false;
-  @State isReady: boolean = false;
+  @Local showGuide: boolean = false;
+  @Local isReady: boolean = false;
 
   async aboutToAppear(): Promise<void> {
     // 等待 AppState 初始化完成，避免跳转到首页时数据未就绪
@@ -44,10 +45,10 @@ struct Index {
   }
 }
 
-@Component
+@ComponentV2
 struct GuidePage {
-  @State currentPage: number = 0;
-  onComplete?: () => void;
+  @Local currentPage: number = 0;
+  @Event onComplete?: () => void;
 
   build() {
     Column() {

@@ -1,6 +1,6 @@
 // CrashMonitorManager.ets
-// 崩溃监控管理�?- �?EntryAbility 拆出，独立管理错误观察器的注册和日志写入
-// 职责：注�?注销 errorManager 观察器、崩溃日志写入磁盘、旧日志清理
+// 崩溃监控管理器 — 从 EntryAbility 拆出，独立管理错误观察器的注册和日志写入
+// 职责：注册/注销 errorManager 观察器、崩溃日志写入磁盘、旧日志清理
 
 import { errorManager } from '@kit.AbilityKit';
 import { fileIo } from '@kit.CoreFileKit';
@@ -17,7 +17,9 @@ export class CrashMonitorManager {
   private readonly maxCrashLogs: number = CRASH_LOG_CONFIG.MAX_CRASH_LOGS;
 
   /**
-   * 初始化崩溃监�?   * @param filesDir 应用沙箱 filesDir（来�?context.filesDir�?   */
+   * 初始化崩溃监控
+   * @param filesDir 应用沙箱 filesDir（来自 context.filesDir）
+   */
   init(filesDir: string): void {
     try {
       this.crashLogDir = filesDir + '/crash_logs/';
@@ -29,7 +31,8 @@ export class CrashMonitorManager {
   }
 
   /**
-   * 销毁崩溃监�?- 注销观察�?   * 鸿蒙6 (API 14+) �?errorManager.off 签名�?off(type: string, id: number): void
+   * 销毁崩溃监控 - 注销观察器
+   * 鸿蒙6 (API 14+) 的 errorManager.off 签名：off(type: string, id: number): void
    */
   destroy(): void {
     if (this.crashObserverId !== -1) {
@@ -50,7 +53,8 @@ export class CrashMonitorManager {
   // ===== 私有方法 =====
 
   /**
-   * 注册 errorManager 全局错误观察�?   */
+   * 注册 errorManager 全局错误观察器
+   */
   private registerErrorObserver(): void {
     const observer: errorManager.ErrorObserver = {
       onUnhandledException: (errorMsg: string) => {
@@ -66,13 +70,15 @@ export class CrashMonitorManager {
   }
 
   /**
-   * 将崩溃日志写入本地文�?   */
+   * 将崩溃日志写入本地文件
+   */
   private writeCrashLog(errorMsg: string, stack: string): void {
     try {
       // 确保目录存在
       fileIo.mkdirSync(this.crashLogDir, true);
 
-      // 清理旧日�?      this.cleanupOldCrashLogs();
+      // 清理旧日志
+      this.cleanupOldCrashLogs();
 
       const now = new Date();
       const dateStr =
@@ -103,7 +109,8 @@ export class CrashMonitorManager {
   }
 
   /**
-   * 清理旧日志文�?   */
+   * 清理旧日志文件
+   */
   private cleanupOldCrashLogs(): void {
     try {
       const entries: string[] = fileIo.listFileSync(this.crashLogDir);
@@ -129,7 +136,8 @@ export class CrashMonitorManager {
           fileIo.unlinkSync(oldPath);
           hilog.info(DOMAIN_ZERO, TAG, 'Removed old crash log: %{public}s', oldPath);
         } catch (_e) {
-          // 单个文件删除失败不影响其�?        }
+          // 单个文件删除失败不影响其他文件
+        }
       }
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Cleanup crash logs failed: %{public}s', JSON.stringify(e));

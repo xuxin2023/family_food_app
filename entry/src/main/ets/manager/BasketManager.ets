@@ -6,9 +6,10 @@ import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FoodLabel, FoodLabelJson } from '../model/FoodLabel';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'BasketManager';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 const BASKET_PREFS_FILE = 'basket_cache';
 const BASKET_ITEMS_KEY = 'items';

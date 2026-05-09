@@ -50,6 +50,15 @@ interface GradeThreshold {
 }
 
 /**
+ * 等级显示信息
+ */
+interface GradeDisplayEntry {
+  label: string;
+  color: string;
+  score: number;
+}
+
+/**
  * 各等级阈值（每100g）
  * A级四项均需满足A级条件
  */
@@ -63,7 +72,7 @@ const GRADE_THRESHOLDS: Record<string, GradeThreshold> = {
 /**
  * 各等级显示信息
  */
-const GRADE_DISPLAY: Record<string, { label: string; color: string; score: number }> = {
+const GRADE_DISPLAY: Record<string, GradeDisplayEntry> = {
   'A': { label: '优', color: '#4CAF50', score: 90 },
   'B': { label: '良', color: '#66BB6A', score: 70 },
   'C': { label: '中', color: '#FFA726', score: 45 },
@@ -71,31 +80,45 @@ const GRADE_DISPLAY: Record<string, { label: string; color: string; score: numbe
 };
 
 /**
+ * 通过属性名获取阈值
+ */
+function getThresholdByKey(t: GradeThreshold, key: keyof GradeThreshold): number {
+  if (key === 'energy_kcal') return t.energy_kcal;
+  if (key === 'fat_g') return t.fat_g;
+  if (key === 'sugar_g') return t.sugar_g;
+  return t.sodium_mg;
+}
+
+/**
  * 获取单项营养等级（简化的比较逻辑）
  */
-function getSimpleNutrientLevel(value: number, thresholds: GradeThreshold, 
+function getSimpleNutrientLevel(value: number, thresholds: GradeThreshold,
   key: keyof GradeThreshold): NutrientLevel {
-  if (value <= thresholds[key]) {
-    return { level: '优', score: 25, grade: ShanghaiGrade.GRADE_A };
+  if (value <= getThresholdByKey(thresholds, key)) {
+    const resultA: NutrientLevel = { level: '优', score: 25, grade: ShanghaiGrade.GRADE_A };
+    return resultA;
   }
-  
+
   const bThresholds = GRADE_THRESHOLDS.B;
-  if (value <= bThresholds[key]) {
-    return { level: '良', score: 20, grade: ShanghaiGrade.GRADE_B };
+  if (value <= getThresholdByKey(bThresholds, key)) {
+    const resultB: NutrientLevel = { level: '良', score: 20, grade: ShanghaiGrade.GRADE_B };
+    return resultB;
   }
-  
+
   const cThresholds = GRADE_THRESHOLDS.C;
-  if (value <= cThresholds[key]) {
-    return { level: '中', score: 10, grade: ShanghaiGrade.GRADE_C };
+  if (value <= getThresholdByKey(cThresholds, key)) {
+    const resultC: NutrientLevel = { level: '中', score: 10, grade: ShanghaiGrade.GRADE_C };
+    return resultC;
   }
-  
-  return { level: '差', score: 5, grade: ShanghaiGrade.GRADE_D };
+
+  const resultD: NutrientLevel = { level: '差', score: 5, grade: ShanghaiGrade.GRADE_D };
+  return resultD;
 }
 
 export class ShanghaiGradeEngine {
   /**
    * 根据营养数据计算上海营养分级
-   * 
+   *
    * 规则：
    * - A级：能量≤40kcal、脂肪≤1.5g、糖≤5g、钠≤120mg 四项同时满足
    * - B级：能量≤120kcal、脂肪≤5g、糖≤12g、钠≤400mg 四项同时满足
@@ -119,7 +142,7 @@ export class ShanghaiGradeEngine {
       sugarLevel.grade,
       sodiumLevel.grade
     ];
-    
+
     let finalGrade = ShanghaiGrade.GRADE_A;
     for (const g of grades) {
       if (g === ShanghaiGrade.GRADE_D) {
@@ -134,14 +157,14 @@ export class ShanghaiGradeEngine {
     }
 
     const display = GRADE_DISPLAY[finalGrade];
-    
+
     // 内部综合评分 = 四项得分之和（每项满分25）
     const totalScore = Math.min(100, energyLevel.score + fatLevel.score + sugarLevel.score + sodiumLevel.score);
 
     // 生成说明文字
     const details = ShanghaiGradeEngine.buildDetails(finalGrade, nutrition);
 
-    return {
+    const result: ShanghaiGradeResult = {
       grade: finalGrade,
       gradeLabel: display.label,
       gradeColor: display.color,
@@ -152,6 +175,7 @@ export class ShanghaiGradeEngine {
       sodiumLevel: sodiumLevel.level,
       details: details
     };
+    return result;
   }
 
   /**
@@ -188,7 +212,7 @@ export class ShanghaiGradeEngine {
    */
   private static buildDetails(grade: ShanghaiGrade, nutrition: NutritionPer100g): string {
     const parts: string[] = [];
-    
+
     if (nutrition.calories > GRADE_THRESHOLDS.C.energy_kcal) {
       parts.push(`能量偏高（${nutrition.calories}kcal）`);
     }

@@ -14,13 +14,14 @@
 //   'detail'      — 详情样式（ReportPage）
 //   'chat'        — AI对话样式（AiChatPage）
 import { COLORS, SPACING, RADIUS } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 /** 骨架屏占位块 */
-@Component
+@ComponentV2
 export struct SkeletonBlock {
-  private blockWidth: string | number = '100%'
-  private blockHeight: number = 20
-  private blockRadius: number = RADIUS.SM
+  @Param blockWidth: string | number = '100%'
+  @Param blockHeight: number = 20
+  @Param blockRadius: number = RADIUS.SM
 
   build() {
     Column()
@@ -33,9 +34,9 @@ export struct SkeletonBlock {
 }
 
 /** 骨架屏圆形占位 */
-@Component
+@ComponentV2
 export struct SkeletonCircle {
-  private circleSize: number = 40
+  @Param circleSize: number = 40
 
   build() {
     Column()
@@ -48,7 +49,7 @@ export struct SkeletonCircle {
 }
 
 /** 单行成员卡片骨架 */
-@Component
+@ComponentV2
 export struct SkeletonMemberCard {
   build() {
     Row() {
@@ -69,7 +70,7 @@ export struct SkeletonMemberCard {
 }
 
 /** 通用列表项骨架（单行） */
-@Component
+@ComponentV2
 export struct SkeletonListItem {
   build() {
     Row() {
@@ -90,7 +91,7 @@ export struct SkeletonListItem {
 }
 
 /** 看板数字骨架 */
-@Component
+@ComponentV2
 export struct SkeletonStatCard {
   build() {
     Column() {
@@ -106,7 +107,7 @@ export struct SkeletonStatCard {
 }
 
 /** 图表骨架 */
-@Component
+@ComponentV2
 export struct SkeletonChart {
   build() {
     SkeletonBlock({  blockWidth: '100%', blockHeight: 180, blockRadius: RADIUS.MD  })
@@ -119,10 +120,10 @@ export struct SkeletonChart {
  * @param variant 布局变体
  * @param rowCount 行数（仅部分变体适用）
  */
-@Component
+@ComponentV2
 export struct LoadingSkeleton {
-  private variant: string = 'list'
-  private rowCount: number = 5
+  @Param variant: string = 'list'
+  @Param rowCount: number = 5
 
   build() {
     Column() {
@@ -228,7 +229,7 @@ export struct LoadingSkeleton {
 }
 
 /** 兼容旧版：保持原有的完整骨架屏布局引用 */
-@Component
+@ComponentV2
 export struct SkeletonScreen {
   build() {
     Column() {

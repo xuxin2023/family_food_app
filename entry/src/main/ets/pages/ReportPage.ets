@@ -18,6 +18,7 @@ import { ShareCardGenerator, MemberShareInfo, ShareImageParams } from '../compon
 import { PaywallTrigger, MemberTier } from '../model/MemberStatus';
 import { PaywallDialog } from '../components/PaywallDialog';
 import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 // ===== 页面级别类型 =====
 
@@ -33,20 +34,20 @@ export interface ReportPageParams {
 }
 
 @Entry
-@Component
+@ComponentV2
 struct ReportPage {
-  @State foodLabel: FoodLabel = new FoodLabel()
-  @State recommendations: Recommendation[] = []
-  @State familyMembers: FamilyProfile[] = []
-  @State alternatives: AlternativeFood[] = []
-  @State nutriScore: number = 50
-  @State selectedMemberIndex: number = 0
-  @State showSkeleton: boolean = true
-  @State showNutriAnim: boolean = false
-  @State isImageSaving: boolean = false
-  @State showPaywallDialog: boolean = false
-  @State paywallTrigger: PaywallTrigger | null = null
-  @State showAlternativesLocked: boolean = false
+  @Local foodLabel: FoodLabel = new FoodLabel()
+  @Local recommendations: Recommendation[] = []
+  @Local familyMembers: FamilyProfile[] = []
+  @Local alternatives: AlternativeFood[] = []
+  @Local nutriScore: number = 50
+  @Local selectedMemberIndex: number = 0
+  @Local showSkeleton: boolean = true
+  @Local showNutriAnim: boolean = false
+  @Local isImageSaving: boolean = false
+  @Local showPaywallDialog: boolean = false
+  @Local paywallTrigger: PaywallTrigger | null = null
+  @Local showAlternativesLocked: boolean = false
 
   private appState: AppState = AppState.getInstance()
   private credibilityResult: CredibilityResult = new CredibilityResult()
@@ -160,7 +161,8 @@ struct ReportPage {
       if (this.paywallTrigger !== null) {
         PaywallDialog({
           trigger: this.paywallTrigger,
-          showDialog: $showPaywallDialog
+          showDialog: this.showPaywallDialog,
+      onUpdateShowDialog: (val: boolean) => { this.showPaywallDialog = val }
         })
       }
     }

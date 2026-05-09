@@ -4,6 +4,7 @@
 
 import { FoodLabel } from '../model/FoodLabel';
 import { Recommendation } from '../model/Recommendation';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 export class ReportCacheManager {
   /** 跳转 ReportPage 暂存数据 */

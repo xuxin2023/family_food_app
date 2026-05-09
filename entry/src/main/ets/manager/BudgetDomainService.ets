@@ -14,6 +14,7 @@ import { HistoryRepository, DietRecordInput } from '../repository/HistoryReposit
 import { EngineManager } from '../EngineManager';
 import { DateUtil } from '../utils/DateUtil';
 import { CacheManager } from '../utils/CacheManager';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 export class BudgetDomainService {
   private engs: EngineManager;

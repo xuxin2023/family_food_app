@@ -92,7 +92,7 @@
           "abilities": [
             "EntryAbility"
           ],
-          "when": "inuse"
+          "when": "always"
         }
       },
       {
@@ -113,6 +113,36 @@
             "EntryAbility"
           ],
           "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.MICROPHONE",
+        "reason": "$string:microphone_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.READ_MEDIA",
+        "reason": "$string:media_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.KEEP_BACKGROUND_RUNNING",
+        "reason": "$string:background_run_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "always"
         }
       }
     ],

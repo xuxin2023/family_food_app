@@ -1,6 +1,6 @@
 // 健康信号数据模型 — V2.0 扩展穿戴设备数据
 //
-// V2新增：心率、血氧饱和度、压力等级、精确步数、心率区间、体温
+// V2.1: 升级 @ObservedV2 + @Trace 状态管理
 
 import { HEALTH_CONFIG } from '../constants/AppConfig';
 
@@ -104,45 +104,45 @@ export class HealthSignalJson {
   restingHeartRate: number = 0;
 }
 
-@Observed
+@ObservedV2
 export class HealthSignal {
-  memberId: string = '';
-  date: string = '';
-  stepLevel: StepLevel = StepLevel.NORMAL;
-  sleepStatus: SleepStatus = SleepStatus.GOOD;
-  weightTrend: WeightTrend = WeightTrend.STABLE;
-  activityCaloriesLevel: StepLevel = StepLevel.NORMAL;
-  manualBpStatus: BpStatus = BpStatus.NORMAL;
-  manualBsStatus: BsStatus = BsStatus.NORMAL;
-  hadHighSodiumToday: boolean = false;
-  hadHighSugarToday: boolean = false;
-  source: DataSource = DataSource.MANUAL;
+  @Trace memberId: string = '';
+  @Trace date: string = '';
+  @Trace stepLevel: StepLevel = StepLevel.NORMAL;
+  @Trace sleepStatus: SleepStatus = SleepStatus.GOOD;
+  @Trace weightTrend: WeightTrend = WeightTrend.STABLE;
+  @Trace activityCaloriesLevel: StepLevel = StepLevel.NORMAL;
+  @Trace manualBpStatus: BpStatus = BpStatus.NORMAL;
+  @Trace manualBsStatus: BsStatus = BsStatus.NORMAL;
+  @Trace hadHighSodiumToday: boolean = false;
+  @Trace hadHighSugarToday: boolean = false;
+  @Trace source: DataSource = DataSource.MANUAL;
   /** 数据最后更新时间戳（用于缓存过期判断） */
-  lastUpdated: number = 0;
+  @Trace lastUpdated: number = 0;
 
   // ===== V2 穿戴设备扩展字段 =====
   /** 精确步数（穿戴设备采集） */
-  stepCount: number = 0;
+  @Trace stepCount: number = 0;
   /** 当前心率（bpm） */
-  heartRate: number = 0;
+  @Trace heartRate: number = 0;
   /** 心率区间 */
-  heartRateZone: HeartRateZone = HeartRateZone.REST;
+  @Trace heartRateZone: HeartRateZone = HeartRateZone.REST;
   /** 血氧饱和度（百分比） */
-  spo2: number = 0;
+  @Trace spo2: number = 0;
   /** 血氧等级 */
-  spo2Level: SpO2Level = SpO2Level.NORMAL;
+  @Trace spo2Level: SpO2Level = SpO2Level.NORMAL;
   /** 压力等级 */
-  stressLevel: StressLevel = StressLevel.NORMAL;
+  @Trace stressLevel: StressLevel = StressLevel.NORMAL;
   /** 体温（摄氏度） */
-  bodyTemperature: number = 0;
+  @Trace bodyTemperature: number = 0;
   /** 深睡时长（分钟） */
-  deepSleepMinutes: number = 0;
+  @Trace deepSleepMinutes: number = 0;
   /** 浅睡时长（分钟） */
-  lightSleepMinutes: number = 0;
+  @Trace lightSleepMinutes: number = 0;
   /** 总睡眠时长（分钟） */
-  totalSleepMinutes: number = 0;
+  @Trace totalSleepMinutes: number = 0;
   /** 静息心率（bpm） */
-  restingHeartRate: number = 0;
+  @Trace restingHeartRate: number = 0;
 
   isLowActivity(): boolean {
     return this.stepLevel === StepLevel.LOW || this.activityCaloriesLevel === StepLevel.LOW;
@@ -282,17 +282,17 @@ export class HealthSignal {
 
   static fromJson(json: Record<string, Object>): HealthSignal {
     const signal = new HealthSignal();
-    signal.memberId = json.memberId as string;
-    signal.date = json.date as string;
-    signal.stepLevel = json.stepLevel as StepLevel;
-    signal.sleepStatus = json.sleepStatus as SleepStatus;
-    signal.weightTrend = json.weightTrend as WeightTrend;
-    signal.activityCaloriesLevel = json.activityCaloriesLevel as StepLevel;
-    signal.manualBpStatus = json.manualBpStatus as BpStatus;
-    signal.manualBsStatus = json.manualBsStatus as BsStatus;
+    signal.memberId = (json.memberId as string) ?? '';
+    signal.date = (json.date as string) ?? '';
+    signal.stepLevel = (json.stepLevel as StepLevel) ?? StepLevel.LOW;
+    signal.sleepStatus = (json.sleepStatus as SleepStatus) ?? SleepStatus.FAIR;
+    signal.weightTrend = (json.weightTrend as WeightTrend) ?? WeightTrend.STABLE;
+    signal.activityCaloriesLevel = (json.activityCaloriesLevel as StepLevel) ?? StepLevel.LOW;
+    signal.manualBpStatus = (json.manualBpStatus as BpStatus) ?? BpStatus.NORMAL;
+    signal.manualBsStatus = (json.manualBsStatus as BsStatus) ?? BsStatus.NORMAL;
     signal.hadHighSodiumToday = Boolean(json.hadHighSodiumToday);
     signal.hadHighSugarToday = Boolean(json.hadHighSugarToday);
-    signal.source = json.source as DataSource;
+    signal.source = (json.source as DataSource) ?? DataSource.MANUAL;
     // V2
     signal.stepCount = Number(json.stepCount || 0);
     signal.heartRate = Number(json.heartRate || 0);

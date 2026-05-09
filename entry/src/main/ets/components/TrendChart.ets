@@ -3,11 +3,12 @@
 
 import { NutrientTrendData, DailyNutrientPoint, TrendDirection } from '../engine/NutritionTrendEngine';
 import { COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-@Component
+@ComponentV2
 export struct TrendChart {
-  @Prop data: NutrientTrendData | null = null
-  @Prop chartHeight: number = 160
+  @Param data: NutrientTrendData | null = null
+  @Param chartHeight: number = 160
 
   build() {
     if (this.data === null) {

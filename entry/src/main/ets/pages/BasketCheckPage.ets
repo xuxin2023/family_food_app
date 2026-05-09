@@ -8,14 +8,15 @@ import { AppState } from '../AppState';
 import { PaywallTrigger, MemberTier } from '../model/MemberStatus';
 import { PaywallDialog } from '../components/PaywallDialog';
 import { BUTTON, COLORS } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 @Entry
-@Component
+@ComponentV2
 struct BasketCheckPage {
-  @State basketItems: FoodLabel[] = []
-  @State checkResult: BasketCheckResult | null = null
-  @State showPaywallDialog: boolean = false
-  @State paywallTrigger: PaywallTrigger | null = null
+  @Local basketItems: FoodLabel[] = []
+  @Local checkResult: BasketCheckResult | null = null
+  @Local showPaywallDialog: boolean = false
+  @Local paywallTrigger: PaywallTrigger | null = null
 
   private appState: AppState = AppState.getInstance()
 
@@ -153,7 +154,8 @@ struct BasketCheckPage {
       if (this.paywallTrigger !== null) {
         PaywallDialog({
           trigger: this.paywallTrigger,
-          showDialog: $showPaywallDialog
+          showDialog: this.showPaywallDialog,
+      onUpdateShowDialog: (val: boolean) => { this.showPaywallDialog = val }
         })
       }
     }

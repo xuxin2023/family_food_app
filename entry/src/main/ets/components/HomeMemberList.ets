@@ -7,15 +7,19 @@ import { MemberCard } from './MemberCard';
 import { COLORS } from '../constants/AppTheme';
 import { router } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
-@Component
+@ComponentV2
 export struct HomeMemberList {
   private appState: AppState = AppState.getInstance()
 
-  @Link familyMembers: FamilyProfile[]
-  @Link selectedMemberId: string
+  @Param familyMembers: FamilyProfile[] = []
+  @Event onUpdateFamilyMembers?: (val: FamilyProfile[]) => void
+
+  @Param selectedMemberId: string = ''
+  @Event onUpdateSelectedMemberId?: (val: string) => void
 
   build() {
     Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start, alignItems: ItemAlign.Start }) {
@@ -24,7 +28,7 @@ export struct HomeMemberList {
           MemberCard({
             member: member,
             isSelected: this.selectedMemberId === member.memberId,
-            onSelect: (id: string) => { this.selectedMemberId = id }
+            onSelect: (id: string) => { this.onUpdateSelectedMemberId?.(id) }
           })
         }
         .width('45%')
@@ -34,9 +38,9 @@ export struct HomeMemberList {
       // 添加成员按钮
       Column() {
         Text('+').fontSize(28).fontColor(COLORS.PRIMARY)
-        Text(this.appState.canAddMember() ? $r('app.string.add_member') : $r('app.string.upgrade_unlock'))
+        Text(this.appState.member.canAddMember() ? $r('app.string.add_member') : $r('app.string.upgrade_unlock'))
           .fontSize(12)
-          .fontColor(this.appState.canAddMember() ? COLORS.PRIMARY : COLORS.ORANGE_ACCENT)
+          .fontColor(this.appState.member.canAddMember() ? COLORS.PRIMARY : COLORS.ORANGE_ACCENT)
           .margin({ top: 4 })
       }
       .width('45%')
@@ -48,7 +52,7 @@ export struct HomeMemberList {
       .border({ width: 1, color: COLORS.BORDER_LIGHT, style: BorderStyle.Dashed, radius: 16 })
       .onClick(() => {
         try {
-          if (this.appState.canAddMember()) {
+          if (this.appState.member.canAddMember()) {
             router.pushUrl({ url: 'pages/MemberEditPage' })
           } else {
             router.pushUrl({ url: 'pages/SettingsPage' })

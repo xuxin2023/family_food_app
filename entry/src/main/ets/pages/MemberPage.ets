@@ -4,11 +4,12 @@ import { safeBack, safePushUrl } from '../utils/RouterUtil';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { AppState } from '../AppState';
 import { BUTTON, COLORS } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 @Entry
-@Component
+@ComponentV2
 struct MemberPage {
-  @State members: FamilyProfile[] = []
+  @Local members: FamilyProfile[] = []
 
   private appState: AppState = AppState.getInstance()
 

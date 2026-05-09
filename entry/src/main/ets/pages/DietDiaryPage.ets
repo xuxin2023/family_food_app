@@ -16,8 +16,9 @@ import { MealScenario } from '../model/MealBalance';
 import { AiNutritionAdvice } from '../model/AiModels';
 import { FoodLabel } from '../model/FoodLabel';
 import { HealthSignal } from '../model/HealthSignal';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 // 场景emoji映射
 const SCENARIO_EMOJI: Record<string, string> = {
@@ -41,20 +42,20 @@ interface NutrientAnalysisItem {
 }
 
 @Entry
-@Component
+@ComponentV2
 struct DietDiaryPage {
-  @State familyMembers: FamilyProfile[] = []
-  @State selectedMemberId: string = ''
-  @State currentDate: string = ''
-  @State mealGroups: MealGroup[] = []
-  @State budget: DailyBudget | null = null
-  @State dateInputText: string = ''
-  @State showDatePicker: boolean = false
-  @State isLoading: boolean = false
-  @State errorMessage: string = ''
-  @State aiAdvice: AiNutritionAdvice | null = null
-  @State isLoadingAi: boolean = false
-  @State showAiSection: boolean = false
+  @Local familyMembers: FamilyProfile[] = []
+  @Local selectedMemberId: string = ''
+  @Local currentDate: string = ''
+  @Local mealGroups: MealGroup[] = []
+  @Local budget: DailyBudget | null = null
+  @Local dateInputText: string = ''
+  @Local showDatePicker: boolean = false
+  @Local isLoading: boolean = false
+  @Local errorMessage: string = ''
+  @Local aiAdvice: AiNutritionAdvice | null = null
+  @Local isLoadingAi: boolean = false
+  @Local showAiSection: boolean = false
 
   private appState: AppState = AppState.getInstance()
 

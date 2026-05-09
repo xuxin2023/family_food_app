@@ -1,11 +1,12 @@
 import { router } from '@kit.ArkUI';
 import { HotFoodItem, HOT_FOODS, DAILY_TIPS } from '../constants/HotFoods';
 import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-@Component
+@ComponentV2
 export struct HotFoodGuideCard {
-  @State currentTipIndex: number = 0
-  @Prop scanHistoryCount: number = 0
+  @Local currentTipIndex: number = 0
+  @Param scanHistoryCount: number = 0
   private tipTimer: number = 0
 
   aboutToAppear() {

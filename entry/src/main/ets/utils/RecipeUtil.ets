@@ -3,6 +3,7 @@
 // 消除 RecipeDetailPage 和 RecipeCommunityPage 之间的函数重复
 
 import { DietTag } from '../model/Recipe';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 /**
  * 获取食谱分类的本地化标签

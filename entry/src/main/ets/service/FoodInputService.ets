@@ -2,6 +2,7 @@ import { common } from '@kit.AbilityKit';
 import { FoodLabel, FoodSource } from '../model/FoodLabel';
 import { OcrService } from './OcrService';
 import { ScanService } from './ScanService';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 export interface FoodInputResult {
   foodLabel: FoodLabel;

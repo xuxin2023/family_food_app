@@ -8,6 +8,7 @@ import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { safeBack, safePushUrl } from '../utils/RouterUtil';
 import { AppState } from '../AppState';
+import { common } from '@kit.AbilityKit';
 import { FamilyProfile } from '../model/FamilyProfile';
 import {
   HealthSignal,
@@ -20,8 +21,9 @@ import {
 } from '../model/HealthSignal';
 import { COLORS, FONT_SIZE, SPACING, RADIUS } from '../constants/AppTheme';
 import { MemberTier, getPaywallTriggerForFeature } from '../model/MemberStatus';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 interface DetailItem {
   label: string;
@@ -38,16 +40,16 @@ interface MetricCardData {
 }
 
 @Entry
-@Component
+@ComponentV2
 struct DeviceDashboardPage {
-  @State familyMembers: FamilyProfile[] = []
-  @State selectedMemberId: string = ''
-  @State healthSignal: HealthSignal = new HealthSignal()
-  @State isLoading: boolean = true
-  @State isHwConnected: boolean = false
-  @State isAuthorized: boolean = false
-  @State showPaywall: boolean = false
-  @State lastSyncTime: string = ''
+  @Local familyMembers: FamilyProfile[] = []
+  @Local selectedMemberId: string = ''
+  @Local healthSignal: HealthSignal = new HealthSignal()
+  @Local isLoading: boolean = true
+  @Local isHwConnected: boolean = false
+  @Local isAuthorized: boolean = false
+  @Local showPaywall: boolean = false
+  @Local lastSyncTime: string = ''
 
   private appState: AppState = AppState.getInstance()
 
@@ -499,8 +501,8 @@ struct DeviceDashboardPage {
     }
 
     try {
-      const context: Object = AppStorage.get<Object>('appContext') as Object
-      const success = await this.appState.switchToHwHealthKit(context as Context)
+      const context = AppStorage.get<common.Context>('appContext')
+      const success = await this.appState.switchToHwHealthKit(context!)
       if (success) {
         this.isHwConnected = true
         promptAction.showToast({ message: '华为健康连接成功' })

@@ -14,8 +14,9 @@ import { OnlineShoppingParser } from '../service/OnlineShoppingParser';
 import { DailyBudget } from '../model/DailyBudget';
 import { LoadingSkeleton } from '../components/SkeletonScreen';
 import { COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, BUTTON } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 export class StatusResult {
   text: string = ''
@@ -27,24 +28,26 @@ export class StatusResult {
 }
 
 @Entry
-@Component
+@ComponentV2
 struct HomePage {
-  @State familyMembers: FamilyProfile[] = []
-  @State selectedMemberId: string = ''
-  @State milestones: Milestone[] = []
-  @State showLinkInput: boolean = false
-  @State linkInputText: string = ''
-  @State isParsingLink: boolean = false
-  @State memberStatusMap: Map<string, StatusResult> = new Map()
-  @State remainingScans: number = 0
-  @State isLoading: boolean = true
+  @Local familyMembers: FamilyProfile[] = []
+  @Local selectedMemberId: string = ''
+  @Local milestones: Milestone[] = []
+  @Local showLinkInput: boolean = false
+  @Local linkInputText: string = ''
+  @Local isParsingLink: boolean = false
+  @Local memberStatusMap: Map<string, StatusResult> = new Map()
+  @Local remainingScans: number = 0
+  @Local isLoading: boolean = true
 
   // ===== AppStorage 版本号绑定 =====
   // scanVersion 在扫码后递增，驱动 UI 增量刷新
-  @StorageProp('scanVersion') scanVersion: number = 0
+  // ComponentV2 兼容：@Local 本地缓存，refreshIfNeeded 直接从 AppStorage 读取
+  @Local scanVersion: number = 0
 
   // 记录上次加载时的版号，避免重复刷新
   private lastScanVersion: number = -1
+  private componentActive: boolean = true
 
   private appState: AppState = AppState.getInstance()
   private milestoneService: MilestoneService = MilestoneService.getInstance()
@@ -60,13 +63,19 @@ struct HomePage {
   ]
 
   async aboutToAppear() {
+    this.componentActive = true
     this.currentSloganIndex = Math.floor(Math.random() * this.slogans.length)
     this.todayDate = this.getTodayDate()
     await this.refreshAll()
   }
 
+  aboutToDisappear(): void {
+    this.componentActive = false
+  }
+
   /** onPageShow：每次页面变为可见时触发 — 响应式增量刷新 */
   async onPageShow() {
+    this.componentActive = true
     await this.refreshIfNeeded()
   }
 
@@ -76,14 +85,16 @@ struct HomePage {
    * - scanVersion 变化 → 刷新当日状态
    */
   private async refreshIfNeeded(): Promise<void> {
-    // scanVersion 递增 → 刷新当日状态
-    if (this.scanVersion !== this.lastScanVersion) {
+    // scanVersion 递增 → 刷新当日状态（ComponentV2 直接从 AppStorage 读取）
+    const currentVersion: number = AppStorage.get<number>('scanVersion') ?? 0
+    if (currentVersion !== this.lastScanVersion) {
+      this.scanVersion = currentVersion
       // 确保成员列表与 AppState 缓存一致（内存读取，无数据库查询）
       if (this.familyMembers.length === 0) {
         this.familyMembers = await this.appState.getAllMembers()
       }
       this.refreshMemberStatuses()
-      this.lastScanVersion = this.scanVersion
+      this.lastScanVersion = currentVersion
     }
   }
 
@@ -93,7 +104,7 @@ struct HomePage {
     this.refreshMemberStatuses()
     await this.refreshMilestones()
     // 记录当前版号
-    this.lastScanVersion = this.scanVersion
+    this.lastScanVersion = AppStorage.get<number>('scanVersion') ?? 0
     this.isLoading = false
   }
 

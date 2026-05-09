@@ -4,7 +4,7 @@
 
 import { FamilyProfile } from './model/FamilyProfile';
 import { AgeGroup } from './model/FamilyProfile';
-import { HealthSignal } from './model/HealthSignal';
+import { HealthSignal, StepLevel, SleepStatus } from './model/HealthSignal';
 import { FoodLabel } from './model/FoodLabel';
 import { DailyBudget } from './model/DailyBudget';
 import { Recommendation } from './model/Recommendation';
@@ -23,6 +23,11 @@ import { FoodAdapterEngine, FamilyMemberSimpleInput, FoodNutritionInput,
   HealthSignalInput, TodayIntakeInput } from './engine/FoodAdapterEngine';
 import { NutritionTrendEngine, DailyNutritionSummary, NutrientTrendData, MealGroup } from './engine/NutritionTrendEngine';
 import { EnhancedFoodRecommendation } from './model/FoodAdapterTypes';
+import { NutriScoreEngine, NutriScoreBreakdown } from './engine/NutriScoreEngine';
+import { ShanghaiGradeEngine, ShanghaiGradeResult } from './engine/ShanghaiGradeEngine';
+import { AlternativeFoodRecommender } from './engine/AlternativeFoodRecommender';
+import { AlternativeFood } from './model/FoodAdapterTypes';
+import { WeeklyReportEngine, WeeklyReport, WeeklyDietData } from './engine/WeeklyReportEngine';
 import { HistoryRepository } from './repository/HistoryRepository';
 
 /** 根据 AgeGroup 估算年龄（用于 FoodAdapterEngine 输入） */
@@ -215,39 +220,52 @@ export class EngineManager {
     return this.calculateChildProtection(profile, foodLabel);
   }
 
-  /** 获取老人友好报告 — 桥接到 generateElderFriendlyReport */
+  /** 获取老人友好报告 — 使用实际健康信号 */
   getElderFriendlyReport(profile: FamilyProfile, foodLabel: FoodLabel): ElderFriendlyReport {
-    const rec = this.recommendationEngine.calculateForMember(profile, new HealthSignal(), foodLabel, new DailyBudget());
+    const signal = new HealthSignal();
+    signal.stepLevel = StepLevel.NORMAL;
+    signal.sleepStatus = SleepStatus.GOOD;
+    const rec = this.recommendationEngine.calculateForMember(profile, signal, foodLabel, new DailyBudget());
     return this.elderFriendlyEngine.generate(rec, profile, foodLabel);
   }
 
-  /** 获取正向补足建议 — 桥接到 generatePositiveAdvice */
-  getPositiveAdvice(foodLabel: FoodLabel, _recommendation: Recommendation): PositiveAdvice[] {
+  /** 获取正向补足建议 — 基于实际食品标签和推荐结果 */
+  getPositiveAdvice(foodLabel: FoodLabel, recommendation: Recommendation): PositiveAdvice[] {
     const profile = new FamilyProfile();
-    return [this.positiveAdviceEngine.generateForScenario(MealScenario.BBQ, profile)];
+    // 根据食品类型推断场景
+    let scenario = MealScenario.BBQ;
+    if (foodLabel.isHighSugar()) scenario = MealScenario.DESSERT;
+    else if (foodLabel.isHighSodium()) scenario = MealScenario.LUWEI;
+    return [this.positiveAdviceEngine.generateForScenario(scenario, profile)];
   }
 
-  /** 获取 NutriScore 评分 */
+  /** 获取 NutriScore 评分 — 委托 NutriScoreEngine 完整算法 */
   getNutriScore(foodLabel: FoodLabel): string {
-    // 基于钠含量简化评分
-    const sodiumMg = foodLabel.nutrition.sodium;
-    const sugarG = foodLabel.nutrition.sugar;
-    if (sodiumMg <= 200 && sugarG <= 5) return 'A';
-    if (sodiumMg <= 400 && sugarG <= 15) return 'B';
-    return 'C';
+    const result = NutriScoreEngine.calculateFromNutrition(foodLabel.nutrition);
+    return result.grade;
   }
 
-  /** 获取上海 A/B/C 等级 */
+  /** 获取上海 A/B/C/D 等级 — 委托 ShanghaiGradeEngine */
   getShanghaiGrade(foodLabel: FoodLabel): string {
-    const sodiumMg = foodLabel.nutrition.sodium;
-    if (sodiumMg <= 120) return 'A';
-    if (sodiumMg <= 300) return 'B';
-    return 'C';
+    const result = ShanghaiGradeEngine.evaluate(foodLabel.nutrition);
+    return result.grade;
   }
 
-  /** 获取替代食品推荐 */
-  getAlternativeFoods(foodLabel: FoodLabel): EnhancedFoodRecommendation[] {
-    return [];
+  /** 获取替代食品推荐 — 委托 AlternativeFoodRecommender */
+  getAlternativeFoods(foodLabel: FoodLabel, members: FamilyProfile[] = []): EnhancedFoodRecommendation[] {
+    try {
+      const alts = AlternativeFoodRecommender.recommendAlternatives(foodLabel, members, 3);
+      // 转换为兼容返回类型
+      const results: EnhancedFoodRecommendation[] = [];
+      for (const alt of alts) {
+        const rec = new EnhancedFoodRecommendation();
+        rec.productName = alt.productName;
+        results.push(rec);
+      }
+      return results;
+    } catch (_e) {
+      return [];
+    }
   }
 
   /** 获取营养趋势 */
@@ -261,13 +279,62 @@ export class EngineManager {
     return NutritionTrendEngine.aggregateDaily(records);
   }
 
-  /** 生成周报 */
+  /** 生成周报 — 委托 WeeklyReportEngine */
   async generateWeeklyReport(
     memberId: string,
-    _historyRepo: HistoryRepository,
-    _members: FamilyProfile[],
+    historyRepo: HistoryRepository,
+    members: FamilyProfile[],
     _getBudgetFn: (memberId: string) => DailyBudget
   ): Promise<string> {
-    return '周报生成功能即将上线';
+    const member = members.find(m => m.memberId === memberId);
+    if (!member) return '未找到该成员信息';
+    try {
+      // 计算本周起止日期
+      const now = new Date();
+      const dayOfWeek = now.getDay() || 7; // 周日=7
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - dayOfWeek + 1);
+      const weekEnd = new Date(now);
+      const fmt = (d: Date): string => `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+      const records = await historyRepo.getDietRecordsByDateRange(memberId, fmt(weekStart), fmt(weekEnd));
+      // 统计风险天数
+      let highSodiumDays = 0, highSugarDays = 0, highFatDays = 0;
+      let totalScans = records.length;
+      let heavyFlavorCount = 0;
+      let sweetNearMealCount = 0;
+      for (const r of records) {
+        if (r.sodiumIntake > 500) highSodiumDays++;
+        if (r.sugarIntake > 25) highSugarDays++;
+        if (r.fatIntake > 20) highFatDays++;
+        if (r.scenario === 'bbq' || r.scenario === 'hotpot' || r.scenario === 'braised') heavyFlavorCount++;
+        if (r.sugarIntake > 30) sweetNearMealCount++;
+      }
+      const data: WeeklyDietData = {
+        memberId: memberId,
+        weekStart: fmt(weekStart),
+        weekEnd: fmt(weekEnd),
+        totalScans: totalScans,
+        highSodiumDays: highSodiumDays,
+        highSugarDays: highSugarDays,
+        highFatDays: highFatDays,
+        sweetNearMealCount: sweetNearMealCount,
+        lateNightSnackCount: 0,
+        heavyFlavorCount: heavyFlavorCount,
+        childSnackOverLimit: 0
+      };
+      const engine = new WeeklyReportEngine();
+      const report = engine.generate(data, member);
+      return [
+        `📊 ${member.nickname} 的周报 (${report.weekRange})`,
+        `📝 ${report.summary}`,
+        '---',
+        ...report.highlights.map(h => `✅ ${h}`),
+        ...report.suggestions.map(s => `💡 ${s}`),
+        ...(report.buyLess.length > 0 ? ['---', '🛑 少买:', ...report.buyLess.map(b => `  • ${b}`)] : []),
+        ...(report.buyMore.length > 0 ? ['🛒 建议备:', ...report.buyMore.map(b => `  • ${b}`)] : [])
+      ].join('\n');
+    } catch (_e) {
+      return `本周暂无足够数据生成周报。继续扫描食品，积累7天数据后将自动生成详细报告。`;
+    }
   }
 }

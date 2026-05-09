@@ -25,9 +25,10 @@ import {
   StressLevel
 } from '../../model/HealthSignal';
 import { HealthSignalProvider } from './HealthSignalProvider';
+import { HILOG_DOMAIN } from '../../constants/AppConfig';
 
 const TAG = 'HwHealthSignalProvider';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 /**
  * 当前时间戳（秒）
@@ -165,9 +166,9 @@ export class HwHealthSignalProvider implements HealthSignalProvider {
         >(hrRequest);
         if (hrResults && hrResults.length > 0 && hrResults[0].fields.bpm) {
           const bpmFields = hrResults[0].fields.bpm;
-          signal.heartRate = (bpmFields as Record<string, number>)['avg'] ||
-            (bpmFields as Record<string, number>)['last'] || 0;
-          signal.restingHeartRate = (bpmFields as Record<string, number>)['min'] || 0;
+          signal.heartRate = (bpmFields as Record<string, number>).avg ||
+            (bpmFields as Record<string, number>).last || 0;
+          signal.restingHeartRate = (bpmFields as Record<string, number>).min || 0;
         }
       } catch (_hrErr) {
         hilog.warn(DOMAIN_ZERO, TAG, 'heart rate read failed: %{public}s', JSON.stringify(_hrErr));
@@ -187,8 +188,8 @@ export class HwHealthSignalProvider implements HealthSignalProvider {
         >(spo2Request);
         if (spo2Results && spo2Results.length > 0 && spo2Results[0].fields.spo2) {
           const spo2Fields = spo2Results[0].fields.spo2;
-          signal.spo2 = (spo2Fields as Record<string, number>)['avg'] ||
-            (spo2Fields as Record<string, number>)['last'] || 0;
+          signal.spo2 = (spo2Fields as Record<string, number>).avg ||
+            (spo2Fields as Record<string, number>).last || 0;
         }
       } catch (_spo2Err) {
         hilog.warn(DOMAIN_ZERO, TAG, 'spo2 read failed: %{public}s', JSON.stringify(_spo2Err));

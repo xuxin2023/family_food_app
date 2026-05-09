@@ -21,9 +21,10 @@ import { AiServiceBase } from './service/ai/AiServiceBase';
 import { FamilyGroupRepository } from './repository/FamilyGroupRepository';
 import { RecipeRepository } from './repository/RecipeRepository';
 import { FEATURE_FLAGS } from './constants/AppConfig';
+import { HILOG_DOMAIN } from './constants/AppConfig';
 
 const TAG = 'ServiceManager';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 export class ServiceManager {
   // ========== 基础服务 ==========

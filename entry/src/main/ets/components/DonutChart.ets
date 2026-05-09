@@ -3,6 +3,7 @@
 // 自绘分段环形，带居中的总值展示
 
 import { COLORS, FONT_SIZE, SPACING, RADIUS } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 export interface DonutSegment {
   label: string;
@@ -10,14 +11,14 @@ export interface DonutSegment {
   color: string;
 }
 
-@Component
+@ComponentV2
 export struct DonutChart {
-  @Prop segments: DonutSegment[] = []
-  @Prop chartSize: number = 160
-  @Prop thickness: number = 24
-  @Prop centerText: string = ''
-  @Prop centerSubText: ResourceStr = ''
-  @Prop showLegend: boolean = true
+  @Param segments: DonutSegment[] = []
+  @Param chartSize: number = 160
+  @Param thickness: number = 24
+  @Param centerText: string = ''
+  @Param centerSubText: ResourceStr = ''
+  @Param showLegend: boolean = true
 
   build() {
     if (this.segments.length === 0) {

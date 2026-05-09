@@ -9,8 +9,9 @@ import { AppState } from '../AppState';
 import { NutrientTrendData, DailyNutritionSummary, TrendDirection, DailyNutrientPoint } from '../engine/NutritionTrendEngine';
 import { TrendChart } from '../components/TrendChart';
 import { COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 interface PeriodOption {
   label: string;
@@ -23,14 +24,14 @@ const PERIOD_OPTIONS: PeriodOption[] = [
 ];
 
 @Entry
-@Component
+@ComponentV2
 struct NutritionTrendPage {
-  @State selectedPeriodIndex: number = 0
-  @State selectedMemberId: string = ''
-  @State trends: NutrientTrendData[] = []
-  @State summaries: DailyNutritionSummary[] = []
-  @State isLoading: boolean = true
-  @State periodLabel: string = '近7天'
+  @Local selectedPeriodIndex: number = 0
+  @Local selectedMemberId: string = ''
+  @Local trends: NutrientTrendData[] = []
+  @Local summaries: DailyNutritionSummary[] = []
+  @Local isLoading: boolean = true
+  @Local periodLabel: string = '近7天'
 
   private appState: AppState = AppState.getInstance()
   private periodOptions: PeriodOption[] = PERIOD_OPTIONS

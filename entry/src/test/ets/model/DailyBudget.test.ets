@@ -1,62 +1,62 @@
 // DailyBudget.test.ets
+// 每日预算模型单元测试
+
 import { describe, it, expect } from '@ohos/hypium';
 import { DailyBudget } from '../../../main/ets/model/DailyBudget';
 
 export default function dailyBudgetTest() {
-  describe('DailyBudgetTest', () => {
-    it('should_start_with_full_budget', 0, () => {
-      const budget = createTestBudget();
-      expect(budget.sodiumRemaining).assertEqual(budget.sodiumBudget);
-      expect(budget.sugarRemaining).assertEqual(budget.sugarBudget);
+  describe('DailyBudget', () => {
+    it('should initialize with default values', () => {
+      const budget = new DailyBudget();
+      expect(budget.sodiumBudget).assertEqual(2000);
+      expect(budget.sodiumRemaining).assertEqual(2000);
+      expect(budget.sugarBudget).assertEqual(50);
+      expect(budget.calorieBudget).assertEqual(2000);
+      expect(budget.fatBudget).assertEqual(65);
     });
 
-    it('should_deduct_intake_correctly', 0, () => {
-      const budget = createTestBudget();
+    it('should calculate sodium usage percentage', () => {
+      const budget = new DailyBudget();
+      budget.sodiumRemaining = 1000;
+      expect(budget.sodiumUsagePercent()).assertEqual(50);
+    });
+
+    it('should deduct intake correctly', () => {
+      const budget = new DailyBudget();
       budget.deductIntake(500, 10, 300, 15);
-      expect(budget.sodiumRemaining).assertEqual(budget.sodiumBudget - 500);
-      expect(budget.sugarRemaining).assertEqual(budget.sugarBudget - 10);
+      expect(budget.sodiumRemaining).assertEqual(1500);
+      expect(budget.sugarRemaining).assertEqual(40);
+      expect(budget.calorieRemaining).assertEqual(1700);
+      expect(budget.fatRemaining).assertEqual(50);
     });
 
-    it('should_not_go_below_zero', 0, () => {
-      const budget = createTestBudget();
-      budget.deductIntake(99999, 99999, 99999, 99999);
-      expect(budget.sodiumRemaining).assertLessThanOrEqual(0);
-      expect(budget.sugarRemaining).assertLessThanOrEqual(0);
+    it('should not allow negative remaining values', () => {
+      const budget = new DailyBudget();
+      budget.deductIntake(3000, 100, 3000, 100);
+      expect(budget.sodiumRemaining).assertEqual(0);
+      expect(budget.sugarRemaining).assertEqual(0);
+      expect(budget.calorieRemaining).assertEqual(0);
+      expect(budget.fatRemaining).assertEqual(0);
     });
 
-    it('should_calculate_usage_percentage', 0, () => {
-      const budget = createTestBudget();
-      budget.deductIntake(500, 0, 0, 0);
-      const pct = budget.getSodiumUsagePercent();
-      expect(pct).assertEqual(25); // 500/2000 = 25%
+    it('should report budget exhausted', () => {
+      const budget = new DailyBudget();
+      budget.sodiumRemaining = 0;
+      budget.sugarRemaining = 5;
+      expect(budget.isSodiumExhausted()).assertEqual(true);
+      expect(budget.isSugarExhausted()).assertEqual(false);
     });
 
-    it('should_report_budget_exhausted', 0, () => {
-      const budget = createTestBudget();
-      budget.deductIntake(2000, 50, 2000, 65);
-      expect(budget.isSodiumExhausted()).assertTrue();
-      expect(budget.isSugarExhausted()).assertTrue();
-    });
-
-    it('should_handle_zero_deduction', 0, () => {
-      const budget = createTestBudget();
-      budget.deductIntake(0, 0, 0, 0);
-      expect(budget.sodiumRemaining).assertEqual(budget.sodiumBudget);
+    it('should serialize to JSON and back', () => {
+      const budget = new DailyBudget();
+      budget.memberId = 'm1';
+      budget.date = '2026-05-09';
+      budget.deductIntake(300, 8, 200, 10);
+      const json = budget.toJson();
+      const restored = DailyBudget.fromJson(json);
+      expect(restored.memberId).assertEqual('m1');
+      expect(restored.sodiumRemaining).assertEqual(budget.sodiumRemaining);
+      expect(restored.calorieRemaining).assertEqual(budget.calorieRemaining);
     });
   });
-}
-
-function createTestBudget(): DailyBudget {
-  const budget = new DailyBudget();
-  budget.memberId = 'test_member';
-  budget.date = '2026-05-06';
-  budget.sodiumBudget = 2000;
-  budget.sodiumRemaining = 2000;
-  budget.sugarBudget = 50;
-  budget.sugarRemaining = 50;
-  budget.calorieBudget = 2000;
-  budget.calorieRemaining = 2000;
-  budget.fatBudget = 65;
-  budget.fatRemaining = 65;
-  return budget;
 }

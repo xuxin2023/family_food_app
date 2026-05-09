@@ -6,9 +6,10 @@ import { WeeklyReport, WeeklyDietData } from '../engine/WeeklyReportEngine';
 import { FamilyProfile } from '../model/FamilyProfile';
 import { AiServiceBase } from './ai/AiServiceBase';
 import { AI_SERVICE_DEFAULTS, SYSTEM_PROMPTS } from './ai/AiConfig';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'AiWeeklyReportService';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 export interface AiWeeklyReportResult {
   summary: string;

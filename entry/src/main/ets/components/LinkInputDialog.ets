@@ -7,10 +7,11 @@ import { AppState } from '../AppState';
 import { COLORS, BUTTON } from '../constants/AppTheme';
 import { router } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
-@Component
+@ComponentV2
 export struct LinkInputDialog {
   linkInputText: string = ''
   isParsingLink: boolean = false

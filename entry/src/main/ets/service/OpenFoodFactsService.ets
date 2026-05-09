@@ -10,9 +10,10 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FoodLabel, NutritionPer100g, FoodSource } from '../model/FoodLabel';
 import { JsonObject } from '../model/JsonTypes';
 import { API_TIMEOUT_CONFIG } from '../constants/AppConfig';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'OpenFoodFactsService';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 // ===== 公开的营养数据接口（替代已移除的 FoodAdapterTypes.FoodNutrition） =====
 
@@ -303,7 +304,7 @@ export class OpenFoodFactsService {
     }
 
     try {
-      const productRaw = response['product'] as Record<string, Object>
+      const productRaw = response.product as Record<string, Object>
       if (productRaw === undefined) {
         return null
       }
@@ -333,10 +334,10 @@ export class OpenFoodFactsService {
     }
 
     try {
-      const count = response['count'] as number ?? 0
-      const respPage = response['page'] as number ?? page
-      const respPageSize = response['page_size'] as number ?? pageSize
-      const rawProducts = response['products'] as Record<string, Object>[] ?? []
+      const count = response.count as number ?? 0
+      const respPage = response.page as number ?? page
+      const respPageSize = response.page_size as number ?? pageSize
+      const rawProducts = response.products as Record<string, Object>[] ?? []
 
       const products: OffProductSummary[] = []
       for (const raw of rawProducts) {
@@ -540,97 +541,110 @@ export class OpenFoodFactsService {
   }
 
   /**
+   * 安全获取 Record 中的值（通过 Object.entries 遍历，兼容含连字符的 key）
+   */
+  private getRecordValue(rec: Record<string, Object>, key: string): Object | undefined {
+    const entries = Object.entries(rec);
+    for (const entry of entries) {
+      if (entry[0] === key) {
+        return entry[1];
+      }
+    }
+    return undefined;
+  }
+
+  /**
    * 解析 API 原始产品数据为 OffProduct
    */
   private parseOffProduct(barcode: string, raw: JsonObject): OffProduct {
-    const nutrimentsRaw = raw['nutriments'] as Record<string, Object>[] ?? []
+    const nutrimentsRaw = raw.nutriments as Record<string, Object>
 
     const nutriments: OffNutriments = {
-      energyKj: this.safeNumber(nutrimentsRaw['energy_100g'] ?? nutrimentsRaw['energy-kj_100g']),
-      energyKcal: this.safeNumber(nutrimentsRaw['energy-kcal_100g'] ?? nutrimentsRaw['energykcal_100g']),
-      fat: this.safeNumber(nutrimentsRaw['fat_100g']),
-      saturatedFat: this.safeNumber(nutrimentsRaw['saturated-fat_100g']),
-      transFat: this.safeNumber(nutrimentsRaw['trans-fat_100g']),
-      cholesterol: this.safeNumber(nutrimentsRaw['cholesterol_100g']),
-      carbohydrates: this.safeNumber(nutrimentsRaw['carbohydrates_100g']),
-      sugars: this.safeNumber(nutrimentsRaw['sugars_100g']),
-      fiber: this.safeNumber(nutrimentsRaw['fiber_100g']),
-      proteins: this.safeNumber(nutrimentsRaw['proteins_100g']),
-      salt: this.safeNumber(nutrimentsRaw['salt_100g']),
-      sodium: this.safeNumber(nutrimentsRaw['sodium_100g']),
-      vitaminA: this.safeNumber(nutrimentsRaw['vitamin-a_100g']),
-      vitaminC: this.safeNumber(nutrimentsRaw['vitamin-c_100g']),
-      calcium: this.safeNumber(nutrimentsRaw['calcium_100g']),
-      iron: this.safeNumber(nutrimentsRaw['iron_100g']),
-      fructose: this.safeNumber(nutrimentsRaw['fructose_100g']),
-      glucose: this.safeNumber(nutrimentsRaw['glucose_100g']),
-      sucrose: this.safeNumber(nutrimentsRaw['sucrose_100g']),
-      lactose: this.safeNumber(nutrimentsRaw['lactose_100g']),
-      maltose: this.safeNumber(nutrimentsRaw['maltose_100g']),
-      starch: this.safeNumber(nutrimentsRaw['starch_100g']),
-      polyunsaturatedFat: this.safeNumber(nutrimentsRaw['polyunsaturated-fat_100g']),
-      monounsaturatedFat: this.safeNumber(nutrimentsRaw['monounsaturated-fat_100g']),
-      caffeine: this.safeNumber(nutrimentsRaw['caffeine_100g']),
-      alcohol: this.safeNumber(nutrimentsRaw['alcohol_100g'])
+      energyKj: this.safeNumber(nutrimentsRaw.energy_100g ?? this.getRecordValue(nutrimentsRaw, 'energy-kj_100g')),
+      energyKcal: this.safeNumber(this.getRecordValue(nutrimentsRaw, 'energy-kcal_100g') ?? nutrimentsRaw.energykcal_100g),
+      fat: this.safeNumber(nutrimentsRaw.fat_100g),
+      saturatedFat: this.safeNumber(this.getRecordValue(nutrimentsRaw, 'saturated-fat_100g')),
+      transFat: this.safeNumber(this.getRecordValue(nutrimentsRaw, 'trans-fat_100g')),
+      cholesterol: this.safeNumber(nutrimentsRaw.cholesterol_100g),
+      carbohydrates: this.safeNumber(nutrimentsRaw.carbohydrates_100g),
+      sugars: this.safeNumber(nutrimentsRaw.sugars_100g),
+      fiber: this.safeNumber(nutrimentsRaw.fiber_100g),
+      proteins: this.safeNumber(nutrimentsRaw.proteins_100g),
+      salt: this.safeNumber(nutrimentsRaw.salt_100g),
+      sodium: this.safeNumber(nutrimentsRaw.sodium_100g),
+      vitaminA: this.safeNumber(this.getRecordValue(nutrimentsRaw, 'vitamin-a_100g')),
+      vitaminC: this.safeNumber(this.getRecordValue(nutrimentsRaw, 'vitamin-c_100g')),
+      calcium: this.safeNumber(nutrimentsRaw.calcium_100g),
+      iron: this.safeNumber(nutrimentsRaw.iron_100g),
+      fructose: this.safeNumber(nutrimentsRaw.fructose_100g),
+      glucose: this.safeNumber(nutrimentsRaw.glucose_100g),
+      sucrose: this.safeNumber(nutrimentsRaw.sucrose_100g),
+      lactose: this.safeNumber(nutrimentsRaw.lactose_100g),
+      maltose: this.safeNumber(nutrimentsRaw.maltose_100g),
+      starch: this.safeNumber(nutrimentsRaw.starch_100g),
+      polyunsaturatedFat: this.safeNumber(this.getRecordValue(nutrimentsRaw, 'polyunsaturated-fat_100g')),
+      monounsaturatedFat: this.safeNumber(this.getRecordValue(nutrimentsRaw, 'monounsaturated-fat_100g')),
+      caffeine: this.safeNumber(nutrimentsRaw.caffeine_100g),
+      alcohol: this.safeNumber(nutrimentsRaw.alcohol_100g)
     }
 
     // 解析配料
     const ingredients: OffIngredient[] = []
-    const ingredientsRaw = raw['ingredients'] as Record<string, Object>[] ?? []
+    const ingredientsRaw = raw.ingredients as Record<string, Object>[] ?? []
     for (const ing of ingredientsRaw) {
       ingredients.push({
-        id: (ing['id'] as string) ?? '',
-        text: (ing['text'] as string) ?? '',
-        percent: this.safeNumber(ing['percent']),
-        vegan: (ing['vegan'] as string) ?? '',
-        vegetarian: (ing['vegetarian'] as string) ?? ''
+        id: (ing.id as string) ?? '',
+        text: (ing.text as string) ?? '',
+        percent: this.safeNumber(ing.percent),
+        vegan: (ing.vegan as string) ?? '',
+        vegetarian: (ing.vegetarian as string) ?? ''
       })
     }
 
     // 解析过敏原标签
     const allergensTags: string[] = []
-    const allergensRaw = raw['allergens_tags'] as string[] ?? []
+    const allergensRaw = raw.allergens_tags as string[] ?? []
     for (const tag of allergensRaw) {
       allergensTags.push(tag)
     }
 
     // 解析添加剂标签
     const additivesTags: string[] = []
-    const additivesRaw = raw['additives_tags'] as string[] ?? []
+    const additivesRaw = raw.additives_tags as string[] ?? []
     for (const tag of additivesRaw) {
       additivesTags.push(tag)
     }
 
-    const code = (raw['code'] as string) ?? barcode
-    const imageUrl = (raw['image_url'] as string) ?? ''
-    const imageSmallUrl = (raw['image_small_url'] as string) ?? ''
+    const code = (raw.code as string) ?? barcode
+    const imageUrl = (raw.image_url as string) ?? ''
+    const imageSmallUrl = (raw.image_small_url as string) ?? ''
 
     return {
       code: code,
-      productName: (raw['product_name'] as string) ?? '',
-      brands: (raw['brands'] as string) ?? '',
-      ingredientsText: (raw['ingredients_text'] as string) ?? '',
+      productName: (raw.product_name as string) ?? '',
+      brands: (raw.brands as string) ?? '',
+      ingredientsText: (raw.ingredients_text as string) ?? '',
       ingredients: ingredients,
       allergensTags: allergensTags,
-      allergensText: (raw['allergens'] as string) ?? '',
+      allergensText: (raw.allergens as string) ?? '',
       nutriments: nutriments,
-      nutritionGrade: (raw['nutrition_grades'] as string) ?? '',
-      nutriscoreScore: this.safeNumber(raw['nutriscore_score']),
+      nutritionGrade: (raw.nutrition_grades as string) ?? '',
+      nutriscoreScore: this.safeNumber(raw.nutriscore_score),
       imageUrl: imageUrl,
       imageSmallUrl: imageSmallUrl,
-      productQuantity: this.safeInt(raw['product_quantity']),
-      productPackaging: (raw['product_packaging'] as string) ?? '',
-      categories: (raw['categories'] as string) ?? '',
-      labels: (raw['labels'] as string) ?? '',
-      origin: (raw['origins'] as string) ?? '',
-      manufacturer: (raw['manufacturing_places'] as string) ?? '',
-      dataQualityScore: this.safeNumber(raw['data_quality_score']),
+      productQuantity: this.safeInt(raw.product_quantity),
+      productPackaging: (raw.product_packaging as string) ?? '',
+      categories: (raw.categories as string) ?? '',
+      labels: (raw.labels as string) ?? '',
+      origin: (raw.origins as string) ?? '',
+      manufacturer: (raw.manufacturing_places as string) ?? '',
+      dataQualityScore: this.safeNumber(raw.data_quality_score),
       additivesTags: additivesTags,
-      additivesText: (raw['additives'] as string) ?? '',
-      nutritionGradeFr: (raw['nutrition_grades'] as string) ?? '',
-      ecoscoreScore: this.safeNumber(raw['ecoscore_score']),
-      ecoscoreGrade: (raw['ecoscore_grade'] as string) ?? '',
-      novaGroup: this.safeInt(raw['nova_group'])
+      additivesText: (raw.additives as string) ?? '',
+      nutritionGradeFr: (raw.nutrition_grades as string) ?? '',
+      ecoscoreScore: this.safeNumber(raw.ecoscore_score),
+      ecoscoreGrade: (raw.ecoscore_grade as string) ?? '',
+      novaGroup: this.safeInt(raw.nova_group)
     }
   }
 
@@ -638,21 +652,21 @@ export class OpenFoodFactsService {
    * 解析搜索结果的单个产品摘要
    */
   private parseProductSummary(raw: JsonObject): OffProductSummary | null {
-    const code = (raw['code'] as string) ?? ''
+    const code = (raw.code as string) ?? ''
     if (code.length === 0) {
       return null
     }
 
-    const nutrimentsRaw = raw['nutriments'] as Record<string, Object>
+    const nutrimentsRaw = raw.nutriments as Record<string, Object>
 
     return {
       code: code,
-      productName: (raw['product_name'] as string) ?? '',
-      brands: (raw['brands'] as string) ?? '',
-      imageUrl: (raw['image_url'] as string) ?? '',
-      nutritionGrade: (raw['nutrition_grades'] as string) ?? '',
-      energyKj: this.safeNumber(nutrimentsRaw?.['energy_100g']),
-      nutriscoreScore: this.safeNumber(raw['nutriscore_score'])
+      productName: (raw.product_name as string) ?? '',
+      brands: (raw.brands as string) ?? '',
+      imageUrl: (raw.image_url as string) ?? '',
+      nutritionGrade: (raw.nutrition_grades as string) ?? '',
+      energyKj: this.safeNumber(nutrimentsRaw?.energy_100g),
+      nutriscoreScore: this.safeNumber(raw.nutriscore_score)
     }
   }
 

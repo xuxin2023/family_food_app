@@ -3,6 +3,7 @@
 // 使用 Canvas/Shape 自绘，鸿蒙 API 原生实现
 
 import { COLORS, FONT_SIZE, SPACING } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 export interface RadarAxis {
   label: string;
@@ -16,11 +17,11 @@ interface Point {
   y: number;
 }
 
-@Component
+@ComponentV2
 export struct RadarChart {
-  @Prop axes: RadarAxis[] = []
-  @Prop chartSize: number = 200
-  @Prop showLabels: boolean = true
+  @Param axes: RadarAxis[] = []
+  @Param chartSize: number = 200
+  @Param showLabels: boolean = true
 
   build() {
     Column() {

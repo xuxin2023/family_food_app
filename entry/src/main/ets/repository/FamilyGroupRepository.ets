@@ -7,9 +7,10 @@ import {
   FamilyGroup, GroupMember, JoinRequest, GroupFeed,
   GroupRole, JoinMethod, JoinRequestStatus, FeedType
 } from '../model/FamilyGroup';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'FamilyGroupRepository';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 /** 群组表名 */
 const TABLE_GROUP = 'family_group';

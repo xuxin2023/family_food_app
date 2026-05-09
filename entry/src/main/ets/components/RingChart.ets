@@ -3,6 +3,7 @@
 // 使用 Shape + Arc 自绘，支持渐变色和动画
 
 import { COLORS, FONT_SIZE } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 export interface RingData {
   label: string;
@@ -13,12 +14,12 @@ export interface RingData {
   bgColor: string;
 }
 
-@Component
+@ComponentV2
 export struct RingChart {
-  @Prop data: RingData | null = null
-  @Prop ringSize: number = 80
-  @Prop strokeWidth: number = 8
-  @Prop showLabel: boolean = true
+  @Param data: RingData | null = null
+  @Param ringSize: number = 80
+  @Param strokeWidth: number = 8
+  @Param showLabel: boolean = true
 
   build() {
     if (this.data === null) {

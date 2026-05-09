@@ -1,4 +1,5 @@
 // 家庭成员画像数据模型
+// V2 状态管理: @ObservedV2 + @Trace 深度嵌套观察
 
 // 年龄段枚举
 export enum AgeGroup {
@@ -20,23 +21,22 @@ export enum HealthGoal {
 }
 
 // 正餐时间
-@Observed
+@ObservedV2
 export class MealTimes {
-  breakfast: string = '07:30';  // HH:mm
-  lunch: string = '12:00';      // HH:mm
-  dinner: string = '18:00';     // HH:mm
+  @Trace breakfast: string = '07:30';
+  @Trace lunch: string = '12:00';
+  @Trace dinner: string = '18:00';
 
-  /**
-   * 更新用餐时间并返回新的实例（触发 @Observed 刷新）
-   * @Observed 装饰器对嵌套属性修改不会自动触发UI刷新，
-   * 使用此方法确保返回新实例以触发组件更新
-   */
-  withUpdate(breakfast?: string, lunch?: string, dinner?: string): MealTimes {
-    const updated = new MealTimes();
-    updated.breakfast = breakfast !== undefined ? breakfast : this.breakfast;
-    updated.lunch = lunch !== undefined ? lunch : this.lunch;
-    updated.dinner = dinner !== undefined ? dinner : this.dinner;
-    return updated;
+  update(breakfast?: string, lunch?: string, dinner?: string): void {
+    if (breakfast !== undefined) {
+      this.breakfast = breakfast;
+    }
+    if (lunch !== undefined) {
+      this.lunch = lunch;
+    }
+    if (dinner !== undefined) {
+      this.dinner = dinner;
+    }
   }
 }
 
@@ -63,45 +63,39 @@ export class DailyBudgetConfigJson {
 }
 
 // 家庭成员画像
-@Observed
+@ObservedV2
 export class FamilyProfile {
-  memberId: string = '';
-  nickname: string = '';
-  ageGroup: AgeGroup = AgeGroup.ADULT;
-  healthGoals: HealthGoal[] = [HealthGoal.NONE];
-  allergens: string[] = [];
-  dailyBudget: DailyBudgetConfig = new DailyBudgetConfig();
-  mealTimes: MealTimes = new MealTimes();
-  bedtime: string = '22:00';
-  createdAt: number = 0;
-  updatedAt: number = 0;
+  @Trace memberId: string = '';
+  @Trace nickname: string = '';
+  @Trace ageGroup: AgeGroup = AgeGroup.ADULT;
+  @Trace healthGoals: HealthGoal[] = [HealthGoal.NONE];
+  @Trace allergens: string[] = [];
+  @Trace dailyBudget: DailyBudgetConfig = new DailyBudgetConfig();
+  @Trace mealTimes: MealTimes = new MealTimes();
+  @Trace bedtime: string = '22:00';
+  @Trace createdAt: number = 0;
+  @Trace updatedAt: number = 0;
 
-  // 是否为儿童
   isChild(): boolean {
     return this.ageGroup === AgeGroup.CHILD || this.healthGoals.includes(HealthGoal.CHILD);
   }
 
-  // 是否控压
   isControlBp(): boolean {
     return this.healthGoals.includes(HealthGoal.CONTROL_BP);
   }
 
-  // 是否控糖
   isControlSugar(): boolean {
     return this.healthGoals.includes(HealthGoal.CONTROL_SUGAR);
   }
 
-  // 是否减脂
   isLoseFat(): boolean {
     return this.healthGoals.includes(HealthGoal.LOSE_FAT);
   }
 
-  // 是否控脂
   isControlFat(): boolean {
     return this.healthGoals.includes(HealthGoal.CONTROL_FAT);
   }
 
-  // 序列化为JSON
   toJson(): FamilyProfileJson {
     const json = new FamilyProfileJson();
     json.memberId = this.memberId;
@@ -117,7 +111,6 @@ export class FamilyProfile {
     return json;
   }
 
-  // 从JSON反序列化
   static fromJson(json: FamilyProfileJson): FamilyProfile {
     const profile = new FamilyProfile();
     profile.memberId = json.memberId;
@@ -135,12 +128,12 @@ export class FamilyProfile {
 }
 
 // 每日营养预算配置
-@Observed
+@ObservedV2
 export class DailyBudgetConfig {
-  sodiumBudget: number = 2000;   // mg
-  sugarBudget: number = 50;      // g
-  calorieBudget: number = 2000;  // kcal
-  fatBudget: number = 65;        // g
+  @Trace sodiumBudget: number = 2000;
+  @Trace sugarBudget: number = 50;
+  @Trace calorieBudget: number = 2000;
+  @Trace fatBudget: number = 65;
 
   toJson(): DailyBudgetConfigJson {
     const json = new DailyBudgetConfigJson();
@@ -161,10 +154,6 @@ export class DailyBudgetConfig {
   }
 }
 
-/**
- * 创建默认家庭成员列表（首次启动时使用）
- * 生成一个默认的成人成员
- */
 export function createDefaultMembers(): FamilyProfile[] {
   const defaultMembers: FamilyProfile[] = [];
   const adult = new FamilyProfile();

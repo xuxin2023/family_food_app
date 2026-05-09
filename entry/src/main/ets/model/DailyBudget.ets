@@ -1,4 +1,5 @@
 // 今日预算数据模型
+// V2 状态管理: @ObservedV2 + @Trace
 
 // DailyBudget JSON 输出类
 export class DailyBudgetJson {
@@ -14,18 +15,18 @@ export class DailyBudgetJson {
   fatRemaining: number = 0;
 }
 
-@Observed
+@ObservedV2
 export class DailyBudget {
-  memberId: string = '';
-  date: string = '';              // YYYY-MM-DD
-  sodiumBudget: number = 2000;    // 钠预算总量 mg
-  sodiumRemaining: number = 2000; // 钠剩余额度 mg
-  sugarBudget: number = 50;       // 糖预算总量 g
-  sugarRemaining: number = 50;    // 糖剩余额度 g
-  calorieBudget: number = 2000;   // 热量预算总量 kcal
-  calorieRemaining: number = 2000;// 热量剩余额度 kcal
-  fatBudget: number = 65;         // 脂肪预算总量 g
-  fatRemaining: number = 65;      // 脂肪剩余额度 g
+  @Trace memberId: string = '';
+  @Trace date: string = '';              // YYYY-MM-DD
+  @Trace sodiumBudget: number = 2000;    // 钠预算总量 mg
+  @Trace sodiumRemaining: number = 2000; // 钠剩余额度 mg
+  @Trace sugarBudget: number = 50;       // 糖预算总量 g
+  @Trace sugarRemaining: number = 50;    // 糖剩余额度 g
+  @Trace calorieBudget: number = 2000;   // 热量预算总量 kcal
+  @Trace calorieRemaining: number = 2000;// 热量剩余额度 kcal
+  @Trace fatBudget: number = 65;         // 脂肪预算总量 g
+  @Trace fatRemaining: number = 65;      // 脂肪剩余额度 g
 
   // 钠预算使用百分比
   sodiumUsagePercent(): number {

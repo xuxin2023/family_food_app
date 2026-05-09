@@ -58,9 +58,10 @@ import {
   AiRecipeRecommendationResult, AiRecipeRequest,
   AiNutritionAdvice
 } from './model/AiModels';
+import { HILOG_DOMAIN } from './constants/AppConfig';
 
 const TAG = 'AppState';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 // 全局单例
 let appStateInstance: AppState | null = null;
@@ -137,7 +138,7 @@ export class AppState {
     // 1. 迁移数据库
     const rdbConfig: relationalStore.StoreConfig = {
       name: 'family_food.db',
-      securityLevel: relationalStore.SecurityLevel.S1
+      securityLevel: relationalStore.SecurityLevel.S3
     };
     const rdbStore = await relationalStore.getRdbStore(context, rdbConfig);
     await migrateDatabase(rdbStore, context);
@@ -465,9 +466,24 @@ export class AppState {
   }
 
   // ===== 缓存刷新 =====
+  /** 全量刷新（兼容旧接口，内部委托给增量刷新） */
   refreshCache(): void {
-    this.cache.clearAll();
+    this.refreshMemberCache();
+    this.refreshBudgetCache();
+    this.engines.cleanExpiredEngineCache();
     AppStorage.set<number>('scanVersion', (AppStorage.get<number>('scanVersion') || 0) + 1);
+  }
+
+  /** 仅刷新成员缓存 */
+  refreshMemberCache(): void {
+    this.cache.clearHealthSignalsCache();
+    this._membersCache = [];
+  }
+
+  /** 仅刷新预算缓存 */
+  refreshBudgetCache(): void {
+    this.cache.clearAllBudgets();
+    this._dailyBudgetsCache = new Map();
   }
 
   // ===== 页面兼容桥 =====

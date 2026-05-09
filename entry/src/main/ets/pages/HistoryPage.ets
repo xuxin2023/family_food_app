@@ -8,13 +8,14 @@ import { EmptyState } from '../components/EmptyState';
 import { LoadingSkeleton } from '../components/SkeletonScreen';
 import { COLORS } from '../constants/AppTheme';
 import { BasicDataSource } from '../utils/BasicDataSource';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 @Entry
-@Component
+@ComponentV2
 struct HistoryPage {
-  @State familyMembers: FamilyProfile[] = []
-  @State selectedMemberId: string = 'all'
-  @State isLoading: boolean = true
+  @Local familyMembers: FamilyProfile[] = []
+  @Local selectedMemberId: string = 'all'
+  @Local isLoading: boolean = true
 
   private appState: AppState = AppState.getInstance()
   private historyRecords: ScanHistoryRecord[] = []

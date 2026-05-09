@@ -3,15 +3,15 @@
   "securityConfig": {
     "domainSettings": [
       {
-        "cleartextPermitted": true,
+        "cleartextPermitted": false,
         "domains": [
+          { "domain": "api.familyfood.example.com" }
+        ],
+        "certificates": [
           {
-            "subDomains": true,
-            "name": "*.openfoodfacts.org"
-          },
-          {
-            "subDomains": true,
-            "name": "*.openbeautyfacts.org"
+            "type": "pem",
+            "source": "file",
+            "value": "rawfile/ca_cert.pem"
           }
         ]
       }

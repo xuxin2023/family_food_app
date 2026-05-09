@@ -6,9 +6,10 @@ import { common } from '@kit.AbilityKit';
 import { preferences } from '@kit.ArkData';
 import { reminderAgentManager } from '@kit.BackgroundTasksKit';
 import { BusinessError } from '@kit.BasicServicesKit';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'PushNotificationService';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 export interface NotificationConfig {
   dietReminderEnabled: boolean;

@@ -3,9 +3,10 @@ import { http } from '@kit.NetworkKit';
 import { common } from '@kit.AbilityKit';
 import { preferences } from '@kit.ArkData';
 import { TIME_INTERVAL_CONFIG, API_TIMEOUT_CONFIG } from '../constants/AppConfig';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'InspectionDataService';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 const SAMR_API_BASE = 'https://spcjsac.gsxt.gov.cn';
 

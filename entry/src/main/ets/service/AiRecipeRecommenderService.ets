@@ -24,9 +24,10 @@ import { RecipeRepository } from '../repository/RecipeRepository';
 import { AI_CACHE_CONFIG } from '../constants/AppConfig';
 import { AiServiceBase } from './ai/AiServiceBase';
 import { AI_SERVICE_DEFAULTS } from './ai/AiConfig';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'AiRecipeRecommenderService';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 const CACHE_TTL_MS = AI_CACHE_CONFIG.RECIPE_RECOMMENDER_CACHE_TTL_MS;
 
 /** 内部评分食谱结构 */

@@ -3,6 +3,7 @@
 
 import { BasicDataSource } from './BasicDataSource';
 import { FamilyProfile } from '../model/FamilyProfile';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 export class FamilyMemberDataSource extends BasicDataSource<FamilyProfile> {
   /**

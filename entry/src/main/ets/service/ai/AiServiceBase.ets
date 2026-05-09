@@ -6,9 +6,10 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AssetKeyManager, KeyAlias } from '../../utils/AssetKeyManager';
 import { AiClient, AiRequestOptions } from './AiClient';
 import { AI_RETRY_CONFIG } from './AiConfig';
+import { HILOG_DOMAIN } from '../../constants/AppConfig';
 
 const TAG = 'AiServiceBase';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 /**
  * AI 服务基类

@@ -8,9 +8,10 @@ import {
   RecipeIngredient, RecipeStep, RecipeNutrition,
   RecipeDifficulty, RecipeCategory, DietTag
 } from '../model/Recipe';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'RecipeRepository';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 const TABLE_RECIPE = 'recipe';
 const TABLE_COMMENT = 'recipe_comment';
@@ -500,7 +501,8 @@ export class RecipeRepository {
 
     const nutritionStr = resultSet.getString(resultSet.getColumnIndex('nutrition'));
 
-    const defaultArr: object[] = [];
+    const defaultArr: object[] = JSON.parse('[]') as object[];
+    const defaultObj: object = JSON.parse('{}') as object;
     return {
       recipeId: resultSet.getString(resultSet.getColumnIndex('recipe_id')),
       title: resultSet.getString(resultSet.getColumnIndex('title')),
@@ -515,7 +517,7 @@ export class RecipeRepository {
       servings: resultSet.getLong(resultSet.getColumnIndex('servings')),
       ingredients: parseJSON(resultSet.getString(resultSet.getColumnIndex('ingredients')) || '[]', defaultArr) as RecipeIngredient[],
       steps: parseJSON(resultSet.getString(resultSet.getColumnIndex('steps')) || '[]', defaultArr) as RecipeStep[],
-      nutrition: nutritionStr ? parseJSON(nutritionStr, new Object()) as RecipeNutrition : null,
+      nutrition: nutritionStr ? parseJSON(nutritionStr, defaultObj) as RecipeNutrition : null,
       dietTags: parseJSON(resultSet.getString(resultSet.getColumnIndex('diet_tags')) || '[]', defaultArr) as DietTag[],
       relatedFoodId: resultSet.getString(resultSet.getColumnIndex('related_food_id')) || '',
       fromGroupId: resultSet.getString(resultSet.getColumnIndex('from_group_id')) || '',

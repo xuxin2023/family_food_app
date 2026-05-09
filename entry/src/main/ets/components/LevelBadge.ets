@@ -2,12 +2,13 @@
 
 import { RecommendLevel, LevelColor, getLevelColorValue } from '../model/Recommendation';
 import { COLORS } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-@Component
+@ComponentV2
 export struct LevelBadge {
-  @Prop level: RecommendLevel = RecommendLevel.SUITABLE;
-  @Prop levelColor: LevelColor = LevelColor.GREEN;
-  @Prop fontSize: number = 14;
+  @Param level: RecommendLevel = RecommendLevel.SUITABLE;
+  @Param levelColor: LevelColor = LevelColor.GREEN;
+  @Param fontSize: number = 14;
 
   build() {
     Text(this.level)

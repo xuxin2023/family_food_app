@@ -16,7 +16,7 @@ import { DateUtil } from '../utils/DateUtil';
 // 导入图表组件
 import { DonutChart, DonutSegment } from '../components/DonutChart';
 import { NutrientRadarPanel, NutrientScores } from '../components/NutrientRadarPanel';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { HILOG_DOMAIN, NUTRITION_LIMITS } from '../constants/AppConfig';
 
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
@@ -40,30 +40,30 @@ interface MemberTab {
 }
 
 @Entry
-@Component
+@ComponentV2
 struct DashboardPage {
-  @State familyMembers: FamilyProfile[] = []
-  @State selectedMemberId: string = ''
-  @State selectedPeriodIndex: number = 0
-  @State isLoading: boolean = true
+  @Local familyMembers: FamilyProfile[] = []
+  @Local selectedMemberId: string = ''
+  @Local selectedPeriodIndex: number = 0
+  @Local isLoading: boolean = true
 
   // 仪表盘数据
-  @State trendsData: NutrientTrendData[] = []
-  @State summaries: DailyNutritionSummary[] = []
-  @State donutSegments: DonutSegment[] = []
-  @State periodLabel: ResourceStr = '7天'
+  @Local trendsData: NutrientTrendData[] = []
+  @Local summaries: DailyNutritionSummary[] = []
+  @Local donutSegments: DonutSegment[] = []
+  @Local periodLabel: ResourceStr = '7天'
 
   // 概览统计
-  @State overviewRecords: number = 0
-  @State overviewDays: number = 0
-  @State overviewAvgCalorie: number = 0
-  @State overviewHighSodiumDays: number = 0
+  @Local overviewRecords: number = 0
+  @Local overviewDays: number = 0
+  @Local overviewAvgCalorie: number = 0
+  @Local overviewHighSodiumDays: number = 0
 
   // 健康星级评分
-  @State healthScore: number = 85
-  @State healthScoreLabel: Resource = $r('app.string.health_score_good')
-  @State healthScoreColor: string = COLORS.ACCENT_GREEN_4CAF
-  @State healthInsight: string = ''
+  @Local healthScore: number = 85
+  @Local healthScoreLabel: Resource = $r('app.string.health_score_good')
+  @Local healthScoreColor: string = COLORS.ACCENT_GREEN_4CAF
+  @Local healthInsight: string = ''
 
   private appState: AppState = AppState.getInstance()
 
@@ -102,95 +102,81 @@ struct DashboardPage {
     const result: NutrientTrendData[] = []
     if (summaries.length > 0) {
       const last = summaries[summaries.length - 1]
-      const t1 = new NutrientTrendData(); t1.nutrientName = '钠'; t1.unit = 'mg'; t1.dailyValues = summaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.sodium; return p }); t1.currentValue = last.sodium; t1.targetValue = 2000; t1.maxValue = 2500; t1.color = '#FF9800'; t1.trend = TrendDirection.STABLE; result.push(t1)
-      const t2 = new NutrientTrendData(); t2.nutrientName = '糖'; t2.unit = 'g'; t2.dailyValues = summaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.sugar; return p }); t2.currentValue = last.sugar; t2.targetValue = 50; t2.maxValue = 60; t2.color = '#FF5722'; t2.trend = TrendDirection.STABLE; result.push(t2)
-      const t3 = new NutrientTrendData(); t3.nutrientName = '热量'; t3.unit = 'kcal'; t3.dailyValues = summaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.calorie; return p }); t3.currentValue = last.calorie; t3.targetValue = 2000; t3.maxValue = 2200; t3.color = '#4CAF50'; t3.trend = TrendDirection.STABLE; result.push(t3)
-      const t4 = new NutrientTrendData(); t4.nutrientName = '脂肪'; t4.unit = 'g'; t4.dailyValues = summaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.fat; return p }); t4.currentValue = last.fat; t4.targetValue = 65; t4.maxValue = 80; t4.color = '#2196F3'; t4.trend = TrendDirection.STABLE; result.push(t4)
+      const t1 = new NutrientTrendData(); t1.nutrientName = '钠'; t1.unit = 'mg'; t1.dailyValues = summaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.sodium; return p }); t1.currentValue = last.sodium; t1.targetValue = NUTRITION_LIMITS.SODIUM_MAX; t1.maxValue = Math.round(NUTRITION_LIMITS.SODIUM_MAX * 1.25); t1.color = COLORS.ACCENT_ORANGE_FFA7; t1.trend = TrendDirection.STABLE; result.push(t1)
+      const t2 = new NutrientTrendData(); t2.nutrientName = '糖'; t2.unit = 'g'; t2.dailyValues = summaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.sugar; return p }); t2.currentValue = last.sugar; t2.targetValue = NUTRITION_LIMITS.SUGAR_MAX; t2.maxValue = Math.round(NUTRITION_LIMITS.SUGAR_MAX * 1.2); t2.color = COLORS.ACCENT_ORANGE; t2.trend = TrendDirection.STABLE; result.push(t2)
+      const t3 = new NutrientTrendData(); t3.nutrientName = '热量'; t3.unit = 'kcal'; t3.dailyValues = summaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.calorie; return p }); t3.currentValue = last.calorie; t3.targetValue = NUTRITION_LIMITS.CALORIE_MAX; t3.maxValue = Math.round(NUTRITION_LIMITS.CALORIE_MAX * 1.1); t3.color = COLORS.SUCCESS; t3.trend = TrendDirection.STABLE; result.push(t3)
+      const t4 = new NutrientTrendData(); t4.nutrientName = '脂肪'; t4.unit = 'g'; t4.dailyValues = summaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.fat; return p }); t4.currentValue = last.fat; t4.targetValue = NUTRITION_LIMITS.FAT_MAX; t4.maxValue = Math.round(NUTRITION_LIMITS.FAT_MAX * 1.23); t4.color = COLORS.ACCENT_BLUE; t4.trend = TrendDirection.STABLE; result.push(t4)
     }
     this.trendsData = result
     this.summaries = await this.appState.getDailySummaries(this.selectedMemberId, days)
 
-    // 构建圆环构成数据（最近一天或平均构成）
-    this.buildDonutData()
-    // 计算概览统计数据
-    this.computeOverview()
-    // 计算健康评分
-    this.computeHealthScore()
+    // 构建圆环构成 + 概览统计 + 健康评分（合并为单次遍历）
+    this.computeAllDashboardData()
     this.isLoading = false
   }
 
-  private buildDonutData() {
-    // 基于7天/30天均值构建营养素来源构成
-    const days = this.summaries.length
-    if (days === 0) {
+  /** 一次遍历完成 donut 构成、概览统计、健康评分的全部计算 */
+  private computeAllDashboardData() {
+    const dayCount = this.summaries.length
+    this.overviewDays = dayCount
+
+    if (dayCount === 0) {
       this.donutSegments = []
+      this.overviewRecords = 0
+      this.overviewAvgCalorie = 0
+      this.overviewHighSodiumDays = 0
+      this.healthScore = 75
+      this.healthScoreLabel = $r('app.string.health_score_insufficient')
+      this.healthScoreColor = COLORS.TEXT_GRAY_9E9E
+      this.healthInsight = '持续记录饮食后可获得更准确的健康评分'
       return
     }
 
-    let avgCalorie = 0
-    let avgSodium = 0
-    let avgSugar = 0
-    let avgFat = 0
-    let avgProtein = 0
+    // 单次遍历累积所有统计量
+    let totalCalorie = 0, totalSodium = 0, totalSugar = 0, totalFat = 0
+    let totalProtein = 0, totalRecords = 0, highSodiumDays = 0
 
-    for (let i = 0; i < this.summaries.length; i++) {
+    for (let i = 0; i < dayCount; i++) {
       const s = this.summaries[i]
-      avgCalorie += s.calorie
-      avgSodium += s.sodium
-      avgSugar += s.sugar
-      avgFat += s.fat
-      // 从趋势数据中提取蛋白质值（暂使用固定比例估算）
-      avgProtein += s.calorie * 0.12 / 4 // 假设12%热量来自蛋白质
+      totalCalorie += s.calorie
+      totalSodium += s.sodium
+      totalSugar += s.sugar
+      totalFat += s.fat
+      totalRecords += s.recordCount
+      if (s.sodium >= NUTRITION_LIMITS.SODIUM_HIGH_WARN) {
+        highSodiumDays++
+      }
+      // 蛋白质估算（12%热量来自蛋白质，1g=4kcal）
+      totalProtein += s.calorie * 0.12 / 4
     }
 
-    avgCalorie /= days
-    avgSodium /= days
-    avgSugar /= days
-    avgFat /= days
-    avgProtein /= days
+    // ── 概览统计 ──
+    this.overviewRecords = totalRecords
+    this.overviewAvgCalorie = Math.round(totalCalorie / dayCount)
+    this.overviewHighSodiumDays = highSodiumDays
 
-    // 基于热量构成显示宏量营养素分布
-    // 注意：由于目前膳食记录未单独记录碳水/蛋白质摄入量，
-    // 所以根据中国居民膳食指南推荐比例进行估算（55%碳水、12%蛋白质、33%脂肪）
-    // 脂肪部分使用实际记录的脂肪数据换算，更接近真实情况
-    const fatCalFromRecord = avgFat * 9 // 1g脂肪=9kcal
+    // ── donut 构成 ──
+    const avgFat = totalFat / dayCount
+    const avgCalorie = totalCalorie / dayCount
+    const fatCalFromRecord = avgFat * 9
     const totalMacroCal = Math.max(avgCalorie, 1)
     const fatPct = Math.round(fatCalFromRecord / totalMacroCal * 100)
-    const proteinPct = 12 // 推荐比例
+    const proteinPct = 12
     const carbPct = Math.max(0, 100 - fatPct - proteinPct)
-
-    const carbCalorie = avgCalorie * carbPct / 100
-    const proteinCalorie = avgCalorie * proteinPct / 100
-    const fatCalorieRecord = avgCalorie * fatPct / 100
-
     this.donutSegments = [
-      { label: '碳水', value: Math.round(carbCalorie), color: '#FFB74D' },
-      { label: '蛋白质', value: Math.round(proteinCalorie), color: '#4FC3F7' },
-      { label: '脂肪', value: Math.round(fatCalorieRecord), color: '#BA68C8' }
+      { label: '碳水', value: Math.round(avgCalorie * carbPct / 100), color: '#FFB74D' },
+      { label: '蛋白质', value: Math.round(avgCalorie * proteinPct / 100), color: '#4FC3F7' },
+      { label: '脂肪', value: Math.round(avgCalorie * fatPct / 100), color: '#BA68C8' }
     ]
+
+    // ── 健康评分 ──
+    this.computeHealthScoreFromAverages(totalSodium / dayCount, totalSugar / dayCount)
   }
 
-  private computeOverview() {
-    let totalRecords = 0
-    let totalCalorie = 0
-    let highSodiumCount = 0
-
-    for (let i = 0; i < this.summaries.length; i++) {
-      const s = this.summaries[i]
-      totalRecords += s.recordCount
-      totalCalorie += s.calorie
-      if (s.sodium >= 1500) {
-        highSodiumCount++
-      }
-    }
-    this.overviewDays = this.summaries.length
-    this.overviewRecords = totalRecords
-    this.overviewAvgCalorie = this.overviewDays > 0 ? totalCalorie / this.overviewDays : 0
-    this.overviewHighSodiumDays = highSodiumCount
-  }
-
-  private computeHealthScore() {
-    if (this.summaries.length < 2) {
+  /** 基于已计算的日均值推导健康评分（不再重复遍历） */
+  private computeHealthScoreFromAverages(sodiumAvg: number, sugarAvg: number) {
+    const dayCount = this.overviewDays
+    if (dayCount < 2) {
       this.healthScore = 75
       this.healthScoreLabel = $r('app.string.health_score_insufficient')
       this.healthScoreColor = COLORS.TEXT_GRAY_9E9E
@@ -201,22 +187,18 @@ struct DashboardPage {
     let score = 80
     const insights: string[] = []
 
-    // 钠分项（扣分项）
-    const sodiumAvg = this.overviewDays > 0 ? this.summaries.reduce((s, d) => s + d.sodium, 0) / this.overviewDays : 0
-    if (sodiumAvg > 2000) {
+    if (sodiumAvg > NUTRITION_LIMITS.SODIUM_MAX) {
       score -= 20
       insights.push('钠摄入偏高')
-    } else if (sodiumAvg > 1500) {
+    } else if (sodiumAvg > NUTRITION_LIMITS.SODIUM_HIGH_WARN) {
       score -= 10
       insights.push('钠摄入略高')
-    } else if (sodiumAvg < 800) {
+    } else if (sodiumAvg < NUTRITION_LIMITS.SODIUM_LOW) {
       score += 5
       insights.push('钠控制良好')
     }
 
-    // 糖分项
-    const sugarAvg = this.overviewDays > 0 ? this.summaries.reduce((s, d) => s + d.sugar, 0) / this.overviewDays : 0
-    if (sugarAvg > 40) {
+    if (sugarAvg > NUTRITION_LIMITS.SUGAR_HIGH_WARN) {
       score -= 15
       insights.push('糖摄入偏高')
     } else if (sugarAvg > 25) {
@@ -226,31 +208,24 @@ struct DashboardPage {
       insights.push('糖控制优秀')
     }
 
-    // 记录连续性加分
-    if (this.overviewDays >= 7) {
+    if (dayCount >= 7) {
       score += 5
       insights.push('坚持记录')
-    } else if (this.overviewDays >= 3) {
+    } else if (dayCount >= 3) {
       score += 3
     }
 
-    // 限制分数范围
     score = Math.max(30, Math.min(100, score))
-
     this.healthScore = score
 
     if (score >= 85) {
       this.healthScoreLabel = $r('app.string.health_score_excellent')
       this.healthScoreColor = COLORS.ACCENT_GREEN_4CAF
-      if (insights.length === 0) {
-        insights.push('继续保持！饮食非常均衡')
-      }
+      if (insights.length === 0) insights.push('继续保持！饮食非常均衡')
     } else if (score >= 70) {
       this.healthScoreLabel = $r('app.string.health_score_good')
       this.healthScoreColor = COLORS.ORANGE_ACCENT
-      if (insights.length === 0) {
-        insights.push('整体不错，仍有改善空间')
-      }
+      if (insights.length === 0) insights.push('整体不错，仍有改善空间')
     } else if (score >= 50) {
       this.healthScoreLabel = $r('app.string.health_score_fair')
       this.healthScoreColor = COLORS.ORANGE_DEEP

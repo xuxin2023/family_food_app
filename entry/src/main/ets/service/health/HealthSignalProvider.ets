@@ -1,4 +1,5 @@
 import { HealthSignal } from '../../model/HealthSignal';
+import { HILOG_DOMAIN } from '../../constants/AppConfig';
 
 export interface HealthSignalProvider {
   checkAuthorization(): Promise<boolean>;

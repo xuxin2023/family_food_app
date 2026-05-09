@@ -1,18 +1,13 @@
 /**
  * JsonUtil - ArkTS JSON 数据安全访问工具
  *
- * ArkTS 限制：
- * 1. 不支持 obj['key'] 索引访问
- * 2. 不支持 Record<string, Object> 类型
- * 3. 不支持 typeof 操作符
- * 4. 不支持 ?. 可选链
- * 5. 不支持 as unknown as X 的双重转换
- *
- * 本工具提供静态方法，通过 JSON.parse 后使用 ESObject API 安全访问数据
+ * ArkTS 兼容策略：
+ * 1. 使用 Object.entries() 替代 obj['key'] 索引访问
+ * 2. 使用 Record<string, Object> 作为 JSON 容器（ArkTS 官方推荐模式）
  */
 
 // 使用 Object 基类作为通用 JSON 容器
-// 通过 Object.keys() 和属性访问来避免索引签名
+// 通过 Object.entries() 遍历来避免索引签名限制
 
 /**
  * 从 JSON 对象中安全获取字符串值
@@ -21,10 +16,10 @@
  * @param defaultValue 默认值
  */
 export function getJsonString(obj: Object, key: string, defaultValue: string = ''): string {
-  const keys = Object.keys(obj);
-  for (const k of keys) {
-    if (k === key) {
-      const val = (obj as Record<string, Object>)[k];
+  const entries = Object.entries(obj);
+  for (const entry of entries) {
+    if (entry[0] === key) {
+      const val = entry[1];
       if (val !== undefined && val !== null) {
         return String(val);
       }
@@ -39,10 +34,10 @@ export function getJsonString(obj: Object, key: string, defaultValue: string = '
  * @param key 键名
  */
 export function getJsonNumber(obj: Object, key: string): number {
-  const keys = Object.keys(obj);
-  for (const k of keys) {
-    if (k === key) {
-      const val = (obj as Record<string, Object>)[k];
+  const entries = Object.entries(obj);
+  for (const entry of entries) {
+    if (entry[0] === key) {
+      const val = entry[1];
       if (val !== undefined && val !== null) {
         const num = Number(val);
         if (!isNaN(num)) {
@@ -58,10 +53,10 @@ export function getJsonNumber(obj: Object, key: string): number {
  * 从 JSON 对象中安全获取布尔值
  */
 export function getJsonBoolean(obj: Object, key: string): boolean {
-  const keys = Object.keys(obj);
-  for (const k of keys) {
-    if (k === key) {
-      const val = (obj as Record<string, Object>)[k];
+  const entries = Object.entries(obj);
+  for (const entry of entries) {
+    if (entry[0] === key) {
+      const val = entry[1];
       if (val !== undefined && val !== null) {
         return val === true || val === 1 || val === 'true' || val === '1';
       }
@@ -74,10 +69,10 @@ export function getJsonBoolean(obj: Object, key: string): boolean {
  * 从 JSON 对象中安全获取子对象
  */
 export function getJsonObject(obj: Object, key: string): Object | null {
-  const keys = Object.keys(obj);
-  for (const k of keys) {
-    if (k === key) {
-      const val = (obj as Record<string, Object>)[k];
+  const entries = Object.entries(obj);
+  for (const entry of entries) {
+    if (entry[0] === key) {
+      const val = entry[1];
       if (val !== undefined && val !== null && typeof val === 'object') {
         return val as Object;
       }
@@ -90,10 +85,10 @@ export function getJsonObject(obj: Object, key: string): Object | null {
  * 从 JSON 对象中安全获取字符串数组
  */
 export function getJsonStringArray(obj: Object, key: string): string[] {
-  const keys = Object.keys(obj);
-  for (const k of keys) {
-    if (k === key) {
-      const val = (obj as Record<string, Object>)[k];
+  const entries = Object.entries(obj);
+  for (const entry of entries) {
+    if (entry[0] === key) {
+      const val = entry[1];
       if (val !== undefined && val !== null) {
         const result: string[] = [];
         if (Array.isArray(val)) {
@@ -113,10 +108,10 @@ export function getJsonStringArray(obj: Object, key: string): string[] {
  * 从 JSON 对象中安全获取对象数组
  */
 export function getJsonObjectArray(obj: Object, key: string): Object[] {
-  const keys = Object.keys(obj);
-  for (const k of keys) {
-    if (k === key) {
-      const val = (obj as Record<string, Object>)[k];
+  const entries = Object.entries(obj);
+  for (const entry of entries) {
+    if (entry[0] === key) {
+      const val = entry[1];
       if (val !== undefined && val !== null && Array.isArray(val)) {
         const result: Object[] = [];
         const arr: Object[] = val as Object[];
@@ -136,10 +131,10 @@ export function getJsonObjectArray(obj: Object, key: string): Object[] {
  * 检查 JSON 对象是否包含指定 key
  */
 export function hasJsonKey(obj: Object, key: string): boolean {
-  const keys = Object.keys(obj);
-  for (const k of keys) {
-    if (k === key) {
-      const val = (obj as Record<string, Object>)[k];
+  const entries = Object.entries(obj);
+  for (const entry of entries) {
+    if (entry[0] === key) {
+      const val = entry[1];
       return val !== undefined;
     }
   }

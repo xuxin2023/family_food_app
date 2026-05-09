@@ -6,9 +6,10 @@ import { image } from '@kit.ImageKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FoodLabel, FoodSource, NutritionPer100g } from '../model/FoodLabel';
 import { StringRes } from '../constants/StringRes';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'OcrService';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 // OCR边界框
 export class OcrBounds {

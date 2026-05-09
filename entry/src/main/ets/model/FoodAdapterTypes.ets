@@ -27,14 +27,14 @@ export interface FoodRecommendation {
 /**
  * 动态适配计算结果（增强版）
  */
-export interface EnhancedFoodRecommendation {
-  productName: string;
-  memberId: string;
-  memberName: string;
-  maxIntake_g: number;
-  level: RecommendationLevel;
-  levelText: string;
-  reason: string;
+export class EnhancedFoodRecommendation {
+  productName: string = '';
+  memberId: string = '';
+  memberName: string = '';
+  maxIntake_g: number = 0;
+  level: RecommendationLevel = RecommendationLevel.GREEN;
+  levelText: string = '';
+  reason: string = '';
   dynamicAdjustReason?: string;
   scanIndex?: number;
   previousScanImpact?: string;

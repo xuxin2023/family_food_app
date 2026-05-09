@@ -3,24 +3,29 @@
 // 支持：自定义图标、主标题、副标题、操作按钮、顶部间距
 
 import { COLORS, FONT_SIZE, SPACING, RADIUS } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 export interface EmptyStateAction {
   text: string;
   onClick: () => void;
 }
 
-@Component
+@ComponentV2
 export struct EmptyState {
   // 图标（emoji或文字符号，如'📷' '🔍' '📊'）
-  private icon: string = '📭';
+  @Param icon: string = '📭';
+
   // 主标题
-  private title: string = '暂无内容';
+  @Param title: string = '暂无内容';
+
   // 副标题（可选）
-  private subtitle: string = '';
+  @Param subtitle: string = '';
+
   // 操作按钮（可选）
-  private action: EmptyStateAction | null = null;
+  @Param action: EmptyStateAction | null = null;
+
   // 顶部间距
-  private topPadding: number = 0;
+  @Param topPadding: number = 0;
 
   build() {
     Column() {

@@ -51,6 +51,7 @@ import {
   PurchaseResult
 } from '../model/MemberStatus';
 import { StringRes } from '../constants/StringRes';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 // ==================== 沙箱测试报告类型 ====================
 
@@ -78,7 +79,7 @@ export interface SandboxTestReport {
 }
 
 const TAG = 'IapService';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 // ==================== 商品ID ====================
 

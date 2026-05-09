@@ -6,9 +6,10 @@ import { http } from '@kit.NetworkKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AGENT_ARTS_ENDPOINT, AGENT_ARTS_MODEL } from './AiConfig';
 import { API_TIMEOUT_CONFIG } from '../../constants/AppConfig';
+import { HILOG_DOMAIN } from '../../constants/AppConfig';
 
 const TAG = 'AiClient';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 /**
  * AI 调用请求参数

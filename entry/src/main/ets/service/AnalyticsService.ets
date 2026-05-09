@@ -12,9 +12,10 @@ import {
   ANALYTICS_COLUMNS
 } from '../model/AnalyticsRecord';
 import { TIME_INTERVAL_CONFIG } from '../constants/AppConfig';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'AnalyticsService';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 /** 内存队列最大容量，达到此数量触发自动 flush */
 const FLUSH_BATCH_SIZE = TIME_INTERVAL_CONFIG.ANALYTICS_BATCH_SIZE;

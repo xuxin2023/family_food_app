@@ -1,7 +1,7 @@
 // ObservableMap.ets
-// 可观察的 Map 包装器 - 使 Map 数据能被 @State 追踪变化
+// 可观察的 Map 包装器 - 使 Map 数据能被 @Local 追踪变化
 // 当前 AppState 使用 Map<string, HealthSignal>/Map<string, DailyBudget> 缓存
-// 但 V1 @State 不追踪 Map 内部增删改，需要此包装类
+// 但 V1 @Local 不追踪 Map 内部增删改，需要此包装类
 //
 // 鸿蒙6.1 ArkTS 约束：
 // - 不使用 undefined 类型，统一使用 null

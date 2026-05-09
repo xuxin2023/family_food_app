@@ -9,9 +9,10 @@ import { ProductPlan, PRODUCT_PLANS, getProductPlanForTier } from '../model/Pric
 import { IapService } from '../service/IapService';
 import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON } from '../constants/AppTheme';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'SubscriptionPage';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 // 展示方案数据
 interface PlanDisplay {
@@ -27,12 +28,12 @@ interface PlanDisplay {
 }
 
 @Entry
-@Component
+@ComponentV2
 struct SubscriptionPage {
-  @State currentTier: MemberTier = MemberTier.FREE
-  @State plans: PlanDisplay[] = []
-  @State isPurchasing: boolean = false
-  @State selectedPlanIndex: number = -1
+  @Local currentTier: MemberTier = MemberTier.FREE
+  @Local plans: PlanDisplay[] = []
+  @Local isPurchasing: boolean = false
+  @Local selectedPlanIndex: number = -1
 
   private appState: AppState = AppState.getInstance()
   private iapService: IapService = IapService.getInstance()

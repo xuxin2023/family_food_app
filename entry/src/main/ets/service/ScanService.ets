@@ -6,9 +6,10 @@ import { scanBarcode, scanCore } from '@kit.ScanKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FoodLabel } from '../model/FoodLabel';
 import { AppState } from '../AppState';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'ScanService';
-const DOMAIN_ZERO = 0;
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 export class ScanService {
   private appState: AppState = AppState.getInstance();

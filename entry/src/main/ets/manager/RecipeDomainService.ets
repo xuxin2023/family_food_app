@@ -3,6 +3,7 @@
 
 import { CreateRecipeParams, RecipeCommunityService } from '../service/RecipeCommunityService';
 import { Recipe, RecipeQueryParams, RecipeComment } from '../model/Recipe';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 export class RecipeDomainService {
   private rs: RecipeCommunityService | null = null;

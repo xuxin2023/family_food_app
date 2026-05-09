@@ -2,10 +2,11 @@
 
 import { FoodLabel } from '../model/FoodLabel';
 import { COLORS } from '../constants/AppTheme';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-@Component
+@ComponentV2
 export struct FoodLabelCard {
-  @Prop foodLabel: FoodLabel = new FoodLabel();
+  @Param foodLabel: FoodLabel = new FoodLabel();
 
   build() {
     Column() {

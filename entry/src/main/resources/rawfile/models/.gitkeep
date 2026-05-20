@@ -1,0 +1,22 @@
+# MindSpore Lite .ms 模型文件部署目录
+#
+# 模型版本: food_analyst_v2 (量化 INT8)
+# 预期大小: ~120 MB
+# 格式: MindSpore Lite .ms (由 ONNX/TensorFlow 模型转换生成)
+#
+# 部署步骤:
+#   1. 使用 MindSpore Lite Converter 工具将训练好的模型转换为 .ms 格式
+#   2. 将生成的 .ms 文件放入此目录
+#   3. 确保 .ms 文件录入 .gitignore（模型文件进入 Git LFS 管理）
+#   4. 引擎代码自动从 rawfile 加载模型:
+#      - OnDeviceAiEngine → food_analyst_v2.ms
+#      - OnDeviceInferenceEngine → {modelType}.ms
+#
+# 模型转换命令示例:
+#   converter_lite --fmk=ONNX \
+#     --modelFile=food_analyst_v2.onnx \
+#     --outputFile=food_analyst_v2.ms \
+#     --configFile=quantize.cfg
+#
+# 注意: 实际 .ms 文件体积较大（~120MB），请勿直接提交到 Git。
+#       推荐使用 Git LFS 或华为云 OBS 存储，构建时下载。

@@ -1,0 +1,58 @@
+{
+  "app": {
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          // ⚠️ 以下路径/密码应在 local.properties 中管理
+          // DevEco Studio → Build → Generate Key 可自动填充
+          "certpath": "",
+          "keyAlias": "debugKey",
+          "keyPassword": "",
+          "profile": "",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "",
+          "storePassword": ""
+        }
+      }
+    ],
+    "products": [
+      {
+        "name": "default",
+        "signingConfig": "default",
+        "compatibleSdkVersion": "6.1.0(23)",
+        "runtimeOS": "HarmonyOS",
+        "targetSdkVersion": "6.1.0(23)"
+      }
+    ],
+    "buildModeSet": [
+      { "name": "debug" },
+      { "name": "release" },
+      { "name": "test" }
+    ],
+    "capabilities": [
+      {
+        "bundleName": "com.familyfood.helper",
+        "config": [
+          { "name": "Push Kit", "capability": "com.huawei.service.push.base_service" },
+          { "name": "Device status detection", "capability": "com.huawei.service.device_security.device_verify" },
+          { "name": "Map Kit", "capability": "com.huawei.service.mapkit" },
+          { "name": "Safety Detect", "capability": "com.huawei.service.device_security.safety_detect" }
+        ]
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "entry",
+      "srcPath": "./entry",
+      "targets": [{ "name": "default", "applyToProducts": ["default"] }]
+    },
+    {
+      "name": "hsp_core",
+      "srcPath": "./hsp_core",
+      "targets": [{ "name": "default", "applyToProducts": ["default"] }]
+    }
+  ]
+}

@@ -1,24 +1,17 @@
-import { promptAction } from '@kit.ArkUI';
+import {
+  ToastHelper, safeBack, FamilyProfile, DailyBudget, FoodLabel, FoodSource, MealBalance, MealScenario, ChildProtection, PaywallTrigger, MemberTier, COLORS, DateUtil, PositiveAdvice
+} from 'hsp_core';
 import { BackButton } from '../components/BackButton';
-import { safeBack } from '../utils/RouterUtil';
 import { AppState } from '../AppState';
-import { FamilyProfile } from '../model/FamilyProfile';
-import { DailyBudget } from '../model/DailyBudget';
-import { FoodLabel, FoodSource } from '../model/FoodLabel';
-import { MealBalance, MealScenario } from '../model/MealBalance';
-import { ChildProtection } from '../model/ChildProtection';
-import { PositiveAdvice } from '../engine/PositiveAdviceEngine';
 import { BalanceAdviceCard } from '../components/BalanceAdviceCard';
 import { ChildProtectionCard } from '../components/ChildProtectionCard';
-import { PaywallTrigger, MemberTier } from '../model/MemberStatus';
+import { DietRecordInput } from '../repository/HistoryRepository';
 import { PaywallDialog } from '../components/PaywallDialog';
-import { COLORS } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 // 美食场景选项
 class ScenarioOption {
   emoji: string = '';
-  label: string = '';
+  label: ResourceStr = '';
   value: MealScenario = MealScenario.BBQ;
 }
 
@@ -51,32 +44,32 @@ struct BalancePage {
     }
 
     // 初始化场景选项（共21种场景）
-    this.addScenario('🍖', '烧烤', MealScenario.BBQ);
-    this.addScenario('🍲', '火锅', MealScenario.HOTPOT);
-    this.addScenario('🍗', '炸鸡', MealScenario.FRIED_CHICKEN);
-    this.addScenario('🧋', '奶茶', MealScenario.MILK_TEA);
-    this.addScenario('🍰', '甜品', MealScenario.DESSERT);
-    this.addScenario('🥘', '卤味', MealScenario.LUWEI);
-    this.addScenario('🍜', '方便面', MealScenario.INSTANT_NOODLE);
-    this.addScenario('🌙', '夜宵', MealScenario.LATE_NIGHT);
-    this.addScenario('🌶️', '麻辣烫', MealScenario.MALATANG);
-    this.addScenario('🥩', '烤肉', MealScenario.BBQ_MEAT);
-    this.addScenario('🍣', '日料', MealScenario.SUSHI);
-    this.addScenario('🍱', '自助餐', MealScenario.BUFFET);
-    this.addScenario('☕', '下午茶', MealScenario.AFTERNOON_TEA);
-    this.addScenario('🍝', '螺蛳粉', MealScenario.LUOSIFEN);
-    this.addScenario('🫘', '冒菜', MealScenario.MAOCAI);
-    this.addScenario('🌶️', '麻辣香锅', MealScenario.MALAXIANG_GUO);
-    this.addScenario('🥗', '轻食沙拉', MealScenario.LIGHT_SALAD);
-    this.addScenario('🍕', '披萨', MealScenario.PIZZA);
-    this.addScenario('🍔', '汉堡', MealScenario.HAMBURGER);
-    this.addScenario('🥟', '饺子包子', MealScenario.DUMPLINGS);
-    this.addScenario('🍚', '炒饭盖饭', MealScenario.FRIED_RICE);
+    this.addScenario('🍖', $r('app.string.balance_scenario_bbq'), MealScenario.BBQ);
+    this.addScenario('🍲', $r('app.string.balance_scenario_hotpot'), MealScenario.HOTPOT);
+    this.addScenario('🍗', $r('app.string.balance_scenario_fried_chicken'), MealScenario.FRIED_CHICKEN);
+    this.addScenario('🧋', $r('app.string.balance_scenario_milk_tea'), MealScenario.MILK_TEA);
+    this.addScenario('🍰', $r('app.string.balance_scenario_dessert'), MealScenario.DESSERT);
+    this.addScenario('🥘', $r('app.string.balance_scenario_luwei'), MealScenario.LUWEI);
+    this.addScenario('🍜', $r('app.string.balance_scenario_instant_noodle'), MealScenario.INSTANT_NOODLE);
+    this.addScenario('🌙', $r('app.string.balance_scenario_late_night'), MealScenario.LATE_NIGHT);
+    this.addScenario('🌶️', $r('app.string.balance_scenario_malatang'), MealScenario.MALATANG);
+    this.addScenario('🥩', $r('app.string.balance_scenario_bbq_meat'), MealScenario.BBQ_MEAT);
+    this.addScenario('🍣', $r('app.string.balance_scenario_sushi'), MealScenario.SUSHI);
+    this.addScenario('🍱', $r('app.string.balance_scenario_buffet'), MealScenario.BUFFET);
+    this.addScenario('☕', $r('app.string.balance_scenario_afternoon_tea'), MealScenario.AFTERNOON_TEA);
+    this.addScenario('🍝', $r('app.string.balance_scenario_luosifen'), MealScenario.LUOSIFEN);
+    this.addScenario('🫘', $r('app.string.balance_scenario_maocai'), MealScenario.MAOCAI);
+    this.addScenario('🌶️', $r('app.string.balance_scenario_malaxiang_guo'), MealScenario.MALAXIANG_GUO);
+    this.addScenario('🥗', $r('app.string.balance_scenario_light_salad'), MealScenario.LIGHT_SALAD);
+    this.addScenario('🍕', $r('app.string.balance_scenario_pizza'), MealScenario.PIZZA);
+    this.addScenario('🍔', $r('app.string.balance_scenario_hamburger'), MealScenario.HAMBURGER);
+    this.addScenario('🥟', $r('app.string.balance_scenario_dumplings'), MealScenario.DUMPLINGS);
+    this.addScenario('🍚', $r('app.string.balance_scenario_fried_rice'), MealScenario.FRIED_RICE);
 
     this.loadData();
   }
 
-  private addScenario(emoji: string, label: string, value: MealScenario): void {
+  private addScenario(emoji: string, label: ResourceStr, value: MealScenario): void {
     const option = new ScenarioOption();
     option.emoji = emoji;
     option.label = label;
@@ -99,6 +92,8 @@ struct BalancePage {
           Row() {
             BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
               .onClick(() => { safeBack() })
+              .accessibilityText('返回')
+              .accessibilityLevel('yes')
             Text($r('app.string.record_meal'))
               .fontSize(20)
               .fontWeight(FontWeight.Bold)
@@ -110,7 +105,7 @@ struct BalancePage {
           // 每日次数提示
           if (!this.isLocked) {
             Row() {
-              Text(`今日已使用 ${this.dailyUseCount} / ${this.DAILY_FREE_LIMIT} 次`)
+              Text($r('app.string.balance_daily_usage', this.dailyUseCount, this.DAILY_FREE_LIMIT))
                 .fontSize(12)
                 .fontColor(this.dailyUseCount >= this.DAILY_FREE_LIMIT ? COLORS.ACCENT_ORANGE : COLORS.TEXT_GRAY_7575)
             }
@@ -152,6 +147,8 @@ struct BalancePage {
               })
               .margin({ right: 8, bottom: 10 })
               .onClick(() => { this.handleScenarioSelection(scenario.value) })
+              .accessibilityText(scenario.label as string)
+              .accessibilityLevel('yes')
             }, (scenario: ScenarioOption) => scenario.value)
           }
           .width('92%')
@@ -217,6 +214,8 @@ struct BalancePage {
               this.selectedMemberId = member.memberId
               this.refreshBudget()
             })
+            .accessibilityText(member.nickname)
+            .accessibilityLevel('yes')
         }, (member: FamilyProfile) => member.memberId)
       }
     }
@@ -237,16 +236,16 @@ struct BalancePage {
         .margin({ bottom: 10 })
 
       Row() {
-        this.BudgetMetric('钠', `${Math.round(this.currentBudget.sodiumRemaining)} / ${Math.round(this.currentBudget.sodiumBudget)} mg`)
-        this.BudgetMetric('糖', `${Math.round(this.currentBudget.sugarRemaining)} / ${Math.round(this.currentBudget.sugarBudget)} g`)
+        this.BudgetMetric($r('app.string.balance_nutrient_sodium'), `${Math.round(this.currentBudget.sodiumRemaining)} / ${Math.round(this.currentBudget.sodiumBudget)} mg`)
+        this.BudgetMetric($r('app.string.balance_nutrient_sugar'), `${Math.round(this.currentBudget.sugarRemaining)} / ${Math.round(this.currentBudget.sugarBudget)} g`)
       }
       .width('100%')
       .justifyContent(FlexAlign.SpaceBetween)
       .margin({ bottom: 8 })
 
       Row() {
-        this.BudgetMetric('热量', `${Math.round(this.currentBudget.calorieRemaining)} / ${Math.round(this.currentBudget.calorieBudget)} kcal`)
-        this.BudgetMetric('脂肪', `${Math.round(this.currentBudget.fatRemaining)} / ${Math.round(this.currentBudget.fatBudget)} g`)
+        this.BudgetMetric($r('app.string.balance_nutrient_calorie'), `${Math.round(this.currentBudget.calorieRemaining)} / ${Math.round(this.currentBudget.calorieBudget)} kcal`)
+        this.BudgetMetric($r('app.string.balance_nutrient_fat'), `${Math.round(this.currentBudget.fatRemaining)} / ${Math.round(this.currentBudget.fatBudget)} g`)
       }
       .width('100%')
       .justifyContent(FlexAlign.SpaceBetween)
@@ -260,7 +259,7 @@ struct BalancePage {
   }
 
   @Builder
-  BudgetMetric(label: string, value: string) {
+  BudgetMetric(label: ResourceStr, value: string) {
     Column() {
       Text(label)
         .fontSize(12)
@@ -348,7 +347,8 @@ struct BalancePage {
 
     await this.appState.saveFoodLabel(food)
     this.balanceResult = this.appState.calculateMealBalance(scenario, this.selectedMemberId)
-    this.positiveAdvice = this.appState.generatePositiveAdvice(scenario, this.selectedMemberId)
+    const generated = this.appState.generatePositiveAdvice(scenario, this.selectedMemberId)
+    this.positiveAdvice = generated ?? new PositiveAdvice()
 
     const member = this.familyMembers.find(item => item.memberId === this.selectedMemberId) || null
     if (member && member.isChild()) {
@@ -358,19 +358,13 @@ struct BalancePage {
     }
 
     await this.appState.saveDietRecord(
-      this.selectedMemberId,
-      scenario,
-      'snack',   // 美食平衡页面记录的归为 snack
-      food.foodId,
-      100,
-      food.nutrition.sodium,
-      food.nutrition.sugar,
-      food.nutrition.calories,
-      food.nutrition.fat
+      this.selectedMemberId, scenario, 'snack',
+      food.foodId, 100, food.nutrition.sodium,
+      food.nutrition.sugar, food.nutrition.calories, food.nutrition.fat
     )
 
     this.refreshBudget()
-    promptAction.showToast({ message: '已记录到今日美食额度' })
+    ToastHelper.show(this.getUIContext(), $r('app.string.balance_recorded'))
   }
 
   private createFoodForScenario(scenario: MealScenario): FoodLabel {
@@ -518,5 +512,12 @@ struct BalancePage {
     label.nutrition.carbohydrate = 25
     label.nutrition.protein = 10
     return label
+  }
+
+  pageTransition() {
+    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Right)
+    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Left)
   }
 }

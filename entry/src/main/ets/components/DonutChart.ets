@@ -2,13 +2,12 @@
 // 圆环构成图组件 - 展示营养素摄入来源/构成比例
 // 自绘分段环形，带居中的总值展示
 
-import { COLORS, FONT_SIZE, SPACING, RADIUS } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { COLORS, FONT_SIZE, SPACING } from 'hsp_core';
 
-export interface DonutSegment {
-  label: string;
-  value: number;
-  color: string;
+export class DonutSegment {
+  label: string = '';
+  value: number = 0;
+  color: string = '';
 }
 
 @ComponentV2
@@ -79,7 +78,7 @@ export struct DonutChart {
               }
               .padding({ right: SPACING.MD, bottom: SPACING.XS })
               .alignItems(VerticalAlign.Center)
-            })
+            }, (seg: DonutSegment, index: number) => `donut_${index}`)
           }
           .width('100%')
           .padding({ top: SPACING.SM })
@@ -99,7 +98,7 @@ export struct DonutChart {
         .fillOpacity(0.85)
         .stroke(COLORS.WHITE)
         .strokeWidth(1)
-    })
+    }, (seg: DonutSegment, index: number) => `seg_${index}`)
   }
 
   private calcSegmentPath(index: number): string {

@@ -7,6 +7,11 @@ import { cryptoFramework } from '@kit.CryptoArchitectureKit';
 import { util } from '@kit.BasicServicesKit';
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+import { HILOG_DOMAIN } from '../constants/AppConfig';
+
+const TAG = 'SecureDataStore';
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 const SECURE_PREF_NAME = 'secure_encrypted_store';
 const KEY_ALIAS = 'family_food_aes256_key';
@@ -42,7 +47,7 @@ export class SecureDataStore {
       await prefs.flush();
       return true;
     } catch (e) {
-      console.error('SecureDataStore encryptAndStore failed:', JSON.stringify(e));
+      hilog.error(DOMAIN_ZERO, TAG, 'encryptAndStore failed: %{public}s', JSON.stringify(e));
       return false;
     }
   }
@@ -56,7 +61,7 @@ export class SecureDataStore {
       const encrypted = this.hexToArrayBuffer(hexStr);
       return await this.decrypt(encrypted);
     } catch (e) {
-      console.error('SecureDataStore loadAndDecrypt failed:', JSON.stringify(e));
+      hilog.error(DOMAIN_ZERO, TAG, 'loadAndDecrypt failed: %{public}s', JSON.stringify(e));
       return null;
     }
   }
@@ -79,8 +84,8 @@ export class SecureDataStore {
     const keyData = new Uint8Array(this.keyMaterial!.outData!);
     const symKey = await symKeyGenerator.convertKey({ data: keyData.buffer as ArrayBuffer });
 
-    const cipher = cryptoFramework.createCipher('AES256|GCM|PKCS7');
-    const iv = cryptoFramework.createIv(new Uint8Array(IV_LENGTH)); // 随机 IV
+    const cipher = cryptoFramework.createCipher('AES256|GCM|NONE');
+    const iv = cryptoFramework.createIv(new Uint8Array(IV_LENGTH));
     const params: cryptoFramework.GcmParamsSpec = {
       iv: { data: new Uint8Array(IV_LENGTH).buffer as ArrayBuffer },
       aad: { data: new Uint8Array(0).buffer as ArrayBuffer },
@@ -113,7 +118,7 @@ export class SecureDataStore {
     const tag = new Uint8Array(fullData.slice(encryptedData.byteLength - TAG_LENGTH));
     const cipherData = new Uint8Array(fullData.slice(IV_LENGTH, encryptedData.byteLength - TAG_LENGTH));
 
-    const decipher = cryptoFramework.createCipher('AES256|GCM|PKCS7');
+    const decipher = cryptoFramework.createCipher('AES256|GCM|NONE');
     const params: cryptoFramework.GcmParamsSpec = {
       iv: { data: iv.buffer as ArrayBuffer },
       aad: { data: new Uint8Array(0).buffer as ArrayBuffer },
@@ -134,7 +139,6 @@ export class SecureDataStore {
     try {
       // 尝试获取已有密钥
       const keyProperties: huks.HuksKeyProperties = {
-        tag: KEY_ALIAS,
         alias: KEY_ALIAS
       };
       this.keyMaterial = await huks.getKeyProperties(keyProperties);
@@ -159,11 +163,10 @@ export class SecureDataStore {
     };
     await huks.generateKeyItem(keyGenParams);
     // 重新获取
-    const keyProperties: huks.HuksKeyProperties = {
-      tag: KEY_ALIAS,
+    const keyProperties2: huks.HuksKeyProperties = {
       alias: KEY_ALIAS
     };
-    this.keyMaterial = await huks.getKeyProperties(keyProperties);
+    this.keyMaterial = await huks.getKeyProperties(keyProperties2);
   }
 
   private stringToArrayBuffer(str: string): ArrayBuffer {

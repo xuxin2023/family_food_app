@@ -2,6 +2,7 @@
 import { describe, it, expect } from '@ohos/hypium';
 import { Recommendation, RecommendLevel, LevelColor,
   getLevelColorValue } from '../../../../../src/main/ets/model/Recommendation';
+import { JsonHelper } from '../../../../main/ets/utils/JsonHelper';
 
 function createRec(level: RecommendLevel, levelColor: LevelColor, maxAmount: number,
   maxServings: number, reasons: string[], reminders: string[]): Recommendation {
@@ -76,7 +77,9 @@ export default function recommendationTest() {
         disclaimer: '本结果仅供参考',
         generatedAt: 1700000000000
       });
-      const rec: Recommendation = Recommendation.fromJson(JSON.parse(jsonStr) as Record<string, Object>);
+      const rec: Recommendation = Recommendation.fromJson((() => {
+        return JsonHelper.recordToMap(JSON.parse(jsonStr) as Record<string, Object>);
+      })());
 
       expect(rec.memberId).assertEqual('test_from_json');
       expect(rec.foodId).assertEqual('food_from_json');
@@ -92,7 +95,9 @@ export default function recommendationTest() {
         ['含过敏原：花生，建议避免'], []);
 
       const jsonStr: string = JSON.stringify(original.toJson());
-      const restored: Recommendation = Recommendation.fromJson(JSON.parse(jsonStr) as Record<string, Object>);
+      const restored: Recommendation = Recommendation.fromJson((() => {
+        return JsonHelper.recordToMap(JSON.parse(jsonStr) as Record<string, Object>);
+      })());
 
       expect(restored.memberId).assertEqual('member_1');
       expect(restored.level).assertEqual(RecommendLevel.AVOID);

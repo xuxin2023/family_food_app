@@ -13,8 +13,7 @@
 //   'dashboard'   — 看板样式（DashboardPage, DeviceDashboardPage）
 //   'detail'      — 详情样式（ReportPage）
 //   'chat'        — AI对话样式（AiChatPage）
-import { COLORS, SPACING, RADIUS } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { COLORS, SPACING, RADIUS } from 'hsp_core';
 
 /** 骨架屏占位块 */
 @ComponentV2
@@ -133,14 +132,14 @@ export struct LoadingSkeleton {
           .margin({ top: SPACING.MD, bottom: SPACING.LG })
         ForEach(new Array(this.rowCount), () => {
           SkeletonListItem()
-        })
+        }, (_: void, i: number) => `skel_${i}`)
       } else if (this.variant === 'card') {
         // 卡片样式：顶部标题 + 成员卡片 + 图表
         SkeletonBlock({  blockWidth: '60%', blockHeight: 24, blockRadius: RADIUS.SM  })
           .margin({ top: SPACING.LG, bottom: SPACING.LG })
         ForEach(new Array(this.rowCount > 3 ? 3 : this.rowCount), () => {
           SkeletonMemberCard()
-        })
+        }, (_: void, i: number) => `skel_${i}`)
       } else if (this.variant === 'dashboard') {
         // 看板样式：标题 + 双列统计卡 + 图表
         SkeletonBlock({  blockWidth: '50%', blockHeight: 22, blockRadius: RADIUS.SM  })
@@ -212,7 +211,7 @@ export struct LoadingSkeleton {
           }
           .width('100%')
           .padding({ top: SPACING.SM, bottom: SPACING.SM })
-        })
+        }, (_: void, i: number) => `skel_${i}`)
       } else {
         // 默认：简单通用列表
         SkeletonBlock({  blockWidth: '40%', blockHeight: 22  })
@@ -220,7 +219,7 @@ export struct LoadingSkeleton {
         ForEach(new Array(this.rowCount > 5 ? 5 : this.rowCount), () => {
           SkeletonBlock({  blockWidth: '100%', blockHeight: 60, blockRadius: RADIUS.MD  })
             .margin({ bottom: SPACING.SM })
-        })
+        }, (_: void, i: number) => `skel_${i}`)
       }
     }
     .width('100%')
@@ -238,7 +237,7 @@ export struct SkeletonScreen {
 
       ForEach([1, 2, 3], () => {
         SkeletonMemberCard()
-      })
+      }, (_: void, i: number) => `skel_${i}`)
 
       SkeletonChart()
 

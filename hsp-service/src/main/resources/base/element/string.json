@@ -1,0 +1,12 @@
+{
+  "string": [
+    {
+      "name": "hsp_service_name",
+      "value": "食品适配服务"
+    },
+    {
+      "name": "hsp_service_desc",
+      "value": "家庭食品适配助手业务服务层"
+    }
+  ]
+}

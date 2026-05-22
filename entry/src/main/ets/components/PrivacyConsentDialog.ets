@@ -38,19 +38,21 @@ export struct PrivacyConsentDialog {
       .width('100%')
       .height('100%')
       .backgroundColor('rgba(0,0,0,0.5)')
+      .accessibilityText($r('app.string.close_dialog'))
+      .accessibilityLevel('yes')
       .onClick(() => { /* 禁止点击穿透 */ })
 
       // 弹窗主体
       Column() {
         // 标题区
-        Text('欢迎使用\n家庭食品适配助手')
+        Text($r('app.string.welcome_title'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .fontColor('#1A1A1A')
           .textAlign(TextAlign.Center)
           .margin({ top: 24, bottom: 8 })
 
-        Text('为保护您的个人信息安全，请阅读并同意以下协议')
+        Text($r('app.string.privacy_desc'))
           .fontSize(13)
           .fontColor('#999999')
           .textAlign(TextAlign.Center)
@@ -59,20 +61,20 @@ export struct PrivacyConsentDialog {
         // 协议内容摘要
         Column() {
           this.buildPolicyItem(
-            '隐私政策',
-            '我们如何收集、使用、存储和保护您的个人信息',
+            $r('app.string.privacy_policy') as string,
+            $r('app.string.privacy_policy_desc') as string,
             () => this.openUrl('https://www.familyfood.app/privacy')
           )
           Divider().color('#EEEEEE').margin({ left: 16, right: 16 })
           this.buildPolicyItem(
-            '用户服务协议',
-            '使用本应用的服务条款与用户行为规范',
+            $r('app.string.user_agreement') as string,
+            $r('app.string.user_agreement_desc') as string,
             () => this.openUrl('https://www.familyfood.app/terms')
           )
           Divider().color('#EEEEEE').margin({ left: 16, right: 16 })
           this.buildPolicyItem(
-            '个人信息收集清单',
-            '我们收集的个人信息类型、目的与方式',
+            $r('app.string.data_collection_list') as string,
+            $r('app.string.data_collection_list_desc') as string,
             () => this.openUrl('https://www.familyfood.app/data-list')
           )
         }
@@ -85,21 +87,21 @@ export struct PrivacyConsentDialog {
         // 数据使用说明
         Row() {
           Text('✅ ').fontSize(13)
-          Text('数据仅在您设备本地处理，不上传云端').fontSize(12).fontColor('#666666')
+          Text($r('app.string.data_local_only')).fontSize(12).fontColor('#666666')
         }
         .width('100%')
         .margin({ bottom: 4 })
 
         Row() {
           Text('✅ ').fontSize(13)
-          Text('您可以随时在「设置」中撤回授权').fontSize(12).fontColor('#666666')
+          Text($r('app.string.revoke_in_settings')).fontSize(12).fontColor('#666666')
         }
         .width('100%')
         .margin({ bottom: 20 })
 
         // 按钮区
         Row() {
-          Button('不同意并退出')
+          Button($r('app.string.disagree_exit'))
             .layoutWeight(1)
             .height(44)
             .backgroundColor(Color.White)
@@ -107,11 +109,13 @@ export struct PrivacyConsentDialog {
             .border({ width: 1, color: '#DDDDDD' })
             .borderRadius(22)
             .fontSize(14)
+            .accessibilityText($r('app.string.disagree_exit'))
+            .accessibilityLevel('yes')
             .onClick(() => {
               this.onRejected?.();
             })
 
-          Button('同意并继续')
+          Button($r('app.string.agree_continue'))
             .layoutWeight(1)
             .height(44)
             .backgroundColor('#4CAF50')
@@ -119,6 +123,8 @@ export struct PrivacyConsentDialog {
             .borderRadius(22)
             .fontSize(14)
             .margin({ left: 12 })
+            .accessibilityText($r('app.string.agree_continue'))
+            .accessibilityLevel('yes')
             .onClick(async () => {
               await this.saveAgreement();
               this.isVisible = false;
@@ -154,12 +160,14 @@ export struct PrivacyConsentDialog {
       }
       .layoutWeight(1)
 
-      Text('查看 ›')
+      Text($r('app.string.view_detail'))
         .fontSize(12)
         .fontColor('#4CAF50')
     }
     .width('100%')
     .padding({ left: 16, right: 16, top: 12, bottom: 12 })
+    .accessibilityText($r('app.string.view_policy'))
+    .accessibilityLevel('yes')
     .onClick(onClick)
   }
 

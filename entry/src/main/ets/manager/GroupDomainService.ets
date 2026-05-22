@@ -1,10 +1,9 @@
 // GroupDomainService.ets
 // 群组领域服务 - 从 AppState 剥离的群组相关业务逻辑
 
-import { GroupSummary, GroupFeed, FeedType } from '../model/FamilyGroup';
-import { FamilyGroupService } from '../service/FamilyGroupService';
+import { GroupSummary, GroupFeed, FeedType, HILOG_DOMAIN } from 'hsp_core';
+import { FamilyGroupService, CreateGroupParams } from '../service/FamilyGroupService';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'GroupDomainService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -27,7 +26,11 @@ export class GroupDomainService {
     if (!this.gs) {
       throw new Error('Group service not initialized');
     }
-    return this.gs.createGroup({ groupName: name, description: '', ownerName: '' });
+    const params = new CreateGroupParams();
+    params.groupName = name;
+    params.description = '';
+    params.ownerName = '';
+    return this.gs.createGroup(params);
   }
 
   async getOrCreateGroupSummary(): Promise<GroupSummary | null> {

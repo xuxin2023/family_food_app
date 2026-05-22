@@ -1,12 +1,11 @@
 // AiChatService.ets
 // AI 对话服务 — 基于 AiServiceBase 实现多轮对话，支持上下文记忆
 
+import { ChatRole, ChatMessage, generateMessageId, HILOG_DOMAIN, NutritionTarget } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AiServiceBase } from './ai/AiServiceBase';
 import { AI_SERVICE_DEFAULTS, SYSTEM_PROMPTS } from './ai/AiConfig';
-import { ChatRole, ChatMessage, generateMessageId } from '../model/AiChat';
 import { AppState } from '../AppState';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'AiChatService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -27,9 +26,9 @@ const MAX_HISTORY_ROUNDS = 10;
 /**
  * 历史记录项
  */
-interface ChatHistoryItem {
-  role: string;
-  content: string;
+class ChatHistoryItem {
+  role: string = '';
+  content: string = '';
 }
 
 export class AiChatService extends AiServiceBase {
@@ -51,7 +50,7 @@ export class AiChatService extends AiServiceBase {
   }
 
   protected getSystemPrompt(): string {
-    return SYSTEM_PROMPTS.CHAT;
+    return SYSTEM_PROMPTS.get('CHAT') || '';
   }
 
   /**
@@ -149,10 +148,10 @@ export class AiChatService extends AiServiceBase {
     for (let i = startIndex; i < this.conversationHistory.length; i++) {
       const msg = this.conversationHistory[i];
       if (msg.role === ChatRole.ASSISTANT || msg.role === ChatRole.USER) {
-        items.push({
-          role: msg.role === ChatRole.USER ? 'user' : 'assistant',
-          content: msg.content
-        });
+        const item = new ChatHistoryItem();
+        item.role = msg.role === ChatRole.USER ? 'user' : 'assistant';
+        item.content = msg.content;
+        items.push(item);
       }
     }
     // 最后一条是当前用户消息，已包含在 userPrompt 中，排除
@@ -180,19 +179,48 @@ export class AiChatService extends AiServiceBase {
       }
 
       const budget = appState.getDailyBudgetSync(this.currentMemberId);
+      const target = appState.getNutritionTargetSync(this.currentMemberId);
       const signal = appState.getHealthSignal(this.currentMemberId);
 
       const contextParts: string[] = [];
       contextParts.push(`[上下文] 当前成员：${member.nickname}（${member.ageGroup}）`);
       contextParts.push(`健康目标：${member.healthGoals.join('、')}`);
 
+      if (member.allergens.length > 0) {
+        contextParts.push(`过敏原：${member.allergens.join('、')}`);
+      }
+
+      // 今日摄入详情
       if (budget !== null) {
-        const calPct = Math.round(((budget.calorieBudget - budget.calorieRemaining) / budget.calorieBudget) * 100);
-        contextParts.push(`今日热量已用：${calPct}%`);
+        const sodiumUsed = Math.max(0, budget.sodiumBudget - budget.sodiumRemaining);
+        const sugarUsed = Math.max(0, budget.sugarBudget - budget.sugarRemaining);
+        const calUsed = Math.max(0, budget.calorieBudget - budget.calorieRemaining);
+        const fatUsed = Math.max(0, budget.fatBudget - budget.fatRemaining);
+
+        contextParts.push(`今日已摄入：钠${Math.round(sodiumUsed)}mg / 糖${sugarUsed.toFixed(1)}g / 热量${Math.round(calUsed)}kcal / 脂肪${fatUsed.toFixed(1)}g`);
+        contextParts.push(`每日目标：钠${target.sodiumMax_mg}mg / 糖${target.sugarMax_g}g / 热量${target.caloriesTarget}kcal / 脂肪${target.fatMax_g}g`);
+        contextParts.push(`距目标还差：钠${Math.round(budget.sodiumRemaining)}mg / 糖${budget.sugarRemaining.toFixed(1)}g / 热量${Math.round(budget.calorieRemaining)}kcal`);
+
+        const calPct = Math.round((calUsed / budget.calorieBudget) * 100);
+        const sodiumPct = Math.round((sodiumUsed / budget.sodiumBudget) * 100);
+        contextParts.push(`预算使用：热量${calPct}% / 钠${sodiumPct}%`);
       }
 
       if (signal !== null) {
         contextParts.push(`步数：${signal.stepCount}步`);
+        if (signal.manualBpStatus !== undefined) {
+          contextParts.push(`血压状态：${signal.manualBpStatus}`);
+        }
+        if (signal.manualBsStatus !== undefined) {
+          contextParts.push(`血糖状态：${signal.manualBsStatus}`);
+        }
+      }
+
+      // 家庭成员概要
+      if (members.length > 1) {
+        const otherMembers = members.filter(m => m.memberId !== this.currentMemberId);
+        const familyDesc = otherMembers.map(m => `${m.nickname}(${m.ageGroup}, 目标:${m.healthGoals.join(',')})`);
+        contextParts.push(`其他家庭成员：${familyDesc.join('；')}`);
       }
 
       return `${contextParts.join('；')}\n\n用户问题：${userMessage}`;

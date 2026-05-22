@@ -38,44 +38,38 @@
 // | family_food_transparency_report | —         | ¥3.9/次    | —             | CONSUMABLE   |
 // | family_food_brand_trace         | —         | ¥2.9/次    | —             | CONSUMABLE   |
 
+import { ToastHelper, StringRes, HILOG_DOMAIN, MemberTier, ProductInfo, PurchaseResult } from 'hsp_core';
 import { iap } from '@kit.IAPKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { util } from '@kit.ArkTS';
-import { promptAction } from '@kit.ArkUI';
-import {
-  MemberTier,
-  ProductInfo,
-  PurchaseResult
-} from '../model/MemberStatus';
-import { StringRes } from '../constants/StringRes';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+
 
 // ==================== 沙箱测试报告类型 ====================
 
 /**
  * 沙箱测试单个步骤结果
  */
-export interface SandboxTestStep {
-  name: string
-  success: boolean
-  duration: number
-  errorCode: number
-  errorMessage: string
-  details: string
+export class SandboxTestStep {
+  name: string = ''
+  success: boolean = false
+  duration: number = 0
+  errorCode: number = 0
+  errorMessage: string = ''
+  details: string = ''
 }
 
 /**
  * 沙箱测试综合报告
  */
-export interface SandboxTestReport {
-  overallSuccess: boolean
-  totalDuration: number
-  sandboxMode: boolean
-  steps: SandboxTestStep[]
-  timestamp: number
+export class SandboxTestReport {
+  overallSuccess: boolean = false
+  totalDuration: number = 0
+  sandboxMode: boolean = false
+  steps: SandboxTestStep[] = []
+  timestamp: number = 0
 }
 
 const TAG = 'IapService';
@@ -83,26 +77,25 @@ const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 // ==================== 商品ID ====================
 
-interface ProductIdMap {
-  PERSONAL_MONTHLY: string;
-  PERSONAL_YEARLY: string;
-  FAMILY_YEARLY: string;
-  PREMIUM_YEARLY: string;
-  TRANSPARENCY_REPORT: string;
-  BRAND_TRACE: string;
+class ProductIdMap {
+  PERSONAL_MONTHLY: string = '';
+  PERSONAL_YEARLY: string = '';
+  FAMILY_YEARLY: string = '';
+  PREMIUM_YEARLY: string = '';
+  TRANSPARENCY_REPORT: string = '';
+  BRAND_TRACE: string = '';
 }
 
 /**
  * 所有可购买商品的ID常量
  */
-export const PRODUCT_IDS: ProductIdMap = {
-  PERSONAL_MONTHLY: 'family_food_personal_monthly',
-  PERSONAL_YEARLY: 'family_food_personal_yearly',
-  FAMILY_YEARLY: 'family_food_family_yearly',
-  PREMIUM_YEARLY: 'family_food_premium_yearly',
-  TRANSPARENCY_REPORT: 'family_food_transparency_report',
-  BRAND_TRACE: 'family_food_brand_trace'
-};
+export const PRODUCT_IDS: ProductIdMap = new ProductIdMap();
+PRODUCT_IDS.PERSONAL_MONTHLY = 'family_food_personal_monthly';
+PRODUCT_IDS.PERSONAL_YEARLY = 'family_food_personal_yearly';
+PRODUCT_IDS.FAMILY_YEARLY = 'family_food_family_yearly';
+PRODUCT_IDS.PREMIUM_YEARLY = 'family_food_premium_yearly';
+PRODUCT_IDS.TRANSPARENCY_REPORT = 'family_food_transparency_report';
+PRODUCT_IDS.BRAND_TRACE = 'family_food_brand_trace';
 
 const PRODUCT_IDS_VALUES: string[] = [
   PRODUCT_IDS.PERSONAL_MONTHLY,
@@ -115,71 +108,36 @@ const PRODUCT_IDS_VALUES: string[] = [
 
 // ==================== 商品内部定义 ====================
 
-interface ProductDefinition {
-  productId: string;
-  tier: MemberTier | null;       // null表示非订阅型消耗品
-  price: string;                 // 展示价格
-  originalPrice: string;         // 划线原价
-  title: string;
-  description: string;
-  iapProductType: number;        // 0=消耗型, 3=非续期订阅
+class ProductDefinition {
+  productId: string = '';
+  tier: MemberTier | null = null;
+  price: string = '';
+  originalPrice: string = '';
+  title: string = '';
+  description: string = '';
+  iapProductType: number = 0;
+}
+
+function makeProductDef(productId: string, tier: MemberTier | null, price: string,
+  originalPrice: string, title: string, description: string, iapProductType: number): ProductDefinition {
+  const d = new ProductDefinition();
+  d.productId = productId;
+  d.tier = tier;
+  d.price = price;
+  d.originalPrice = originalPrice;
+  d.title = title;
+  d.description = description;
+  d.iapProductType = iapProductType;
+  return d;
 }
 
 const PRODUCT_DEFINITIONS: ProductDefinition[] = [
-  {
-    productId: PRODUCT_IDS.PERSONAL_MONTHLY,
-    tier: MemberTier.PERSONAL,
-    price: '¥9/月',
-    originalPrice: '',
-    title: '个人月度版',
-    description: '无限扫码、个人历史记录、今日预算、饮食平衡建议，按月订阅',
-    iapProductType: iap.ProductType.NONRENEWABLE
-  },
-  {
-    productId: PRODUCT_IDS.PERSONAL_YEARLY,
-    tier: MemberTier.PERSONAL,
-    price: '¥39/年',
-    originalPrice: '¥108',
-    title: '个人年度版',
-    description: '无限扫码、个人历史记录、今日预算、饮食平衡建议、购物清单',
-    iapProductType: iap.ProductType.NONRENEWABLE
-  },
-  {
-    productId: PRODUCT_IDS.FAMILY_YEARLY,
-    tier: MemberTier.FAMILY,
-    price: '¥69/年',
-    originalPrice: '¥199',
-    title: '家庭年度版',
-    description: '不限家庭成员、家庭购物清单、家庭饮食周报、儿童正餐保护',
-    iapProductType: iap.ProductType.NONRENEWABLE
-  },
-  {
-    productId: PRODUCT_IDS.PREMIUM_YEARLY,
-    tier: MemberTier.PREMIUM,
-    price: '¥129/年',
-    originalPrice: '¥299',
-    title: '高级家庭版',
-    description: '深度可信度报告、动态健康数据联动、个性化周报、品牌信用等级',
-    iapProductType: iap.ProductType.NONRENEWABLE
-  },
-  {
-    productId: PRODUCT_IDS.TRANSPARENCY_REPORT,
-    tier: null,
-    price: '¥3.9/次',
-    originalPrice: '',
-    title: '透明度深度报告',
-    description: '查看每款食品的深度数据可信度分析、数据来源和评分依据',
-    iapProductType: iap.ProductType.CONSUMABLE
-  },
-  {
-    productId: PRODUCT_IDS.BRAND_TRACE,
-    tier: null,
-    price: '¥2.9/次',
-    originalPrice: '',
-    title: '品牌溯源查询',
-    description: '查询品牌生产信息、SC证书编号、委托商信息等溯源数据',
-    iapProductType: iap.ProductType.CONSUMABLE
-  }
+  makeProductDef(PRODUCT_IDS.PERSONAL_MONTHLY, MemberTier.PERSONAL, '¥9/月', '', '个人月度版', '无限扫码、个人历史记录、今日预算、饮食平衡建议，按月订阅', iap.ProductType.NONRENEWABLE),
+  makeProductDef(PRODUCT_IDS.PERSONAL_YEARLY, MemberTier.PERSONAL, '¥39/年', '¥108', '个人年度版', '无限扫码、个人历史记录、今日预算、饮食平衡建议、购物清单', iap.ProductType.NONRENEWABLE),
+  makeProductDef(PRODUCT_IDS.FAMILY_YEARLY, MemberTier.FAMILY, '¥69/年', '¥199', '家庭年度版', '不限家庭成员、家庭购物清单、家庭饮食周报、儿童正餐保护', iap.ProductType.NONRENEWABLE),
+  makeProductDef(PRODUCT_IDS.PREMIUM_YEARLY, MemberTier.PREMIUM, '¥129/年', '¥299', '高级家庭版', '深度可信度报告、动态健康数据联动、个性化周报、品牌信用等级', iap.ProductType.NONRENEWABLE),
+  makeProductDef(PRODUCT_IDS.TRANSPARENCY_REPORT, null, '¥3.9/次', '', '透明度深度报告', '查看每款食品的深度数据可信度分析、数据来源和评分依据', iap.ProductType.CONSUMABLE),
+  makeProductDef(PRODUCT_IDS.BRAND_TRACE, null, '¥2.9/次', '', '品牌溯源查询', '查询品牌生产信息、SC证书编号、委托商信息等溯源数据', iap.ProductType.CONSUMABLE)
 ];
 
 // ==================== 外部接口 ====================
@@ -187,15 +145,15 @@ const PRODUCT_DEFINITIONS: ProductDefinition[] = [
 /**
  * 购买记录
  */
-export interface PurchaseRecord {
-  productId: string;
-  purchaseTime: number;
-  orderId: string;
+export class PurchaseRecord {
+  productId: string = '';
+  purchaseTime: number = 0;
+  orderId: string = '';
 }
 
 // ==================== 内部JWS类型 ====================
 
-interface PurchaseOrderPayload {
+class PurchaseOrderPayload {
   productId?: string;
   purchaseOrderId?: string;
   purchaseTime?: number;
@@ -205,7 +163,7 @@ interface PurchaseOrderPayload {
   finishStatus?: string;
 }
 
-interface PurchaseData {
+class PurchaseData {
   jwsPurchaseOrder?: string;
 }
 
@@ -282,33 +240,38 @@ const PURCHASE_TIMEOUT_MS: number = 60000;
 /** 防重复购买：同一商品ID的冷却期（毫秒） */
 const DUPLICATE_PURCHASE_COOLDOWN_MS: number = 3000;
 
-/** 最近一次发起购买的记录，用于防重复 */
-let lastPurchaseTimestamp: Map<string, number> = new Map();
 
 // ==================== 测试流程定义 ====================
 
 /**
  * 测试步骤
  */
-export interface TestStep {
-  name: string;
-  action: string;
-  status: 'pending' | 'running' | 'passed' | 'failed';
+export enum TestStepStatus {
+  PENDING = 'pending',
+  RUNNING = 'running',
+  PASSED = 'passed',
+  FAILED = 'failed'
+}
+
+export class TestStep {
+  name: string = '';
+  action: string = '';
+  status: TestStepStatus = TestStepStatus.PENDING;
   detail?: string;
 }
 
 /**
  * 测试报告
  */
-export interface TestReport {
-  suiteName: string;
-  startTime: number;
-  endTime: number;
-  totalSteps: number;
-  passedSteps: number;
-  failedSteps: number;
-  steps: TestStep[];
-  concluded: boolean;
+export class TestReport {
+  suiteName: string = '';
+  startTime: number = 0;
+  endTime: number = 0;
+  totalSteps: number = 0;
+  passedSteps: number = 0;
+  failedSteps: number = 0;
+  steps: TestStep[] = [];
+  concluded: boolean = false;
 }
 
 // ==================== 本地持久化键名 ====================
@@ -328,6 +291,7 @@ let iapServiceInstance: IapService | null = null;
 export class IapService {
   private context: common.Context | null = null;
   private isInitialized: boolean = false;
+  private lastPurchaseTimestamp: Map<string, number> = new Map();
 
   static getInstance(): IapService {
     if (iapServiceInstance === null) {
@@ -435,12 +399,12 @@ export class IapService {
    */
   private canPurchase(productId: string): boolean {
     const now = Date.now();
-    const lastTime = lastPurchaseTimestamp.get(productId);
+    const lastTime = this.lastPurchaseTimestamp.get(productId);
     if (lastTime !== undefined && (now - lastTime) < DUPLICATE_PURCHASE_COOLDOWN_MS) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Duplicate purchase blocked: %{public}s', productId);
       return false;
     }
-    lastPurchaseTimestamp.set(productId, now);
+    this.lastPurchaseTimestamp.set(productId, now);
     return true;
   }
 
@@ -463,28 +427,28 @@ export class IapService {
   private parseIapError(err: BusinessError): string {
     // 先匹配 IAP Kit 内置错误码
     if (err.code === iap.IAPErrorCode.PRODUCT_OWNED) {
-      return '商品已拥有，正在为您恢复购买权益';
+      return $r('app.string.iap_err_product_owned') as string;
     }
     if (err.code === iap.IAPErrorCode.SYSTEM_ERROR) {
-      return '支付系统繁忙，正在为您补发订单';
+      return $r('app.string.iap_err_system_busy') as string;
     }
     if (err.code === iap.IAPErrorCode.USER_CANCELED) {
-      return '用户取消购买';
+      return $r('app.string.iap_err_user_canceled') as string;
     }
     if (err.code === iap.IAPErrorCode.PURCHASE_NOT_PAID) {
-      return '未查询到有效购买记录';
+      return $r('app.string.iap_err_no_record') as string;
     }
     if (err.code === iap.IAPErrorCode.FREQUENT_CALLS) {
-      return '购买请求频率过高，请稍后重试';
+      return $r('app.string.iap_err_frequent') as string;
     }
     if (err.code === iap.IAPErrorCode.NETWORK_ERROR) {
-      return '网络连接不稳定，请检查网络后重试';
+      return $r('app.string.iap_err_network_unstable') as string;
     }
     if (err.code === iap.IAPErrorCode.ACCOUNT_NOT_TEST) {
-      return '登录的华为账号不是沙箱测试账号，请在AGC添加后再试';
+      return $r('app.string.iap_err_not_test_account') as string;
     }
     if (err.code === iap.IAPErrorCode.APP_NOT_DEBUG) {
-      return '当前应用不是debug签名，请使用调试证书打包';
+      return $r('app.string.iap_err_not_debug') as string;
     }
 
     // 匹配扩展错误码
@@ -495,10 +459,10 @@ export class IapService {
 
     // 沙箱环境特殊提示
     if (IS_SANDBOX_ENABLED) {
-      return `沙箱支付异常（错误码：${err.code}），请检查沙箱测试账号配置`;
+      return `${$r('app.string.iap_err_sandbox_anomaly') as string}`.replace('%s', `${err.code}`);
     }
 
-    return `支付失败（错误码：${err.code}）`;
+    return `${$r('app.string.iap_err_payment_failed') as string}`.replace('%s', `${err.code}`);
   }
 
   /**
@@ -507,31 +471,31 @@ export class IapService {
   private mapExtendedErrorCode(code: number): string | undefined {
     switch (code) {
       case -1:
-        return '支付服务内部错误（沙箱环境常见）';
+        return $r('app.string.iap_err_internal') as string;
       case -2:
-        return '网络连接异常，请检查网络后重试';
+        return $r('app.string.iap_err_network_error') as string;
       case -3:
-        return '沙箱环境配置错误，请确认沙箱测试账号已正确配置';
+        return $r('app.string.iap_err_sandbox_config') as string;
       case 1001:
-        return '华为账号服务未就绪，请确认已登录华为账号';
+        return $r('app.string.iap_err_huawei_not_ready') as string;
       case 1002:
-        return 'IAP Kit API 版本不兼容，请更新应用';
+        return $r('app.string.iap_err_api_incompatible') as string;
       case 35001:
-        return '支付服务异常，请稍后重试';
+        return $r('app.string.iap_err_service_exception') as string;
       case 35002:
-        return '请求参数错误';
+        return $r('app.string.iap_err_param_invalid') as string;
       case 35003:
-        return '商品信息无效';
+        return $r('app.string.iap_err_product_invalid') as string;
       case 35004:
-        return '订单处理失败';
+        return $r('app.string.iap_err_order_failed') as string;
       case 35005:
-        return '购买被用户取消';
+        return $r('app.string.iap_err_purchase_canceled') as string;
       case 35006:
-        return '支付密码验证失败';
+        return $r('app.string.iap_err_password_failed') as string;
       case 35007:
-        return '账户余额不足';
+        return $r('app.string.iap_err_insufficient_balance') as string;
       case 35008:
-        return '单日购买次数超限';
+        return $r('app.string.iap_err_daily_limit') as string;
       default:
         return undefined;
     }
@@ -558,14 +522,14 @@ export class IapService {
       }
       // 查找 IAP 返回的价格，优先使用实时价格
       const iapPrice = iapPrices.get(def.productId);
-      results.push({
-        productId: def.productId,
-        tier: def.tier || MemberTier.FREE,
-        price: iapPrice || def.price,
-        originalPrice: def.originalPrice,
-        title: def.title,
-        description: def.description
-      });
+      const info = new ProductInfo();
+      info.productId = def.productId;
+      info.tier = def.tier || MemberTier.FREE;
+      info.price = iapPrice || def.price;
+      info.originalPrice = def.originalPrice;
+      info.title = def.title;
+      info.description = def.description;
+      results.push(info);
     }
     return results;
   }
@@ -643,7 +607,7 @@ export class IapService {
    */
   async purchase(productId: string): Promise<PurchaseResult> {
     if (!this.context) {
-      return this.failResult(productId, '服务未初始化');
+      return this.failResult(productId, $r('app.string.iap_service_not_init') as string);
     }
 
     const def = PRODUCT_DEFINITIONS.find(d => d.productId === productId);
@@ -653,13 +617,13 @@ export class IapService {
 
     // 防重复购买检查
     if (!this.canPurchase(productId)) {
-      promptAction.showToast({ message: StringRes.TOAST_PURCHASING, duration: 1500 });
+      ToastHelper.show(undefined, StringRes.TOAST_PURCHASING, 1500);
       return this.failResult(productId, StringRes.TOAST_TOO_FREQUENT);
     }
 
     // 沙箱模式提示
     if (this.isSandboxMode()) {
-      promptAction.showToast({ message: StringRes.TOAST_SANDBOX_MODE, duration: 2000 });
+      ToastHelper.show(undefined, StringRes.TOAST_SANDBOX_MODE, 2000);
       hilog.info(DOMAIN_ZERO, TAG, 'Sandbox mode: purchase simulation for %{public}s', productId);
     }
 
@@ -676,7 +640,7 @@ export class IapService {
       const result: iap.CreatePurchaseResult = await (this.withTimeout(
         iap.createPurchase(uiContext, purchaseParam),
         PURCHASE_TIMEOUT_MS,
-        '购买请求超时，请检查网络后重试'
+        $r('app.string.iap_purchase_timeout') as string
       ) as Promise<iap.CreatePurchaseResult>);
 
       // 解析购买结果
@@ -684,64 +648,39 @@ export class IapService {
       if (!purchaseDataStr) {
         // 兜底：createPurchase 成功但没有 purchaseData
         await this.savePurchaseRecord(productId, 'manual_order_' + Date.now());
-        return {
-          success: true,
-          productId: productId,
-          errorCode: 0,
-          errorMessage: '购买成功'
-        };
+        return this.successResult(productId);
       }
 
       const purchaseData = safeJsonParse<PurchaseData>(purchaseDataStr);
       if (purchaseData === null) {
         await this.savePurchaseRecord(productId, 'parse_fallback_' + Date.now());
-        return {
-          success: true,
-          productId: productId,
-          errorCode: 0,
-          errorMessage: '购买成功'
-        };
+        return this.successResult(productId);
       }
 
       const jwsPurchaseOrder: string | undefined = purchaseData.jwsPurchaseOrder;
       if (!jwsPurchaseOrder || jwsPurchaseOrder.length === 0) {
         await this.savePurchaseRecord(productId, 'jws_empty_' + Date.now());
-        return {
-          success: true,
-          productId: productId,
-          errorCode: 0,
-          errorMessage: '购买成功'
-        };
+        return this.successResult(productId);
       }
 
       // 解码 JWS 获取订单详情
       const payloadStr = decodeJwsPayload(jwsPurchaseOrder);
       if (payloadStr.length === 0) {
         await this.savePurchaseRecord(productId, 'jws_decode_fallback_' + Date.now());
-        return {
-          success: true,
-          productId: productId,
-          errorCode: 0,
-          errorMessage: '购买成功'
-        };
+        return this.successResult(productId);
       }
 
       const payload = safeJsonParse<PurchaseOrderPayload>(payloadStr);
       if (payload === null) {
         await this.savePurchaseRecord(productId, 'jws_json_fallback_' + Date.now());
-        return {
-          success: true,
-          productId: productId,
-          errorCode: 0,
-          errorMessage: '购买成功'
-        };
+        return this.successResult(productId);
       }
 
       // 检查是否被撤销
       if (payload.purchaseOrderRevocationReasonCode !== undefined &&
           payload.purchaseOrderRevocationReasonCode !== null &&
           payload.purchaseOrderRevocationReasonCode.length > 0) {
-        return this.failResult(productId, '该订单已被撤销');
+        return this.failResult(productId, $r('app.string.iap_order_revoked') as string);
       }
 
       // 记录订单
@@ -754,12 +693,7 @@ export class IapService {
         await this.consumePurchase(productId);
       }
 
-      return {
-        success: true,
-        productId: productId,
-        errorCode: 0,
-        errorMessage: '购买成功'
-      };
+      return this.successResult(productId);
     } catch (err) {
       const error = err as BusinessError;
       hilog.error(DOMAIN_ZERO, TAG, 'Purchase failed: code=%{public}d, msg=%{public}s',
@@ -1088,7 +1022,11 @@ export class IapService {
       // 追加历史记录
       const historyJson = prefs.getSync(KEY_PURCHASE_HISTORY, '[]') as string;
       const history: PurchaseRecord[] = safeJsonParse<PurchaseRecord[]>(historyJson) || [];
-      history.push({ productId: productId, purchaseTime: now, orderId: orderId });
+      const rec = new PurchaseRecord();
+      rec.productId = productId;
+      rec.purchaseTime = now;
+      rec.orderId = orderId;
+      history.push(rec);
       prefs.putSync(KEY_PURCHASE_HISTORY, JSON.stringify(history));
 
       await prefs.flush();
@@ -1113,12 +1051,21 @@ export class IapService {
    * 构造失败结果
    */
   private failResult(productId: string, message: string): PurchaseResult {
-    return {
-      success: false,
-      productId: productId,
-      errorCode: -1,
-      errorMessage: message
-    };
+    const r = new PurchaseResult();
+    r.success = false;
+    r.productId = productId;
+    r.errorCode = 0;
+    r.errorMessage = message;
+    return r;
+  }
+
+  private successResult(productId: string): PurchaseResult {
+    const r = new PurchaseResult();
+    r.success = true;
+    r.productId = productId;
+    r.errorCode = 0;
+    r.errorMessage = $r('app.string.iap_purchase_success') as string;
+    return r;
   }
 
   // ==================== 用户友好的错误码映射（对外暴露） ====================
@@ -1131,46 +1078,46 @@ export class IapService {
     // 自定义错误码映射（沙箱测试扩展）
     switch (code) {
       case -1:
-        return '支付已取消';
+        return $r('app.string.iap_err_pay_canceled') as string;
       case -2:
-        return '网络异常，请检查后重试';
+        return $r('app.string.iap_err_network_retry') as string;
       case -3:
-        return '支付失败，请稍后再试';
+        return $r('app.string.iap_err_pay_fail_retry') as string;
       case 1001:
-        return '您的账户已订阅该服务';
+        return $r('app.string.iap_err_already_subscribed') as string;
       case 1002:
-        return '商品ID不存在，请联系客服';
+        return $r('app.string.iap_err_product_not_exist') as string;
       case 1003:
-        return '请先登录华为账号';
+        return $r('app.string.iap_err_login_first') as string;
       default:
         break;
     }
     // IAP Kit 内置错误码映射
     if (code === iap.IAPErrorCode.USER_CANCELED) {
-      return '支付已取消';
+      return $r('app.string.iap_err_pay_canceled') as string;
     }
     if (code === iap.IAPErrorCode.SYSTEM_ERROR) {
-      return '支付系统繁忙，请稍后重试';
+      return $r('app.string.iap_err_system_busy_retry') as string;
     }
     if (code === iap.IAPErrorCode.PRODUCT_OWNED) {
-      return '您已订阅该服务，无需重复购买';
+      return $r('app.string.iap_err_no_repeat_purchase') as string;
     }
     if (code === iap.IAPErrorCode.NETWORK_ERROR) {
-      return '网络异常，请检查后重试';
+      return $r('app.string.iap_err_network_retry') as string;
     }
     if (code === iap.IAPErrorCode.PURCHASE_NOT_PAID) {
-      return '未查询到有效购买记录';
+      return $r('app.string.iap_err_no_record') as string;
     }
     if (code === iap.IAPErrorCode.FREQUENT_CALLS) {
-      return '操作过于频繁，请稍后重试';
+      return $r('app.string.iap_err_too_frequent') as string;
     }
     if (code === iap.IAPErrorCode.ACCOUNT_NOT_LOGGED_IN) {
-      return '请先登录华为账号';
+      return $r('app.string.iap_err_login_first') as string;
     }
     if (code === iap.IAPErrorCode.PURCHASE_FINISHED) {
-      return '此次购买已完成，无需重复发货';
+      return $r('app.string.iap_err_already_delivered') as string;
     }
-    return message && message.length > 0 ? message : `支付异常（错误码：${code}）`;
+    return message && message.length > 0 ? message : `${$r('app.string.iap_err_anomaly') as string}`.replace('%s', `${code}`);
   }
 
   // ==================== 购买超时检查 ====================
@@ -1188,7 +1135,7 @@ export class IapService {
           success: false,
           productId: productId,
           errorCode: -2,
-          errorMessage: '支付处理中，请稍候查看订阅状态'
+          errorMessage: $r('app.string.iap_payment_processing') as string
         });
       }, timeoutMs);
     });
@@ -1217,7 +1164,14 @@ export class IapService {
     const steps: SandboxTestStep[] = [];
     const recordStep = (name: string, success: boolean, duration: number,
       errorCode: number, errorMessage: string, details: string): void => {
-      steps.push({ name, success, duration, errorCode, errorMessage, details });
+      const step = new SandboxTestStep();
+      step.name = name;
+      step.success = success;
+      step.duration = duration;
+      step.errorCode = errorCode;
+      step.errorMessage = errorMessage;
+      step.details = details;
+      steps.push(step);
     };
 
     // ---- 步骤1: 环境检查 ----
@@ -1328,13 +1282,13 @@ export class IapService {
 
     const totalDuration = Date.now() - startTime;
     const overallSuccess = steps.every(s => s.success);
-    return {
-      overallSuccess: overallSuccess,
-      totalDuration: totalDuration,
-      sandboxMode: this.isSandboxMode(),
-      steps: steps,
-      timestamp: Date.now()
-    };
+    const report = new SandboxTestReport();
+    report.overallSuccess = overallSuccess;
+    report.totalDuration = totalDuration;
+    report.sandboxMode = this.isSandboxMode();
+    report.steps = steps;
+    report.timestamp = Date.now();
+    return report;
   }
 
   /**
@@ -1352,5 +1306,18 @@ export class IapService {
     } catch (err) {
       return [];
     }
+  }
+
+  private activeTimers: number[] = [];
+
+  registerTimer(id: number): void {
+    this.activeTimers.push(id);
+  }
+
+  destroy(): void {
+    for (const id of this.activeTimers) {
+      clearTimeout(id);
+    }
+    this.activeTimers = [];
   }
 }

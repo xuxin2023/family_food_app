@@ -1,11 +1,8 @@
+import { FamilyProfile, HealthSignal, MealBalance, MealScenario, RiskTag, MEAL_TEMPLATES, safeParseRiskTag } from 'hsp_core';
 // MealBalanceEngine.ets
 // 餐次平衡引擎 - 美食平衡建议
 // V2增强：新增6种场景、具体菜品建议、明天早餐建议、下一餐营养素补充
 
-import { FamilyProfile, HealthGoal } from '../model/FamilyProfile';
-import { HealthSignal } from '../model/HealthSignal';
-import { MealBalance, MealScenario, RiskTag } from '../model/MealBalance';
-import { MEAL_TEMPLATES } from '../constants/MealTemplates';
 
 export class MealBalanceEngine {
   /**
@@ -25,7 +22,7 @@ export class MealBalanceEngine {
       return result;
     }
 
-    result.riskTags = template.riskTags.map(tag => tag as RiskTag);
+    result.riskTags = template.riskTags.map(tag => safeParseRiskTag(tag));
     result.nextMealAdvice = template.nextMealAdvice;
     result.avoidStacking = template.avoidStacking;
     result.hydrationReminder = template.hydrationReminder;
@@ -33,8 +30,9 @@ export class MealBalanceEngine {
     const goalAdvices: string[] = [];
     for (const goal of profile.healthGoals) {
       const goalName = goal as string;
-      if (template.goalAdvice[goalName] !== undefined) {
-        goalAdvices.push(template.goalAdvice[goalName]);
+      const advice = template.goalAdvice.get(goalName);
+      if (advice !== undefined) {
+        goalAdvices.push(advice);
       }
     }
 

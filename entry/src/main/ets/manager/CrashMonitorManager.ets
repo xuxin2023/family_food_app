@@ -2,11 +2,10 @@
 // 崩溃监控管理器 — 从 EntryAbility 拆出，独立管理错误观察器的注册和日志写入
 // 职责：注册/注销 errorManager 观察器、崩溃日志写入磁盘、旧日志清理
 
+import { HILOG_DOMAIN, CRASH_LOG_CONFIG } from 'hsp_core';
 import { errorManager } from '@kit.AbilityKit';
 import { fileIo } from '@kit.CoreFileKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
-import { CRASH_LOG_CONFIG } from '../constants/AppConfig';
 
 const TAG = 'CrashMonitorManager';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;

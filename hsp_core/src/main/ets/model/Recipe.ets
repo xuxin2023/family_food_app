@@ -169,3 +169,20 @@ export enum RecipeSortBy {
   POPULAR = 'popular',
   TRENDING = 'trending'
 }
+
+export interface CreateRecipeParams {
+  title: string;
+  description: string;
+  coverImageUrl: string;
+  category: RecipeCategory;
+  difficulty: RecipeDifficulty;
+  totalMinutes: number;
+  servings: number;
+  ingredients: RecipeIngredient[];
+  steps: RecipeStep[];
+  nutrition: RecipeNutrition | null;
+  dietTags: DietTag[];
+  relatedFoodId: string;
+  fromGroupId: string;
+  isDraft: boolean;
+}

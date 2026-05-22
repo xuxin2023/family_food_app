@@ -1,20 +1,13 @@
 // BudgetDomainService.ets
 // 预算领域服务 - 从 AppState 剥离的预算/膳食/营养趋势相关业务逻辑
 
-import { FamilyProfile } from '../model/FamilyProfile';
-import { HealthSignal } from '../model/HealthSignal';
-import { FoodLabel } from '../model/FoodLabel';
-import { DailyBudget } from '../model/DailyBudget';
-import { Recommendation } from '../model/Recommendation';
-import { MealBalance, MealScenario } from '../model/MealBalance';
-import { ChildProtection } from '../model/ChildProtection';
+import {
+  FamilyProfile, HealthSignal, FoodLabel, DailyBudget, Recommendation, MealBalance, MealScenario, ChildProtection, DateUtil, CacheManager
+} from 'hsp_core';
 import { PositiveAdvice } from '../engine/PositiveAdviceEngine';
-import { DailyNutritionSummary, NutritionTrendEngine, MealGroup } from '../engine/NutritionTrendEngine';
+import { DailyNutritionSummary, NutritionTrendEngine, nutritionTrendEngine, MealGroup } from '../engine/NutritionTrendEngine';
 import { HistoryRepository, DietRecordInput } from '../repository/HistoryRepository';
 import { EngineManager } from '../EngineManager';
-import { DateUtil } from '../utils/DateUtil';
-import { CacheManager } from '../utils/CacheManager';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 export class BudgetDomainService {
   private engs: EngineManager;
@@ -56,19 +49,18 @@ export class BudgetDomainService {
     memberId: string, mealType: string, foodId: string, amount: number,
     sodium: number, sugar: number, calories: number, fat: number
   ): Promise<void> {
-    const record: DietRecordInput = {
-      memberId: memberId,
-      date: DateUtil.getToday(),
-      scenario: 'meal_balance',
-      mealType: mealType,
-      foodId: foodId,
-      amountG: amount,
-      sodiumIntake: sodium,
-      sugarIntake: sugar,
-      calorieIntake: calories,
-      fatIntake: fat,
-      recordedAt: Date.now()
-    };
+    const record = new DietRecordInput();
+    record.memberId = memberId;
+    record.date = DateUtil.getToday();
+    record.scenario = 'meal_balance';
+    record.mealType = mealType;
+    record.foodId = foodId;
+    record.amountG = amount;
+    record.sodiumIntake = sodium;
+    record.sugarIntake = sugar;
+    record.calorieIntake = calories;
+    record.fatIntake = fat;
+    record.recordedAt = Date.now();
     await this.histRepo.saveDietRecord(record);
   }
 
@@ -78,12 +70,12 @@ export class BudgetDomainService {
     d.setDate(d.getDate() - days);
     const startDate = DateUtil.formatDate(d);
     const records = await this.histRepo.getDietRecordsByDateRange(memberId, startDate, endDate);
-    return NutritionTrendEngine.aggregateDaily(records);
+    return nutritionTrendEngine.aggregateDaily(records);
   }
 
   async getDailyDietGroups(memberId: string, date: string): Promise<MealGroup[]> {
     const records = await this.histRepo.getDietRecordsByDateRange(memberId, date, date);
-    return NutritionTrendEngine.groupByMealType(records);
+    return nutritionTrendEngine.groupByMealType(records);
   }
 
   async generateWeeklyReport(memberId: string, members: FamilyProfile[]): Promise<string> {

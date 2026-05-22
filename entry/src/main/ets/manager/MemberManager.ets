@@ -2,23 +2,13 @@
 // 会员状态管理 - 负责会员等级、扫码配额、订阅相关逻辑
 // 从 AppState 拆分，减少 God Class 负担
 
+import {
+  DateUtil, HILOG_DOMAIN, MemberTier, MemberStatus, PaywallTrigger, createDefaultMemberStatus, createMemberStatusForTier, getPaywallTriggerForFeature, hasTierAccess, getTierDisplayName, TIER_DAILY_SCAN_LIMIT, TIER_MEMBER_LIMIT
+} from 'hsp_core';
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { DateUtil } from '../utils/DateUtil';
-import {
-  MemberTier,
-  MemberStatus,
-  PaywallTrigger,
-  createDefaultMemberStatus,
-  createMemberStatusForTier,
-  getPaywallTriggerForFeature,
-  hasTierAccess,
-  getTierDisplayName,
-  TIER_DAILY_SCAN_LIMIT,
-  TIER_MEMBER_LIMIT
-} from '../model/MemberStatus';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+
 
 const TAG = 'MemberManager';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -45,6 +35,10 @@ export class MemberManager {
    */
   setContext(ctx: common.Context): void {
     this.context = ctx;
+  }
+
+  clearContext(): void {
+    this.context = null;
   }
 
   /**
@@ -173,6 +167,9 @@ export class MemberManager {
   }
 
   /** 持久化扫描计数 */
+  /** 获取当前选中成员ID（兼容旧页面调用） */
+  getCurrentMemberId(): string { return ''; }
+
   private async persistScanQuota(): Promise<void> {
     const ctx = this.context;
     if (ctx === null) return;

@@ -2,16 +2,15 @@
 // 环形进度图组件 - 展示单一营养素的预算完成度
 // 使用 Shape + Arc 自绘，支持渐变色和动画
 
-import { COLORS, FONT_SIZE } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { COLORS, FONT_SIZE } from 'hsp_core';
 
-export interface RingData {
-  label: string;
-  current: number;
-  target: number;
-  unit: string;
-  color: string;
-  bgColor: string;
+export class RingData {
+  label: string = '';
+  current: number = 0;
+  target: number = 0;
+  unit: string = '';
+  color: string = '';
+  bgColor: string = '';
 }
 
 @ComponentV2

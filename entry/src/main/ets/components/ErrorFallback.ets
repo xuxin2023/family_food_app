@@ -14,8 +14,7 @@
 //     // 正常内容
 //   }
 
-import { COLORS, SPACING, RADIUS, FONT_SIZE, FONT_WEIGHT, BUTTON } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { COLORS, BUTTON } from 'hsp_core';
 
 /** 错误回退组件 */
 @ComponentV2
@@ -55,8 +54,9 @@ export struct ErrorFallback {
           .fontColor(COLORS.WHITE)
           .fontSize(14)
           .onClick(() => {
-            this.onRetry!()
+            this.onRetry?.()
           })
+          .accessibilityText('重试')
       }
     }
     .width('100%')
@@ -105,7 +105,8 @@ export struct ErrorEmptyState {
           .borderRadius(BUTTON.RADIUS_SECONDARY)
           .fontColor(COLORS.WHITE)
           .fontSize(14)
-          .onClick(() => { this.onAction!() })
+          .onClick(() => { this.onAction?.() })
+          .accessibilityText('执行操作')
       }
     }
     .width('100%')

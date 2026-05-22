@@ -1,0 +1,13 @@
+{
+  "name": "feature-community",
+  "version": "1.0.0",
+  "description": "家庭食品适配助手社区功能模块 — 食谱分享、用户互动、社区动态",
+  "main": "Index.ets",
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "hsp_core": "file:../hsp_core",
+    "hsp-service": "file:../hsp-service"
+  },
+  "devDependencies": {}
+}

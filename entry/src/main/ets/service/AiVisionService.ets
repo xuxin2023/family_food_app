@@ -1,72 +1,83 @@
 // AiVisionService.ets
 // AI视觉识别兜底服务 - 当常规识别失败时，调用AI模型进行视觉分类
 
-import { FoodLabel, NutritionPer100g, FoodSource } from '../model/FoodLabel';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { FoodLabel, NutritionPer100g, FoodSource } from 'hsp_core';
 
 const TAG = 'AiVisionService';
 
 /**
  * AI识别结果
  */
-export interface AiRecognitionResult {
-  success: boolean;
-  label: FoodLabel | null;
-  confidence: number;
-  categories: string[];
-  errorMessage: string;
+export class AiRecognitionResult {
+  success: boolean = false;
+  label: FoodLabel | null = null;
+  confidence: number = 0;
+  categories: string[] = [];
+  errorMessage: string = '';
 }
 
 /**
  * 常见食品分类及其默认营养数据
  */
-interface CategoryNutrition {
-  category: string;
-  keywords: string[];
-  sodium_mg: number;
-  sugar_g: number;
-  calories: number;
-  fat_g: number;
-  saturatedFat_g: number;
+class CategoryNutrition {
+  category: string = '';
+  keywords: string[] = [];
+  sodium_mg: number = 0;
+  sugar_g: number = 0;
+  calories: number = 0;
+  fat_g: number = 0;
+  saturatedFat_g: number = 0;
 }
 
-const CATEGORY_NUTRITIONS: CategoryNutrition[] = [
-  {
-    category: '膨化食品',
-    keywords: ['薯片', '膨化', '虾条', '爆米花', '浪味仙', '奇多'],
-    sodium_mg: 400, sugar_g: 5, calories: 520, fat_g: 30, saturatedFat_g: 8
-  },
-  {
-    category: '饼干糕点',
-    keywords: ['饼干', '曲奇', '糕点', '酥', '饼', '蛋糕', '面包'],
-    sodium_mg: 200, sugar_g: 20, calories: 450, fat_g: 18, saturatedFat_g: 6
-  },
-  {
-    category: '糖果巧克力',
-    keywords: ['糖果', '巧克力', '糖', '棒棒糖', '口香糖', '软糖'],
-    sodium_mg: 30, sugar_g: 60, calories: 400, fat_g: 10, saturatedFat_g: 4
-  },
-  {
-    category: '饮料',
-    keywords: ['饮料', '果汁', '奶茶', '可乐', '汽水', '茶'],
-    sodium_mg: 30, sugar_g: 10, calories: 45, fat_g: 0, saturatedFat_g: 0
-  },
-  {
-    category: '方便食品',
-    keywords: ['方便面', '自热', '速食', '方便', '即食', '泡面'],
-    sodium_mg: 1200, sugar_g: 5, calories: 450, fat_g: 20, saturatedFat_g: 8
-  },
-  {
-    category: '调味品',
-    keywords: ['酱油', '醋', '酱', '调料', '辣酱', '蚝油'],
-    sodium_mg: 5000, sugar_g: 10, calories: 100, fat_g: 2, saturatedFat_g: 0.5
-  },
-  {
-    category: '肉制品',
-    keywords: ['火腿', '香肠', '腊肉', '卤味', '鸡爪', '鸭脖'],
-    sodium_mg: 1000, sugar_g: 5, calories: 250, fat_g: 15, saturatedFat_g: 5
-  }
-];
+const CATEGORY_NUTRITIONS: CategoryNutrition[] = buildCategoryNutritions();
+
+function buildCategoryNutritions(): CategoryNutrition[] {
+  const list: CategoryNutrition[] = [];
+
+  let c = new CategoryNutrition();
+  c.category = '膨化食品';
+  c.keywords = ['薯片', '膨化', '虾条', '爆米花', '浪味仙', '奇多'];
+  c.sodium_mg = 400; c.sugar_g = 5; c.calories = 520; c.fat_g = 30; c.saturatedFat_g = 8;
+  list.push(c);
+
+  c = new CategoryNutrition();
+  c.category = '饼干糕点';
+  c.keywords = ['饼干', '曲奇', '糕点', '酥', '饼', '蛋糕', '面包'];
+  c.sodium_mg = 200; c.sugar_g = 20; c.calories = 450; c.fat_g = 18; c.saturatedFat_g = 6;
+  list.push(c);
+
+  c = new CategoryNutrition();
+  c.category = '糖果巧克力';
+  c.keywords = ['糖果', '巧克力', '糖', '棒棒糖', '口香糖', '软糖'];
+  c.sodium_mg = 30; c.sugar_g = 60; c.calories = 400; c.fat_g = 10; c.saturatedFat_g = 4;
+  list.push(c);
+
+  c = new CategoryNutrition();
+  c.category = '饮料';
+  c.keywords = ['饮料', '果汁', '奶茶', '可乐', '汽水', '茶'];
+  c.sodium_mg = 30; c.sugar_g = 10; c.calories = 45; c.fat_g = 0; c.saturatedFat_g = 0;
+  list.push(c);
+
+  c = new CategoryNutrition();
+  c.category = '方便食品';
+  c.keywords = ['方便面', '自热', '速食', '方便', '即食', '泡面'];
+  c.sodium_mg = 1200; c.sugar_g = 5; c.calories = 450; c.fat_g = 20; c.saturatedFat_g = 8;
+  list.push(c);
+
+  c = new CategoryNutrition();
+  c.category = '调味品';
+  c.keywords = ['酱油', '醋', '酱', '调料', '辣酱', '蚝油'];
+  c.sodium_mg = 5000; c.sugar_g = 10; c.calories = 100; c.fat_g = 2; c.saturatedFat_g = 0.5;
+  list.push(c);
+
+  c = new CategoryNutrition();
+  c.category = '肉制品';
+  c.keywords = ['火腿', '香肠', '腊肉', '卤味', '鸡爪', '鸭脖'];
+  c.sodium_mg = 1000; c.sugar_g = 5; c.calories = 250; c.fat_g = 15; c.saturatedFat_g = 5;
+  list.push(c);
+
+  return list;
+}
 
 let aiServiceInstance: AiVisionService | null = null;
 
@@ -87,13 +98,13 @@ export class AiVisionService {
   async recognize(productName: string, barcode?: string): Promise<AiRecognitionResult> {
     try {
       if (!productName || productName.length === 0) {
-        return {
-          success: false,
-          label: null,
-          confidence: 0,
-          categories: [],
-          errorMessage: '未提供食品名称'
-        };
+        const r = new AiRecognitionResult();
+        r.success = false;
+        r.label = null;
+        r.confidence = 0;
+        r.categories = [];
+        r.errorMessage = '未提供食品名称';
+        return r;
       }
 
       // 根据名称匹配类别
@@ -123,21 +134,21 @@ export class AiVisionService {
 
       const categories = matchedCategory !== null ? [matchedCategory.category] : ['未知'];
 
-      return {
-        success: true,
-        label: label,
-        confidence: confidence,
-        categories: categories,
-        errorMessage: ''
-      };
+      const r = new AiRecognitionResult();
+      r.success = true;
+      r.label = label;
+      r.confidence = confidence;
+      r.categories = categories;
+      r.errorMessage = '';
+      return r;
     } catch (err) {
-      return {
-        success: false,
-        label: null,
-        confidence: 0,
-        categories: [],
-        errorMessage: err instanceof Error ? err.message : 'AI识别异常'
-      };
+      const r = new AiRecognitionResult();
+      r.success = false;
+      r.label = null;
+      r.confidence = 0;
+      r.categories = [];
+      r.errorMessage = err instanceof Error ? err.message : 'AI识别异常';
+      return r;
     }
   }
 

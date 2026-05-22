@@ -2,17 +2,9 @@
 // 营养领域服务 - 编排营养趋势分析、AI 营养师建议、膳食分组等能力
 // 从 AppState 拆分，减轻上帝类职责
 
-import { FamilyProfile } from '../model/FamilyProfile';
-import { DailyBudget } from '../model/DailyBudget';
-import { HealthSignal } from '../model/HealthSignal';
-import { DietRecord } from '../repository/HistoryRepository';
+import { FamilyProfile, DailyBudget, HealthSignal, AiNutritionAdvice, DateUtil, HILOG_DOMAIN, INutritionTrendCalculator, DailyNutritionSummary, NutrientTrendData, MealGroup, DietRecord } from 'hsp_core';
 import { HistoryRepository } from '../repository/HistoryRepository';
-import { NutritionTrendEngine, DailyNutritionSummary, NutrientTrendData, MealGroup } from '../engine/NutritionTrendEngine';
-import { AiNutritionAdvice } from '../model/AiModels';
 import { AiNutritionistService } from './AiNutritionistService';
-import { DateUtil } from '../utils/DateUtil';
-import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'NutritionDomainService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -20,18 +12,18 @@ const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 export class NutritionDomainService {
   private historyRepo: HistoryRepository;
   private aiNutritionist: AiNutritionistService;
+  private trendCalculator: INutritionTrendCalculator;
 
   constructor(
     historyRepo: HistoryRepository,
-    aiNutritionist: AiNutritionistService
+    aiNutritionist: AiNutritionistService,
+    trendCalculator: INutritionTrendCalculator
   ) {
     this.historyRepo = historyRepo;
     this.aiNutritionist = aiNutritionist;
+    this.trendCalculator = trendCalculator;
   }
 
-  /**
-   * 获取 AI 营养师建议（编排成员画像、健康信号、预算、膳食记录 → 传给 AI 服务）
-   */
   async getAiNutritionAdvice(
     member: FamilyProfile,
     signal: HealthSignal,
@@ -43,12 +35,11 @@ export class NutritionDomainService {
     const endDate = DateUtil.getToday();
     const startDate = this.getDaysAgo(days);
     const records = await this.historyRepo.getDietRecordsByDateRange(memberId, startDate, endDate);
-    return await this.aiNutritionist.getAdvice(member, signal, budget, records, days, includeMealPlan);
+    const summaries = this.trendCalculator.aggregateDaily(records);
+    const mealGroups = this.trendCalculator.groupByMealType(records);
+    return await this.aiNutritionist.getAdvice(member, signal, budget, records, days, includeMealPlan, summaries, mealGroups);
   }
 
-  /**
-   * 获取营养趋势数据
-   */
   async getNutritionTrends(
     memberId: string,
     days: number,
@@ -62,27 +53,21 @@ export class NutritionDomainService {
     const targetSugar = member?.dailyBudget.sugarBudget || 50;
     const targetCalorie = member?.dailyBudget.calorieBudget || 2000;
     const targetFat = member?.dailyBudget.fatBudget || 65;
-    return NutritionTrendEngine.buildNutrientTrends(
-      NutritionTrendEngine.aggregateDaily(records),
+    return this.trendCalculator.buildNutrientTrends(
+      this.trendCalculator.aggregateDaily(records),
       targetSodium, targetSugar, targetCalorie, targetFat);
   }
 
-  /**
-   * 获取每日营养汇总
-   */
   async getDailySummaries(memberId: string, days: number): Promise<DailyNutritionSummary[]> {
     const endDate = DateUtil.getToday();
     const startDate = this.getDaysAgo(days);
     const records = await this.historyRepo.getDietRecordsByDateRange(memberId, startDate, endDate);
-    return NutritionTrendEngine.aggregateDaily(records);
+    return this.trendCalculator.aggregateDaily(records);
   }
 
-  /**
-   * 获取指定日期的膳食分组
-   */
   async getDailyDietGroups(memberId: string, date: string): Promise<MealGroup[]> {
     const records = await this.historyRepo.getDietRecordsByDateRange(memberId, date, date);
-    return NutritionTrendEngine.groupByMealType(records);
+    return this.trendCalculator.groupByMealType(records);
   }
 
   private getDaysAgo(days: number): string {

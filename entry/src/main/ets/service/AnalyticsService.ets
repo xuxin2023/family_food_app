@@ -1,18 +1,14 @@
 // 埋点统计服务 - 记录用户行为与增长指标
 // 使用关系型数据库本地持久化，支持批量写入和定时上报
 
+import {
+  TIME_INTERVAL_CONFIG, DB_NAME, HILOG_DOMAIN, JsonHelper, AnalyticsEvent, EventType, ANALYTICS_TABLE_NAME, ANALYTICS_COLUMNS
+} from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
 import { relationalStore } from '@kit.ArkData';
-import { AppState } from '../AppState';
-import {
-  AnalyticsEvent,
-  EventType,
-  ANALYTICS_TABLE_NAME,
-  ANALYTICS_COLUMNS
-} from '../model/AnalyticsRecord';
-import { TIME_INTERVAL_CONFIG } from '../constants/AppConfig';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+
+import { PrivacyManager } from './PrivacyManager';
 
 const TAG = 'AnalyticsService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -55,11 +51,8 @@ export class AnalyticsService {
 
     try {
       // 创建或打开事件数据库
-      const rdbConfig: relationalStore.StoreConfig = {
-        name: 'analytics.db',
-        securityLevel: relationalStore.SecurityLevel.S1
-      };
-      this.rdbStore = await relationalStore.getRdbStore(context, rdbConfig);
+      const rdbConfig: relationalStore.StoreConfig = { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 };
+      this.rdbStore = await relationalStore.getRdbStoreV9(context, rdbConfig);
 
       // 创建事件表
       await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${ANALYTICS_TABLE_NAME} (
@@ -100,15 +93,18 @@ export class AnalyticsService {
    * @param type 事件类型（推荐使用 EventType 枚举值）
    * @param properties 事件自定义属性
    */
-  trackEvent(type: string, properties: Record<string, string | number | boolean>): void {
+  trackEvent(type: string, properties: Map<string, string | number | boolean>): void {
+    if (!PrivacyManager.isPrivacyAgreed()) {
+      hilog.info(DOMAIN_ZERO, TAG, '隐私未同意，跳过分析');
+      return;
+    }
     this.ensureSession();
-    const event: AnalyticsEvent = {
-      eventId: this.generateEventId(),
-      eventType: type,
-      timestamp: Date.now(),
-      properties: properties,
-      sessionId: this.sessionId
-    };
+    const event = new AnalyticsEvent();
+    event.eventId = this.generateEventId();
+    event.eventType = type;
+    event.timestamp = Date.now();
+    event.properties = JSON.parse(JSON.stringify(properties)) as Record<string, string | number | boolean>;
+    event.sessionId = this.sessionId;
     this.enqueue(event);
   }
 
@@ -116,70 +112,70 @@ export class AnalyticsService {
    * 扫码行为追踪
    */
   trackScan(productName: string, memberCount: number, scanType: string): void {
-    this.trackEvent(EventType.SCAN, {
-      'product_name': productName,
-      'member_count': memberCount,
-      'scan_type': scanType
-    });
+    const props = new Map<string, string | number | boolean>();
+    props.set('product_name', productName);
+    props.set('member_count', memberCount);
+    props.set('scan_type', scanType);
+    this.trackEvent(EventType.SCAN, props);
   }
 
   /**
    * 分享行为追踪
    */
   trackShare(platform: string, cardType: string): void {
-    this.trackEvent(EventType.SHARE, {
-      'platform': platform,
-      'card_type': cardType
-    });
+    const props = new Map<string, string | number | boolean>();
+    props.set('platform', platform);
+    props.set('card_type', cardType);
+    this.trackEvent(EventType.SHARE, props);
   }
 
   /**
    * 美食平衡使用追踪
    */
   trackMealBalance(scene: string): void {
-    this.trackEvent(EventType.MEAL_BALANCE, {
-      'scene': scene
-    });
+    const props = new Map<string, string | number | boolean>();
+    props.set('scene', scene);
+    this.trackEvent(EventType.MEAL_BALANCE, props);
   }
 
   /**
    * 成员管理行为追踪
    */
   trackMemberEdit(memberId: string, action: string): void {
-    this.trackEvent(EventType.MEMBER_EDIT, {
-      'member_id': memberId,
-      'action': action
-    });
+    const props = new Map<string, string | number | boolean>();
+    props.set('member_id', memberId);
+    props.set('action', action);
+    this.trackEvent(EventType.MEMBER_EDIT, props);
   }
 
   /**
    * 页面浏览追踪
    */
   trackPageView(pageName: string): void {
-    this.trackEvent(EventType.PAGE_VIEW, {
-      'page_name': pageName
-    });
+    const props = new Map<string, string | number | boolean>();
+    props.set('page_name', pageName);
+    this.trackEvent(EventType.PAGE_VIEW, props);
   }
 
   /**
    * 评分查看追踪
    */
   trackScoreView(foodName: string, score: number): void {
-    this.trackEvent(EventType.SCORE_VIEW, {
-      'food_name': foodName,
-      'score': score
-    });
+    const props = new Map<string, string | number | boolean>();
+    props.set('food_name', foodName);
+    props.set('score', score);
+    this.trackEvent(EventType.SCORE_VIEW, props);
   }
 
   /**
    * 替代品点击追踪
    */
   trackAlternativeClick(foodName: string, alternativeName: string, scoreDiff: number): void {
-    this.trackEvent(EventType.ALTERNATIVE_CLICK, {
-      'food_name': foodName,
-      'alternative_name': alternativeName,
-      'score_diff': scoreDiff
-    });
+    const props = new Map<string, string | number | boolean>();
+    props.set('food_name', foodName);
+    props.set('alternative_name', alternativeName);
+    props.set('score_diff', scoreDiff);
+    this.trackEvent(EventType.ALTERNATIVE_CLICK, props);
   }
 
   // ==================== 用户画像追踪 ====================
@@ -200,10 +196,10 @@ export class AnalyticsService {
   setUserTier(tier: string): void {
     this.userTier = tier;
     hilog.info(DOMAIN_ZERO, TAG, 'User tier set: %{public}s', tier);
-    this.trackEvent(EventType.SUBSCRIPTION, {
-      'tier': tier,
-      'action': 'set_tier'
-    });
+    const props = new Map<string, string | number | boolean>();
+    props.set('tier', tier);
+    props.set('action', 'set_tier');
+    this.trackEvent(EventType.SUBSCRIPTION, props);
   }
 
   /**
@@ -265,8 +261,8 @@ export class AnalyticsService {
       // 回滚事务
       try {
         await this.rdbStore.rollBack();
-      } catch (_rollbackError) {
-        // 静默处理回滚失败
+      } catch (e) {
+        hilog.warn(DOMAIN_ZERO, TAG, '事务回滚失败: %{public}s', JSON.stringify(e));
       }
       hilog.error(DOMAIN_ZERO, TAG, 'Batch flush failed: %{public}s', JSON.stringify(error));
       // 失败时将事件放回队列前端，避免丢失
@@ -307,15 +303,14 @@ export class AnalyticsService {
       const events: AnalyticsEvent[] = [];
 
       while (resultSet.goToNextRow()) {
-        const event: AnalyticsEvent = {
-          eventId: resultSet.getString(resultSet.getColumnIndex(ANALYTICS_COLUMNS.EVENT_ID)),
-          eventType: resultSet.getString(resultSet.getColumnIndex(ANALYTICS_COLUMNS.EVENT_TYPE)),
-          timestamp: resultSet.getLong(resultSet.getColumnIndex(ANALYTICS_COLUMNS.TIMESTAMP)),
-          properties: this.parseProperties(
-            resultSet.getString(resultSet.getColumnIndex(ANALYTICS_COLUMNS.PROPERTIES))
-          ),
-          sessionId: resultSet.getString(resultSet.getColumnIndex(ANALYTICS_COLUMNS.SESSION_ID))
-        };
+        const event = new AnalyticsEvent();
+        event.eventId = resultSet.getString(resultSet.getColumnIndex(ANALYTICS_COLUMNS.EVENT_ID));
+        event.eventType = resultSet.getString(resultSet.getColumnIndex(ANALYTICS_COLUMNS.EVENT_TYPE));
+        event.timestamp = resultSet.getLong(resultSet.getColumnIndex(ANALYTICS_COLUMNS.TIMESTAMP));
+        event.properties = this.parseProperties(
+          resultSet.getString(resultSet.getColumnIndex(ANALYTICS_COLUMNS.PROPERTIES))
+        );
+        event.sessionId = resultSet.getString(resultSet.getColumnIndex(ANALYTICS_COLUMNS.SESSION_ID));
         events.push(event);
       }
 
@@ -333,9 +328,9 @@ export class AnalyticsService {
   async getEventCounts(
     startTime?: number,
     endTime?: number
-  ): Promise<Record<string, number>> {
+  ): Promise<Map<string, number>> {
     if (!this.dbReady || this.rdbStore === null) {
-      return {};
+      return new Map();
     }
 
     try {
@@ -354,19 +349,19 @@ export class AnalyticsService {
       sql += ' GROUP BY event_type';
 
       const resultSet = await this.rdbStore.querySql(sql, args);
-      const counts: Record<string, number> = {};
+      const counts: Map<string, number> = new Map();
 
       while (resultSet.goToNextRow()) {
         const eventType = resultSet.getString(0);
         const count = resultSet.getLong(1);
-        counts[eventType] = count;
+        counts.set(eventType, count);
       }
 
       resultSet.close();
       return counts;
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Get event counts failed: %{public}s', JSON.stringify(error));
-      return {};
+      return new Map();
     }
   }
 
@@ -398,9 +393,9 @@ export class AnalyticsService {
     // 停止定时器
     if (this.flushTimerId !== -1) {
       try {
-        clearTimeout(this.flushTimerId);
+        clearInterval(this.flushTimerId);
       } catch (_e) {
-        // ignore clearTimeout error
+        // ignore clearInterval error
       }
       this.flushTimerId = -1;
     }
@@ -467,7 +462,8 @@ export class AnalyticsService {
       return {};
     }
     try {
-      return JSON.parse(jsonStr) as Record<string, string | number | boolean>;
+      const raw = JSON.parse(jsonStr) as Record<string, string | number | boolean>;
+      return raw;
     } catch {
       return {};
     }

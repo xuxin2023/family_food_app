@@ -1,10 +1,8 @@
+import { safePushUrl, COLORS, BUTTON } from 'hsp_core';
 // FeatureButton.ets
 // 通用功能按钮组件 - 带图标、文字和点击跳转
 // 用于 HomePage 底部操作区
 
-import { router } from '@kit.ArkUI';
-import { COLORS, BUTTON } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 @ComponentV2
 export struct FeatureButton {
@@ -41,17 +39,13 @@ export struct FeatureButton {
     .backgroundColor(this.btnBg)
     .borderRadius(this.btnRadius)
     .margin({ bottom: 12 })
-    .accessibilityText(this.text)
+    .accessibilityText(this.text as string)
     .accessibilityLevel('yes')
     .onClick(() => {
-      try {
-        if (this.targetUrl.length > 0) {
-          router.pushUrl({ url: this.targetUrl });
-        } else {
-          this.onCustomClick?.();
-        }
-      } catch (_e) {
-        // ignore router error
+      if (this.targetUrl.length > 0) {
+        safePushUrl(this.targetUrl);
+      } else {
+        this.onCustomClick?.();
       }
     })
   }
@@ -72,14 +66,10 @@ export struct NavLinkText {
       .fontSize(13)
       .fontColor(this.color)
       .fontWeight(this.fontWeight as FontWeight)
-      .accessibilityText(this.text)
+      .accessibilityText(this.text as string)
       .accessibilityLevel('yes')
       .onClick(() => {
-        try {
-          router.pushUrl({ url: this.targetUrl });
-        } catch (_e) {
-          // ignore router error
-        }
+        safePushUrl(this.targetUrl);
       })
   }
 }

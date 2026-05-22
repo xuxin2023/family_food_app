@@ -5,9 +5,8 @@
 // V2: 统一缓存策略 — 不再维护独立缓存，由 AppState.CacheManager 统一管理
 // 所有数据操作直接委托给 FamilyRepository，调用方负责缓存同步
 
-import { FamilyProfile, AgeGroup, HealthGoal, createDefaultMembers } from '../model/FamilyProfile';
+import { FamilyProfile, createDefaultMembers } from 'hsp_core';
 import { FamilyRepository } from '../repository/FamilyRepository';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'FamilyDomainService';
 

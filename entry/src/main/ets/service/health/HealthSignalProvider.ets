@@ -1,10 +1,8 @@
-import { HealthSignal } from '../../model/HealthSignal';
-import { HILOG_DOMAIN } from '../../constants/AppConfig';
+import { HealthSignal } from 'hsp_core';
 
-export interface HealthSignalProvider {
-  checkAuthorization(): Promise<boolean>;
-  requestAuthorization(): Promise<boolean>;
-  getTodayHealthData(memberId: string): Promise<HealthSignal>;
-  /** 释放资源（切换 provider 时调用） */
+export abstract class HealthSignalProvider {
+  abstract checkAuthorization(): Promise<boolean>;
+  abstract requestAuthorization(): Promise<boolean>;
+  abstract getTodayHealthData(memberId: string): Promise<HealthSignal>;
   release?(): void;
 }

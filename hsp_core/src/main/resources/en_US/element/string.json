@@ -1,0 +1,12 @@
+{
+  "string": [
+    {
+      "name": "hsp_core_name",
+      "value": "Food Adapt Core"
+    },
+    {
+      "name": "hsp_core_desc",
+      "value": "Family Food Adapter Shared Core Module"
+    }
+  ]
+}

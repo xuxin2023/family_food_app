@@ -2,7 +2,7 @@
 // 隐私数据加密服务 - 基于 SecureDataStore 提供领域级加密存储
 // 用于健康档案、成员敏感信息、过敏原等隐私数据
 
-import { SecureDataStore } from '../utils/SecureDataStore';
+import { SecureDataStore } from 'hsp_core';
 import { common } from '@kit.AbilityKit';
 
 const KEY_MEMBER_HEALTH = 'privacy_member_health_';

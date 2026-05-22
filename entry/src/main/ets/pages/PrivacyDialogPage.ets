@@ -2,15 +2,11 @@
 // 隐私政策与用户协议确认页面 - 首次启动时展示
 // 用户同意后方可进入主页面
 
-import { router } from '@kit.ArkUI';
-import { getPrivacyPolicyHtml, getUserAgreementHtml } from '../utils/PrivacyContentUtil';
+import { safeReplaceUrl, getPrivacyPolicyHtml, getUserAgreementHtml, COLORS, HILOG_DOMAIN } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
-import { COLORS } from '../constants/AppTheme';
 import { AppState } from '../AppState';
-import { PermissionManager } from '../service/PermissionManager';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'PrivacyDialogPage';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -18,6 +14,7 @@ const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 @Entry
 @ComponentV2
 struct PrivacyDialogPage {
+  @Local isLoading: boolean = true
   @Local currentTab: number = 0 // 0=隐私政策, 1=用户协议
   @Local agreed: boolean = false
   @Local showPrivacyContent: boolean = false
@@ -25,15 +22,22 @@ struct PrivacyDialogPage {
   @Local privacyHtml: string = ''
   @Local agreementHtml: string = ''
 
-  async aboutToAppear() {
-    // 等待 AppState 初始化完成（避免竞态条件）
-    await AppState.waitForReady()
+  private appState: AppState = AppState.getInstance()
 
-    // 检查是否已经同意过
-    const agreed = await this.checkPrivacyAgreed()
-    if (agreed) {
-      // 已同意过，直接跳转到首页
-      this.navigateToHome()
+  async aboutToAppear() {
+    try {
+      this.isLoading = true
+      // 等待 AppState 初始化完成（避免竞态条件）
+      await AppState.waitForReady()
+
+      // 检查是否已经同意过
+      const agreed = await this.checkPrivacyAgreed()
+      if (agreed) {
+        // 已同意过，直接跳转到首页
+        this.navigateToHome()
+      }
+      this.isLoading = false
+    } catch (_e) {
     }
   }
 
@@ -46,9 +50,7 @@ struct PrivacyDialogPage {
       if (!context) {
         return false
       }
-      const pref = await preferences.getPreferences(context, 'privacy_settings')
-      const agreed = await pref.get('privacy_agreed', false)
-      return agreed as boolean
+      return await this.appState.checkPrivacyAgreed(context)
     } catch (_e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'checkPrivacyAgreed failed')
       return false
@@ -62,12 +64,9 @@ struct PrivacyDialogPage {
     try {
       const context = AppStorage.get<common.Context>('appContext')
       if (context) {
-        const pref = await preferences.getPreferences(context, 'privacy_settings')
-        await pref.put('privacy_agreed', true)
-        await pref.flush()
+        await this.appState.agreePrivacy(context)
       }
-      // 通知权限管理器用户已同意隐私政策
-      PermissionManager.getInstance().setPrivacyAgreed()
+      this.appState.permission.setPrivacyAgreed()
     } catch (_e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'save privacy agreed failed')
     }
@@ -75,12 +74,7 @@ struct PrivacyDialogPage {
   }
 
   private navigateToHome(): void {
-    try {
-      // V6: 跳转到悬浮页签主页 MainTabsPage
-      router.replaceUrl({ url: 'pages/MainTabsPage' })
-    } catch (_e) {
-      hilog.error(DOMAIN_ZERO, TAG, 'navigateToHome failed')
-    }
+    safeReplaceUrl('pages/MainTabsPage')
   }
 
   build() {
@@ -162,8 +156,8 @@ struct PrivacyDialogPage {
                     this.showPrivacyContent = true
                     this.showAgreementContent = false
                   })
-
-                Text($r('app.string.user_agreement'))
+                  .accessibilityText('隐私政策')
+                  .accessibilityLevel('yes')
                   .fontSize(14)
                   .fontColor(COLORS.PRIMARY)
                   .decoration({ type: TextDecorationType.Underline })
@@ -171,6 +165,8 @@ struct PrivacyDialogPage {
                     this.showAgreementContent = true
                     this.showPrivacyContent = false
                   })
+                  .accessibilityText('用户协议')
+                  .accessibilityLevel('yes')
               }
               .margin({ top: 12 })
             }
@@ -190,6 +186,8 @@ struct PrivacyDialogPage {
                   .onClick(() => {
                     this.showPrivacyContent = false
                   })
+                  .accessibilityText('返回')
+                  .accessibilityLevel('yes')
                 Blank()
                 Text($r('app.string.privacy_policy'))
                   .fontSize(16)
@@ -229,6 +227,8 @@ struct PrivacyDialogPage {
                   .onClick(() => {
                     this.showAgreementContent = false
                   })
+                  .accessibilityText('返回')
+                  .accessibilityLevel('yes')
                 Blank()
                 Text($r('app.string.user_agreement'))
                   .fontSize(16)
@@ -270,6 +270,8 @@ struct PrivacyDialogPage {
               .onChange((isSelected: boolean) => {
                 this.agreed = isSelected
               })
+              .accessibilityText('同意协议')
+              .accessibilityLevel('yes')
             Text($r('app.string.agree_read'))
               .fontSize(13)
               .fontColor('#666666')
@@ -282,6 +284,8 @@ struct PrivacyDialogPage {
                 this.showPrivacyContent = true
                 this.showAgreementContent = false
               })
+              .accessibilityText('隐私政策')
+              .accessibilityLevel('yes')
 
             Text($r('app.string.and_conjunction'))
               .fontSize(13)
@@ -294,6 +298,8 @@ struct PrivacyDialogPage {
                 this.showAgreementContent = true
                 this.showPrivacyContent = false
               })
+              .accessibilityText('用户协议')
+              .accessibilityLevel('yes')
           }
           .width('100%')
           .alignItems(VerticalAlign.Center)
@@ -312,6 +318,8 @@ struct PrivacyDialogPage {
                 this.onAgreeAndContinue()
               }
             })
+            .accessibilityText('同意并继续')
+            .accessibilityLevel('yes')
         }
         .width('92%')
         .padding({ bottom: 32 })
@@ -323,5 +331,12 @@ struct PrivacyDialogPage {
     }
     .width('100%')
     .height('100%')
+  }
+
+  pageTransition() {
+    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Right)
+    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Left)
   }
 }

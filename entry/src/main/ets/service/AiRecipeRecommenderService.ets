@@ -7,24 +7,14 @@
 // 3. 免费额度用完自动降级为规则匹配引擎
 // 4. 网络不可用时自动降级，不影响核心浏览功能
 
+import {
+  safeParseRecipeCategory, FamilyProfile, HealthGoal, DailyBudget, HealthSignal, BpStatus, BsStatus, AI_CACHE_CONFIG, HILOG_DOMAIN, Recipe, RecipeCategory, DietTag, RecipeQueryParams, RecipeDifficulty, RecipeIngredient, RecipeNutrition, RecipeSortBy, AiRecipeRecommendation, AiRecipeRecommendationResult, AiRecipeRequest, AiRecommendationCacheEntry, getHealthGoalDescription
+} from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import {
-  Recipe, RecipeCategory, DietTag, RecipeQueryParams,
-  RecipeDifficulty, RecipeIngredient, RecipeNutrition
-} from '../model/Recipe';
-import {
-  AiRecipeRecommendation, AiRecipeRecommendationResult,
-  AiRecipeRequest, AiRecommendationCacheEntry,
-  getHealthGoalDescription
-} from '../model/AiModels';
-import { FamilyProfile, HealthGoal } from '../model/FamilyProfile';
-import { DailyBudget } from '../model/DailyBudget';
-import { HealthSignal, BpStatus, BsStatus } from '../model/HealthSignal';
+
 import { RecipeRepository } from '../repository/RecipeRepository';
-import { AI_CACHE_CONFIG } from '../constants/AppConfig';
 import { AiServiceBase } from './ai/AiServiceBase';
 import { AI_SERVICE_DEFAULTS } from './ai/AiConfig';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'AiRecipeRecommenderService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -45,32 +35,32 @@ class BudgetStatus {
 }
 
 function createEmptyRecipe(): Recipe {
-  return {
-    recipeId: '',
-    authorUid: '',
-    authorName: '',
-    authorAvatar: '',
-    title: '',
-    description: '',
-    coverImageUrl: '',
-    category: RecipeCategory.BREAKFAST,
-    difficulty: RecipeDifficulty.EASY,
-    dietTags: [],
-    ingredients: [],
-    steps: [],
-    nutrition: null,
-    totalMinutes: 0,
-    servings: 0,
-    relatedFoodId: '',
-    fromGroupId: '',
-    createdAt: 0,
-    updatedAt: 0,
-    likeCount: 0,
-    commentCount: 0,
-    bookmarkCount: 0,
-    isApproved: false,
-    isDraft: false
-  };
+  const r = new Recipe();
+  r.recipeId = '';
+  r.authorUid = '';
+  r.authorName = '';
+  r.authorAvatar = '';
+  r.title = '';
+  r.description = '';
+  r.coverImageUrl = '';
+  r.category = RecipeCategory.BREAKFAST;
+  r.difficulty = RecipeDifficulty.EASY;
+  r.dietTags = [];
+  r.ingredients = [];
+  r.steps = [];
+  r.nutrition = null;
+  r.totalMinutes = 0;
+  r.servings = 0;
+  r.relatedFoodId = '';
+  r.fromGroupId = '';
+  r.createdAt = 0;
+  r.updatedAt = 0;
+  r.likeCount = 0;
+  r.commentCount = 0;
+  r.bookmarkCount = 0;
+  r.isApproved = false;
+  r.isDraft = false;
+  return r;
 }
 
 export class AiRecipeRecommenderService extends AiServiceBase {
@@ -137,6 +127,14 @@ export class AiRecipeRecommenderService extends AiServiceBase {
     return this.buildRuleBasedResult(scoredRecipes, request);
   }
 
+  /**
+   * 兼容 ServiceManager 调用入口
+   */
+  async recommendForFamily(request: AiRecipeRequest, members: FamilyProfile[],
+    signals: Map<string, HealthSignal>, budgets: Map<string, DailyBudget>): Promise<AiRecipeRecommendationResult> {
+    return this.getRecommendations(request, members, signals, budgets);
+  }
+
   private async fetchCandidateRecipes(
     members: FamilyProfile[],
     request: AiRecipeRequest
@@ -145,14 +143,12 @@ export class AiRecipeRecommenderService extends AiServiceBase {
       return [];
     }
     try {
-      const params: RecipeQueryParams = {
-        offset: 0,
-        limit: 50,
-        category: request.mealCategory as RecipeCategory,
-        sortBy: 'popular'
-      };
+      const category: string = safeParseRecipeCategory(request.mealCategory ?? '') as string;
+      const sortBy: string = RecipeSortBy.POPULAR as string;
+      const defaultCategory: string = category.length > 0 ? category : '';
+      const defaultSortBy: string = sortBy.length > 0 ? sortBy : '';
       return await this.recipeRepo.queryApprovedRecipes(
-        params.offset, params.limit, params.category, params.sortBy
+        0, 50, defaultCategory, defaultSortBy
       );
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'fetch recipes error: %{public}s', JSON.stringify(error));
@@ -174,7 +170,7 @@ export class AiRecipeRecommenderService extends AiServiceBase {
       ? members.filter(m => request.memberIds.includes(m.memberId))
       : members;
 
-    const scored: ScoredRecipe[] = [];
+    let scored: ScoredRecipe[] = [];
 
     for (const recipe of recipes) {
       let bestScore = 0;
@@ -226,7 +222,7 @@ export class AiRecipeRecommenderService extends AiServiceBase {
     }
 
     // 按分数降序
-    scored.sort((a, b) => b.score - a.score);
+    scored = [...scored].sort((a, b) => b.score - a.score);
     return scored;
   }
 
@@ -442,15 +438,15 @@ ${request.preference !== undefined ? `额外偏好：${request.preference}` : ''
         const sr = scoredRecipes[idx];
         const member = this.findMemberById(sr.bestMemberId);
 
-        recommendations.push({
-          recipe: sr.recipe,
-          matchScore: sr.score,
-          reason: aiItem.reason.length > 0 ? aiItem.reason : this.getFallbackReason(sr.recipe, member),
-          bestForMemberId: sr.bestMemberId,
-          matchedGoals: sr.matchedGoals,
-          budgetNote: '',
-          nutritionTip: aiItem.nutritionTip
-        });
+        const rec = new AiRecipeRecommendation();
+        rec.recipe = sr.recipe;
+        rec.matchScore = sr.score;
+        rec.reason = aiItem.reason.length > 0 ? aiItem.reason : this.getFallbackReason(sr.recipe, member);
+        rec.bestForMemberId = sr.bestMemberId;
+        rec.matchedGoals = sr.matchedGoals;
+        rec.budgetNote = '';
+        rec.nutritionTip = aiItem.nutritionTip;
+        recommendations.push(rec);
       }
     }
 
@@ -462,24 +458,24 @@ ${request.preference !== undefined ? `额外偏好：${request.preference}` : ''
         }
         if (!recommendations.find(r => r.recipe.recipeId === sr.recipe.recipeId)) {
           const member = this.findMemberById(sr.bestMemberId);
-          recommendations.push({
-            recipe: sr.recipe,
-            matchScore: sr.score,
-            reason: this.getFallbackReason(sr.recipe, member),
-            bestForMemberId: sr.bestMemberId,
-            matchedGoals: sr.matchedGoals,
-            budgetNote: '',
-            nutritionTip: ''
-          });
+          const rec = new AiRecipeRecommendation();
+          rec.recipe = sr.recipe;
+          rec.matchScore = sr.score;
+          rec.reason = this.getFallbackReason(sr.recipe, member);
+          rec.bestForMemberId = sr.bestMemberId;
+          rec.matchedGoals = sr.matchedGoals;
+          rec.budgetNote = '';
+          rec.nutritionTip = '';
+          recommendations.push(rec);
         }
       }
     }
 
-    return {
-      recommendations: recommendations.slice(0, request.limit),
-      overallSummary: aiResult.overallSummary.length > 0 ? aiResult.overallSummary : '根据家庭成员健康情况推荐以上食谱',
-      isAiGenerated: true
-    };
+    const r = new AiRecipeRecommendationResult();
+    r.recommendations = recommendations.slice(0, request.limit);
+    r.overallSummary = aiResult.overallSummary.length > 0 ? aiResult.overallSummary : '根据家庭成员健康情况推荐以上食谱';
+    r.isAiGenerated = true;
+    return r;
   }
 
   /** 从文本中提取 JSON 并解析 */
@@ -492,6 +488,7 @@ ${request.preference !== undefined ? `额外偏好：${request.preference}` : ''
       const parsed: ParsedAiRecommendation = JSON.parse(jsonMatch[0]) as ParsedAiRecommendation;
       return parsed;
     } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'AI recipe parse failed: %{public}s', JSON.stringify(error));
       return null;
     }
   }
@@ -538,30 +535,30 @@ ${request.preference !== undefined ? `额外偏好：${request.preference}` : ''
 
     for (let i = 0; i < takeCount; i++) {
       const sr = scoredRecipes[i];
-      recommendations.push({
-        recipe: sr.recipe,
-        matchScore: sr.score,
-        reason: this.getFallbackReason(sr.recipe),
-        bestForMemberId: sr.bestMemberId,
-        matchedGoals: sr.matchedGoals,
-        budgetNote: '',
-        nutritionTip: ''
-      });
+      const rec = new AiRecipeRecommendation();
+      rec.recipe = sr.recipe;
+      rec.matchScore = sr.score;
+      rec.reason = this.getFallbackReason(sr.recipe);
+      rec.bestForMemberId = sr.bestMemberId;
+      rec.matchedGoals = sr.matchedGoals;
+      rec.budgetNote = '';
+      rec.nutritionTip = '';
+      recommendations.push(rec);
     }
 
-    return {
-      recommendations: recommendations,
-      overallSummary: '基于家庭成员健康画像的规则匹配结果',
-      isAiGenerated: false
-    };
+    const r = new AiRecipeRecommendationResult();
+    r.recommendations = recommendations;
+    r.overallSummary = '基于家庭成员健康画像的规则匹配结果';
+    r.isAiGenerated = false;
+    return r;
   }
 
   private buildEmptyResult(): AiRecipeRecommendationResult {
-    return {
-      recommendations: [],
-      overallSummary: '暂无符合条件的食谱推荐',
-      isAiGenerated: false
-    };
+    const r = new AiRecipeRecommendationResult();
+    r.recommendations = [];
+    r.overallSummary = '暂无符合条件的食谱推荐';
+    r.isAiGenerated = false;
+    return r;
   }
 
   private makeScoredRecipe(recipe: Recipe, score: number, bestMemberId: string, matchedGoals: string[]): ScoredRecipe {
@@ -582,14 +579,14 @@ ${request.preference !== undefined ? `额外偏好：${request.preference}` : ''
 }
 
 /** AI 解析结果内部类型 */
-interface ParsedAiRecommendationItem {
-  recipeIndex: number;
-  reason: string;
-  bestForMember: string;
-  nutritionTip: string;
+class ParsedAiRecommendationItem {
+  recipeIndex: number = 0;
+  reason: string = '';
+  bestForMember: string = '';
+  nutritionTip: string = '';
 }
 
-interface ParsedAiRecommendation {
-  recommendations: ParsedAiRecommendationItem[];
-  overallSummary: string;
+class ParsedAiRecommendation {
+  recommendations: ParsedAiRecommendationItem[] = [];
+  overallSummary: string = '';
 }

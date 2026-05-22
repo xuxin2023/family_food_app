@@ -1,52 +1,45 @@
+import { TIME_INTERVAL_CONFIG, API_TIMEOUT_CONFIG, HILOG_DOMAIN, JsonHelper } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { http } from '@kit.NetworkKit';
 import { common } from '@kit.AbilityKit';
 import { preferences } from '@kit.ArkData';
-import { TIME_INTERVAL_CONFIG, API_TIMEOUT_CONFIG } from '../constants/AppConfig';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { SecureHttpHelper } from './SecureHttpHelper';
 
 const TAG = 'InspectionDataService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 const SAMR_API_BASE = 'https://spcjsac.gsxt.gov.cn';
 
-// 工具函数：获取对象所有键
-function getObjectKeys(obj: Record<string, Object>): string[] {
-  const keys: string[] = [];
-  const objKeys = Object.keys(obj);
-  for (let i = 0; i < objKeys.length; i++) {
-    keys.push(objKeys[i]);
-  }
-  return keys;
+export enum InspectionResult {
+  PASS = 'pass',
+  FAIL = 'fail',
+  PENDING = 'pending'
 }
 
-// HTTP请求选项
-class HttpRequestOption {
-  method: http.RequestMethod = http.RequestMethod.GET;
-  header: Record<string, string> = {};
-  connectTimeout: number = API_TIMEOUT_CONFIG.DEFAULT_CONNECT_TIMEOUT_MS;
-  readTimeout: number = API_TIMEOUT_CONFIG.DEFAULT_READ_TIMEOUT_MS;
+export class InspectionRecord {
+  productName: string = '';
+  manufacturer: string = '';
+  batchNumber: string = '';
+  inspectionType: string = '';
+  inspectionDate: string = '';
+  result: InspectionResult = InspectionResult.PENDING;
+  unqualifiedItem: string = '';
+  source: string = '';
+  detailUrl: string = '';
 }
 
-export interface InspectionRecord {
-  productName: string;
-  manufacturer: string;
-  batchNumber: string;
-  inspectionType: string;
-  inspectionDate: string;
-  result: 'pass' | 'fail' | 'pending';
-  unqualifiedItem: string;
-  source: string;
-  detailUrl: string;
+export enum RiskLevel {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high'
 }
 
-export interface InspectionSummary {
-  totalChecks: number;
-  failCount: number;
-  recentFailDate: string;
-  failItems: string[];
-  lastUpdate: number;
-  riskLevel: 'low' | 'medium' | 'high';
+export class InspectionSummary {
+  totalChecks: number = 0;
+  failCount: number = 0;
+  recentFailDate: string = '';
+  failItems: string[] = [];
+  lastUpdate: number = 0;
+  riskLevel: RiskLevel = RiskLevel.LOW;
 }
 
 export class InspectionDataService {
@@ -70,22 +63,16 @@ export class InspectionDataService {
     }
 
     try {
-      const httpRequest = http.createHttp();
       const url = `${SAMR_API_BASE}/api/inspection?manufacturer=${encodeURIComponent(manufacturer)}`;
 
-      const reqOpts = new HttpRequestOption();
-      reqOpts.method = http.RequestMethod.GET;
-      const reqHeaders: Record<string, string> = {
-        'User-Agent': 'FamilyFoodApp/1.0',
-        'Accept': 'application/json'
-      };
-      reqOpts.header = reqHeaders;
+      const reqHeader = new Map<string, string>();
+      reqHeader.set('User-Agent', 'FamilyFoodApp/1.0');
+      reqHeader.set('Accept', 'application/json');
 
-      const response = await httpRequest.request(url, reqOpts);
-      httpRequest.destroy();
+      const resp = await SecureHttpHelper.get(url, reqHeader, API_TIMEOUT_CONFIG.DEFAULT_CONNECT_TIMEOUT_MS);
 
-      if (response.responseCode === 200) {
-        const records = this.parseInspectionResponse(response.result as string);
+      if (resp.responseCode === 200 && resp.data !== null) {
+        const records = this.parseInspectionResponse(JSON.stringify(resp.data));
         const summary = this.buildSummary(records);
         this.cache.set(manufacturer, summary);
         await this.persistCache();
@@ -105,50 +92,40 @@ export class InspectionDataService {
     }
 
     try {
-      const httpRequest = http.createHttp();
       const url = `${SAMR_API_BASE}/api/inspection?scNumber=${encodeURIComponent(scNumber)}`;
 
-      const reqOpts = new HttpRequestOption();
-      reqOpts.method = http.RequestMethod.GET;
-      const reqHeaders: Record<string, string> = {
-        'User-Agent': 'FamilyFoodApp/1.0',
-        'Accept': 'application/json'
-      };
-      reqOpts.header = reqHeaders;
+      const reqHeader = new Map<string, string>();
+      reqHeader.set('User-Agent', 'FamilyFoodApp/1.0');
+      reqHeader.set('Accept', 'application/json');
 
-      const response = await httpRequest.request(url, reqOpts);
-      httpRequest.destroy();
+      const resp = await SecureHttpHelper.get(url, reqHeader, API_TIMEOUT_CONFIG.DEFAULT_CONNECT_TIMEOUT_MS);
 
-      if (response.responseCode === 200) {
-        const records = this.parseInspectionResponse(response.result as string);
+      if (resp.responseCode === 200 && resp.data !== null) {
+        const records = this.parseInspectionResponse(JSON.stringify(resp.data));
         return this.buildSummary(records);
       }
       return this.emptySummary();
     } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'queryByScNumber failed: %{public}s', JSON.stringify(error));
       return this.emptySummary();
     }
   }
 
   async getRecentFails(limit: number = 20): Promise<InspectionRecord[]> {
     try {
-      const httpRequest = http.createHttp();
       const url = `${SAMR_API_BASE}/api/inspection/recent_fails?limit=${limit}`;
 
-      const reqOpts = new HttpRequestOption();
-      reqOpts.method = http.RequestMethod.GET;
-      const reqHeaders: Record<string, string> = {
-        'User-Agent': 'FamilyFoodApp/1.0'
-      };
-      reqOpts.header = reqHeaders;
+      const reqHeader = new Map<string, string>();
+      reqHeader.set('User-Agent', 'FamilyFoodApp/1.0');
 
-      const response = await httpRequest.request(url, reqOpts);
-      httpRequest.destroy();
+      const resp = await SecureHttpHelper.get(url, reqHeader, API_TIMEOUT_CONFIG.DEFAULT_CONNECT_TIMEOUT_MS);
 
-      if (response.responseCode === 200) {
-        return this.parseInspectionResponse(response.result as string);
+      if (resp.responseCode === 200 && resp.data !== null) {
+        return this.parseInspectionResponse(JSON.stringify(resp.data));
       }
       return [];
     } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'getRecentFails failed: %{public}s', JSON.stringify(error));
       return [];
     }
   }
@@ -163,16 +140,17 @@ export class InspectionDataService {
 
   private parseInspectionResponse(responseBody: string): InspectionRecord[] {
     try {
-      const json = JSON.parse(responseBody) as Record<string, Object> | InspectionRecord[];
-      if (Array.isArray(json)) {
-        return json as InspectionRecord[];
+      const jsonRaw = JSON.parse(responseBody) as Record<string, Object> | InspectionRecord[];
+      if (Array.isArray(jsonRaw)) {
+        return jsonRaw as InspectionRecord[];
       }
-      const jsonObj = json as Record<string, Object>;
-      if (jsonObj['data'] && Array.isArray(jsonObj['data'])) {
-        return jsonObj['data'] as InspectionRecord[];
+      const jsonObjRaw = jsonRaw as Record<string, Object>;
+      const jsonObj = JsonHelper.recordToMap(jsonObjRaw);
+      if (jsonObj.get('data') && Array.isArray(jsonObj.get('data'))) {
+        return jsonObj.get('data') as InspectionRecord[];
       }
-      if (jsonObj['records'] && Array.isArray(jsonObj['records'])) {
-        return jsonObj['records'] as InspectionRecord[];
+      if (jsonObj.get('records') && Array.isArray(jsonObj.get('records'))) {
+        return jsonObj.get('records') as InspectionRecord[];
       }
       return [];
     } catch (error) {
@@ -181,7 +159,7 @@ export class InspectionDataService {
   }
 
   private buildSummary(records: InspectionRecord[]): InspectionSummary {
-    const summary = new InspectionSummaryImpl();
+    const summary = new InspectionSummary();
     summary.totalChecks = records.length;
     summary.failCount = records.filter(r => r.result === 'fail').length;
 
@@ -195,18 +173,18 @@ export class InspectionDataService {
     summary.lastUpdate = Date.now();
 
     if (summary.failCount === 0) {
-      summary.riskLevel = 'low';
+      summary.riskLevel = RiskLevel.LOW;
     } else if (summary.failCount <= 1 && summary.totalChecks > 5) {
-      summary.riskLevel = 'medium';
+      summary.riskLevel = RiskLevel.MEDIUM;
     } else {
-      summary.riskLevel = 'high';
+      summary.riskLevel = RiskLevel.HIGH;
     }
 
     return summary;
   }
 
   private emptySummary(): InspectionSummary {
-    const summary = new InspectionSummaryImpl();
+    const summary = new InspectionSummary();
     summary.totalChecks = 0;
     summary.failCount = 0;
     summary.recentFailDate = '';
@@ -223,7 +201,7 @@ export class InspectionDataService {
       const cacheStr = prefs.getSync('cache', '') as string;
       if (cacheStr.length > 0) {
         const parsed = JSON.parse(cacheStr) as Record<string, InspectionSummary>;
-        const cacheKeys = getObjectKeys(parsed as Record<string, Object>);
+        const cacheKeys = JsonHelper.recordKeys(parsed);
         for (const key of cacheKeys) {
           this.cache.set(key, parsed[key]);
         }
@@ -246,13 +224,4 @@ export class InspectionDataService {
       hilog.warn(DOMAIN_ZERO, TAG, 'persistCache failed: %{public}s', JSON.stringify(e));
     }
   }
-}
-
-class InspectionSummaryImpl implements InspectionSummary {
-  totalChecks: number = 0;
-  failCount: number = 0;
-  recentFailDate: string = '';
-  failItems: string[] = [];
-  lastUpdate: number = 0;
-  riskLevel: 'low' | 'medium' | 'high' = 'low';
 }

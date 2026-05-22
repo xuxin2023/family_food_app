@@ -1,0 +1,92 @@
+// SecureHttpHelper.ets
+// 安全HTTP请求统一辅助工具 — 为所有服务提供便捷的 SecureHttpClient 调用封装
+// 消除各服务直接使用 http.createHttp() 的需求
+
+import { http } from '@kit.NetworkKit';
+import { SecureHttpClient, SecureRequestOptions } from './SecureHttpClient';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+import { HILOG_DOMAIN } from 'hsp_core';
+
+const TAG = 'SecureHttpHelper';
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+
+export class RawResponse {
+  raw: string = '';
+}
+
+export class SecureJsonResponse {
+  responseCode: number = -1;
+  data: Record<string, Object> | null = null;
+  error: string = '';
+}
+
+export class SecureHttpHelper {
+  static async get(url: string, header?: Map<string, string>, timeoutMs: number = 10000): Promise<SecureJsonResponse> {
+    return SecureHttpHelper.request(url, http.RequestMethod.GET, header, '', timeoutMs);
+  }
+
+  static async post(url: string, body: Object, header?: Map<string, string>, timeoutMs: number = 10000): Promise<SecureJsonResponse> {
+    return SecureHttpHelper.request(url, http.RequestMethod.POST, header, JSON.stringify(body), timeoutMs);
+  }
+
+  static async request(
+    url: string,
+    method: http.RequestMethod,
+    header?: Map<string, string>,
+    body: string | Object = '',
+    timeoutMs: number = 10000
+  ): Promise<SecureJsonResponse> {
+    const result = new SecureJsonResponse();
+    try {
+      const opts = new SecureRequestOptions();
+      opts.url = url;
+      opts.method = method;
+      opts.header = header ?? new Map<string, string>();
+      opts.extraData = body;
+      opts.connectTimeout = timeoutMs;
+      opts.readTimeout = timeoutMs;
+
+      const response = await SecureHttpClient.getInstance().request(opts);
+      result.responseCode = response.responseCode;
+
+      if (response.responseCode >= 200 && response.responseCode < 300) {
+        const raw = response.result;
+        if (typeof raw === 'string' && raw.length > 0) {
+          try {
+            result.data = JSON.parse(raw) as Record<string, Object>;
+          } catch (_) {
+            const rawObj: RawResponse = new RawResponse();
+            rawObj.raw = raw;
+            // RawResponse is not a Record; wrap in a Record for type compatibility
+            result.data = { raw: rawObj.raw } as Record<string, Object>;
+          }
+        }
+      } else {
+        result.error = `HTTP ${response.responseCode}`;
+        hilog.warn(DOMAIN_ZERO, TAG, 'Request failed: %{public}s -> HTTP %{public}d', url, response.responseCode);
+      }
+    } catch (e) {
+      result.error = (e as Error).message;
+      hilog.warn(DOMAIN_ZERO, TAG, 'Request error: %{public}s -> %{public}s', url, result.error);
+    }
+    return result;
+  }
+
+  static async downloadBuffer(url: string, header?: Map<string, string>, timeoutMs: number = 30000): Promise<ArrayBuffer | null> {
+    try {
+      const opts = new SecureRequestOptions();
+      opts.url = url;
+      opts.method = http.RequestMethod.GET;
+      opts.header = header ?? new Map<string, string>();
+      opts.readTimeout = timeoutMs;
+
+      const response = await SecureHttpClient.getInstance().request(opts);
+      if (response.responseCode === 200 && response.result instanceof ArrayBuffer) {
+        return response.result as ArrayBuffer;
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+}

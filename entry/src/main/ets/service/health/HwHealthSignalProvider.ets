@@ -13,19 +13,10 @@ import { healthStore } from '@kit.HealthServiceKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import {
-  HealthSignal,
-  StepLevel,
-  SleepStatus,
-  WeightTrend,
-  BpStatus,
-  BsStatus,
-  DataSource,
-  HeartRateZone,
-  SpO2Level,
-  StressLevel
-} from '../../model/HealthSignal';
+  HealthSignal, StepLevel, SleepStatus, WeightTrend, BpStatus, BsStatus, DataSource, HeartRateZone, SpO2Level, StressLevel, HILOG_DOMAIN
+} from 'hsp_core';
 import { HealthSignalProvider } from './HealthSignalProvider';
-import { HILOG_DOMAIN } from '../../constants/AppConfig';
+
 
 const TAG = 'HwHealthSignalProvider';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -46,13 +37,14 @@ function todayStartSeconds(): number {
   return Math.floor(d.getTime() / 1000);
 }
 
-export class HwHealthSignalProvider implements HealthSignalProvider {
+export class HwHealthSignalProvider extends HealthSignalProvider {
   private context: Context | null = null;
   private isInitialized: boolean = false;
   // Health Store 实例（延迟初始化）
   private healthStore: Object | null = null;
 
   constructor(context: Context) {
+    super();
     this.context = context;
   }
 

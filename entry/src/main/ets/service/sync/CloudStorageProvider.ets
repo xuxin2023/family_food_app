@@ -6,7 +6,8 @@
 import { http } from '@kit.NetworkKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from '../../constants/AppConfig';
+import { HILOG_DOMAIN } from 'hsp_core';
+import { SecureHttpHelper } from '../SecureHttpHelper';
 
 const TAG = 'CloudStorageProvider';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -14,111 +15,116 @@ const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 /**
  * 认证结果
  */
-export interface AuthResult {
-  token: string;
+export class AuthResult {
+  token: string = '';
 }
 
 /**
  * 设备注册结果
  */
-export interface DeviceRegisterResult {
-  deviceRegistered: boolean;
+export class DeviceRegisterResult {
+  deviceRegistered: boolean = false;
 }
 
 /**
  * 云端设备信息
  */
-export interface CloudDeviceInfo {
-  deviceId: string;
-  deviceName: string;
-  lastSyncAt: number;
+export class CloudDeviceInfo {
+  deviceId: string = '';
+  deviceName: string = '';
+  lastSyncAt: number = 0;
 }
 
 /**
  * 同步统计信息
  */
-export interface SyncStatsResult {
-  totalSyncs: number;
-  totalConflicts: number;
-  lastSyncAt: number;
-  deviceCount: number;
+export class SyncStatsResult {
+  totalSyncs: number = 0;
+  totalConflicts: number = 0;
+  lastSyncAt: number = 0;
+  deviceCount: number = 0;
 }
 
 /**
  * 云端操作结果
  */
-export interface CloudOperationResult<T> {
-  success: boolean;
-  data: T | null;
-  errorMessage: string;
-  statusCode: number;
+export class CloudOperationResult<T> {
+  success: boolean = false;
+  data: T | null = null;
+  errorMessage: string = '';
+  statusCode: number = 0;
 }
 
 /**
  * 云端同步批量请求体
  */
-export interface SyncBatchRequest {
+export class SyncBatchRequest {
   /** 用户认证Token */
-  token: string;
+  token: string = '';
   /** 设备唯一标识 */
-  deviceId: string;
+  deviceId: string = '';
   /** 上次同步时间戳 */
-  lastSyncAt: number;
+  lastSyncAt: number = 0;
   /** 待上传的变更记录列表 */
-  uploads: SyncBatchItem[];
+  uploads: SyncBatchItem[] = [];
 }
 
 /**
  * 云端同步批量响应体
  */
-export interface SyncBatchResponse {
+export class SyncBatchResponse {
   /** 服务端收到的最大版本号 */
-  serverVersion: number;
+  serverVersion: number = 0;
   /** 需要应用到本地的远程变更列表 */
-  downloads: SyncBatchItem[];
+  downloads: SyncBatchItem[] = [];
   /** 冲突记录列表（需要解决冲突） */
-  conflicts: SyncConflictItem[];
+  conflicts: SyncConflictItem[] = [];
 }
 
 /**
  * 同步批次数据项
  */
-export interface SyncBatchItem {
-  entityType: string;
-  entityId: string;
-  changeType: string;
-  data: string;
-  version: number;
-  changedAt: number;
+export class SyncBatchItem {
+  entityType: string = '';
+  entityId: string = '';
+  changeType: string = '';
+  data: string = '';
+  version: number = 0;
+  changedAt: number = 0;
 }
 
 /**
  * 冲突项
  */
-export interface SyncConflictItem {
-  entityType: string;
-  entityId: string;
-  localData: string;
-  remoteData: string;
-  localVersion: number;
-  remoteVersion: number;
+export class SyncConflictItem {
+  entityType: string = '';
+  entityId: string = '';
+  localData: string = '';
+  remoteData: string = '';
+  localVersion: number = 0;
+  remoteVersion: number = 0;
 }
 
 /**
  * 云存储提供者配置
  */
-export interface CloudStorageProviderConfig {
+export class CloudStorageProviderConfigUpdate {
+  baseUrl: string | undefined = undefined;
+  apiVersion: string | undefined = undefined;
+  timeout: number | undefined = undefined;
+}
+
+export class CloudStorageProviderConfig {
   /** API基础URL */
-  baseUrl: string;
+  baseUrl: string = '';
   /** API版本路径 */
-  apiVersion: string;
+  apiVersion: string = '';
   /** 请求超时（ms） */
-  timeout: number;
+  timeout: number = 0;
 }
 
 export class CloudStorageProvider {
   private config: CloudStorageProviderConfig;
-  private httpClient: http.HttpRequest | null = null;
 
   constructor(config: CloudStorageProviderConfig) {
     this.config = config;
@@ -127,7 +133,7 @@ export class CloudStorageProvider {
   /**
    * 更新配置
    */
-  updateConfig(config: Partial<CloudStorageProviderConfig>): void {
+  updateConfig(config: CloudStorageProviderConfigUpdate): void {
     if (config.baseUrl !== undefined) {
       this.config.baseUrl = config.baseUrl;
     }
@@ -225,57 +231,45 @@ export class CloudStorageProvider {
     const url = `${this.config.baseUrl}${this.config.apiVersion}${path}`;
 
     try {
-      this.httpClient = http.createHttp();
-      const header: Record<string, string> = {
-        'Content-Type': 'application/json'
-      };
+      const header: Map<string, string> = new Map([
+        ['Content-Type', 'application/json']
+      ]);
       if (token !== undefined && token.length > 0) {
-        header['Authorization'] = `Bearer ${token}`;
+        header.set('Authorization', `Bearer ${token}`);
       }
 
-      const requestMethod: http.RequestMethod = method === 'GET' ? http.RequestMethod.GET : http.RequestMethod.POST;
-      const requestOptions: http.HttpRequestOptions = {
-        method: requestMethod,
-        header: header,
-        extraData: bodyStr,
-        connectTimeout: this.config.timeout,
-        readTimeout: this.config.timeout
-      };
+      const resp = await SecureHttpHelper.request(
+        url,
+        method === 'GET' ? http.RequestMethod.GET : http.RequestMethod.POST,
+        header,
+        bodyStr,
+        this.config.timeout
+      );
 
-      const result: http.HttpResponse = await this.httpClient.request(url, requestOptions);
-      const responseCode: number = result.responseCode;
-
-      if (responseCode === http.ResponseCode.OK ||
-          responseCode === http.ResponseCode.CREATED) {
-        const responseData: object = JSON.parse(result.result as string);
-        return {
-          success: true,
-          data: responseData as T,
-          errorMessage: '',
-          statusCode: result.responseCode
-        };
+      if (resp.responseCode >= 200 && resp.responseCode < 300 && resp.data !== null) {
+        const r = new CloudOperationResult<T>();
+        r.success = true;
+        r.data = resp.data as T;
+        r.errorMessage = '';
+        r.statusCode = resp.responseCode;
+        return r;
       }
 
-      return {
-        success: false,
-        data: null,
-        errorMessage: `HTTP ${result.responseCode}`,
-        statusCode: result.responseCode
-      };
+      const r2 = new CloudOperationResult<T>();
+      r2.success = false;
+      r2.data = null;
+      r2.errorMessage = `HTTP ${resp.responseCode}`;
+      r2.statusCode = resp.responseCode;
+      return r2;
     } catch (error) {
       const err = error as BusinessError;
       hilog.error(DOMAIN_ZERO, TAG, 'Request failed: %{public}s', JSON.stringify(err));
-      return {
-        success: false,
-        data: null,
-        errorMessage: err.message || '网络请求失败',
-        statusCode: 0
-      };
-    } finally {
-      if (this.httpClient) {
-        this.httpClient.destroy();
-        this.httpClient = null;
-      }
+      const r3 = new CloudOperationResult<T>();
+      r3.success = false;
+      r3.data = null;
+      r3.errorMessage = err.message || '网络请求失败';
+      r3.statusCode = 0;
+      return r3;
     }
   }
 }

@@ -6,7 +6,11 @@
   "author": "",
   "license": "",
   "dependencies": {
-    "hsp_core": "file:../hsp_core"
+    "hsp_core": "file:../hsp_core",
+    "hsp-service": "file:../hsp-service",
+    "feature-scan": "file:../feature-scan",
+    "feature-report": "file:../feature-report",
+    "feature-community": "file:../feature-community"
   },
   "devDependencies": {
     "@ohos/hypium": "1.0.25"

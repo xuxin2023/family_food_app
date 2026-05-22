@@ -1,15 +1,9 @@
 // HomeMemberList.ets
 // 首页家庭成员选择列表 - 网格卡片布局，支持懒加载
 
-import { FamilyProfile } from '../model/FamilyProfile';
+import { FamilyProfile, COLORS, safePushUrl } from 'hsp_core';
 import { AppState } from '../AppState';
 import { MemberCard } from './MemberCard';
-import { COLORS } from '../constants/AppTheme';
-import { router } from '@kit.ArkUI';
-import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
-
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 @ComponentV2
 export struct HomeMemberList {
@@ -51,16 +45,13 @@ export struct HomeMemberList {
       .alignItems(HorizontalAlign.Center)
       .border({ width: 1, color: COLORS.BORDER_LIGHT, style: BorderStyle.Dashed, radius: 16 })
       .onClick(() => {
-        try {
-          if (this.appState.member.canAddMember()) {
-            router.pushUrl({ url: 'pages/MemberEditPage' })
-          } else {
-            router.pushUrl({ url: 'pages/SettingsPage' })
-          }
-        } catch (_e) {
-          hilog.warn(DOMAIN_ZERO, 'HomePage', 'pushUrl member/add failed: %{public}s', JSON.stringify(_e));
+        if (this.appState.member.canAddMember()) {
+          safePushUrl('pages/MemberEditPage')
+        } else {
+          safePushUrl('pages/SettingsPage')
         }
       })
+      .accessibilityText('选择家庭成员')
     }
     .width('100%')
   }

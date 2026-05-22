@@ -1,11 +1,11 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { ShareActionResult, ShareProvider, ShareTarget } from './ShareProvider';
-import { HILOG_DOMAIN } from '../../constants/AppConfig';
+import { HILOG_DOMAIN } from 'hsp_core';
 
 const TAG = 'CopyTextProvider';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
-export class CopyTextProvider implements ShareProvider {
+export class CopyTextProvider extends ShareProvider {
   getCopyHint(): string {
     return '长按下方文案即可选择复制，再粘贴到微信或家庭群。';
   }
@@ -27,9 +27,9 @@ export class CopyTextProvider implements ShareProvider {
 
   private notImplemented(message: string): ShareActionResult {
     hilog.info(DOMAIN_ZERO, TAG, message);
-    return {
-      success: false,
-      message
-    };
+    const result = new ShareActionResult();
+    result.success = false;
+    result.message = message;
+    return result;
   }
 }

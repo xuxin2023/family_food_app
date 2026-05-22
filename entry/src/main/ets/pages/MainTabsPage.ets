@@ -7,13 +7,11 @@
 //
 // Tab 结构: 首页 | 饮食 | AI | 社区 | 我的
 
+import { safePushUrl, COLORS, HILOG_DOMAIN, NavigationManager } from 'hsp_core';
 import { HdsTabs, HdsTabsController } from '@kit.UIDesignKit';
 import { hdsMaterial } from '@kit.UIDesignKit';
 import { SymbolGlyphModifier } from '@kit.ArkUI';
-import { router } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { COLORS } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 const TAG = 'MainTabsPage';
@@ -50,6 +48,7 @@ struct MainTabsPage {
   }
 
   build() {
+    Navigation(NavigationManager.getStack()) {
     Column() {
     HdsTabs({
       controller: this.tabsController,
@@ -76,7 +75,7 @@ struct MainTabsPage {
           if (this.tabLoaded[1]) {
             this.DietContent()
           } else {
-            this.TabPlaceholder('🍽️ 饮食中心', '首次访问时加载')
+            this.TabPlaceholder($r('app.string.main_tabs_diet_center'), $r('app.string.main_tabs_lazy_load_hint'))
           }
         }
         .width('100%').height('100%')
@@ -96,7 +95,7 @@ struct MainTabsPage {
           if (this.tabLoaded[2]) {
             this.AiContent()
           } else {
-            this.TabPlaceholder('🤖 AI 智能助手', '首次访问时加载')
+            this.TabPlaceholder($r('app.string.main_tabs_ai_assistant'), $r('app.string.main_tabs_lazy_load_hint'))
           }
         }
         .width('100%').height('100%')
@@ -116,7 +115,7 @@ struct MainTabsPage {
           if (this.tabLoaded[3]) {
             this.CommunityContent()
           } else {
-            this.TabPlaceholder('👥 社区中心', '首次访问时加载')
+            this.TabPlaceholder($r('app.string.main_tabs_community_center'), $r('app.string.main_tabs_lazy_load_hint'))
           }
         }
         .width('100%').height('100%')
@@ -136,7 +135,7 @@ struct MainTabsPage {
           if (this.tabLoaded[4]) {
             this.ProfileContent()
           } else {
-            this.TabPlaceholder('⚙️ 个人中心', '首次访问时加载')
+            this.TabPlaceholder($r('app.string.main_tabs_profile_center'), $r('app.string.main_tabs_lazy_load_hint'))
           }
         }
         .width('100%').height('100%')
@@ -164,14 +163,31 @@ struct MainTabsPage {
     .onChange((index: number) => {
       this.currentIndex = index;
     })
-    }
+    .width('100%')
+    .height('100%')
+  }
+}
+    .navDestination(this.buildNavDestination)
+    .mode(NavigationMode.Stack)
     .width('100%')
     .height('100%')
   }
 
+  @Builder
+  buildNavDestination(name: string, param: Object) {
+    Column() {
+      Text(name)
+        .fontSize(16)
+        .fontColor(COLORS.TEXT_PRIMARY)
+    }
+    .width('100%')
+    .height('100%')
+    .justifyContent(FlexAlign.Center)
+  }
+
   // ──── Tab 占位符（未加载时的空白页面）────
   @Builder
-  TabPlaceholder(emojiTitle: string, hint: string) {
+  TabPlaceholder(emojiTitle: ResourceStr, hint: ResourceStr) {
     Column() {
       Column() {
         Text(emojiTitle)
@@ -198,12 +214,12 @@ struct MainTabsPage {
       Text('🏠')
         .fontSize(48)
         .margin({ top: 60 })
-      Text('首页')
+      Text($r('app.string.main_tabs_home'))
         .fontSize(20)
         .fontWeight(600)
         .fontColor(COLORS.TEXT_PRIMARY)
         .margin({ top: 12, bottom: 8 })
-      Text('食品适配助手 · 家庭饮食平衡')
+      Text($r('app.string.main_tabs_app_slogan'))
         .fontSize(14)
         .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ bottom: 24 })
@@ -211,27 +227,23 @@ struct MainTabsPage {
       Button() {
         Row({ space: 6 }) {
           Text('📷').fontSize(18)
-          Text('扫码识别').fontSize(16).fontColor(COLORS.WHITE)
+          Text($r('app.string.main_tabs_scan_identify')).fontSize(16).fontColor(COLORS.WHITE)
         }
       }
       .width('70%')
       .height(48)
       .borderRadius(24)
       .backgroundColor(COLORS.PRIMARY)
-      .accessibilityText('扫码识别食品标签')
+      .accessibilityText($r('app.string.main_tabs_scan_accessibility'))
       .accessibilityLevel('yes')
       .onClick(() => {
-        try {
-          router.pushUrl({ url: 'pages/ScanPage' })
-        } catch (e) {
-          hilog.warn(DOMAIN_ZERO, TAG, 'pushUrl ScanPage failed: %{public}s', JSON.stringify(e));
-        }
+        safePushUrl('pages/ScanPage')
       })
 
       Button() {
         Row({ space: 6 }) {
           Text('🍽️').fontSize(18)
-          Text('进入完整首页').fontSize(16).fontColor(COLORS.PRIMARY)
+          Text($r('app.string.main_tabs_enter_home')).fontSize(16).fontColor(COLORS.PRIMARY)
         }
       }
       .width('70%')
@@ -240,14 +252,10 @@ struct MainTabsPage {
       .backgroundColor(COLORS.BG_CARD)
       .margin({ top: 12 })
       .border({ width: 1, color: COLORS.PRIMARY_LIGHT, style: BorderStyle.Solid })
-      .accessibilityText('进入完整首页，查看全部功能')
+      .accessibilityText($r('app.string.main_tabs_enter_home_accessibility'))
       .accessibilityLevel('yes')
       .onClick(() => {
-        try {
-          router.pushUrl({ url: 'pages/HomePage' })
-        } catch (e) {
-          hilog.warn(DOMAIN_ZERO, TAG, 'pushUrl HomePage failed: %{public}s', JSON.stringify(e));
-        }
+        safePushUrl('pages/HomePage')
       })
     }
     .width('100%')
@@ -262,7 +270,7 @@ struct MainTabsPage {
   DietContent() {
     Column() {
       Row() {
-        Text('🍽️ 饮食中心')
+        Text($r('app.string.main_tabs_diet_center'))
           .fontSize(22)
           .fontWeight(600)
           .fontColor(COLORS.TEXT_PRIMARY)
@@ -272,15 +280,15 @@ struct MainTabsPage {
 
       Scroll() {
         Column({ space: 12 }) {
-          this.QuickEntryCard('📝', '记录美食', '扫描食品标签，自动记录饮食摄入',
+          this.QuickEntryCard('📝', $r('app.string.main_tabs_record_food'), $r('app.string.main_tabs_record_food_desc'),
             'pages/BalancePage')
-          this.QuickEntryCard('📖', '膳食日记', '查看每日饮食明细与营养分析',
+          this.QuickEntryCard('📖', $r('app.string.main_tabs_diet_diary'), $r('app.string.main_tabs_diet_diary_desc'),
             'pages/DietDiaryPage')
-          this.QuickEntryCard('📋', '历史记录', '回顾过往的饮食扫描记录',
+          this.QuickEntryCard('📋', $r('app.string.main_tabs_history'), $r('app.string.main_tabs_history_desc'),
             'pages/HistoryPage')
-          this.QuickEntryCard('📊', '营养仪表盘', '可视化查看营养摄入趋势与构成',
+          this.QuickEntryCard('📊', $r('app.string.main_tabs_nutrition_dashboard'), $r('app.string.main_tabs_nutrition_dashboard_desc'),
             'pages/DashboardPage')
-          this.QuickEntryCard('🛒', '购物篮分析', '评估购物篮食品的家庭适配性',
+          this.QuickEntryCard('🛒', $r('app.string.main_tabs_basket_analysis'), $r('app.string.main_tabs_basket_analysis_desc')),
             'pages/BasketCheckPage')
         }
         .padding({ left: 16, right: 16, bottom: 80 })
@@ -297,7 +305,7 @@ struct MainTabsPage {
   AiContent() {
     Column() {
       Row() {
-        Text('🤖 AI 智能助手')
+        Text($r('app.string.main_tabs_ai_assistant'))
           .fontSize(22)
           .fontWeight(600)
           .fontColor(COLORS.TEXT_PRIMARY)
@@ -307,13 +315,13 @@ struct MainTabsPage {
 
       Scroll() {
         Column({ space: 12 }) {
-          this.QuickEntryCard('💬', 'AI 营养师对话', '与AI营养师对话获取个性化建议',
+          this.QuickEntryCard('💬', $r('app.string.main_tabs_ai_nutritionist'), $r('app.string.main_tabs_ai_nutritionist_desc'),
             'pages/AiChatPage')
-          this.QuickEntryCard('🍳', 'AI 推荐食谱', '基于家庭健康画像智能推荐食谱',
-            'pages/RecipeCommunityPage', { 'aiMode': 'recommend' } as Record<string, Object>)
-          this.QuickEntryCard('🧪', '营养趋势分析', 'AI驱动的营养趋势预测与洞察',
+          this.QuickEntryCard('🍳', $r('app.string.main_tabs_ai_recipe'), $r('app.string.main_tabs_ai_recipe_desc'),
+            'pages/RecipeCommunityPage', new Map([['aiMode', 'recommend']]))
+          this.QuickEntryCard('🧪', $r('app.string.main_tabs_nutrition_trend'), $r('app.string.main_tabs_nutrition_trend_desc'),
             'pages/NutritionTrendPage')
-          this.QuickEntryCard('📈', '周报分析', '查看本周饮食健康周报',
+          this.QuickEntryCard('📈', $r('app.string.main_tabs_weekly_report'), $r('app.string.main_tabs_weekly_report_desc')),
             'pages/WeeklyReportPage')
         }
         .padding({ left: 16, right: 16, bottom: 80 })
@@ -330,7 +338,7 @@ struct MainTabsPage {
   CommunityContent() {
     Column() {
       Row() {
-        Text('👥 社区中心')
+        Text($r('app.string.main_tabs_community_center'))
           .fontSize(22)
           .fontWeight(600)
           .fontColor(COLORS.TEXT_PRIMARY)
@@ -340,11 +348,11 @@ struct MainTabsPage {
 
       Scroll() {
         Column({ space: 12 }) {
-          this.QuickEntryCard('🍳', '食谱社区', '浏览和分享家庭食谱',
+          this.QuickEntryCard('🍳', $r('app.string.main_tabs_recipe_community'), $r('app.string.main_tabs_recipe_community_desc'),
             'pages/RecipeCommunityPage')
-          this.QuickEntryCard('👨‍👩‍👧‍👦', '家庭群组', '创建家庭群组共享饮食信息',
+          this.QuickEntryCard('👨‍👩‍👧‍👦', $r('app.string.main_tabs_family_group'), $r('app.string.main_tabs_family_group_desc'),
             'pages/FamilyGroupPage')
-          this.QuickEntryCard('✨', '创建食谱', '发布你的独家食谱到社区',
+          this.QuickEntryCard('✨', $r('app.string.main_tabs_create_recipe'), $r('app.string.main_tabs_create_recipe_desc')),
             'pages/RecipeCreatePage')
         }
         .padding({ left: 16, right: 16, bottom: 80 })
@@ -361,7 +369,7 @@ struct MainTabsPage {
   ProfileContent() {
     Column() {
       Row() {
-        Text('⚙️ 个人中心')
+        Text($r('app.string.main_tabs_profile_center'))
           .fontSize(22)
           .fontWeight(600)
           .fontColor(COLORS.TEXT_PRIMARY)
@@ -371,19 +379,19 @@ struct MainTabsPage {
 
       Scroll() {
         Column({ space: 12 }) {
-          this.QuickEntryCard('👤', '家庭成员管理', '管理和编辑家庭成员信息',
+          this.QuickEntryCard('👤', $r('app.string.main_tabs_member_management'), $r('app.string.main_tabs_member_management_desc'),
             'pages/MemberPage')
-          this.QuickEntryCard('📊', '营养仪表盘', '全家人营养数据概览',
+          this.QuickEntryCard('📊', $r('app.string.main_tabs_nutrition_dashboard'), $r('app.string.main_tabs_nutrition_dashboard_all')),
             'pages/DashboardPage')
-          this.QuickEntryCard('🏥', '健康设备', '查看家庭成员健康设备数据',
+          this.QuickEntryCard('🏥', $r('app.string.main_tabs_health_device'), $r('app.string.main_tabs_health_device_desc')),
             'pages/DeviceDashboardPage')
-          this.QuickEntryCard('💎', '订阅会员', '升级会员解锁更多功能',
+          this.QuickEntryCard('💎', $r('app.string.main_tabs_subscription'), $r('app.string.main_tabs_subscription_desc')),
             'pages/SubscriptionPage')
-          this.QuickEntryCard('☁️', '云同步设置', '配置数据同步与备份',
+          this.QuickEntryCard('☁️', $r('app.string.main_tabs_cloud_sync'), $r('app.string.main_tabs_cloud_sync_desc')),
             'pages/CloudSyncSettingsPage')
-          this.QuickEntryCard('🔧', '设置', '应用设置与品牌透明度查询',
+          this.QuickEntryCard('🔧', $r('app.string.main_tabs_settings'), $r('app.string.main_tabs_settings_desc')),
             'pages/SettingsPage')
-          this.QuickEntryCard('🧪', 'API 实验室', 'HarmonyOS V2 API 特性演示',
+          this.QuickEntryCard('🧪', $r('app.string.main_tabs_api_lab'), $r('app.string.main_tabs_api_lab_desc')),
             'pages/V2DemoPage')
         }
         .padding({ left: 16, right: 16, bottom: 80 })
@@ -397,7 +405,7 @@ struct MainTabsPage {
 
   // ──── 通用快捷入口卡片 ────
   @Builder
-  QuickEntryCard(icon: string, title: string, desc: string, targetUrl: string, extraParams?: Record<string, Object>) {
+  QuickEntryCard(icon: string, title: ResourceStr, desc: ResourceStr, targetUrl: string, extraParams?: Map<string, Object>) {
     Row() {
       Text(icon)
         .fontSize(28)
@@ -425,18 +433,17 @@ struct MainTabsPage {
     .backgroundColor(COLORS.BG_CARD)
     .borderRadius(12)
     .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
-    .accessibilityText(`${title}，${desc}`)
+    .accessibilityText(title)
     .accessibilityLevel('yes')
     .onClick(() => {
-      try {
-        const routerParams: Record<string, Object> = extraParams ?? {};
-        router.pushUrl({
-          url: targetUrl,
-          params: routerParams
-        })
-      } catch (e) {
-        hilog.warn(DOMAIN_ZERO, TAG, 'pushUrl failed for %{public}s: %{public}s', targetUrl, JSON.stringify(e));
-      }
+      safePushUrl(targetUrl, extraParams)
     })
+  }
+
+  pageTransition() {
+    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Right)
+    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Left)
   }
 }

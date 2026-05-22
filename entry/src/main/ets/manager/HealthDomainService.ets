@@ -1,12 +1,9 @@
 // HealthDomainService.ets
 // 健康信号领域服务 - 从 AppState 剥离的健康数据相关业务逻辑
 
-import { HealthSignal, DataSource } from '../model/HealthSignal';
-import { DateUtil } from '../utils/DateUtil';
-import { CacheManager } from '../utils/CacheManager';
+import { HealthSignal, DateUtil, CacheManager } from 'hsp_core';
 import { ServiceManager } from '../ServiceManager';
 import { common } from '@kit.AbilityKit';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 export class HealthDomainService {
   private services: ServiceManager;

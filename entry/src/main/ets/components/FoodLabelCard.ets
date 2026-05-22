@@ -1,9 +1,8 @@
-// 食品标签信息卡组件
+import { FoodLabel, COLORS } from 'hsp_core';
+// 食品标签信息卡组件 — @ReusableV2 高频复用优化
 
-import { FoodLabel } from '../model/FoodLabel';
-import { COLORS } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
+@ReusableV2
 @ComponentV2
 export struct FoodLabelCard {
   @Param foodLabel: FoodLabel = new FoodLabel();

@@ -1,0 +1,13 @@
+{
+  "name": "feature-report",
+  "version": "1.0.0",
+  "description": "家庭食品适配助手报告功能模块 — 营养报告、健康预警、数据分析",
+  "main": "Index.ets",
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "hsp_core": "file:../hsp_core",
+    "hsp-service": "file:../hsp-service"
+  },
+  "devDependencies": {}
+}

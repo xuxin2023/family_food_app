@@ -5,8 +5,9 @@
 import { http } from '@kit.NetworkKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AGENT_ARTS_ENDPOINT, AGENT_ARTS_MODEL } from './AiConfig';
-import { API_TIMEOUT_CONFIG } from '../../constants/AppConfig';
-import { HILOG_DOMAIN } from '../../constants/AppConfig';
+import { API_CONFIG, API_TIMEOUT_CONFIG, HILOG_DOMAIN } from 'hsp_core';
+import { SecureHttpClient, SecureRequestOptions } from '../SecureHttpClient';
+import { GlobalErrorHandler } from '../../utils/GlobalErrorHandler';
 
 const TAG = 'AiClient';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -14,23 +15,19 @@ const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 /**
  * AI 调用请求参数
  */
-export interface AiRequestOptions {
-  /** system prompt */
-  systemPrompt: string;
-  /** user prompt */
-  userPrompt: string;
-  /** 温度参数 */
-  temperature: number;
-  /** 最大输出 Token 数 */
-  maxTokens: number;
+export class AiRequestOptions {
+  systemPrompt: string = '';
+  userPrompt: string = '';
+  temperature: number = 0;
+  maxTokens: number = 0;
 }
 
 /**
  * AI 调用响应
  */
-export interface AiCallResponse {
-  text: string;
-  tokensUsed: number;
+export class AiCallResponse {
+  text: string = '';
+  tokensUsed: number = 0;
 }
 
 /** AgentArts API 消息结构 */
@@ -76,8 +73,9 @@ export class AiClient {
     this.apiKey = key;
   }
 
-  getApiKey(): string {
-    return this.apiKey;
+  getApiKeyMasked(): string {
+    if (this.apiKey.length <= 8) return '****';
+    return this.apiKey.substring(0, 4) + '****' + this.apiKey.substring(this.apiKey.length - 4);
   }
 
   hasApiKey(): boolean {
@@ -94,8 +92,6 @@ export class AiClient {
       hilog.warn(DOMAIN_ZERO, TAG, 'No API key configured');
       return null;
     }
-
-    const httpRequest = http.createHttp();
 
     try {
       const systemMsg = new ChatMessage();
@@ -115,16 +111,19 @@ export class AiClient {
         max_tokens: options.maxTokens
       });
 
-      const response = await httpRequest.request(AGENT_ARTS_ENDPOINT, {
-        method: http.RequestMethod.POST,
-        header: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`
-        },
-        extraData: requestBody,
-        connectTimeout: API_TIMEOUT_CONFIG.AI_CONNECT_TIMEOUT_MS,
-        readTimeout: API_TIMEOUT_CONFIG.AI_READ_TIMEOUT_MS
-      });
+      const requestHeader = new Map<string, string>();
+      requestHeader.set('Content-Type', API_CONFIG.HEADER_CONTENT_TYPE_JSON);
+      requestHeader.set('Authorization', `Bearer ${this.apiKey}`);
+
+      const opts = new SecureRequestOptions();
+      opts.url = AGENT_ARTS_ENDPOINT;
+      opts.method = http.RequestMethod.POST;
+      opts.header = requestHeader;
+      opts.extraData = requestBody;
+      opts.connectTimeout = API_TIMEOUT_CONFIG.AI_CONNECT_TIMEOUT_MS;
+      opts.readTimeout = API_TIMEOUT_CONFIG.AI_READ_TIMEOUT_MS;
+
+      const response = await SecureHttpClient.getInstance().request(opts);
 
       if (response.responseCode === 200) {
         const rawResult = response.result;
@@ -140,9 +139,8 @@ export class AiClient {
       return null;
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'AgentArts call failed: %{public}s', JSON.stringify(error));
+      GlobalErrorHandler.getInstance().handleError(error instanceof Error ? error : new Error(String(error)), 'AiClient');
       return null;
-    } finally {
-      httpRequest.destroy();
     }
   }
 
@@ -168,12 +166,13 @@ export class AiClient {
       }
 
       const usage = parsed.usage;
-      return {
-        text: content,
-        tokensUsed: (usage !== null && usage !== undefined) ? usage.total_tokens : 0
-      };
+      const resp = new AiCallResponse();
+      resp.text = content;
+      resp.tokensUsed = (usage !== null && usage !== undefined) ? usage.total_tokens : 0;
+      return resp;
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'parse AgentArts response failed: %{public}s', JSON.stringify(error));
+      GlobalErrorHandler.getInstance().handleError(error instanceof Error ? error : new Error(String(error)), 'AiClient');
       return null;
     }
   }

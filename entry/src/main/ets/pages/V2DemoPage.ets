@@ -13,7 +13,7 @@ import {
   FamilyNutritionManager,
   MealNutrition,
   createDemoFamilyManager
-} from '../model/V2StateDemo';
+} from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'V2DemoPage';
@@ -36,7 +36,7 @@ struct V2DemoPage {
     Column() {
       // 标题栏
       Row() {
-        Text('📊 V2 营养追踪演示')
+        Text($r('app.string.v2_demo_title'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .fontColor('#FFFFFF')
@@ -58,16 +58,20 @@ struct V2DemoPage {
             .onClick(() => {
               this.manager.selectedMemberIndex = index;
             })
-        })
+            .accessibilityText(member.name)
+            .accessibilityLevel('yes')
+        }, (member: MemberNutritionProfile, index: number) => index.toString())
 
         Button('+').fontSize(18).fontColor('#007AFF')
           .width(32).height(32)
           .borderRadius(16)
           .backgroundColor('#E8E8E8')
           .onClick(() => {
-            this.newMemberName = `成员${this.manager.members.length + 1}`;
+            this.newMemberName = $r('app.string.v2_demo_member_prefix') + (this.manager.members.length + 1);
             this.manager.addMember(this.newMemberName);
           })
+          .accessibilityText('添加成员')
+          .accessibilityLevel('yes')
       }
       .width('100%')
       .padding(12)
@@ -86,12 +90,18 @@ struct V2DemoPage {
       // 添加餐次按钮
       if (this.manager.selectedMember) {
         Row({ space: 8 }) {
-          Button('+ 早餐').fontSize(13)
-            .onClick(() => this.addMeal('早餐', 350, 200, 10, 8))
-          Button('+ 午餐').fontSize(13)
-            .onClick(() => this.addMeal('午餐', 650, 500, 12, 18))
-          Button('+ 晚餐').fontSize(13)
-            .onClick(() => this.addMeal('晚餐', 500, 400, 10, 15))
+          Button($r('app.string.v2_demo_add_breakfast')).fontSize(13)
+            .onClick(() => this.addMeal($r('app.string.v2_demo_breakfast'), 350, 200, 10, 8))
+            .accessibilityText('添加早餐')
+            .accessibilityLevel('yes')
+          Button($r('app.string.v2_demo_add_lunch')).fontSize(13)
+            .onClick(() => this.addMeal($r('app.string.v2_demo_lunch'), 650, 500, 12, 18))
+            .accessibilityText('添加午餐')
+            .accessibilityLevel('yes')
+          Button($r('app.string.v2_demo_add_dinner')).fontSize(13)
+            .onClick(() => this.addMeal($r('app.string.v2_demo_dinner'), 500, 400, 10, 15))
+            .accessibilityText('添加晚餐')
+            .accessibilityLevel('yes')
         }
         .width('100%')
         .padding(12)
@@ -109,6 +119,13 @@ struct V2DemoPage {
     if (member) {
       member.today.addMeal(new MealNutrition(name, cal, na, sug, fat));
     }
+  }
+
+  pageTransition() {
+    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Right)
+    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Left)
   }
 }
 
@@ -145,16 +162,16 @@ struct MemberSummary {
 
   build() {
     Column() {
-      Text(`${this.member.name} · 今日摄入`)
+      Text(this.member.name + ' · ' + $r('app.string.v2_demo_today_intake'))
         .fontSize(16).fontWeight(FontWeight.Medium)
         .margin({ bottom: 12 })
 
       Row({ space: 16 }) {
-        this.NutritionCard('🔥热量', this.todayCalories, this.member.dailyCalorieGoal, 'kcal',
+        this.NutritionCard($r('app.string.v2_demo_calories'), this.todayCalories, this.member.dailyCalorieGoal, 'kcal',
           this.caloriePercent >= 90 ? '#FF5722' : '#4CAF50')
-        this.NutritionCard('🧂钠', this.todaySodium, this.member.dailySodiumGoal, 'mg', '#FF9800')
-        this.NutritionCard('🍬糖', this.todaySugar, this.member.dailySugarGoal, 'g', '#2196F3')
-        this.NutritionCard('🥩脂肪', this.todayFat, this.member.dailyFatGoal, 'g', '#9C27B0')
+        this.NutritionCard($r('app.string.v2_demo_sodium'), this.todaySodium, this.member.dailySodiumGoal, 'mg', '#FF9800')
+        this.NutritionCard($r('app.string.v2_demo_sugar'), this.todaySugar, this.member.dailySugarGoal, 'g', '#2196F3')
+        this.NutritionCard($r('app.string.v2_demo_fat'), this.todayFat, this.member.dailyFatGoal, 'g', '#9C27B0')
       }
       .width('100%')
       .justifyContent(FlexAlign.SpaceEvenly)
@@ -167,7 +184,7 @@ struct MemberSummary {
   }
 
   @Builder
-  NutritionCard(label: string, current: number, goal: number, unit: string, color: string) {
+  NutritionCard(label: ResourceStr, current: number, goal: number, unit: string, color: string) {
     Column({ space: 4 }) {
       Text(label).fontSize(11).fontColor('#999999')
       Text(`${current}`).fontSize(18).fontWeight(FontWeight.Bold).fontColor(color)
@@ -195,11 +212,11 @@ struct MealList {
 
   build() {
     Column() {
-      Text('今日餐次').fontSize(14).fontWeight(FontWeight.Medium)
+      Text($r('app.string.v2_demo_today_meals')).fontSize(14).fontWeight(FontWeight.Medium)
         .width('100%').padding({ left: 4, bottom: 8 })
 
       if (this.member.today.meals.length === 0) {
-        Text('暂无记录，点击下方按钮添加')
+        Text($r('app.string.v2_demo_no_records'))
           .fontSize(13).fontColor('#999999')
           .width('100%').textAlign(TextAlign.Center).padding(20)
       } else {
@@ -245,6 +262,8 @@ struct MealItem {
           .borderRadius(14)
           .backgroundColor('#E8E8E8')
           .onClick(() => { this.editing = !this.editing; })
+          .accessibilityText('编辑餐次')
+          .accessibilityLevel('yes')
       }
       .width('100%')
       .padding(10)
@@ -255,13 +274,19 @@ struct MealItem {
       // 内联编辑 — 展示 @Local 组件内部状态
       if (this.editing) {
         Row({ space: 6 }) {
-          Text(`热量: ${this.meal.calories}`).fontSize(12)
+          Text($r('app.string.v2_demo_calorie_inline') + ': ' + this.meal.calories).fontSize(12)
           Button('+50').fontSize(11).height(24)
             .onClick(() => { this.meal.calories += 50; })
+            .accessibilityText('增加50卡路里')
+            .accessibilityLevel('yes')
           Button('-50').fontSize(11).height(24)
             .onClick(() => { this.meal.calories = Math.max(0, this.meal.calories - 50); })
-          Button('重置').fontSize(11).height(24)
+            .accessibilityText('减少50卡路里')
+            .accessibilityLevel('yes')
+          Button($r('app.string.v2_demo_reset')).fontSize(11).height(24)
             .onClick(() => { this.meal.calories = 300; })
+            .accessibilityText('重置卡路里')
+            .accessibilityLevel('yes')
         }
         .width('100%')
         .padding({ left: 16, bottom: 8 })

@@ -1,10 +1,6 @@
 // 适配计算引擎 - 封装规则引擎，提供高层API
 
-import { FamilyProfile } from '../model/FamilyProfile';
-import { HealthSignal } from '../model/HealthSignal';
-import { FoodLabel } from '../model/FoodLabel';
-import { DailyBudget } from '../model/DailyBudget';
-import { Recommendation } from '../model/Recommendation';
+import { FamilyProfile, HealthSignal, FoodLabel, DailyBudget, Recommendation } from 'hsp_core';
 import { RuleEngine, RuleEngineParams } from './RuleEngine';
 
 export class RecommendationEngine {
@@ -17,12 +13,7 @@ export class RecommendationEngine {
     foodLabel: FoodLabel,
     dailyBudget: DailyBudget
   ): Recommendation {
-    const params: RuleEngineParams = {
-      profile,
-      healthSignal,
-      foodLabel,
-      dailyBudget
-    };
+    const params = new RuleEngineParams(profile, healthSignal, foodLabel, dailyBudget);
     return this.ruleEngine.calculate(params);
   }
 
@@ -35,12 +26,7 @@ export class RecommendationEngine {
   ): Recommendation[] {
     const results: Recommendation[] = [];
     for (let i = 0; i < profiles.length; i++) {
-      const params: RuleEngineParams = {
-        profile: profiles[i],
-        healthSignal: healthSignals[i],
-        foodLabel,
-        dailyBudget: dailyBudgets[i]
-      };
+      const params = new RuleEngineParams(profiles[i], healthSignals[i], foodLabel, dailyBudgets[i]);
       results.push(this.ruleEngine.calculate(params));
     }
     return results;

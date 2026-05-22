@@ -1,0 +1,12 @@
+{
+  "name": "hsp-service",
+  "version": "1.0.0",
+  "description": "家庭食品适配助手业务服务层 — 数据库操作、云函数调用、业务逻辑封装",
+  "main": "Index.ets",
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "hsp_core": "file:../hsp_core"
+  },
+  "devDependencies": {}
+}

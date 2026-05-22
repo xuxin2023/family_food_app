@@ -77,3 +77,5 @@ export const ROUTE_CHECKUP_REPORT_PAGE: string = 'pages/CheckupReportPage';
 export const ROUTE_CHILD_HEALTH_PAGE: string = 'pages/ChildHealthPage';
 /** 个性化推荐 */
 export const ROUTE_PERSONALIZED_RECOMMEND_PAGE: string = 'pages/PersonalizedRecommendPage';
+/** 青少年模式 */
+export const ROUTE_TEEN_MODE_PAGE: string = 'pages/TeenModePage';

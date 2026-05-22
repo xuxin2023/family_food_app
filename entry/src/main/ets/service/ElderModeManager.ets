@@ -1,7 +1,7 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
 import { preferences } from '@kit.ArkData';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { HILOG_DOMAIN } from 'hsp_core';
 
 const TAG = 'ElderModeManager';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -31,6 +31,7 @@ export class ElderModeManager {
       this.isEnabled = prefs.getSync('elder_mode', false) as boolean;
       hilog.info(DOMAIN_ZERO, TAG, 'Elder mode: %{public}s', this.isEnabled);
     } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Init elder mode failed: %{public}s', JSON.stringify(error));
       this.isEnabled = false;
     }
   }

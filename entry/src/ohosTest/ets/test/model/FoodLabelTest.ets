@@ -1,9 +1,11 @@
 // FoodLabel 单元测试 - 食品标签模型
 import { describe, it, expect } from '@ohos/hypium';
 import { FoodLabel, NutritionPer100g, FoodLabelJson, FoodSource } from '../../../../../src/main/ets/model/FoodLabel';
+import { JsonHelper } from '../../../../main/ets/utils/JsonHelper';
 
-function jsonParse(text: string): Record<string, Object> {
-  return JSON.parse(text) as Record<string, Object>;
+function jsonParse(text: string): Map<string, Object> {
+  const raw = JSON.parse(text) as Record<string, Object>;
+  return JsonHelper.recordToMap(raw);
 }
 
 function createFoodLabel(sodium: number, sugar: number, calories: number, fat: number,

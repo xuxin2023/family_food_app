@@ -1,8 +1,6 @@
+import { safeBack, COLORS, FONT_SIZE } from 'hsp_core';
 // BackButton.ets
 // 统一返回按钮组件 - 所有页面使用此组件替代手动 Text('<') / Text('‹')
-import { safeBack } from '../utils/RouterUtil';
-import { COLORS, FONT_SIZE } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 @ComponentV2
 export struct BackButton {

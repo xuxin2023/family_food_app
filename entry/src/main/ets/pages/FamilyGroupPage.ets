@@ -1,14 +1,12 @@
 // FamilyGroupPage.ets
 // 家庭群组页面 — 创建/加入群组、群组列表、成员管理
 
-import { router, promptAction } from '@kit.ArkUI';
+import {
+  ToastHelper, GroupMember, GroupRole, GroupSummary, COLORS, RADIUS, BUTTON, BasicDataSource, safePushUrl, HILOG_DOMAIN
+} from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
-import { GroupMember, GroupRole, GroupSummary } from '../model/FamilyGroup';
-import { COLORS, RADIUS, BUTTON } from '../constants/AppTheme';
-import { BasicDataSource } from '../utils/BasicDataSource';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'FamilyGroupPage';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -50,6 +48,8 @@ struct FamilyGroupPage {
       // 顶栏
       Row() {
         BackButton()
+        .accessibilityText('返回')
+        .accessibilityLevel('yes')
         Text($r('app.string.family_group'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
@@ -61,6 +61,8 @@ struct FamilyGroupPage {
           .onClick(() => {
             this.showCreateDialog()
           })
+          .accessibilityText('创建群组')
+          .accessibilityLevel('yes')
       }
       .width('100%')
       .padding(16)
@@ -82,7 +84,7 @@ struct FamilyGroupPage {
           Text('+')
             .fontSize(20)
             .fontColor(COLORS.WHITE)
-          Text('加入群组')
+          Text($r('app.string.family_group_join'))
             .fontSize(15)
             .fontColor(COLORS.WHITE)
         }
@@ -95,6 +97,8 @@ struct FamilyGroupPage {
       .onClick(() => {
         this.showJoinDialog()
       })
+      .accessibilityText('加入群组')
+      .accessibilityLevel('yes')
     }
     .width('100%')
     .height('100%')
@@ -129,7 +133,7 @@ struct FamilyGroupPage {
         ListItem() {
           this.groupCard(summary)
         }
-      }, (summary: GroupSummary) => `${summary.group.groupId}`)
+      }, (summary: GroupSummary) => `${summary.groupId}`)
     }
     .width('100%')
     .height('100%')
@@ -151,7 +155,7 @@ struct FamilyGroupPage {
             .width(48)
             .height(48)
             .fill(COLORS.PRIMARY_LIGHT)
-          Text(summary.group.groupName.substring(0, 1))
+          Text(summary.groupName.substring(0, 1))
             .fontSize(20)
             .fontColor(COLORS.PRIMARY)
         }
@@ -160,11 +164,11 @@ struct FamilyGroupPage {
 
         Column() {
           Row() {
-            Text(summary.group.groupName)
+            Text(summary.groupName)
               .fontSize(16)
               .fontWeight(FontWeight.Medium)
             if (summary.myRole === GroupRole.OWNER) {
-              Text('群主')
+              Text($r('app.string.family_group_owner'))
                 .fontSize(11)
                 .fontColor(COLORS.WHITE)
                 .backgroundColor(COLORS.ACCENT_ORANGE)
@@ -188,7 +192,7 @@ struct FamilyGroupPage {
               }
               .width(24)
               .height(24)
-            })
+            }, (member: GroupMember) => member.id)
             if (summary.members.length > 5) {
               Text('+' + (summary.members.length - 5))
                 .fontSize(11)
@@ -211,10 +215,10 @@ struct FamilyGroupPage {
 
       if (summary.myRole === GroupRole.OWNER || summary.myRole === GroupRole.ADMIN) {
         Row() {
-          Text('邀请码')
+          Text($r('app.string.family_group_invite_code'))
             .fontSize(12)
             .fontColor(COLORS.TEXT_GRAY_9E9E)
-          Text(summary.group.inviteCode)
+          Text(summary.inviteCode)
             .fontSize(14)
             .fontWeight(FontWeight.Bold)
             .fontColor(COLORS.PRIMARY)
@@ -225,6 +229,8 @@ struct FamilyGroupPage {
             .onClick(() => {
               this.showMemberManage(summary)
             })
+            .accessibilityText('成员管理')
+            .accessibilityLevel('yes')
         }
         .width('100%')
         .padding({ left: 16, right: 16, bottom: 12 })
@@ -235,30 +241,28 @@ struct FamilyGroupPage {
     .borderRadius(RADIUS.LG)
     .margin({ bottom: 12 })
     .onClick(() => {
-      // 跳转到群组动态
-      const navParams: Record<string, Object> = {} as Record<string, Object>
-      navParams['groupId'] = summary.group.groupId
-      navParams['groupName'] = summary.group.groupName
-      router.pushUrl({
-        url: 'pages/GroupFeedPage',
-        params: navParams
-      })
+      const navParams = new Map<string, Object>();
+      navParams.set('groupId', summary.groupId);
+      navParams.set('groupName', summary.groupName);
+      safePushUrl('pages/GroupFeedPage', navParams)
     })
+    .accessibilityText(summary.groupName)
+    .accessibilityLevel('yes')
   }
 
   private showCreateDialog(): void {
     AlertDialog.show({
-      title: '创建家庭群组',
-      message: '请输入群组名称和描述',
+      title: $r('app.string.family_group_create_title'),
+      message: $r('app.string.family_group_create_message'),
       autoCancel: false,
       primaryButton: {
-        value: '创建',
+        value: $r('app.string.family_group_create'),
         action: () => {
           this.handleCreateGroup()
         }
       },
       secondaryButton: {
-        value: '取消',
+        value: $r('app.string.family_group_cancel'),
         action: () => {}
       }
     })
@@ -266,35 +270,35 @@ struct FamilyGroupPage {
 
   private showJoinDialog(): void {
     AlertDialog.show({
-      title: '加入家庭群组',
-      message: '请输入6位邀请码和你的显示名称',
+      title: $r('app.string.family_group_join_title'),
+      message: $r('app.string.family_group_join_message'),
       autoCancel: false,
       primaryButton: {
-        value: '加入',
+        value: $r('app.string.family_group_join_action'),
         action: () => {
           this.handleJoinGroup()
         }
       },
       secondaryButton: {
-        value: '取消',
+        value: $r('app.string.family_group_cancel'),
         action: () => {}
       }
     })
   }
 
   private showMemberManage(summary: GroupSummary): void {
-    let memberListText = '当前成员：\n'
+    let memberListText = $r('app.string.family_group_current_members') + '\n'
     for (const m of summary.members) {
       const roleLabel = m.role === GroupRole.OWNER ? '👑 ' : (m.role === GroupRole.ADMIN ? '🛡️ ' : '')
       memberListText += roleLabel + m.displayName + '\n'
     }
 
     AlertDialog.show({
-      title: '成员管理',
+      title: $r('app.string.family_group_member_manage'),
       message: memberListText,
       autoCancel: true,
       primaryButton: {
-        value: '关闭',
+        value: $r('app.string.family_group_close'),
         action: () => {}
       }
     })
@@ -302,32 +306,39 @@ struct FamilyGroupPage {
 
   private async handleCreateGroup(): Promise<void> {
     if (this.createGroupName.trim().length === 0) {
-      promptAction.showToast({ message: '请输入群组名称' })
+      ToastHelper.show(this.getUIContext(), $r('app.string.family_group_input_name'))
       return
     }
     try {
       await this.appState.createFamilyGroup(this.createGroupName.trim())
-      promptAction.showToast({ message: '群组创建成功！' })
+      ToastHelper.show(this.getUIContext(), $r('app.string.family_group_create_success'))
       this.groupSummaries = await this.appState.getMyGroups()
       this.groupDS.reload(this.groupSummaries)
     } catch (e) {
-      promptAction.showToast({ message: '创建失败：' + (e as Error).message })
+      ToastHelper.show(this.getUIContext(), $r('app.string.family_group_create_failed') + (e as Error).message)
     }
   }
 
   private async handleJoinGroup(): Promise<void> {
     if (this.inviteCodeInput.trim().length === 0) {
-      promptAction.showToast({ message: '请输入邀请码' })
+      ToastHelper.show(this.getUIContext(), $r('app.string.family_group_input_invite_code'))
       return
     }
-    const displayName = this.displayNameInput.trim() || '家庭成员'
+    const displayName = this.displayNameInput.trim() || $r('app.string.family_group_default_member')
     try {
       await this.appState.joinFamilyGroup(this.inviteCodeInput.trim().toUpperCase())
-      promptAction.showToast({ message: '加入群组成功！' })
+      ToastHelper.show(this.getUIContext(), $r('app.string.family_group_join_success'))
       this.groupSummaries = await this.appState.getMyGroups()
       this.groupDS.reload(this.groupSummaries)
     } catch (e) {
-      promptAction.showToast({ message: '加入失败：' + (e as Error).message })
+      ToastHelper.show(this.getUIContext(), $r('app.string.family_group_join_failed') + (e as Error).message)
     }
+  }
+
+  pageTransition() {
+    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Right)
+    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Left)
   }
 }

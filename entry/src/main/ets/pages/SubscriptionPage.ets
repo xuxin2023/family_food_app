@@ -2,29 +2,28 @@
 // 会员订阅页面 - 展示四种会员方案卡片
 // 基于 MemberTier + ProductPlan 体系
 
-import { router, promptAction, curves } from '@kit.ArkUI';
+import {
+  ToastHelper, safeBack, MemberTier, PurchaseResult, ProductPlan, getProductPlanForTier, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, HILOG_DOMAIN
+} from 'hsp_core';
 import { AppState } from '../AppState';
-import { MemberTier, PurchaseResult } from '../model/MemberStatus';
-import { ProductPlan, PRODUCT_PLANS, getProductPlanForTier } from '../model/PricingModel';
 import { IapService } from '../service/IapService';
-import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON } from '../constants/AppTheme';
+import { promptAction } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'SubscriptionPage';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 // 展示方案数据
-interface PlanDisplay {
-  index: number;
-  tier: MemberTier;
-  name: string;
-  price: string;
-  isYearly: boolean;
-  features: string[];
-  badge: string;
-  borderColor: string;
-  cardBg: string;
+export class PlanDisplay {
+  index: number = 0;
+  tier: MemberTier = MemberTier.FREE;
+  name: string = '';
+  price: string = '';
+  isYearly: boolean = false;
+  features: string[] = [];
+  badge: string = '';
+  borderColor: string = '';
+  cardBg: string = '';
 }
 
 @Entry
@@ -34,13 +33,16 @@ struct SubscriptionPage {
   @Local plans: PlanDisplay[] = []
   @Local isPurchasing: boolean = false
   @Local selectedPlanIndex: number = -1
+  @Local isLoading: boolean = false
 
   private appState: AppState = AppState.getInstance()
   private iapService: IapService = IapService.getInstance()
 
   async aboutToAppear() {
+    this.isLoading = true
     this.currentTier = this.appState.member.memberStatus.tier
     this.plans = this.buildPlanDisplays()
+    this.isLoading = false
   }
 
   build() {
@@ -52,8 +54,10 @@ struct SubscriptionPage {
             .fontSize(FONT_SIZE.LARGE)
             .fontColor(COLORS.PRIMARY)
             .onClick(() => {
-              try { router.back() } catch (_e) { hilog.warn(DOMAIN_ZERO, TAG, 'router.back failed') }
+              safeBack()
             })
+            .accessibilityText('返回')
+            .accessibilityLevel('yes')
           Text($r('app.string.subscription'))
             .fontSize(FONT_SIZE.TITLE_LG)
             .fontWeight(FONT_WEIGHT.BOLD)
@@ -78,6 +82,8 @@ struct SubscriptionPage {
               .fontSize(FONT_SIZE.BODY)
               .fontColor(COLORS.ACCENT_BLUE)
               .onClick(() => { this.handleRestore() })
+              .accessibilityText('恢复购买')
+              .accessibilityLevel('yes')
           }
           .margin({ top: 12, bottom: 8 })
         }
@@ -148,7 +154,7 @@ struct SubscriptionPage {
           .fontColor(COLORS.PRIMARY_DARK)
           .fontWeight(FONT_WEIGHT.MEDIUM)
       } else {
-        Text('✨ ' + this.getTierDisplayName(this.currentTier) + ' 会员')
+        Text('✨ ' + this.getTierDisplayName(this.currentTier) + ' ' + $r('app.string.subscription_member_suffix'))
           .fontSize(FONT_SIZE.SUBTITLE)
           .fontWeight(FONT_WEIGHT.BOLD)
           .fontColor(COLORS.SUCCESS)
@@ -181,7 +187,7 @@ struct SubscriptionPage {
             .fontWeight(FONT_WEIGHT.BOLD)
             .fontColor(COLORS.TEXT_PRIMARY)
 
-          Text(plan.price + (plan.isYearly ? '/年' : ''))
+          Text(plan.price + (plan.isYearly ? $r('app.string.subscription_per_year') : ''))
             .fontSize(FONT_SIZE.SUBTITLE)
             .fontColor(COLORS.PRIMARY_DARK)
             .fontWeight(FONT_WEIGHT.MEDIUM)
@@ -215,11 +221,11 @@ struct SubscriptionPage {
             .fontColor(COLORS.TEXT_SECONDARY)
         }
         .margin({ bottom: 4 })
-      })
+      }, (feature: string, i: number) => `feat_${i}`)
 
       // ---- 购买按钮 ----
       Button() {
-        Text(plan.price === '免费' ? '当前方案' : '立即订阅')
+        Text(plan.price === '免费' ? $r('app.string.subscription_current_plan_btn') : $r('app.string.subscription_subscribe_now'))
           .fontSize(FONT_SIZE.BODY)
           .fontColor(COLORS.WHITE)
           .fontWeight(FONT_WEIGHT.MEDIUM)
@@ -231,6 +237,8 @@ struct SubscriptionPage {
       .margin({ top: 12 })
       .onClick(() => { this.handlePurchase(plan.index) })
       .enabled(!this.isPurchasing)
+      .accessibilityText(plan.name + ' ' + plan.price)
+      .accessibilityLevel('yes')
     }
     .width('90%')
     .padding(SPACING.MD)
@@ -254,17 +262,17 @@ struct SubscriptionPage {
       const tier = tiers[i]
       const plan = getProductPlanForTier(tier)
       if (!plan) continue
-      result.push({
-        index: i,
-        tier: tier,
-        name: this.getTierDisplayName(tier),
-        price: plan.price,
-        isYearly: plan.isYearly,
-        features: plan.features,
-        badge: plan.badge,
-        borderColor: plan.tier === MemberTier.PREMIUM ? '#FFD700' : (plan.tier === MemberTier.FAMILY ? '#4CAF50' : (plan.tier === MemberTier.PERSONAL ? '#2196F3' : '#E0E0E0')),
-        cardBg: plan.tier === MemberTier.PREMIUM ? '#FFFDE7' : (plan.tier === MemberTier.FAMILY ? '#F1F8E9' : (plan.tier === MemberTier.PERSONAL ? '#E3F2FD' : '#FFFFFF'))
-      })
+      const d = new PlanDisplay()
+      d.index = i
+      d.tier = tier
+      d.name = this.getTierDisplayName(tier)
+      d.price = plan.price
+      d.isYearly = plan.isYearly
+      d.features = plan.features
+      d.badge = plan.badge
+      d.borderColor = plan.tier === MemberTier.PREMIUM ? '#FFD700' : (plan.tier === MemberTier.FAMILY ? '#4CAF50' : (plan.tier === MemberTier.PERSONAL ? '#2196F3' : '#E0E0E0'))
+      d.cardBg = plan.tier === MemberTier.PREMIUM ? '#FFFDE7' : (plan.tier === MemberTier.FAMILY ? '#F1F8E9' : (plan.tier === MemberTier.PERSONAL ? '#E3F2FD' : '#FFFFFF'))
+      result.push(d)
     }
     return result
   }
@@ -275,7 +283,7 @@ struct SubscriptionPage {
     if (index < 0 || index >= this.plans.length) return
     const plan = this.plans[index]
     if (plan.tier === this.currentTier) {
-      promptAction.showToast({ message: '已是当前方案' })
+      promptAction.showToast({ message: $r('app.string.subscription_already_current_plan') })
       return
     }
     if (this.isPurchasing) return
@@ -283,31 +291,32 @@ struct SubscriptionPage {
     this.selectedPlanIndex = index
 
     try {
-      promptAction.showToast({ message: '正在处理...' })
+      promptAction.showToast({ message: $r('app.string.subscription_processing') })
       const productPlan = getProductPlanForTier(plan.tier)
       if (!productPlan) {
-        promptAction.showToast({ message: '方案信息加载失败' })
+        promptAction.showToast({ message: $r('app.string.subscription_plan_load_failed') })
         return
       }
       if (productPlan.price === '免费') {
         this.appState.member.upgradeTier(plan.tier, 365)
         this.currentTier = plan.tier
         this.plans = this.buildPlanDisplays()
-        promptAction.showToast({ message: '已切换到 ' + plan.name })
+        promptAction.showToast({ message: $r('app.string.subscription_switched_to') + ' ' + plan.name })
         return
       }
       const result: PurchaseResult = await this.iapService.purchase(productPlan.productId)
       if (result.success) {
         const days = 365; // 默认 365 天
-        this.appState.member.upgradeTier(plan.tier, days)
+        this.appState.member.upgradeTier(plan.tier, 365)
         this.currentTier = plan.tier
         this.plans = this.buildPlanDisplays()
-        promptAction.showToast({ message: '升级成功！' })
+        promptAction.showToast({ message: $r('app.string.subscription_upgrade_success') })
       } else {
-        promptAction.showToast({ message: result.errorMessage || '购买失败' })
+        promptAction.showToast({ message: result.errorMessage || $r('app.string.subscription_purchase_failed') })
       }
     } catch (_e) {
-      promptAction.showToast({ message: '购买过程异常' })
+      hilog.error(DOMAIN_ZERO, TAG, 'Purchase failed: %{public}s', JSON.stringify(_e));
+      promptAction.showToast({ message: $r('app.string.subscription_purchase_error') })
     } finally {
       this.isPurchasing = false
       this.selectedPlanIndex = -1
@@ -317,7 +326,7 @@ struct SubscriptionPage {
   // ==================== 恢复购买 ====================
 
   private async handleRestore() {
-    promptAction.showToast({ message: '正在恢复购买记录...' })
+    promptAction.showToast({ message: $r('app.string.subscription_restoring') })
     await this.iapService.restorePurchases()
     const tierStr = await this.iapService.getSavedPurchaseTier()
 
@@ -328,27 +337,34 @@ struct SubscriptionPage {
       else if (tierStr === 'premium') tier = MemberTier.PREMIUM;
 
       if (tier !== MemberTier.FREE) {
-        this.appState.member.upgradeTier(tier, 365);
+        this.appState.member.upgradeTier(tier, 365)
         this.currentTier = tier;
         this.plans = this.buildPlanDisplays();
-        promptAction.showToast({ message: '已恢复订阅' });
+        promptAction.showToast({ message: $r('app.string.subscription_restore_success') });
       } else {
-        promptAction.showToast({ message: '未找到有效订阅记录' });
+        promptAction.showToast({ message: $r('app.string.subscription_no_valid_subscription') });
       }
     } else {
-      promptAction.showToast({ message: '未找到有效订阅记录' });
+      promptAction.showToast({ message: $r('app.string.subscription_no_valid_subscription') });
     }
   }
 
   // ==================== 会员等级显示名称 ====================
 
-  private getTierDisplayName(tier: MemberTier): string {
+  private getTierDisplayName(tier: MemberTier): ResourceStr {
     switch (tier) {
-      case MemberTier.FREE: return '免费版';
-      case MemberTier.PERSONAL: return '个人版';
-      case MemberTier.FAMILY: return '家庭版';
-      case MemberTier.PREMIUM: return '高级版';
-      default: return '未知';
+      case MemberTier.FREE: return $r('app.string.subscription_tier_free');
+      case MemberTier.PERSONAL: return $r('app.string.subscription_tier_personal');
+      case MemberTier.FAMILY: return $r('app.string.subscription_tier_family');
+      case MemberTier.PREMIUM: return $r('app.string.subscription_tier_premium');
+      default: return $r('app.string.subscription_tier_unknown');
     }
+  }
+
+  pageTransition() {
+    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Right)
+    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Left)
   }
 }

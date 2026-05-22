@@ -2,20 +2,15 @@
 // 统一数据服务层 - 封装降级查询链：本地缓存 → 远程API → OCR → AI识别
 // V3: 集成 FoodRepository + RuleEngine 实现真实降级查询
 
+import {
+  FoodLabel, NutritionPer100g, FoodSource, Recommendation, RecommendLevel, LevelColor, FamilyProfile, DailyBudget, HealthSignal, AlternativeFood, JsonHelper, MapUtil, StringRes, HILOG_DOMAIN, IRuleCalculator, IRuleEngineParams, IAlternativeRecommender
+} from 'hsp_core';
 import { common } from '@kit.AbilityKit';
-import { http } from '@kit.NetworkKit';
-import { FoodLabel, NutritionPer100g, FoodSource } from '../model/FoodLabel';
-import { Recommendation, RecommendLevel, LevelColor } from '../model/Recommendation';
-import { FamilyProfile } from '../model/FamilyProfile';
-import { DailyBudget } from '../model/DailyBudget';
-import { HealthSignal } from '../model/HealthSignal';
-import { AlternativeFood } from '../model/FoodAdapterTypes';
-import { AlternativeFoodRecommender } from '../engine/AlternativeFoodRecommender';
 import { FoodRepository } from '../repository/FoodRepository';
 import { RuleEngine, RuleEngineParams } from '../engine/RuleEngine';
-import { StringRes } from '../constants/StringRes';
+import { AlternativeFoodRecommender } from '../engine/AlternativeFoodRecommender';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { SecureHttpHelper } from './SecureHttpHelper';
 
 const TAG = 'DataService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -44,11 +39,19 @@ let dataServiceInstance: DataService | null = null;
 
 export class DataService {
   private foodRepo: FoodRepository | null = null;
-  private ruleEngine: RuleEngine = new RuleEngine();
+  private ruleEngine: IRuleCalculator;
+  private altRecommender: IAlternativeRecommender;
+
+  constructor(ruleEngine: IRuleCalculator, altRecommender: IAlternativeRecommender) {
+    this.ruleEngine = ruleEngine;
+    this.altRecommender = altRecommender;
+  }
 
   static getInstance(): DataService {
     if (dataServiceInstance === null) {
-      dataServiceInstance = new DataService();
+      const ruleEngine = new RuleEngine();
+      const altRecommender = new AlternativeFoodRecommender();
+      dataServiceInstance = new DataService(ruleEngine, altRecommender);
     }
     return dataServiceInstance;
   }
@@ -143,22 +146,21 @@ export class DataService {
   private async lookupFromRemoteApi(barcode: string): Promise<FoodLabel | null> {
     if (!barcode) return null;
 
-    const httpRequest = http.createHttp();
     try {
-      const httpResponse = await httpRequest.request(
+      const remoteHeader = new Map<string, string>();
+      remoteHeader.set('User-Agent', 'FamilyFoodApp/4.0');
+
+      const resp = await SecureHttpHelper.get(
         `https://world.openfoodfacts.org/api/v2/product/${barcode}.json`,
-        {
-          method: http.RequestMethod.GET,
-          connectTimeout: 10000,
-          readTimeout: 10000,
-          header: { 'User-Agent': 'FamilyFoodApp/4.0' }
-        }
+        remoteHeader,
+        10000
       );
 
-      if (httpResponse.responseCode === 200 && httpResponse.result) {
-        const data = JSON.parse(httpResponse.result as string) as Record<string, Object>;
-        const product = data.product as Record<string, Object> | undefined;
-        const status = data.status as number;
+      if (resp.responseCode === 200 && resp.data !== null) {
+        const raw = resp.data as Record<string, Object>;
+        const data = JsonHelper.recordToMap(raw);
+        const product = data.get('product') as Map<string, Object> | undefined;
+        const status = data.get('status') as number;
 
         if (status === 1 && product) {
           return this.parseOpenFoodFactsResponse(product, barcode);
@@ -168,63 +170,51 @@ export class DataService {
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Remote API lookup failed: %{public}s', JSON.stringify(error));
       return null;
-    } finally {
-      httpRequest.destroy();
     }
   }
 
-  /**
-   * 安全获取 Record 中的值（通过 Object.entries 遍历，兼容含连字符的 key）
-   */
-  private static getRecordValue(rec: Record<string, Object>, key: string): Object | undefined {
-    const entries = Object.entries(rec);
-    for (const entry of entries) {
-      if (entry[0] === key) {
-        return entry[1];
-      }
-    }
-    return undefined;
-  }
-
-  /**
-   * 解析 Open Food Facts API 响应
-   */
-  private parseOpenFoodFactsResponse(product: Record<string, Object>, barcode: string): FoodLabel | null {
+  private parseOpenFoodFactsResponse(product: Map<string, Object>, barcode: string): FoodLabel | null {
     try {
       const label = new FoodLabel();
       label.foodId = `remote_${barcode}_${Date.now()}`;
-      label.foodName = (product.product_name as string) || (product.product_name_zh as string) || '未知食品';
+      label.foodName = MapUtil.safeGetString(product, 'product_name') || MapUtil.safeGetString(product, 'product_name_zh') || '未知食品';
       label.barcode = barcode;
       label.source = FoodSource.BARCODE_SCAN;
       label.identifiedAt = Date.now();
 
       // 配料表
-      const ingredientsText = product.ingredients_text as string || product.ingredients_text_zh as string || '';
+      const ingredientsText = MapUtil.safeGetString(product, 'ingredients_text') || MapUtil.safeGetString(product, 'ingredients_text_zh');
       if (ingredientsText) {
         label.ingredients = ingredientsText.split(',').map(i => i.trim()).filter(i => i.length > 0);
       }
 
       // 营养数据
-      const nutriments = product.nutriments as Record<string, Object> | undefined;
+      const nutriments = product.get('nutriments') as Map<string, Object> | undefined;
       if (nutriments) {
         const nutrition = new NutritionPer100g();
-        nutrition.sodium = DataService.safeParseFloat(nutriments.sodium_100g);
-        nutrition.sugar = DataService.safeParseFloat(nutriments.sugars_100g);
-        nutrition.calories = DataService.safeParseFloat(DataService.getRecordValue(nutriments, 'energy-kcal_100g'));
-        nutrition.fat = DataService.safeParseFloat(nutriments.fat_100g);
-        nutrition.saturatedFat = DataService.safeParseFloat(DataService.getRecordValue(nutriments, 'saturated-fat_100g'));
-        nutrition.protein = DataService.safeParseFloat(nutriments.proteins_100g);
-        nutrition.carbohydrate = DataService.safeParseFloat(nutriments.carbohydrates_100g);
+        const sodiumG = JsonHelper.safeParseFloat(nutriments.get('sodium_100g'));
+        const saltG = JsonHelper.safeParseFloat(nutriments.get('salt_100g'));
+        if (sodiumG > 0) {
+          nutrition.sodium = Math.round(sodiumG * 1000);
+        } else if (saltG > 0) {
+          nutrition.sodium = Math.round(saltG * 393);
+        }
+        nutrition.sugar = JsonHelper.safeParseFloat(nutriments.get('sugars_100g'));
+        nutrition.calories = JsonHelper.safeParseFloat(JsonHelper.getRecordValue(nutriments, 'energy-kcal_100g'));
+        nutrition.fat = JsonHelper.safeParseFloat(nutriments.get('fat_100g'));
+        nutrition.saturatedFat = JsonHelper.safeParseFloat(JsonHelper.getRecordValue(nutriments, 'saturated-fat_100g'));
+        nutrition.protein = JsonHelper.safeParseFloat(nutriments.get('proteins_100g'));
+        nutrition.carbohydrate = JsonHelper.safeParseFloat(nutriments.get('carbohydrates_100g'));
         label.nutrition = nutrition;
       }
 
       // 生产商
-      label.manufacturer = (product.brands as string) || '';
+      label.manufacturer = MapUtil.safeGetString(product, 'brands');
       label.allergenHints = [];
 
-      const allergens = product.allergens_tags as string[] | undefined;
-      if (allergens) {
-        label.allergenHints = allergens.map(a => a.replace('en:', '').replace('zh:', ''));
+      const allergensArr = MapUtil.safeGetStringArray(product, 'allergens_tags');
+      if (allergensArr.length > 0) {
+        label.allergenHints = allergensArr.map(a => a.replace('en:', '').replace('zh:', ''));
       }
 
       return label;
@@ -232,15 +222,6 @@ export class DataService {
       hilog.warn(DOMAIN_ZERO, TAG, 'Parse API response failed: %{public}s', JSON.stringify(error));
       return null;
     }
-  }
-
-  /**
-   * 安全解析浮点数
-   */
-  private static safeParseFloat(value: Object | undefined): number {
-    if (value === undefined || value === null) return 0;
-    const num = Number(value);
-    return isNaN(num) ? 0 : num;
   }
 
   /**
@@ -304,12 +285,7 @@ export class DataService {
           const signal = healthSignals?.get(member.memberId) || new HealthSignal();
           const budget = dailyBudgets?.get(member.memberId) || this.createDefaultBudget(member);
 
-          const params: RuleEngineParams = {
-            profile: member,
-            healthSignal: signal,
-            foodLabel: label,
-            dailyBudget: budget
-          };
+          const params = new RuleEngineParams(member, signal, label, budget);
           const rec = this.ruleEngine.calculate(params);
           recommendations.push(rec);
         } catch (error) {
@@ -333,7 +309,7 @@ export class DataService {
     // 集成AlternativeFoodRecommender生成替代食品推荐
     let alternatives: AlternativeFood[] = [];
     try {
-      alternatives = AlternativeFoodRecommender.recommendAlternatives(label, membersList, 3);
+      alternatives = this.altRecommender.recommendAlternatives(label, membersList, 3);
     } catch (error) {
       alternatives = [];
     }

@@ -3,10 +3,10 @@
 // 各 AI 服务继承此类，只需实现 buildPrompt() 和 parseResponse() 即可
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { AssetKeyManager, KeyAlias } from '../../utils/AssetKeyManager';
+import { AssetKeyManager, KeyAlias } from 'hsp_core';
 import { AiClient, AiRequestOptions } from './AiClient';
 import { AI_RETRY_CONFIG } from './AiConfig';
-import { HILOG_DOMAIN } from '../../constants/AppConfig';
+import { HILOG_DOMAIN } from 'hsp_core';
 
 const TAG = 'AiServiceBase';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -119,12 +119,11 @@ export abstract class AiServiceBase {
       this.client.setApiKey(this.apiKey);
     }
 
-    const options: AiRequestOptions = {
-      systemPrompt: this.getSystemPrompt(),
-      userPrompt: userPrompt,
-      temperature: this.getDefaultTemperature(),
-      maxTokens: this.getDefaultMaxTokens()
-    };
+    const options = new AiRequestOptions();
+    options.systemPrompt = this.getSystemPrompt();
+    options.userPrompt = userPrompt;
+    options.temperature = this.getDefaultTemperature();
+    options.maxTokens = this.getDefaultMaxTokens();
 
     const maxRetries = AI_RETRY_CONFIG.MAX_RETRIES;
 

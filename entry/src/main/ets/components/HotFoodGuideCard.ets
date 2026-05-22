@@ -1,7 +1,10 @@
-import { router } from '@kit.ArkUI';
-import { HotFoodItem, HOT_FOODS, DAILY_TIPS } from '../constants/HotFoods';
-import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import {
+  safePushUrl, HotFoodItem, HOT_FOODS, DAILY_TIPS, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, HILOG_DOMAIN
+} from 'hsp_core';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+
+const TAG = 'HotFoodGuideCard';
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 @ComponentV2
 export struct HotFoodGuideCard {
@@ -20,8 +23,8 @@ export struct HotFoodGuideCard {
     if (this.tipTimer) {
       try {
         clearInterval(this.tipTimer);
-      } catch (_e) {
-        // ignore clearInterval error
+      } catch (e) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'clearInterval失败: %{public}s', JSON.stringify(e));
       }
     }
   }
@@ -73,21 +76,16 @@ export struct HotFoodGuideCard {
         .margin({ bottom: SPACING.MD })
 
       Row() {
-        Button('立即扫码')
+        Button($r('app.string.hot_food_scan_now'))
           .height(36)
           .backgroundColor(COLORS.PRIMARY)
           .fontColor(COLORS.TEXT_WHITE)
           .borderRadius(RADIUS.XXL)
           .fontSize(FONT_SIZE.BODY)
           .onClick(() => {
-            try {
-
-              router.pushUrl({ url: 'pages/ScanPage' })
-
-            } catch (_e) {
-              // ignore router.pushUrl error
-            }
+            safePushUrl('pages/ScanPage')
           })
+          .accessibilityText($r('app.string.hot_food_view_hot_foods'))
 
         Text($r('app.string.quick_experience'))
           .fontSize(FONT_SIZE.SMALL)
@@ -142,14 +140,10 @@ export struct HotFoodGuideCard {
     .margin({ right: SPACING.SM })
     .shadow({ radius: 4, color: COLORS.SHADOW_LIGHT, offsetX: 0, offsetY: 1 })
     .onClick(() => {
-      try {
-      router.pushUrl({
-        url: 'pages/ReportPage',
-        params: { hotFoodName: item.foodName }
-      })
-      } catch (_e) {
-        // ignore router.pushUrl error
-      }
+      const navParams = new Map<string, Object>();
+      navParams.set('hotFoodName', item.foodName);
+      safePushUrl('pages/ReportPage', navParams)
     })
+    .accessibilityText($r('app.string.hot_food_view_more'))
   }
 }

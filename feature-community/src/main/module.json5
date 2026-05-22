@@ -1,0 +1,13 @@
+{
+  "module": {
+    "name": "feature-community",
+    "type": "shared",
+    "description": "社区功能模块 — 食谱分享、用户互动、社区动态",
+    "deviceTypes": [
+      "phone",
+      "tablet",
+      "2in1"
+    ],
+    "deliveryWithInstall": true
+  }
+}

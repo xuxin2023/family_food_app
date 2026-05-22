@@ -6,7 +6,7 @@
 import { deviceSecurity } from '@kit.DeviceSecurityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { HILOG_DOMAIN } from 'hsp_core';
 
 const TAG = 'AntiPeepShield';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;

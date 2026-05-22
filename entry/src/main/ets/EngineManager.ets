@@ -2,15 +2,9 @@
 // 引擎管理器 - 统一管理所有业务引擎的创建和调用
 // AppState 通过此管理器委托所有引擎调用
 
-import { FamilyProfile } from './model/FamilyProfile';
-import { AgeGroup } from './model/FamilyProfile';
-import { HealthSignal, StepLevel, SleepStatus } from './model/HealthSignal';
-import { FoodLabel } from './model/FoodLabel';
-import { DailyBudget } from './model/DailyBudget';
-import { Recommendation } from './model/Recommendation';
-import { MealBalance, MealScenario } from './model/MealBalance';
-import { ChildProtection } from './model/ChildProtection';
-import { CredibilityResult } from './model/CredibilityResult';
+import {
+  FamilyProfile, AgeGroup, HealthSignal, StepLevel, SleepStatus, FoodLabel, DailyBudget, Recommendation, MealBalance, MealScenario, ChildProtection, CredibilityResult, EnhancedFoodRecommendation, AlternativeFood, IDietRecordProvider
+} from 'hsp_core';
 import { BasketCheckResult, BasketCheckEngine } from './engine/BasketCheckEngine';
 import { ElderFriendlyReport, ElderFriendlyEngine } from './engine/ElderFriendlyEngine';
 import { PositiveAdvice, PositiveAdviceEngine } from './engine/PositiveAdviceEngine';
@@ -21,14 +15,15 @@ import { ChildProtectionEngine, MealTimeParams } from './engine/ChildProtectionE
 import { CredibilityEngine } from './engine/CredibilityEngine';
 import { FoodAdapterEngine, FamilyMemberSimpleInput, FoodNutritionInput, 
   HealthSignalInput, TodayIntakeInput } from './engine/FoodAdapterEngine';
-import { NutritionTrendEngine, DailyNutritionSummary, NutrientTrendData, MealGroup } from './engine/NutritionTrendEngine';
-import { EnhancedFoodRecommendation } from './model/FoodAdapterTypes';
+import { NutritionTrendEngine, nutritionTrendEngine, DailyNutritionSummary, NutrientTrendData, MealGroup } from './engine/NutritionTrendEngine';
 import { NutriScoreEngine, NutriScoreBreakdown } from './engine/NutriScoreEngine';
 import { ShanghaiGradeEngine, ShanghaiGradeResult } from './engine/ShanghaiGradeEngine';
-import { AlternativeFoodRecommender } from './engine/AlternativeFoodRecommender';
-import { AlternativeFood } from './model/FoodAdapterTypes';
+import { AlternativeFoodRecommender, alternativeFoodRecommender } from './engine/AlternativeFoodRecommender';
 import { WeeklyReportEngine, WeeklyReport, WeeklyDietData } from './engine/WeeklyReportEngine';
-import { HistoryRepository } from './repository/HistoryRepository';
+import { ExerciseNutritionEngine, ExerciseSession } from './engine/ExerciseNutritionEngine';
+import { CheckupReportEngine, CheckupReport } from './engine/CheckupReportEngine';
+import { ChildHealthAssessmentEngine, ChildHealthAssessment, SnackImpactAssessment } from './engine/ChildHealthAssessmentEngine';
+import { PersonalizedRecommendEngine, PersonalizedRecommendation, RecommendationContext } from './engine/PersonalizedRecommendEngine';
 
 /** 根据 AgeGroup 估算年龄（用于 FoodAdapterEngine 输入） */
 function estimateAgeFromGroup(ageGroup: AgeGroup): number {
@@ -59,6 +54,11 @@ export class EngineManager {
   readonly elderFriendlyEngine: ElderFriendlyEngine = new ElderFriendlyEngine();
   // 正向补足引擎
   readonly positiveAdviceEngine: PositiveAdviceEngine = new PositiveAdviceEngine();
+  // V2 新增引擎
+  readonly exerciseNutritionEngine: ExerciseNutritionEngine = new ExerciseNutritionEngine();
+  readonly checkupReportEngine: CheckupReportEngine = new CheckupReportEngine();
+  readonly childHealthAssessmentEngine: ChildHealthAssessmentEngine = new ChildHealthAssessmentEngine();
+  readonly personalizedRecommendEngine: PersonalizedRecommendEngine = new PersonalizedRecommendEngine();
 
   /**
    * 计算单个成员的食品适配推荐
@@ -254,7 +254,7 @@ export class EngineManager {
   /** 获取替代食品推荐 — 委托 AlternativeFoodRecommender */
   getAlternativeFoods(foodLabel: FoodLabel, members: FamilyProfile[] = []): EnhancedFoodRecommendation[] {
     try {
-      const alts = AlternativeFoodRecommender.recommendAlternatives(foodLabel, members, 3);
+      const alts = alternativeFoodRecommender.recommendAlternatives(foodLabel, members, 3);
       // 转换为兼容返回类型
       const results: EnhancedFoodRecommendation[] = [];
       for (const alt of alts) {
@@ -269,20 +269,20 @@ export class EngineManager {
   }
 
   /** 获取营养趋势 */
-  async getNutritionTrend(memberId: string, days: number, historyRepo: HistoryRepository): Promise<DailyNutritionSummary[]> {
+  async getNutritionTrend(memberId: string, days: number, dietProvider: IDietRecordProvider): Promise<DailyNutritionSummary[]> {
     // 使用静态方法聚合饮食记录
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
     const fmt = (d: Date): string => `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
-    const records = await historyRepo.getDietRecordsByDateRange(memberId, fmt(startDate), fmt(endDate));
-    return NutritionTrendEngine.aggregateDaily(records);
+    const records = await dietProvider.getDietRecordsByDateRange(memberId, fmt(startDate), fmt(endDate));
+    return nutritionTrendEngine.aggregateDaily(records);
   }
 
   /** 生成周报 — 委托 WeeklyReportEngine */
   async generateWeeklyReport(
     memberId: string,
-    historyRepo: HistoryRepository,
+    dietProvider: IDietRecordProvider,
     members: FamilyProfile[],
     _getBudgetFn: (memberId: string) => DailyBudget
   ): Promise<string> {
@@ -296,7 +296,7 @@ export class EngineManager {
       weekStart.setDate(now.getDate() - dayOfWeek + 1);
       const weekEnd = new Date(now);
       const fmt = (d: Date): string => `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
-      const records = await historyRepo.getDietRecordsByDateRange(memberId, fmt(weekStart), fmt(weekEnd));
+      const records = await dietProvider.getDietRecordsByDateRange(memberId, fmt(weekStart), fmt(weekEnd));
       // 统计风险天数
       let highSodiumDays = 0, highSugarDays = 0, highFatDays = 0;
       let totalScans = records.length;

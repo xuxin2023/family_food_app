@@ -1,30 +1,41 @@
 // FoodTrackerCard.ets
 // 营养追踪卡片 - 展示今日饮食概览、卡路里进度、饮水进度
+// 已迁移至 @ComponentV2 装饰器体系
 
-let storage = new LocalStorage();
+import { formBindingData } from '@kit.FormKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 
-@Entry(storage)
-@Component
+const TAG = 'FoodTrackerCard';
+
+@Entry
+@ComponentV2
 struct FoodTrackerCard {
-  // 卡片数据绑定
-  @LocalStorageProp('formId') formId: string = '';
-  @LocalStorageProp('todayMenu') todayMenu: string = '点击查看今日推荐';
-  @LocalStorageProp('calorieTarget') calorieTarget: string = '---';
-  @LocalStorageProp('calorieIntake') calorieIntake: string = '---';
-  @LocalStorageProp('waterProgress') waterProgress: number = 0;
-  @LocalStorageProp('healthScore') healthScore: string = '--';
-  @LocalStorageProp('lastSyncTime') lastSyncTime: string = '-';
+  @Local formId: string = '';
+  @Local todayMenu: string = '点击查看今日推荐';
+  @Local calorieTarget: string = '---';
+  @Local calorieIntake: string = '---';
+  @Local waterProgress: number = 0;
+  @Local healthScore: string = '--';
+  @Local lastSyncTime: string = '-';
+  @Local waterCups: boolean[] = [false, false, false, false, false, false, false, false];
+
+  aboutToAppear(): void {
+    this.updateWaterCups();
+  }
+
+  private updateWaterCups(): void {
+    const filled = Math.min(8, Math.max(0, this.waterProgress));
+    this.waterCups = Array.from({ length: 8 }, (_, i) => i < filled);
+  }
 
   build() {
     Column() {
-      // 顶部：标题 + 健康评分
       Row() {
         Text('🥗 饮食追踪')
           .fontSize(14)
           .fontWeight(FontWeight.Bold)
           .fontColor('#333333')
         Blank()
-        // 健康评分徽章
         Text(this.healthScore)
           .fontSize(12)
           .fontWeight(FontWeight.Bold)
@@ -36,13 +47,11 @@ struct FoodTrackerCard {
       .width('100%')
       .margin({ bottom: 4 })
 
-      // 分隔线
       Divider()
         .height(1)
         .color('#E8E8E8')
         .margin({ bottom: 6 })
 
-      // 今日推荐菜单
       Row() {
         Text('今日推荐')
           .fontSize(11)
@@ -62,7 +71,6 @@ struct FoodTrackerCard {
         .textOverflow({ overflow: TextOverflow.Ellipsis })
         .margin({ bottom: 6 })
 
-      // 卡路里进度
       Row() {
         Text('🔥 卡路里')
           .fontSize(11)
@@ -74,7 +82,6 @@ struct FoodTrackerCard {
       .width('100%')
       .margin({ bottom: 2 })
       Row() {
-        // 进度条背景
         Stack() {
           Row()
             .width('100%')
@@ -92,7 +99,6 @@ struct FoodTrackerCard {
       .width('100%')
       .margin({ bottom: 6 })
 
-      // 饮水进度
       Row() {
         Text('💧 饮水')
           .fontSize(11)
@@ -104,7 +110,7 @@ struct FoodTrackerCard {
       .width('100%')
       .margin({ bottom: 2 })
       Row() {
-        ForEach(this.getWaterCups(), (filled: boolean, index: number) => {
+        ForEach(this.waterCups, (filled: boolean, index: number) => {
           Text(filled ? '🟦' : '⬜')
             .fontSize(12)
             .margin({ right: 2 })
@@ -113,7 +119,6 @@ struct FoodTrackerCard {
       .width('100%')
       .margin({ bottom: 4 })
 
-      // 底部：最后同步时间 + 刷新入口
       Row() {
         Text(`更新: ${this.lastSyncTime}`)
           .fontSize(9)
@@ -128,7 +133,6 @@ struct FoodTrackerCard {
     .backgroundColor('#FFFFFF')
     .borderRadius(12)
     .onClick(() => {
-      // 点击卡片跳转到应用首页
       postCardAction(this, {
         'action': 'router',
         'abilityName': 'EntryAbility',
@@ -139,25 +143,10 @@ struct FoodTrackerCard {
     })
   }
 
-  /**
-   * 计算卡路里百分比字符串
-   */
   calcCaloriePercent(): string {
     const target = parseInt(this.calorieTarget) || 1;
     const intake = parseInt(this.calorieIntake) || 0;
     const pct = Math.min(100, Math.round((intake / target) * 100));
     return `${pct}%`;
-  }
-
-  /**
-   * 生成8个饮水格子状态
-   */
-  getWaterCups(): boolean[] {
-    const cups: boolean[] = [];
-    const filled = Math.min(8, Math.max(0, this.waterProgress));
-    for (let i = 0; i < 8; i++) {
-      cups.push(i < filled);
-    }
-    return cups;
   }
 }

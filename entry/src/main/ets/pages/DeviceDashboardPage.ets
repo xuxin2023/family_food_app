@@ -3,40 +3,39 @@
 // 展示来自华为穿戴设备的步数、心率、血氧、睡眠、压力等健康数据
 // 以及与饮食建议的联动效果
 
-import { promptAction } from '@kit.ArkUI';
+import {
+  ToastHelper, safeBack, safePushUrl, FamilyProfile, COLORS, RADIUS, getPaywallTriggerForFeature, HILOG_DOMAIN, HealthConfig, HealthSignal, StepLevel, SleepStatus, DataSource, HeartRateZone, SpO2Level, StressLevel
+} from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { safeBack, safePushUrl } from '../utils/RouterUtil';
 import { AppState } from '../AppState';
 import { common } from '@kit.AbilityKit';
-import { FamilyProfile } from '../model/FamilyProfile';
-import {
-  HealthSignal,
-  StepLevel,
-  SleepStatus,
-  DataSource,
-  HeartRateZone,
-  SpO2Level,
-  StressLevel
-} from '../model/HealthSignal';
-import { COLORS, FONT_SIZE, SPACING, RADIUS } from '../constants/AppTheme';
-import { MemberTier, getPaywallTriggerForFeature } from '../model/MemberStatus';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+
+import { promptAction } from '@kit.ArkUI';
+import { PermissionGuideDialog } from '../components/PermissionGuideDialog';
 
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const TAG = 'DeviceDashboardPage';
 
-interface DetailItem {
-  label: string;
-  value: string;
+class DetailItem {
+  label: ResourceStr = '';
+  value: ResourceStr = '';
 }
 
-interface MetricCardData {
-  icon: string;
-  label: string;
-  value: string;
-  unit: string;
-  status: string;
-  detail: string;
+function makeDetail(label: ResourceStr, value: ResourceStr): DetailItem {
+  const item = new DetailItem();
+  item.label = label;
+  item.value = value;
+  return item;
+}
+
+class MetricCardData {
+  icon: string = '';
+  label: ResourceStr = '';
+  value: string = '';
+  unit: ResourceStr = '';
+  status: string = '';
+  detail: string = '';
 }
 
 @Entry
@@ -50,21 +49,26 @@ struct DeviceDashboardPage {
   @Local isAuthorized: boolean = false
   @Local showPaywall: boolean = false
   @Local lastSyncTime: string = ''
+  @Local showPermissionGuide: boolean = false
 
   private appState: AppState = AppState.getInstance()
 
   async aboutToAppear() {
-    this.familyMembers = await this.appState.getAllMembers()
+    try {
+      this.familyMembers = await this.appState.getAllMembers()
 
-    const trigger = getPaywallTriggerForFeature('health_data_sync', this.appState.member.memberStatus.tier)
-    this.showPaywall = trigger !== null
+      const trigger = getPaywallTriggerForFeature('health_data_sync', this.appState.member.memberStatus.tier)
+      this.showPaywall = trigger !== null
 
-    if (this.familyMembers.length > 0) {
-      this.selectedMemberId = this.familyMembers[0].memberId
-      await this.loadHealthDataInner()
+      // loadHealthDataInner 依赖 selectedMemberId，需先从 familyMembers 中选取，不可并行
+      if (this.familyMembers.length > 0) {
+        this.selectedMemberId = this.familyMembers[0].memberId
+        await this.loadHealthDataInner()
+      }
+
+      this.isLoading = false
+    } catch (_e) {
     }
-
-    this.isLoading = false
   }
 
   build() {
@@ -98,6 +102,18 @@ struct DeviceDashboardPage {
     .width('100%')
     .height('100%')
     .backgroundColor(COLORS.BG_PAGE)
+    .bindContentCover(this.showPermissionGuide, this.buildPermissionGuide(), {
+      modalTransition: ModalTransition.NONE,
+      onDisappear: () => { this.showPermissionGuide = false }
+    })
+  }
+
+  @Builder
+  buildPermissionGuide() {
+    PermissionGuideDialog({
+      permissionName: $r('app.string.device_dash_health_data'),
+      reason: $r('app.string.device_dash_permission_reason')
+    })
   }
 
   @Builder
@@ -112,12 +128,12 @@ struct DeviceDashboardPage {
           }
         })
       Column() {
-        Text('设备联动')
+        Text($r('app.string.device_dash_title'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .fontColor(COLORS.TEXT_PRIMARY)
         if (this.lastSyncTime.length > 0) {
-          Text(`最后同步: ${this.lastSyncTime}`)
+          Text($r('app.string.device_dash_last_sync') + ': ' + this.lastSyncTime)
             .fontSize(10)
             .fontColor(COLORS.TEXT_TERTIARY)
         }
@@ -134,7 +150,7 @@ struct DeviceDashboardPage {
           this.isLoading = true
           await this.loadHealthDataInner()
           this.isLoading = false
-          promptAction.showToast({ message: '数据已刷新' })
+          promptAction.showToast({ message: $r('app.string.device_dash_data_refreshed') })
         })
     }
     .width('100%')
@@ -149,18 +165,18 @@ struct DeviceDashboardPage {
           .fontSize(24)
           .margin({ right: 10 })
         Column() {
-          Text('连接华为健康设备')
+          Text($r('app.string.device_dash_connect_hw_health'))
             .fontSize(15)
             .fontWeight(FontWeight.Bold)
             .fontColor(COLORS.WHITE)
-          Text('升级家庭版后，可自动同步穿戴设备的步数、心率、睡眠等数据，动态调整每日饮食预算')
+          Text($r('app.string.device_dash_upgrade_desc'))
             .fontSize(11)
             .fontColor('#FFD0D0')
             .lineHeight(16)
             .margin({ top: 4 })
         }
         .layoutWeight(1)
-        Text('升级 ›')
+        Text($r('app.string.device_dash_upgrade'))
           .fontSize(14)
           .fontColor(COLORS.WHITE)
           .fontWeight(FontWeight.Bold)
@@ -182,7 +198,7 @@ struct DeviceDashboardPage {
   @Builder
   buildLoadingState() {
     Column() {
-      Text('加载中...')
+      Text($r('app.string.device_dash_loading'))
         .fontSize(14)
         .fontColor(COLORS.TEXT_TERTIARY)
       LoadingProgress()
@@ -204,12 +220,12 @@ struct DeviceDashboardPage {
         .height(10)
         .fill(this.isHwConnected ? COLORS.SUCCESS : COLORS.TEXT_TERTIARY)
         .margin({ right: 8 })
-      Text(this.isHwConnected ? '华为健康已连接' : '未连接华为健康')
+      Text(this.isHwConnected ? $r('app.string.device_dash_hw_connected') : $r('app.string.device_dash_hw_disconnected'))
         .fontSize(13)
         .fontColor(this.isHwConnected ? COLORS.SUCCESS : COLORS.TEXT_TERTIARY)
       Blank()
       if (!this.isHwConnected) {
-        Text('连接')
+        Text($r('app.string.device_dash_connect'))
           .fontSize(12)
           .fontColor(COLORS.PRIMARY)
           .padding({ left: 12, right: 12, top: 4, bottom: 4 })
@@ -230,7 +246,7 @@ struct DeviceDashboardPage {
   @Builder
   buildMemberSelector() {
     Column() {
-      Text('查看成员')
+      Text($r('app.string.device_dash_view_members'))
         .fontSize(12)
         .fontColor(COLORS.TEXT_TERTIARY)
         .margin({ bottom: 6 })
@@ -247,7 +263,7 @@ struct DeviceDashboardPage {
               this.selectedMemberId = member.memberId
               this.loadHealthDataInner()
             })
-        })
+        }, (member: FamilyProfile) => member.memberId)
       }
     }
     .width('92%')
@@ -283,7 +299,7 @@ struct DeviceDashboardPage {
           .alignItems(HorizontalAlign.Center)
           .shadow({ radius: 2, color: '#0A000000', offsetY: 1 })
         }
-      })
+      }, (card: MetricCardData, i: number) => `metric_${i}`)
     }
     .columnsTemplate('1fr 1fr 1fr')
     .rowsTemplate('1fr 1fr')
@@ -295,38 +311,38 @@ struct DeviceDashboardPage {
 
   @Builder
   buildDetailSections() {
-    this.buildDetailSection('🚶 步数详情', [
-      { label: '今日总步数', value: `${this.healthSignal.stepCount} 步` } as DetailItem,
-      { label: '活动等级', value: this.healthSignal.stepLevel } as DetailItem,
-      { label: '步数达标', value: this.healthSignal.stepCount >= 8000 ? '✅ 已达标' : '❌ 未达标' } as DetailItem,
-      { label: '饮食影响', value: this.getStepDietImpact() } as DetailItem
+    this.buildDetailSection($r('app.string.device_dash_step_detail_title'), [
+      makeDetail($r('app.string.device_dash_today_total_steps'), this.healthSignal.stepCount + ' ' + $r('app.string.device_dash_step_unit')),
+      makeDetail($r('app.string.device_dash_activity_level'), this.healthSignal.stepLevel),
+      makeDetail($r('app.string.device_dash_step_goal'), this.healthSignal.stepCount >= HealthConfig.DAILY_STEP_GOAL ? $r('app.string.device_dash_goal_reached_icon') : $r('app.string.device_dash_goal_not_reached_icon')),
+      makeDetail($r('app.string.device_dash_diet_impact'), this.getStepDietImpact())
     ])
 
-    this.buildDetailSection('❤️ 心率详情', [
-      { label: '当前心率', value: `${this.healthSignal.heartRate} bpm` } as DetailItem,
-      { label: '静息心率', value: `${this.healthSignal.restingHeartRate} bpm` } as DetailItem,
-      { label: '心率区间', value: this.healthSignal.getHeartRateZoneText() } as DetailItem,
-      { label: '饮食影响', value: this.getHeartDietImpact() } as DetailItem
+    this.buildDetailSection($r('app.string.device_dash_heart_detail_title'), [
+      makeDetail($r('app.string.device_dash_current_heart_rate'), `${this.healthSignal.heartRate} bpm`),
+      makeDetail($r('app.string.device_dash_resting_heart_rate'), `${this.healthSignal.restingHeartRate} bpm`),
+      makeDetail($r('app.string.device_dash_heart_rate_zone'), this.healthSignal.getHeartRateZoneText()),
+      makeDetail($r('app.string.device_dash_diet_impact'), this.getHeartDietImpact())
     ])
 
-    this.buildDetailSection('😴 睡眠详情', [
-      { label: '总睡眠', value: this.formatSleepMinutes(this.healthSignal.totalSleepMinutes) } as DetailItem,
-      { label: '深睡', value: this.formatSleepMinutes(this.healthSignal.deepSleepMinutes) } as DetailItem,
-      { label: '浅睡', value: this.formatSleepMinutes(this.healthSignal.lightSleepMinutes) } as DetailItem,
-      { label: '睡眠质量', value: this.healthSignal.sleepStatus } as DetailItem,
-      { label: '饮食影响', value: this.healthSignal.isPoorSleep() ? '睡眠差，高糖减少20%' : '正常' } as DetailItem
+    this.buildDetailSection($r('app.string.device_dash_sleep_detail_title'), [
+      makeDetail($r('app.string.device_dash_total_sleep'), this.formatSleepMinutes(this.healthSignal.totalSleepMinutes)),
+      makeDetail($r('app.string.device_dash_deep_sleep'), this.formatSleepMinutes(this.healthSignal.deepSleepMinutes)),
+      makeDetail($r('app.string.device_dash_light_sleep'), this.formatSleepMinutes(this.healthSignal.lightSleepMinutes)),
+      makeDetail($r('app.string.device_dash_sleep_quality'), this.healthSignal.sleepStatus),
+      makeDetail($r('app.string.device_dash_diet_impact'), this.healthSignal.isPoorSleep() ? $r('app.string.device_dash_poor_sleep_reduce_sugar') : $r('app.string.device_dash_normal'))
     ])
 
-    this.buildDetailSection('🩺 身体指标', [
-      { label: '血氧饱和度', value: `${this.healthSignal.spo2}%` } as DetailItem,
-      { label: '血氧状态', value: this.healthSignal.spo2Level } as DetailItem,
-      { label: '压力等级', value: this.healthSignal.stressLevel } as DetailItem,
-      { label: '体温', value: `${this.healthSignal.bodyTemperature.toFixed(1)}°C` } as DetailItem
+    this.buildDetailSection($r('app.string.device_dash_body_metrics_title')), [
+      makeDetail($r('app.string.device_dash_spo2'), `${this.healthSignal.spo2}%`),
+      makeDetail($r('app.string.device_dash_spo2_status'), this.healthSignal.spo2Level),
+      makeDetail($r('app.string.device_dash_stress_level'), this.healthSignal.stressLevel),
+      makeDetail($r('app.string.device_dash_body_temp'), `${this.healthSignal.bodyTemperature.toFixed(1)}°C`)
     ])
   }
 
   @Builder
-  buildDetailSection(title: string, items: DetailItem[]) {
+  buildDetailSection(title: ResourceStr, items: DetailItem[]) {
     Column() {
       Text(title)
         .fontSize(14)
@@ -348,7 +364,7 @@ struct DeviceDashboardPage {
         .width('100%')
         .padding({ top: 4, bottom: 4 })
         .border({ width: { bottom: 0.5 }, color: COLORS.BORDER_LIGHT })
-      })
+      }, (item: DetailItem, i: number) => `detail_${i}`)
     }
     .width('92%')
     .padding(14)
@@ -361,7 +377,7 @@ struct DeviceDashboardPage {
   @Builder
   buildDietImpactCard() {
     Column() {
-      Text('📊 穿戴数据对饮食建议的影响')
+      Text($r('app.string.device_dash_diet_impact_title'))
         .fontSize(14)
         .fontWeight(FontWeight.Bold)
         .fontColor(COLORS.TEXT_PRIMARY)
@@ -377,9 +393,9 @@ struct DeviceDashboardPage {
           }
           .width('100%')
           .margin({ top: 4 })
-        })
+        }, (text: string, i: number) => `impact_${i}`)
       } else {
-        Text('今日各项指标正常，饮食建议按标准预算执行')
+        Text($r('app.string.device_dash_all_normal'))
           .fontSize(12)
           .fontColor(COLORS.SUCCESS)
       }
@@ -398,35 +414,35 @@ struct DeviceDashboardPage {
     const signal = this.healthSignal
     return [
       {
-        icon: '🚶', label: '步数',
+        icon: '🚶', label: $r('app.string.device_dash_steps'),
         value: signal.stepCount > 0 ? `${signal.stepCount}` : '--',
-        unit: '步',
-        status: signal.stepCount >= 8000 ? 'good' : (signal.stepCount >= 3000 ? 'warning' : 'error'),
-        detail: signal.stepCount >= 8000 ? '达标' : '未达标'
+        unit: $r('app.string.device_dash_step_unit'),
+        status: signal.stepCount >= HealthConfig.DAILY_STEP_GOAL ? 'good' : (signal.stepCount >= HealthConfig.STEP_LOW_THRESHOLD ? 'warning' : 'error'),
+        detail: signal.stepCount >= HealthConfig.DAILY_STEP_GOAL ? $r('app.string.device_dash_goal_reached') : $r('app.string.device_dash_goal_not_reached')
       },
       {
-        icon: '❤️', label: '心率',
+        icon: '❤️', label: $r('app.string.device_dash_heart_rate'),
         value: signal.heartRate > 0 ? `${signal.heartRate}` : '--',
         unit: 'bpm',
         status: signal.heartRate > 120 ? 'warning' : 'good',
         detail: signal.heartRate > 0 ? signal.getHeartRateZoneText() : ''
       },
       {
-        icon: '😴', label: '睡眠',
+        icon: '😴', label: $r('app.string.device_dash_sleep'),
         value: signal.totalSleepMinutes > 0 ? `${Math.floor(signal.totalSleepMinutes / 60)}h` : '--',
         unit: signal.totalSleepMinutes > 0 ? `${signal.totalSleepMinutes % 60}m` : '',
         status: signal.isPoorSleep() ? 'error' : (signal.sleepStatus === SleepStatus.FAIR ? 'warning' : 'good'),
         detail: signal.sleepStatus
       },
       {
-        icon: '🫁', label: '血氧',
+        icon: '🫁', label: $r('app.string.device_dash_spo2_short'),
         value: signal.spo2 > 0 ? `${signal.spo2}%` : '--',
         unit: '',
         status: signal.spo2 >= 95 ? 'good' : (signal.spo2 >= 90 ? 'warning' : 'error'),
         detail: signal.spo2Level
       },
       {
-        icon: '🧘', label: '压力',
+        icon: '🧘', label: $r('app.string.device_dash_stress'),
         value: signal.stressLevel,
         unit: '',
         status: signal.stressLevel === StressLevel.HIGH ? 'error' :
@@ -434,7 +450,7 @@ struct DeviceDashboardPage {
         detail: ''
       },
       {
-        icon: '🌡️', label: '体温',
+        icon: '🌡️', label: $r('app.string.device_dash_body_temp'),
         value: signal.bodyTemperature > 0 ? `${signal.bodyTemperature.toFixed(1)}°` : '--',
         unit: '',
         status: signal.bodyTemperature > 37.3 ? 'warning' : 'good',
@@ -457,25 +473,25 @@ struct DeviceDashboardPage {
     if (minutes <= 0) {
       return '--'
     }
-    return `${Math.floor(minutes / 60)}小时${minutes % 60}分钟`
+    return Math.floor(minutes / 60) + $r('app.string.device_dash_hours') + (minutes % 60) + $r('app.string.device_dash_minutes')
   }
 
-  private getStepDietImpact(): string {
+  private getStepDietImpact(): ResourceStr {
     const steps = this.healthSignal.stepCount
-    if (steps < 3000) {
-      return '建议量收紧'
+    if (steps < HealthConfig.STEP_LOW_THRESHOLD) {
+      return $r('app.string.device_dash_suggest_tighten')
     }
-    if (steps >= 10000) {
-      return '建议量放宽'
+    if (steps >= HealthConfig.STEP_HIGH_THRESHOLD) {
+      return $r('app.string.device_dash_suggest_relax')
     }
-    return '常规建议'
+    return $r('app.string.device_dash_suggest_normal')
   }
 
-  private getHeartDietImpact(): string {
+  private getHeartDietImpact(): ResourceStr {
     if (this.healthSignal.heartRate > 120) {
-      return '心率偏高，收紧高热量'
+      return $r('app.string.device_dash_heart_high_tighten')
     }
-    return '正常'
+    return $r('app.string.device_dash_normal')
   }
 
   private async loadHealthDataInner(): Promise<void> {
@@ -488,6 +504,7 @@ struct DeviceDashboardPage {
       const now = new Date()
       this.lastSyncTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
     } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'loadHealthData failed, using cache: %{public}s', JSON.stringify(error));
       const cached = this.appState.getHealthSignal(this.selectedMemberId)
       this.healthSignal = cached
       this.isHwConnected = cached.source === DataSource.HUAWEI_HEALTH
@@ -496,49 +513,60 @@ struct DeviceDashboardPage {
 
   private async connectHwHealthInner(): Promise<void> {
     if (this.showPaywall) {
-      promptAction.showToast({ message: '请先升级家庭版以使用健康数据联动功能' })
+      promptAction.showToast({ message: $r('app.string.device_dash_upgrade_to_use') })
       return
     }
 
     try {
-      const context = AppStorage.get<common.Context>('appContext')
-      const success = await this.appState.switchToHwHealthKit(context!)
+      const success = await this.appState.switchToHwHealthKit(getContext())
       if (success) {
         this.isHwConnected = true
-        promptAction.showToast({ message: '华为健康连接成功' })
+        promptAction.showToast({ message: $r('app.string.device_dash_hw_connect_success') })
         await this.loadHealthDataInner()
       } else {
-        const authorized = await this.appState.requestHealthAuthorization()
-        if (authorized) {
-          this.isAuthorized = true
-          await this.loadHealthDataInner()
+        const hasPermission = await this.appState.permission.requestActivityMotionPermission()
+        if (hasPermission) {
+          const authorized = await this.appState.requestHealthAuthorization()
+          if (authorized) {
+            this.isAuthorized = true
+            await this.loadHealthDataInner()
+          } else {
+            this.showPermissionGuide = true
+          }
         } else {
-          promptAction.showToast({ message: '授权失败，请确保已安装华为运动健康App' })
+          this.showPermissionGuide = true
         }
       }
     } catch (error) {
-      promptAction.showToast({ message: '连接失败，请稍后重试' })
+      hilog.warn(DOMAIN_ZERO, TAG, 'connectHwHealth failed: %{public}s', JSON.stringify(error));
+      promptAction.showToast({ message: $r('app.string.device_dash_connect_failed') })
     }
   }
 
   private getImpactTexts(): string[] {
     const texts: string[] = []
-    if (this.healthSignal.stepCount > 0 && this.healthSignal.stepCount < 3000) {
-      texts.push(`步数 ${this.healthSignal.stepCount} 步 → 活动不足，高热量/高脂肪建议量收紧`)
+    if (this.healthSignal.stepCount > 0 && this.healthSignal.stepCount < HealthConfig.STEP_LOW_THRESHOLD) {
+      texts.push($r('app.string.device_dash_impact_step_low').replace('%s', `${this.healthSignal.stepCount}`))
     }
-    if (this.healthSignal.stepCount >= 10000) {
-      texts.push(`步数 ${this.healthSignal.stepCount} 步 → 活动充足，热量可适当放宽`)
+    if (this.healthSignal.stepCount >= HealthConfig.STEP_HIGH_THRESHOLD) {
+      texts.push($r('app.string.device_dash_impact_step_high').replace('%s', `${this.healthSignal.stepCount}`))
     }
     if (this.healthSignal.isPoorSleep()) {
-      texts.push('睡眠质量差 → 高糖食品建议量减少')
+      texts.push($r('app.string.device_dash_impact_poor_sleep'))
     }
     if (this.healthSignal.isStressed()) {
-      texts.push('压力较大 → 建议选择清淡饮食')
+      texts.push($r('app.string.device_dash_impact_stress'))
     }
     if (this.healthSignal.heartRate > 120) {
-      texts.push(`心率 ${this.healthSignal.heartRate}bpm → 偏高，收紧高热量`)
+      texts.push($r('app.string.device_dash_impact_heart_high').replace('%s', `${this.healthSignal.heartRate}`))
     }
     return texts
   }
 
+  pageTransition() {
+    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Right)
+    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Left)
+  }
 }

@@ -3,6 +3,7 @@
     "name": "entry",
     "type": "entry",
     "description": "$string:module_desc",
+    "contentRating": "3+",
     "mainElement": "EntryAbility",
     "deviceTypes": [
       "phone",
@@ -29,6 +30,20 @@
             ],
             "actions": [
               "action.system.home"
+            ]
+          },
+          {
+            "entities": [
+              "entity.system.browsable"
+            ],
+            "actions": [
+              "ohos.want.action.viewData"
+            ],
+            "uris": [
+              {
+                "scheme": "https",
+                "host": "foodscan.familyfood.app"
+              }
             ]
           }
         ]
@@ -86,18 +101,28 @@
         }
       },
       {
-        "name": "ohos.permission.DISTRIBUTED_DATASYNC",
-        "reason": "$string:distributed_sync_reason",
+        "name": "ohos.permission.READ_IMAGEVIDEO",
+        "reason": "$string:media_reason",
         "usedScene": {
           "abilities": [
             "EntryAbility"
           ],
-          "when": "always"
+          "when": "inuse"
         }
       },
       {
-        "name": "ohos.permission.ACTIVITY_MOTION",
-        "reason": "$string:activity_motion_reason",
+        "name": "ohos.permission.WRITE_IMAGEVIDEO",
+        "reason": "$string:media_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.HEALTH_DATA",
+        "reason": "$string:health_data_reason",
         "usedScene": {
           "abilities": [
             "EntryAbility"
@@ -116,6 +141,26 @@
         }
       },
       {
+        "name": "ohos.permission.ACTIVITY_MOTION",
+        "reason": "$string:health_data_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.DISTRIBUTED_DATASYNC",
+        "reason": "$string:distributed_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
         "name": "ohos.permission.MICROPHONE",
         "reason": "$string:microphone_reason",
         "usedScene": {
@@ -123,26 +168,6 @@
             "EntryAbility"
           ],
           "when": "inuse"
-        }
-      },
-      {
-        "name": "ohos.permission.READ_MEDIA",
-        "reason": "$string:media_reason",
-        "usedScene": {
-          "abilities": [
-            "EntryAbility"
-          ],
-          "when": "inuse"
-        }
-      },
-      {
-        "name": "ohos.permission.KEEP_BACKGROUND_RUNNING",
-        "reason": "$string:background_run_reason",
-        "usedScene": {
-          "abilities": [
-            "EntryAbility"
-          ],
-          "when": "always"
         }
       }
     ],

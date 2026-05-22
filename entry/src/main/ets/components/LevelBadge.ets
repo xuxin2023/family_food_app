@@ -1,8 +1,6 @@
+import { RecommendLevel, LevelColor, getLevelColorValue, COLORS } from 'hsp_core';
 // 四级建议标识组件
 
-import { RecommendLevel, LevelColor, getLevelColorValue } from '../model/Recommendation';
-import { COLORS } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 @ComponentV2
 export struct LevelBadge {

@@ -1,12 +1,10 @@
 // FoodDomainService.ets
 // 食品领域服务 - 从 AppState 剥离的食品标签/扫码相关业务逻辑
 
-import { FoodLabel, FoodLabelJson } from '../model/FoodLabel';
+import { FoodLabel, CacheManager } from 'hsp_core';
 import { FoodRepository } from '../repository/FoodRepository';
-import { CacheManager } from '../utils/CacheManager';
 import { ScanHistoryRecord } from '../repository/HistoryRepository';
 import { RepositoryManager } from '../manager/RepositoryManager';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 export class FoodDomainService {
   private repos: RepositoryManager;

@@ -1,26 +1,28 @@
 // NutritionTrendPage.ets
 // 营养摄入趋势图表页面 - 7天/30天营养素趋势、每日汇总、预算对比
 
-import { router } from '@kit.ArkUI';
+import { safeBack, getPageParams, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, HILOG_DOMAIN, DateUtil, NutrientTrendData, DailyNutritionSummary, TrendDirection, DailyNutrientPoint, MealGroup } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
-import { hilog } from '@kit.PerformanceAnalysisKit';
-import { safeBack } from '../utils/RouterUtil';
 import { AppState } from '../AppState';
-import { NutrientTrendData, DailyNutritionSummary, TrendDirection, DailyNutrientPoint } from '../engine/NutritionTrendEngine';
 import { TrendChart } from '../components/TrendChart';
-import { COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
-interface PeriodOption {
-  label: string;
-  days: number;
+class PeriodOption {
+  label: string = '';
+  days: number = 0;
+}
+
+function makePeriodOption(label: string, days: number): PeriodOption {
+  const opt = new PeriodOption();
+  opt.label = label;
+  opt.days = days;
+  return opt;
 }
 
 const PERIOD_OPTIONS: PeriodOption[] = [
-  { label: '7天', days: 7 },
-  { label: '30天', days: 30 }
+  makePeriodOption($r('app.string.nutrition_trend_7_days'), 7),
+  makePeriodOption($r('app.string.nutrition_trend_30_days'), 30)
 ];
 
 @Entry
@@ -31,7 +33,7 @@ struct NutritionTrendPage {
   @Local trends: NutrientTrendData[] = []
   @Local summaries: DailyNutritionSummary[] = []
   @Local isLoading: boolean = true
-  @Local periodLabel: string = '近7天'
+  @Local periodLabel: ResourceStr = $r('app.string.nutrition_trend_recent_7')
 
   private appState: AppState = AppState.getInstance()
   private periodOptions: PeriodOption[] = PERIOD_OPTIONS
@@ -44,13 +46,15 @@ struct NutritionTrendPage {
 
   async aboutToAppear() {
     try {
-      const params = router.getParams() as Record<string, Object>;
-      this.selectedMemberId = params['memberId'] as string || '';
-    } catch (e) {
-      hilog.warn(DOMAIN_ZERO, 'NutritionTrendPage', 'getParams failed: %{public}s', JSON.stringify(e));
-    }
+      const params = getPageParams();
+      if (params !== undefined) {
+        const mid = params.get('memberId');
+        this.selectedMemberId = (typeof mid === 'string') ? mid : '';
+      }
 
-    await this.loadData()
+      await this.loadData()
+    } catch (_e) {
+    }
   }
 
   private async loadData() {
@@ -67,21 +71,38 @@ struct NutritionTrendPage {
 
     this.isLoading = true
     const days = this.periodOptions[this.selectedPeriodIndex].days
-    this.periodLabel = '近' + days + '天'
-
-    const summaries = await this.appState.getNutritionTrend(this.selectedMemberId, days)
-    this.summaries = await this.appState.getDailySummaries(this.selectedMemberId, days)
-    // 从 summaries 构建趋势数据
+    this.periodLabel = $r('app.string.nutrition_trend_recent_prefix') + days + $r('app.string.nutrition_trend_recent_suffix')
+    const endDate = new Date()
+    const startDate = new Date()
+    startDate.setDate(startDate.getDate() - days)
+    const allResults = await Promise.all([
+      this.appState.getNutritionTrend(this.selectedMemberId, days),
+      this.appState.getDailySummaries(this.selectedMemberId, days)
+    ])
+    const rawSnapshots = allResults[1] as Object[];
+    const dailySummaries: DailyNutritionSummary[] = [];
+    for (const raw of rawSnapshots) {
+      const snap = raw as Record<string, Object>;
+      const d = new DailyNutritionSummary();
+      d.date = (snap['date'] as string) || '';
+      d.sodium = (snap['sodium'] as number) || 0;
+      d.sugar = (snap['sugar'] as number) || 0;
+      d.calorie = (snap['calorie'] as number) || 0;
+      d.fat = (snap['fat'] as number) || 0;
+      d.recordCount = (snap['recordCount'] as number) || 1;
+      dailySummaries.push(d);
+    }
+    // 从 dailySummaries 构建趋势数据
     const result: NutrientTrendData[] = []
-    if (summaries.length > 0) {
-      const last = summaries[summaries.length - 1]
-      const t1 = new NutrientTrendData(); t1.nutrientName = '钠'; t1.unit = 'mg'; t1.dailyValues = summaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.sodium; return p }); t1.currentValue = last.sodium; t1.targetValue = 2000; t1.maxValue = 2500; t1.color = '#FF9800'; t1.trend = TrendDirection.STABLE; result.push(t1)
-      const t2 = new NutrientTrendData(); t2.nutrientName = '糖'; t2.unit = 'g'; t2.dailyValues = summaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.sugar; return p }); t2.currentValue = last.sugar; t2.targetValue = 50; t2.maxValue = 60; t2.color = '#FF5722'; t2.trend = TrendDirection.STABLE; result.push(t2)
-      const t3 = new NutrientTrendData(); t3.nutrientName = '热量'; t3.unit = 'kcal'; t3.dailyValues = summaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.calorie; return p }); t3.currentValue = last.calorie; t3.targetValue = 2000; t3.maxValue = 2200; t3.color = '#4CAF50'; t3.trend = TrendDirection.STABLE; result.push(t3)
-      const t4 = new NutrientTrendData(); t4.nutrientName = '脂肪'; t4.unit = 'g'; t4.dailyValues = summaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.fat; return p }); t4.currentValue = last.fat; t4.targetValue = 65; t4.maxValue = 80; t4.color = '#2196F3'; t4.trend = TrendDirection.STABLE; result.push(t4)
+    if (dailySummaries.length > 0) {
+      const last = dailySummaries[dailySummaries.length - 1]
+      const t1 = new NutrientTrendData(); t1.nutrientName = $r('app.string.nutrition_trend_sodium') as string; t1.unit = 'mg'; t1.dailyValues = dailySummaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.sodium; return p }); t1.currentValue = last.sodium; t1.targetValue = 2000; t1.maxValue = 2500; t1.color = '#FF9800'; t1.trend = TrendDirection.STABLE; result.push(t1)
+      const t2 = new NutrientTrendData(); t2.nutrientName = $r('app.string.nutrition_trend_sugar') as string; t2.unit = 'g'; t2.dailyValues = dailySummaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.sugar; return p }); t2.currentValue = last.sugar; t2.targetValue = 50; t2.maxValue = 60; t2.color = '#FF5722'; t2.trend = TrendDirection.STABLE; result.push(t2)
+      const t3 = new NutrientTrendData(); t3.nutrientName = $r('app.string.nutrition_trend_calorie') as string; t3.unit = 'kcal'; t3.dailyValues = dailySummaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.calorie; return p }); t3.currentValue = last.calorie; t3.targetValue = 2000; t3.maxValue = 2200; t3.color = '#4CAF50'; t3.trend = TrendDirection.STABLE; result.push(t3)
+      const t4 = new NutrientTrendData(); t4.nutrientName = $r('app.string.nutrition_trend_fat') as string; t4.unit = 'g'; t4.dailyValues = dailySummaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.fat; return p }); t4.currentValue = last.fat; t4.targetValue = 65; t4.maxValue = 80; t4.color = '#2196F3'; t4.trend = TrendDirection.STABLE; result.push(t4)
     }
     this.trends = result
-    this.summaries = await this.appState.getDailySummaries(this.selectedMemberId, days)
+    this.summaries = dailySummaries
 
     // 计算概览数据
     let totalRecords = 0;
@@ -112,6 +133,8 @@ struct NutritionTrendPage {
       Row() {
         BackButton({ fontSize: 28, fontColor: COLORS.PRIMARY })
           .onClick(() => { safeBack() })
+          .accessibilityText('返回')
+          .accessibilityLevel('yes')
         Text($r('app.string.nutrition_trend'))
           .fontSize(FONT_SIZE.TITLE)
           .fontWeight(FONT_WEIGHT.BOLD)
@@ -132,6 +155,8 @@ struct NutritionTrendPage {
             .borderRadius(RADIUS.FULL)
             .backgroundColor(this.selectedPeriodIndex === index ? COLORS.PRIMARY : COLORS.BG_LIGHT_GRAY_F5)
             .onClick(() => { this.switchPeriod(index) })
+            .accessibilityText(option.label as string)
+            .accessibilityLevel('yes')
         }, (_option: PeriodOption, index: number) => index.toString())
       }
       .width('100%')
@@ -157,7 +182,7 @@ struct NutritionTrendPage {
             .fontSize(FONT_SIZE.SMALL)
             .fontColor(COLORS.TEXT_GRAY_BDBD)
             .margin({ top: SPACING.SM })
-          Text('共 ' + this.summaries.length + ' 天有记录')
+          Text($r('app.string.nutrition_trend_recent_prefix') + this.summaries.length + $r('app.string.nutrition_trend_recent_suffix'))
             .fontSize(FONT_SIZE.SMALL)
             .fontColor(COLORS.TEXT_GRAY_9E9E)
             .margin({ top: SPACING.MD })
@@ -210,7 +235,7 @@ struct NutritionTrendPage {
   @Builder
   buildOverviewCard() {
     Column() {
-      Text(this.periodLabel + '概览')
+      Text(this.periodLabel + '' + $r('app.string.nutrition_trend_overview'))
         .fontSize(FONT_SIZE.BODY)
         .fontWeight(FONT_WEIGHT.BOLD)
         .fontColor(COLORS.TEXT_PRIMARY)
@@ -336,5 +361,12 @@ struct NutritionTrendPage {
     const parts = date.split('-')
     if (parts.length < 3) return date
     return parts[1] + '/' + parts[2]
+  }
+
+  pageTransition() {
+    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Right)
+    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Left)
   }
 }

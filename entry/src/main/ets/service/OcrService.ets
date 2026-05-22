@@ -1,12 +1,10 @@
 // OCR服务 - 集成华为Core Vision Kit
 // API参考：https://developer.huawei.com/consumer/cn/doc/harmonyos-references-V5/textrecognition-V5
 
+import { FoodLabel, FoodSource, NutritionPer100g, StringRes, HILOG_DOMAIN } from 'hsp_core';
 import { textRecognition } from '@kit.CoreVisionKit';
 import { image } from '@kit.ImageKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { FoodLabel, FoodSource, NutritionPer100g } from '../model/FoodLabel';
-import { StringRes } from '../constants/StringRes';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'OcrService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -69,7 +67,11 @@ export class OcrService {
       return result;
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'OCR recognize failed: %{public}s', JSON.stringify(error));
-      return { text: '', confidence: 0, blocks: [] };
+      const emptyResult = new OcrResult();
+      emptyResult.text = '';
+      emptyResult.confidence = 0;
+      emptyResult.blocks = [];
+      return emptyResult;
     } finally {
       if (pixelMap) {
         try {
@@ -86,17 +88,27 @@ export class OcrService {
    * @param pixelMap 相机帧PixelMap
    * @returns OCR识别结果
    */
+  private static cachedConfig: textRecognition.TextRecognitionConfiguration | null = null;
+
+  private static getConfig(): textRecognition.TextRecognitionConfiguration {
+    if (!OcrService.cachedConfig) {
+      OcrService.cachedConfig = { isDirectionDetectionSupported: false };
+    }
+    return OcrService.cachedConfig;
+  }
+
   async recognizeFromPixelMap(pixelMap: image.PixelMap): Promise<OcrResult> {
     try {
-      const visionInfo: textRecognition.VisionInfo = { pixelMap };
-      const config: textRecognition.TextRecognitionConfiguration = {
-        isDirectionDetectionSupported: false
-      };
-      const textResult = await textRecognition.recognizeText(visionInfo, config);
+      const visionInfo: textRecognition.VisionInfo = { pixelMap: pixelMap };
+      const textResult = await textRecognition.recognizeText(visionInfo, OcrService.getConfig());
       return this.parseOcrResult(textResult);
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'OCR recognize from PixelMap failed: %{public}s', JSON.stringify(error));
-      return { text: '', confidence: 0, blocks: [] };
+      const emptyResult = new OcrResult();
+      emptyResult.text = '';
+      emptyResult.confidence = 0;
+      emptyResult.blocks = [];
+      return emptyResult;
     }
   }
 
@@ -191,22 +203,22 @@ export class OcrService {
         continue;
       }
 
-      blocks.push({
-        text: blockText,
-        confidence: 0,
-        bounds: this.buildBounds(this.resolveCornerPoints(block))
-      });
+      const ocrBlock = new OcrBlock();
+      ocrBlock.text = blockText;
+      ocrBlock.confidence = 0;
+      ocrBlock.bounds = this.buildBounds(this.resolveCornerPoints(block))
+      blocks.push(ocrBlock);
     }
 
     if (fullText.length === 0 && blocks.length > 0) {
       fullText = blocks.map((block) => block.text).join('\n').trim();
     }
 
-    return {
-      text: fullText,
-      confidence: 0,
-      blocks
-    };
+    const result = new OcrResult();
+    result.text = fullText;
+    result.confidence = 0;
+    result.blocks = blocks;
+    return result;
   }
 
   private resolveCornerPoints(block: textRecognition.TextBlock): Array<textRecognition.PixelPoint> {

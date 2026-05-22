@@ -19,25 +19,23 @@
 //     ├─ 相机模式 → createCameraDraft
 //     └─ 离线模式 → 纯本地规则引擎
 
+import {
+  ToastHelper, safePushUrl, getPageParams, FoodLabel, Throttler, PaywallTrigger, TIER_DAILY_SCAN_LIMIT, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON, SCAN_CONFIG, HILOG_DOMAIN, EnhancedFoodRecommendation, AccessibilityUtil, TodayIntakeInput, FoodInputResult
+} from 'hsp_core';
 import { common } from '@kit.AbilityKit';
-import { router, promptAction, curves } from '@kit.ArkUI';
-import { safeBack, safePushUrl } from '../utils/RouterUtil';
-import { connection } from '@kit.NetworkKit';
+import { curves } from '@kit.ArkUI';
 import { vibrator } from '@kit.SensorServiceKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { FoodLabel, FoodSource } from '../model/FoodLabel';
+import { scanBarcode, scanCore } from '@kit.ScanKit';
+import { BusinessError } from '@kit.BasicServicesKit';
 import { AppState } from '../AppState';
-import { PermissionManager } from '../service/PermissionManager';
-import { FoodInputResult, FoodInputService } from '../service/FoodInputService';
-import { PaywallTrigger, TIER_DAILY_SCAN_LIMIT } from '../model/MemberStatus';
+import { PermissionGuideDialog } from '../components/PermissionGuideDialog';
 import { NutriScoreBadge } from '../components/NutriScoreBadge';
 import { PaywallDialog } from '../components/PaywallDialog';
-import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON } from '../constants/AppTheme';
-import { SCAN_CONFIG } from '../constants/AppConfig';
-import { EnhancedFoodRecommendation } from '../model/FoodAdapterTypes';
-import { TodayIntakeInput } from '../engine/FoodAdapterEngine';
 import { BackButton } from '../components/BackButton';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { ScanResultCard } from '../components/ScanResultCard';
+import { ScanEditPanel } from '../components/ScanEditPanel';
+import { ScanModeSelector } from '../components/ScanModeSelector';
 
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 const TAG = 'ScanPage';
@@ -83,73 +81,79 @@ class EditPanelData {
   trustee: string = ''
 }
 
+@ObservedV2
+class ScanViewModel {
+  @Trace scanPhase: ScanPhase = ScanPhase.IDLE
+  @Trace foodLabel: FoodLabel = new FoodLabel()
+  @Trace showEditPanel: boolean = false
+  @Trace scanLimitReached: boolean = false
+  @Trace remainingScans: number = 3
+  @Trace recognizedText: string = ''
+  @Trace recognitionHint: ResourceStr = ''
+  @Trace ocrConfidence: number = 1
+  @Trace isOffline: boolean = false
+  @Trace frequentItems: FoodLabel[] = []
+  @Trace recentScans: FoodLabel[] = []
+  @Trace scoreReady: boolean = false
+  @Trace nutriScore: number = 50
+  @Trace detailLoading: boolean = false
+  @Trace showPaywallDialog: boolean = false
+  @Trace paywallTrigger: PaywallTrigger | null = null
+  @Trace editPanel: EditPanelData = new EditPanelData()
+  @Trace retryCount: number = 0
+  @Trace lastError: string = ''
+  @Trace showErrorBanner: boolean = false
+  @Trace isLoadingRetry: boolean = false
+  @Trace permissionDenied: boolean = false
+  @Trace showPermissionGuide: boolean = false
+  @Trace currentBreakpoint: string = 'md'
+  @Trace scanMode: string = 'camera'
+}
+
 @Entry
 @ComponentV2
 struct ScanPage {
-  // ---- 核心扫描状态 ----
-  @Local scanMode: string = 'camera'
-  @Local scanPhase: ScanPhase = ScanPhase.IDLE
-  @Local foodLabel: FoodLabel = new FoodLabel()
-  @Local showEditPanel: boolean = false
-  @Local scanLimitReached: boolean = false
-  @Local remainingScans: number = 3
-  @Local recognizedText: string = ''
-  @Local recognitionHint: ResourceStr = ''
-  @Local ocrConfidence: number = 1
-  @Local isOffline: boolean = false
-
-  // ---- 预加载与评分 ----
-  @Local frequentItems: FoodLabel[] = []
-  @Local recentScans: FoodLabel[] = []
-  @Local scoreReady: boolean = false
-  @Local nutriScore: number = 50
-  @Local detailLoading: boolean = false
-
-  // ---- 付费墙 ----
-  @Local showPaywallDialog: boolean = false
-  @Local paywallTrigger: PaywallTrigger | null = null
-
-  // ---- 编辑面板字段（合并为 EditPanelData 对象，减少 @Local 数量） ----
-  @Local editPanel: EditPanelData = new EditPanelData()
-
-  // ---- 体验升级：错误恢复与防崩溃 ----
-  @Local retryCount: number = 0
-  @Local lastError: string = ''
-  @Local showErrorBanner: boolean = false
-  @Local isLoadingRetry: boolean = false
-
+  @Local vm: ScanViewModel = new ScanViewModel()
   private memberId: string = ''
   private appState: AppState = AppState.getInstance()
-  private foodInputService: FoodInputService = new FoodInputService()
+  private foodInputService = this.appState.foodInput
   private autoScanTimer: number = -1
-  private retryTimer: number = -1  // 重试定时器ID，用于防止内存泄漏
+  private retryTimer: number = -1
+  private scoreTimer: number = -1
   private componentActive: boolean = true
+  private scanThrottler: Throttler = new Throttler(500)
 
   // ==================== 生命周期 ====================
 
   async aboutToAppear() {
-    const params = router.getParams() as Record<string, string>
-    if (params) {
-      this.memberId = params.memberId || ''
+    try {
+      const params = getPageParams();
+      if (params !== undefined) {
+        const mid = params.get('memberId');
+        if (typeof mid === 'string') {
+          this.memberId = mid;
+        }
+      }
+
+      // 1. 检测网络状态
+      await this.checkNetworkStatus()
+
+      // 2. 刷新扫描限额
+      this.refreshScanQuota()
+
+      // 3. 异步预加载高频商品库 + 最近扫描记录
+      this.loadFrequentItems()
+      this.loadRecentScans()
+
+      // 4. 零点击自动启动识别
+      this.triggerAutoScan()
+    } catch (_e) {
     }
-
-    // 1. 检测网络状态
-    await this.checkNetworkStatus()
-
-    // 2. 刷新扫描限额
-    this.refreshScanQuota()
-
-    // 3. 异步预加载高频商品库 + 最近扫描记录
-    this.loadFrequentItems()
-    this.loadRecentScans()
-
-    // 4. 零点击自动启动识别
-    this.triggerAutoScan()
   }
 
   async onPageShow() {
     // 扫码页面再次可见时，自动重置状态以便连续扫码
-    if (this.foodLabel.foodId.length > 0 && this.componentActive) {
+    if (this.vm.foodLabel.foodId.length > 0 && this.componentActive) {
       this.resetScan();
     }
   }
@@ -158,17 +162,16 @@ struct ScanPage {
    * 重置扫码状态，以便连续扫码
    */
   private resetScan(): void {
-    this.foodLabel = new FoodLabel();
-    this.scanPhase = ScanPhase.IDLE;
-    this.scanMode = 'barcode';
+    this.vm.foodLabel = new FoodLabel();
+    this.vm.scanPhase = ScanPhase.IDLE;
+    this.vm.scanMode = 'barcode';
     this.autoScanTimer = -1;
     this.retryTimer = -1;
-    this.recognitionHint = $r('app.string.first_time_hint');
+    this.vm.recognitionHint = $r('app.string.first_time_hint');
   }
 
   aboutToDisappear(): void {
     this.componentActive = false
-    // 清理自动扫码定时器，防止内存泄漏
     if (this.autoScanTimer !== -1) {
       try {
         clearTimeout(this.autoScanTimer)
@@ -177,13 +180,21 @@ struct ScanPage {
       }
       this.autoScanTimer = -1
     }
-    // 清理重试定时器，防止组件销毁后回调执行
     if (this.retryTimer !== -1) {
       try {
         clearTimeout(this.retryTimer)
       } catch (_e) {
         hilog.warn(DOMAIN_ZERO, 'ScanPage', 'clearTimeout retryTimer failed');
       }
+      this.retryTimer = -1
+    }
+    if (this.scoreTimer !== -1) {
+      try {
+        clearTimeout(this.scoreTimer)
+      } catch (_e) {
+        hilog.warn(DOMAIN_ZERO, 'ScanPage', 'clearTimeout scoreTimer failed');
+      }
+      this.scoreTimer = -1
     }
   }
 
@@ -202,11 +213,11 @@ struct ScanPage {
         usage: 'physicalFeedback'
       }).then(() => {
         // 振动成功，无需额外处理
-      }).catch(() => {
-        // 振动失败静默处理，不影响核心流程
+      }).catch((err: Error) => {
+        hilog.warn(DOMAIN_ZERO, TAG, '振动失败: %{public}s', JSON.stringify(err));
       })
     } catch (err) {
-      // 静默处理
+      hilog.warn(DOMAIN_ZERO, TAG, '触发振动异常: %{public}s', JSON.stringify(err));
     }
   }
 
@@ -223,11 +234,11 @@ struct ScanPage {
         usage: 'physicalFeedback'
       }).then(() => {
         // 振动成功
-      }).catch(() => {
-        // 静默处理
+      }).catch((err: Error) => {
+        hilog.warn(DOMAIN_ZERO, TAG, '错误振动失败: %{public}s', JSON.stringify(err));
       })
     } catch (err) {
-      // 静默处理
+      hilog.warn(DOMAIN_ZERO, TAG, '触发错误振动异常: %{public}s', JSON.stringify(err));
     }
   }
 
@@ -241,31 +252,31 @@ struct ScanPage {
       return null
     }
     try {
-      this.showErrorBanner = false
+      this.vm.showErrorBanner = false
       const result = await action()
-      this.retryCount = 0
+      this.vm.retryCount = 0
       return result
     } catch (err) {
       const errMsg = `${errorMessage}: ${err}`
       hilog.error(DOMAIN_ZERO, TAG, errMsg)
-      this.lastError = errorMessage
-      this.retryCount++
-      if (this.retryCount <= SCAN_CONFIG.MAX_RETRY_COUNT && this.componentActive) {
-        this.showErrorBanner = true
+      this.vm.lastError = errorMessage
+      this.vm.retryCount++
+      if (this.vm.retryCount <= SCAN_CONFIG.MAX_RETRY_COUNT && this.componentActive) {
+        this.vm.showErrorBanner = true
         // 自动重试（记录定时器ID，以便在组件销毁时清理）
         this.retryTimer = setTimeout(() => {
           this.retryTimer = -1
           if (this.componentActive) {
-            this.isLoadingRetry = true
+            this.vm.isLoadingRetry = true
             this.safeExecute(action, errorMessage).then(() => {
-              this.isLoadingRetry = false
+              this.vm.isLoadingRetry = false
             })
           }
         }, SCAN_CONFIG.RETRY_INTERVAL_MS)
       } else {
         // 超出重试次数，显示永久错误提示
-        this.showErrorBanner = true
-        promptAction.showToast({ message: errorMessage + '，请稍后重试' })
+        this.vm.showErrorBanner = true
+        ToastHelper.show(this.getUIContext(), $r('app.string.scan_please_retry_later', errorMessage))
       }
       return null
     }
@@ -276,16 +287,7 @@ struct ScanPage {
    * 无网络时标记 isOffline = true，后续走纯本地流程
    */
   private async checkNetworkStatus(): Promise<void> {
-    try {
-      const netHandle = connection.getDefaultNetSync()
-      const caps = connection.getNetCapabilitiesSync(netHandle)
-      const hasNet = caps.bearerTypes.length > 0
-      this.isOffline = !hasNet
-    } catch (err) {
-      hilog.warn(DOMAIN_ZERO, 'ScanPage', 'checkNetworkStatus failed: ' + JSON.stringify(err))
-      // 获取网络状态失败，保守地认为有网络
-      this.isOffline = false
-    }
+    this.vm.isOffline = !this.appState.network.isOnline
   }
 
   // ==================== 零点击自动扫码 ====================
@@ -299,7 +301,7 @@ struct ScanPage {
    * - 超时未获得结果 → 降级提示 + 切换到拍照模式 + 错误振动
    */
   private triggerAutoScan() {
-    if (this.scanLimitReached) {
+    if (this.vm.scanLimitReached) {
       return
     }
 
@@ -309,13 +311,13 @@ struct ScanPage {
 
     // 设置自动扫码超时定时器
     this.autoScanTimer = setTimeout(() => {
-      if (this.foodLabel.foodId.length === 0 && this.componentActive) {
+      if (this.vm.foodLabel.foodId.length === 0 && this.componentActive) {
         // 超时且未获得结果 → 降级
         this.vibrateError()
-        promptAction.showToast({ message: $r('app.string.barcode_not_found') })
-        this.scanMode = 'camera'
-        this.scanPhase = ScanPhase.TIMEOUT
-        this.recognitionHint = $r('app.string.scan_manual_hint')
+        ToastHelper.show(this.getUIContext(), $r('app.string.barcode_not_found'))
+        this.vm.scanMode = 'camera'
+        this.vm.scanPhase = ScanPhase.TIMEOUT
+        this.vm.recognitionHint = $r('app.string.scan_manual_hint')
       }
     }, SCAN_CONFIG.AUTO_SCAN_TIMEOUT_MS)
   }
@@ -341,7 +343,7 @@ struct ScanPage {
           if (items.length >= 8) break
         }
       }
-      this.frequentItems = items
+      this.vm.frequentItems = items
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, '预加载高频商品失败: %{public}s', JSON.stringify(error))
     }
@@ -363,7 +365,7 @@ struct ScanPage {
           items.push(foodLabel)
         }
       }
-      this.recentScans = items
+      this.vm.recentScans = items
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, '加载最近扫描记录失败: %{public}s', JSON.stringify(error))
     }
@@ -373,23 +375,31 @@ struct ScanPage {
 
   build() {
     Stack() {
-      Scroll() {
+      GridRow({
+        columns: { sm: 4, md: 8, lg: 12 },
+        breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
+      }) {
+        GridCol({ span: { sm: 4, md: 8, lg: this.vm.showEditPanel ? 8 : 12 }, offset: { sm: 0, md: 0, lg: 0 } }) {
+          Scroll() {
         Column() {
           // ---- 顶部导航栏 ----
           Row() {
             BackButton({ fontColor: COLORS.PRIMARY })
             Blank()
-            if (this.foodLabel.foodId.length > 0) {
+            if (this.vm.foodLabel.foodId.length > 0) {
               Text($r('app.string.barcode_detected')).fontSize(FONT_SIZE.TINY).fontColor(COLORS.ACCENT_GREEN)
             }
           }
           .width('100%')
           .padding({ left: SPACING.LG, right: SPACING.LG, top: SPACING.LG, bottom: SPACING.SM })
 
-          this.ModeSelector()
+          ScanModeSelector({
+            scanMode: this.vm.scanMode,
+            onModeChange: (mode: string) => { this.vm.scanMode = mode }
+          })
 
           // ---- 离线提示 ----
-          if (this.isOffline) {
+          if (this.vm.isOffline) {
             Row() {
               Text('📡 ' + $r('app.string.offline_mode'))
                 .fontSize(FONT_SIZE.SMALL)
@@ -400,41 +410,102 @@ struct ScanPage {
             .margin({ bottom: SPACING.MD })
           }
 
-          // ---- 扫描次数 ----
-          if (this.appState.member.memberStatus.scansRemainingToday >= 0) {
+          // ---- 权限拒绝提示 ----
+          if (this.vm.permissionDenied) {
             Row() {
-              Text(this.scanLimitReached ? $r('app.string.scan_today_used_up') : $r('app.string.scan_today_remaining') + `：${this.remainingScans} 次`)
+              Text('📷 ' + $r('app.string.scan_camera_permission_denied'))
                 .fontSize(FONT_SIZE.SMALL)
-                .fontColor(this.scanLimitReached ? COLORS.LEVEL_RED : '#F57C00')
+                .fontColor(COLORS.LEVEL_RED)
             }
             .width('100%')
             .padding({ left: SPACING.LG, right: SPACING.LG })
             .margin({ bottom: SPACING.MD })
           }
 
-          this.ResultCard()
+          // ---- 错误横幅 ----
+          if (this.vm.showErrorBanner) {
+            Row() {
+              Text('⚠️')
+                .fontSize(FONT_SIZE.SMALL)
+                .margin({ right: 4 })
+              Text(this.vm.lastError)
+                .fontSize(FONT_SIZE.SMALL)
+                .fontColor(COLORS.LEVEL_RED)
+                .layoutWeight(1)
+              if (this.vm.isLoadingRetry) {
+                LoadingProgress().width(16).height(16).color(COLORS.PRIMARY)
+              } else {
+                Text($r('app.string.retry'))
+                  .fontSize(FONT_SIZE.SMALL)
+                  .fontColor(COLORS.PRIMARY)
+                  .onClick(() => {
+                    this.vm.showErrorBanner = false
+                    this.startRecognition()
+                  })
+              }
+            }
+            .width('100%')
+            .padding({ left: SPACING.LG, right: SPACING.LG, top: 8, bottom: 8 })
+            .backgroundColor('#FFF3E0')
+            .margin({ bottom: SPACING.SM })
+          }
+
+          // ---- 扫描次数 ----
+          if (this.appState.member.memberStatus.scansRemainingToday >= 0) {
+            Row() {
+              Text(this.vm.scanLimitReached ? $r('app.string.scan_today_used_up') : $r('app.string.scan_today_remaining') + `：${this.vm.remainingScans} ` + $r('app.string.scan_times'))
+                .fontSize(FONT_SIZE.SMALL)
+                .fontColor(this.vm.scanLimitReached ? COLORS.LEVEL_RED : '#F57C00')
+            }
+            .width('100%')
+            .padding({ left: SPACING.LG, right: SPACING.LG })
+            .margin({ bottom: SPACING.MD })
+          }
+
+          ScanResultCard({
+            scanPhase: this.vm.scanPhase as ScanPhase,
+            foodLabel: this.vm.foodLabel,
+            scoreReady: this.vm.scoreReady,
+            nutriScore: this.vm.nutriScore,
+            detailLoading: this.vm.detailLoading,
+            recognizedText: this.vm.recognizedText,
+            recognitionHint: this.vm.recognitionHint,
+            isOffline: this.vm.isOffline,
+            frequentItems: this.vm.frequentItems,
+            showEditPanel: this.vm.showEditPanel,
+            onFrequentItemTap: (item: FoodLabel) => {
+              this.vm.foodLabel = item
+              this.calculateScoreForCurrentLabel()
+            }
+          })
 
           // ---- 扫描历史快捷入口 ----
-          if (this.foodLabel.foodId.length === 0 && this.recentScans.length > 0 &&
-              this.scanPhase !== ScanPhase.RECOGNIZING && !this.isRecognizing()) {
+          if (this.vm.foodLabel.foodId.length === 0 && this.vm.recentScans.length > 0 &&
+              this.vm.scanPhase !== ScanPhase.RECOGNIZING && !this.isRecognizing()) {
             this.RecentScanBar()
           }
 
-          if (this.showEditPanel) {
-            this.EditPanel()
+          if (this.vm.showEditPanel) {
+            ScanEditPanel({ editPanel: this.vm.editPanel })
           }
 
           Column() {
-            if (this.foodLabel.foodId.length === 0) {
-              Button(this.scanMode === 'barcode' ? $r('app.string.scan_mode_barcode') : $r('app.string.scan_mode_photo'))
+            if (this.vm.foodLabel.foodId.length === 0) {
+              Button(this.vm.scanMode === 'barcode' ? $r('app.string.scan_mode_barcode') : $r('app.string.scan_mode_photo'))
                 .width('90%')
                 .height(52)
                 .backgroundColor(COLORS.PRIMARY)
                 .borderRadius(BUTTON.RADIUS_PRIMARY)
-                .onClick(() => { this.startRecognition() })
+                .onClick(() => {
+            if (this.vm.scanMode === 'barcode') {
+              this.scanWithSystemKit()
+            } else {
+              this.startRecognition()
+            }
+          })
                 .animation({ duration: 200, curve: curves.springMotion() })
                 .accessibilityText($r('app.string.scan_identify'))
-                .accessibilityDescription('开始扫描食品信息')
+                .accessibilityDescription($r('app.string.scan_start_desc'))
 
               Button($r('app.string.scan_mode_manual'))
                 .width('90%')
@@ -443,7 +514,7 @@ struct ScanPage {
                 .fontColor(COLORS.PRIMARY)
                 .borderRadius(BUTTON.RADIUS_MD)
                 .margin({ top: 10 })
-                .accessibilityText('手动输入食品信息')
+                .accessibilityText($r('app.string.scan_manual_input'))
                 .accessibilityLevel('yes')
                 .onClick(() => { this.startManualEntry() })
                 .animation({ duration: 200, curve: curves.springMotion() })
@@ -453,23 +524,23 @@ struct ScanPage {
                 .height(52)
                 .backgroundColor(COLORS.ACCENT_GREEN)
                 .borderRadius(BUTTON.RADIUS_PRIMARY)
-                .accessibilityText('查看食品适配报告')
+                .accessibilityText($r('app.string.scan_view_report_desc'))
                 .accessibilityLevel('yes')
                 .onClick(() => { this.viewReport() })
                 .animation({ duration: 300, curve: curves.springMotion() })
 
               Row() {
-                Button(this.showEditPanel ? $r('app.string.edit_panel_collapse') : $r('app.string.edit_panel_toggle'))
+                Button(this.vm.showEditPanel ? $r('app.string.edit_panel_collapse') : $r('app.string.edit_panel_toggle'))
                   .layoutWeight(1)
                   .height(BUTTON.HEIGHT_SECONDARY)
                   .backgroundColor(COLORS.BG_CARD)
                   .fontColor(COLORS.PRIMARY)
                   .borderRadius(BUTTON.RADIUS_SECONDARY)
-                  .accessibilityText('展开或收起编辑面板')
+                  .accessibilityText($r('app.string.scan_edit_panel_toggle_desc'))
                   .accessibilityLevel('yes')
                   .onClick(() => {
-                    this.showEditPanel = !this.showEditPanel
-                    if (this.showEditPanel) {
+                    this.vm.showEditPanel = !this.vm.showEditPanel
+                    if (this.vm.showEditPanel) {
                       this.loadEditFormFromLabel()
                     }
                   })
@@ -482,7 +553,7 @@ struct ScanPage {
                   .fontColor(COLORS.ORANGE_DEEP)
                   .borderRadius(BUTTON.RADIUS_SECONDARY)
                   .margin({ left: 10 })
-                  .accessibilityText('保存食品标签信息')
+                  .accessibilityText($r('app.string.scan_save_label_desc'))
                   .accessibilityLevel('yes')
                   .onClick(() => { this.saveDraft() })
                   .animation({ duration: 200, curve: curves.springMotion() })
@@ -500,14 +571,45 @@ struct ScanPage {
       }
       .width('100%')
       .height('100%')
+        }
+
+        if (this.vm.currentBreakpoint === 'lg' && this.vm.showEditPanel) {
+          GridCol({ span: { sm: 0, md: 0, lg: 4 }, offset: { sm: 0, md: 0, lg: 0 } }) {
+            Scroll() {
+              ScanEditPanel({ editPanel: this.vm.editPanel })
+            }
+            .width('100%')
+            .height('100%')
+            .padding({ left: 8, right: 8, top: 16 })
+          }
+        }
+      }
+      .width('100%')
+      .height('100%')
+      .onBreakpointChange((bp: string) => { this.vm.currentBreakpoint = bp })
 
       // 付费墙弹窗（覆盖在内容之上）
-      if (this.paywallTrigger !== null) {
+      if (this.vm.paywallTrigger !== null) {
         PaywallDialog({
-          trigger: this.paywallTrigger,
-          showDialog: this.showPaywallDialog,
-      onUpdateShowDialog: (val: boolean) => { this.showPaywallDialog = val }
+          trigger: this.vm.paywallTrigger,
+          showDialog: this.vm.showPaywallDialog,
+      onUpdateShowDialog: (val: boolean) => { this.vm.showPaywallDialog = val }
         })
+      }
+
+      if (this.vm.showPermissionGuide) {
+        Column() {
+          PermissionGuideDialog({
+            permissionName: '',
+            reason: '',
+            onClose: () => { this.vm.showPermissionGuide = false }
+          })
+        }
+        .width('100%')
+        .height('100%')
+        .justifyContent(FlexAlign.Center)
+        .backgroundColor(0x66000000)
+        .onClick(() => { this.vm.showPermissionGuide = false })
       }
     }
     .width('100%')
@@ -518,57 +620,26 @@ struct ScanPage {
    * 判断当前是否处于正在识别的阶段
    */
   private isRecognizing(): boolean {
-    return this.scanPhase === ScanPhase.RECOGNIZING ||
-           this.scanPhase === ScanPhase.DB_QUERYING ||
-           this.scanPhase === ScanPhase.API_QUERYING ||
-           this.scanPhase === ScanPhase.SCORING
+    return this.vm.scanPhase === ScanPhase.RECOGNIZING ||
+           this.vm.scanPhase === ScanPhase.DB_QUERYING ||
+           this.vm.scanPhase === ScanPhase.API_QUERYING ||
+           this.vm.scanPhase === ScanPhase.SCORING
   }
 
-  // ==================== 模式选择器 ====================
 
-  @Builder
-  ModeSelector() {
-    Row() {
-      Text($r('app.string.tab_photo'))
-        .fontSize(15)
-        .padding({ left: 20, right: 20, top: 8, bottom: 8 })
-        .borderRadius(BUTTON.RADIUS_SMALL)
-        .backgroundColor(this.scanMode === 'camera' ? COLORS.PRIMARY : COLORS.WHITE)
-        .fontColor(this.scanMode === 'camera' ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
-        .onClick(() => {
-          this.scanMode = 'camera'
-          // 清除超时状态提示
-          if (this.scanPhase === ScanPhase.TIMEOUT) {
-            this.scanPhase = ScanPhase.IDLE
-          }
-        })
-
-      Text($r('app.string.tab_barcode'))
-        .fontSize(15)
-        .padding({ left: 20, right: 20, top: 8, bottom: 8 })
-        .borderRadius(BUTTON.RADIUS_SMALL)
-        .backgroundColor(this.scanMode === 'barcode' ? COLORS.PRIMARY : COLORS.WHITE)
-        .fontColor(this.scanMode === 'barcode' ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
-        .margin({ left: 10 })
-        .onClick(() => { this.scanMode = 'barcode' })
-    }
-    .width('100%')
-    .padding({ left: SPACING.LG, right: SPACING.LG })
-    .margin({ bottom: SPACING.MD })
-  }
 
   // ==================== 最近扫描快捷入口 ====================
 
   @Builder
   RecentScanBar() {
     Column() {
-      Text('⏱ 最近扫描')
+      Text('⏱ ' + $r('app.string.scan_recent_scans'))
         .fontSize(FONT_SIZE.SMALL)
         .fontColor(COLORS.TEXT_SECONDARY)
         .margin({ bottom: SPACING.SM })
       Scroll() {
         Row() {
-          ForEach(this.recentScans, (item: FoodLabel) => {
+          ForEach(this.vm.recentScans, (item: FoodLabel) => {
             Column() {
               Text(item.foodName)
                 .fontSize(FONT_SIZE.TINY)
@@ -585,7 +656,7 @@ struct ScanPage {
             .borderRadius(RADIUS.SM)
             .margin({ right: SPACING.SM })
             .onClick(() => {
-              this.foodLabel = item
+              this.vm.foodLabel = item
               this.calculateScoreForCurrentLabel()
             })
           }, (item: FoodLabel) => item.foodId)
@@ -598,241 +669,18 @@ struct ScanPage {
     .width('92%')
   }
 
-  // ==================== 结果卡片（多态加载状态） ====================
-
-  @Builder
-  ResultCard() {
-    Column() {
-      if (this.isRecognizing()) {
-        // ── 正在识别中：按阶段显示不同状态（渐变过渡）──
-        if (this.scanPhase === ScanPhase.RECOGNIZING) {
-          Column() {
-            LoadingProgress()
-              .width(48)
-              .height(BUTTON.HEIGHT_MD)
-              .color(COLORS.ACCENT_BLUE)
-            Text($r('app.string.scanning_barcode'))
-              .fontSize(FONT_SIZE.BODY)
-              .fontColor(COLORS.TEXT_TERTIARY)
-              .margin({ top: SPACING.MD })
-          }
-          .alignItems(HorizontalAlign.Center)
-          .justifyContent(FlexAlign.Center)
-          .width('100%')
-          .height(140)
-          .transition(TransitionEffect.opacity(1))
-        } else if (this.scanPhase === ScanPhase.DB_QUERYING) {
-          Column() {
-            LoadingProgress()
-              .width(36)
-              .height(36)
-              .color(COLORS.ACCENT_GREEN)
-            Text('正在查询本地数据库…')
-              .fontSize(FONT_SIZE.BODY)
-              .fontColor(COLORS.TEXT_TERTIARY)
-              .margin({ top: SPACING.MD })
-          }
-          .alignItems(HorizontalAlign.Center)
-          .justifyContent(FlexAlign.Center)
-          .width('100%')
-          .height(100)
-          .transition(TransitionEffect.opacity(1))
-        } else if (this.scanPhase === ScanPhase.API_QUERYING) {
-          Column() {
-            LoadingProgress()
-              .width(36)
-              .height(36)
-              .color(COLORS.ACCENT_PURPLE)
-            Text('正在查询远程营养数据…')
-              .fontSize(FONT_SIZE.BODY)
-              .fontColor(COLORS.TEXT_TERTIARY)
-              .margin({ top: SPACING.MD })
-            if (this.isOffline) {
-              Text('（离线模式，仅使用本地数据）')
-                .fontSize(FONT_SIZE.SMALL)
-                .fontColor(COLORS.WARNING)
-                .margin({ top: SPACING.XS })
-            }
-          }
-          .alignItems(HorizontalAlign.Center)
-          .justifyContent(FlexAlign.Center)
-          .width('100%')
-          .height(120)
-          .transition(TransitionEffect.opacity(1))
-        } else if (this.scanPhase === ScanPhase.SCORING) {
-          Column() {
-            LoadingProgress()
-              .width(32)
-              .height(32)
-              .color(COLORS.ACCENT_GREEN)
-            Text('正在评估营养评分…')
-              .fontSize(FONT_SIZE.SMALL)
-              .fontColor(COLORS.TEXT_TERTIARY)
-              .margin({ top: SPACING.SM, bottom: SPACING.MD })
-          }
-          .alignItems(HorizontalAlign.Center)
-          .justifyContent(FlexAlign.Center)
-          .width('100%')
-          .height(80)
-          .transition(TransitionEffect.opacity(1))
-        }
-      } else if (this.foodLabel.foodId.length === 0) {
-        // ── 未识别：显示高频商品快速入口 ──
-        if (this.frequentItems.length > 0) {
-          Text('🔥 快速选择历史商品')
-            .fontSize(FONT_SIZE.SMALL)
-            .fontColor(COLORS.TEXT_SECONDARY)
-            .margin({ bottom: SPACING.SM })
-          Scroll() {
-            Row() {
-              ForEach(this.frequentItems, (item: FoodLabel) => {
-                Column() {
-                  Text(item.foodName)
-                    .fontSize(FONT_SIZE.TINY)
-                    .fontColor(COLORS.TEXT_PRIMARY)
-                    .maxLines(2)
-                    .textOverflow({ overflow: TextOverflow.Ellipsis })
-                    .lineHeight(14)
-                    .textAlign(TextAlign.Center)
-                }
-                .width(72)
-                .height(60)
-                .padding(SPACING.XS)
-                .backgroundColor(COLORS.BG_CARD_HIGHLIGHT)
-                .borderRadius(RADIUS.SM)
-                .margin({ right: SPACING.SM })
-                .onClick(() => {
-                  this.foodLabel = item
-                  this.calculateScoreForCurrentLabel()
-                })
-              }, (item: FoodLabel) => item.foodId)
-            }
-          }
-          .scrollable(ScrollDirection.Horizontal)
-          .scrollBar(BarState.Off)
-          .margin({ bottom: SPACING.MD })
-        }
-
-        // 超时降级提示
-        if (this.scanPhase === ScanPhase.TIMEOUT) {
-          Column() {
-            Text('⏰ 扫码超时')
-              .fontSize(15)
-              .fontColor(COLORS.LEVEL_ORANGE)
-              .fontWeight(FONT_WEIGHT.BOLD)
-            Text('请对准条码或切换使用拍照模式')
-              .fontSize(FONT_SIZE.SMALL)
-              .fontColor(COLORS.TEXT_TERTIARY)
-              .margin({ top: 4 })
-          }
-          .margin({ bottom: SPACING.MD })
-        }
-
-        Text('识别后会在这里生成一个可编辑的 FoodLabel 草稿')
-          .fontSize(15)
-          .fontColor(COLORS.TEXT_TERTIARY)
-          .textAlign(TextAlign.Center)
-        Text($r('app.string.scan_mode_barcode') + ' ' + $r('app.string.scan_today_remaining') + '...')
-          .fontSize(FONT_SIZE.SMALL)
-          .fontColor(COLORS.TEXT_TERTIARY)
-          .textAlign(TextAlign.Center)
-          .margin({ top: SPACING.SM })
-      } else {
-        // ── 识别完成：先展示评分徽章，再异步加载详情 ──
-        if (this.scoreReady) {
-          NutriScoreBadge({
-            score: this.nutriScore,
-            diameter: 120,
-            animating: true
-          })
-          .margin({ bottom: SPACING.MD })
-        } else if (this.detailLoading) {
-          LoadingProgress()
-            .width(32)
-            .height(32)
-            .color(COLORS.ACCENT_GREEN)
-          Text('正在评估营养评分...')
-            .fontSize(FONT_SIZE.SMALL)
-            .fontColor(COLORS.TEXT_TERTIARY)
-            .margin({ top: SPACING.SM, bottom: SPACING.MD })
-        }
-
-        Text(this.foodLabel.foodName.length > 0 ? this.foodLabel.foodName : '待补充食品名称')
-          .fontSize(FONT_SIZE.TITLE)
-          .fontWeight(FONT_WEIGHT.BOLD)
-          .margin({ bottom: SPACING.SM })
-
-        if (typeof this.recognitionHint === 'string' && this.recognitionHint.length > 0) {
-          Text(this.recognitionHint)
-            .fontSize(FONT_SIZE.SMALL)
-            .fontColor(COLORS.PRIMARY)
-            .textAlign(TextAlign.Center)
-            .margin({ bottom: 6 })
-        }
-
-        if (this.recognizedText.length > 0) {
-          Text(this.recognizedText)
-            .fontSize(FONT_SIZE.SMALL)
-            .fontColor(COLORS.TEXT_TERTIARY)
-            .textAlign(TextAlign.Center)
-            .margin({ bottom: SPACING.SM })
-        }
-
-        Row() {
-          this.MetricChip('钠', `${this.foodLabel.nutrition.sodium} mg`)
-          this.MetricChip('糖', `${this.foodLabel.nutrition.sugar} g`)
-          this.MetricChip('热量', `${this.foodLabel.nutrition.calories} kcal`)
-        }
-        .width('100%')
-        .justifyContent(FlexAlign.SpaceAround)
-        .margin({ bottom: SPACING.SM })
-
-        if (this.foodLabel.barcode.length > 0) {
-          Text(`条码：${this.foodLabel.barcode}`)
-            .fontSize(FONT_SIZE.SMALL)
-            .fontColor(COLORS.TEXT_SECONDARY)
-            .margin({ bottom: 6 })
-        }
-
-        Text(this.showEditPanel ? '请核对下方字段后保存或查看报告' : '如信息不完整，可展开手动修正面板补全')
-          .fontSize(FONT_SIZE.SMALL)
-          .fontColor(COLORS.TEXT_TERTIARY)
-          .textAlign(TextAlign.Center)
-      }
-    }
-    .width('92%')
-    .padding(20)
-    .backgroundColor(COLORS.BG_CARD)
-    .borderRadius(RADIUS.LG)
-    .alignItems(HorizontalAlign.Center)
-  }
-
-  @Builder
-  MetricChip(label: string, value: string) {
-    Column() {
-      Text(label)
-        .fontSize(11)
-        .fontColor(COLORS.TEXT_TERTIARY)
-      Text(value)
-        .fontSize(13)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(COLORS.TEXT_GRAY_2121)
-        .margin({ top: 2 })
-    }
-    .padding(8)
-    .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
-    .borderRadius(10)
-  }
-
   // ==================== 评分计算 ====================
 
   private calculateScoreForCurrentLabel() {
-    this.scoreReady = false
-    this.detailLoading = true
-    setTimeout(() => {
-      this.nutriScore = this.quickNutriScore(this.foodLabel)
-      this.scoreReady = true
-      this.detailLoading = false
+    this.vm.scoreReady = false
+    this.vm.detailLoading = true
+    if (this.scoreTimer !== -1) clearTimeout(this.scoreTimer)
+    this.scoreTimer = setTimeout(() => {
+      this.scoreTimer = -1
+      if (!this.componentActive) return
+      this.vm.nutriScore = this.quickNutriScore(this.vm.foodLabel)
+      this.vm.scoreReady = true
+      this.vm.detailLoading = false
     }, 600)
   }
 
@@ -847,81 +695,139 @@ struct ScanPage {
     return Math.max(0, Math.min(100, score))
   }
 
-  // ==================== 编辑面板 ====================
-
-  @Builder
-  EditPanel() {
-    Column() {
-      Text('手动修正')
-        .fontSize(17)
-        .fontWeight(FontWeight.Bold)
-        .margin({ bottom: SPACING.MD })
-
-      this.FormInput('食品名称', this.editPanel.foodName, '输入食品名称', (value: string) => { this.editPanel.foodName = value })
-      this.FormInput('钠（mg/100g）', this.editPanel.sodium, '0', (value: string) => { this.editPanel.sodium = value })
-      this.FormInput('糖（g/100g）', this.editPanel.sugar, '0', (value: string) => { this.editPanel.sugar = value })
-      this.FormInput('热量（kcal/100g）', this.editPanel.calories, '0', (value: string) => { this.editPanel.calories = value })
-      this.FormInput('脂肪（g/100g）', this.editPanel.fat, '0', (value: string) => { this.editPanel.fat = value })
-      this.FormInput('碳水（g/100g）', this.editPanel.carbohydrate, '0', (value: string) => { this.editPanel.carbohydrate = value })
-      this.FormInput('蛋白质（g/100g）', this.editPanel.protein, '0', (value: string) => { this.editPanel.protein = value })
-
-      Column() {
-        Text('配料')
-          .fontSize(13)
-          .fontColor(COLORS.TEXT_TERTIARY)
-          .margin({ bottom: 6 })
-        TextArea({ text: this.editPanel.ingredients, placeholder: '一行一个，或用逗号分隔' })
-          .width('100%')
-          .height(100)
-          .padding(10)
-          .backgroundColor(COLORS.BG_PAGE_LIGHT)
-          .borderRadius(12)
-          .onChange((value: string) => { this.editPanel.ingredients = value })
-      }
-      .width('100%')
-      .alignItems(HorizontalAlign.Start)
-      .margin({ bottom: SPACING.MD })
-
-      this.FormInput('生产商', this.editPanel.manufacturer, '输入生产商', (value: string) => { this.editPanel.manufacturer = value })
-      this.FormInput('SC 编号', this.editPanel.scNumber, '输入 SC 编号', (value: string) => { this.editPanel.scNumber = value })
-      this.FormInput('委托方', this.editPanel.principal, '输入委托方', (value: string) => { this.editPanel.principal = value })
-      this.FormInput('受托方', this.editPanel.trustee, '输入受托方', (value: string) => { this.editPanel.trustee = value })
-    }
-    .width('92%')
-    .padding(16)
-    .backgroundColor(COLORS.BG_CARD)
-    .borderRadius(RADIUS.LG)
-    .margin({ top: 14 })
-    .alignItems(HorizontalAlign.Start)
-  }
-
-  @Builder
-  FormInput(title: string, value: string, placeholder: string, onChange: (value: string) => void) {
-    Column() {
-      Text(title)
-        .fontSize(13)
-        .fontColor(COLORS.TEXT_TERTIARY)
-        .margin({ bottom: 6 })
-      TextInput({ text: value, placeholder })
-        .width('100%')
-        .height(BUTTON.HEIGHT_SECONDARY)
-        .padding({ left: 12, right: 12 })
-        .backgroundColor(COLORS.BG_PAGE_LIGHT)
-        .borderRadius(12)
-        .onChange(onChange)
-    }
-    .width('100%')
-    .alignItems(HorizontalAlign.Start)
-    .margin({ bottom: SPACING.MD })
-  }
-
   // ==================== 扫描限额 ====================
 
+  // ==================== 系统 ScanKit 扫码（替代自定义扫码） ====================
+
+  /**
+   * 使用系统 @kit.ScanKit 原生扫码界面
+   * 支持条码/二维码、相册识别、多码模式
+   */
+  private scanWithSystemKit(): void {
+    if (this.vm.scanLimitReached) {
+      ToastHelper.show(this.getUIContext(), $r('app.string.scan_today_used_up'))
+      return
+    }
+
+    this.vm.scanPhase = ScanPhase.RECOGNIZING
+    const options: scanBarcode.ScanOptions = {
+        scanTypes: [scanCore.ScanType.ALL],
+        enableMultiMode: false,
+        enableAlbum: true
+      };
+
+    try {
+      const context = getContext(this) as common.UIAbilityContext
+      scanBarcode.startScanForResult(context, options)
+        .then((result: scanBarcode.ScanResult) => {
+          if (!this.componentActive) return
+          this.vibrateSuccess()
+          this.vm.recognizedText = result.originalValue
+          this.vm.scanPhase = ScanPhase.DB_QUERYING
+          // 用扫码结果查询食品
+          this.processScanResult(result.originalValue)
+        })
+        .catch((err: BusinessError) => {
+          if (!this.componentActive) return
+          hilog.warn(DOMAIN_ZERO, TAG, 'scanBarcode failed: %{public}s', err.message)
+          this.vm.scanPhase = ScanPhase.IDLE
+          if (err.code !== 1000500002) { // 非用户取消
+            ToastHelper.show(this.getUIContext(), $r('app.string.scan_barcode_failed_retry'))
+          }
+        })
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'scanWithSystemKit: ' + JSON.stringify(e))
+      this.vm.scanPhase = ScanPhase.IDLE
+    }
+  }
+
+  /**
+   * 校验条码格式（仅支持 EAN-8/12/13）
+   */
+  private isValidBarcodeFormat(barcode: string): boolean {
+    if (/^[0-9]{8}$/.test(barcode)) return true;
+    if (/^[0-9]{13}$/.test(barcode)) return true;
+    if (/^[0-9]{12}$/.test(barcode)) {
+      let sum = 0;
+      for (let i = 0; i < 11; i++) {
+        sum += parseInt(barcode[i]) * (i % 2 === 0 ? 3 : 1);
+      }
+      const checksum = (10 - (sum % 10)) % 10;
+      return checksum === parseInt(barcode[11]);
+    }
+    if (barcode.startsWith('http') && (barcode.includes('openfoodfacts') || barcode.includes('foodscan'))) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * 处理扫码结果，查询食品信息
+   */
+  private async processScanResult(barcode: string): Promise<void> {
+    let throttled = false;
+    this.scanThrottler.run(() => { throttled = true; });
+    if (!throttled) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Scan throttle: too frequent, skip');
+      return;
+    }
+
+    // 条码格式校验
+    if (!this.isValidBarcodeFormat(barcode)) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Invalid barcode format: len=%{public}d', barcode.length);
+      ToastHelper.show(this.getUIContext(), $r('app.string.scan_unsupported_barcode'));
+      this.vm.scanPhase = ScanPhase.IDLE;
+      return;
+    }
+
+    try {
+      this.vm.scanPhase = ScanPhase.DB_QUERYING
+      const scanService = this.appState.scanService
+      const lookupResult = await scanService.lookupByBarcodeChain(barcode)
+      if (lookupResult.foodLabel && lookupResult.foodLabel.foodName.length > 0) {
+        hilog.info(DOMAIN_ZERO, TAG, 'processScanResult: found via %{public}s, confidence=%{public}d',
+          lookupResult.source, lookupResult.confidence)
+        this.vm.foodLabel = lookupResult.foodLabel
+        if (this.vm.isOffline && lookupResult.source !== 'barcode_scan') {
+          this.vm.recognitionHint = '📡 ' + $r('app.string.scan_offline_data')
+        }
+        this.vm.scanPhase = ScanPhase.SCORING
+        this.calculateScoreForCurrentLabel()
+      } else {
+        hilog.info(DOMAIN_ZERO, TAG, 'processScanResult: all levels miss for barcode %{public}s', barcode)
+        ToastHelper.show(this.getUIContext(), $r('app.string.scan_barcode_not_found_manual'))
+        this.vm.scanPhase = ScanPhase.IDLE
+      }
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'processScanResult: ' + JSON.stringify(e))
+      // 远程查询失败时尝试本地缓存降级
+      try {
+        const localFood = await this.appState.foodRepo.findByBarcode(barcode)
+        if (localFood !== null) {
+          this.vm.foodLabel = localFood
+          this.vm.recognitionHint = '📡 ' + $r('app.string.scan_offline_data')
+          this.vm.scanPhase = ScanPhase.SCORING
+          this.calculateScoreForCurrentLabel()
+          return
+        }
+      } catch (_e2) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'Offline fallback also failed')
+      }
+      // 降级路径：网络不可用时尝试端侧AI推理
+      const onDeviceAi = this.appState.getOnDeviceAiEngine();
+      if (onDeviceAi && (onDeviceAi as Record<string, Object>).isAvailable !== undefined) {
+        hilog.info(DOMAIN_ZERO, TAG, 'Attempting on-device AI inference fallback');
+        // TODO: 当端侧模型可推理营养评分时，使用 onDeviceAi.inferNutritionScore(localData) 结果
+      }
+      this.vm.scanPhase = ScanPhase.IDLE
+    }
+  }
+
   private refreshScanQuota() {
-    this.scanLimitReached = false
+    this.vm.scanLimitReached = false
     const remaining = this.appState.member.getRemainingScans()
-    this.remainingScans = remaining
-    this.scanLimitReached = remaining <= 0 && TIER_DAILY_SCAN_LIMIT[this.appState.member.memberStatus.tier] !== -1
+    this.vm.remainingScans = remaining
+    this.vm.scanLimitReached = remaining <= 0 && TIER_DAILY_SCAN_LIMIT[this.appState.member.memberStatus.tier] !== -1
   }
 
   // ==================== 识别入口 ====================
@@ -944,45 +850,49 @@ struct ScanPage {
     // 付费墙拦截
     const trigger = this.appState.member.useScan();
     if (trigger !== null) {
-      this.paywallTrigger = trigger;
-      this.showPaywallDialog = true;
-      this.scanLimitReached = true;
+      const paywallTrigger = new PaywallTrigger();
+    paywallTrigger.featureName = 'scan';
+    this.vm.paywallTrigger = paywallTrigger;
+      this.vm.showPaywallDialog = true;
+      this.vm.scanLimitReached = true;
       return;
     }
 
-    this.scanPhase = ScanPhase.RECOGNIZING;
+    this.vm.scanPhase = ScanPhase.RECOGNIZING;
     try {
       // 检查并请求摄像头权限（扫码和拍照都需要）
-      const hasCameraPermission = await PermissionManager.getInstance().requestCameraPermission();
+      const hasCameraPermission = await this.appState.permission.requestCameraPermission();
       if (!hasCameraPermission) {
-        promptAction.showToast({ message: '需要摄像头权限才能扫码，请在设置中授予' })
-        this.scanPhase = ScanPhase.ERROR
+        this.vm.permissionDenied = true
+        this.vm.showPermissionGuideDialog($r('app.string.scan_camera') as string, $r('app.string.scan_camera_permission_reason') as string)
+        this.vm.scanPhase = ScanPhase.ERROR
         return
       }
+      this.vm.permissionDenied = false
 
-      if (this.scanMode === 'barcode') {
+      if (this.vm.scanMode === 'barcode') {
         const context = getContext(this) as common.Context
         const result = await this.foodInputService.scanBarcode(context)
         if (result) {
-          this.scanPhase = ScanPhase.DB_QUERYING
+          this.vm.scanPhase = ScanPhase.DB_QUERYING
           this.applyFoodInputResult(result)
         } else {
-          promptAction.showToast({ message: $r('app.string.barcode_not_found') })
+          ToastHelper.show(this.getUIContext(), $r('app.string.barcode_not_found'))
         }
       } else {
         // 拍照模式：直接生成草稿 + 提示后续手动修正
-        this.scanPhase = ScanPhase.DB_QUERYING
+        this.vm.scanPhase = ScanPhase.DB_QUERYING
         this.applyFoodInputResult(this.foodInputService.createCameraDraft())
       }
 
-      if (this.foodLabel.foodId.length > 0) {
-        this.scanPhase = ScanPhase.SCORING
+      if (this.vm.foodLabel.foodId.length > 0) {
+        this.vm.scanPhase = ScanPhase.SCORING
         this.calculateScoreForCurrentLabel()
-        this.scanPhase = ScanPhase.DONE
+        this.vm.scanPhase = ScanPhase.DONE
       }
     } catch (error) {
-      this.scanPhase = ScanPhase.ERROR
-      promptAction.showToast({ message: '识别失败，已切换到手动录入' })
+      this.vm.scanPhase = ScanPhase.ERROR
+      ToastHelper.show(this.getUIContext(), $r('app.string.scan_recognition_failed_manual'))
       this.startManualEntry()
     } finally {
       this.refreshScanQuota()
@@ -992,54 +902,54 @@ struct ScanPage {
   // ==================== 编辑表单 ====================
 
   private loadEditFormFromLabel() {
-    this.editPanel.foodName = this.foodLabel.foodName
-    this.editPanel.sodium = `${this.foodLabel.nutrition.sodium}`
-    this.editPanel.sugar = `${this.foodLabel.nutrition.sugar}`
-    this.editPanel.calories = `${this.foodLabel.nutrition.calories}`
-    this.editPanel.fat = `${this.foodLabel.nutrition.fat}`
-    this.editPanel.carbohydrate = `${this.foodLabel.nutrition.carbohydrate}`
-    this.editPanel.protein = `${this.foodLabel.nutrition.protein}`
-    this.editPanel.ingredients = this.foodLabel.ingredients.join('\\n')
-    this.editPanel.manufacturer = this.foodLabel.manufacturer
-    this.editPanel.scNumber = this.foodLabel.scNumber
-    this.editPanel.principal = this.foodLabel.principal
-    this.editPanel.trustee = this.foodLabel.trustee
+    this.vm.editPanel.foodName = this.vm.foodLabel.foodName
+    this.vm.editPanel.sodium = `${this.vm.foodLabel.nutrition.sodium}`
+    this.vm.editPanel.sugar = `${this.vm.foodLabel.nutrition.sugar}`
+    this.vm.editPanel.calories = `${this.vm.foodLabel.nutrition.calories}`
+    this.vm.editPanel.fat = `${this.vm.foodLabel.nutrition.fat}`
+    this.vm.editPanel.carbohydrate = `${this.vm.foodLabel.nutrition.carbohydrate}`
+    this.vm.editPanel.protein = `${this.vm.foodLabel.nutrition.protein}`
+    this.vm.editPanel.ingredients = this.vm.foodLabel.ingredients.join('\\n')
+    this.vm.editPanel.manufacturer = this.vm.foodLabel.manufacturer
+    this.vm.editPanel.scNumber = this.vm.foodLabel.scNumber
+    this.vm.editPanel.principal = this.vm.foodLabel.principal
+    this.vm.editPanel.trustee = this.vm.foodLabel.trustee
   }
 
   private applyEditFormToLabel() {
-    if (this.foodLabel.foodId.length === 0) {
-      this.foodLabel.foodId = `food_${Date.now()}`
+    if (this.vm.foodLabel.foodId.length === 0) {
+      this.vm.foodLabel.foodId = `food_${Date.now()}`
     }
-    if (this.foodLabel.identifiedAt <= 0) {
-      this.foodLabel.identifiedAt = Date.now()
+    if (this.vm.foodLabel.identifiedAt <= 0) {
+      this.vm.foodLabel.identifiedAt = Date.now()
     }
-    this.foodLabel.foodName = this.editPanel.foodName.trim()
-    this.foodLabel.nutrition.sodium = this.parseNumber(this.editPanel.sodium)
-    this.foodLabel.nutrition.sugar = this.parseNumber(this.editPanel.sugar)
-    this.foodLabel.nutrition.calories = this.parseNumber(this.editPanel.calories)
-    this.foodLabel.nutrition.fat = this.parseNumber(this.editPanel.fat)
-    this.foodLabel.nutrition.carbohydrate = this.parseNumber(this.editPanel.carbohydrate)
-    this.foodLabel.nutrition.protein = this.parseNumber(this.editPanel.protein)
-    this.foodLabel.ingredients = this.editPanel.ingredients
+    this.vm.foodLabel.foodName = this.vm.editPanel.foodName.trim()
+    this.vm.foodLabel.nutrition.sodium = this.parseNumber(this.vm.editPanel.sodium)
+    this.vm.foodLabel.nutrition.sugar = this.parseNumber(this.vm.editPanel.sugar)
+    this.vm.foodLabel.nutrition.calories = this.parseNumber(this.vm.editPanel.calories)
+    this.vm.foodLabel.nutrition.fat = this.parseNumber(this.vm.editPanel.fat)
+    this.vm.foodLabel.nutrition.carbohydrate = this.parseNumber(this.vm.editPanel.carbohydrate)
+    this.vm.foodLabel.nutrition.protein = this.parseNumber(this.vm.editPanel.protein)
+    this.vm.foodLabel.ingredients = this.vm.editPanel.ingredients
       .split(/\\r?\\n|,|，|、/)
       .map(item => item.trim())
       .filter(item => item.length > 0)
-    this.foodLabel.manufacturer = this.editPanel.manufacturer.trim()
-    this.foodLabel.scNumber = this.editPanel.scNumber.trim()
-    this.foodLabel.principal = this.editPanel.principal.trim()
-    this.foodLabel.trustee = this.editPanel.trustee.trim()
+    this.vm.foodLabel.manufacturer = this.vm.editPanel.manufacturer.trim()
+    this.vm.foodLabel.scNumber = this.vm.editPanel.scNumber.trim()
+    this.vm.foodLabel.principal = this.vm.editPanel.principal.trim()
+    this.vm.foodLabel.trustee = this.vm.editPanel.trustee.trim()
   }
 
   private applyFoodInputResult(result: FoodInputResult) {
-    this.foodLabel = result.foodLabel
-    this.recognizedText = result.recognizedText
-    this.recognitionHint = result.hint
-    this.ocrConfidence = result.confidence
-    this.showEditPanel = result.requiresManualReview
-    if (this.showEditPanel) {
+    this.vm.foodLabel = result.foodLabel
+    this.vm.recognizedText = result.recognizedText
+    this.vm.recognitionHint = result.hint
+    this.vm.ocrConfidence = result.confidence
+    this.vm.showEditPanel = result.requiresManualReview
+    if (this.vm.showEditPanel) {
       this.loadEditFormFromLabel()
     }
-    if (this.foodLabel.foodId.length > 0) {
+    if (this.vm.foodLabel.foodId.length > 0) {
       this.calculateScoreForCurrentLabel()
     }
   }
@@ -1050,16 +960,16 @@ struct ScanPage {
   }
 
   private async persistCurrentFoodLabel(showSuccessToast: boolean): Promise<boolean> {
-    if (this.showEditPanel) {
+    if (this.vm.showEditPanel) {
       this.applyEditFormToLabel()
     }
-    if (this.foodLabel.foodName.trim().length === 0) {
-      promptAction.showToast({ message: '请先补全食品名称' })
+    if (this.vm.foodLabel.foodName.trim().length === 0) {
+      ToastHelper.show(this.getUIContext(), $r('app.string.scan_complete_food_name_first'))
       return false
     }
-    await this.appState.saveFoodLabel(this.foodLabel)
+    await this.appState.saveFoodLabel(this.vm.foodLabel)
     if (showSuccessToast) {
-      promptAction.showToast({ message: 'FoodLabel 已保存' })
+      ToastHelper.show(this.getUIContext(), $r('app.string.scan_food_label_saved'))
     }
     return true
   }
@@ -1077,27 +987,29 @@ struct ScanPage {
       // 调用动态适配增强计算（集成 FoodAdapterEngine）
       const scanToday = this.appState.member.getTodayScanCount()
       const budget = this.appState.getDailyBudgetSync(this.memberId)
-      const todayIntake: TodayIntakeInput = {
-        sodium_mg: Math.max(0, budget.sodiumBudget - budget.sodiumRemaining),
-        sugar_g: Math.max(0, budget.sugarBudget - budget.sugarRemaining),
-        energy_kcal: Math.max(0, budget.calorieBudget - budget.calorieRemaining),
-        fat_g: Math.max(0, budget.fatBudget - budget.fatRemaining)
-      }
+      const todayIntake = new TodayIntakeInput()
+      todayIntake.sodium_mg = Math.max(0, budget.sodiumBudget - budget.sodiumRemaining)
+      todayIntake.sugar_g = Math.max(0, budget.sugarBudget - budget.sugarRemaining)
+      todayIntake.energy_kcal = Math.max(0, budget.calorieBudget - budget.calorieRemaining)
+      todayIntake.fat_g = Math.max(0, budget.fatBudget - budget.fatRemaining)
       const enhanced: EnhancedFoodRecommendation | null = this.appState.engines.calculateEnhancedAdaptation(
-        this.appState.getAllMembersSync()[0], this.foodLabel, this.appState.getHealthSignal(this.memberId),
+        this.appState.getAllMembersSync()[0], this.vm.foodLabel, this.appState.getHealthSignal(this.memberId),
         todayIntake, scanToday
       )
       if (enhanced !== null) {
-        hilog.info(DOMAIN_ZERO, 'ScanPage', 'Enhanced adaptation computed for %{public}s', this.foodLabel.foodName)
+        hilog.info(DOMAIN_ZERO, 'ScanPage', 'Enhanced adaptation computed for %{public}s', this.vm.foodLabel.foodName)
       }
-      try {
-        router.pushUrl({ url: 'pages/ReportPage', params: { memberId: this.memberId, foodId: this.foodLabel.foodId } })
-      } catch (_e) {
-        hilog.warn(DOMAIN_ZERO, 'ScanPage', 'viewReport check failed');
-      }
+      const navParams = new Map<string, Object>();
+      navParams.set('memberId', this.memberId);
+      navParams.set('foodId', this.vm.foodLabel.foodId);
+      safePushUrl('pages/ReportPage', navParams)
     } catch (_e) {
       hilog.warn(DOMAIN_ZERO, 'ScanPage', 'viewReport pushUrl failed');
     }
+  }
+
+  private showPermissionGuideDialog(_permissionName: string, _reason: string): void {
+    this.vm.showPermissionGuide = true
   }
 
   pageTransition() {

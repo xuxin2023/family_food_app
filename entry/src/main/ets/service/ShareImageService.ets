@@ -1,17 +1,15 @@
+import { Recommendation, RecommendLevel, FamilyProfile, HILOG_DOMAIN } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
-import { Recommendation, RecommendLevel, getLevelColorValue } from '../model/Recommendation';
-import { FamilyProfile } from '../model/FamilyProfile';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'ShareImageService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
-export interface ShareCardParams {
-  foodName: string;
-  recommendations: Recommendation[];
-  members: FamilyProfile[];
-  appName: string;
+export class ShareCardParams {
+  foodName: string = '';
+  recommendations: Recommendation[] = [];
+  members: FamilyProfile[] = [];
+  appName: string = '';
 }
 
 export class ShareImageService {

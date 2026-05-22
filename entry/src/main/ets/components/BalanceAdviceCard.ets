@@ -1,9 +1,8 @@
-// 美食平衡建议卡组件
+import { MealBalance, RiskTag, COLORS } from 'hsp_core';
+// 美食平衡建议卡组件 — @ReusableV2 高频复用
 
-import { MealBalance, RiskTag } from '../model/MealBalance';
-import { COLORS } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
+@ReusableV2
 @ComponentV2
 export struct BalanceAdviceCard {
   @Param balance: MealBalance = new MealBalance();

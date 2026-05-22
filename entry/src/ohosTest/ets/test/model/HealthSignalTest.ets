@@ -2,6 +2,7 @@
 import { describe, it, expect } from '@ohos/hypium';
 import { HealthSignal, StepLevel, SleepStatus, WeightTrend,
   BpStatus, BsStatus, DataSource } from '../../../../../src/main/ets/model/HealthSignal';
+import { JsonHelper } from '../../../../main/ets/utils/JsonHelper';
 
 function createHealthSignal(stepLevel: StepLevel, sleepStatus: SleepStatus,
   weightTrend: WeightTrend, activityCaloriesLevel: StepLevel,
@@ -197,7 +198,9 @@ export default function healthSignalTest() {
         hadHighSugarToday: true,
         source: DataSource.MANUAL
       });
-      const signal: HealthSignal = HealthSignal.fromJson(JSON.parse(jsonStr) as Record<string, Object>);
+      const signal: HealthSignal = HealthSignal.fromJson((() => {
+        return JsonHelper.recordToMap(JSON.parse(jsonStr) as Record<string, Object>);
+      })());
 
       expect(signal.memberId).assertEqual('test_from_json');
       expect(signal.stepLevel).assertEqual(StepLevel.HIGH);

@@ -1,20 +1,12 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import {
-  HealthSignal,
-  StepLevel,
-  SleepStatus,
-  WeightTrend,
-  BpStatus,
-  BsStatus,
-  DataSource
-} from '../../model/HealthSignal';
+import { HealthSignal, StepLevel, SleepStatus, WeightTrend, BpStatus, BsStatus, DataSource, HILOG_DOMAIN } from 'hsp_core';
 import { HealthSignalProvider } from './HealthSignalProvider';
-import { HILOG_DOMAIN } from '../../constants/AppConfig';
+
 
 const TAG = 'ManualHealthSignalProvider';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
-export class ManualHealthSignalProvider implements HealthSignalProvider {
+export class ManualHealthSignalProvider extends HealthSignalProvider {
   async checkAuthorization(): Promise<boolean> {
     hilog.info(DOMAIN_ZERO, TAG, 'Health Kit not connected in P0 MVP');
     return false;

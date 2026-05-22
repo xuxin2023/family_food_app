@@ -5,20 +5,18 @@
 // 鸿蒙6.1 ArkTS 约束：
 // - 不使用 undefined 类型，统一使用 null
 
-import { FamilyProfile, AgeGroup } from '../model/FamilyProfile';
-import { HealthSignal } from '../model/HealthSignal';
-import { DailyBudget } from '../model/DailyBudget';
-import { FoodLabel } from '../model/FoodLabel';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { FamilyProfile, AgeGroup, HealthSignal, DailyBudget, FoodLabel } from 'hsp_core';
+
+
 import { FoodAdapterEngine, FamilyMemberSimpleInput, FoodNutritionInput,
-  HealthSignalInput, TodayIntakeInput } from '../engine/FoodAdapterEngine';
+  HealthSignalInput, TodayIntakeInput, DailyBudgetInput } from '../engine/FoodAdapterEngine';
 
 /** toFoodAdapterInputs 的返回值类型 */
-export interface FoodAdapterInputs {
-  memberInput: FamilyMemberSimpleInput;
-  foodInput: FoodNutritionInput;
-  healthInput: HealthSignalInput;
-  intakeInput: TodayIntakeInput;
+export class FoodAdapterInputs {
+  memberInput: FamilyMemberSimpleInput = new FamilyMemberSimpleInput();
+  foodInput: FoodNutritionInput = new FoodNutritionInput();
+  healthInput: HealthSignalInput = new HealthSignalInput();
+  intakeInput: TodayIntakeInput = new TodayIntakeInput();
 }
 
 /**
@@ -59,52 +57,55 @@ export function toFoodAdapterInputs(
   budget: DailyBudget,
   todayIntake?: TodayIntakeInput
 ): FoodAdapterInputs {
-  const memberInput: FamilyMemberSimpleInput = {
-    id: member.memberId,
-    name: member.nickname,
-    role: member.ageGroup,
-    age: estimateAgeFromGroup(member.ageGroup),
-    healthGoal: member.healthGoals.length > 0 ? member.healthGoals[0] : '无特殊',
-    dailyBudget: {
-      sodium_mg: member.dailyBudget.sodiumBudget,
-      sugar_g: member.dailyBudget.sugarBudget,
-      energy_kcal: member.dailyBudget.calorieBudget,
-      fat_g: member.dailyBudget.fatBudget,
-      saturatedFat_g: 0
-    },
-    allergenRedline: member.allergens,
-    dislikedAdditives: []
-  };
+  const memberInput = new FamilyMemberSimpleInput();
+  memberInput.id = member.memberId;
+  memberInput.name = member.nickname;
+  memberInput.role = member.ageGroup;
+  memberInput.age = estimateAgeFromGroup(member.ageGroup);
+  memberInput.healthGoal = member.healthGoals.length > 0 ? member.healthGoals[0] : '无特殊';
+  const memberBudget = new DailyBudgetInput();
+  memberBudget.sodium_mg = member.dailyBudget.sodiumBudget;
+  memberBudget.sugar_g = member.dailyBudget.sugarBudget;
+  memberBudget.energy_kcal = member.dailyBudget.calorieBudget;
+  memberBudget.fat_g = member.dailyBudget.fatBudget;
+  memberBudget.saturatedFat_g = 0;
+  memberInput.dailyBudget = memberBudget;
+  memberInput.allergenRedline = member.allergens;
+  memberInput.dislikedAdditives = [];
 
-  const foodInput: FoodNutritionInput = {
-    productName: food.foodName,
-    brand: food.manufacturer,
-    sodium_mg: food.nutrition.sodium,
-    sugar_g: food.nutrition.sugar,
-    energy_kj: Math.round(food.nutrition.calories * 4.184),
-    fat_g: food.nutrition.fat,
-    saturatedFat_g: food.nutrition.saturatedFat,
-    transFat_g: 0,
-    carbs_g: food.nutrition.carbohydrate,
-    protein_g: food.nutrition.protein,
-    allergens: food.ingredients,
-    manufacturer: food.manufacturer
-  };
+  const foodInput = new FoodNutritionInput();
+  foodInput.productName = food.foodName;
+  foodInput.brand = food.manufacturer;
+  foodInput.sodium_mg = food.nutrition.sodium;
+  foodInput.sugar_g = food.nutrition.sugar;
+  foodInput.energy_kj = Math.round(food.nutrition.calories * 4.184);
+  foodInput.fat_g = food.nutrition.fat;
+  foodInput.saturatedFat_g = food.nutrition.saturatedFat;
+  foodInput.transFat_g = 0;
+  foodInput.carbs_g = food.nutrition.carbohydrate;
+  foodInput.protein_g = food.nutrition.protein;
+  foodInput.allergens = food.ingredients;
+  foodInput.manufacturer = food.manufacturer;
 
-  const healthInput: HealthSignalInput = {
-    steps: signal.stepLevel,
-    sleep: signal.sleepStatus,
-    weightTrend: signal.weightTrend,
-    manualBpStatus: signal.manualBpStatus,
-    manualBgStatus: signal.manualBsStatus
-  };
+  const healthInput = new HealthSignalInput();
+  healthInput.steps = signal.stepLevel;
+  healthInput.sleep = signal.sleepStatus;
+  healthInput.weightTrend = signal.weightTrend;
+  healthInput.manualBpStatus = signal.manualBpStatus;
+  healthInput.manualBgStatus = signal.manualBsStatus;
 
-  const intakeInput: TodayIntakeInput = todayIntake ?? {
-    sodium_mg: Math.max(0, budget.sodiumBudget - budget.sodiumRemaining),
-    sugar_g: Math.max(0, budget.sugarBudget - budget.sugarRemaining),
-    energy_kcal: Math.max(0, budget.calorieBudget - budget.calorieRemaining),
-    fat_g: Math.max(0, budget.fatBudget - budget.fatRemaining)
-  };
+  let intakeInput: TodayIntakeInput = todayIntake ?? new TodayIntakeInput();
+  if (!todayIntake) {
+    intakeInput.sodium_mg = Math.max(0, budget.sodiumBudget - budget.sodiumRemaining);
+    intakeInput.sugar_g = Math.max(0, budget.sugarBudget - budget.sugarRemaining);
+    intakeInput.energy_kcal = Math.max(0, budget.calorieBudget - budget.calorieRemaining);
+    intakeInput.fat_g = Math.max(0, budget.fatBudget - budget.fatRemaining);
+  }
 
-  return { memberInput, foodInput, healthInput, intakeInput };
+  const result = new FoodAdapterInputs();
+  result.memberInput = memberInput;
+  result.foodInput = foodInput;
+  result.healthInput = healthInput;
+  result.intakeInput = intakeInput;
+  return result;
 }

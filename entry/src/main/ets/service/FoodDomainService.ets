@@ -2,9 +2,8 @@
 // 食品数据领域服务 - 封装食品标签相关的业务逻辑
 // 用途：从 AppState 中提取食品数据管理职责
 
-import { FoodLabel } from '../model/FoodLabel';
+import { FoodLabel } from 'hsp_core';
 import { FoodRepository } from '../repository/FoodRepository';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'FoodDomainService';
 

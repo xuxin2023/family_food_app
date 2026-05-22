@@ -6,20 +6,37 @@
 
 local.properties
 
+# 签名凭据已外部化 — 禁止提交含密码的 build-profile.json5
+# build-profile.json5 中密码请从 local.properties 恢复或重新自动签名
+# 仓库中保留 build-profile.json5.template 作为结构参考
+build-profile.json5
+
 Thumbs.db
 .DS_Store
 
 # Build outputs and caches
 entry/build/
+hsp_core/build/
 build_error.log
 build_error_clean.txt
+
+# Build error reports and debug files
+*.py
+build_errors.*
+arkts_errors.*
+*.log
 
 # Temporary and backup files
 _backup.ets
 *.bak
 temp_*
 
-# Python scripts
-*.py
-docx_clean.txt
-cleanup.bat
+# Signing keys (excluded from version control)
+*.p12
+*.p7b
+*.jks
+*.keystore
+
+# MindSpore Lite 模型文件（大文件，使用 Git LFS 或 OBS 管理）
+*.ms
+rawfile/models/*.ms

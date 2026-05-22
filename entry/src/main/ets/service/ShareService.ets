@@ -1,9 +1,6 @@
-import { FamilyProfile } from '../model/FamilyProfile';
-import { Recommendation, RecommendLevel } from '../model/Recommendation';
+import { FamilyProfile, Recommendation, RecommendLevel, StringRes } from 'hsp_core';
 import { CopyTextProvider } from './share/CopyTextProvider';
-import { ShareActionResult, ShareProvider } from './share/ShareProvider';
-import { StringRes } from '../constants/StringRes';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { ShareActionResult, ShareProvider, ShareTarget } from './share/ShareProvider';
 
 export class ShareService {
   private provider: ShareProvider;
@@ -49,17 +46,17 @@ export class ShareService {
     const memberResults: ShareMemberResult[] = [];
     for (const recommendation of recommendations) {
       const member = memberMap.get(recommendation.memberId);
-      memberResults.push({
-        displayName: member ? this.getDisplayName(member) : StringRes.FAMILY_MEMBERS,
-        level: recommendation.level,
-        maxAmount: recommendation.maxAmount
-      });
+      const mr = new ShareMemberResult();
+      mr.displayName = member ? this.getDisplayName(member) : StringRes.FAMILY_MEMBERS;
+      mr.level = recommendation.level;
+      mr.maxAmount = recommendation.maxAmount;
+      memberResults.push(mr);
     }
 
-    return {
-      foodName: foodName.length > 0 ? foodName : StringRes.UNNAMED_FOOD,
-      memberResults
-    };
+    const params = new ShareParams();
+    params.foodName = foodName.length > 0 ? foodName : StringRes.UNNAMED_FOOD;
+    params.memberResults = memberResults;
+    return params;
   }
 
   getCopyHint(): string {
@@ -67,11 +64,11 @@ export class ShareService {
   }
 
   async shareToFamily(_text: string): Promise<ShareActionResult> {
-    return await this.provider.shareText('family', _text);
+    return await this.provider.shareText(ShareTarget.FAMILY, _text);
   }
 
   async shareToWechat(_text: string): Promise<ShareActionResult> {
-    return await this.provider.shareText('wechat', _text);
+    return await this.provider.shareText(ShareTarget.WECHAT, _text);
   }
 
   async saveAsImage(_componentId: string): Promise<ShareActionResult> {
@@ -113,13 +110,13 @@ export class ShareService {
   }
 }
 
-export interface ShareParams {
-  foodName: string;
-  memberResults: ShareMemberResult[];
+export class ShareParams {
+  foodName: string = '';
+  memberResults: ShareMemberResult[] = [];
 }
 
-export interface ShareMemberResult {
-  displayName: string;
-  level: RecommendLevel;
-  maxAmount: number;
+export class ShareMemberResult {
+  displayName: string = '';
+  level: RecommendLevel = RecommendLevel.CAUTIOUS;
+  maxAmount: number = 0;
 }

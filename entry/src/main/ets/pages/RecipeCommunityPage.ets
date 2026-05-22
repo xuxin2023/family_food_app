@@ -1,25 +1,15 @@
 // RecipeCommunityPage.ets
 // 食谱社区页面 — 浏览热门/最新食谱、分类筛选
 
-import { router, promptAction } from '@kit.ArkUI';
+import {
+  safeBack, safePushUrl, getPageParams, Recipe, RecipeCategory, DietTag, RecipeQueryParams, safeParseRecipeCategory, COLORS, RADIUS, BUTTON, BasicDataSource, PAGE_SIZE_CONFIG, HILOG_DOMAIN, AiRecipeRecommendation, AiRecipeRecommendationResult, AiRecipeRequest, getCategoryLabel, getCategoryEmoji, getDietTagLabel
+} from 'hsp_core';
 import { BackButton } from '../components/BackButton';
-import { safeBack, safePushUrl } from '../utils/RouterUtil';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
 import { ErrorFallback } from '../components/ErrorFallback';
-import { Recipe, RecipeCategory, RecipeDifficulty, DietTag, RecipeQueryParams } from '../model/Recipe';
 import {
-  AiRecipeRecommendation, AiRecipeRecommendationResult, AiRecipeRequest
-} from '../model/AiModels';
-import { COLORS, RADIUS, SPACING, BUTTON, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
-import { BasicDataSource } from '../utils/BasicDataSource';
-import { PAGE_SIZE_CONFIG } from '../constants/AppConfig';
-import {
-  getCategoryLabel,
-  getCategoryEmoji,
-  getDietTagLabel
-} from '../utils/RecipeUtil';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+
 
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
@@ -36,6 +26,7 @@ struct RecipeCommunityPage {
   @Local showAiRecommend: boolean = false
   @Local aiSummary: string = ''
   @Local errorMessage: string = ''
+  private componentActive: boolean = true
 
   private appState: AppState = AppState.getInstance()
   private recipes: Recipe[] = []
@@ -43,27 +34,31 @@ struct RecipeCommunityPage {
   private readonly categoryKeys: string[] = ['breakfast', 'lunch', 'dinner', 'snack', 'beverage', 'dessert', 'soup', 'staple']
 
   async aboutToAppear() {
-    // 检查是否从首页以AI推荐模式进入
-    try {
-      const params = router.getParams() as Record<string, Object>;
-      if (params['aiMode'] === 'recommend') {
-        this.showAiRecommend = true
-        await this.loadAiRecommendations()
-      }
-    } catch (e) {
-      hilog.warn(DOMAIN_ZERO, 'RecipeCommunityPage', 'getParams failed: %{public}s', JSON.stringify(e));
+    const params = getPageParams();
+    if (params !== null && params.get('aiMode') === 'recommend') {
+      this.showAiRecommend = true
+      await Promise.all([
+        this.loadAiRecommendations(),
+        this.loadRecipes()
+      ])
+    } else {
+      await this.loadRecipes()
     }
-    await this.loadRecipes()
+  }
+
+  aboutToDisappear(): void {
+    this.componentActive = false
   }
 
   async loadAiRecommendations(): Promise<void> {
     this.isLoadingAi = true
     try {
       const members = await this.appState.getAllMembers()
-      const request: AiRecipeRequest = {
-        memberIds: members.map(m => m.memberId),
-        limit: 5
-      }
+      const request = new AiRecipeRequest()
+      request.memberIds = members.map(m => m.memberId)
+      request.limit = 5
+      request.mealCategory = ''
+      request.preference = ''
       const result = await this.appState.getAiRecipeRecommendation(request)
       this.aiRecommendations = result.recommendations
       this.aiSummary = result.overallSummary
@@ -77,17 +72,16 @@ struct RecipeCommunityPage {
     this.isLoading = true
     this.errorMessage = ''
     try {
-      const params: RecipeQueryParams = {
-        offset: 0,
-        limit: PAGE_SIZE,
-        category: this.selectedCategory.length > 0 ? this.selectedCategory as RecipeCategory : undefined,
-        sortBy: this.sortBy === 'popular' ? 'popular' : 'latest'
-      }
+      const params = new RecipeQueryParams()
+      params.offset = 0
+      params.limit = PAGE_SIZE
+      params.category = this.selectedCategory.length > 0 ? safeParseRecipeCategory(this.selectedCategory) : undefined
+      params.sortBy = this.sortBy === 'popular' ? 'popular' : 'latest'
       this.recipes = await this.appState.queryCommunityRecipes(params)
       this.recipeDS.reload(this.recipes)
     } catch (e) {
       hilog.error(DOMAIN_ZERO, 'RecipeCommunityPage', 'load recipes error')
-      this.errorMessage = '食谱加载失败，请检查网络后重试'
+      this.errorMessage = $r('app.string.recipe_community_load_failed') as string
     }
     this.isLoading = false
   }
@@ -98,6 +92,8 @@ struct RecipeCommunityPage {
       Row() {
         BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
           .onClick(() => { safeBack() })
+          .accessibilityText('返回')
+          .accessibilityLevel('yes')
         Text($r('app.string.recipe_community'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
@@ -109,6 +105,8 @@ struct RecipeCommunityPage {
           .onClick(() => {
             safePushUrl('pages/RecipeCreatePage')
           })
+          .accessibilityText('发布食谱')
+          .accessibilityLevel('yes')
       }
       .width('100%')
       .padding(16)
@@ -116,10 +114,10 @@ struct RecipeCommunityPage {
       // 分类导航
       Scroll() {
         Row({ space: 8 }) {
-          this.categoryChip('全部', '')
+          this.categoryChip($r('app.string.recipe_community_all'), '')
           ForEach(this.categoryKeys, (key: string) => {
             this.categoryChip(getCategoryLabel(key), key)
-          })
+          }, (key: string) => key)
         }
         .padding({ left: 16, right: 16, bottom: 8 })
       }
@@ -129,9 +127,9 @@ struct RecipeCommunityPage {
 
       // AI推荐Tab + 排序Tab
       Row({ space: 8 }) {
-        this.sortTab('✨ AI推荐', 'ai')
-        this.sortTab('最新', 'latest')
-        this.sortTab('热门', 'popular')
+        this.sortTab($r('app.string.recipe_community_ai_recommend'), 'ai')
+        this.sortTab($r('app.string.recipe_community_latest'), 'latest')
+        this.sortTab($r('app.string.recipe_community_popular'), 'popular')
       }
       .width('100%')
       .padding({ left: 16, right: 16, bottom: 8 })
@@ -187,6 +185,8 @@ struct RecipeCommunityPage {
         this.selectedCategory = value
         this.loadRecipes()
       })
+      .accessibilityText(label)
+      .accessibilityLevel('yes')
   }
 
   @Builder
@@ -203,6 +203,8 @@ struct RecipeCommunityPage {
           this.loadRecipes()
         }
       })
+      .accessibilityText(label)
+      .accessibilityLevel('yes')
   }
 
   @Builder
@@ -220,15 +222,17 @@ struct RecipeCommunityPage {
         .fontColor(COLORS.TEXT_GRAY_9E9E)
         .textAlign(TextAlign.Center)
         .margin({ bottom: 16 })
-      Button('发布第一个食谱')
+      Button($r('app.string.recipe_community_publish_first'))
         .height(BUTTON.HEIGHT_SECONDARY)
         .backgroundColor(COLORS.PRIMARY)
         .borderRadius(BUTTON.RADIUS_SECONDARY)
         .fontColor(COLORS.WHITE)
         .fontSize(14)
         .onClick(() => {
-          router.pushUrl({ url: 'pages/RecipeCreatePage' })
+          safePushUrl('pages/RecipeCreatePage')
         })
+        .accessibilityText('发布第一个食谱')
+        .accessibilityLevel('yes')
     }
     .width('100%')
     .padding({ top: 60 })
@@ -312,13 +316,13 @@ struct RecipeCommunityPage {
         .margin({ bottom: 12 })
         .shadow({ radius: 2, color: COLORS.SHADOW_LIGHT, offsetY: 1 })
         .onClick(() => {
-          try {
-            router.pushUrl({ url: 'pages/RecipeDetailPage', params: { recipeId: rec.recipe.recipeId } })
-          } catch (_e) {
-            // ignore
-          }
+          const navParams = new Map<string, Object>();
+          navParams.set('recipeId', rec.recipe.recipeId);
+          safePushUrl('pages/RecipeDetailPage', navParams)
         })
-      })
+        .accessibilityText(rec.recipe.title)
+        .accessibilityLevel('yes')
+      }, (rec: AiRecipeRecommendation, i: number) => `rec_${i}`)
     }
     .width('100%')
     .padding({ left: 16, right: 16 })
@@ -365,7 +369,7 @@ struct RecipeCommunityPage {
                 .backgroundColor(COLORS.BG_LIGHT_GREEN)
                 .padding({ left: 6, right: 6, top: 2, bottom: 2 })
                 .borderRadius(6)
-            })
+            }, (tag: DietTag) => tag)
           }
         }
         .margin({ top: 6 })
@@ -381,7 +385,7 @@ struct RecipeCommunityPage {
           }
           Row({ space: 4 }) {
             Text('⏱️').fontSize(12)
-            Text(`${recipe.totalMinutes}分钟`).fontSize(11).fontColor(COLORS.TEXT_GRAY_9E9E)
+            Text(`${recipe.totalMinutes}` + $r('app.string.recipe_community_minutes')).fontSize(11).fontColor(COLORS.TEXT_GRAY_9E9E)
           }
           Blank()
           Text(getCategoryLabel(recipe.category) || recipe.category)
@@ -398,10 +402,12 @@ struct RecipeCommunityPage {
     .borderRadius(RADIUS.LG)
     .margin({ bottom: 14 })
     .onClick(() => {
-      const navParams: Record<string, Object> = {} as Record<string, Object>
-      navParams['recipeId'] = recipe.recipeId
+      const navParams = new Map<string, Object>();
+      navParams.set('recipeId', recipe.recipeId);
       safePushUrl('pages/RecipeDetailPage', navParams)
     })
+    .accessibilityText(recipe.title)
+    .accessibilityLevel('yes')
   }
 
   // 使用全局函数 getDietTagLabel，避免栈溢出

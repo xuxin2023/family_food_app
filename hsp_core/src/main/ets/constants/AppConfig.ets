@@ -14,7 +14,7 @@ export class ApiConfig {
   /** 默认 JSON Content-Type */
   readonly HEADER_CONTENT_TYPE_JSON: string = 'application/json';
   /** 云同步 API 基础地址 */
-  readonly SYNC_BASE_URL: string = '';
+  readonly SYNC_BASE_URL: string = this.HUAWEI_CLOUD_BASE_URL;
   /** API 版本路径 */
   readonly SYNC_API_VERSION: string = '/v1';
   /** 请求超时时间（毫秒） */

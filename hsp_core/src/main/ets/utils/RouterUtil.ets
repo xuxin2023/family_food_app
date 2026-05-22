@@ -17,9 +17,9 @@ export function safeBack(): void {
  * @param url 页面路径，如 'pages/ReportPage'
  * @param params 可选参数对象
  */
-export function safePushUrl(url: string, params?: Map<string, Object>): void {
+export function safePushUrl(url: string, params?: Object): void {
   const routeName: string = resolveRouteName(url);
-  NavigationManager.pushPath(routeName, params as Object);
+  NavigationManager.pushPath(routeName, params);
 }
 
 /**
@@ -34,14 +34,38 @@ export function getPageParams(): Map<string, Object> | undefined {
   return undefined;
 }
 
+export function getParamString(params: Map<string, Object> | undefined, key: string, defaultValue: string = ''): string {
+  if (params === undefined) return defaultValue;
+  const val = params.get(key);
+  if (val === undefined || val === null) return defaultValue;
+  if (typeof val === 'string') return val;
+  return String(val);
+}
+
+export function getParamNumber(params: Map<string, Object> | undefined, key: string, defaultValue: number = 0): number {
+  if (params === undefined) return defaultValue;
+  const val = params.get(key);
+  if (val === undefined || val === null) return defaultValue;
+  if (typeof val === 'number') return val;
+  const parsed = Number(val);
+  return isNaN(parsed) ? defaultValue : parsed;
+}
+
+export function getParamObject<T>(params: Map<string, Object> | undefined, key: string): T | null {
+  if (params === undefined) return null;
+  const val = params.get(key);
+  if (val === undefined || val === null) return null;
+  return val as T;
+}
+
 /**
  * 安全替换当前页面
  * @param url 页面路径
  * @param params 可选参数
  */
-export function safeReplaceUrl(url: string, params?: Map<string, Object>): void {
+export function safeReplaceUrl(url: string, params?: Object): void {
   const routeName: string = resolveRouteName(url);
-  NavigationManager.replacePath(routeName, params as Object);
+  NavigationManager.replacePath(routeName, params);
 }
 
 /**

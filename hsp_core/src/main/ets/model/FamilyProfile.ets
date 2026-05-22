@@ -3,6 +3,8 @@
 
 // 年龄段枚举
 export enum AgeGroup {
+  INFANT = '婴儿',
+  TODDLER = '幼儿',
   CHILD = '儿童',
   TEEN = '青少年',
   ADULT = '成人',

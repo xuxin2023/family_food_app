@@ -5,26 +5,27 @@
 // 京东联盟API文档参考：jd.union.open.goods.detail.query
 // 淘宝开放平台API文档参考：taobao.item.get
 
+import { FoodLabel, NutritionPer100g, FoodSource, API_TIMEOUT_CONFIG, HILOG_DOMAIN } from 'hsp_core';
 import { http } from '@kit.NetworkKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { FoodLabel, NutritionPer100g, FoodSource } from '../model/FoodLabel';
 import { OcrService } from './OcrService';
-import { API_TIMEOUT_CONFIG } from '../constants/AppConfig';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { SecureHttpHelper } from './SecureHttpHelper';
 
 const TAG = 'OnlineShoppingParser';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 // ==================== 常量配置 ====================
 
-// 京东联盟API配置（需替换为实际申请的AppKey和AppSecret）
-const JD_APP_KEY: string = 'YOUR_JD_APP_KEY';
-const JD_APP_SECRET: string = 'YOUR_JD_APP_SECRET';
+// 京东联盟API配置 — 密钥通过 AssetKeyManager 运行时获取，此处仅占位
+// ⚠️ 部署前必须通过 AssetKeyManager 预置真实密钥，否则 MD5 签名为空串将鉴权失败
+const JD_APP_KEY: string = '';
+const JD_APP_SECRET: string = '';
 const JD_API_URL: string = 'https://api.jd.com/routerjson';
 
-// 淘宝开放平台API配置（需替换为实际申请的AppKey和AppSecret）
-const TAOBAO_APP_KEY: string = 'YOUR_TAOBAO_APP_KEY';
-const TAOBAO_APP_SECRET: string = 'YOUR_TAOBAO_APP_SECRET';
+// 淘宝开放平台API配置 — 密钥通过 AssetKeyManager 运行时获取，此处仅占位
+// ⚠️ 部署前必须通过 AssetKeyManager 预置真实密钥，否则 HMAC 签名为空串将鉴权失败
+const TAOBAO_APP_KEY: string = '';
+const TAOBAO_APP_SECRET: string = '';
 const TAOBAO_API_URL: string = 'https://eco.taobao.com/router/rest';
 
 // ==================== 数据类型 ====================
@@ -32,26 +33,23 @@ const TAOBAO_API_URL: string = 'https://eco.taobao.com/router/rest';
 /**
  * 解析后的链接数据
  */
-export interface ParsedLink {
-  platform: string;       // 平台标识：'京东' | '淘宝' | '拼多多' | 'unknown'
-  productId: string;      // 商品ID
-  productName: string;    // 商品名称
-  price: number;          // 价格
-  imageUrl: string;       // 商品图片URL
-  rawUrl: string;         // 原始链接
-  parseSuccess: boolean;  // 是否解析成功
-  errorMessage: string;   // 错误信息（解析失败时）
+export class ParsedLink {
+  platform: string = '';
+  productId: string = '';
+  productName: string = '';
+  price: number = 0;
+  imageUrl: string = '';
+  rawUrl: string = '';
+  parseSuccess: boolean = false;
+  errorMessage: string = '';
 }
 
-/**
- * 解析结果（兼容原有ParseResult接口）
- */
-export interface ParseResult {
-  success: boolean;
-  label: FoodLabel | null;
-  source: string;
-  parseTime: number;
-  errorMessage: string;
+export class ParseResult {
+  success: boolean = false;
+  label: FoodLabel | null = null;
+  source: string = '';
+  parseTime: number = 0;
+  errorMessage: string = '';
 }
 
 /**
@@ -70,10 +68,10 @@ export enum PlatformType {
 /**
  * 商品详情结果
  */
-interface GoodsDetail {
-  productName: string;
-  price: number;
-  imageUrl: string;
+class GoodsDetail {
+  productName: string = '';
+  price: number = 0;
+  imageUrl: string = '';
 }
 
 /**
@@ -156,13 +154,12 @@ export class OnlineShoppingParser {
     const parsed = await this.parseUrl(url);
 
     if (!parsed.parseSuccess) {
-      const result: ParseResult = {
-        success: false,
-        label: null,
-        source: parsed.platform,
-        parseTime: Date.now(),
-        errorMessage: parsed.errorMessage
-      };
+      const result = new ParseResult();
+      result.success = false;
+      result.label = null;
+      result.source = parsed.platform;
+      result.parseTime = Date.now();
+      result.errorMessage = parsed.errorMessage;
       return result;
     }
 
@@ -178,13 +175,12 @@ export class OnlineShoppingParser {
     label.identifiedAt = Date.now();
     label.nutrition = new NutritionPer100g();
 
-    const result: ParseResult = {
-      success: true,
-      label: label,
-      source: parsed.platform,
-      parseTime: Date.now(),
-      errorMessage: ''
-    };
+    const result = new ParseResult();
+    result.success = true;
+    result.label = label;
+    result.source = parsed.platform;
+    result.parseTime = Date.now();
+    result.errorMessage = '';
     return result;
   }
 
@@ -333,14 +329,14 @@ export class OnlineShoppingParser {
     const paramJson = JSON.stringify(jdQueryParam);
 
     // 构建请求参数（按ASCII排序）
-    const params: Record<string, string> = {};
-    params['app_key'] = JD_APP_KEY;
-    params['method'] = method;
-    params['param_json'] = paramJson;
-    params['timestamp'] = timestamp;
-    params['v'] = '1.0';
-    params['sign_method'] = 'md5';
-    params['sign'] = this.buildMd5Sign(params, JD_APP_SECRET);
+    const params: Map<string, string> = new Map();
+    params.set('app_key', JD_APP_KEY);
+    params.set('method', method);
+    params.set('param_json', paramJson);
+    params.set('timestamp', timestamp);
+    params.set('v', '1.0');
+    params.set('sign_method', 'md5');
+    params.set('sign', this.buildMd5Sign(params, JD_APP_SECRET));
 
     // 发起HTTP POST请求
     const result = await this.httpPostForm(JD_API_URL, params);
@@ -348,32 +344,29 @@ export class OnlineShoppingParser {
 
     const responseWrapper = parsed['jd_union_open_goods_detail_query_response'] as Record<string, Object>;
     if (responseWrapper === undefined) {
-      const emptyDetail: GoodsDetail = {
-        productName: '京东商品',
-        price: 0,
-        imageUrl: ''
-      };
+      const emptyDetail = new GoodsDetail();
+      emptyDetail.productName = '京东商品';
+      emptyDetail.price = 0;
+      emptyDetail.imageUrl = '';
       return emptyDetail;
     }
 
     const queryResultStr = responseWrapper['queryResult'] as string;
     if (queryResultStr === undefined) {
-      const emptyDetail: GoodsDetail = {
-        productName: '京东商品',
-        price: 0,
-        imageUrl: ''
-      };
+      const emptyDetail = new GoodsDetail();
+      emptyDetail.productName = '京东商品';
+      emptyDetail.price = 0;
+      emptyDetail.imageUrl = '';
       return emptyDetail;
     }
 
     const queryResult = JSON.parse(queryResultStr) as Array<Record<string, Object>>;
 
     if (queryResult.length === 0) {
-      const emptyDetail: GoodsDetail = {
-        productName: '京东商品',
-        price: 0,
-        imageUrl: ''
-      };
+      const emptyDetail = new GoodsDetail();
+      emptyDetail.productName = '京东商品';
+      emptyDetail.price = 0;
+      emptyDetail.imageUrl = '';
       return emptyDetail;
     }
 
@@ -382,11 +375,10 @@ export class OnlineShoppingParser {
     const priceStr = (goodsInfo['price'] as string) || '0';
     const imgUrl = (goodsInfo['imgUrl'] as string) || '';
 
-    const detail: GoodsDetail = {
-      productName: goodsName,
-      price: parseFloat(priceStr) || 0,
-      imageUrl: imgUrl
-    };
+    const detail = new GoodsDetail();
+    detail.productName = goodsName;
+    detail.price = parseFloat(priceStr) || 0;
+    detail.imageUrl = imgUrl;
     return detail;
   }
 
@@ -394,13 +386,14 @@ export class OnlineShoppingParser {
    * MD5签名算法：按ASCII排序参数 + AppSecret拼接头尾 → MD5大写
    * 用于京东API签名
    */
-  private buildMd5Sign(params: Record<string, string>, appSecret: string): string {
-    // 按ASCII排序key
-    const keys = Object.keys(params).sort();
+  private buildMd5Sign(params: Map<string, string>, appSecret: string): string {
+    const keys: string[] = [];
+    params.forEach((_v, k) => { keys.push(k); });
+    const sortedKeys = [...keys].sort();
     let signStr = appSecret;
-    for (const key of keys) {
+    for (const key of sortedKeys) {
       if (key === 'sign') continue;
-      signStr += key + params[key];
+      signStr += key + (params.get(key) ?? '');
     }
     signStr += appSecret;
 
@@ -428,16 +421,16 @@ export class OnlineShoppingParser {
     const timestamp = this.getTimestamp();
 
     // 构建请求参数
-    const params: Record<string, string> = {};
-    params['method'] = method;
-    params['app_key'] = TAOBAO_APP_KEY;
-    params['timestamp'] = timestamp;
-    params['format'] = 'json';
-    params['v'] = '2.0';
-    params['sign_method'] = 'hmac';
-    params['fields'] = 'title,price,pic_url,num_iid';
-    params['num_iid'] = numIid;
-    params['sign'] = this.buildMd5Sign(params, TAOBAO_APP_SECRET);
+    const params: Map<string, string> = new Map();
+    params.set('method', method);
+    params.set('app_key', TAOBAO_APP_KEY);
+    params.set('timestamp', timestamp);
+    params.set('format', 'json');
+    params.set('v', '2.0');
+    params.set('sign_method', 'hmac');
+    params.set('fields', 'title,price,pic_url,num_iid');
+    params.set('num_iid', numIid);
+    params.set('sign', this.buildMd5Sign(params, TAOBAO_APP_SECRET));
 
     // 发起HTTP POST请求
     const result = await this.httpPostForm(TAOBAO_API_URL, params);
@@ -446,21 +439,19 @@ export class OnlineShoppingParser {
     // 淘宝API返回格式：{ "item_get_response": { "item": { ... } } }
     const responseObj = parsed['item_get_response'] as Record<string, Object>;
     if (responseObj === undefined) {
-      const emptyDetail: GoodsDetail = {
-        productName: '淘宝商品',
-        price: 0,
-        imageUrl: ''
-      };
+      const emptyDetail = new GoodsDetail();
+      emptyDetail.productName = '淘宝商品';
+      emptyDetail.price = 0;
+      emptyDetail.imageUrl = '';
       return emptyDetail;
     }
 
     const item = responseObj['item'] as Record<string, Object>;
     if (item === undefined) {
-      const emptyDetail: GoodsDetail = {
-        productName: '淘宝商品',
-        price: 0,
-        imageUrl: ''
-      };
+      const emptyDetail = new GoodsDetail();
+      emptyDetail.productName = '淘宝商品';
+      emptyDetail.price = 0;
+      emptyDetail.imageUrl = '';
       return emptyDetail;
     }
 
@@ -468,11 +459,10 @@ export class OnlineShoppingParser {
     const priceStr = (item['price'] as string) || '0';
     const picUrl = (item['pic_url'] as string) || '';
 
-    const detail: GoodsDetail = {
-      productName: title,
-      price: parseFloat(priceStr) || 0,
-      imageUrl: picUrl
-    };
+    const detail = new GoodsDetail();
+    detail.productName = title;
+    detail.price = parseFloat(priceStr) || 0;
+    detail.imageUrl = picUrl;
     return detail;
   }
 
@@ -481,40 +471,28 @@ export class OnlineShoppingParser {
   /**
    * HTTP POST 请求（application/x-www-form-urlencoded）
    */
-  private httpPostForm(url: string, params: Record<string, string>): Promise<string> {
-    return new Promise<string>((resolve: (value: string) => void, reject: (reason: Error) => void) => {
-      const httpRequest = http.createHttp();
-      // 构建表单体
-      let bodyParts: Array<string> = [];
-      const keys = Object.keys(params);
-      for (let i = 0; i < keys.length; i++) {
-        const key = keys[i];
-        bodyParts.push(encodeURIComponent(key) + '=' + encodeURIComponent(params[key]));
-      }
-      const bodyStr = bodyParts.join('&');
-
-      httpRequest.request(url, {
-        method: http.RequestMethod.POST,
-        header: {
-          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-        } as Record<string, string>,
-        extraData: bodyStr,
-        connectTimeout: API_TIMEOUT_CONFIG.DEFAULT_CONNECT_TIMEOUT_MS,
-        readTimeout: API_TIMEOUT_CONFIG.DEFAULT_READ_TIMEOUT_MS
-      }).then((response: http.HttpResponse) => {
-        if (response.responseCode === 200) {
-          const resultStr = response.result as string;
-          httpRequest.destroy();
-          resolve(resultStr);
-        } else {
-          httpRequest.destroy();
-          reject(new Error('HTTP ' + response.responseCode + ': ' + JSON.stringify(response.result)));
-        }
-      }).catch((err: Error) => {
-        httpRequest.destroy();
-        reject(new Error('网络请求失败: ' + JSON.stringify(err)));
-      });
+  private async httpPostForm(url: string, params: Map<string, string>): Promise<string> {
+    let bodyParts: Array<string> = [];
+    params.forEach((v, k) => {
+      bodyParts.push(encodeURIComponent(k) + '=' + encodeURIComponent(v));
     });
+    const bodyStr = bodyParts.join('&');
+
+    const postHeader = new Map<string, string>();
+    postHeader.set('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+
+    const resp = await SecureHttpHelper.request(
+      url, http.RequestMethod.POST, postHeader, bodyStr, API_TIMEOUT_CONFIG.DEFAULT_CONNECT_TIMEOUT_MS
+    );
+
+    if (resp.responseCode === 200 && resp.data !== null) {
+      const raw = resp.data;
+      if (typeof raw === 'object' && raw !== null) {
+        return JSON.stringify(raw);
+      }
+      return String(raw);
+    }
+    throw new Error('HTTP ' + resp.responseCode + ': ' + resp.error);
   }
 
   // ==================== 结果构建 ====================
@@ -524,30 +502,28 @@ export class OnlineShoppingParser {
     productId: string,
     data: GoodsDetail
   ): ParsedLink {
-    const result: ParsedLink = {
-      platform: platform,
-      productId: productId,
-      productName: data.productName,
-      price: data.price,
-      imageUrl: data.imageUrl,
-      rawUrl: '',
-      parseSuccess: true,
-      errorMessage: ''
-    };
+    const result = new ParsedLink();
+    result.platform = platform;
+    result.productId = productId;
+    result.productName = data.productName;
+    result.price = data.price;
+    result.imageUrl = data.imageUrl;
+    result.rawUrl = '';
+    result.parseSuccess = true;
+    result.errorMessage = '';
     return result;
   }
 
   private buildError(platform: string, productId: string, errorMessage: string): ParsedLink {
-    const result: ParsedLink = {
-      platform: platform === 'unknown' ? 'unknown' : platform,
-      productId: productId,
-      productName: '',
-      price: 0,
-      imageUrl: '',
-      rawUrl: '',
-      parseSuccess: false,
-      errorMessage: errorMessage
-    };
+    const result = new ParsedLink();
+    result.platform = platform === 'unknown' ? 'unknown' : platform;
+    result.productId = productId;
+    result.productName = '';
+    result.price = 0;
+    result.imageUrl = '';
+    result.rawUrl = '';
+    result.parseSuccess = false;
+    result.errorMessage = errorMessage;
     return result;
   }
 
@@ -584,16 +560,15 @@ export class OnlineShoppingParser {
       const productName = this.extractNameFromOcr(ocrResult.text);
       const price = this.extractPriceFromOcr(ocrResult.text);
 
-      const result: ParsedLink = {
-        platform: 'unknown',
-        productId: '',
-        productName: productName,
-        price: price,
-        imageUrl: '',
-        rawUrl: '',
-        parseSuccess: true,
-        errorMessage: '通过截图识别，数据仅供参考'
-      };
+      const result = new ParsedLink();
+      result.platform = 'unknown';
+      result.productId = '';
+      result.productName = productName;
+      result.price = price;
+      result.imageUrl = '';
+      result.rawUrl = '';
+      result.parseSuccess = true;
+      result.errorMessage = '通过截图识别，数据仅供参考';
       return result;
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'OCR parse failed: %{public}s', JSON.stringify(error));

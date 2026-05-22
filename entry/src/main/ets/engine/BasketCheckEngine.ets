@@ -1,7 +1,6 @@
+import { FoodLabel, FamilyProfile } from 'hsp_core';
 // 家庭购物篮检查引擎 - 连续扫多个食品后，检查这一篮子是否高盐高糖高脂
 
-import { FoodLabel } from '../model/FoodLabel';
-import { FamilyProfile, HealthGoal } from '../model/FamilyProfile';
 
 // 购物篮检查结果
 export class BasketCheckResult {

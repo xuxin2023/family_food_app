@@ -1,18 +1,16 @@
 // 预加载服务 - 进入首页时预缓存高频商品库和画像数据
 
+import { FoodLabel, FamilyProfile, HILOG_DOMAIN } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
-import { FoodLabel } from '../model/FoodLabel';
-import { FamilyProfile } from '../model/FamilyProfile';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'PreloadService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
-export interface PreloadCache {
-  scanHistory: FoodLabel[];
-  members: FamilyProfile[];
-  cachedAt: number;
+export class PreloadCache {
+  scanHistory: FoodLabel[] = [];
+  members: FamilyProfile[] = [];
+  cachedAt: number = 0;
 }
 
 let preloadServiceInstance: PreloadService | null = null;
@@ -50,11 +48,11 @@ export class PreloadService {
         }
       }
 
-      this.cache = {
-        scanHistory: labels,
-        members: members,
-        cachedAt: Date.now()
-      };
+      const cache = new PreloadCache();
+      cache.scanHistory = labels;
+      cache.members = members;
+      cache.cachedAt = Date.now();
+      this.cache = cache;
 
       hilog.info(DOMAIN_ZERO, TAG,
         'Preload complete: %{public}d foods, %{public}d members',

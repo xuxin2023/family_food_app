@@ -21,8 +21,16 @@ const db = new GaussDBClient({
   database: DB_NAME
 })
 
-// 缓存在内存中的热门条码（LRU，最大100条）
-const hotCache = new Map<string, ProductRecord>()
+process.on('SIGTERM', async () => {
+  console.info('SIGTERM received, closing GaussDB pool...')
+  await db.end()
+  process.exit(0)
+})
+
+// 缓存在内存中的热门条码（LRU + TTL，最大100条，TTL 30分钟）
+const CACHE_TTL_MS = 30 * 60 * 1000
+interface CacheEntry { product: ProductRecord; expiresAt: number }
+const hotCache = new Map<string, CacheEntry>()
 const MAX_CACHE_SIZE = 100
 
 export async function handler(event: {
@@ -33,7 +41,7 @@ export async function handler(event: {
   const { barcode, uid, memberId } = event
 
   // 参数校验
-  if (!barcode || typeof barcode !== 'string' || barcode.length < 8) {
+  if (!barcode || typeof barcode !== 'string' || !/^[0-9]{8,14}$/.test(barcode)) {
     return {
       code: 400,
       message: 'Invalid barcode parameter',
@@ -44,20 +52,20 @@ export async function handler(event: {
   try {
     // 1. 查询内存缓存
     const cached = hotCache.get(barcode)
-    if (cached) {
+    if (cached && Date.now() < cached.expiresAt) {
       // 异步更新搜索热度
       incrementSearchCount(barcode).catch(() => {})
       return {
         code: 200,
         message: 'OK (cached)',
-        data: { found: true, product: cached }
+        data: { found: true, product: cached.product }
       }
     }
 
     // 2. 查询 GaussDB
     const sql = `
       SELECT * FROM food_products 
-      WHERE barcode = ? AND verify_status = 1 
+      WHERE barcode = $1 AND verify_status = 1 
       LIMIT 1
     `
     const result = await db.query(sql, [barcode])
@@ -70,7 +78,7 @@ export async function handler(event: {
         const firstKey = hotCache.keys().next().value
         if (firstKey) hotCache.delete(firstKey)
       }
-      hotCache.set(barcode, product)
+      hotCache.set(barcode, { product, expiresAt: Date.now() + CACHE_TTL_MS })
 
       // 搜索热度+1
       incrementSearchCount(barcode).catch(() => {})
@@ -145,8 +153,8 @@ async function saveOffProductToDB(product: ProductRecord, uid?: string): Promise
       barcode, product_name, product_name_zh, brands, manufacturers,
       ingredients_text, nutrition_grades, nova_group, ecoscore_grade,
       image_url, image_small_url, source, contributor_uid
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'OFF', ?)
-    ON DUPLICATE KEY UPDATE search_count = search_count + 1
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'OFF', $12)
+    ON CONFLICT (barcode) DO UPDATE SET search_count = search_count + 1
   `
   await db.execute(sql, [
     product.barcode,
@@ -167,7 +175,7 @@ async function saveOffProductToDB(product: ProductRecord, uid?: string): Promise
 /** 异步更新搜索计数 */
 async function incrementSearchCount(barcode: string): Promise<void> {
   await db.execute(
-    'UPDATE food_products SET search_count = search_count + 1 WHERE barcode = ?',
+    'UPDATE food_products SET search_count = search_count + 1 WHERE barcode = $1',
     [barcode]
   )
 }
@@ -177,7 +185,7 @@ async function recordScanHistory(
   uid: string, memberId: string, barcode: string, productId: number
 ): Promise<void> {
   await db.execute(
-    'INSERT INTO scan_history (uid, member_id, barcode, product_id) VALUES (?, ?, ?, ?)',
+    'INSERT INTO scan_history (uid, member_id, barcode, product_id) VALUES ($1, $2, $3, $4)',
     [uid, memberId, barcode, productId]
   )
 }
@@ -273,54 +281,4 @@ function parseJsonArray(str: string): string[] {
   } catch {
     return []
   }
-}
-
-// ==================== Type Definitions ====================
-
-interface ProductRecord {
-  id: number
-  barcode: string
-  product_name: string
-  product_name_zh: string
-  brands: string
-  manufacturers: string
-  ingredients_text: string
-  ingredients_text_zh: string
-  allergens_text: string
-  nutrition_grade: string
-  novaGroup: number
-  ecoscoreGrade: string
-  ecoscoreScore: number
-  additivesTags: string[]
-  categories: string
-  labels: string
-  origins: string
-  imageUrl: string
-  imageSmallUrl: string
-  quantity: string
-  servingSize: string
-  nutrition: {
-    energyKj: number
-    fat: number
-    saturatedFat: number
-    carbohydrates: number
-    sugars: number
-    fiber: number
-    proteins: number
-    salt: number
-    sodium: number
-  }
-  source: string
-  verifyStatus: number
-  searchCount: number
-}
-
-interface ApiResponse {
-  code: number
-  message: string
-  data: {
-    found: boolean
-    product?: ProductRecord
-    similarProducts?: ProductRecord[]
-  } | null
 }

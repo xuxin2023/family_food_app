@@ -1,13 +1,11 @@
 // RecipeCreatePage.ets
 // 创建食谱页面 — 发布新食谱到社区
 
-import { router, promptAction } from '@kit.ArkUI';
+import {
+  ToastHelper, safeBack, getPageParams, RecipeCategory, RecipeDifficulty, DietTag, RecipeIngredient, RecipeStep, COLORS, RADIUS, safeParseDietTag
+} from 'hsp_core';
 import { BackButton } from '../components/BackButton';
-import { safeBack } from '../utils/RouterUtil';
 import { AppState } from '../AppState';
-import { RecipeCategory, RecipeDifficulty, DietTag, RecipeIngredient, RecipeStep } from '../model/Recipe';
-import { COLORS, RADIUS, BUTTON } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 class OptionItem {
   label: string = '';
@@ -19,23 +17,28 @@ class OptionItem {
 }
 
 const CATEGORY_OPTIONS: OptionItem[] = [
-  new OptionItem('早餐', RecipeCategory.BREAKFAST),
-  new OptionItem('午餐', RecipeCategory.LUNCH),
-  new OptionItem('晚餐', RecipeCategory.DINNER),
-  new OptionItem('零食', RecipeCategory.SNACK),
-  new OptionItem('饮品', RecipeCategory.BEVERAGE),
-  new OptionItem('甜品', RecipeCategory.DESSERT),
-  new OptionItem('汤羹', RecipeCategory.SOUP),
-  new OptionItem('主食', RecipeCategory.STAPLE)
+  new OptionItem($r('app.string.recipe_create_cat_breakfast'), RecipeCategory.BREAKFAST),
+  new OptionItem($r('app.string.recipe_create_cat_lunch'), RecipeCategory.LUNCH),
+  new OptionItem($r('app.string.recipe_create_cat_dinner'), RecipeCategory.DINNER),
+  new OptionItem($r('app.string.recipe_create_cat_snack'), RecipeCategory.SNACK),
+  new OptionItem($r('app.string.recipe_create_cat_beverage'), RecipeCategory.BEVERAGE),
+  new OptionItem($r('app.string.recipe_create_cat_dessert'), RecipeCategory.DESSERT),
+  new OptionItem($r('app.string.recipe_create_cat_soup'), RecipeCategory.SOUP),
+  new OptionItem($r('app.string.recipe_create_cat_staple'), RecipeCategory.STAPLE)
 ];
 
+const DIFFICULTY_LABEL_MAP: Map<string, ResourceStr> = new Map();
+DIFFICULTY_LABEL_MAP.set('easy', $r('app.string.recipe_create_diff_easy'));
+DIFFICULTY_LABEL_MAP.set('medium', $r('app.string.recipe_create_diff_medium'));
+DIFFICULTY_LABEL_MAP.set('hard', $r('app.string.recipe_create_diff_hard'));
+
 const DIET_TAG_OPTIONS: OptionItem[] = [
-  new OptionItem('儿童友好', DietTag.CHILD_FRIENDLY),
-  new OptionItem('老人友好', DietTag.ELDER_FRIENDLY),
-  new OptionItem('低钠', DietTag.LOW_SODIUM),
-  new OptionItem('低糖', DietTag.LOW_SUGAR),
-  new OptionItem('低脂', DietTag.LOW_FAT),
-  new OptionItem('高蛋白', DietTag.HIGH_PROTEIN),
+  new OptionItem($r('app.string.recipe_create_tag_child_friendly'), DietTag.CHILD_FRIENDLY),
+  new OptionItem($r('app.string.recipe_create_tag_elder_friendly'), DietTag.ELDER_FRIENDLY),
+  new OptionItem($r('app.string.recipe_create_tag_low_sodium'), DietTag.LOW_SODIUM),
+  new OptionItem($r('app.string.recipe_create_tag_low_sugar'), DietTag.LOW_SUGAR),
+  new OptionItem($r('app.string.recipe_create_tag_low_fat'), DietTag.LOW_FAT),
+  new OptionItem($r('app.string.recipe_create_tag_high_protein'), DietTag.HIGH_PROTEIN),
 ];
 
 @Entry
@@ -47,28 +50,47 @@ struct RecipeCreatePage {
   @Local difficulty: RecipeDifficulty = RecipeDifficulty.EASY
   @Local totalMinutes: number = 30
   @Local servings: number = 2
-  @Local ingredients: RecipeIngredient[] = [{ name: '', amount: '', alternative: '' }]
-  @Local steps: RecipeStep[] = [{ stepNumber: 1, description: '', imageUrl: '', durationMinutes: 0 }]
+  @Local ingredients: RecipeIngredient[] = (() => { const i = new RecipeIngredient(); return [i]; })()
+  @Local steps: RecipeStep[] = (() => { const s = new RecipeStep(); s.stepNumber = 1; return [s]; })()
   @Local selectedDietTags: DietTag[] = []
   @Local showCategoryPicker: boolean = false
   @Local showDifficultyPicker: boolean = false
+  @Local isLoading: boolean = false
 
   private appState: AppState = AppState.getInstance()
   private relatedFoodId: string = ''
 
   async aboutToAppear() {
-    const params = router.getParams() as Record<string, Object>
-    if (params && (params.relatedFoodId as string)) {
-      this.relatedFoodId = params.relatedFoodId as string
+    this.isLoading = true;
+    try {
+    const params = getPageParams()
+    const raw = params !== undefined ? params.get('relatedFoodId') : undefined;
+    const relatedFoodId = typeof raw === 'string' ? raw : '';
+    if (relatedFoodId) {
+      this.relatedFoodId = relatedFoodId
+    }
+    } finally {
+      this.isLoading = false;
     }
   }
 
   build() {
+    if (this.isLoading) {
+      Column() {
+        LoadingProgress().width(48).height(48).color(COLORS.PRIMARY)
+      }
+      .width('100%')
+      .height('100%')
+      .justifyContent(FlexAlign.Center)
+      .alignItems(HorizontalAlign.Center)
+    } else {
     Column() {
       // 顶栏
       Row() {
         BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
           .onClick(() => { safeBack() })
+          .accessibilityText('返回')
+          .accessibilityLevel('yes')
         Text($r('app.string.create_recipe'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
@@ -79,6 +101,8 @@ struct RecipeCreatePage {
           .fontColor(COLORS.PRIMARY)
           .fontWeight(FontWeight.Bold)
           .onClick(() => { this.handlePublish() })
+          .accessibilityText('保存')
+          .accessibilityLevel('yes')
       }
       .width('100%')
       .padding(16)
@@ -86,19 +110,19 @@ struct RecipeCreatePage {
       Scroll() {
         Column() {
           // 基本信息
-          this.sectionHeader('基本信息')
+          this.sectionHeader($r('app.string.recipe_create_section_basic_info'))
           this.formCard()
 
           // 食材
-          this.sectionHeader('食材清单')
+          this.sectionHeader($r('app.string.recipe_create_section_ingredients'))
           this.ingredientsCard()
 
           // 步骤
-          this.sectionHeader('烹饪步骤')
+          this.sectionHeader($r('app.string.recipe_create_section_steps'))
           this.stepsCard()
 
           // 适配标签
-          this.sectionHeader('适合人群（可多选）')
+          this.sectionHeader($r('app.string.recipe_create_section_diet_tags'))
           this.dietTagsCard()
 
           // 底部间距
@@ -112,6 +136,7 @@ struct RecipeCreatePage {
     .width('100%')
     .height('100%')
     .backgroundColor(COLORS.BG_PAGE)
+    }
   }
 
   @Builder
@@ -126,15 +151,17 @@ struct RecipeCreatePage {
   @Builder
   formCard() {
     Column() {
-      TextInput({ placeholder: '食谱名称', text: this.title })
+      TextInput({ placeholder: $r('app.string.recipe_create_placeholder_recipe_name'), text: this.title })
         .width('100%')
         .height(48)
         .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
         .borderRadius(12)
         .padding({ left: 16 })
         .onChange((v: string) => { this.title = v })
+        .accessibilityText('食谱名称')
+        .accessibilityLevel('yes')
 
-      TextArea({ placeholder: '简单描述一下这个食谱（可选）', text: this.description })
+      TextArea({ placeholder: $r('app.string.recipe_create_placeholder_description'), text: this.description })
         .width('100%')
         .height(80)
         .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
@@ -150,6 +177,8 @@ struct RecipeCreatePage {
             .fontSize(14)
             .fontWeight(FontWeight.Medium)
             .onClick(() => { this.showCategoryPicker = true })
+            .accessibilityText('选择分类')
+            .accessibilityLevel('yes')
         }
         .layoutWeight(1)
         .padding(10)
@@ -163,6 +192,8 @@ struct RecipeCreatePage {
             .fontSize(14)
             .fontWeight(FontWeight.Medium)
             .onClick(() => { this.showDifficultyPicker = true })
+            .accessibilityText('选择难度')
+            .accessibilityLevel('yes')
         }
         .layoutWeight(1)
         .padding(10)
@@ -181,6 +212,8 @@ struct RecipeCreatePage {
             .onChange((v: string) => {
               this.totalMinutes = parseInt(v) || 30
             })
+            .accessibilityText('烹饪时间(分钟)')
+            .accessibilityLevel('yes')
         }
         .layoutWeight(1)
         .padding(10)
@@ -199,6 +232,8 @@ struct RecipeCreatePage {
             .onChange((v: string) => {
               this.servings = parseInt(v) || 2
             })
+            .accessibilityText('份数')
+            .accessibilityLevel('yes')
         }
         .layoutWeight(1)
         .padding(10)
@@ -220,42 +255,48 @@ struct RecipeCreatePage {
     Column() {
       ForEach(this.ingredients, (ing: RecipeIngredient, index: number) => {
         Row({ space: 8 }) {
-          TextInput({ placeholder: '食材名', text: ing.name })
+          TextInput({ placeholder: $r('app.string.recipe_create_placeholder_ingredient_name'), text: ing.name })
             .layoutWeight(3)
             .height(40)
             .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
             .borderRadius(10)
             .padding({ left: 12 })
             .onChange((v: string) => { this.ingredients[index].name = v })
-          TextInput({ placeholder: '用量', text: ing.amount })
+            .accessibilityText('食材名称')
+            .accessibilityLevel('yes')
+          TextInput({ placeholder: $r('app.string.recipe_create_placeholder_ingredient_amount'), text: ing.amount })
             .layoutWeight(2)
             .height(40)
             .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
             .borderRadius(10)
             .padding({ left: 12 })
             .onChange((v: string) => { this.ingredients[index].amount = v })
+            .accessibilityText('食材用量')
+            .accessibilityLevel('yes')
           if (this.ingredients.length > 1) {
             Text('✕')
               .fontSize(18)
               .fontColor(COLORS.ERROR)
               .onClick(() => {
-                this.ingredients.splice(index, 1)
-                this.ingredients = [...this.ingredients]
+                this.ingredients = this.ingredients.filter((_: RecipeIngredient, i: number) => i !== index)
               })
+              .accessibilityText('删除食材')
+              .accessibilityLevel('yes')
           }
         }
         .width('100%')
         .margin({ bottom: 8 })
-      })
+      }, (ing: RecipeIngredient, index: number) => index.toString())
 
-      Text('+ 添加食材')
+      Text($r('app.string.recipe_create_btn_add_ingredient'))
         .fontSize(13)
         .fontColor(COLORS.PRIMARY)
         .margin({ top: 4 })
         .onClick(() => {
-          this.ingredients.push({ name: '', amount: '', alternative: '' })
-          this.ingredients = [...this.ingredients]
+          this.ingredients = [...this.ingredients, new RecipeIngredient()]
         })
+        .accessibilityText('添加食材')
+        .accessibilityLevel('yes')
     }
     .width('100%')
     .padding(16)
@@ -280,25 +321,27 @@ struct RecipeCreatePage {
             }
             .width(24)
             .height(24)
-            Text(`步骤 ${index + 1}`)
+            Text(`${$r('app.string.recipe_create_label_step')} ${index + 1}`)
               .fontSize(14)
               .fontWeight(FontWeight.Medium)
               .margin({ left: 8 })
             Blank()
             if (this.steps.length > 1) {
-              Text('删除')
+              Text($r('app.string.recipe_create_btn_delete'))
                 .fontSize(12)
                 .fontColor(COLORS.ERROR)
                 .onClick(() => {
                   this.steps.splice(index, 1)
                   this.steps = [...this.steps]
                 })
+                .accessibilityText('删除步骤')
+                .accessibilityLevel('yes')
             }
           }
           .width('100%')
 
           TextArea({
-            placeholder: '描述这一步的操作...',
+            placeholder: $r('app.string.recipe_create_placeholder_step_desc'),
             text: step.description
           })
             .width('100%')
@@ -312,7 +355,7 @@ struct RecipeCreatePage {
           Row() {
             Text('⏱️').fontSize(14)
             TextInput({
-              placeholder: '预计用时(分钟)',
+              placeholder: $r('app.string.recipe_create_placeholder_duration'),
               text: step.durationMinutes > 0 ? `${step.durationMinutes}` : ''
             })
               .width(120)
@@ -324,6 +367,8 @@ struct RecipeCreatePage {
               .onChange((v: string) => {
                 this.steps[index].durationMinutes = parseInt(v) || 0
               })
+              .accessibilityText('步骤时长(分钟)')
+              .accessibilityLevel('yes')
           }
           .width('100%')
           .margin({ top: 8 })
@@ -333,21 +378,20 @@ struct RecipeCreatePage {
         .backgroundColor(COLORS.BG_PAGE_LIGHT)
         .borderRadius(12)
         .margin({ bottom: 10 })
-      })
+      }, (step: RecipeStep, index: number) => index.toString())
 
-      Text('+ 添加步骤')
+      Text($r('app.string.recipe_create_btn_add_step'))
         .fontSize(13)
         .fontColor(COLORS.PRIMARY)
         .margin({ top: 4 })
         .onClick(() => {
-          this.steps.push({
-            stepNumber: this.steps.length + 1,
-            description: '',
-            imageUrl: '',
-            durationMinutes: 0
-          })
+          const newStep = new RecipeStep()
+          newStep.stepNumber = this.steps.length + 1
+          this.steps.push(newStep)
           this.steps = [...this.steps]
         })
+        .accessibilityText('添加步骤')
+        .accessibilityLevel('yes')
     }
     .width('100%')
     .padding(16)
@@ -362,12 +406,12 @@ struct RecipeCreatePage {
         ForEach(DIET_TAG_OPTIONS, (option: OptionItem) => {
           Text(option.label)
             .fontSize(13)
-            .fontColor(this.selectedDietTags.includes(option.value as DietTag) ? COLORS.WHITE : COLORS.ACCENT_GREEN_4CAF)
-            .backgroundColor(this.selectedDietTags.includes(option.value as DietTag) ? COLORS.ACCENT_GREEN : COLORS.BG_LIGHT_GREEN)
+            .fontColor(this.selectedDietTags.includes(safeParseDietTag(option.value)) ? COLORS.WHITE : COLORS.ACCENT_GREEN_4CAF)
+            .backgroundColor(this.selectedDietTags.includes(safeParseDietTag(option.value)) ? COLORS.ACCENT_GREEN : COLORS.BG_LIGHT_GREEN)
             .padding({ left: 12, right: 12, top: 6, bottom: 6 })
             .borderRadius(16)
             .onClick(() => {
-              const tag = option.value as DietTag
+              const tag = safeParseDietTag(option.value)
               const idx = this.selectedDietTags.indexOf(tag)
               if (idx >= 0) {
                 this.selectedDietTags.splice(idx, 1)
@@ -376,7 +420,9 @@ struct RecipeCreatePage {
               }
               this.selectedDietTags = [...this.selectedDietTags]
             })
-        })
+            .accessibilityText(option.label)
+            .accessibilityLevel('yes')
+        }, (option: OptionItem, i: number) => `tag_${i}`)
       }
       .width('100%')
     }
@@ -386,7 +432,7 @@ struct RecipeCreatePage {
     .borderRadius(RADIUS.LG)
   }
 
-  private getCategoryLabel(value: RecipeCategory): string {
+  private getCategoryLabel(value: RecipeCategory): ResourceStr {
     for (const opt of CATEGORY_OPTIONS) {
       if (opt.value === value) {
         return opt.label
@@ -395,25 +441,21 @@ struct RecipeCreatePage {
     return value
   }
 
-  private getDifficultyLabel(value: RecipeDifficulty): string {
-    const difficultyMap: Map<string, string> = new Map()
-    difficultyMap.set('easy', '简单')
-    difficultyMap.set('medium', '中等')
-    difficultyMap.set('hard', '困难')
-    return difficultyMap.get(value) || value
+  private getDifficultyLabel(value: RecipeDifficulty): ResourceStr {
+    return DIFFICULTY_LABEL_MAP.get(value) || value
   }
 
   private async handlePublish() {
     if (this.title.trim().length === 0) {
-      promptAction.showToast({ message: '请输入食谱名称' })
+      ToastHelper.show(this.getUIContext(), $r('app.string.recipe_create_toast_enter_name'))
       return
     }
     if (this.ingredients.length === 0 || this.ingredients.every(i => i.name.length === 0)) {
-      promptAction.showToast({ message: '请至少添加一个食材' })
+      ToastHelper.show(this.getUIContext(), $r('app.string.recipe_create_toast_add_ingredient'))
       return
     }
     if (this.steps.length === 0 || this.steps.every(s => s.description.length === 0)) {
-      promptAction.showToast({ message: '请至少添加一个步骤' })
+      ToastHelper.show(this.getUIContext(), $r('app.string.recipe_create_toast_add_step'))
       return
     }
 
@@ -422,12 +464,11 @@ struct RecipeCreatePage {
       const validSteps: RecipeStep[] = this.steps
         .filter(s => s.description.length > 0)
         .map((s, idx) => {
-          const step: RecipeStep = {
-            stepNumber: idx + 1,
-            description: s.description,
-            imageUrl: s.imageUrl,
-            durationMinutes: s.durationMinutes
-          }
+          const step = new RecipeStep()
+          step.stepNumber = idx + 1
+          step.description = s.description
+          step.imageUrl = s.imageUrl
+          step.durationMinutes = s.durationMinutes
           return step
         })
 
@@ -448,10 +489,17 @@ struct RecipeCreatePage {
         isDraft: false
       })
 
-      promptAction.showToast({ message: '食谱发布成功！' })
+      ToastHelper.show(this.getUIContext(), $r('app.string.recipe_create_toast_publish_success'))
       safeBack()
     } catch (e) {
-      promptAction.showToast({ message: `发布失败：${(e as Error).message}` })
+      ToastHelper.show(this.getUIContext(), `${$r('app.string.recipe_create_toast_publish_fail')}：${(e as Error).message}`)
     }
+  }
+
+  pageTransition() {
+    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Right)
+    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Left)
   }
 }

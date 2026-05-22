@@ -1,0 +1,379 @@
+// FavoritePage.ets
+// 我的收藏页面 - 展示用户收藏的食品列表
+
+import {
+  ToastHelper, safeBack, safePushUrl, COLORS, FONT_SIZE, FONT_WEIGHT, SPACING, RADIUS, BUTTON, HILOG_DOMAIN, FEATURE_LIMITS, ImageCache
+} from 'hsp_core';
+import { AppState } from '../AppState';
+import { FavoriteItem } from '../repository/FavoriteRepository';
+import { EmptyState } from '../components/EmptyState';
+import { FoodTagFilter, FilterTag, createAllFilterTags } from '../components/FoodTagFilter';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+import { FavoriteDataSource } from '../utils/FavoriteDataSource';
+
+const TAG = 'FavoritePage';
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const FREE_FAVORITE_LIMIT: number = FEATURE_LIMITS.FREE_FAVORITE_MAX;
+
+const NUTRI_GRADE_MAP: Map<string, string> = new Map();
+NUTRI_GRADE_MAP.set('nutri_a', 'A');
+NUTRI_GRADE_MAP.set('nutri_b', 'B');
+NUTRI_GRADE_MAP.set('nutri_c', 'C');
+NUTRI_GRADE_MAP.set('nutri_d', 'D');
+NUTRI_GRADE_MAP.set('nutri_e', 'E');
+
+@ComponentV2
+struct FavoriteItemRow {
+  @Param item: FavoriteItem = new FavoriteItem()
+  @Event onRemove?: (foodId: string) => void
+  @Event onItemClick?: (item: FavoriteItem) => void
+
+  private formatTime(timestamp: number): string {
+    const d = new Date(timestamp);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  private getGradeColor(grade: string): string {
+    if (grade.length === 0) return COLORS.TEXT_TERTIARY;
+    const upper = grade.toUpperCase();
+    if (upper === 'A') return COLORS.LEVEL_GREEN;
+    if (upper === 'B') return '#8BC34A';
+    if (upper === 'C') return COLORS.LEVEL_YELLOW;
+    if (upper === 'D') return COLORS.LEVEL_ORANGE;
+    if (upper === 'E') return COLORS.LEVEL_RED;
+    return COLORS.TEXT_TERTIARY;
+  }
+
+  build() {
+    ListItem() {
+      Row({ space: 12 }) {
+        if (this.item.imageUrl.length > 0) {
+          Image(ImageCache.has(this.item.imageUrl) ? ImageCache.get(this.item.imageUrl)! : this.item.imageUrl)
+            .width(40)
+            .height(40)
+            .borderRadius(RADIUS.SM)
+            .backgroundColor(COLORS.BG_LIGHT)
+            .objectFit(ImageFit.Cover)
+            .onComplete(() => {
+              if (!ImageCache.has(this.item.imageUrl)) {
+                ImageCache.set(this.item.imageUrl, this.item.imageUrl);
+              }
+            })
+        } else {
+          Column() {
+            Text('🥫').fontSize(20)
+          }
+          .width(40)
+          .height(40)
+          .borderRadius(RADIUS.SM)
+          .backgroundColor(COLORS.BG_LIGHT)
+          .justifyContent(FlexAlign.Center)
+        }
+
+        Column({ space: 2 }) {
+          Text(this.item.foodName)
+            .fontSize(FONT_SIZE.BODY)
+            .fontWeight(FONT_WEIGHT.MEDIUM)
+            .fontColor(COLORS.TEXT_PRIMARY)
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+
+          Row({ space: 6 }) {
+            if (this.item.brand.length > 0) {
+              Text(this.item.brand)
+                .fontSize(FONT_SIZE.TINY)
+                .fontColor(COLORS.TEXT_TERTIARY)
+                .maxLines(1)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+            }
+
+            if (this.item.nutriGrade.length > 0) {
+              Text(this.item.nutriGrade.toUpperCase())
+                .fontSize(FONT_SIZE.TINY)
+                .fontColor(this.getGradeColor(this.item.nutriGrade))
+                .fontWeight(FONT_WEIGHT.BOLD)
+            }
+
+            Text(this.formatTime(this.item.createdAt))
+              .fontSize(FONT_SIZE.TINY)
+              .fontColor(COLORS.TEXT_TERTIARY)
+          }
+        }
+        .layoutWeight(1)
+        .alignItems(HorizontalAlign.Start)
+      }
+      .width('100%')
+      .padding({ left: 16, right: 16, top: 10, bottom: 10 })
+      .onClick(() => {
+        if (this.onItemClick) {
+          this.onItemClick(this.item);
+        }
+      })
+      .accessibilityText(this.item.foodName)
+      .accessibilityLevel('yes')
+    }
+    .swipeAction({ end: this.deleteSwipeBuilder() })
+  }
+
+  @Builder
+  deleteSwipeBuilder() {
+    Row() {
+      Text($r('app.string.favorite_remove'))
+        .fontSize(FONT_SIZE.BODY)
+        .fontColor(COLORS.WHITE)
+        .padding({ left: 20, right: 20 })
+    }
+    .height('100%')
+    .backgroundColor(COLORS.ERROR)
+    .justifyContent(FlexAlign.Center)
+    .onClick(() => {
+      if (this.onRemove) {
+        this.onRemove(this.item.foodId);
+      }
+    })
+    .accessibilityText('删除收藏')
+    .accessibilityLevel('yes')
+  }
+}
+
+@Entry
+@ComponentV2
+struct FavoritePage {
+  @Local allFavorites: FavoriteItem[] = []
+  @Local filteredFavorites: FavoriteItem[] = []
+  @Local isLoading: boolean = true
+  @Local isRefreshing: boolean = false
+  @Local favoriteCount: number = 0
+  @Local filterTags: FilterTag[] = createAllFilterTags()
+  @Local selectedFilterKeys: string[] = []
+
+  private appState: AppState = AppState.getInstance()
+  private favoriteDS: FavoriteDataSource = new FavoriteDataSource()
+
+  async aboutToAppear() {
+    await this.loadFavorites();
+    this.isLoading = false;
+  }
+
+  async onPageShow() {
+    await this.loadFavorites();
+  }
+
+  aboutToDisappear(): void {
+    ImageCache.clear();
+  }
+
+  private async loadFavorites(): Promise<void> {
+    try {
+      this.allFavorites = await this.appState.getAllFavorites();
+      this.favoriteCount = this.allFavorites.length;
+      this.applyFilter();
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'Load favorites failed: %{public}s', JSON.stringify(error));
+    }
+  }
+
+  private applyFilter(): void {
+    if (this.selectedFilterKeys.length === 0) {
+      this.filteredFavorites = this.allFavorites;
+    } else {
+      this.filteredFavorites = this.allFavorites.filter((item: FavoriteItem) => {
+        return this.selectedFilterKeys.some((key: string) => this.matchFilter(item, key));
+      });
+    }
+    this.favoriteDS.setData(this.filteredFavorites);
+  }
+
+  private matchFilter(item: FavoriteItem, key: string): boolean {
+    if (key.startsWith('nutri_')) {
+      const target = NUTRI_GRADE_MAP.get(key);
+      return target !== undefined && item.nutriGrade.toUpperCase() === target;
+    }
+    if (key.startsWith('nova_')) {
+      return false;
+    }
+    switch (key) {
+      case 'low_sodium':
+        return item.foodName.includes('低钠');
+      case 'low_sugar':
+        return item.foodName.includes('低糖') || item.foodName.includes('无糖');
+      case 'high_protein':
+        return item.foodName.includes('高蛋白');
+      case 'high_fiber':
+        return item.foodName.includes('高纤维');
+      case 'organic':
+        return item.foodName.includes('有机');
+      case 'no_added_sugar':
+        return item.foodName.includes('无添加糖') || item.foodName.includes('无糖');
+      default:
+        return false;
+    }
+  }
+
+  private onFilterChange(selectedKeys: string[]): void {
+    this.selectedFilterKeys = selectedKeys;
+    this.applyFilter();
+  }
+
+  private async handleRemove(foodId: string): Promise<void> {
+    try {
+      await this.appState.removeFavorite(foodId);
+        ToastHelper.show(this.getUIContext(), $r('app.string.favorite_removed'));
+        await this.loadFavorites();
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'Remove favorite failed: %{public}s', JSON.stringify(error));
+      ToastHelper.show(this.getUIContext(), $r('app.string.favorite_remove_failed'));
+    }
+  }
+
+  private handleItemClick(item: FavoriteItem): void {
+    if (item.barcode.length > 0) {
+      const navParams = new Map<string, Object>();
+      navParams.set('barcode', item.barcode);
+      navParams.set('foodId', item.foodId);
+      safePushUrl('pages/ReportPage', navParams);
+    } else {
+      const navParams = new Map<string, Object>();
+      navParams.set('foodId', item.foodId);
+      safePushUrl('pages/ReportPage', navParams);
+    }
+  }
+
+  build() {
+    Column() {
+      Row() {
+        Row() {
+          Text('←')
+            .fontSize(FONT_SIZE.LARGE)
+            .fontColor(COLORS.TEXT_PRIMARY)
+        }
+        .width(40)
+        .height(BUTTON.HEIGHT_SMALL)
+        .justifyContent(FlexAlign.Center)
+        .onClick(() => { safeBack() })
+        .accessibilityText('返回')
+        .accessibilityLevel('yes')
+
+        Text($r('app.string.favorite_title'))
+          .fontSize(FONT_SIZE.TITLE)
+          .fontWeight(FONT_WEIGHT.BOLD)
+          .fontColor(COLORS.TEXT_PRIMARY)
+          .layoutWeight(1)
+          .textAlign(TextAlign.Center)
+
+        Text(`${this.favoriteCount}`)
+          .fontSize(FONT_SIZE.SMALL)
+          .fontColor(COLORS.PRIMARY)
+          .fontWeight(FONT_WEIGHT.BOLD)
+          .width(40)
+          .textAlign(TextAlign.Center)
+      }
+      .width('100%')
+      .height(BUTTON.HEIGHT_LG)
+      .padding({ left: 8, right: 8 })
+      .backgroundColor(COLORS.BG_CARD)
+
+      // 标签筛选栏
+      if (!this.isLoading && this.allFavorites.length > 0) {
+        FoodTagFilter({
+          tags: this.filterTags,
+          onFilterChange: (selectedTags: string[]) => { this.onFilterChange(selectedTags) }
+        })
+          .margin({ top: SPACING.XS, bottom: SPACING.XS })
+      }
+
+      if (this.isLoading) {
+        Column() {
+          LoadingProgress()
+            .width(40)
+            .height(40)
+            .color(COLORS.PRIMARY)
+        }
+        .width('100%')
+        .layoutWeight(1)
+        .justifyContent(FlexAlign.Center)
+      } else if (this.allFavorites.length === 0) {
+        EmptyState({
+          icon: '❤️',
+          title: $r('app.string.favorite_empty_title'),
+          subtitle: $r('app.string.favorite_empty_subtitle')
+        })
+      } else if (this.filteredFavorites.length === 0 && this.selectedFilterKeys.length > 0) {
+        Column() {
+          Text('🔍')
+            .fontSize(48)
+            .margin({ bottom: 12 })
+          Text($r('app.string.favorite_no_match'))
+            .fontSize(FONT_SIZE.LG)
+            .fontColor(COLORS.TEXT_PRIMARY)
+            .margin({ bottom: 4 })
+          Text($r('app.string.favorite_no_match_hint'))
+            .fontSize(FONT_SIZE.BODY)
+            .fontColor(COLORS.TEXT_TERTIARY)
+        }
+        .width('100%')
+        .layoutWeight(1)
+        .justifyContent(FlexAlign.Center)
+      } else {
+        Refresh({ refreshing: $$this.isRefreshing }) {
+          List({ space: 0 }) {
+            LazyForEach(this.favoriteDS, (item: FavoriteItem) => {
+              FavoriteItemRow({
+                item: item,
+                onRemove: (foodId: string) => { this.handleRemove(foodId) },
+                onItemClick: (favItem: FavoriteItem) => { this.handleItemClick(favItem) }
+              })
+            }, (item: FavoriteItem) => item.foodId)
+          }
+          .width('100%')
+          .layoutWeight(1)
+          .divider({ strokeWidth: 0.5, color: COLORS.DIVIDER })
+          .cachedCount(5)
+        }
+        .onRefreshing(async () => {
+          await this.loadFavorites();
+          this.isRefreshing = false;
+        })
+        .layoutWeight(1)
+      }
+
+      if (this.favoriteCount >= FREE_FAVORITE_LIMIT) {
+        Column() {
+          Row() {
+            Text($r('app.string.favorite_limit_hint'))
+              .fontSize(FONT_SIZE.TINY)
+              .fontColor(COLORS.ORANGE_ACCENT)
+          }
+          .width('100%')
+          .padding({ left: 16, right: 16, top: 6, bottom: 2 })
+          Row() {
+            Text($r('app.string.favorite_upgrade_hint'))
+              .fontSize(FONT_SIZE.TINY)
+              .fontColor(COLORS.PRIMARY)
+              .fontWeight(FONT_WEIGHT.MEDIUM)
+          }
+          .width('100%')
+          .padding({ left: 16, right: 16, bottom: 6 })
+          .onClick(() => {
+            const navParams = new Map<string, Object>();
+            safePushUrl('pages/PaywallPage', navParams);
+          })
+          .accessibilityText('升级会员')
+          .accessibilityLevel('yes')
+        }
+        .width('100%')
+        .backgroundColor(COLORS.BG_WARM_ORANGE)
+      }
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor(COLORS.BG_PAGE)
+  }
+
+  pageTransition() {
+    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Right)
+    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Left)
+  }
+}

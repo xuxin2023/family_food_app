@@ -2,19 +2,18 @@
 // 雷达图组件 - 多营养素均衡度可视化
 // 使用 Canvas/Shape 自绘，鸿蒙 API 原生实现
 
-import { COLORS, FONT_SIZE, SPACING } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { COLORS, FONT_SIZE, SPACING } from 'hsp_core';
 
-export interface RadarAxis {
-  label: string;
-  value: number;      // 0~100 百分比值
-  maxValue: number;   // 参考最大值
-  color: string;
+export class RadarAxis {
+  label: string = '';
+  value: number = 0;
+  maxValue: number = 100;
+  color: string = '';
 }
 
-interface Point {
-  x: number;
-  y: number;
+export class Point {
+  x: number = 0;
+  y: number = 0;
 }
 
 @ComponentV2
@@ -145,7 +144,7 @@ export struct RadarChart {
               }
               .padding({ right: SPACING.SM, bottom: SPACING.XS })
               .alignItems(VerticalAlign.Center)
-            })
+            }, (axis: RadarAxis, i: number) => `axis_${i}`)
           }
           .width('100%')
           .padding({ top: SPACING.XS })
@@ -214,16 +213,19 @@ export struct RadarChart {
 
   pointPos(size: number, data: RadarAxis[], index: number): Point {
     const sides = data.length;
-    if (index >= sides) return { x: 0, y: 0 };
+    if (index >= sides) {
+      const p0 = new Point();
+      return p0;
+    }
     const cx = size / 2;
     const cy = size / 2;
     const maxR = size * 0.38;
     const axis = data[index];
     const r = maxR * Math.min(axis.value / (axis.maxValue || 100), 1);
     const angle = (2 * Math.PI * index) / sides - Math.PI / 2;
-    return {
-      x: cx + r * Math.cos(angle) - 3,
-      y: cy + r * Math.sin(angle) - 3
-    };
+    const pt = new Point();
+    pt.x = cx + r * Math.cos(angle) - 3;
+    pt.y = cy + r * Math.sin(angle) - 3;
+    return pt;
   }
 }

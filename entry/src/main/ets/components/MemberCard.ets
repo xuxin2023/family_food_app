@@ -1,9 +1,8 @@
-// 成员选择卡片组件
+import { FamilyProfile, COLORS } from 'hsp_core';
+// 成员选择卡片组件 — @ReusableV2 高频复用优化
 
-import { FamilyProfile, HealthGoal } from '../model/FamilyProfile';
-import { COLORS } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
+@ReusableV2
 @ComponentV2
 export struct MemberCard {
   @Param member: FamilyProfile = new FamilyProfile();

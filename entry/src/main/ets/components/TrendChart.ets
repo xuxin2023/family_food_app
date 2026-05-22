@@ -2,8 +2,7 @@
 // 营养摄入趋势柱状图组件 - 展示单一营养素在日期范围内的趋势
 
 import { NutrientTrendData, DailyNutrientPoint, TrendDirection } from '../engine/NutritionTrendEngine';
-import { COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT } from 'hsp_core';
 
 @ComponentV2
 export struct TrendChart {
@@ -56,11 +55,11 @@ export struct TrendChart {
                   .width(20)
                   .height(this.getBarHeight(point.value))
                   .borderRadius(4)
-                  .backgroundColor(this.data!.color)
+                  .backgroundColor(this.data.color)
                   .opacity(0.8)
 
                 // 日期标签（仅显示部分）
-                if (index % Math.max(1, Math.floor(this.data!.dailyValues.length / 7)) === 0) {
+                if (index % Math.max(1, Math.floor(this.data.dailyValues.length / 7)) === 0) {
                   Text(this.formatShortDate(point.date))
                     .fontSize(8)
                     .fontColor(COLORS.TEXT_GRAY_9E9E)

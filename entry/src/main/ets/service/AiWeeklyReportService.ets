@@ -1,22 +1,20 @@
 // AiWeeklyReportService.ets
 // AI 周报服务 - 为每周饮食报告生成个性化总结和建议
 
+import { FamilyProfile, HILOG_DOMAIN, JsonHelper, WeeklyReport, WeeklyDietData } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { WeeklyReport, WeeklyDietData } from '../engine/WeeklyReportEngine';
-import { FamilyProfile } from '../model/FamilyProfile';
 import { AiServiceBase } from './ai/AiServiceBase';
 import { AI_SERVICE_DEFAULTS, SYSTEM_PROMPTS } from './ai/AiConfig';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'AiWeeklyReportService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
-export interface AiWeeklyReportResult {
-  summary: string;
-  highlights: string[];
-  suggestions: string[];
-  personalizedTip: string;
-  motivationalMessage: string;
+export class AiWeeklyReportResult {
+  summary: string = '';
+  highlights: string[] = [];
+  suggestions: string[] = [];
+  personalizedTip: string = '';
+  motivationalMessage: string = '';
 }
 
 export class AiWeeklyReportService extends AiServiceBase {
@@ -33,7 +31,7 @@ export class AiWeeklyReportService extends AiServiceBase {
   }
 
   protected getSystemPrompt(): string {
-    return SYSTEM_PROMPTS.WEEKLY;
+    return SYSTEM_PROMPTS.get('WEEKLY') ?? '你是家庭饮食周报润色助手。输出必须是合法JSON。语气温和鼓励，不恐吓。';
   }
 
   async enhanceWeeklyReport(
@@ -108,27 +106,28 @@ export class AiWeeklyReportService extends AiServiceBase {
       if (jsonMatch === null) {
         return this.buildFallbackResult(fallback);
       }
-      const parsed = JSON.parse(jsonMatch[0]) as Record<string, Object>;
-      const result: AiWeeklyReportResult = {
-        summary: (parsed.summary as string) || fallback.summary,
-        highlights: (parsed.highlights as string[]) || fallback.highlights,
-        suggestions: (parsed.suggestions as string[]) || fallback.suggestions,
-        personalizedTip: (parsed.personalizedTip as string) || '',
-        motivationalMessage: (parsed.motivationalMessage as string) || '坚持记录，全家更安心'
-      };
+      const rawParsed = JSON.parse(jsonMatch[0]) as Record<string, Object>;
+      const parsed = JsonHelper.recordToMap(rawParsed);
+      const result = new AiWeeklyReportResult();
+      result.summary = (parsed.get('summary') as string) || fallback.summary;
+      result.highlights = (parsed.get('highlights') as string[]) || fallback.highlights;
+      result.suggestions = (parsed.get('suggestions') as string[]) || fallback.suggestions;
+      result.personalizedTip = (parsed.get('personalizedTip') as string) || '';
+      result.motivationalMessage = (parsed.get('motivationalMessage') as string) || '坚持记录，全家更安心';
       return result;
     } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'AI weekly parse failed: %{public}s', JSON.stringify(error));
       return this.buildFallbackResult(fallback);
     }
   }
 
   private buildFallbackResult(report: WeeklyReport): AiWeeklyReportResult {
-    return {
-      summary: report.summary,
-      highlights: report.highlights,
-      suggestions: report.suggestions,
-      personalizedTip: '',
-      motivationalMessage: '坚持记录，全家更安心'
-    };
+    const r = new AiWeeklyReportResult();
+    r.summary = report.summary;
+    r.highlights = report.highlights;
+    r.suggestions = report.suggestions;
+    r.personalizedTip = '';
+    r.motivationalMessage = '坚持记录，全家更安心';
+    return r;
   }
 }

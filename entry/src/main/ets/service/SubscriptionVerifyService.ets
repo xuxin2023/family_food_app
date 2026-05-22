@@ -1,27 +1,25 @@
 // SubscriptionVerifyService.ets
 // 订阅云端校验服务 - 基于 MemberTier
 
+import { TIME_INTERVAL_CONFIG, API_TIMEOUT_CONFIG, API_CONFIG, HILOG_DOMAIN, MemberTier, safeParseMemberTier } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { http } from '@kit.NetworkKit';
 import { common } from '@kit.AbilityKit';
-import { TIME_INTERVAL_CONFIG, API_TIMEOUT_CONFIG } from '../constants/AppConfig';
 import { preferences } from '@kit.ArkData';
-import { MemberTier } from '../model/MemberStatus';
 import { AuthService } from './AuthService';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { SecureHttpClient, SecureRequestOptions } from './SecureHttpClient';
+import { GlobalErrorHandler } from '../utils/GlobalErrorHandler';
 
 const TAG = 'SubscriptionVerifyService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
-const VERIFY_ENDPOINT = 'https://familyfood-api.cn-north-4.myhuaweicloud.com/subscription/verify';
-
-export interface SubscriptionVerifyResult {
-  valid: boolean;
-  tier: MemberTier;
-  expiresAt: number;
-  orderId: string;
-  verifiedAt: number;
-  source: string;
+export class SubscriptionVerifyResult {
+  valid: boolean = false;
+  tier: MemberTier = MemberTier.FREE;
+  expiresAt: number = 0;
+  orderId: string = '';
+  verifiedAt: number = 0;
+  source: string = '';
 }
 
 export class SubscriptionVerifyService {
@@ -41,7 +39,6 @@ export class SubscriptionVerifyService {
     }
 
     try {
-      const httpRequest = http.createHttp();
       const payload = JSON.stringify({
         uid: uid,
         productId: productId,
@@ -49,14 +46,19 @@ export class SubscriptionVerifyService {
         verifyAt: Date.now()
       });
 
-      const response = await httpRequest.request(VERIFY_ENDPOINT, {
-        method: http.RequestMethod.POST,
-        header: { 'Content-Type': 'application/json' },
-        extraData: payload,
-        connectTimeout: API_TIMEOUT_CONFIG.DEFAULT_CONNECT_TIMEOUT_MS,
-        readTimeout: API_TIMEOUT_CONFIG.DEFAULT_READ_TIMEOUT_MS
-      });
-      httpRequest.destroy();
+      const verifyEndpoint = `${API_CONFIG.HUAWEI_CLOUD_BASE_URL}/subscription/verify`;
+      const verifyHeader = new Map<string, string>();
+      verifyHeader.set('Content-Type', API_CONFIG.HEADER_CONTENT_TYPE_JSON);
+
+      const opts = new SecureRequestOptions();
+      opts.url = verifyEndpoint;
+      opts.method = http.RequestMethod.POST;
+      opts.header = verifyHeader;
+      opts.extraData = payload;
+      opts.connectTimeout = API_TIMEOUT_CONFIG.DEFAULT_CONNECT_TIMEOUT_MS;
+      opts.readTimeout = API_TIMEOUT_CONFIG.DEFAULT_READ_TIMEOUT_MS;
+
+      const response = await SecureHttpClient.getInstance().request(opts);
 
       if (response.responseCode === 200) {
         const result = JSON.parse(response.result as string) as SubscriptionVerifyResult;
@@ -70,6 +72,7 @@ export class SubscriptionVerifyService {
       return this.invalidResult(`服务端返回${response.responseCode}`);
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Verify failed: %{public}s', JSON.stringify(error));
+      GlobalErrorHandler.getInstance().handleError(error instanceof Error ? error : new Error(String(error)), 'SubscriptionVerifyService');
       return this.invalidResult('网络异常，使用本地缓存');
     }
   }
@@ -120,6 +123,7 @@ export class SubscriptionVerifyService {
       await prefs.flush();
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Persist verify result failed: %{public}s', JSON.stringify(error));
+      GlobalErrorHandler.getInstance().handleError(error instanceof Error ? error : new Error(String(error)), 'SubscriptionVerifyService');
     }
   }
 
@@ -129,7 +133,7 @@ export class SubscriptionVerifyService {
       const tierStr = prefs.getSync('verified_tier', '') as string;
       const expiresAt = parseInt(prefs.getSync('expires_at', '0') as string, 10);
       if (tierStr.length > 0 && expiresAt > Date.now()) {
-        return tierStr as MemberTier;
+        return safeParseMemberTier(tierStr);
       }
       return null;
     } catch (_) {
@@ -138,13 +142,13 @@ export class SubscriptionVerifyService {
   }
 
   private invalidResult(reason: string): SubscriptionVerifyResult {
-    return {
-      valid: false,
-      tier: MemberTier.FREE,
-      expiresAt: 0,
-      orderId: '',
-      verifiedAt: Date.now(),
-      source: reason
-    };
+    const result = new SubscriptionVerifyResult();
+    result.valid = false;
+    result.tier = MemberTier.FREE;
+    result.expiresAt = 0;
+    result.orderId = '';
+    result.verifiedAt = Date.now();
+    result.source = reason;
+    return result;
   }
 }

@@ -1,16 +1,11 @@
 // AiDomainService.ets
 // AI 领域服务 - 从 AppState 剥离的 AI 营养顾问相关业务逻辑
 
-import { FamilyProfile } from '../model/FamilyProfile';
-import { HealthSignal } from '../model/HealthSignal';
-import { FoodLabel } from '../model/FoodLabel';
-import { DailyBudget } from '../model/DailyBudget';
-import { AiNutritionAdvice, AiRecipeRecommendationResult, AiRecipeRequest } from '../model/AiModels';
+import {
+  FamilyProfile, HealthSignal, FoodLabel, DailyBudget, AiNutritionAdvice, AiRecipeRecommendationResult, AiRecipeRequest, DateUtil, CacheManager
+} from 'hsp_core';
 import { HistoryRepository } from '../repository/HistoryRepository';
-import { DateUtil } from '../utils/DateUtil';
-import { CacheManager } from '../utils/CacheManager';
 import { ServiceManager } from '../ServiceManager';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 export class AiDomainService {
   private svc: ServiceManager;

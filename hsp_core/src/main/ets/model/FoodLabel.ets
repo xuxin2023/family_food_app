@@ -59,6 +59,10 @@ export class FoodLabel {
   @Trace source: FoodSource = FoodSource.USER_UPLOAD;
   @Trace identifiedAt: number = 0;
   @Trace nutriScore: number = 0;
+  @Trace ecoScoreGrade: string = '';
+  @Trace ecoScoreScore: number = 0;
+  @Trace novaGroup: number = 0;
+  @Trace allergens: string[] = [];
 
   isOem(): boolean {
     return this.principal.length > 0;
@@ -129,6 +133,11 @@ export class FoodLabel {
     label.traceCode = (json.traceCode as string) ?? '';
     label.source = (json.source as FoodSource) ?? FoodSource.USER_UPLOAD;
     label.identifiedAt = (json.identifiedAt as number) ?? 0;
+    label.nutriScore = (json.nutriScore as number) ?? 0;
+    label.ecoScoreGrade = (json.ecoScoreGrade as string) ?? '';
+    label.ecoScoreScore = (json.ecoscoreScore as number) ?? (json.ecoScoreScore as number) ?? 0;
+    label.novaGroup = (json.novaGroup as number) ?? 0;
+    label.allergens = (json.allergens as string[]) ?? [];
     return label;
   }
 }

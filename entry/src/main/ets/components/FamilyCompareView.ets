@@ -1,9 +1,6 @@
+import { Recommendation, getLevelColorValue, FamilyProfile, COLORS } from 'hsp_core';
 // 家庭对比视图组件 - 同一食品对全家不同建议
 
-import { Recommendation, getLevelColorValue } from '../model/Recommendation';
-import { FamilyProfile } from '../model/FamilyProfile';
-import { COLORS } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 @ComponentV2
 export struct FamilyCompareView {

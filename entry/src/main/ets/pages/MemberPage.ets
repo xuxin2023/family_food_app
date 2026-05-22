@@ -1,20 +1,21 @@
 // 成员管理页 - 家庭成员列表
 
-import { safeBack, safePushUrl } from '../utils/RouterUtil';
-import { FamilyProfile } from '../model/FamilyProfile';
+import { safeBack, safePushUrl, FamilyProfile, BUTTON, COLORS } from 'hsp_core';
 import { AppState } from '../AppState';
-import { BUTTON, COLORS } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 @Entry
 @ComponentV2
 struct MemberPage {
   @Local members: FamilyProfile[] = []
+  @Local isLoading: boolean = true
 
   private appState: AppState = AppState.getInstance()
 
   async aboutToAppear() {
-    await this.loadMembers();
+    try {
+      await this.loadMembers();
+    } catch (_e) {
+    }
   }
 
   async onPageShow() {
@@ -22,7 +23,9 @@ struct MemberPage {
   }
 
   private async loadMembers() {
+    this.isLoading = true
     this.members = await this.appState.getAllMembers();
+    this.isLoading = false
   }
 
   build() {
@@ -86,7 +89,14 @@ struct MemberPage {
     .borderRadius(12)
     .margin({ top: 8 })
     .onClick(() => {
-      safePushUrl('pages/MemberEditPage')
+      safePushUrl(`pages/MemberEditPage?memberId=${member.memberId}`)
     })
+  }
+
+  pageTransition() {
+    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Right)
+    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Left)
   }
 }

@@ -6,14 +6,21 @@ import {
   RecommendationLevel, EnhancedFoodRecommendation } from '../../../../../src/main/ets/model/FoodAdapterTypes';
 
 function createAdapterMember(): FamilyMemberSimpleInputInput {
-  const budget = {
-    sodium_mg: 2000, sugar_g: 50, energy_kcal: 2000, fat_g: 65, saturatedFat_g: 20
-  };
-  const member: FamilyMemberSimpleInputInput = {
-    id: 'dad_1', name: '爸爸', role: '爸爸', age: 35,
-    healthGoal: '控压', allergenRedline: [], dislikedAdditives: [],
-    dailyBudget: budget
-  };
+  const budget = new TodayIntakeInputInput();
+  budget.sodium_mg = 2000;
+  budget.sugar_g = 50;
+  budget.energy_kcal = 2000;
+  budget.fat_g = 65;
+  budget.saturatedFat_g = 20;
+  const member = new FamilyMemberSimpleInputInput();
+  member.id = 'dad_1';
+  member.name = '爸爸';
+  member.role = '爸爸';
+  member.age = 35;
+  member.healthGoal = '控压';
+  member.allergenRedline = [];
+  member.dislikedAdditives = [];
+  member.dailyBudget = budget;
   return member;
 }
 
@@ -25,12 +32,20 @@ function createAdapterMemberWithId(id: string): FamilyMemberSimpleInputInput {
 }
 
 function createAdapterFood(): FoodNutritionInputInput {
-  return {
-    productName: '测试饼干', brand: '测试品牌',
-    energy_kj: 840, protein_g: 5, fat_g: 10, saturatedFat_g: 3,
-    transFat_g: 0, carbs_g: 60, sugar_g: 15, sodium_mg: 300,
-    allergens: [], manufacturer: '测试工厂'
-  };
+  const f = new FoodNutritionInputInput();
+  f.productName = '测试饼干';
+  f.brand = '测试品牌';
+  f.energy_kj = 840;
+  f.protein_g = 5;
+  f.fat_g = 10;
+  f.saturatedFat_g = 3;
+  f.transFat_g = 0;
+  f.carbs_g = 60;
+  f.sugar_g = 15;
+  f.sodium_mg = 300;
+  f.allergens = [];
+  f.manufacturer = '测试工厂';
+  return f;
 }
 
 function createAdapterFoodLowSodium(): FoodNutritionInputInput {
@@ -66,27 +81,61 @@ function createAdapterFoodHighSodium600(): FoodNutritionInput {
 }
 
 function createAdapterHealthSignalInput(): HealthSignalInput {
-  return { steps: '8000', sleep: '良好', weightTrend: '稳定', manualBpStatus: '正常', manualBgStatus: '正常' };
+  const s = new HealthSignalInputInput();
+  s.steps = '8000';
+  s.sleep = '良好';
+  s.weightTrend = '稳定';
+  s.manualBpStatus = '正常';
+  s.manualBgStatus = '正常';
+  return s;
 }
 
 function createAdapterSignalLowSteps(): HealthSignalInput {
-  return { steps: '正常', sleep: '好', weightTrend: '稳定', manualBpStatus: '正常', manualBgStatus: '正常' };
+  const s = new HealthSignalInputInput();
+  s.steps = '正常';
+  s.sleep = '好';
+  s.weightTrend = '稳定';
+  s.manualBpStatus = '正常';
+  s.manualBgStatus = '正常';
+  return s;
 }
 
 function createAdapterSignalLowSteps(): HealthSignalInput {
-  return { steps: '低', sleep: '好', weightTrend: '稳定', manualBpStatus: '正常', manualBgStatus: '正常' };
+  const s = new HealthSignalInputInput();
+  s.steps = '低';
+  s.sleep = '好';
+  s.weightTrend = '稳定';
+  s.manualBpStatus = '正常';
+  s.manualBgStatus = '正常';
+  return s;
 }
 
 function createAdapterSignalPoorSleep(): HealthSignalInput {
-  return { steps: '正常', sleep: '差', weightTrend: '稳定', manualBpStatus: '正常', manualBgStatus: '正常' };
+  const s = new HealthSignalInputInput();
+  s.steps = '正常';
+  s.sleep = '差';
+  s.weightTrend = '稳定';
+  s.manualBpStatus = '正常';
+  s.manualBgStatus = '正常';
+  return s;
 }
 
 function createAdapterTodayIntake(): TodayIntakeInput {
-  return { sodium_mg: 500, sugar_g: 10, energy_kcal: 600, fat_g: 15 };
+  const t = new TodayIntakeInputInput();
+  t.sodium_mg = 500;
+  t.sugar_g = 10;
+  t.energy_kcal = 600;
+  t.fat_g = 15;
+  return t;
 }
 
 function createAdapterIntakeExhausted(): TodayIntakeInput {
-  return { sodium_mg: 2000, sugar_g: 50, energy_kcal: 2000, fat_g: 65 };
+  const t = new TodayIntakeInputInput();
+  t.sodium_mg = 2000;
+  t.sugar_g = 50;
+  t.energy_kcal = 2000;
+  t.fat_g = 65;
+  return t;
 }
 
 export default function foodAdapterEngineTest() {

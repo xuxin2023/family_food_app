@@ -1,13 +1,10 @@
 // LinkInputDialog.ets
 // 链接输入弹窗组件 - 粘贴电商商品链接进行解析
 
-import { promptAction } from '@kit.ArkUI';
+import { ToastHelper, COLORS, BUTTON, safePushUrl, HILOG_DOMAIN } from 'hsp_core';
 import { OnlineShoppingParser } from '../service/OnlineShoppingParser';
 import { AppState } from '../AppState';
-import { COLORS, BUTTON } from '../constants/AppTheme';
-import { router } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
@@ -22,23 +19,25 @@ export struct LinkInputDialog {
   build() {
     Column() {
       Column() {
-        Text('粘贴商品链接')
+        Text($r('app.string.link_input_paste_product_link'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .fontColor(COLORS.TEXT_PRIMARY)
           .margin({ bottom: 16 })
 
-        TextInput({ placeholder: '粘贴京东/淘宝/拼多多商品链接', text: this.linkInputText })
+        TextInput({ placeholder: $r('app.string.link_input_paste_placeholder'), text: this.linkInputText })
           .width('100%')
           .height(BUTTON.HEIGHT_SECONDARY)
           .borderRadius(8)
           .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
           .padding({ left: 12, right: 12 })
           .placeholderColor(COLORS.TEXT_TERTIARY)
+          .accessibilityText($r('app.string.link_input_paste_product_link'))
+          .accessibilityDescription($r('app.string.link_input_paste_desc'))
           .onChange((value: string) => { this.linkInputText = value })
 
         Row({ space: 12 }) {
-          Button('取消')
+          Button($r('app.string.link_input_cancel'))
             .width('45%')
             .height(BUTTON.HEIGHT_SECONDARY)
             .borderRadius(BUTTON.RADIUS_SECONDARY)
@@ -48,6 +47,7 @@ export struct LinkInputDialog {
               this.linkInputText = ''
               this.onClose()
             })
+            .accessibilityText($r('app.string.link_input_cancel'))
 
           Button() {
             if (this.isParsingLink) {
@@ -56,7 +56,7 @@ export struct LinkInputDialog {
                 .height(20)
                 .color(COLORS.WHITE)
             } else {
-              Text('解析')
+              Text($r('app.string.link_input_parse'))
                 .fontColor(COLORS.WHITE)
                 .fontSize(16)
             }
@@ -70,6 +70,7 @@ export struct LinkInputDialog {
               this.handleParseLink()
             }
           })
+          .accessibilityText($r('app.string.link_input_confirm_parse'))
         }
         .width('100%')
         .margin({ top: 16 })
@@ -89,12 +90,13 @@ export struct LinkInputDialog {
       this.linkInputText = ''
       this.onClose()
     })
+    .accessibilityText($r('app.string.link_input_paste_link'))
   }
 
   private async handleParseLink(): Promise<void> {
     const url = this.linkInputText.trim()
     if (url.length === 0) {
-      promptAction.showToast({ message: '请输入或粘贴商品链接' })
+      ToastHelper.show(this.getUIContext(), $r('app.string.link_input_please_paste'))
       return
     }
 
@@ -105,7 +107,7 @@ export struct LinkInputDialog {
       const parseResult = await parser.parseUrlToLabel(url)
 
       if (!parseResult.success || !parseResult.label) {
-        promptAction.showToast({ message: parseResult.errorMessage || '解析失败，请检查链接' })
+        ToastHelper.show(this.getUIContext(), parseResult.errorMessage || $r('app.string.link_input_parse_fail'))
         this.isParsingLink = false
         return
       }
@@ -113,16 +115,13 @@ export struct LinkInputDialog {
       this.appState.reportCache.setParams(parseResult.label, [], [])
 
       const sourceName: string = parseResult.source ?? '';
-      router.pushUrl({
-        url: 'pages/ReportPage',
-        params: {
-          foodLabelId: parseResult.label.foodId,
-          sourceName: sourceName,
-          fromEcommerce: true
-        }
-      })
+      const navParams = new Map<string, Object>();
+      navParams.set('foodLabelId', parseResult.label.foodId);
+      navParams.set('sourceName', sourceName);
+      navParams.set('fromEcommerce', true);
+      safePushUrl('pages/ReportPage', navParams)
     } catch (error) {
-      promptAction.showToast({ message: '解析异常，请稍后重试' })
+      ToastHelper.show(this.getUIContext(), $r('app.string.link_input_parse_error'))
       hilog.error(DOMAIN_ZERO, 'LinkInputDialog', 'parseLink error: ' + JSON.stringify(error))
     } finally {
       this.isParsingLink = false

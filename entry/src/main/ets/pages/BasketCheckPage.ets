@@ -1,14 +1,9 @@
 // 购物篮检查页 - 连续扫描后检查一篮子食品
 
-import { safeBack, safePushUrl } from '../utils/RouterUtil';
-import { hilog } from '@kit.PerformanceAnalysisKit';
-import { FoodLabel, FoodSource, NutritionPer100g } from '../model/FoodLabel';
-import { BasketCheckResult } from '../engine/BasketCheckEngine';
+import { safeBack, safePushUrl, FoodLabel, PaywallTrigger, BUTTON, COLORS } from 'hsp_core';
+import { BasketCheckResult, BasketCheckEngine } from '../engine/BasketCheckEngine';
 import { AppState } from '../AppState';
-import { PaywallTrigger, MemberTier } from '../model/MemberStatus';
 import { PaywallDialog } from '../components/PaywallDialog';
-import { BUTTON, COLORS } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 @Entry
 @ComponentV2
@@ -17,10 +12,13 @@ struct BasketCheckPage {
   @Local checkResult: BasketCheckResult | null = null
   @Local showPaywallDialog: boolean = false
   @Local paywallTrigger: PaywallTrigger | null = null
+  @Local isLoading: boolean = true
 
   private appState: AppState = AppState.getInstance()
 
   async aboutToAppear() {
+    this.isLoading = true;
+    try {
     // 检查付费墙 - 购物篮检查需要家庭版以上
     const trigger = this.appState.member.getPaywallTrigger('basket_check')
     if (trigger !== null) {
@@ -30,23 +28,35 @@ struct BasketCheckPage {
       return
     }
 
-    // 从AppState获取购物篮数据
     this.basketItems = this.appState.basket.getBasketItems()
-    if (this.basketItems.length === 0) {
-      // 无数据时使用示例
-      this.basketItems = this.createFallbackBasket()
+    if (this.basketItems.length > 0) {
+      const checkEngine = new BasketCheckEngine();
+      this.checkResult = checkEngine.check(this.basketItems, [])
     }
-    this.checkResult = this.appState.checkBasket()
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   build() {
     Stack() {
+      if (this.isLoading) {
+        Column() {
+          LoadingProgress().width(48).height(48).color(COLORS.PRIMARY)
+        }
+        .width('100%')
+        .height('100%')
+        .justifyContent(FlexAlign.Center)
+        .alignItems(HorizontalAlign.Center)
+      } else {
       Scroll() {
         Column() {
           // 顶部导航
           Row() {
             Text($r('app.string.back_arrow')).fontSize(24).fontColor(COLORS.PRIMARY)
               .onClick(() => { safeBack() })
+              .accessibilityText('返回')
+              .accessibilityLevel('yes')
             Text($r('app.string.basket_button')).fontSize(20).fontWeight(FontWeight.Bold)
               .margin({ left: 16 })
           }
@@ -54,6 +64,24 @@ struct BasketCheckPage {
           .padding({ left: 16, right: 16, top: 16, bottom: 16 })
 
           // 篮子概览
+          if (this.basketItems.length === 0) {
+            Column() {
+              Text('🛒').fontSize(48).margin({ bottom: 16 })
+              Text($r('app.string.basket_empty')).fontSize(16).fontColor(COLORS.TEXT_GRAY_7575)
+                .margin({ bottom: 24 })
+              Button($r('app.string.scan_add'))
+                .height(BUTTON.HEIGHT_MD)
+                .backgroundColor(COLORS.PRIMARY)
+                .borderRadius(BUTTON.RADIUS_MD)
+                .onClick(() => { safePushUrl('pages/ScanPage') })
+                .accessibilityText('扫描添加')
+                .accessibilityLevel('yes')
+            }
+            .width('100%')
+            .layoutWeight(1)
+            .justifyContent(FlexAlign.Center)
+            .alignItems(HorizontalAlign.Center)
+          } else {
           Row() {
             Text(`🛒 ${this.basketItems.length}款食品`).fontSize(16).fontWeight(FontWeight.Medium)
             Blank()
@@ -142,13 +170,16 @@ struct BasketCheckPage {
             .borderRadius(BUTTON.RADIUS_MD)
             .margin({ top: 16, bottom: 32 })
             .onClick(() => { safePushUrl('pages/ScanPage') })
-        }
+            .accessibilityText('继续扫描添加')
+            .accessibilityLevel('yes')
+          }
         .width('100%')
       }
       .width('100%')
       .height('100%')
       .backgroundColor('#FAFAFA')
       .scrollable(ScrollDirection.Vertical)
+      }
 
       // 付费墙弹窗（覆盖在内容之上）
       if (this.paywallTrigger !== null) {
@@ -163,49 +194,10 @@ struct BasketCheckPage {
     .height('100%')
   }
 
-  private createFallbackBasket(): FoodLabel[] {
-    const items: FoodLabel[] = []
-    const now = Date.now()
-
-    const item1 = new FoodLabel()
-    item1.foodId = 'b1'; item1.foodName = '即食鸡爪（香辣味）'
-    item1.nutrition = new NutritionPer100g();
-    item1.nutrition.sodium = 1200;
-    item1.nutrition.sugar = 3;
-    item1.nutrition.calories = 230;
-    item1.nutrition.fat = 12;
-    item1.nutrition.saturatedFat = 3;
-    item1.nutrition.carbohydrate = 8;
-    item1.nutrition.protein = 15;
-    item1.ingredients = ['鸡爪', '食用盐', '酱油']; item1.source = FoodSource.USER_UPLOAD; item1.identifiedAt = now
-    items.push(item1)
-
-    const item2 = new FoodLabel()
-    item2.foodId = 'b2'; item2.foodName = '儿童酸奶'
-    item2.nutrition = new NutritionPer100g();
-    item2.nutrition.sodium = 80;
-    item2.nutrition.sugar = 18;
-    item2.nutrition.calories = 90;
-    item2.nutrition.fat = 3;
-    item2.nutrition.saturatedFat = 1.5;
-    item2.nutrition.carbohydrate = 15;
-    item2.nutrition.protein = 3;
-    item2.ingredients = ['生牛乳', '白砂糖', '果胶']; item2.source = FoodSource.USER_UPLOAD; item2.identifiedAt = now
-    items.push(item2)
-
-    const item3 = new FoodLabel()
-    item3.foodId = 'b3'; item3.foodName = '火锅底料（牛油麻辣）'
-    item3.nutrition = new NutritionPer100g();
-    item3.nutrition.sodium = 3500;
-    item3.nutrition.sugar = 5;
-    item3.nutrition.calories = 450;
-    item3.nutrition.fat = 35;
-    item3.nutrition.saturatedFat = 18;
-    item3.nutrition.carbohydrate = 10;
-    item3.nutrition.protein = 5;
-    item3.ingredients = ['牛油', '辣椒', '食用盐', '花椒']; item3.source = FoodSource.USER_UPLOAD; item3.identifiedAt = now
-    items.push(item3)
-
-    return items
+  pageTransition() {
+    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Right)
+    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Left)
   }
 }

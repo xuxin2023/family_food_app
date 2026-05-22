@@ -4,13 +4,10 @@
 // API 文档: https://openfoodfacts.github.io/openfoodfacts-server/api/
 // Base URL: https://world.openfoodfacts.org/api/v2/
 
+import { FoodLabel, NutritionPer100g, FoodSource, JsonObject, API_TIMEOUT_CONFIG, HILOG_DOMAIN } from 'hsp_core';
 import { http } from '@kit.NetworkKit';
 import { image } from '@kit.ImageKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { FoodLabel, NutritionPer100g, FoodSource } from '../model/FoodLabel';
-import { JsonObject } from '../model/JsonTypes';
-import { API_TIMEOUT_CONFIG } from '../constants/AppConfig';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'OpenFoodFactsService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -213,6 +210,9 @@ export class OpenFoodFactsService {
       return parts.length > 1 ? parts[1] : tag
     })
 
+    foodLabel.ecoScoreGrade = product.ecoscoreGrade || ''
+    foodLabel.novaGroup = product.novaGroup || 0
+
     // 构建 FoodNutrition（用于引擎计算）
     const nutrition = this.mapToFoodNutrition(product)
 
@@ -231,58 +231,71 @@ export class OpenFoodFactsService {
    * 返回 OnlineLookupResult 数组
    */
   async searchByName(keyword: string, page: number): Promise<OnlineLookupResult[]> {
-    const searchResult = await this.searchProducts(keyword, page)
-    if (searchResult === null) {
-      return []
+    const fields = 'code,product_name,brands,manufacturing_places,ingredients_text,allergens_tags,' +
+      'nutriments,nutrition_grades,nova_group,ecoscore_grade,ecoscore_score,' +
+      'image_url,image_url_small,quantity,serving_size,additives_tags';
+    const searchUrl = `${OFF_BASE_URL}cgi/search.pl?search_terms=${encodeURIComponent(keyword)}` +
+      `&fields=${fields}&page=${page}&page_size=20&json=1`;
+    const searchResponse = await this.makeRequest(searchUrl);
+    if (searchResponse === null) {
+      return [];
     }
 
-    const results: OnlineLookupResult[] = []
-    for (const summary of searchResult.products) {
-      const product = await this.getProductByBarcode(summary.code)
-      if (product !== null) {
-        // 构建 FoodLabel
-        const foodLabel = new FoodLabel()
-        foodLabel.foodId = product.code
-        foodLabel.foodName = product.productName
-        foodLabel.barcode = product.code
-        foodLabel.manufacturer = product.manufacturer
-        foodLabel.source = FoodSource.BARCODE_HIT
-        foodLabel.identifiedAt = Date.now()
+    try {
+      const json = typeof searchResponse === 'string' ? JSON.parse(searchResponse) : searchResponse;
+      const products = json.products || [];
+      const results: OnlineLookupResult[] = [];
 
-        const nutriments = product.nutriments
-        foodLabel.nutrition = new NutritionPer100g()
-        foodLabel.nutrition.calories = Math.round(nutriments.energyKcal)
-        foodLabel.nutrition.protein = nutriments.proteins
-        foodLabel.nutrition.fat = nutriments.fat
-        foodLabel.nutrition.saturatedFat = nutriments.saturatedFat
-        foodLabel.nutrition.carbohydrate = nutriments.carbohydrates
-        foodLabel.nutrition.sugar = nutriments.sugars
-        if (nutriments.sodium > 0) {
-          foodLabel.nutrition.sodium = nutriments.sodium
-        } else if (nutriments.salt > 0) {
-          foodLabel.nutrition.sodium = Math.round(nutriments.salt * 393)
+      for (const product of products) {
+        if (!product || !product.code) continue;
+        const foodLabel = new FoodLabel();
+        foodLabel.foodId = product.code;
+        foodLabel.foodName = product.product_name || '';
+        foodLabel.barcode = product.code;
+        foodLabel.manufacturer = product.manufacturing_places || product.brands || '';
+        foodLabel.source = FoodSource.BARCODE_HIT;
+        foodLabel.identifiedAt = Date.now();
+
+        const n = product.nutriments || {};
+        foodLabel.nutrition = new NutritionPer100g();
+        foodLabel.nutrition.calories = Math.round(n['energy-kcal_100g'] || n.energyKcal || 0);
+        foodLabel.nutrition.protein = n.proteins_100g || 0;
+        foodLabel.nutrition.fat = n.fat_100g || 0;
+        foodLabel.nutrition.saturatedFat = n['saturated-fat_100g'] || 0;
+        foodLabel.nutrition.carbohydrate = n.carbohydrates_100g || 0;
+        foodLabel.nutrition.sugar = n.sugars_100g || 0;
+        foodLabel.nutrition.fiber = n.fiber_100g || 0;
+        if (n.sodium_100g > 0) {
+          foodLabel.nutrition.sodium = n.sodium_100g;
+        } else if (n.salt_100g > 0) {
+          foodLabel.nutrition.sodium = Math.round(n.salt_100g * 393);
         }
 
-        if (product.ingredientsText.length > 0) {
-          foodLabel.ingredients = product.ingredientsText.split(',').map((s: string) => s.trim())
+        if (product.ingredients_text && product.ingredients_text.length > 0) {
+          foodLabel.ingredients = product.ingredients_text.split(',').map((s: string) => s.trim());
         }
-        foodLabel.allergenHints = product.allergensTags.map((tag: string) => {
-          const parts = tag.split(':')
-          return parts.length > 1 ? parts[1] : tag
-        })
+        foodLabel.allergenHints = (product.allergens_tags || []).map((tag: string) => {
+          const parts = tag.split(':');
+          return parts.length > 1 ? parts[1] : tag;
+        });
 
-        const nutrition = this.mapToFoodNutrition(product)
+        foodLabel.ecoScoreGrade = product.ecoscore_grade || '';
+        foodLabel.novaGroup = product.nova_group || 0;
+
         results.push({
           found: true,
           foodLabel: foodLabel,
           source: 'OpenFoodFacts',
           confidence: 80,
-          product: product,
-          nutrition: nutrition
-        })
+          product: product as OffProduct,
+          nutrition: this.mapToFoodNutrition(product as OffProduct)
+        });
       }
+      return results;
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'searchByName parse failed: %{public}s', JSON.stringify(e));
+      return [];
     }
-    return results
   }
 
   // ===== 公开方法 =====

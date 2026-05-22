@@ -2,29 +2,32 @@
 // 应用入口页面 - 判断引导状态后进入主页面
 // V2增强：三屏引导内容具体化
 
-import { router } from '@kit.ArkUI';
+import { safeReplaceUrl, COLORS } from 'hsp_core';
 import { AppState } from '../AppState';
-import { COLORS } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 @Entry
 @ComponentV2
 struct Index {
   @Local showGuide: boolean = false;
   @Local isReady: boolean = false;
+  @Local isLoading: boolean = true;
 
   async aboutToAppear(): Promise<void> {
-    // 等待 AppState 初始化完成，避免跳转到首页时数据未就绪
-    await AppState.waitForReady()
-    const state = AppState.getInstance();
-    this.showGuide = !state.hasShownGuide;
-    if (!this.showGuide) {
-      this.navigateToHome();
+    this.isLoading = true;
+    try {
+      await AppState.waitForReady()
+      const state = AppState.getInstance();
+      this.showGuide = !state.hasShownGuide;
+      if (!this.showGuide) {
+        this.navigateToHome();
+      }
+    } finally {
+      this.isLoading = false;
     }
   }
 
   private navigateToHome(): void {
-    router.replaceUrl({ url: 'pages/HomePage' });
+    safeReplaceUrl('pages/HomePage');
   }
 
   build() {

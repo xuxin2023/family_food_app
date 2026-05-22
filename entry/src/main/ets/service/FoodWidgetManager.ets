@@ -1,7 +1,7 @@
+import { HILOG_DOMAIN, DB_NAME } from 'hsp_core';
 import { formBindingData } from '@kit.FormKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferences, relationalStore } from '@kit.ArkData';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const TAG = 'FoodWidgetManager';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -119,11 +119,8 @@ export class FoodWidgetManager {
   private async getRecentScanSummary(context: Context): Promise<ScanSummary> {
     const summary = new ScanSummary();
     try {
-      const rdbConfig: relationalStore.StoreConfig = {
-        name: 'food_helper.db',
-        securityLevel: relationalStore.SecurityLevel.S3
-      };
-      const store = await relationalStore.getRdbStore(context, rdbConfig);
+      const rdbConfig: relationalStore.StoreConfig = { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 };
+      const store = await relationalStore.getRdbStoreV9(context, rdbConfig);
       const resultSet = await store.querySql(
         'SELECT food_name, level FROM scan_history ORDER BY scanned_at DESC LIMIT 1'
       );

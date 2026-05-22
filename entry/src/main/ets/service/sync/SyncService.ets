@@ -7,9 +7,9 @@ import { common } from '@kit.AbilityKit';
 import { SyncChangeType, SyncStatus, SyncChangeRecord, SyncResult, SyncableEntity } from './Syncable';
 import { CloudStorageProvider, SyncBatchRequest, SyncBatchItem, SyncBatchResponse } from './CloudStorageProvider';
 import { NetworkMonitorService, NetworkState, NetType, NetworkStateChangeCallback } from '../NetworkMonitorService';
-import { CloudSyncConfig, SyncStrategy, ConflictResolution, createDefaultSyncConfig } from '../../model/CloudSyncConfig';
-import { API_CONFIG } from '../../constants/AppConfig';
-import { HILOG_DOMAIN } from '../../constants/AppConfig';
+import { CloudSyncConfig, SyncStrategy, ConflictResolution, createDefaultSyncConfig, API_CONFIG, HILOG_DOMAIN } from 'hsp_core';
+
+
 
 const TAG = 'SyncService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -440,9 +440,20 @@ export class SyncService {
             // 根据策略自动解决
             if (this.config.conflictResolution === ConflictResolution.REMOTE_WINS) {
               this.resolveWithRemoteData(conflict.entityType, conflict.entityId, conflict.remoteData);
+            } else if (this.config.conflictResolution === ConflictResolution.LOCAL_WINS) {
+              // 保留本地数据，标记为待同步以在下次同步时上传覆盖远程
+              localItem.syncStatus = SyncStatus.PENDING;
+            } else if (this.config.conflictResolution === ConflictResolution.LOCAL_FIRST) {
+              // 本地优先：若本地更新时间 >= 远程，保留本地；否则采用远程
+              const localUpdated = localItem.updatedAt ?? 0;
+              const remoteUpdated = conflict.remoteData?.updatedAt ?? 0;
+              if (localUpdated >= remoteUpdated) {
+                localItem.syncStatus = SyncStatus.PENDING;
+              } else {
+                this.resolveWithRemoteData(conflict.entityType, conflict.entityId, conflict.remoteData);
+              }
             }
-            // LOCAL_WINS: 保留本地，下次同步会上传覆盖
-            // MANUAL: 需要用户介入
+            // MANUAL: 保持 CONFLICT 状态，等待用户通过 SyncConflictResolver 组件介入
           }
         }
       }

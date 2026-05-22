@@ -1,19 +1,28 @@
 // CloudSyncSettingsPage.ets
 // 云同步设置页面 - 管理云端账户绑定、同步开关、策略选择
 
-import { promptAction } from '@kit.ArkUI';
+import {
+  ToastHelper, safeBack, CloudSyncConfig, SyncStrategy, ConflictResolution, createDefaultSyncConfig, COLORS
+} from 'hsp_core';
 import { BackButton } from '../components/BackButton';
-import { safeBack } from '../utils/RouterUtil';
 import { AppState } from '../AppState';
-import { PermissionManager } from '../service/PermissionManager';
 import { SyncService, SyncEvent } from '../service/sync/SyncService';
-import { NetworkState } from '../service/NetworkMonitorService';
-import { CloudSyncConfig, SyncStrategy, ConflictResolution, createDefaultSyncConfig } from '../model/CloudSyncConfig';
-import { COLORS } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
-interface StrategyItem { label: string; value: SyncStrategy; }
-interface ConflictItem { label: string; value: ConflictResolution; }
+class StrategyItem { label: ResourceStr = ''; value: SyncStrategy = SyncStrategy.WIFI_ONLY; }
+class ConflictItem { label: ResourceStr = ''; value: ConflictResolution = ConflictResolution.LOCAL_FIRST; }
+
+function makeStrategyItem(label: ResourceStr, value: SyncStrategy): StrategyItem {
+  const item = new StrategyItem();
+  item.label = label;
+  item.value = value;
+  return item;
+}
+function makeConflictItem(label: ResourceStr, value: ConflictResolution): ConflictItem {
+  const item = new ConflictItem();
+  item.label = label;
+  item.value = value;
+  return item;
+}
 
 enum SyncPageTab {
   SETTINGS = 0,
@@ -24,13 +33,13 @@ enum SyncPageTab {
 @ComponentV2
 struct CloudSyncSettingsPage {
   private readonly strategyItems: StrategyItem[] = [
-    { label: '仅WiFi下同步', value: SyncStrategy.WIFI_ONLY },
-    { label: '任何网络均可', value: SyncStrategy.ALWAYS }
+    makeStrategyItem($r('app.string.cloud_sync_strategy_wifi_only'), SyncStrategy.WIFI_ONLY),
+    makeStrategyItem($r('app.string.cloud_sync_strategy_always'), SyncStrategy.ALWAYS)
   ]
   private readonly conflictItems: ConflictItem[] = [
-    { label: '以本地数据为准', value: ConflictResolution.LOCAL_WINS },
-    { label: '以云端数据为准', value: ConflictResolution.REMOTE_WINS },
-    { label: '手动处理冲突', value: ConflictResolution.MANUAL }
+    makeConflictItem($r('app.string.cloud_sync_conflict_local_wins'), ConflictResolution.LOCAL_WINS),
+    makeConflictItem($r('app.string.cloud_sync_conflict_remote_wins'), ConflictResolution.REMOTE_WINS),
+    makeConflictItem($r('app.string.cloud_sync_conflict_manual'), ConflictResolution.MANUAL)
   ]
   @Local private currentTab: SyncPageTab = SyncPageTab.SETTINGS;
   @Local private syncConfig: CloudSyncConfig = createDefaultSyncConfig();
@@ -41,7 +50,7 @@ struct CloudSyncSettingsPage {
   @Local private isWifi: boolean = false;
   @Local private pendingCount: number = 0;
   @Local private isSyncing: boolean = false;
-  @Local private lastSyncTime: string = '从未同步';
+  @Local private lastSyncTime: ResourceStr = $r('app.string.cloud_sync_never_synced');
   @Local private syncLog: string[] = [];
   @Local private showStrategyPicker: boolean = false;
   @Local private showConflictPicker: boolean = false;
@@ -65,6 +74,8 @@ struct CloudSyncSettingsPage {
       Row() {
         BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
           .onClick(() => { safeBack() })
+          .accessibilityText('返回')
+          .accessibilityLevel('yes')
         Text($r('app.string.cloud_sync'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
@@ -83,10 +94,10 @@ struct CloudSyncSettingsPage {
 
       // Tab切换
       Row() {
-        this.TabButton('设置', this.currentTab === SyncPageTab.SETTINGS, () => {
+        this.TabButton($r('app.string.cloud_sync_tab_settings'), this.currentTab === SyncPageTab.SETTINGS, () => {
           this.currentTab = SyncPageTab.SETTINGS
         })
-        this.TabButton('同步状态', this.currentTab === SyncPageTab.STATUS, () => {
+        this.TabButton($r('app.string.cloud_sync_tab_sync_status'), this.currentTab === SyncPageTab.STATUS, () => {
           this.currentTab = SyncPageTab.STATUS
         })
       }
@@ -106,7 +117,7 @@ struct CloudSyncSettingsPage {
   }
 
   @Builder
-  TabButton(label: string, active: boolean, onClick: () => void) {
+  TabButton(label: ResourceStr, active: boolean, onClick: () => void) {
     Text(label)
       .fontSize(15)
       .fontWeight(active ? FontWeight.Bold : FontWeight.Normal)
@@ -115,6 +126,8 @@ struct CloudSyncSettingsPage {
       .border({ width: { bottom: active ? 2 : 0 }, color: { bottom: active ? COLORS.PRIMARY : Color.Transparent } })
       .margin({ right: 24 })
       .onClick(onClick)
+      .accessibilityText(label)
+      .accessibilityLevel('yes')
   }
 
   @Builder
@@ -123,11 +136,11 @@ struct CloudSyncSettingsPage {
       Column() {
         // ---- 云端账户 ----
         Column() {
-            Text('云端账户').fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
+            Text($r('app.string.cloud_sync_section_cloud_account')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
           if (this.isBound) {
             Row() {
               Column() {
-                Text(this.accountName.length > 0 ? this.accountName : '已绑定账户')
+                Text(this.accountName.length > 0 ? this.accountName : $r('app.string.cloud_sync_bound_account'))
                   .fontSize(15)
                   .fontWeight(FontWeight.Bold)
                 Text($r('app.string.sync_desc'))
@@ -138,13 +151,15 @@ struct CloudSyncSettingsPage {
               .alignItems(HorizontalAlign.Start)
               .layoutWeight(1)
 
-              Button('解绑')
+              Button($r('app.string.cloud_sync_btn_unbind'))
                 .fontSize(13)
                 .fontColor(Color.Red)
                 .backgroundColor('#FFF5F5')
                 .borderRadius(16)
                 .height(32)
                 .onClick(() => this.unbindAccount())
+                .accessibilityText('解绑账户')
+                .accessibilityLevel('yes')
             }
           } else {
             Column() {
@@ -155,13 +170,15 @@ struct CloudSyncSettingsPage {
                 .fontSize(12)
                 .fontColor(COLORS.TEXT_GRAY_9E9E)
                 .margin({ top: 2, bottom: 12 })
-              Button('绑定云端账户')
+              Button($r('app.string.cloud_sync_btn_bind_cloud_account'))
                 .width('100%')
                 .height(40)
                 .backgroundColor(COLORS.PRIMARY)
                 .borderRadius(20)
                 .fontColor(Color.White)
                 .onClick(() => this.bindAccount())
+                .accessibilityText('绑定云端账户')
+                .accessibilityLevel('yes')
             }
             .alignItems(HorizontalAlign.Center)
             .width('100%')
@@ -170,7 +187,7 @@ struct CloudSyncSettingsPage {
 
         // ---- 同步开关 ----
         Column() {
-            Text('同步设置').fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
+            Text($r('app.string.cloud_sync_section_sync_settings')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
           Row() {
             Text($r('app.string.enable_cloud_sync'))
               .fontSize(15)
@@ -179,14 +196,13 @@ struct CloudSyncSettingsPage {
               .onChange(async (isOn) => {
                 if (isOn) {
                   // 启用云同步前检查分布式数据同步权限
-                  const hasPermission = await PermissionManager.getInstance()
+                  const hasPermission = await this.appState.permission
                     .requestDistributedSyncPermission();
                   if (!hasPermission) {
-                    promptAction.showToast({ message: '需要分布式数据同步权限才能使用云同步功能' });
+                    ToastHelper.show(this.getUIContext(), $r('app.string.cloud_sync_permission_required'));
                     return;
                   }
-                  // 检查活动运动权限（如果需要同步健康数据）
-                  await PermissionManager.getInstance().requestActivityMotionPermission();
+                  await this.appState.permission.requestActivityMotionPermission();
                 }
                 this.syncConfig.enabled = isOn
                 this.syncService.updateConfig(this.syncConfig)
@@ -214,6 +230,8 @@ struct CloudSyncSettingsPage {
             .onClick(() => {
               this.showStrategyPicker = true
             })
+            .accessibilityText('选择同步策略')
+            .accessibilityLevel('yes')
 
             if (this.showStrategyPicker) {
               Column() {
@@ -231,8 +249,8 @@ struct CloudSyncSettingsPage {
                   }
                   .width('100%')
                   .padding({ top: 6, bottom: 6 })
-                })
-                Button('确定')
+                }, (item: StrategyItem, i: number) => `strategy_${i}`)
+                Button($r('app.string.cloud_sync_btn_confirm'))
                   .fontSize(13)
                   .height(32)
                   .backgroundColor('#E8F5E9')
@@ -242,6 +260,8 @@ struct CloudSyncSettingsPage {
                     this.showStrategyPicker = false
                     this.refreshAllState()
                   })
+                  .accessibilityText('确认同步策略')
+                  .accessibilityLevel('yes')
               }
               .padding(8)
               .backgroundColor('#FAFAFA')
@@ -268,6 +288,8 @@ struct CloudSyncSettingsPage {
             .onClick(() => {
               this.showConflictPicker = true
             })
+            .accessibilityText('选择冲突解决策略')
+            .accessibilityLevel('yes')
 
             if (this.showConflictPicker) {
               Column() {
@@ -285,8 +307,8 @@ struct CloudSyncSettingsPage {
                   }
                   .width('100%')
                   .padding({ top: 6, bottom: 6 })
-                })
-                Button('确定')
+                }, (item: ConflictItem, i: number) => `conflict_${i}`)
+                Button($r('app.string.cloud_sync_btn_confirm'))
                   .fontSize(13)
                   .height(32)
                   .backgroundColor('#E8F5E9')
@@ -296,6 +318,8 @@ struct CloudSyncSettingsPage {
                     this.showConflictPicker = false
                     this.refreshAllState()
                   })
+                  .accessibilityText('确认冲突策略')
+                  .accessibilityLevel('yes')
               }
               .padding(8)
               .backgroundColor('#FAFAFA')
@@ -309,7 +333,7 @@ struct CloudSyncSettingsPage {
                 .fontSize(14)
                 .fontColor('#757575')
               Blank()
-              Text(`${this.syncConfig.syncIntervalMinutes}分钟`)
+              Text(`${this.syncConfig.syncIntervalMinutes}${$r('app.string.cloud_sync_unit_minutes')}`)
                 .fontSize(14)
                 .fontColor(COLORS.TEXT_GRAY_2121)
             }
@@ -321,8 +345,8 @@ struct CloudSyncSettingsPage {
         // ---- 手动操作 ----
         if (this.syncConfig.enabled && this.isBound) {
           Column() {
-            Text('操作').fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
-            Button(this.isSyncing ? '同步中...' : '立即同步')
+            Text($r('app.string.cloud_sync_section_operations')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
+            Button(this.isSyncing ? $r('app.string.cloud_sync_btn_syncing') : $r('app.string.cloud_sync_btn_sync_now'))
               .width('100%')
               .height(44)
               .backgroundColor(COLORS.PRIMARY)
@@ -333,8 +357,10 @@ struct CloudSyncSettingsPage {
                 this.manuallySync()
               })
               .margin({ bottom: 10 })
+              .accessibilityText('立即同步')
+              .accessibilityLevel('yes')
 
-            Button('清除同步队列')
+            Button($r('app.string.cloud_sync_btn_clear_sync_queue'))
               .width('100%')
               .height(44)
               .backgroundColor('#FFF5F5')
@@ -343,16 +369,18 @@ struct CloudSyncSettingsPage {
               .onClick(() => {
                 this.clearSyncQueue()
               })
+              .accessibilityText('清除同步队列')
+              .accessibilityLevel('yes')
           }
         }
 
         // ---- 设备信息 ----
         Column() {
-            Text('设备信息').fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
-          this.InfoRow('设备标识', this.deviceId.length > 0 ?
-            this.deviceId.substring(0, 20) + '...' : '获取中...')
-          this.InfoRow('网络状态', this.getNetworkStatusText())
-          this.InfoRow('待同步项', `${this.pendingCount} 条`)
+            Text($r('app.string.cloud_sync_section_device_info')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
+          this.InfoRow($r('app.string.cloud_sync_label_device_id'), this.deviceId.length > 0 ?
+            this.deviceId.substring(0, 20) + '...' : $r('app.string.cloud_sync_loading_text'))
+          this.InfoRow($r('app.string.cloud_sync_label_network_status'), this.getNetworkStatusText())
+          this.InfoRow($r('app.string.cloud_sync_label_pending_items'), `${this.pendingCount} ${$r('app.string.cloud_sync_unit_items')}`)
         }
 
         Text($r('app.string.encrypt_transport'))
@@ -374,14 +402,14 @@ struct CloudSyncSettingsPage {
       Column() {
         // ---- 同步状态概览 ----
         Column() {
-            Text('同步状态').fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
+            Text($r('app.string.cloud_sync_tab_sync_status')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
           Row() {
-            this.StatusItem(this.isConnected ? '🟢' : '🔴', '网络',
-              this.isConnected ? '已连接' : '离线')
-            this.StatusItem(this.isBound ? '✅' : '❌', '账户',
-              this.isBound ? '已绑定' : '未绑定')
-            this.StatusItem(this.syncConfig.enabled ? '🟢' : '⏸️', '同步',
-              this.syncConfig.enabled ? '已启用' : '已暂停')
+            this.StatusItem(this.isConnected ? '🟢' : '🔴', $r('app.string.cloud_sync_status_network'),
+              this.isConnected ? $r('app.string.cloud_sync_status_connected') : $r('app.string.cloud_sync_status_offline'))
+            this.StatusItem(this.isBound ? '✅' : '❌', $r('app.string.cloud_sync_status_account'),
+              this.isBound ? $r('app.string.cloud_sync_status_bound') : $r('app.string.cloud_sync_status_unbound'))
+            this.StatusItem(this.syncConfig.enabled ? '🟢' : '⏸️', $r('app.string.cloud_sync_status_sync'),
+              this.syncConfig.enabled ? $r('app.string.cloud_sync_status_enabled') : $r('app.string.cloud_sync_status_paused'))
           }
           .width('100%')
           .justifyContent(FlexAlign.SpaceAround)
@@ -404,7 +432,7 @@ struct CloudSyncSettingsPage {
               .fontSize(14)
               .fontColor('#757575')
             Blank()
-            Text(`${this.pendingCount} 条`)
+            Text(`${this.pendingCount} ${$r('app.string.cloud_sync_unit_items')}`)
               .fontSize(14)
               .fontColor(this.pendingCount > 0 ? '#F57C00' : '#2E7D32')
           }
@@ -413,22 +441,22 @@ struct CloudSyncSettingsPage {
 
         // ---- 同步日志 ----
         Column() {
-            Text('同步日志').fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
+            Text($r('app.string.cloud_sync_section_sync_log')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
           if (this.syncLog.length === 0) {
-            Text('暂无同步记录')
+            Text($r('app.string.cloud_sync_no_sync_records'))
               .fontSize(13)
               .fontColor(COLORS.TEXT_GRAY_9E9E)
               .padding({ top: 8, bottom: 8 })
           } else {
             Column() {
-              ForEach(this.syncLog.slice(-20).reverse(), (log: string) => {
+              ForEach(this.syncLog.slice(-20).reverse(), (log: ResourceStr) => {
                 Text(log)
                   .fontSize(11)
                   .fontColor('#616161')
                   .lineHeight(16)
                   .width('100%')
                   .padding({ top: 2, bottom: 2 })
-              })
+              }, (log: ResourceStr, i: number) => `log_${i}`)
             }
           }
         }
@@ -440,7 +468,7 @@ struct CloudSyncSettingsPage {
   }
 
   @Builder
-  InfoRow(label: string, value: string) {
+  InfoRow(label: ResourceStr, value: ResourceStr) {
     Row() {
       Text(label)
         .fontSize(13)
@@ -455,7 +483,7 @@ struct CloudSyncSettingsPage {
   }
 
   @Builder
-  StatusItem(icon: string, label: string, value: string) {
+  StatusItem(icon: string, label: ResourceStr, value: ResourceStr) {
     Column() {
       Text(icon)
         .fontSize(24)
@@ -471,29 +499,29 @@ struct CloudSyncSettingsPage {
     .alignItems(HorizontalAlign.Center)
   }
 
-  private getStrategyLabel(strategy: SyncStrategy): string {
+  private getStrategyLabel(strategy: SyncStrategy): ResourceStr {
     switch (strategy) {
-      case SyncStrategy.WIFI_ONLY: return '仅WiFi'
-      case SyncStrategy.ALWAYS: return '任何网络'
-      case SyncStrategy.CHARGING_ONLY: return '仅充电时'
-      default: return '未知'
+      case SyncStrategy.WIFI_ONLY: return $r('app.string.cloud_sync_strategy_wifi')
+      case SyncStrategy.ALWAYS: return $r('app.string.cloud_sync_strategy_any_network')
+      case SyncStrategy.CHARGING_ONLY: return $r('app.string.cloud_sync_strategy_charging_only')
+      default: return $r('app.string.cloud_sync_unknown')
     }
   }
 
-  private getConflictLabel(resolution: ConflictResolution): string {
+  private getConflictLabel(resolution: ConflictResolution): ResourceStr {
     switch (resolution) {
-      case ConflictResolution.LOCAL_WINS: return '以本地为准'
-      case ConflictResolution.REMOTE_WINS: return '以云端为准'
-      case ConflictResolution.MANUAL: return '手动处理'
-      default: return '未知'
+      case ConflictResolution.LOCAL_WINS: return $r('app.string.cloud_sync_conflict_local_first')
+      case ConflictResolution.REMOTE_WINS: return $r('app.string.cloud_sync_conflict_remote_first')
+      case ConflictResolution.MANUAL: return $r('app.string.cloud_sync_conflict_manual_handle')
+      default: return $r('app.string.cloud_sync_unknown')
     }
   }
 
-  private getNetworkStatusText(): string {
+  private getNetworkStatusText(): ResourceStr {
     const monitor = this.syncService.getNetworkMonitor()
-    if (!monitor.isConnected()) return '离线'
+    if (!monitor.isConnected()) return $r('app.string.cloud_sync_status_offline')
     if (monitor.isWifi()) return 'WiFi'
-    return '蜂窝网络'
+    return $r('app.string.cloud_sync_network_cellular')
   }
 
   private async bindAccount(): Promise<void> {
@@ -503,26 +531,26 @@ struct CloudSyncSettingsPage {
     await this.cloudAuth.bindCloudAccount(mockToken, mockAccount, '我的账户');
     await this.refreshAllState();
     this.addLog('云端账户绑定成功');
-    promptAction.showToast({ message: '云端账户绑定成功' });
+    ToastHelper.show(this.getUIContext(), $r('app.string.cloud_sync_bind_success'));
   }
 
   private async unbindAccount(): Promise<void> {
     AlertDialog.show({
-      title: '解绑云端账户',
-      message: '解绑后本地数据仍保留，但将停止多端同步。确定解绑？',
+      title: $r('app.string.cloud_sync_unbind_dialog_title'),
+      message: $r('app.string.cloud_sync_unbind_dialog_message'),
       primaryButton: {
-        value: '取消',
+        value: $r('app.string.cloud_sync_btn_cancel'),
         action: () => {}
       },
       secondaryButton: {
-        value: '确认解绑',
+        value: $r('app.string.cloud_sync_btn_confirm_unbind'),
         fontColor: '#E53935',
         action: async () => {
           await this.cloudAuth.unbindCloudAccount();
           await this.syncService.updateConfig(this.syncConfig);
           await this.refreshAllState();
           this.addLog('云端账户已解绑');
-          promptAction.showToast({ message: '已解绑云端账户' });
+          ToastHelper.show(this.getUIContext(), $r('app.string.cloud_sync_unbind_success'));
         }
       }
     });
@@ -542,20 +570,20 @@ struct CloudSyncSettingsPage {
 
   private async clearSyncQueue(): Promise<void> {
     AlertDialog.show({
-      title: '清除同步队列',
-      message: '将清除所有待同步的变更记录。这些数据将不会同步到云端。',
+      title: $r('app.string.cloud_sync_btn_clear_sync_queue'),
+      message: $r('app.string.cloud_sync_clear_queue_dialog_message'),
       primaryButton: {
-        value: '取消',
+        value: $r('app.string.cloud_sync_btn_cancel'),
         action: () => {}
       },
       secondaryButton: {
-        value: '确认清除',
+        value: $r('app.string.cloud_sync_btn_confirm_clear'),
         fontColor: '#E53935',
         action: async () => {
           await this.syncService.clearQueue();
           await this.refreshAllState();
           this.addLog('同步队列已清除');
-          promptAction.showToast({ message: '已清除同步队列' });
+          ToastHelper.show(this.getUIContext(), $r('app.string.cloud_sync_queue_cleared'));
         }
       }
     });
@@ -611,4 +639,11 @@ struct CloudSyncSettingsPage {
         break;
     }
   };
+
+  pageTransition() {
+    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Right)
+    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Left)
+  }
 }

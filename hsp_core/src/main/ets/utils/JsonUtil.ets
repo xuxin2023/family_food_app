@@ -68,13 +68,13 @@ export function getJsonBoolean(obj: Object, key: string): boolean {
 /**
  * 从 JSON 对象中安全获取子对象
  */
-export function getJsonObject(obj: Object, key: string): Object | null {
+export function getJsonObject(obj: Object, key: string): Record<string, Object> | null {
   const entries = Object.entries(obj);
   for (const entry of entries) {
     if (entry[0] === key) {
       const val = entry[1];
       if (val !== undefined && val !== null && typeof val === 'object') {
-        return val as Object;
+        return val as Record<string, Object>;
       }
     }
   }
@@ -92,7 +92,7 @@ export function getJsonStringArray(obj: Object, key: string): string[] {
       if (val !== undefined && val !== null) {
         const result: string[] = [];
         if (Array.isArray(val)) {
-          const arr: Object[] = val as Object[];
+          const arr: string[] = val as string[];
           for (const item of arr) {
             result.push(String(item));
           }
@@ -107,17 +107,17 @@ export function getJsonStringArray(obj: Object, key: string): string[] {
 /**
  * 从 JSON 对象中安全获取对象数组
  */
-export function getJsonObjectArray(obj: Object, key: string): Object[] {
+export function getJsonObjectArray(obj: Object, key: string): Record<string, Object>[] {
   const entries = Object.entries(obj);
   for (const entry of entries) {
     if (entry[0] === key) {
       const val = entry[1];
       if (val !== undefined && val !== null && Array.isArray(val)) {
-        const result: Object[] = [];
+        const result: Record<string, Object>[] = [];
         const arr: Object[] = val as Object[];
         for (const item of arr) {
           if (item !== null && typeof item === 'object') {
-            result.push(item as Object);
+            result.push(item as Record<string, Object>);
           }
         }
         return result;

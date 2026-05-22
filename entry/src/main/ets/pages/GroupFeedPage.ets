@@ -1,14 +1,10 @@
-import { router, promptAction } from '@kit.ArkUI';
+import {
+  ToastHelper, safeBack, getPageParams, GroupFeed, FeedType, COLORS, RADIUS, BasicDataSource, PAGE_SIZE_CONFIG, HILOG_DOMAIN
+} from 'hsp_core';
 import { BackButton } from '../components/BackButton';
-import { safeBack } from '../utils/RouterUtil';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { pasteboard } from '@kit.BasicServicesKit';
 import { AppState } from '../AppState';
-import { GroupFeed, FeedType, FoodScanFeedContent } from '../model/FamilyGroup';
-import { COLORS, RADIUS, SPACING, BUTTON, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
-import { BasicDataSource } from '../utils/BasicDataSource';
-import { PAGE_SIZE_CONFIG } from '../constants/AppConfig';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 const PAGE_SIZE = PAGE_SIZE_CONFIG.GROUP_FEED_PAGE_SIZE;
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -25,11 +21,11 @@ struct GroupFeedPage {
   private feedDS = new BasicDataSource<GroupFeed>()
 
   async aboutToAppear() {
-    const params = router.getParams() as Record<string, Object>
-    if (params) {
-      this.groupId = (params.groupId as string) || ''
-      this.groupName = (params.groupName as string) || ''
-    }
+    const params = getPageParams()
+    const rawGroupId = params !== undefined ? params.get('groupId') : undefined;
+    const rawGroupName = params !== undefined ? params.get('groupName') : undefined;
+    this.groupId = (typeof rawGroupId === 'string' ? rawGroupId : '');
+    this.groupName = (typeof rawGroupName === 'string' ? rawGroupName : '');
     await this.loadFeeds()
   }
 
@@ -50,6 +46,8 @@ struct GroupFeedPage {
       Row() {
         BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
           .onClick(() => { safeBack() })
+          .accessibilityText('返回')
+          .accessibilityLevel('yes')
         Text(this.groupName)
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
@@ -61,6 +59,8 @@ struct GroupFeedPage {
           .onClick(() => {
             this.showGroupInfo()
           })
+          .accessibilityText('群组信息')
+          .accessibilityLevel('yes')
       }
       .width('100%')
       .padding(16)
@@ -165,7 +165,7 @@ struct GroupFeedPage {
 
       // 内容
       if (feed.feedType === FeedType.FOOD_SCAN_SHARE) {
-        Text('📦 食品扫描分享')
+        Text($r('app.string.group_feed_food_scan_share'))
           .fontSize(15)
           .fontWeight(FontWeight.Medium)
           .margin({ top: 12, bottom: 8 })
@@ -203,22 +203,22 @@ struct GroupFeedPage {
 
   private showGroupInfo() {
     AlertDialog.show({
-      title: '群组信息',
-      message: `群组：${this.groupName}\n群组ID：${this.groupId}`,
+      title: $r('app.string.group_feed_info_title'),
+      message: $r('app.string.group_feed_group_label') + `${this.groupName}\n` + $r('app.string.group_feed_group_id_label') + `${this.groupId}`,
       primaryButton: {
-        value: '复制群组ID',
+        value: $r('app.string.group_feed_copy_group_id'),
         action: () => {
           try {
             const data = pasteboard.createData('text/plain', this.groupId)
             pasteboard.getSystemPasteboard().setData(data)
-            promptAction.showToast({ message: '群组ID已复制到剪贴板' })
+            ToastHelper.show(this.getUIContext(), $r('app.string.group_feed_copied'))
           } catch (_e) {
-            promptAction.showToast({ message: '复制失败' })
+            ToastHelper.show(this.getUIContext(), $r('app.string.group_feed_copy_failed'))
           }
         }
       },
       secondaryButton: {
-        value: '关闭',
+        value: $r('app.string.group_feed_close'),
         action: () => {}
       }
     })
@@ -227,10 +227,17 @@ struct GroupFeedPage {
   private formatTime(timestamp: number): string {
     const now = Date.now()
     const diff = now - timestamp
-    if (diff < 60000) return '刚刚'
-    if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`
-    if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`
+    if (diff < 60000) return $r('app.string.group_feed_just_now') as string
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}` + $r('app.string.group_feed_minutes_ago') as string
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}` + $r('app.string.group_feed_hours_ago') as string
     const d = new Date(timestamp)
     return `${d.getMonth() + 1}/${d.getDate()}`
+  }
+
+  pageTransition() {
+    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Right)
+    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Left)
   }
 }

@@ -26,6 +26,21 @@
     "pages/CloudSyncSettingsPage",
     "pages/AiChatPage",
     "pages/V2DemoPage",
-    "pages/MainTabsPage"
+    "pages/FavoritePage",
+    "pages/NutritionTargetPage",
+    "pages/MainTabsPage",
+    "pages/FoodComparePage",
+    "pages/OffSearchPage",
+    "pages/AlternativeFoodPage",
+    "pages/MealPlanPage",
+    "pages/NutritionKnowledgePage",
+    "pages/ShoppingListPage",
+    "pages/ReminderRulePage",
+    "pages/FeedbackPage",
+    "pages/ExerciseNutritionPage",
+    "pages/CheckupReportPage",
+    "pages/ChildHealthPage",
+    "pages/PersonalizedRecommendPage",
+    "pages/TeenModePage"
   ]
 }

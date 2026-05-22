@@ -6,7 +6,7 @@
 import { scanBarcode, scanCore } from '@kit.ScanKit';
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { HILOG_DOMAIN } from 'hsp_core';
 
 const TAG = 'ScanDirectService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;

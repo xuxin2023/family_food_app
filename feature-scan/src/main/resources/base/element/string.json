@@ -1,0 +1,12 @@
+{
+  "string": [
+    {
+      "name": "feature_scan_name",
+      "value": "食品扫描"
+    },
+    {
+      "name": "feature_scan_desc",
+      "value": "家庭食品适配助手扫描功能模块"
+    }
+  ]
+}

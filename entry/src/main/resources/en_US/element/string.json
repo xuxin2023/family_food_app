@@ -1,1 +1,5600 @@
-{"string":[{"name":"module_desc","value":"Family Food Adapt Assistant"},{"name":"form_desc","value":"Food Adapt Assistant"},{"name":"producer_identity","value":"Producer Identity"},{"name":"transparency","value":"Transparency"},{"name":"info_transparency","value":"Info Transparency"},{"name":"public_query_entry","value":"Public Query Entry"},{"name":"copy_label","value":"Copy"},{"name":"hot_foods","value":"Hot Foods"},{"name":"first_time_use","value":"First Time Use"},{"name":"first_time_hint","value":"Scan food labels to quickly check suitability"},{"name":"quick_experience","value":"Quick Experience"},{"name":"ability_desc","value":"Main entry for Food Adapt Assistant"},{"name":"ability_label","value":"Food Adapt Assistant"},{"name":"camera_reason","value":"Used to recognize food packaging labels"},{"name":"internet_reason","value":"Used for optional AI polish service"},{"name":"vibrate_reason","value":"Provides vibration feedback when scanning food labels"},{"name":"app_name","value":"Food Adapt Assistant"},{"name":"home_title","value":"Who are we scanning for?"},{"name":"scan_button","value":"Scan Food Label"},{"name":"balance_button","value":"Log Meal"},{"name":"member_dad","value":"Dad"},{"name":"member_mom","value":"Mom"},{"name":"member_child","value":"Child"},{"name":"member_me","value":"Me"},{"name":"level_suitable","value":"Suitable"},{"name":"level_small","value":"In Moderation"},{"name":"level_cautious","value":"Be Cautious Today"},{"name":"level_avoid","value":"Avoid"},{"name":"disclaimer","value":"This result is based on label recognition and health goals. It does not represent lab testing of current batch, nor replace medical advice."},{"name":"join_group","value":"Join Group"},{"name":"dashboard_title","value":"Nutrition Dashboard"},{"name":"period_7_days","value":"7 Days"},{"name":"period_30_days","value":"30 Days"},{"name":"no_family_diet_data","value":"No family diet data yet"},{"name":"no_family_diet_hint","value":"Add family members and start recording to see the dashboard"},{"name":"health_score_insufficient","value":"Insufficient Data"},{"name":"health_score_excellent","value":"Excellent"},{"name":"health_score_good","value":"Good"},{"name":"health_score_fair","value":"Fair"},{"name":"health_score_poor","value":"Needs Improvement"},{"name":"insight_sodium_high","value":"Sodium intake is high"},{"name":"insight_sodium_mid","value":"Sodium is slightly high"},{"name":"insight_sodium_good","value":"Sodium is well controlled"},{"name":"insight_sugar_high","value":"Sugar intake is high"},{"name":"insight_sugar_good","value":"Sugar is excellently controlled"},{"name":"insight_keep_recording","value":"Keep recording"},{"name":"insight_keep_it_up","value":"Keep it up! Diet is very balanced"},{"name":"insight_good_improve","value":"Good overall, room for improvement"},{"name":"insight_balanced","value":"Balanced diet, keep going"},{"name":"insight_keep_recording_hint","value":"Continued recording will give more accurate health scores"},{"name":"trend_stable","value":"Stable"},{"name":"trend_upward","value":"Upward trend"},{"name":"trend_downward","value":"Downward trend"},{"name":"avg_daily_kcal","value":"Daily Avg kcal"},{"name":"macronutrient_composition","value":"Macronutrient Composition"},{"name":"daily_avg","value":"Daily Avg"},{"name":"health_evaluation","value":"Health Evaluation"},{"name":"day_unit","value":"Day"},{"name":"record_unit","value":"Records"},{"name":"report_default_title","value":"Adaptation Report"},{"name":"alternative_section_title","value":"Better Alternatives"},{"name":"unlock","value":"Unlock"},{"name":"unlock_alt_desc","value":"Upgrade to see healthier choices"},{"name":"share_text_title","value":"Shareable Text"},{"name":"share_text_hint","value":"Tap copy to copy text to clipboard"},{"name":"share_to_group_action","value":"Share"},{"name":"group_member_count","value":"%s members"},{"name":"privacy_terms_desc","value":"By using you agree to our terms. We collect necessary data to provide personalized dietary advice."},{"name":"privacy_data_storage","value":"Data Storage & Security"},{"name":"privacy_medical_disclaimer","value":"Medical Disclaimer"},{"name":"privacy_data_control","value":"Data Control & Deletion"},{"name":"back_arrow","value":"Back"},{"name":"agree_read","value":"I have read and agree to"},{"name":"and_conjunction","value":"and"},{"name":"parse_success","value":"Parsed Successfully"},{"name":"data_from_ecommerce","value":"Data from E-commerce Platform"},{"name":"ai_recommend_recipe","value":"AI Recommended Recipe"},{"name":"save_today_status","value":"Save Today's Status"},{"name":"barcode_detected","value":"Barcode Detected"},{"name":"scan_today_used_up","value":"Used"},{"name":"scan_today_remaining","value":"Remaining"},{"name":"scan_mode_barcode","value":"Barcode Mode"},{"name":"scan_mode_photo","value":"Photo Mode"},{"name":"scan_mode_manual","value":"Manual Mode"},{"name":"edit_panel_collapse","value":"Collapse"},{"name":"edit_panel_toggle","value":"Expand Correction Panel"},{"name":"tab_photo","value":"Photo"},{"name":"tab_barcode","value":"Barcode"},{"name":"share_to_group_title","value":"Share to Family Group"},{"name":"no_group_hint","value":"Not in any family group yet"},{"name":"create_or_join_group","value":"Create or Join Group"},{"name":"publish_as_recipe","value":"Publish as Recipe"},{"name":"publish_to_community","value":"Publish to Community"},{"name":"today_ref","value":"Today's Reference"},{"name":"family_diff_conclusion","value":"Family Difference Analysis"},{"name":"disclaimer_report","value":"Disclaimer"},{"name":"alternative_locked","value":"Alternatives Locked"},{"name":"risk_high_salt","value":"High Salt"},{"name":"risk_high_sugar","value":"High Sugar"},{"name":"balance_adv","value":"Diet Balance Advice"},{"name":"family_members","value":"Family Members"},{"name":"sub_today_budget","value":"Today's Budget"},{"name":"advice_for_you","value":"Advice for You"},{"name":"next_meal_suggestion","value":"Next Meal Suggestion"},{"name":"mvp_hint","value":"MVP Hint"},{"name":"mvp_detail","value":"Current version provides basic features only"},{"name":"privacy_and_compliance","value":"Privacy & Compliance"},{"name":"collapse","value":"Collapse"},{"name":"record_days","value":"Recording Days"},{"name":"total_records","value":"Total Records"},{"name":"daily_avg_sodium","value":"Daily Avg Sodium"},{"name":"daily_avg_sugar","value":"Daily Avg Sugar"},{"name":"col_date","value":"Date"},{"name":"col_sodium","value":"Sodium(mg)"},{"name":"col_sugar","value":"Sugar(g)"},{"name":"col_calorie","value":"Calories(kcal)"},{"name":"col_fat","value":"Fat(g)"},{"name":"restore_purchase","value":"Restore Purchase"},{"name":"refund_policy","value":"Refund Policy"},{"name":"secure_payment","value":"Secure Payment"},{"name":"cancel_anytime","value":"Cancel Anytime"},{"name":"unbiased_disclaimer","value":"This app provides objective analysis, not health advice"},{"name":"free_tier_desc","value":"Free Features"},{"name":"upgrade_personal_desc","value":"Upgrade to unlock more features"},{"name":"thanks_support","value":"Thank You for Your Support"},{"name":"group_info","value":"Group Info"},{"name":"group_empty","value":"Group Empty"},{"name":"group_empty_hint","value":"No group content yet"},{"name":"system_msg","value":"System Message"},{"name":"food_share","value":"Food Share"},{"name":"upgrade_for_weekly","value":"Upgrade to Unlock Weekly Report"},{"name":"unbind_account","value":"Unbind Account"},{"name":"enable_cloud_sync","value":"Enable Cloud Sync"},{"name":"sync_strategy","value":"Sync Strategy"},{"name":"conflict_resolution","value":"Conflict Resolution"},{"name":"sync_interval","value":"Sync Interval"},{"name":"encrypt_transport","value":"Encrypted Transport"},{"name":"last_sync","value":"Last Sync"},{"name":"pending_sync","value":"Pending Sync"},{"name":"create_recipe","value":"Create Recipe"},{"name":"save","value":"Save"},{"name":"category_label","value":"Category"},{"name":"difficulty_label","value":"Difficulty"},{"name":"cook_time_label","value":"Cook Time"},{"name":"servings_label","value":"Servings"},{"name":"food_adapt_assistant","value":"Food Adapt Assistant"},{"name":"scan_food_peace_mind","value":"Scan food, eat with peace of mind"},{"name":"balance_advice","value":"Balance Advice"},{"name":"this_meal_high","value":"This meal is high"},{"name":"next_meal_advice","value":"Next Meal Advice"},{"name":"no_more_today","value":"Had enough today"},{"name":"hydrate_advice","value":"Remember to drink water"},{"name":"for_you_advice","value":"Recommended for You"},{"name":"child_protection_tip","value":"Child Diet Protection"},{"name":"meal_protection","value":"Meal Protection"},{"name":"bedtime_protection","value":"Bedtime Protection"},{"name":"taste_protection","value":"Taste Protection"},{"name":"no_meal_offset_tip","value":"No meal offset"},{"name":"no_trend_data","value":"No trend data yet"},{"name":"create_group","value":"Create Group"},{"name":"create_group_hint","value":"Enter group name"},{"name":"reminder_reason","value":"Used to send dietary reminders and health reports"},{"name":"skip","value":"Skip"},{"name":"next_step","value":"Next"},{"name":"start_use","value":"Get Started"},{"name":"welcome_title","value":"Welcome"},{"name":"agree_continue","value":"Agree & Continue"},{"name":"privacy_policy","value":"Privacy Policy"},{"name":"user_agreement","value":"User Agreement"},{"name":"setup_health_profile","value":"Set up health profiles for the whole family"},{"name":"setup_profile_hint","value":"Set health goals for each family member,\\nthen scan to see 'same food, different advice'"},{"name":"goal_control_bp","value":"BP Control"},{"name":"goal_lose_fat","value":"Fat Loss"},{"name":"goal_child","value":"Child"},{"name":"goal_control_sugar","value":"Sugar Control"},{"name":"three_ways_scan","value":"Three ways to scan"},{"name":"method_photo","value":"Photo Recognition"},{"name":"method_photo_desc","value":"Take a photo of the package or ingredients list to extract nutrition info"},{"name":"method_barcode","value":"Barcode Scan"},{"name":"method_barcode_desc","value":"Scan barcode and check food data from global database"},{"name":"method_link","value":"Paste Link"},{"name":"method_link_desc","value":"Copy product link from shopping app and paste to analyze"},{"name":"result_same_accurate","value":"All methods give equally accurate results"},{"name":"family_report_overview","value":"Whole family report at a glance"},{"name":"example_food","value":"Spicy Beef Jerky"},{"name":"same_food_diff_advice","value":"Same food, different advice for each member"},{"name":"privacy_dialog_title","value":"Family Diet Balance Assistant"},{"name":"paste_link_hint","value":"Enter or paste product link"},{"name":"paste_link","value":"Paste Link"},{"name":"parse_failed","value":"Parse failed, try photo recognition"},{"name":"parse_exception","value":"Link parse error, retry or use photo recognition"},{"name":"scan_identify","value":"Scan & Identify"},{"name":"add_member","value":"Add Member"},{"name":"upgrade_unlock","value":"Upgrade to Unlock"},{"name":"diet_diary","value":"Diet Diary"},{"name":"ai_nutritionist","value":"AI Nutritionist"},{"name":"brand_transparency","value":"Brand Transparency"},{"name":"recipe_community","value":"Recipe Community"},{"name":"family_group","value":"Family Group"},{"name":"member_manage","value":"Manage Members"},{"name":"add_family_member","value":"+ Add Family Member"},{"name":"edit","value":"Edit"},{"name":"nickname_label","value":"Nickname"},{"name":"age_group_label","value":"Age Group"},{"name":"health_goal_label","value":"Health Goals (multi-select)"},{"name":"allergen_nuts","value":"Nuts"},{"name":"activity_label","value":"Activity:"},{"name":"sleep_label","value":"Sleep:"},{"name":"bp_label","value":"Blood Pressure:"},{"name":"bg_label","value":"Blood Sugar:"},{"name":"calorie","value":"Calories"},{"name":"sodium","value":"Sodium"},{"name":"sugar","value":"Sugar"},{"name":"fat","value":"Fat"},{"name":"protein","value":"Protein"},{"name":"barcode_not_found","value":"Barcode not found, switching to photo mode"},{"name":"scan_manual_hint","value":"Try aiming at the label to take a photo, or enter manually"},{"name":"offline_mode","value":"📡 No network, using local recognition"},{"name":"view_report","value":"View Report"},{"name":"save_food_label","value":"Save Food Label"},{"name":"scanning_barcode","value":"Scanning barcode…"},{"name":"history_record","value":"History"},{"name":"all","value":"All"},{"name":"record_meal","value":"Log Meal"},{"name":"share_title","value":"Share"},{"name":"share_copy_text","value":"Shareable Copy Text"},{"name":"share_placeholder","value":"Copy text will appear here after the report is generated."},{"name":"share_refresh","value":"Refresh Text"},{"name":"share_copy","value":"Copy Text"},{"name":"share_go_publish","value":"Publish"},{"name":"share_no_family","value":"You are not in any family group yet"},{"name":"share_publish_recipe","value":"Publish as Recipe"},{"name":"basket_attention","value":"Needs Attention"},{"name":"basket_ok","value":"Okay Overall"},{"name":"basket_warning","value":"⚠ Basket Alert"},{"name":"basket_suggestion","value":"💡 Shopping Advice"},{"name":"basket_items","value":"Items in Basket"},{"name":"risk_high_fat","value":"High Fat"},{"name":"settings","value":"Settings"},{"name":"version_label","value":"Version v4.0.0"},{"name":"today_status","value":"Today's Status"},{"name":"activity","value":"Activity"},{"name":"health_signal_fair","value":"Fair"},{"name":"today_tags_label","value":"Today's Tags"},{"name":"status_affect_hint","value":"These statuses directly affect today's adaptation report and meal quota."},{"name":"weekly_report","value":"Weekly Report"},{"name":"feature_locked","value":"Feature Locked"},{"name":"weekly_focus","value":"This Week's Focus"},{"name":"next_week_advice","value":"Next Week's Advice"},{"name":"shopping_recommend","value":"Shopping Advice"},{"name":"ai_analysis","value":"🤖 AI Analysis"},{"name":"trend_tab","value":"📊 Trends"},{"name":"go_scan_tip","value":"Go to home page to scan food labels"},{"name":"ai_analyzing","value":"AI Nutritionist is analyzing..."},{"name":"ai_analysis_title","value":"AI Nutritionist Analysis"},{"name":"ai_enhanced","value":"AI Enhanced Analysis"},{"name":"need_attention","value":"⚠️ Needs Attention"},{"name":"no_content","value":"No Content"},{"name":"click_refresh_ai","value":"Tap refresh to get AI recommendations"},{"name":"no_recipe_yet","value":"No recipes shared yet"},{"name":"recipe_community_hint","value":"Scan food to create recipes and share with the community"},{"name":"ai_recommend","value":"AI Recommendations"},{"name":"ai_match_desc","value":"Personalized matching based on family health profiles"},{"name":"nutrition_trend","value":"Nutrition Trends"},{"name":"no_nutrition_data","value":"No trend data yet"},{"name":"nutrition_hint","value":"Keep recording meals to see nutrition intake trends here"},{"name":"intake_trend","value":"Nutrient Intake Trends"},{"name":"daily_intake","value":"Daily Intake Details"},{"name":"subscription","value":"Subscription"},{"name":"sub_free","value":"Free"},{"name":"current_plan","value":"Current Plan"},{"name":"cloud_sync","value":"Cloud Sync"},{"name":"sync_desc","value":"Data will sync across devices via cloud"},{"name":"no_composition_data","value":"No composition data"},{"name":"no_data","value":"No Data"},{"name":"recipe_detail","value":"Recipe Details"},{"name":"recipe_not_found","value":"Recipe Not Found"},{"name":"favorite","value":"Favorites"},{"name":"intro_label","value":"Intro"},{"name":"ingredient_list","value":"Ingredients"},{"name":"cook_steps","value":"Steps"},{"name":"nutrition_per_serving","value":"Nutrition Per Serving"},{"name":"suitable_persons","value":"Suitable For"},{"name":"no_comments_yet","value":"No Comments Yet"},{"name":"no_balance_data","value":"No balance data yet"},{"name":"producer_info","value":"Producer Info"},{"name":"avoid_label","value":"Avoid"},{"name":"nutrition_per_100g_label","value":"Nutrition per 100g"},{"name":"ingredients_label","value":"Ingredients"},{"name":"nutrition_trend_summary","value":"No trend data"},{"name":"suggest_avoid","value":"Suggest to avoid"},{"name":"distributed_sync_reason","value":"Used to sync data across devices"},{"name":"activity_motion_reason","value":"Used to obtain step count and activity data"},{"name":"health_data_reason","value":"Used to read heart rate, blood oxygen, sleep data for personalized advice"},{"name":"microphone_reason","value":"Used for AI Nutritionist voice input"},{"name":"media_reason","value":"Used to save food label images to gallery"},{"name":"background_run_reason","value":"Used to sync family data in background"},{"name":"load_error","value":"Load failed, check network and retry"},{"name":"retry","value":"Retry"},{"name":"cancel","value":"Cancel"},{"name":"week_sun","value":"Sun"},{"name":"week_mon","value":"Mon"},{"name":"week_tue","value":"Tue"},{"name":"week_wed","value":"Wed"},{"name":"week_thu","value":"Thu"},{"name":"week_fri","value":"Fri"},{"name":"week_sat","value":"Sat"},{"name":"comment","value":"Comment"},{"name":"favorited","value":"Favorited"},{"name":"unfavorited","value":"Unfavorited"},{"name":"amount_unit","value":"Amount"},{"name":"delete","value":"Delete"},{"name":"data_refreshed","value":"Data Refreshed"},{"name":"paste_link_title","value":"Paste Product Link"},{"name":"parse","value":"Parse"},{"name":"paste_link_hint_inner","value":"Enter or paste product link"},{"name":"upgrade_member","value":"Upgrade Membership"},{"name":"skip_upgrade","value":"Skip Upgrade"},{"name":"scan_now","value":"Scan Now"},{"name":"copied","value":"Copied to clipboard"},{"name":"copy_failed","value":"Copy failed"},{"name":"not_provided","value":"Not Provided"},{"name":"producer","value":"Producer"},{"name":"sc_number","value":"SC Number"},{"name":"principal","value":"Principal"},{"name":"trustee","value":"Trustee"},{"name":"empty_default","value":"No content"},{"name":"identity_clear","value":"Identity Clear"},{"name":"license_info","value":"License Info"},{"name":"trace_entry","value":"Trace Entry"},{"name":"public_query","value":"Public Query"},{"name":"claim_boundary","value":"Claim Boundary"},{"name":"status_clear","value":"Clear"},{"name":"status_partial","value":"Partial"},{"name":"status_not_recognized","value":"Not Recognized"},{"name":"my_account","value":"My Account"},{"name":"network_label","value":"Network"},{"name":"account_label","value":"Account"},{"name":"settings_tab","value":"Settings"},{"name":"sync_label","value":"Sync"},{"name":"journal_label","value":"Journal"},{"name":"app_name_share","value":"Family Food Adapt Assistant"},{"name":"care_early","value":"Care Early"},{"name":"suggest_avoid_short","value":"Avoid"},{"name":"sodium_high","value":"Sodium is high"},{"name":"sugar_high","value":"Sugar is high"},{"name":"fat_high","value":"Fat is high"},{"name":"overall_ok","value":"Overall OK"},{"name":"today_try_amount","value":"Try %sg today"},{"name":"little_taste_ok","value":"A little taste is OK"},{"name":"carb","value":"Carbs"},{"name":"dietary_fiber","value":"Fiber"},{"name":"vitamin","value":"Vitamin"},{"name":"mineral","value":"Mineral"},{"name":"healthy_fat","value":"Healthy Fat"},{"name":"max_amount_fmt","value":"Max %sg"},{"name":"send","value":"Send"},{"name":"confirm","value":"Confirm"},{"name":"unbind","value":"Unbind"},{"name":"bind_cloud","value":"Bind Cloud Account"},{"name":"clear_queue","value":"Clear Sync Queue"},{"name":"publish_first_recipe","value":"Publish First Recipe"},{"name":"continue_scan_add","value":"Continue Scanning"},{"name":"yesterday","value":"Yesterday"},{"name":"jump","value":"Jump"},{"name":"sync_status","value":"Sync Status"},{"name":"connected","value":"Connected"},{"name":"offline","value":"Offline"},{"name":"bound","value":"Bound"},{"name":"not_bound","value":"Not Bound"},{"name":"sync_enabled","value":"Enabled"},{"name":"sync_paused","value":"Paused"},{"name":"operation_label","value":"Operation"},{"name":"device_info","value":"Device Info"},{"name":"sync_log_label","value":"Sync Log"},{"name":"no_sync_records","value":"No sync records"},{"name":"tab_home","value":"Home"},{"name":"tab_diet","value":"Diet"},{"name":"tab_ai","value":"AI"},{"name":"tab_community","value":"Community"},{"name":"tab_mine","value":"Mine"},{"name":"slogan_1","value":"Scan food, eat with confidence"},{"name":"slogan_2","value":"One scan for the whole family's health"},{"name":"slogan_3","value":"Smart diet, family nutrition guardian"},{"name":"slogan_4","value":"Know what you eat, care for your loved ones"},{"name":"slogan_5","value":"Healthy eating starts with every scan"}]}
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "Family Food Adapt Assistant"
+    },
+    {
+      "name": "form_desc",
+      "value": "Food Adapt Assistant"
+    },
+    {
+      "name": "producer_identity",
+      "value": "Producer Identity"
+    },
+    {
+      "name": "transparency",
+      "value": "Transparency"
+    },
+    {
+      "name": "info_transparency",
+      "value": "Info Transparency"
+    },
+    {
+      "name": "public_query_entry",
+      "value": "Public Query Entry"
+    },
+    {
+      "name": "copy_label",
+      "value": "Copy"
+    },
+    {
+      "name": "hot_foods",
+      "value": "Hot Foods"
+    },
+    {
+      "name": "first_time_use",
+      "value": "First Time Use"
+    },
+    {
+      "name": "first_time_hint",
+      "value": "Scan food labels to quickly check suitability"
+    },
+    {
+      "name": "quick_experience",
+      "value": "Quick Experience"
+    },
+    {
+      "name": "ability_desc",
+      "value": "Main entry for Food Adapt Assistant"
+    },
+    {
+      "name": "ability_label",
+      "value": "Food Adapt Assistant"
+    },
+    {
+      "name": "camera_reason",
+      "value": "Used to recognize food packaging labels"
+    },
+    {
+      "name": "internet_reason",
+      "value": "Used for optional AI polish service"
+    },
+    {
+      "name": "vibrate_reason",
+      "value": "Provides vibration feedback when scanning food labels"
+    },
+    {
+      "name": "app_name",
+      "value": "Food Adapt Assistant"
+    },
+    {
+      "name": "home_title",
+      "value": "Who are we scanning for?"
+    },
+    {
+      "name": "scan_button",
+      "value": "Scan Food Label"
+    },
+    {
+      "name": "balance_button",
+      "value": "Log Meal"
+    },
+    {
+      "name": "member_dad",
+      "value": "Dad"
+    },
+    {
+      "name": "member_mom",
+      "value": "Mom"
+    },
+    {
+      "name": "member_child",
+      "value": "Child"
+    },
+    {
+      "name": "member_me",
+      "value": "Me"
+    },
+    {
+      "name": "level_suitable",
+      "value": "Suitable"
+    },
+    {
+      "name": "level_small",
+      "value": "In Moderation"
+    },
+    {
+      "name": "level_cautious",
+      "value": "Be Cautious Today"
+    },
+    {
+      "name": "level_avoid",
+      "value": "Avoid"
+    },
+    {
+      "name": "disclaimer",
+      "value": "This result is based on label recognition and health goals. It does not represent lab testing of current batch, nor replace medical advice."
+    },
+    {
+      "name": "join_group",
+      "value": "Join Group"
+    },
+    {
+      "name": "dashboard_title",
+      "value": "Nutrition Dashboard"
+    },
+    {
+      "name": "period_7_days",
+      "value": "7 Days"
+    },
+    {
+      "name": "period_30_days",
+      "value": "30 Days"
+    },
+    {
+      "name": "no_family_diet_data",
+      "value": "No family diet data yet"
+    },
+    {
+      "name": "no_family_diet_hint",
+      "value": "Add family members and start recording to see the dashboard"
+    },
+    {
+      "name": "health_score_insufficient",
+      "value": "Insufficient Data"
+    },
+    {
+      "name": "health_score_excellent",
+      "value": "Excellent"
+    },
+    {
+      "name": "health_score_good",
+      "value": "Good"
+    },
+    {
+      "name": "health_score_fair",
+      "value": "Fair"
+    },
+    {
+      "name": "health_score_poor",
+      "value": "Needs Improvement"
+    },
+    {
+      "name": "insight_sodium_high",
+      "value": "Sodium intake is high"
+    },
+    {
+      "name": "insight_sodium_mid",
+      "value": "Sodium is slightly high"
+    },
+    {
+      "name": "insight_sodium_good",
+      "value": "Sodium is well controlled"
+    },
+    {
+      "name": "insight_sugar_high",
+      "value": "Sugar intake is high"
+    },
+    {
+      "name": "insight_sugar_good",
+      "value": "Sugar is excellently controlled"
+    },
+    {
+      "name": "insight_keep_recording",
+      "value": "Keep recording"
+    },
+    {
+      "name": "insight_keep_it_up",
+      "value": "Keep it up! Diet is very balanced"
+    },
+    {
+      "name": "insight_good_improve",
+      "value": "Good overall, room for improvement"
+    },
+    {
+      "name": "insight_balanced",
+      "value": "Balanced diet, keep going"
+    },
+    {
+      "name": "insight_keep_recording_hint",
+      "value": "Continued recording will give more accurate health scores"
+    },
+    {
+      "name": "trend_stable",
+      "value": "Stable"
+    },
+    {
+      "name": "trend_upward",
+      "value": "Upward trend"
+    },
+    {
+      "name": "trend_downward",
+      "value": "Downward trend"
+    },
+    {
+      "name": "avg_daily_kcal",
+      "value": "Daily Avg kcal"
+    },
+    {
+      "name": "macronutrient_composition",
+      "value": "Macronutrient Composition"
+    },
+    {
+      "name": "daily_avg",
+      "value": "Daily Avg"
+    },
+    {
+      "name": "health_evaluation",
+      "value": "Health Evaluation"
+    },
+    {
+      "name": "day_unit",
+      "value": "Day"
+    },
+    {
+      "name": "record_unit",
+      "value": "Records"
+    },
+    {
+      "name": "report_default_title",
+      "value": "Adaptation Report"
+    },
+    {
+      "name": "alternative_section_title",
+      "value": "Better Alternatives"
+    },
+    {
+      "name": "unlock",
+      "value": "Unlock"
+    },
+    {
+      "name": "unlock_alt_desc",
+      "value": "Upgrade to see healthier choices"
+    },
+    {
+      "name": "share_text_title",
+      "value": "Shareable Text"
+    },
+    {
+      "name": "share_text_hint",
+      "value": "Tap copy to copy text to clipboard"
+    },
+    {
+      "name": "share_to_group_action",
+      "value": "Share"
+    },
+    {
+      "name": "group_member_count",
+      "value": "%s members"
+    },
+    {
+      "name": "privacy_terms_desc",
+      "value": "By using you agree to our terms. We collect necessary data to provide personalized dietary advice."
+    },
+    {
+      "name": "privacy_data_storage",
+      "value": "Data Storage & Security"
+    },
+    {
+      "name": "privacy_medical_disclaimer",
+      "value": "Medical Disclaimer"
+    },
+    {
+      "name": "privacy_data_control",
+      "value": "Data Control & Deletion"
+    },
+    {
+      "name": "back_arrow",
+      "value": "Back"
+    },
+    {
+      "name": "agree_read",
+      "value": "I have read and agree to"
+    },
+    {
+      "name": "and_conjunction",
+      "value": "and"
+    },
+    {
+      "name": "parse_success",
+      "value": "Parsed Successfully"
+    },
+    {
+      "name": "data_from_ecommerce",
+      "value": "Data from E-commerce Platform"
+    },
+    {
+      "name": "ai_recommend_recipe",
+      "value": "AI Recommended Recipe"
+    },
+    {
+      "name": "save_today_status",
+      "value": "Save Today's Status"
+    },
+    {
+      "name": "barcode_detected",
+      "value": "Barcode Detected"
+    },
+    {
+      "name": "scan_today_used_up",
+      "value": "Used"
+    },
+    {
+      "name": "scan_today_remaining",
+      "value": "Remaining"
+    },
+    {
+      "name": "scan_mode_barcode",
+      "value": "Barcode Mode"
+    },
+    {
+      "name": "scan_mode_photo",
+      "value": "Photo Mode"
+    },
+    {
+      "name": "scan_mode_manual",
+      "value": "Manual Mode"
+    },
+    {
+      "name": "edit_panel_collapse",
+      "value": "Collapse"
+    },
+    {
+      "name": "edit_panel_toggle",
+      "value": "Expand Correction Panel"
+    },
+    {
+      "name": "tab_photo",
+      "value": "Photo"
+    },
+    {
+      "name": "tab_barcode",
+      "value": "Barcode"
+    },
+    {
+      "name": "share_to_group_title",
+      "value": "Share to Family Group"
+    },
+    {
+      "name": "no_group_hint",
+      "value": "Not in any family group yet"
+    },
+    {
+      "name": "create_or_join_group",
+      "value": "Create or Join Group"
+    },
+    {
+      "name": "publish_as_recipe",
+      "value": "Publish as Recipe"
+    },
+    {
+      "name": "publish_to_community",
+      "value": "Publish to Community"
+    },
+    {
+      "name": "today_ref",
+      "value": "Today's Reference"
+    },
+    {
+      "name": "family_diff_conclusion",
+      "value": "Family Difference Analysis"
+    },
+    {
+      "name": "disclaimer_report",
+      "value": "Disclaimer"
+    },
+    {
+      "name": "alternative_locked",
+      "value": "Alternatives Locked"
+    },
+    {
+      "name": "risk_high_salt",
+      "value": "High Salt"
+    },
+    {
+      "name": "risk_high_sugar",
+      "value": "High Sugar"
+    },
+    {
+      "name": "balance_adv",
+      "value": "Diet Balance Advice"
+    },
+    {
+      "name": "family_members",
+      "value": "Family Members"
+    },
+    {
+      "name": "sub_today_budget",
+      "value": "Today's Budget"
+    },
+    {
+      "name": "advice_for_you",
+      "value": "Advice for You"
+    },
+    {
+      "name": "next_meal_suggestion",
+      "value": "Next Meal Suggestion"
+    },
+    {
+      "name": "mvp_hint",
+      "value": "MVP Hint"
+    },
+    {
+      "name": "mvp_detail",
+      "value": "Current version provides basic features only"
+    },
+    {
+      "name": "privacy_and_compliance",
+      "value": "Privacy & Compliance"
+    },
+    {
+      "name": "collapse",
+      "value": "Collapse"
+    },
+    {
+      "name": "record_days",
+      "value": "Recording Days"
+    },
+    {
+      "name": "total_records",
+      "value": "Total Records"
+    },
+    {
+      "name": "daily_avg_sodium",
+      "value": "Daily Avg Sodium"
+    },
+    {
+      "name": "daily_avg_sugar",
+      "value": "Daily Avg Sugar"
+    },
+    {
+      "name": "col_date",
+      "value": "Date"
+    },
+    {
+      "name": "col_sodium",
+      "value": "Sodium(mg)"
+    },
+    {
+      "name": "col_sugar",
+      "value": "Sugar(g)"
+    },
+    {
+      "name": "col_calorie",
+      "value": "Calories(kcal)"
+    },
+    {
+      "name": "col_fat",
+      "value": "Fat(g)"
+    },
+    {
+      "name": "restore_purchase",
+      "value": "Restore Purchase"
+    },
+    {
+      "name": "refund_policy",
+      "value": "Refund Policy"
+    },
+    {
+      "name": "secure_payment",
+      "value": "Secure Payment"
+    },
+    {
+      "name": "cancel_anytime",
+      "value": "Cancel Anytime"
+    },
+    {
+      "name": "unbiased_disclaimer",
+      "value": "This app provides objective analysis, not health advice"
+    },
+    {
+      "name": "free_tier_desc",
+      "value": "Free Features"
+    },
+    {
+      "name": "upgrade_personal_desc",
+      "value": "Upgrade to unlock more features"
+    },
+    {
+      "name": "thanks_support",
+      "value": "Thank You for Your Support"
+    },
+    {
+      "name": "group_info",
+      "value": "Group Info"
+    },
+    {
+      "name": "group_empty",
+      "value": "Group Empty"
+    },
+    {
+      "name": "group_empty_hint",
+      "value": "No group content yet"
+    },
+    {
+      "name": "system_msg",
+      "value": "System Message"
+    },
+    {
+      "name": "food_share",
+      "value": "Food Share"
+    },
+    {
+      "name": "upgrade_for_weekly",
+      "value": "Upgrade to Unlock Weekly Report"
+    },
+    {
+      "name": "unbind_account",
+      "value": "Unbind Account"
+    },
+    {
+      "name": "enable_cloud_sync",
+      "value": "Enable Cloud Sync"
+    },
+    {
+      "name": "sync_strategy",
+      "value": "Sync Strategy"
+    },
+    {
+      "name": "conflict_resolution",
+      "value": "Conflict Resolution"
+    },
+    {
+      "name": "sync_interval",
+      "value": "Sync Interval"
+    },
+    {
+      "name": "encrypt_transport",
+      "value": "Encrypted Transport"
+    },
+    {
+      "name": "last_sync",
+      "value": "Last Sync"
+    },
+    {
+      "name": "pending_sync",
+      "value": "Pending Sync"
+    },
+    {
+      "name": "create_recipe",
+      "value": "Create Recipe"
+    },
+    {
+      "name": "save",
+      "value": "Save"
+    },
+    {
+      "name": "category_label",
+      "value": "Category"
+    },
+    {
+      "name": "difficulty_label",
+      "value": "Difficulty"
+    },
+    {
+      "name": "cook_time_label",
+      "value": "Cook Time"
+    },
+    {
+      "name": "servings_label",
+      "value": "Servings"
+    },
+    {
+      "name": "food_adapt_assistant",
+      "value": "Food Adapt Assistant"
+    },
+    {
+      "name": "scan_food_peace_mind",
+      "value": "Scan food, eat with peace of mind"
+    },
+    {
+      "name": "balance_advice",
+      "value": "Balance Advice"
+    },
+    {
+      "name": "this_meal_high",
+      "value": "This meal is high"
+    },
+    {
+      "name": "next_meal_advice",
+      "value": "Next Meal Advice"
+    },
+    {
+      "name": "no_more_today",
+      "value": "Had enough today"
+    },
+    {
+      "name": "hydrate_advice",
+      "value": "Remember to drink water"
+    },
+    {
+      "name": "for_you_advice",
+      "value": "Recommended for You"
+    },
+    {
+      "name": "child_protection_tip",
+      "value": "Child Diet Protection"
+    },
+    {
+      "name": "meal_protection",
+      "value": "Meal Protection"
+    },
+    {
+      "name": "bedtime_protection",
+      "value": "Bedtime Protection"
+    },
+    {
+      "name": "taste_protection",
+      "value": "Taste Protection"
+    },
+    {
+      "name": "no_meal_offset_tip",
+      "value": "No meal offset"
+    },
+    {
+      "name": "no_trend_data",
+      "value": "No trend data yet"
+    },
+    {
+      "name": "create_group",
+      "value": "Create Group"
+    },
+    {
+      "name": "create_group_hint",
+      "value": "Enter group name"
+    },
+    {
+      "name": "reminder_reason",
+      "value": "Used to send dietary reminders and health reports"
+    },
+    {
+      "name": "skip",
+      "value": "Skip"
+    },
+    {
+      "name": "next_step",
+      "value": "Next"
+    },
+    {
+      "name": "start_use",
+      "value": "Get Started"
+    },
+    {
+      "name": "welcome_title",
+      "value": "Welcome"
+    },
+    {
+      "name": "agree_continue",
+      "value": "Agree & Continue"
+    },
+    {
+      "name": "privacy_policy",
+      "value": "Privacy Policy"
+    },
+    {
+      "name": "user_agreement",
+      "value": "User Agreement"
+    },
+    {
+      "name": "setup_health_profile",
+      "value": "Set up health profiles for the whole family"
+    },
+    {
+      "name": "setup_profile_hint",
+      "value": "Set health goals for each family member,\\nthen scan to see 'same food, different advice'"
+    },
+    {
+      "name": "goal_control_bp",
+      "value": "BP Control"
+    },
+    {
+      "name": "goal_lose_fat",
+      "value": "Fat Loss"
+    },
+    {
+      "name": "goal_child",
+      "value": "Child"
+    },
+    {
+      "name": "goal_control_sugar",
+      "value": "Sugar Control"
+    },
+    {
+      "name": "three_ways_scan",
+      "value": "Three ways to scan"
+    },
+    {
+      "name": "method_photo",
+      "value": "Photo Recognition"
+    },
+    {
+      "name": "method_photo_desc",
+      "value": "Take a photo of the package or ingredients list to extract nutrition info"
+    },
+    {
+      "name": "method_barcode",
+      "value": "Barcode Scan"
+    },
+    {
+      "name": "method_barcode_desc",
+      "value": "Scan barcode and check food data from global database"
+    },
+    {
+      "name": "method_link",
+      "value": "Paste Link"
+    },
+    {
+      "name": "method_link_desc",
+      "value": "Copy product link from shopping app and paste to analyze"
+    },
+    {
+      "name": "result_same_accurate",
+      "value": "All methods give equally accurate results"
+    },
+    {
+      "name": "family_report_overview",
+      "value": "Whole family report at a glance"
+    },
+    {
+      "name": "example_food",
+      "value": "Spicy Beef Jerky"
+    },
+    {
+      "name": "same_food_diff_advice",
+      "value": "Same food, different advice for each member"
+    },
+    {
+      "name": "privacy_dialog_title",
+      "value": "Family Diet Balance Assistant"
+    },
+    {
+      "name": "paste_link_hint",
+      "value": "Enter or paste product link"
+    },
+    {
+      "name": "paste_link",
+      "value": "Paste Link"
+    },
+    {
+      "name": "parse_failed",
+      "value": "Parse failed, try photo recognition"
+    },
+    {
+      "name": "parse_exception",
+      "value": "Link parse error, retry or use photo recognition"
+    },
+    {
+      "name": "scan_identify",
+      "value": "Scan & Identify"
+    },
+    {
+      "name": "add_member",
+      "value": "Add Member"
+    },
+    {
+      "name": "upgrade_unlock",
+      "value": "Upgrade to Unlock"
+    },
+    {
+      "name": "diet_diary",
+      "value": "Diet Diary"
+    },
+    {
+      "name": "ai_nutritionist",
+      "value": "AI Nutritionist"
+    },
+    {
+      "name": "brand_transparency",
+      "value": "Brand Transparency"
+    },
+    {
+      "name": "recipe_community",
+      "value": "Recipe Community"
+    },
+    {
+      "name": "family_group",
+      "value": "Family Group"
+    },
+    {
+      "name": "member_manage",
+      "value": "Manage Members"
+    },
+    {
+      "name": "add_family_member",
+      "value": "+ Add Family Member"
+    },
+    {
+      "name": "edit",
+      "value": "Edit"
+    },
+    {
+      "name": "nickname_label",
+      "value": "Nickname"
+    },
+    {
+      "name": "age_group_label",
+      "value": "Age Group"
+    },
+    {
+      "name": "health_goal_label",
+      "value": "Health Goals (multi-select)"
+    },
+    {
+      "name": "allergen_nuts",
+      "value": "Nuts"
+    },
+    {
+      "name": "activity_label",
+      "value": "Activity:"
+    },
+    {
+      "name": "sleep_label",
+      "value": "Sleep:"
+    },
+    {
+      "name": "bp_label",
+      "value": "Blood Pressure:"
+    },
+    {
+      "name": "bg_label",
+      "value": "Blood Sugar:"
+    },
+    {
+      "name": "calorie",
+      "value": "Calories"
+    },
+    {
+      "name": "sodium",
+      "value": "Sodium"
+    },
+    {
+      "name": "sugar",
+      "value": "Sugar"
+    },
+    {
+      "name": "fat",
+      "value": "Fat"
+    },
+    {
+      "name": "protein",
+      "value": "Protein"
+    },
+    {
+      "name": "barcode_not_found",
+      "value": "Barcode not found, switching to photo mode"
+    },
+    {
+      "name": "scan_manual_hint",
+      "value": "Try aiming at the label to take a photo, or enter manually"
+    },
+    {
+      "name": "offline_mode",
+      "value": "📡 No network, using local recognition"
+    },
+    {
+      "name": "view_report",
+      "value": "View Report"
+    },
+    {
+      "name": "save_food_label",
+      "value": "Save Food Label"
+    },
+    {
+      "name": "scanning_barcode",
+      "value": "Scanning barcode…"
+    },
+    {
+      "name": "history_record",
+      "value": "History"
+    },
+    {
+      "name": "all",
+      "value": "All"
+    },
+    {
+      "name": "record_meal",
+      "value": "Log Meal"
+    },
+    {
+      "name": "share_title",
+      "value": "Share"
+    },
+    {
+      "name": "share_copy_text",
+      "value": "Shareable Copy Text"
+    },
+    {
+      "name": "share_placeholder",
+      "value": "Copy text will appear here after the report is generated."
+    },
+    {
+      "name": "share_refresh",
+      "value": "Refresh Text"
+    },
+    {
+      "name": "share_copy",
+      "value": "Copy Text"
+    },
+    {
+      "name": "share_go_publish",
+      "value": "Publish"
+    },
+    {
+      "name": "share_no_family",
+      "value": "You are not in any family group yet"
+    },
+    {
+      "name": "share_publish_recipe",
+      "value": "Publish as Recipe"
+    },
+    {
+      "name": "basket_attention",
+      "value": "Needs Attention"
+    },
+    {
+      "name": "basket_ok",
+      "value": "Okay Overall"
+    },
+    {
+      "name": "basket_warning",
+      "value": "⚠ Basket Alert"
+    },
+    {
+      "name": "basket_suggestion",
+      "value": "💡 Shopping Advice"
+    },
+    {
+      "name": "basket_items",
+      "value": "Items in Basket"
+    },
+    {
+      "name": "risk_high_fat",
+      "value": "High Fat"
+    },
+    {
+      "name": "alternative_food_title",
+      "value": "Alternative Foods"
+    },
+    {
+      "name": "meal_plan_title",
+      "value": "Meal Plan"
+    },
+    {
+      "name": "nutrition_knowledge_title",
+      "value": "Nutrition Knowledge"
+    },
+    {
+      "name": "add_to_diet_record",
+      "value": "Add to Diet Record"
+    },
+    {
+      "name": "settings",
+      "value": "Settings"
+    },
+    {
+      "name": "version_label",
+      "value": "Version v4.0.0"
+    },
+    {
+      "name": "today_status",
+      "value": "Today's Status"
+    },
+    {
+      "name": "activity",
+      "value": "Activity"
+    },
+    {
+      "name": "health_signal_fair",
+      "value": "Fair"
+    },
+    {
+      "name": "today_tags_label",
+      "value": "Today's Tags"
+    },
+    {
+      "name": "status_affect_hint",
+      "value": "These statuses directly affect today's adaptation report and meal quota."
+    },
+    {
+      "name": "weekly_report",
+      "value": "Weekly Report"
+    },
+    {
+      "name": "feature_locked",
+      "value": "Feature Locked"
+    },
+    {
+      "name": "weekly_focus",
+      "value": "This Week's Focus"
+    },
+    {
+      "name": "next_week_advice",
+      "value": "Next Week's Advice"
+    },
+    {
+      "name": "shopping_recommend",
+      "value": "Shopping Advice"
+    },
+    {
+      "name": "ai_analysis",
+      "value": "🤖 AI Analysis"
+    },
+    {
+      "name": "trend_tab",
+      "value": "📊 Trends"
+    },
+    {
+      "name": "go_scan_tip",
+      "value": "Go to home page to scan food labels"
+    },
+    {
+      "name": "ai_analyzing",
+      "value": "AI Nutritionist is analyzing..."
+    },
+    {
+      "name": "ai_analysis_title",
+      "value": "AI Nutritionist Analysis"
+    },
+    {
+      "name": "ai_enhanced",
+      "value": "AI Enhanced Analysis"
+    },
+    {
+      "name": "need_attention",
+      "value": "⚠️ Needs Attention"
+    },
+    {
+      "name": "no_content",
+      "value": "No Content"
+    },
+    {
+      "name": "click_refresh_ai",
+      "value": "Tap refresh to get AI recommendations"
+    },
+    {
+      "name": "no_recipe_yet",
+      "value": "No recipes shared yet"
+    },
+    {
+      "name": "recipe_community_hint",
+      "value": "Scan food to create recipes and share with the community"
+    },
+    {
+      "name": "ai_recommend",
+      "value": "AI Recommendations"
+    },
+    {
+      "name": "ai_match_desc",
+      "value": "Personalized matching based on family health profiles"
+    },
+    {
+      "name": "nutrition_trend",
+      "value": "Nutrition Trends"
+    },
+    {
+      "name": "no_nutrition_data",
+      "value": "No trend data yet"
+    },
+    {
+      "name": "nutrition_hint",
+      "value": "Keep recording meals to see nutrition intake trends here"
+    },
+    {
+      "name": "intake_trend",
+      "value": "Nutrient Intake Trends"
+    },
+    {
+      "name": "daily_intake",
+      "value": "Daily Intake Details"
+    },
+    {
+      "name": "subscription",
+      "value": "Subscription"
+    },
+    {
+      "name": "sub_free",
+      "value": "Free"
+    },
+    {
+      "name": "current_plan",
+      "value": "Current Plan"
+    },
+    {
+      "name": "cloud_sync",
+      "value": "Cloud Sync"
+    },
+    {
+      "name": "sync_desc",
+      "value": "Data will sync across devices via cloud"
+    },
+    {
+      "name": "no_composition_data",
+      "value": "No composition data"
+    },
+    {
+      "name": "no_data",
+      "value": "No Data"
+    },
+    {
+      "name": "recipe_detail",
+      "value": "Recipe Details"
+    },
+    {
+      "name": "recipe_not_found",
+      "value": "Recipe Not Found"
+    },
+    {
+      "name": "favorite",
+      "value": "Favorites"
+    },
+    {
+      "name": "intro_label",
+      "value": "Intro"
+    },
+    {
+      "name": "ingredient_list",
+      "value": "Ingredients"
+    },
+    {
+      "name": "cook_steps",
+      "value": "Steps"
+    },
+    {
+      "name": "nutrition_per_serving",
+      "value": "Nutrition Per Serving"
+    },
+    {
+      "name": "suitable_persons",
+      "value": "Suitable For"
+    },
+    {
+      "name": "no_comments_yet",
+      "value": "No Comments Yet"
+    },
+    {
+      "name": "no_balance_data",
+      "value": "No balance data yet"
+    },
+    {
+      "name": "producer_info",
+      "value": "Producer Info"
+    },
+    {
+      "name": "avoid_label",
+      "value": "Avoid"
+    },
+    {
+      "name": "nutrition_per_100g_label",
+      "value": "Nutrition per 100g"
+    },
+    {
+      "name": "ingredients_label",
+      "value": "Ingredients"
+    },
+    {
+      "name": "nutrition_trend_summary",
+      "value": "No trend data"
+    },
+    {
+      "name": "suggest_avoid",
+      "value": "Suggest to avoid"
+    },
+    {
+      "name": "distributed_sync_reason",
+      "value": "Used to sync data across devices"
+    },
+    {
+      "name": "activity_motion_reason",
+      "value": "Used to obtain step count and activity data"
+    },
+    {
+      "name": "health_data_reason",
+      "value": "Used to read heart rate, blood oxygen, sleep data for personalized advice"
+    },
+    {
+      "name": "microphone_reason",
+      "value": "Used for AI Nutritionist voice input"
+    },
+    {
+      "name": "media_reason",
+      "value": "Used to save food label images to gallery"
+    },
+    {
+      "name": "background_run_reason",
+      "value": "Used to sync family data in background"
+    },
+    {
+      "name": "load_error",
+      "value": "Load failed, check network and retry"
+    },
+    {
+      "name": "retry",
+      "value": "Retry"
+    },
+    {
+      "name": "cancel",
+      "value": "Cancel"
+    },
+    {
+      "name": "week_sun",
+      "value": "Sun"
+    },
+    {
+      "name": "week_mon",
+      "value": "Mon"
+    },
+    {
+      "name": "week_tue",
+      "value": "Tue"
+    },
+    {
+      "name": "week_wed",
+      "value": "Wed"
+    },
+    {
+      "name": "week_thu",
+      "value": "Thu"
+    },
+    {
+      "name": "week_fri",
+      "value": "Fri"
+    },
+    {
+      "name": "week_sat",
+      "value": "Sat"
+    },
+    {
+      "name": "comment",
+      "value": "Comment"
+    },
+    {
+      "name": "favorited",
+      "value": "Favorited"
+    },
+    {
+      "name": "unfavorited",
+      "value": "Unfavorited"
+    },
+    {
+      "name": "amount_unit",
+      "value": "Amount"
+    },
+    {
+      "name": "delete",
+      "value": "Delete"
+    },
+    {
+      "name": "data_refreshed",
+      "value": "Data Refreshed"
+    },
+    {
+      "name": "paste_link_title",
+      "value": "Paste Product Link"
+    },
+    {
+      "name": "parse",
+      "value": "Parse"
+    },
+    {
+      "name": "paste_link_hint_inner",
+      "value": "Enter or paste product link"
+    },
+    {
+      "name": "upgrade_member",
+      "value": "Upgrade Membership"
+    },
+    {
+      "name": "skip_upgrade",
+      "value": "Skip Upgrade"
+    },
+    {
+      "name": "scan_now",
+      "value": "Scan Now"
+    },
+    {
+      "name": "copied",
+      "value": "Copied to clipboard"
+    },
+    {
+      "name": "copy_failed",
+      "value": "Copy failed"
+    },
+    {
+      "name": "not_provided",
+      "value": "Not Provided"
+    },
+    {
+      "name": "producer",
+      "value": "Producer"
+    },
+    {
+      "name": "sc_number",
+      "value": "SC Number"
+    },
+    {
+      "name": "principal",
+      "value": "Principal"
+    },
+    {
+      "name": "trustee",
+      "value": "Trustee"
+    },
+    {
+      "name": "empty_default",
+      "value": "No content"
+    },
+    {
+      "name": "identity_clear",
+      "value": "Identity Clear"
+    },
+    {
+      "name": "license_info",
+      "value": "License Info"
+    },
+    {
+      "name": "trace_entry",
+      "value": "Trace Entry"
+    },
+    {
+      "name": "public_query",
+      "value": "Public Query"
+    },
+    {
+      "name": "claim_boundary",
+      "value": "Claim Boundary"
+    },
+    {
+      "name": "status_clear",
+      "value": "Clear"
+    },
+    {
+      "name": "status_partial",
+      "value": "Partial"
+    },
+    {
+      "name": "status_not_recognized",
+      "value": "Not Recognized"
+    },
+    {
+      "name": "my_account",
+      "value": "My Account"
+    },
+    {
+      "name": "network_label",
+      "value": "Network"
+    },
+    {
+      "name": "account_label",
+      "value": "Account"
+    },
+    {
+      "name": "settings_tab",
+      "value": "Settings"
+    },
+    {
+      "name": "sync_label",
+      "value": "Sync"
+    },
+    {
+      "name": "journal_label",
+      "value": "Journal"
+    },
+    {
+      "name": "app_name_share",
+      "value": "Family Food Adapt Assistant"
+    },
+    {
+      "name": "care_early",
+      "value": "Care Early"
+    },
+    {
+      "name": "suggest_avoid_short",
+      "value": "Avoid"
+    },
+    {
+      "name": "sodium_high",
+      "value": "Sodium is high"
+    },
+    {
+      "name": "sugar_high",
+      "value": "Sugar is high"
+    },
+    {
+      "name": "fat_high",
+      "value": "Fat is high"
+    },
+    {
+      "name": "overall_ok",
+      "value": "Overall OK"
+    },
+    {
+      "name": "today_try_amount",
+      "value": "Try %sg today"
+    },
+    {
+      "name": "little_taste_ok",
+      "value": "A little taste is OK"
+    },
+    {
+      "name": "carb",
+      "value": "Carbs"
+    },
+    {
+      "name": "dietary_fiber",
+      "value": "Fiber"
+    },
+    {
+      "name": "vitamin",
+      "value": "Vitamin"
+    },
+    {
+      "name": "mineral",
+      "value": "Mineral"
+    },
+    {
+      "name": "healthy_fat",
+      "value": "Healthy Fat"
+    },
+    {
+      "name": "max_amount_fmt",
+      "value": "Max %sg"
+    },
+    {
+      "name": "send",
+      "value": "Send"
+    },
+    {
+      "name": "confirm",
+      "value": "Confirm"
+    },
+    {
+      "name": "unbind",
+      "value": "Unbind"
+    },
+    {
+      "name": "bind_cloud",
+      "value": "Bind Cloud Account"
+    },
+    {
+      "name": "clear_queue",
+      "value": "Clear Sync Queue"
+    },
+    {
+      "name": "publish_first_recipe",
+      "value": "Publish First Recipe"
+    },
+    {
+      "name": "continue_scan_add",
+      "value": "Continue Scanning"
+    },
+    {
+      "name": "yesterday",
+      "value": "Yesterday"
+    },
+    {
+      "name": "jump",
+      "value": "Jump"
+    },
+    {
+      "name": "sync_status",
+      "value": "Sync Status"
+    },
+    {
+      "name": "connected",
+      "value": "Connected"
+    },
+    {
+      "name": "offline",
+      "value": "Offline"
+    },
+    {
+      "name": "bound",
+      "value": "Bound"
+    },
+    {
+      "name": "not_bound",
+      "value": "Not Bound"
+    },
+    {
+      "name": "sync_enabled",
+      "value": "Enabled"
+    },
+    {
+      "name": "sync_paused",
+      "value": "Paused"
+    },
+    {
+      "name": "operation_label",
+      "value": "Operation"
+    },
+    {
+      "name": "device_info",
+      "value": "Device Info"
+    },
+    {
+      "name": "sync_log_label",
+      "value": "Sync Log"
+    },
+    {
+      "name": "no_sync_records",
+      "value": "No sync records"
+    },
+    {
+      "name": "tab_home",
+      "value": "Home"
+    },
+    {
+      "name": "tab_diet",
+      "value": "Diet"
+    },
+    {
+      "name": "tab_ai",
+      "value": "AI"
+    },
+    {
+      "name": "tab_community",
+      "value": "Community"
+    },
+    {
+      "name": "tab_mine",
+      "value": "Mine"
+    },
+    {
+      "name": "slogan_1",
+      "value": "Scan food, eat with confidence"
+    },
+    {
+      "name": "slogan_2",
+      "value": "One scan for the whole family's health"
+    },
+    {
+      "name": "slogan_3",
+      "value": "Smart diet, family nutrition guardian"
+    },
+    {
+      "name": "slogan_4",
+      "value": "Know what you eat, care for your loved ones"
+    },
+    {
+      "name": "slogan_5",
+      "value": "Healthy eating starts with every scan"
+    },
+    {
+      "name": "favorite_title",
+      "value": "My Favorites"
+    },
+    {
+      "name": "favorite_empty_title",
+      "value": "No Favorites Yet"
+    },
+    {
+      "name": "favorite_empty_subtitle",
+      "value": "Tap favorite when viewing food reports"
+    },
+    {
+      "name": "favorite_added",
+      "value": "Added to favorites"
+    },
+    {
+      "name": "favorite_removed",
+      "value": "Removed from favorites"
+    },
+    {
+      "name": "favorite_remove",
+      "value": "Delete"
+    },
+    {
+      "name": "favorite_limit_hint",
+      "value": "Free tier allows up to 10 favorites. Upgrade for more"
+    },
+    {
+      "name": "nutrition_target_title",
+      "value": "Nutrition Target"
+    },
+    {
+      "name": "select_member",
+      "value": "Select Member"
+    },
+    {
+      "name": "preset_scheme",
+      "value": "Preset Scheme"
+    },
+    {
+      "name": "custom_adjust",
+      "value": "Custom Adjust"
+    },
+    {
+      "name": "sodium_max",
+      "value": "Sodium Max"
+    },
+    {
+      "name": "sugar_max",
+      "value": "Sugar Max"
+    },
+    {
+      "name": "calories_target",
+      "value": "Calories Target"
+    },
+    {
+      "name": "fat_max",
+      "value": "Fat Max"
+    },
+    {
+      "name": "protein_target",
+      "value": "Protein Target"
+    },
+    {
+      "name": "fiber_min",
+      "value": "Fiber Min"
+    },
+    {
+      "name": "reset_to_default",
+      "value": "Reset Default"
+    },
+    {
+      "name": "nutrition_target_settings",
+      "value": "Nutrition Target"
+    },
+    {
+      "name": "nutrition_target_settings_desc",
+      "value": "Customize daily nutrition intake targets"
+    },
+    {
+      "name": "quick_food_input",
+      "value": "Quick Input"
+    },
+    {
+      "name": "search_food_name",
+      "value": "Search food name..."
+    },
+    {
+      "name": "no_search_result",
+      "value": "No matching food found"
+    },
+    {
+      "name": "recent_foods",
+      "value": "Recent Foods"
+    },
+    {
+      "name": "servings",
+      "value": "Servings"
+    },
+    {
+      "name": "or_grams",
+      "value": "or grams"
+    },
+    {
+      "name": "advanced_mode",
+      "value": "Advanced (Manual Input)"
+    },
+    {
+      "name": "food_name_hint",
+      "value": "Food name"
+    },
+    {
+      "name": "confirm_add",
+      "value": "Confirm Add"
+    },
+    {
+      "name": "add_food",
+      "value": "Add Food"
+    },
+    {
+      "name": "quick_add_diet",
+      "value": "+"
+    },
+    {
+      "name": "export_report",
+      "value": "Export Report"
+    },
+    {
+      "name": "export_summary",
+      "value": "Export Summary"
+    },
+    {
+      "name": "save_snapshot",
+      "value": "Save as Snapshot"
+    },
+    {
+      "name": "select_snapshot",
+      "value": "Select Snapshot"
+    },
+    {
+      "name": "export_success",
+      "value": "Export successful"
+    },
+    {
+      "name": "export_failed",
+      "value": "Export failed"
+    },
+    {
+      "name": "snapshot_saved",
+      "value": "Snapshot saved"
+    },
+    {
+      "name": "diet_record_saved",
+      "value": "Diet record saved"
+    },
+    {
+      "name": "scan_camera_permission_denied",
+      "value": "Camera permission required, please enable in system settings"
+    },
+    {
+      "name": "scan_times",
+      "value": "times"
+    },
+    {
+      "name": "scan_start_desc",
+      "value": "Start scanning food info"
+    },
+    {
+      "name": "scan_manual_input",
+      "value": "Enter food info manually"
+    },
+    {
+      "name": "scan_view_report_desc",
+      "value": "View food adaptation report"
+    },
+    {
+      "name": "scan_edit_panel_toggle_desc",
+      "value": "Expand or collapse edit panel"
+    },
+    {
+      "name": "scan_save_label_desc",
+      "value": "Save food label info"
+    },
+    {
+      "name": "scan_recent_scans",
+      "value": "Recent scans"
+    },
+    {
+      "name": "scan_querying_local",
+      "value": "Querying local database…"
+    },
+    {
+      "name": "scan_querying_remote",
+      "value": "Querying remote nutrition data…"
+    },
+    {
+      "name": "scan_offline_local_only",
+      "value": "(Offline mode, using local data only)"
+    },
+    {
+      "name": "scan_evaluating_score",
+      "value": "Evaluating nutrition score…"
+    },
+    {
+      "name": "scan_quick_select_history",
+      "value": "Quick select from history"
+    },
+    {
+      "name": "scan_timeout",
+      "value": "Scan timeout"
+    },
+    {
+      "name": "scan_timeout_hint",
+      "value": "Aim at barcode or switch to photo mode"
+    },
+    {
+      "name": "scan_draft_hint",
+      "value": "An editable FoodLabel draft will appear here after recognition"
+    },
+    {
+      "name": "scan_pending_food_name",
+      "value": "Food name pending"
+    },
+    {
+      "name": "scan_barcode_label",
+      "value": "Barcode"
+    },
+    {
+      "name": "scan_check_and_save",
+      "value": "Verify fields below then save or view report"
+    },
+    {
+      "name": "scan_edit_to_complete",
+      "value": "If info is incomplete, expand the edit panel to complete"
+    },
+    {
+      "name": "scan_manual_edit",
+      "value": "Manual Edit"
+    },
+    {
+      "name": "scan_input_food_name",
+      "value": "Enter food name"
+    },
+    {
+      "name": "scan_sodium_mg",
+      "value": "Sodium (mg/100g)"
+    },
+    {
+      "name": "scan_sugar_g",
+      "value": "Sugar (g/100g)"
+    },
+    {
+      "name": "scan_calorie_kcal",
+      "value": "Calories (kcal/100g)"
+    },
+    {
+      "name": "scan_fat_g",
+      "value": "Fat (g/100g)"
+    },
+    {
+      "name": "scan_carb_g",
+      "value": "Carbs (g/100g)"
+    },
+    {
+      "name": "scan_protein_g",
+      "value": "Protein (g/100g)"
+    },
+    {
+      "name": "scan_ingredients",
+      "value": "Ingredients"
+    },
+    {
+      "name": "scan_ingredients_placeholder",
+      "value": "One per line, or comma-separated"
+    },
+    {
+      "name": "scan_input_producer",
+      "value": "Enter producer"
+    },
+    {
+      "name": "scan_input_sc_number",
+      "value": "Enter SC number"
+    },
+    {
+      "name": "scan_input_principal",
+      "value": "Enter principal"
+    },
+    {
+      "name": "scan_input_trustee",
+      "value": "Enter trustee"
+    },
+    {
+      "name": "scan_please_retry_later",
+      "value": "%s, please retry later"
+    },
+    {
+      "name": "scan_barcode_failed_retry",
+      "value": "Scan failed, please retry"
+    },
+    {
+      "name": "scan_unsupported_barcode",
+      "value": "Unsupported barcode format, only EAN-8/12/13 supported"
+    },
+    {
+      "name": "scan_offline_data",
+      "value": "Offline data"
+    },
+    {
+      "name": "scan_barcode_not_found_manual",
+      "value": "Food not found for this barcode, try manual input or photo"
+    },
+    {
+      "name": "scan_camera",
+      "value": "Camera"
+    },
+    {
+      "name": "scan_camera_permission_reason",
+      "value": "Camera permission is required for scanning, please enable in settings"
+    },
+    {
+      "name": "scan_recognition_failed_manual",
+      "value": "Recognition failed, switched to manual input"
+    },
+    {
+      "name": "scan_complete_food_name_first",
+      "value": "Please complete the food name first"
+    },
+    {
+      "name": "scan_food_label_saved",
+      "value": "FoodLabel saved"
+    },
+    {
+      "name": "report_back_desc",
+      "value": "Go back to previous page"
+    },
+    {
+      "name": "report_per_100g",
+      "value": "100g"
+    },
+    {
+      "name": "report_no_adaptation_data",
+      "value": "No adaptation data"
+    },
+    {
+      "name": "report_max_amount",
+      "value": "Max %sg"
+    },
+    {
+      "name": "report_food_compare",
+      "value": "Food Compare"
+    },
+    {
+      "name": "report_data_credibility",
+      "value": "Data Credibility"
+    },
+    {
+      "name": "report_score_unit",
+      "value": "pts"
+    },
+    {
+      "name": "report_child_protection",
+      "value": "Child Protection Advice"
+    },
+    {
+      "name": "report_meal",
+      "value": "Meal"
+    },
+    {
+      "name": "report_bedtime",
+      "value": "Bedtime"
+    },
+    {
+      "name": "report_taste",
+      "value": "Taste"
+    },
+    {
+      "name": "report_production_info",
+      "value": "Production Info"
+    },
+    {
+      "name": "report_save_failed",
+      "value": "Save failed: context unavailable"
+    },
+    {
+      "name": "report_image_saved",
+      "value": "Share image saved to album 📸"
+    },
+    {
+      "name": "report_save_failed_retry",
+      "value": "Save failed, please retry"
+    },
+    {
+      "name": "report_member_default",
+      "value": "Member"
+    },
+    {
+      "name": "ai_chat_all_members",
+      "value": "All Members"
+    },
+    {
+      "name": "ai_chat_title",
+      "value": "AI Nutritionist"
+    },
+    {
+      "name": "ai_chat_switch",
+      "value": "Switch"
+    },
+    {
+      "name": "ai_chat_send",
+      "value": "Send"
+    },
+    {
+      "name": "ai_chat_sending",
+      "value": "Sending..."
+    },
+    {
+      "name": "ai_chat_send_failed",
+      "value": "Send Failed"
+    },
+    {
+      "name": "ai_chat_input_placeholder",
+      "value": "Type your question..."
+    },
+    {
+      "name": "ai_chat_error_reply",
+      "value": "Sorry, an error occurred. Please try again later."
+    },
+    {
+      "name": "ai_chat_switch_member",
+      "value": "Switch Family Member"
+    },
+    {
+      "name": "ai_chat_try_these",
+      "value": "💡 Try asking these questions"
+    },
+    {
+      "name": "ai_chat_welcome",
+      "value": "Hello! I'm your family AI nutritionist assistant.\n\nYou can ask me any questions about diet and nutrition, like these:"
+    },
+    {
+      "name": "ai_chat_welcome_with_member",
+      "value": "Hello! I'm your family AI nutritionist assistant, currently providing health advice for \"%s\".\n\nYou can ask me any questions about diet and nutrition, like these:"
+    },
+    {
+      "name": "ai_chat_switched_member",
+      "value": "Switched to \"%s\"'s health consultation. What would you like to ask?"
+    },
+    {
+      "name": "diary_load_failed",
+      "value": "Data loading failed, please retry"
+    },
+    {
+      "name": "diary_today",
+      "value": "Today"
+    },
+    {
+      "name": "diary_yesterday",
+      "value": "Yesterday"
+    },
+    {
+      "name": "diary_week_mon",
+      "value": "Mon"
+    },
+    {
+      "name": "diary_week_tue",
+      "value": "Tue"
+    },
+    {
+      "name": "diary_week_wed",
+      "value": "Wed"
+    },
+    {
+      "name": "diary_week_thu",
+      "value": "Thu"
+    },
+    {
+      "name": "diary_week_fri",
+      "value": "Fri"
+    },
+    {
+      "name": "diary_week_sat",
+      "value": "Sat"
+    },
+    {
+      "name": "diary_week_sun",
+      "value": "Sun"
+    },
+    {
+      "name": "diary_date_placeholder",
+      "value": "Enter date YYYY-MM-DD"
+    },
+    {
+      "name": "diary_jump",
+      "value": "Go"
+    },
+    {
+      "name": "diary_date_incomplete",
+      "value": "Please enter a complete date"
+    },
+    {
+      "name": "diary_sodium_label",
+      "value": "🧂 Sodium"
+    },
+    {
+      "name": "diary_sugar_label",
+      "value": "🍬 Sugar"
+    },
+    {
+      "name": "diary_calorie_label",
+      "value": "🔥 Calories"
+    },
+    {
+      "name": "diary_fat_label",
+      "value": "🥩 Fat"
+    },
+    {
+      "name": "diary_sodium_sugar_info",
+      "value": "Sodium %dmg · Sugar %sg"
+    },
+    {
+      "name": "diary_unknown_scene",
+      "value": "Unknown scene"
+    },
+    {
+      "name": "diary_sodium_unit",
+      "value": "Na %d"
+    },
+    {
+      "name": "diary_sugar_unit",
+      "value": "Sugar %s"
+    },
+    {
+      "name": "diary_refresh_analysis",
+      "value": "🔄 Refresh Analysis"
+    },
+    {
+      "name": "dashboard_sodium",
+      "value": "Sodium"
+    },
+    {
+      "name": "dashboard_sugar",
+      "value": "Sugar"
+    },
+    {
+      "name": "dashboard_calorie",
+      "value": "Calories"
+    },
+    {
+      "name": "dashboard_fat",
+      "value": "Fat"
+    },
+    {
+      "name": "dashboard_carb",
+      "value": "Carbs"
+    },
+    {
+      "name": "dashboard_protein",
+      "value": "Protein"
+    },
+    {
+      "name": "dashboard_insight_more_data",
+      "value": "Keep logging meals for a more accurate health score"
+    },
+    {
+      "name": "dashboard_insight_sodium_high",
+      "value": "Sodium intake is high"
+    },
+    {
+      "name": "dashboard_insight_sodium_slightly_high",
+      "value": "Sodium intake is slightly high"
+    },
+    {
+      "name": "dashboard_insight_sodium_good",
+      "value": "Sodium well controlled"
+    },
+    {
+      "name": "dashboard_insight_sugar_high",
+      "value": "Sugar intake is high"
+    },
+    {
+      "name": "dashboard_insight_sugar_excellent",
+      "value": "Sugar well controlled"
+    },
+    {
+      "name": "dashboard_insight_keep_recording",
+      "value": "Keep recording"
+    },
+    {
+      "name": "dashboard_insight_keep_going",
+      "value": "Keep it up! Diet is well balanced"
+    },
+    {
+      "name": "dashboard_insight_room_improve",
+      "value": "Overall good, room for improvement"
+    },
+    {
+      "name": "dashboard_insight_balanced",
+      "value": "Diet is balanced, keep it up"
+    },
+    {
+      "name": "dashboard_personal_tab",
+      "value": "Personal"
+    },
+    {
+      "name": "dashboard_family_tab",
+      "value": "Family"
+    },
+    {
+      "name": "dashboard_trend_load_failed",
+      "value": "Trend data failed to load"
+    },
+    {
+      "name": "dashboard_no_trend_data",
+      "value": "Not enough data yet. Keep logging for 7 days to view trends"
+    },
+    {
+      "name": "dashboard_family_completion_rate",
+      "value": "Family Completion Rate"
+    },
+    {
+      "name": "dashboard_member_lowest_rate",
+      "value": "%s has the lowest rate (%d%%), needs attention"
+    },
+    {
+      "name": "dashboard_family_intake_compare",
+      "value": "Daily Nutrient Intake by Member"
+    },
+    {
+      "name": "dashboard_no_data",
+      "value": "No data yet"
+    },
+    {
+      "name": "dashboard_trend_up",
+      "value": "↑ Trending up"
+    },
+    {
+      "name": "dashboard_trend_down",
+      "value": "↓ Trending down"
+    },
+    {
+      "name": "dashboard_trend_stable",
+      "value": "→ Stable"
+    },
+    {
+      "name": "balance_scenario_bbq",
+      "value": "BBQ"
+    },
+    {
+      "name": "balance_scenario_hotpot",
+      "value": "Hotpot"
+    },
+    {
+      "name": "balance_scenario_fried_chicken",
+      "value": "Fried Chicken"
+    },
+    {
+      "name": "balance_scenario_milk_tea",
+      "value": "Milk Tea"
+    },
+    {
+      "name": "balance_scenario_dessert",
+      "value": "Dessert"
+    },
+    {
+      "name": "balance_scenario_luwei",
+      "value": "Braised Food"
+    },
+    {
+      "name": "balance_scenario_instant_noodle",
+      "value": "Instant Noodle"
+    },
+    {
+      "name": "balance_scenario_late_night",
+      "value": "Late Night Snack"
+    },
+    {
+      "name": "balance_scenario_malatang",
+      "value": "Malatang"
+    },
+    {
+      "name": "balance_scenario_bbq_meat",
+      "value": "Roast Meat"
+    },
+    {
+      "name": "balance_scenario_sushi",
+      "value": "Japanese Food"
+    },
+    {
+      "name": "balance_scenario_buffet",
+      "value": "Buffet"
+    },
+    {
+      "name": "balance_scenario_afternoon_tea",
+      "value": "Afternoon Tea"
+    },
+    {
+      "name": "balance_scenario_luosifen",
+      "value": "Luosifen"
+    },
+    {
+      "name": "balance_scenario_maocai",
+      "value": "Maocai"
+    },
+    {
+      "name": "balance_scenario_malaxiang_guo",
+      "value": "Mala Xiang Guo"
+    },
+    {
+      "name": "balance_scenario_light_salad",
+      "value": "Light Salad"
+    },
+    {
+      "name": "balance_scenario_pizza",
+      "value": "Pizza"
+    },
+    {
+      "name": "balance_scenario_hamburger",
+      "value": "Hamburger"
+    },
+    {
+      "name": "balance_scenario_dumplings",
+      "value": "Dumplings"
+    },
+    {
+      "name": "balance_scenario_fried_rice",
+      "value": "Fried Rice"
+    },
+    {
+      "name": "balance_daily_usage",
+      "value": "Used %d / %d times today"
+    },
+    {
+      "name": "balance_nutrient_sodium",
+      "value": "Sodium"
+    },
+    {
+      "name": "balance_nutrient_sugar",
+      "value": "Sugar"
+    },
+    {
+      "name": "balance_nutrient_calorie",
+      "value": "Calories"
+    },
+    {
+      "name": "balance_nutrient_fat",
+      "value": "Fat"
+    },
+    {
+      "name": "balance_recorded",
+      "value": "Recorded to today's meal quota"
+    },
+    {
+      "name": "settings_user_agreement",
+      "value": "📋 User Agreement"
+    },
+    {
+      "name": "settings_user_agreement_desc",
+      "value": "Read the terms of service before using"
+    },
+    {
+      "name": "settings_feedback",
+      "value": "📝 Feedback"
+    },
+    {
+      "name": "settings_feedback_desc",
+      "value": "Submit bug reports, feature suggestions, or issues"
+    },
+    {
+      "name": "settings_check_update",
+      "value": "🔄 Check for Updates"
+    },
+    {
+      "name": "settings_check_update_desc",
+      "value": "Current version %s, check for new version"
+    },
+    {
+      "name": "settings_privacy_policy",
+      "value": "📄 Privacy Policy"
+    },
+    {
+      "name": "settings_privacy_policy_desc",
+      "value": "Learn how we collect and use your personal information"
+    },
+    {
+      "name": "settings_cloud_sync",
+      "value": "☁️ Cloud Sync"
+    },
+    {
+      "name": "settings_cloud_sync_desc",
+      "value": "Multi-device sync, cloud account management"
+    },
+    {
+      "name": "settings_nutrition_target",
+      "value": "🎯 Nutrition Target"
+    },
+    {
+      "name": "settings_nutrition_target_desc",
+      "value": "Customize daily nutrient intake goals"
+    },
+    {
+      "name": "settings_nutrition_knowledge",
+      "value": "📚 Nutrition Knowledge"
+    },
+    {
+      "name": "settings_nutrition_knowledge_desc",
+      "value": "Nutrient guides, label guides, diet myths and more"
+    },
+    {
+      "name": "settings_meal_plan",
+      "value": "📅 Meal Plan Templates"
+    },
+    {
+      "name": "settings_meal_plan_desc",
+      "value": "Weekly meal plan recommendations with custom adjustments"
+    },
+    {
+      "name": "settings_shopping_list",
+      "value": "🛒 Shopping List"
+    },
+    {
+      "name": "settings_shopping_list_desc",
+      "value": "Family shopping list management with smart suggestions"
+    },
+    {
+      "name": "settings_reminder_rule",
+      "value": "🔔 Reminder Rules"
+    },
+    {
+      "name": "settings_reminder_rule_desc",
+      "value": "Custom meal reminders, budget alerts, shopping reminders"
+    },
+    {
+      "name": "settings_locale",
+      "value": "🌐 Language Settings"
+    },
+    {
+      "name": "settings_locale_desc",
+      "value": "Switch app display language"
+    },
+    {
+      "name": "settings_dark_mode",
+      "value": "🌙 Dark Mode"
+    },
+    {
+      "name": "settings_light_mode",
+      "value": "🌙 Light Mode"
+    },
+    {
+      "name": "settings_cancel",
+      "value": "Cancel"
+    },
+    {
+      "name": "settings_data_management",
+      "value": "Data Management"
+    },
+    {
+      "name": "settings_export_data",
+      "value": "📤 Export Data"
+    },
+    {
+      "name": "settings_export_data_desc",
+      "value": "Export all user data as JSON file"
+    },
+    {
+      "name": "settings_import_data",
+      "value": "📥 Import Data"
+    },
+    {
+      "name": "settings_import_data_desc",
+      "value": "Import data from JSON file"
+    },
+    {
+      "name": "settings_clear_data",
+      "value": "🗑️ Clear All Data"
+    },
+    {
+      "name": "settings_clear_data_desc",
+      "value": "Delete all data and reset the app"
+    },
+    {
+      "name": "settings_delete_account",
+      "value": "🚫 Delete Account"
+    },
+    {
+      "name": "settings_delete_account_desc",
+      "value": "Permanently delete account and all associated data"
+    },
+    {
+      "name": "settings_collection_list",
+      "value": "📋 Personal Info Collection List"
+    },
+    {
+      "name": "settings_collection_list_desc",
+      "value": "View types and purposes of collected personal info"
+    },
+    {
+      "name": "settings_delete_confirm_title",
+      "value": "⚠️ Confirm Account Deletion"
+    },
+    {
+      "name": "settings_delete_confirm_message",
+      "value": "After account deletion, all your data (family members, scan records, diet records, etc.) will be permanently deleted and cannot be recovered."
+    },
+    {
+      "name": "settings_confirm_delete",
+      "value": "Confirm Deletion"
+    },
+    {
+      "name": "settings_activity_low",
+      "value": "Low Activity"
+    },
+    {
+      "name": "settings_activity_normal",
+      "value": "Normal"
+    },
+    {
+      "name": "settings_activity_high",
+      "value": "High Activity"
+    },
+    {
+      "name": "settings_sleep_good",
+      "value": "Good"
+    },
+    {
+      "name": "settings_sleep_fair",
+      "value": "Fair"
+    },
+    {
+      "name": "settings_sleep_poor",
+      "value": "Poor"
+    },
+    {
+      "name": "settings_high_sodium",
+      "value": "High Salt"
+    },
+    {
+      "name": "settings_high_sugar",
+      "value": "High Sugar"
+    },
+    {
+      "name": "settings_status_saved",
+      "value": "Today's status saved"
+    },
+    {
+      "name": "settings_export_failed_no_ctx",
+      "value": "Export failed: cannot get context"
+    },
+    {
+      "name": "settings_export_failed_empty",
+      "value": "Export failed: data is empty"
+    },
+    {
+      "name": "settings_export_success",
+      "value": "Data exported to %s"
+    },
+    {
+      "name": "settings_export_failed_retry",
+      "value": "Export failed, please retry"
+    },
+    {
+      "name": "settings_import_failed_no_ctx",
+      "value": "Import failed: cannot get context"
+    },
+    {
+      "name": "settings_no_file_selected",
+      "value": "No file selected"
+    },
+    {
+      "name": "settings_import_success",
+      "value": "Import succeeded: %s"
+    },
+    {
+      "name": "settings_import_failed",
+      "value": "Import failed: %s"
+    },
+    {
+      "name": "settings_import_failed_retry",
+      "value": "Import failed, please retry"
+    },
+    {
+      "name": "settings_update_failed_no_ctx",
+      "value": "Update check failed: cannot get context"
+    },
+    {
+      "name": "settings_already_latest",
+      "value": "Already the latest version"
+    },
+    {
+      "name": "settings_update_required",
+      "value": "Update Required"
+    },
+    {
+      "name": "settings_force_update_msg",
+      "value": "New version %s available. Current version is too low and must be updated.\n\n%s"
+    },
+    {
+      "name": "settings_update_now",
+      "value": "Update Now"
+    },
+    {
+      "name": "settings_new_version_found",
+      "value": "New Version Found"
+    },
+    {
+      "name": "settings_new_version_msg",
+      "value": "New version %s released\n\n%s"
+    },
+    {
+      "name": "settings_later",
+      "value": "Later"
+    },
+    {
+      "name": "settings_update_failed_retry",
+      "value": "Update check failed, please retry"
+    },
+    {
+      "name": "settings_downloading_update",
+      "value": "Downloading update, check progress in notifications..."
+    },
+    {
+      "name": "settings_download_failed",
+      "value": "Update download failed, please try later"
+    },
+    {
+      "name": "settings_no_download_url",
+      "value": "No download URL available, please update from app store"
+    },
+    {
+      "name": "settings_account_deleted",
+      "value": "Account deleted, all data removed"
+    },
+    {
+      "name": "settings_delete_failed_retry",
+      "value": "Deletion failed, please retry"
+    },
+    {
+      "name": "settings_confirm_clear_title",
+      "value": "Confirm Clear Data"
+    },
+    {
+      "name": "settings_confirm_clear_msg",
+      "value": "This will delete all locally stored scan records, family member info, and settings. This cannot be undone. Continue?"
+    },
+    {
+      "name": "settings_confirm_clear",
+      "value": "Confirm Clear"
+    },
+    {
+      "name": "settings_clear_failed_no_ctx",
+      "value": "Clear data failed: cannot get context"
+    },
+    {
+      "name": "settings_data_cleared_restart",
+      "value": "Local data cleared, app will restart"
+    },
+    {
+      "name": "settings_clear_failed_retry",
+      "value": "Clear data failed, please retry"
+    },
+    {
+      "name": "tab_scan",
+      "value": "Scan"
+    },
+    {
+      "name": "tab_recipe",
+      "value": "Recipe"
+    },
+    {
+      "name": "tab_report",
+      "value": "Report"
+    },
+    {
+      "name": "minimize_nav",
+      "value": "Long press to minimize nav bar"
+    },
+    {
+      "name": "content_area",
+      "value": "Content Area"
+    },
+    {
+      "name": "close_dialog",
+      "value": "Close Dialog"
+    },
+    {
+      "name": "privacy_desc",
+      "value": "To protect your personal information, please read and agree to the following agreements"
+    },
+    {
+      "name": "privacy_policy_desc",
+      "value": "How we collect, use, store and protect your personal information"
+    },
+    {
+      "name": "user_agreement_desc",
+      "value": "Terms of service and user conduct guidelines"
+    },
+    {
+      "name": "data_collection_list",
+      "value": "Personal Data Collection List"
+    },
+    {
+      "name": "data_collection_list_desc",
+      "value": "Types, purposes and methods of personal data we collect"
+    },
+    {
+      "name": "data_local_only",
+      "value": "Data is processed locally on your device only, not uploaded to the cloud"
+    },
+    {
+      "name": "revoke_in_settings",
+      "value": "You can revoke authorization in Settings at any time"
+    },
+    {
+      "name": "disagree_exit",
+      "value": "Disagree and Exit"
+    },
+    {
+      "name": "view_detail",
+      "value": "View ›"
+    },
+    {
+      "name": "view_policy",
+      "value": "View Policy"
+    },
+    {
+      "name": "meal_breakfast",
+      "value": "Breakfast"
+    },
+    {
+      "name": "meal_lunch",
+      "value": "Lunch"
+    },
+    {
+      "name": "meal_dinner",
+      "value": "Dinner"
+    },
+    {
+      "name": "meal_snack",
+      "value": "Snack"
+    },
+    {
+      "name": "select_meal",
+      "value": "Select meal"
+    },
+    {
+      "name": "search_food",
+      "value": "Search food"
+    },
+    {
+      "name": "search_food_desc",
+      "value": "Enter food name to search"
+    },
+    {
+      "name": "select_food",
+      "value": "Select food"
+    },
+    {
+      "name": "no_recent_records",
+      "value": "No recent records"
+    },
+    {
+      "name": "select_servings",
+      "value": "Select servings"
+    },
+    {
+      "name": "toggle_grams",
+      "value": "Toggle grams input"
+    },
+    {
+      "name": "grams_placeholder",
+      "value": "Grams"
+    },
+    {
+      "name": "input_grams",
+      "value": "Input grams"
+    },
+    {
+      "name": "input_grams_desc",
+      "value": "Input food weight in grams"
+    },
+    {
+      "name": "toggle_advanced",
+      "value": "Toggle advanced mode"
+    },
+    {
+      "name": "input_food_name",
+      "value": "Input food name"
+    },
+    {
+      "name": "input_food_name_desc",
+      "value": "Manually input food name"
+    },
+    {
+      "name": "calories_placeholder",
+      "value": "Calories(kcal/100g)"
+    },
+    {
+      "name": "input_calories",
+      "value": "Input calories"
+    },
+    {
+      "name": "input_calories_desc",
+      "value": "Manually input calories"
+    },
+    {
+      "name": "sodium_placeholder",
+      "value": "Sodium(mg/100g)"
+    },
+    {
+      "name": "input_sodium",
+      "value": "Input sodium"
+    },
+    {
+      "name": "input_sodium_desc",
+      "value": "Manually input sodium"
+    },
+    {
+      "name": "sugar_placeholder",
+      "value": "Sugar(g/100g)"
+    },
+    {
+      "name": "input_sugar",
+      "value": "Input sugar"
+    },
+    {
+      "name": "input_sugar_desc",
+      "value": "Manually input sugar"
+    },
+    {
+      "name": "fat_placeholder",
+      "value": "Fat(g/100g)"
+    },
+    {
+      "name": "input_fat",
+      "value": "Input fat"
+    },
+    {
+      "name": "input_fat_desc",
+      "value": "Manually input fat"
+    },
+    {
+      "name": "unknown_food",
+      "value": "Unknown"
+    },
+    {
+      "name": "score_grade",
+      "value": "Grade "
+    },
+    {
+      "name": "score_unit",
+      "value": "pts"
+    },
+    {
+      "name": "score_full_score",
+      "value": "Max "
+    },
+    {
+      "name": "tag_low_sodium",
+      "value": "Low Sodium"
+    },
+    {
+      "name": "tag_low_sugar",
+      "value": "Low Sugar"
+    },
+    {
+      "name": "tag_high_protein",
+      "value": "High Protein"
+    },
+    {
+      "name": "tag_high_fiber",
+      "value": "High Fiber"
+    },
+    {
+      "name": "tag_organic",
+      "value": "Organic"
+    },
+    {
+      "name": "tag_no_added_sugar",
+      "value": "No Added Sugar"
+    },
+    {
+      "name": "tag_selected",
+      "value": ", Selected"
+    },
+    {
+      "name": "tag_unselected",
+      "value": ", Not Selected"
+    },
+    {
+      "name": "cloud_sync_strategy_wifi_only",
+      "value": "Sync on Wi-Fi Only"
+    },
+    {
+      "name": "cloud_sync_strategy_always",
+      "value": "Sync on Any Network"
+    },
+    {
+      "name": "cloud_sync_conflict_local_wins",
+      "value": "Local Data Prevails"
+    },
+    {
+      "name": "cloud_sync_conflict_remote_wins",
+      "value": "Cloud Data Prevails"
+    },
+    {
+      "name": "cloud_sync_conflict_manual",
+      "value": "Handle Conflicts Manually"
+    },
+    {
+      "name": "cloud_sync_never_synced",
+      "value": "Never Synced"
+    },
+    {
+      "name": "cloud_sync_tab_settings",
+      "value": "Settings"
+    },
+    {
+      "name": "cloud_sync_tab_sync_status",
+      "value": "Sync Status"
+    },
+    {
+      "name": "cloud_sync_section_cloud_account",
+      "value": "Cloud Account"
+    },
+    {
+      "name": "cloud_sync_bound_account",
+      "value": "Account Bound"
+    },
+    {
+      "name": "cloud_sync_btn_unbind",
+      "value": "Unbind"
+    },
+    {
+      "name": "cloud_sync_btn_bind_cloud_account",
+      "value": "Bind Cloud Account"
+    },
+    {
+      "name": "cloud_sync_section_sync_settings",
+      "value": "Sync Settings"
+    },
+    {
+      "name": "cloud_sync_permission_required",
+      "value": "Distributed data sync permission is required for cloud sync"
+    },
+    {
+      "name": "cloud_sync_btn_confirm",
+      "value": "OK"
+    },
+    {
+      "name": "cloud_sync_unit_minutes",
+      "value": "min"
+    },
+    {
+      "name": "cloud_sync_section_operations",
+      "value": "Operations"
+    },
+    {
+      "name": "cloud_sync_btn_syncing",
+      "value": "Syncing..."
+    },
+    {
+      "name": "cloud_sync_btn_sync_now",
+      "value": "Sync Now"
+    },
+    {
+      "name": "cloud_sync_btn_clear_sync_queue",
+      "value": "Clear Sync Queue"
+    },
+    {
+      "name": "cloud_sync_section_device_info",
+      "value": "Device Info"
+    },
+    {
+      "name": "cloud_sync_label_device_id",
+      "value": "Device ID"
+    },
+    {
+      "name": "cloud_sync_loading_text",
+      "value": "Loading..."
+    },
+    {
+      "name": "cloud_sync_label_network_status",
+      "value": "Network Status"
+    },
+    {
+      "name": "cloud_sync_label_pending_items",
+      "value": "Pending Items"
+    },
+    {
+      "name": "cloud_sync_status_network",
+      "value": "Network"
+    },
+    {
+      "name": "cloud_sync_status_connected",
+      "value": "Connected"
+    },
+    {
+      "name": "cloud_sync_status_offline",
+      "value": "Offline"
+    },
+    {
+      "name": "cloud_sync_status_account",
+      "value": "Account"
+    },
+    {
+      "name": "cloud_sync_status_bound",
+      "value": "Bound"
+    },
+    {
+      "name": "cloud_sync_status_unbound",
+      "value": "Unbound"
+    },
+    {
+      "name": "cloud_sync_status_sync",
+      "value": "Sync"
+    },
+    {
+      "name": "cloud_sync_status_enabled",
+      "value": "Enabled"
+    },
+    {
+      "name": "cloud_sync_status_paused",
+      "value": "Paused"
+    },
+    {
+      "name": "cloud_sync_unit_items",
+      "value": "items"
+    },
+    {
+      "name": "cloud_sync_section_sync_log",
+      "value": "Sync Log"
+    },
+    {
+      "name": "cloud_sync_no_sync_records",
+      "value": "No Sync Records"
+    },
+    {
+      "name": "cloud_sync_strategy_wifi",
+      "value": "Wi-Fi Only"
+    },
+    {
+      "name": "cloud_sync_strategy_any_network",
+      "value": "Any Network"
+    },
+    {
+      "name": "cloud_sync_strategy_charging_only",
+      "value": "While Charging"
+    },
+    {
+      "name": "cloud_sync_unknown",
+      "value": "Unknown"
+    },
+    {
+      "name": "cloud_sync_conflict_local_first",
+      "value": "Local First"
+    },
+    {
+      "name": "cloud_sync_conflict_remote_first",
+      "value": "Cloud First"
+    },
+    {
+      "name": "cloud_sync_conflict_manual_handle",
+      "value": "Manual"
+    },
+    {
+      "name": "cloud_sync_network_cellular",
+      "value": "Cellular"
+    },
+    {
+      "name": "cloud_sync_bind_success",
+      "value": "Cloud Account Bound Successfully"
+    },
+    {
+      "name": "cloud_sync_unbind_dialog_title",
+      "value": "Unbind Cloud Account"
+    },
+    {
+      "name": "cloud_sync_unbind_dialog_message",
+      "value": "Local data will be kept after unbinding, but multi-device sync will stop. Confirm unbinding?"
+    },
+    {
+      "name": "cloud_sync_btn_cancel",
+      "value": "Cancel"
+    },
+    {
+      "name": "cloud_sync_btn_confirm_unbind",
+      "value": "Confirm Unbind"
+    },
+    {
+      "name": "cloud_sync_unbind_success",
+      "value": "Cloud Account Unbound"
+    },
+    {
+      "name": "cloud_sync_clear_queue_dialog_message",
+      "value": "All pending changes will be cleared. These changes will not be synced to the cloud."
+    },
+    {
+      "name": "cloud_sync_btn_confirm_clear",
+      "value": "Confirm Clear"
+    },
+    {
+      "name": "cloud_sync_queue_cleared",
+      "value": "Sync Queue Cleared"
+    },
+    {
+      "name": "recipe_create_cat_breakfast",
+      "value": "Breakfast"
+    },
+    {
+      "name": "recipe_create_cat_lunch",
+      "value": "Lunch"
+    },
+    {
+      "name": "recipe_create_cat_dinner",
+      "value": "Dinner"
+    },
+    {
+      "name": "recipe_create_cat_snack",
+      "value": "Snack"
+    },
+    {
+      "name": "recipe_create_cat_beverage",
+      "value": "Beverage"
+    },
+    {
+      "name": "recipe_create_cat_dessert",
+      "value": "Dessert"
+    },
+    {
+      "name": "recipe_create_cat_soup",
+      "value": "Soup"
+    },
+    {
+      "name": "recipe_create_cat_staple",
+      "value": "Staple"
+    },
+    {
+      "name": "recipe_create_diff_easy",
+      "value": "Easy"
+    },
+    {
+      "name": "recipe_create_diff_medium",
+      "value": "Medium"
+    },
+    {
+      "name": "recipe_create_diff_hard",
+      "value": "Hard"
+    },
+    {
+      "name": "recipe_create_tag_child_friendly",
+      "value": "Child-Friendly"
+    },
+    {
+      "name": "recipe_create_tag_elder_friendly",
+      "value": "Elder-Friendly"
+    },
+    {
+      "name": "recipe_create_tag_low_sodium",
+      "value": "Low Sodium"
+    },
+    {
+      "name": "recipe_create_tag_low_sugar",
+      "value": "Low Sugar"
+    },
+    {
+      "name": "recipe_create_tag_low_fat",
+      "value": "Low Fat"
+    },
+    {
+      "name": "recipe_create_tag_high_protein",
+      "value": "High Protein"
+    },
+    {
+      "name": "recipe_create_section_basic_info",
+      "value": "Basic Info"
+    },
+    {
+      "name": "recipe_create_section_ingredients",
+      "value": "Ingredients"
+    },
+    {
+      "name": "recipe_create_section_steps",
+      "value": "Cooking Steps"
+    },
+    {
+      "name": "recipe_create_section_diet_tags",
+      "value": "Dietary Tags (Multiple)"
+    },
+    {
+      "name": "recipe_create_placeholder_recipe_name",
+      "value": "Recipe Name"
+    },
+    {
+      "name": "recipe_create_placeholder_description",
+      "value": "Brief description (optional)"
+    },
+    {
+      "name": "recipe_create_placeholder_ingredient_name",
+      "value": "Ingredient"
+    },
+    {
+      "name": "recipe_create_placeholder_ingredient_amount",
+      "value": "Amount"
+    },
+    {
+      "name": "recipe_create_btn_add_ingredient",
+      "value": "+ Add Ingredient"
+    },
+    {
+      "name": "recipe_create_label_step",
+      "value": "Step"
+    },
+    {
+      "name": "recipe_create_btn_delete",
+      "value": "Delete"
+    },
+    {
+      "name": "recipe_create_placeholder_step_desc",
+      "value": "Describe this step..."
+    },
+    {
+      "name": "recipe_create_placeholder_duration",
+      "value": "Est. time (min)"
+    },
+    {
+      "name": "recipe_create_btn_add_step",
+      "value": "+ Add Step"
+    },
+    {
+      "name": "recipe_create_toast_enter_name",
+      "value": "Please enter a recipe name"
+    },
+    {
+      "name": "recipe_create_toast_add_ingredient",
+      "value": "Please add at least one ingredient"
+    },
+    {
+      "name": "recipe_create_toast_add_step",
+      "value": "Please add at least one step"
+    },
+    {
+      "name": "recipe_create_toast_publish_success",
+      "value": "Recipe Published!"
+    },
+    {
+      "name": "recipe_create_toast_publish_fail",
+      "value": "Publish Failed"
+    },
+    {
+      "name": "member_edit_age_child",
+      "value": "Child"
+    },
+    {
+      "name": "member_edit_age_teen",
+      "value": "Teen"
+    },
+    {
+      "name": "member_edit_age_adult",
+      "value": "Adult"
+    },
+    {
+      "name": "member_edit_age_middle_old",
+      "value": "Middle-old"
+    },
+    {
+      "name": "member_edit_age_old",
+      "value": "Senior"
+    },
+    {
+      "name": "member_edit_goal_control_bp",
+      "value": "Control BP"
+    },
+    {
+      "name": "member_edit_goal_control_sugar",
+      "value": "Control Sugar"
+    },
+    {
+      "name": "member_edit_goal_control_fat",
+      "value": "Control Fat"
+    },
+    {
+      "name": "member_edit_goal_lose_fat",
+      "value": "Lose Fat"
+    },
+    {
+      "name": "member_edit_goal_child",
+      "value": "Child"
+    },
+    {
+      "name": "member_edit_goal_none",
+      "value": "None"
+    },
+    {
+      "name": "member_edit_step_low",
+      "value": "Low"
+    },
+    {
+      "name": "member_edit_step_normal",
+      "value": "Normal"
+    },
+    {
+      "name": "member_edit_step_high",
+      "value": "High"
+    },
+    {
+      "name": "member_edit_sleep_good",
+      "value": "Good"
+    },
+    {
+      "name": "member_edit_sleep_fair",
+      "value": "Fair"
+    },
+    {
+      "name": "member_edit_sleep_poor",
+      "value": "Poor"
+    },
+    {
+      "name": "member_edit_bp_normal",
+      "value": "Normal"
+    },
+    {
+      "name": "member_edit_bp_elevated",
+      "value": "Elevated"
+    },
+    {
+      "name": "member_edit_bp_high",
+      "value": "High"
+    },
+    {
+      "name": "member_edit_bs_normal",
+      "value": "Normal"
+    },
+    {
+      "name": "member_edit_bs_elevated",
+      "value": "Elevated"
+    },
+    {
+      "name": "member_edit_bs_high",
+      "value": "High"
+    },
+    {
+      "name": "member_edit_allergen_nuts",
+      "value": "Nuts"
+    },
+    {
+      "name": "member_edit_allergen_dairy",
+      "value": "Dairy"
+    },
+    {
+      "name": "member_edit_allergen_gluten",
+      "value": "Gluten"
+    },
+    {
+      "name": "member_edit_allergen_egg",
+      "value": "Egg"
+    },
+    {
+      "name": "member_edit_allergen_seafood",
+      "value": "Seafood"
+    },
+    {
+      "name": "member_edit_allergen_soy",
+      "value": "Soy"
+    },
+    {
+      "name": "member_edit_allergen_sesame",
+      "value": "Sesame"
+    },
+    {
+      "name": "member_edit_allergen_peanut",
+      "value": "Peanut"
+    },
+    {
+      "name": "member_edit_nickname_placeholder",
+      "value": "e.g. Dad, Mom, Child"
+    },
+    {
+      "name": "member_edit_allergen_custom_placeholder",
+      "value": "Custom allergen"
+    },
+    {
+      "name": "member_edit_save",
+      "value": "Save"
+    },
+    {
+      "name": "member_edit_paywall_msg_prefix",
+      "value": "Currently added"
+    },
+    {
+      "name": "member_edit_paywall_msg_middle",
+      "value": " family members. Upgrade to "
+    },
+    {
+      "name": "member_edit_paywall_msg_suffix",
+      "value": " to add unlimited family members, all enjoying personalized diet advice."
+    },
+    {
+      "name": "subscription_member_suffix",
+      "value": "Member"
+    },
+    {
+      "name": "subscription_per_year",
+      "value": "/yr"
+    },
+    {
+      "name": "subscription_current_plan_btn",
+      "value": "Current Plan"
+    },
+    {
+      "name": "subscription_subscribe_now",
+      "value": "Subscribe Now"
+    },
+    {
+      "name": "subscription_already_current_plan",
+      "value": "Already current plan"
+    },
+    {
+      "name": "subscription_processing",
+      "value": "Processing..."
+    },
+    {
+      "name": "subscription_plan_load_failed",
+      "value": "Failed to load plan info"
+    },
+    {
+      "name": "subscription_switched_to",
+      "value": "Switched to"
+    },
+    {
+      "name": "subscription_upgrade_success",
+      "value": "Upgrade successful!"
+    },
+    {
+      "name": "subscription_purchase_failed",
+      "value": "Purchase failed"
+    },
+    {
+      "name": "subscription_purchase_error",
+      "value": "Purchase error"
+    },
+    {
+      "name": "subscription_restoring",
+      "value": "Restoring purchases..."
+    },
+    {
+      "name": "subscription_restore_success",
+      "value": "Subscription restored"
+    },
+    {
+      "name": "subscription_no_valid_subscription",
+      "value": "No valid subscription found"
+    },
+    {
+      "name": "subscription_tier_free",
+      "value": "Free"
+    },
+    {
+      "name": "subscription_tier_personal",
+      "value": "Personal"
+    },
+    {
+      "name": "subscription_tier_family",
+      "value": "Family"
+    },
+    {
+      "name": "subscription_tier_premium",
+      "value": "Premium"
+    },
+    {
+      "name": "subscription_tier_unknown",
+      "value": "Unknown"
+    },
+    {
+      "name": "recipe_detail_tab_detail",
+      "value": "Recipe Detail"
+    },
+    {
+      "name": "recipe_detail_tab_comment",
+      "value": "Comments"
+    },
+    {
+      "name": "recipe_detail_minute",
+      "value": " min"
+    },
+    {
+      "name": "recipe_detail_serving",
+      "value": " servings"
+    },
+    {
+      "name": "recipe_detail_step",
+      "value": " steps"
+    },
+    {
+      "name": "recipe_detail_favorited",
+      "value": "Favorited"
+    },
+    {
+      "name": "recipe_detail_unfavorited",
+      "value": "Unfavorited"
+    },
+    {
+      "name": "recipe_detail_alt_replace",
+      "value": "Alternative: "
+    },
+    {
+      "name": "recipe_detail_calories",
+      "value": "Calories"
+    },
+    {
+      "name": "recipe_detail_protein",
+      "value": "Protein"
+    },
+    {
+      "name": "recipe_detail_fat",
+      "value": "Fat"
+    },
+    {
+      "name": "recipe_detail_carbohydrate",
+      "value": "Carbohydrate"
+    },
+    {
+      "name": "recipe_detail_sodium",
+      "value": "Sodium"
+    },
+    {
+      "name": "recipe_detail_sugar",
+      "value": "Sugar"
+    },
+    {
+      "name": "recipe_detail_author",
+      "value": "👩‍🍳 Author: "
+    },
+    {
+      "name": "recipe_detail_comment_placeholder",
+      "value": "Write your comment..."
+    },
+    {
+      "name": "recipe_detail_send",
+      "value": "Send"
+    },
+    {
+      "name": "recipe_detail_comment_sent",
+      "value": "Comment sent"
+    },
+    {
+      "name": "off_search_min_length_hint",
+      "value": "Please enter at least 2 characters"
+    },
+    {
+      "name": "off_search_timeout_error",
+      "value": "Search timed out, please check your network and retry"
+    },
+    {
+      "name": "off_search_failed_prefix",
+      "value": "Search failed"
+    },
+    {
+      "name": "off_search_placeholder",
+      "value": "Search food name (e.g. Coca-Cola)"
+    },
+    {
+      "name": "off_search_search_btn",
+      "value": "Search"
+    },
+    {
+      "name": "off_search_offline_hint",
+      "value": "No network connection, only cached results available"
+    },
+    {
+      "name": "off_search_searching",
+      "value": "Searching global food database..."
+    },
+    {
+      "name": "off_search_no_filter_result",
+      "value": "No matching foods under current filters"
+    },
+    {
+      "name": "off_search_reduce_filter",
+      "value": "Try reducing filter conditions"
+    },
+    {
+      "name": "off_search_no_result",
+      "value": "No matching food found, try other keywords"
+    },
+    {
+      "name": "off_search_try_other",
+      "value": "You can also shorten keywords or use barcode scanning"
+    },
+    {
+      "name": "off_search_retry",
+      "value": "Retry"
+    },
+    {
+      "name": "off_search_welcome_title",
+      "value": "Search the global open food database"
+    },
+    {
+      "name": "off_search_welcome_subtitle",
+      "value": "Open Food Facts contains over 3 million food products"
+    },
+    {
+      "name": "off_search_loading_more",
+      "value": "Loading..."
+    },
+    {
+      "name": "off_search_load_failed",
+      "value": "Load failed"
+    },
+    {
+      "name": "off_search_all_loaded",
+      "value": "All results shown"
+    },
+    {
+      "name": "off_search_sodium_prefix",
+      "value": "Na "
+    },
+    {
+      "name": "off_search_sugar_prefix",
+      "value": "Sugar "
+    },
+    {
+      "name": "food_compare_title",
+      "value": "Food Compare"
+    },
+    {
+      "name": "food_compare_select_hint",
+      "value": "Select two foods for nutrition comparison"
+    },
+    {
+      "name": "food_compare_food_a",
+      "value": "Food A"
+    },
+    {
+      "name": "food_compare_food_b",
+      "value": "Food B"
+    },
+    {
+      "name": "food_compare_start",
+      "value": "Start Compare"
+    },
+    {
+      "name": "food_compare_barcode_placeholder",
+      "value": "Enter barcode..."
+    },
+    {
+      "name": "food_compare_from_history",
+      "value": "Select from history"
+    },
+    {
+      "name": "food_compare_replace",
+      "value": "Replace"
+    },
+    {
+      "name": "food_compare_select_food",
+      "value": "Select Food"
+    },
+    {
+      "name": "food_compare_close",
+      "value": "Close"
+    },
+    {
+      "name": "food_compare_nutrition_title",
+      "value": "Nutrition Compare (per 100g)"
+    },
+    {
+      "name": "food_compare_conclusion_title",
+      "value": "Conclusion"
+    },
+    {
+      "name": "food_compare_calories",
+      "value": "Calories"
+    },
+    {
+      "name": "food_compare_protein",
+      "value": "Protein"
+    },
+    {
+      "name": "food_compare_fat",
+      "value": "Fat"
+    },
+    {
+      "name": "food_compare_carbohydrate",
+      "value": "Carbohydrate"
+    },
+    {
+      "name": "food_compare_sugar",
+      "value": "Sugar"
+    },
+    {
+      "name": "food_compare_sodium",
+      "value": "Sodium"
+    },
+    {
+      "name": "food_compare_fiber",
+      "value": "Dietary Fiber"
+    },
+    {
+      "name": "food_compare_food_a_short",
+      "value": "Food A"
+    },
+    {
+      "name": "food_compare_food_b_short",
+      "value": "Food B"
+    },
+    {
+      "name": "food_compare_conclusion_prefix",
+      "value": "Overall, "
+    },
+    {
+      "name": "food_compare_conclusion_in",
+      "value": "is better in "
+    },
+    {
+      "name": "food_compare_conclusion_better",
+      "value": "; "
+    },
+    {
+      "name": "food_compare_conclusion_no_advantage",
+      "value": "no clear advantage"
+    },
+    {
+      "name": "food_compare_conclusion_equal",
+      "value": "Both foods have similar nutrition profiles. Choose based on your health goals."
+    },
+    {
+      "name": "food_compare_invalid_barcode",
+      "value": "Please enter a valid barcode"
+    },
+    {
+      "name": "food_compare_barcode_not_found",
+      "value": "No food found for this barcode"
+    },
+    {
+      "name": "food_compare_query_failed",
+      "value": "Query failed, please try again later"
+    },
+    {
+      "name": "food_compare_no_snapshot",
+      "value": "No saved snapshots"
+    },
+    {
+      "name": "reminder_title",
+      "value": "Reminder Rules"
+    },
+    {
+      "name": "reminder_add",
+      "value": "Add"
+    },
+    {
+      "name": "reminder_no_custom_rule",
+      "value": "No custom rules. Enable presets or add new"
+    },
+    {
+      "name": "reminder_preset_rules",
+      "value": "Preset Rules"
+    },
+    {
+      "name": "reminder_enable",
+      "value": "Enable"
+    },
+    {
+      "name": "reminder_edit",
+      "value": "Edit"
+    },
+    {
+      "name": "reminder_edit_rule",
+      "value": "Edit Rule"
+    },
+    {
+      "name": "reminder_add_rule",
+      "value": "Add Rule"
+    },
+    {
+      "name": "reminder_type",
+      "value": "Type"
+    },
+    {
+      "name": "reminder_type_meal",
+      "value": "Meal Reminder"
+    },
+    {
+      "name": "reminder_type_budget",
+      "value": "Budget Warning"
+    },
+    {
+      "name": "reminder_type_nutrient",
+      "value": "Nutrient Gap"
+    },
+    {
+      "name": "reminder_type_shopping",
+      "value": "Shopping Reminder"
+    },
+    {
+      "name": "reminder_time",
+      "value": "Reminder Time"
+    },
+    {
+      "name": "reminder_message",
+      "value": "Reminder Message"
+    },
+    {
+      "name": "reminder_message_placeholder",
+      "value": "Message content"
+    },
+    {
+      "name": "reminder_condition",
+      "value": "Trigger Condition"
+    },
+    {
+      "name": "reminder_condition_placeholder",
+      "value": "Condition description"
+    },
+    {
+      "name": "reminder_priority",
+      "value": "Priority"
+    },
+    {
+      "name": "reminder_priority_normal",
+      "value": "Normal"
+    },
+    {
+      "name": "reminder_priority_important",
+      "value": "Important"
+    },
+    {
+      "name": "reminder_priority_urgent",
+      "value": "Urgent"
+    },
+    {
+      "name": "reminder_cancel",
+      "value": "Cancel"
+    },
+    {
+      "name": "reminder_save",
+      "value": "Save"
+    },
+    {
+      "name": "reminder_rule_exists",
+      "value": "Rule already exists"
+    },
+    {
+      "name": "reminder_enabled",
+      "value": "Enabled"
+    },
+    {
+      "name": "reminder_input_message",
+      "value": "Please enter reminder message"
+    },
+    {
+      "name": "reminder_saved",
+      "value": "Saved"
+    },
+    {
+      "name": "family_group_join",
+      "value": "Join Group"
+    },
+    {
+      "name": "family_group_owner",
+      "value": "Owner"
+    },
+    {
+      "name": "family_group_invite_code",
+      "value": "Invite Code"
+    },
+    {
+      "name": "family_group_create_title",
+      "value": "Create Family Group"
+    },
+    {
+      "name": "family_group_create_message",
+      "value": "Enter group name and description"
+    },
+    {
+      "name": "family_group_create",
+      "value": "Create"
+    },
+    {
+      "name": "family_group_cancel",
+      "value": "Cancel"
+    },
+    {
+      "name": "family_group_join_title",
+      "value": "Join Family Group"
+    },
+    {
+      "name": "family_group_join_message",
+      "value": "Enter 6-digit invite code and your display name"
+    },
+    {
+      "name": "family_group_join_action",
+      "value": "Join"
+    },
+    {
+      "name": "family_group_current_members",
+      "value": "Current members: "
+    },
+    {
+      "name": "family_group_member_manage",
+      "value": "Member Management"
+    },
+    {
+      "name": "family_group_close",
+      "value": "Close"
+    },
+    {
+      "name": "family_group_input_name",
+      "value": "Please enter group name"
+    },
+    {
+      "name": "family_group_create_success",
+      "value": "Group created successfully!"
+    },
+    {
+      "name": "family_group_create_failed",
+      "value": "Create failed: "
+    },
+    {
+      "name": "family_group_input_invite_code",
+      "value": "Please enter invite code"
+    },
+    {
+      "name": "family_group_default_member",
+      "value": "Family Member"
+    },
+    {
+      "name": "family_group_join_success",
+      "value": "Joined group successfully!"
+    },
+    {
+      "name": "family_group_join_failed",
+      "value": "Join failed: "
+    },
+    {
+      "name": "nutrition_trend_7_days",
+      "value": "7 Days"
+    },
+    {
+      "name": "nutrition_trend_30_days",
+      "value": "30 Days"
+    },
+    {
+      "name": "nutrition_trend_recent_7",
+      "value": "Last 7 Days"
+    },
+    {
+      "name": "nutrition_trend_recent_prefix",
+      "value": "Last "
+    },
+    {
+      "name": "nutrition_trend_recent_suffix",
+      "value": " Days"
+    },
+    {
+      "name": "nutrition_trend_sodium",
+      "value": "Sodium"
+    },
+    {
+      "name": "nutrition_trend_sugar",
+      "value": "Sugar"
+    },
+    {
+      "name": "nutrition_trend_calorie",
+      "value": "Calories"
+    },
+    {
+      "name": "nutrition_trend_fat",
+      "value": "Fat"
+    },
+    {
+      "name": "nutrition_trend_day_records",
+      "value": "%d days with records"
+    },
+    {
+      "name": "nutrition_trend_overview",
+      "value": " Overview"
+    },
+    {
+      "name": "recipe_community_load_failed",
+      "value": "Failed to load recipes. Check network and retry"
+    },
+    {
+      "name": "recipe_community_all",
+      "value": "All"
+    },
+    {
+      "name": "recipe_community_ai_recommend",
+      "value": "✨ AI Recommend"
+    },
+    {
+      "name": "recipe_community_latest",
+      "value": "Latest"
+    },
+    {
+      "name": "recipe_community_popular",
+      "value": "Popular"
+    },
+    {
+      "name": "recipe_community_publish_first",
+      "value": "Publish First Recipe"
+    },
+    {
+      "name": "recipe_community_minutes",
+      "value": "min"
+    },
+    {
+      "name": "weekly_report_no_records",
+      "value": "No records to show this week"
+    },
+    {
+      "name": "weekly_report_no_records_hint",
+      "value": "Scan, view reports, or record a meal first, then come back"
+    },
+    {
+      "name": "weekly_report_buy_less",
+      "value": "Buy less: "
+    },
+    {
+      "name": "weekly_report_buy_more",
+      "value": "Stock up: "
+    },
+    {
+      "name": "weekly_report_add_to_shopping",
+      "value": "Add to Shopping List"
+    },
+    {
+      "name": "weekly_report_no_purchase_advice",
+      "value": "No purchase advice yet"
+    },
+    {
+      "name": "weekly_report_add_failed",
+      "value": "Add failed"
+    },
+    {
+      "name": "weekly_report_category_other",
+      "value": "Other"
+    },
+    {
+      "name": "weekly_report_added_to_list",
+      "value": "Added %d items to shopping list"
+    },
+    {
+      "name": "personalized_title",
+      "value": "Personalized Recommendation"
+    },
+    {
+      "name": "personalized_member_select",
+      "value": "Member Selection"
+    },
+    {
+      "name": "personalized_member_id",
+      "value": "Member ID"
+    },
+    {
+      "name": "personalized_member_id_placeholder",
+      "value": "Enter member ID"
+    },
+    {
+      "name": "personalized_food_name",
+      "value": "Food Name"
+    },
+    {
+      "name": "personalized_food_name_placeholder",
+      "value": "Enter food name"
+    },
+    {
+      "name": "personalized_get_recommend",
+      "value": "Get Recommendation"
+    },
+    {
+      "name": "personalized_result",
+      "value": "Recommendation Result"
+    },
+    {
+      "name": "personalized_overall_score",
+      "value": "Overall Score: "
+    },
+    {
+      "name": "personalized_recommend_level",
+      "value": "Recommendation Level: "
+    },
+    {
+      "name": "personalized_max_portion",
+      "value": "Suggested Portion: "
+    },
+    {
+      "name": "personalized_confidence",
+      "value": "Data Confidence: "
+    },
+    {
+      "name": "personalized_urgency_note",
+      "value": "Urgency Note: "
+    },
+    {
+      "name": "personalized_factors",
+      "value": "Evaluation Factors:"
+    },
+    {
+      "name": "group_feed_food_scan_share",
+      "value": "📦 Food Scan Share"
+    },
+    {
+      "name": "group_feed_info_title",
+      "value": "Group Info"
+    },
+    {
+      "name": "group_feed_group_label",
+      "value": "Group: "
+    },
+    {
+      "name": "group_feed_group_id_label",
+      "value": "Group ID: "
+    },
+    {
+      "name": "group_feed_copy_group_id",
+      "value": "Copy Group ID"
+    },
+    {
+      "name": "group_feed_copied",
+      "value": "Group ID copied to clipboard"
+    },
+    {
+      "name": "group_feed_copy_failed",
+      "value": "Copy failed"
+    },
+    {
+      "name": "group_feed_close",
+      "value": "Close"
+    },
+    {
+      "name": "group_feed_just_now",
+      "value": "Just now"
+    },
+    {
+      "name": "group_feed_minutes_ago",
+      "value": " min ago"
+    },
+    {
+      "name": "group_feed_hours_ago",
+      "value": " hr ago"
+    },
+    {
+      "name": "feedback_type_bug",
+      "value": "Bug Report"
+    },
+    {
+      "name": "feedback_type_feature",
+      "value": "Feature Suggestion"
+    },
+    {
+      "name": "feedback_type_usage",
+      "value": "Usage Issue"
+    },
+    {
+      "name": "feedback_type_other",
+      "value": "Other"
+    },
+    {
+      "name": "feedback_title",
+      "value": "Feedback"
+    },
+    {
+      "name": "feedback_type_label",
+      "value": "Feedback Type"
+    },
+    {
+      "name": "feedback_content",
+      "value": "Feedback Content"
+    },
+    {
+      "name": "feedback_content_placeholder",
+      "value": "Describe your issue or suggestion (max 500 chars)"
+    },
+    {
+      "name": "feedback_contact",
+      "value": "Contact (Optional)"
+    },
+    {
+      "name": "feedback_contact_placeholder",
+      "value": "Email or phone for reply"
+    },
+    {
+      "name": "feedback_screenshot",
+      "value": "Screenshots (Optional, max 3)"
+    },
+    {
+      "name": "feedback_submit",
+      "value": "Submit Feedback"
+    },
+    {
+      "name": "feedback_thanks",
+      "value": "Thanks for your feedback"
+    },
+    {
+      "name": "feedback_cached",
+      "value": "Feedback cached. Will auto-submit when network recovers"
+    },
+    {
+      "name": "exercise_nutrition_title",
+      "value": "Post-Exercise Nutrition"
+    },
+    {
+      "name": "exercise_nutrition_info",
+      "value": "Exercise Info"
+    },
+    {
+      "name": "exercise_nutrition_type",
+      "value": "Exercise Type"
+    },
+    {
+      "name": "exercise_nutrition_duration",
+      "value": "Duration (min)"
+    },
+    {
+      "name": "exercise_nutrition_calorie_burn",
+      "value": "Calories Burned (kcal)"
+    },
+    {
+      "name": "exercise_nutrition_get_recommend",
+      "value": "Get Recommendation"
+    },
+    {
+      "name": "exercise_nutrition_result",
+      "value": "Recommendation Result"
+    },
+    {
+      "name": "exercise_nutrition_recovery_phase",
+      "value": "Recovery Phase: "
+    },
+    {
+      "name": "exercise_nutrition_recommended_cal",
+      "value": "Recommended Calories: "
+    },
+    {
+      "name": "exercise_nutrition_hydration",
+      "value": "Hydration: "
+    },
+    {
+      "name": "exercise_nutrition_timing",
+      "value": "Timing Advice: "
+    },
+    {
+      "name": "exercise_nutrition_personal_note",
+      "value": "Personal Note: "
+    },
+    {
+      "name": "exercise_nutrition_supplement",
+      "value": "Nutrition Supplements:"
+    },
+    {
+      "name": "exercise_nutrition_avoid",
+      "value": "Avoid: "
+    },
+    {
+      "name": "alt_food_analyzing",
+      "value": "Analyzing alternatives..."
+    },
+    {
+      "name": "alt_food_no_alternative",
+      "value": "No alternatives available"
+    },
+    {
+      "name": "alt_food_no_alternative_hint",
+      "value": "No healthier alternatives for this food"
+    },
+    {
+      "name": "alt_food_disclaimer",
+      "value": "Suggestions based on nutrition data comparison, for reference only"
+    },
+    {
+      "name": "alt_food_calories",
+      "value": "Calories"
+    },
+    {
+      "name": "alt_food_sodium",
+      "value": "Sodium"
+    },
+    {
+      "name": "alt_food_sugar",
+      "value": "Sugar"
+    },
+    {
+      "name": "alt_food_fat",
+      "value": "Fat"
+    },
+    {
+      "name": "alt_food_healthier_alternative",
+      "value": "Healthier Alternatives"
+    },
+    {
+      "name": "alt_food_general_advice",
+      "value": "General Alternative Suggestions"
+    },
+    {
+      "name": "checkup_title",
+      "value": "Checkup Report Entry"
+    },
+    {
+      "name": "checkup_ocr_input",
+      "value": "OCR Text Input"
+    },
+    {
+      "name": "checkup_member_id",
+      "value": "Member ID"
+    },
+    {
+      "name": "checkup_member_id_hint",
+      "value": "Enter member ID"
+    },
+    {
+      "name": "checkup_ocr_placeholder",
+      "value": "Paste checkup report OCR text..."
+    },
+    {
+      "name": "checkup_parse",
+      "value": "Parse Report"
+    },
+    {
+      "name": "checkup_result",
+      "value": "Parse Result"
+    },
+    {
+      "name": "checkup_items",
+      "value": "Checkup Items:"
+    },
+    {
+      "name": "checkup_health_archive_update",
+      "value": "Health Archive Update"
+    },
+    {
+      "name": "shopping_title",
+      "value": "Shopping List"
+    },
+    {
+      "name": "shopping_clear_purchased",
+      "value": "Clear Purchased"
+    },
+    {
+      "name": "shopping_add_item_hint",
+      "value": "Add item name"
+    },
+    {
+      "name": "shopping_quantity",
+      "value": "Quantity"
+    },
+    {
+      "name": "shopping_add",
+      "value": "Add"
+    },
+    {
+      "name": "shopping_unpurchased",
+      "value": "To Buy"
+    },
+    {
+      "name": "shopping_purchased",
+      "value": "Purchased"
+    },
+    {
+      "name": "shopping_input_name_toast",
+      "value": "Please enter item name"
+    },
+    {
+      "name": "shopping_added_toast",
+      "value": "Added"
+    },
+    {
+      "name": "shopping_add_failed_toast",
+      "value": "Add failed"
+    },
+    {
+      "name": "favorite_remove_failed",
+      "value": "Remove failed, please try again later"
+    },
+    {
+      "name": "favorite_no_match",
+      "value": "No matching items under current filter"
+    },
+    {
+      "name": "favorite_no_match_hint",
+      "value": "Try reducing filter conditions"
+    },
+    {
+      "name": "favorite_upgrade_hint",
+      "value": "Upgrade to Family plan for more favorites"
+    },
+    {
+      "name": "child_health_title",
+      "value": "Child Health Assessment"
+    },
+    {
+      "name": "child_health_food_selection",
+      "value": "Food Selection"
+    },
+    {
+      "name": "child_health_food_name",
+      "value": "Food Name"
+    },
+    {
+      "name": "child_health_food_name_hint",
+      "value": "Enter food name"
+    },
+    {
+      "name": "child_health_snack_calories",
+      "value": "Today's snack calories (kcal)"
+    },
+    {
+      "name": "child_health_snack_sugar",
+      "value": "Today's snack sugar (g)"
+    },
+    {
+      "name": "child_health_start",
+      "value": "Start Assessment"
+    },
+    {
+      "name": "child_health_result",
+      "value": "Assessment Result"
+    },
+    {
+      "name": "child_health_snack_impact",
+      "value": "Snack Impact:"
+    },
+    {
+      "name": "child_health_additive_assessment",
+      "value": "Additive Assessment:"
+    },
+    {
+      "name": "child_health_growth_check",
+      "value": "Growth Nutrition Check:"
+    },
+    {
+      "name": "share_to_group_success",
+      "value": "Shared to group!"
+    },
+    {
+      "name": "meal_plan_empty",
+      "value": "No meal plan available"
+    },
+    {
+      "name": "meal_plan_empty_hint",
+      "value": "Add family members and set health goals first"
+    },
+    {
+      "name": "meal_plan_added_toast",
+      "value": "Added to diet record"
+    },
+    {
+      "name": "meal_plan_breakfast",
+      "value": "Breakfast"
+    },
+    {
+      "name": "meal_plan_lunch",
+      "value": "Lunch"
+    },
+    {
+      "name": "meal_plan_dinner",
+      "value": "Dinner"
+    },
+    {
+      "name": "meal_plan_snack",
+      "value": "Snack"
+    },
+    {
+      "name": "history_empty",
+      "value": "No history yet"
+    },
+    {
+      "name": "history_empty_hint",
+      "value": "Scan a label or barcode first, then check back"
+    },
+    {
+      "name": "nutrition_target_saved",
+      "value": "Saved"
+    },
+    {
+      "name": "nutrition_target_save_failed",
+      "value": "Save failed, please retry"
+    },
+    {
+      "name": "nutrition_target_reset_toast",
+      "value": "Reset to default"
+    },
+    {
+      "name": "nutrition_knowledge_no_match",
+      "value": "No matching articles"
+    },
+    {
+      "name": "nutrition_knowledge_no_match_hint",
+      "value": "Try selecting another category"
+    },
+    {
+      "name": "nutrition_knowledge_collapse",
+      "value": "Collapse"
+    },
+    {
+      "name": "nutrition_knowledge_expand",
+      "value": "Expand"
+    },
+    {
+      "name": "error_operation_failed",
+      "value": "Operation failed, please try again later"
+    },
+    {
+      "name": "device_dash_health_data",
+      "value": "Health Data"
+    },
+    {
+      "name": "device_dash_permission_reason",
+      "value": "Requires activity and motion permissions to read health data such as steps and sleep"
+    },
+    {
+      "name": "device_dash_title",
+      "value": "Device Integration"
+    },
+    {
+      "name": "device_dash_data_refreshed",
+      "value": "Data Refreshed"
+    },
+    {
+      "name": "device_dash_connect_hw_health",
+      "value": "Connect to Huawei Health Device"
+    },
+    {
+      "name": "device_dash_upgrade_desc",
+      "value": "Upgrade to Family Plan to auto-sync steps, heart rate, sleep data from wearables and dynamically adjust daily diet budget"
+    },
+    {
+      "name": "device_dash_upgrade",
+      "value": "Upgrade ›"
+    },
+    {
+      "name": "device_dash_loading",
+      "value": "Loading..."
+    },
+    {
+      "name": "device_dash_hw_connected",
+      "value": "Huawei Health Connected"
+    },
+    {
+      "name": "device_dash_hw_disconnected",
+      "value": "Huawei Health Not Connected"
+    },
+    {
+      "name": "device_dash_connect",
+      "value": "Connect"
+    },
+    {
+      "name": "device_dash_view_members",
+      "value": "View Members"
+    },
+    {
+      "name": "device_dash_step_detail_title",
+      "value": "🚶 Step Details"
+    },
+    {
+      "name": "device_dash_today_total_steps",
+      "value": "Today's Total Steps"
+    },
+    {
+      "name": "device_dash_activity_level",
+      "value": "Activity Level"
+    },
+    {
+      "name": "device_dash_step_goal",
+      "value": "Step Goal"
+    },
+    {
+      "name": "device_dash_diet_impact",
+      "value": "Diet Impact"
+    },
+    {
+      "name": "device_dash_heart_detail_title",
+      "value": "❤️ Heart Rate Details"
+    },
+    {
+      "name": "device_dash_current_heart_rate",
+      "value": "Current Heart Rate"
+    },
+    {
+      "name": "device_dash_resting_heart_rate",
+      "value": "Resting Heart Rate"
+    },
+    {
+      "name": "device_dash_heart_rate_zone",
+      "value": "Heart Rate Zone"
+    },
+    {
+      "name": "device_dash_sleep_detail_title",
+      "value": "😴 Sleep Details"
+    },
+    {
+      "name": "device_dash_total_sleep",
+      "value": "Total Sleep"
+    },
+    {
+      "name": "device_dash_deep_sleep",
+      "value": "Deep Sleep"
+    },
+    {
+      "name": "device_dash_light_sleep",
+      "value": "Light Sleep"
+    },
+    {
+      "name": "device_dash_sleep_quality",
+      "value": "Sleep Quality"
+    },
+    {
+      "name": "device_dash_body_metrics_title",
+      "value": "🩺 Body Metrics"
+    },
+    {
+      "name": "device_dash_spo2",
+      "value": "SpO2"
+    },
+    {
+      "name": "device_dash_spo2_status",
+      "value": "SpO2 Status"
+    },
+    {
+      "name": "device_dash_stress_level",
+      "value": "Stress Level"
+    },
+    {
+      "name": "device_dash_body_temp",
+      "value": "Body Temperature"
+    },
+    {
+      "name": "device_dash_diet_impact_title",
+      "value": "📊 Wearable Data Impact on Diet Recommendations"
+    },
+    {
+      "name": "device_dash_all_normal",
+      "value": "All indicators are normal today. Diet recommendations follow standard budget."
+    },
+    {
+      "name": "device_dash_steps",
+      "value": "Steps"
+    },
+    {
+      "name": "device_dash_step_unit",
+      "value": "steps"
+    },
+    {
+      "name": "device_dash_goal_reached",
+      "value": "Goal Reached"
+    },
+    {
+      "name": "device_dash_goal_not_reached",
+      "value": "Goal Not Reached"
+    },
+    {
+      "name": "device_dash_heart_rate",
+      "value": "Heart Rate"
+    },
+    {
+      "name": "device_dash_sleep",
+      "value": "Sleep"
+    },
+    {
+      "name": "device_dash_spo2_short",
+      "value": "SpO2"
+    },
+    {
+      "name": "device_dash_stress",
+      "value": "Stress"
+    },
+    {
+      "name": "device_dash_suggest_tighten",
+      "value": "Suggested Intake Tightened"
+    },
+    {
+      "name": "device_dash_suggest_relax",
+      "value": "Suggested Intake Relaxed"
+    },
+    {
+      "name": "device_dash_suggest_normal",
+      "value": "Standard Recommendation"
+    },
+    {
+      "name": "device_dash_heart_high_tighten",
+      "value": "Heart Rate High, Tighten High-Calorie"
+    },
+    {
+      "name": "device_dash_normal",
+      "value": "Normal"
+    },
+    {
+      "name": "device_dash_upgrade_to_use",
+      "value": "Please upgrade to Family Plan to use health data integration"
+    },
+    {
+      "name": "device_dash_hw_connect_success",
+      "value": "Huawei Health Connected Successfully"
+    },
+    {
+      "name": "device_dash_connect_failed",
+      "value": "Connection failed, please try again later"
+    },
+    {
+      "name": "device_dash_goal_reached_icon",
+      "value": "✅ Goal Reached"
+    },
+    {
+      "name": "device_dash_goal_not_reached_icon",
+      "value": "❌ Goal Not Reached"
+    },
+    {
+      "name": "device_dash_poor_sleep_reduce_sugar",
+      "value": "Poor sleep, high-sugar reduced by 20%"
+    },
+    {
+      "name": "teen_mode_back",
+      "value": "Back"
+    },
+    {
+      "name": "teen_mode_title",
+      "value": "Teen Mode"
+    },
+    {
+      "name": "teen_mode_restrict_desc",
+      "value": "When enabled, the following content will be restricted:"
+    },
+    {
+      "name": "teen_mode_content_filter",
+      "value": "Content Filter"
+    },
+    {
+      "name": "teen_mode_content_filter_desc",
+      "value": "Automatically filter sensitive content such as alcohol, tobacco, and gambling"
+    },
+    {
+      "name": "teen_mode_purchase_limit",
+      "value": "In-App Purchase Restriction"
+    },
+    {
+      "name": "teen_mode_purchase_limit_desc",
+      "value": "Disable in-app purchases"
+    },
+    {
+      "name": "teen_mode_data_retention",
+      "value": "Data Retention"
+    },
+    {
+      "name": "teen_mode_data_retention_desc",
+      "value": "Data retention period shortened to 30 days (normally 365 days)"
+    },
+    {
+      "name": "teen_mode_scan_limit",
+      "value": "Scan Limit"
+    },
+    {
+      "name": "teen_mode_scan_limit_desc",
+      "value": "Daily scan limit of 20 times"
+    },
+    {
+      "name": "teen_mode_community_limit",
+      "value": "Community Restriction"
+    },
+    {
+      "name": "teen_mode_community_limit_desc",
+      "value": "Cannot access community and AI sharing features"
+    },
+    {
+      "name": "teen_mode_enable_label",
+      "value": "Enable Teen Mode"
+    },
+    {
+      "name": "teen_mode_switch",
+      "value": "Teen Mode Switch"
+    },
+    {
+      "name": "teen_mode_currently_on",
+      "value": "Currently On"
+    },
+    {
+      "name": "teen_mode_currently_off",
+      "value": "Currently Off"
+    },
+    {
+      "name": "teen_mode_confirm_enable",
+      "value": "Confirm Enable"
+    },
+    {
+      "name": "teen_mode_confirm_disable",
+      "value": "Confirm Disable"
+    },
+    {
+      "name": "teen_mode_enabled",
+      "value": "Teen Mode Enabled"
+    },
+    {
+      "name": "teen_mode_disabled",
+      "value": "Teen Mode Disabled"
+    },
+    {
+      "name": "teen_mode_pin_failed",
+      "value": "PIN verification failed, cannot disable"
+    },
+    {
+      "name": "teen_mode_confirm_button",
+      "value": "Confirm Settings Button"
+    },
+    {
+      "name": "main_tabs_diet_center",
+      "value": "🍽️ Diet Center"
+    },
+    {
+      "name": "main_tabs_lazy_load_hint",
+      "value": "Loads on first visit"
+    },
+    {
+      "name": "main_tabs_ai_assistant",
+      "value": "🤖 AI Assistant"
+    },
+    {
+      "name": "main_tabs_community_center",
+      "value": "👥 Community Center"
+    },
+    {
+      "name": "main_tabs_profile_center",
+      "value": "⚙️ Profile Center"
+    },
+    {
+      "name": "main_tabs_home",
+      "value": "Home"
+    },
+    {
+      "name": "main_tabs_app_slogan",
+      "value": "Food Adaptation Assistant · Family Diet Balance"
+    },
+    {
+      "name": "main_tabs_scan_identify",
+      "value": "Scan to Identify"
+    },
+    {
+      "name": "main_tabs_scan_accessibility",
+      "value": "Scan to identify food labels"
+    },
+    {
+      "name": "main_tabs_enter_home",
+      "value": "Enter Full Home"
+    },
+    {
+      "name": "main_tabs_enter_home_accessibility",
+      "value": "Enter full home page to view all features"
+    },
+    {
+      "name": "main_tabs_record_food",
+      "value": "Record Food"
+    },
+    {
+      "name": "main_tabs_record_food_desc",
+      "value": "Scan food labels to automatically record dietary intake"
+    },
+    {
+      "name": "main_tabs_diet_diary",
+      "value": "Diet Diary"
+    },
+    {
+      "name": "main_tabs_diet_diary_desc",
+      "value": "View daily diet details and nutrition analysis"
+    },
+    {
+      "name": "main_tabs_history",
+      "value": "History"
+    },
+    {
+      "name": "main_tabs_history_desc",
+      "value": "Review past diet scan records"
+    },
+    {
+      "name": "main_tabs_nutrition_dashboard",
+      "value": "Nutrition Dashboard"
+    },
+    {
+      "name": "main_tabs_nutrition_dashboard_desc",
+      "value": "Visualize nutrition intake trends and composition"
+    },
+    {
+      "name": "main_tabs_basket_analysis",
+      "value": "Basket Analysis"
+    },
+    {
+      "name": "main_tabs_basket_analysis_desc",
+      "value": "Evaluate family suitability of basket items"
+    },
+    {
+      "name": "main_tabs_ai_nutritionist",
+      "value": "AI Nutritionist Chat"
+    },
+    {
+      "name": "main_tabs_ai_nutritionist_desc",
+      "value": "Chat with AI nutritionist for personalized advice"
+    },
+    {
+      "name": "main_tabs_ai_recipe",
+      "value": "AI Recommended Recipes"
+    },
+    {
+      "name": "main_tabs_ai_recipe_desc",
+      "value": "Smart recipe recommendations based on family health profile"
+    },
+    {
+      "name": "main_tabs_nutrition_trend",
+      "value": "Nutrition Trend Analysis"
+    },
+    {
+      "name": "main_tabs_nutrition_trend_desc",
+      "value": "AI-driven nutrition trend prediction and insights"
+    },
+    {
+      "name": "main_tabs_weekly_report",
+      "value": "Weekly Report"
+    },
+    {
+      "name": "main_tabs_weekly_report_desc",
+      "value": "View this week's diet and health report"
+    },
+    {
+      "name": "main_tabs_recipe_community",
+      "value": "Recipe Community"
+    },
+    {
+      "name": "main_tabs_recipe_community_desc",
+      "value": "Browse and share family recipes"
+    },
+    {
+      "name": "main_tabs_family_group",
+      "value": "Family Group"
+    },
+    {
+      "name": "main_tabs_family_group_desc",
+      "value": "Create family groups to share diet information"
+    },
+    {
+      "name": "main_tabs_create_recipe",
+      "value": "Create Recipe"
+    },
+    {
+      "name": "main_tabs_create_recipe_desc",
+      "value": "Publish your unique recipe to the community"
+    },
+    {
+      "name": "main_tabs_member_management",
+      "value": "Family Member Management"
+    },
+    {
+      "name": "main_tabs_member_management_desc",
+      "value": "Manage and edit family member information"
+    },
+    {
+      "name": "main_tabs_nutrition_dashboard_all",
+      "value": "Family Nutrition Data Overview"
+    },
+    {
+      "name": "main_tabs_health_device",
+      "value": "Health Device"
+    },
+    {
+      "name": "main_tabs_health_device_desc",
+      "value": "View family member health device data"
+    },
+    {
+      "name": "main_tabs_subscription",
+      "value": "Subscribe"
+    },
+    {
+      "name": "main_tabs_subscription_desc",
+      "value": "Upgrade membership to unlock more features"
+    },
+    {
+      "name": "main_tabs_cloud_sync",
+      "value": "Cloud Sync Settings"
+    },
+    {
+      "name": "main_tabs_cloud_sync_desc",
+      "value": "Configure data sync and backup"
+    },
+    {
+      "name": "main_tabs_settings",
+      "value": "Settings"
+    },
+    {
+      "name": "main_tabs_settings_desc",
+      "value": "App settings and brand transparency query"
+    },
+    {
+      "name": "main_tabs_api_lab",
+      "value": "API Lab"
+    },
+    {
+      "name": "main_tabs_api_lab_desc",
+      "value": "HarmonyOS V2 API Feature Demo"
+    },
+    {
+      "name": "v2_demo_title",
+      "value": "📊 V2 Nutrition Tracking Demo"
+    },
+    {
+      "name": "v2_demo_add_breakfast",
+      "value": "+ Breakfast"
+    },
+    {
+      "name": "v2_demo_add_lunch",
+      "value": "+ Lunch"
+    },
+    {
+      "name": "v2_demo_add_dinner",
+      "value": "+ Dinner"
+    },
+    {
+      "name": "v2_demo_calories",
+      "value": "🔥Calories"
+    },
+    {
+      "name": "v2_demo_sodium",
+      "value": "🧂Sodium"
+    },
+    {
+      "name": "v2_demo_sugar",
+      "value": "🍬Sugar"
+    },
+    {
+      "name": "v2_demo_fat",
+      "value": "🥩Fat"
+    },
+    {
+      "name": "v2_demo_today_meals",
+      "value": "Today's Meals"
+    },
+    {
+      "name": "v2_demo_no_records",
+      "value": "No records yet, click the button below to add"
+    },
+    {
+      "name": "v2_demo_reset",
+      "value": "Reset"
+    },
+    {
+      "name": "device_dash_last_sync",
+      "value": "Last Sync"
+    },
+    {
+      "name": "device_dash_hours",
+      "value": "h"
+    },
+    {
+      "name": "device_dash_minutes",
+      "value": "m"
+    },
+    {
+      "name": "device_dash_impact_step_low",
+      "value": "Steps %s → Insufficient activity, high-calorie/high-fat intake tightened"
+    },
+    {
+      "name": "device_dash_impact_step_high",
+      "value": "Steps %s → Sufficient activity, calorie intake can be relaxed"
+    },
+    {
+      "name": "device_dash_impact_poor_sleep",
+      "value": "Poor sleep quality → High-sugar food intake reduced"
+    },
+    {
+      "name": "device_dash_impact_stress",
+      "value": "High stress → Light diet recommended"
+    },
+    {
+      "name": "device_dash_impact_heart_high",
+      "value": "Heart rate %sbpm → High, tighten high-calorie intake"
+    },
+    {
+      "name": "v2_demo_today_intake",
+      "value": "Today's Intake"
+    },
+    {
+      "name": "v2_demo_calorie_inline",
+      "value": "Calories"
+    },
+    {
+      "name": "v2_demo_breakfast",
+      "value": "Breakfast"
+    },
+    {
+      "name": "v2_demo_lunch",
+      "value": "Lunch"
+    },
+    {
+      "name": "v2_demo_dinner",
+      "value": "Dinner"
+    },
+    {
+      "name": "v2_demo_member_prefix",
+      "value": "Member"
+    },
+    {
+      "name": "nutri_cross_title",
+      "value": "Nutri-Score Cross Verification"
+    },
+    {
+      "name": "nutri_cross_consistent",
+      "value": "✓ Consistent with OFF rating"
+    },
+    {
+      "name": "nutri_cross_inconsistent",
+      "value": "⚠ Inconsistent with OFF rating"
+    },
+    {
+      "name": "nutri_cross_local_calc",
+      "value": "Local Calculation"
+    },
+    {
+      "name": "nutri_cross_off_official",
+      "value": "OFF Official"
+    },
+    {
+      "name": "nutri_cross_score_unit",
+      "value": "pts"
+    },
+    {
+      "name": "nutri_cross_view_diff",
+      "value": "View Difference Details"
+    },
+    {
+      "name": "nutri_cross_detail_acc",
+      "value": "Cross Verification Details"
+    },
+    {
+      "name": "nutri_cross_diff_reasons",
+      "value": "Difference Analysis:"
+    },
+    {
+      "name": "nutri_cross_disclaimer",
+      "value": "For reference only, OFF official rating recommended"
+    },
+    {
+      "name": "perm_guide_title",
+      "value": "Authorization Required"
+    },
+    {
+      "name": "perm_guide_default_reason",
+      "value": "This permission is required for the feature"
+    },
+    {
+      "name": "perm_guide_denied",
+      "value": "You have denied this permission"
+    },
+    {
+      "name": "perm_guide_path",
+      "value": "Go to: Settings > Apps > Permission Management"
+    },
+    {
+      "name": "perm_guide_cancel",
+      "value": "Cancel"
+    },
+    {
+      "name": "perm_guide_deny_acc",
+      "value": "Deny"
+    },
+    {
+      "name": "perm_guide_go_settings",
+      "value": "Go to Settings"
+    },
+    {
+      "name": "perm_guide_authorize_acc",
+      "value": "Authorize"
+    },
+    {
+      "name": "sync_conflict_title",
+      "value": "Data Conflict"
+    },
+    {
+      "name": "sync_conflict_local_version",
+      "value": "Local Version"
+    },
+    {
+      "name": "sync_conflict_local_default",
+      "value": "Local Modification"
+    },
+    {
+      "name": "sync_conflict_use_local_acc",
+      "value": "Use Local Version"
+    },
+    {
+      "name": "sync_conflict_cloud_version",
+      "value": "Cloud Version"
+    },
+    {
+      "name": "sync_conflict_cloud_default",
+      "value": "Cloud Modification"
+    },
+    {
+      "name": "sync_conflict_use_cloud_acc",
+      "value": "Use Cloud Version"
+    },
+    {
+      "name": "sync_conflict_type_prefix",
+      "value": "Type: "
+    },
+    {
+      "name": "nova_display_title",
+      "value": "Nova Processing Level"
+    },
+    {
+      "name": "nova_display_group_1",
+      "value": "Unprocessed or minimally processed"
+    },
+    {
+      "name": "nova_display_group_2",
+      "value": "Processed culinary ingredients"
+    },
+    {
+      "name": "nova_display_group_3",
+      "value": "Processed foods"
+    },
+    {
+      "name": "nova_display_group_4",
+      "value": "Ultra-processed foods"
+    },
+    {
+      "name": "nova_display_unknown",
+      "value": "Unknown"
+    },
+    {
+      "name": "nova_display_collapse",
+      "value": "Collapse ▲"
+    },
+    {
+      "name": "nova_display_expand",
+      "value": "View Processing Description ▼"
+    },
+    {
+      "name": "nova_display_detail_acc",
+      "value": "View Processing Details"
+    },
+    {
+      "name": "nova_display_detail_1",
+      "value": "Nova 1: Unprocessed/minimally processed (e.g. fresh fruits, vegetables)"
+    },
+    {
+      "name": "nova_display_detail_2",
+      "value": "Nova 2: Processed culinary ingredients (e.g. oil, salt, sugar)"
+    },
+    {
+      "name": "nova_display_detail_3",
+      "value": "Nova 3: Processed foods (e.g. canned, bread, cheese)"
+    },
+    {
+      "name": "nova_display_detail_4",
+      "value": "Nova 4: Ultra-processed (e.g. soft drinks, instant noodles, snacks)"
+    },
+    {
+      "name": "iap_purchase_success",
+      "value": "Purchase Successful"
+    },
+    {
+      "name": "iap_service_not_init",
+      "value": "Service Not Initialized"
+    },
+    {
+      "name": "iap_order_revoked",
+      "value": "Order Has Been Revoked"
+    },
+    {
+      "name": "iap_purchase_timeout",
+      "value": "Purchase request timed out, please check network and retry"
+    },
+    {
+      "name": "iap_payment_processing",
+      "value": "Payment processing, please check subscription status later"
+    },
+    {
+      "name": "iap_err_product_owned",
+      "value": "Product already owned, restoring purchase benefits"
+    },
+    {
+      "name": "iap_err_system_busy",
+      "value": "Payment system busy, resending order"
+    },
+    {
+      "name": "iap_err_user_canceled",
+      "value": "User Canceled Purchase"
+    },
+    {
+      "name": "iap_err_no_record",
+      "value": "No valid purchase record found"
+    },
+    {
+      "name": "iap_err_frequent",
+      "value": "Too many purchase requests, please try later"
+    },
+    {
+      "name": "iap_err_network_unstable",
+      "value": "Network unstable, please check and retry"
+    },
+    {
+      "name": "iap_err_not_test_account",
+      "value": "Not a sandbox test account, please add in AGC first"
+    },
+    {
+      "name": "iap_err_not_debug",
+      "value": "App not debug-signed, please use debug certificate"
+    },
+    {
+      "name": "iap_err_internal",
+      "value": "Internal payment error (common in sandbox)"
+    },
+    {
+      "name": "iap_err_network_error",
+      "value": "Network error, please check and retry"
+    },
+    {
+      "name": "iap_err_sandbox_config",
+      "value": "Sandbox config error, verify test account setup"
+    },
+    {
+      "name": "iap_err_huawei_not_ready",
+      "value": "Huawei account service not ready, please log in"
+    },
+    {
+      "name": "iap_err_api_incompatible",
+      "value": "IAP Kit API incompatible, please update app"
+    },
+    {
+      "name": "iap_err_service_exception",
+      "value": "Payment service error, please try later"
+    },
+    {
+      "name": "iap_err_param_invalid",
+      "value": "Invalid request parameters"
+    },
+    {
+      "name": "iap_err_product_invalid",
+      "value": "Invalid product information"
+    },
+    {
+      "name": "iap_err_order_failed",
+      "value": "Order processing failed"
+    },
+    {
+      "name": "iap_err_purchase_canceled",
+      "value": "Purchase canceled by user"
+    },
+    {
+      "name": "iap_err_password_failed",
+      "value": "Payment password verification failed"
+    },
+    {
+      "name": "iap_err_insufficient_balance",
+      "value": "Insufficient account balance"
+    },
+    {
+      "name": "iap_err_daily_limit",
+      "value": "Daily purchase limit exceeded"
+    },
+    {
+      "name": "iap_err_sandbox_anomaly",
+      "value": "Sandbox payment error (code: %s), check test account config"
+    },
+    {
+      "name": "iap_err_payment_failed",
+      "value": "Payment failed (code: %s)"
+    },
+    {
+      "name": "iap_err_pay_canceled",
+      "value": "Payment Canceled"
+    },
+    {
+      "name": "iap_err_network_retry",
+      "value": "Network error, please check and retry"
+    },
+    {
+      "name": "iap_err_pay_fail_retry",
+      "value": "Payment failed, please try later"
+    },
+    {
+      "name": "iap_err_already_subscribed",
+      "value": "You have already subscribed"
+    },
+    {
+      "name": "iap_err_product_not_exist",
+      "value": "Product ID not found, please contact support"
+    },
+    {
+      "name": "iap_err_login_first",
+      "value": "Please log in to Huawei account first"
+    },
+    {
+      "name": "iap_err_system_busy_retry",
+      "value": "Payment system busy, please try later"
+    },
+    {
+      "name": "iap_err_no_repeat_purchase",
+      "value": "Already subscribed, no need to repurchase"
+    },
+    {
+      "name": "iap_err_too_frequent",
+      "value": "Too frequent, please try later"
+    },
+    {
+      "name": "iap_err_already_delivered",
+      "value": "Purchase already completed, no need to redeliver"
+    },
+    {
+      "name": "iap_err_anomaly",
+      "value": "Payment error (code: %s)"
+    },
+    {
+      "name": "link_input_paste_product_link",
+      "value": "Paste Product Link"
+    },
+    {
+      "name": "link_input_paste_placeholder",
+      "value": "Paste JD/Taobao/PDD product link"
+    },
+    {
+      "name": "link_input_paste_desc",
+      "value": "Enter or paste product link here"
+    },
+    {
+      "name": "link_input_cancel",
+      "value": "Cancel"
+    },
+    {
+      "name": "link_input_parse",
+      "value": "Parse"
+    },
+    {
+      "name": "link_input_confirm_parse",
+      "value": "Confirm Parse"
+    },
+    {
+      "name": "link_input_paste_link",
+      "value": "Paste Link"
+    },
+    {
+      "name": "link_input_please_paste",
+      "value": "Please enter or paste product link"
+    },
+    {
+      "name": "link_input_parse_fail",
+      "value": "Parse failed, please check the link"
+    },
+    {
+      "name": "link_input_parse_error",
+      "value": "Parse error, please try again later"
+    },
+    {
+      "name": "eco_detail_grade_a",
+      "value": "Excellent"
+    },
+    {
+      "name": "eco_detail_grade_b",
+      "value": "Good"
+    },
+    {
+      "name": "eco_detail_grade_c",
+      "value": "Fair"
+    },
+    {
+      "name": "eco_detail_grade_d",
+      "value": "Poor"
+    },
+    {
+      "name": "eco_detail_grade_e",
+      "value": "Bad"
+    },
+    {
+      "name": "eco_detail_grade_unknown",
+      "value": "Unknown"
+    },
+    {
+      "name": "eco_detail_title",
+      "value": "Eco-Score Rating"
+    },
+    {
+      "name": "eco_detail_score_unit",
+      "value": " pt"
+    },
+    {
+      "name": "eco_detail_estimate_hint",
+      "value": "⚠ Estimated, for reference only"
+    },
+    {
+      "name": "eco_detail_collapse",
+      "value": "Collapse ▲"
+    },
+    {
+      "name": "eco_detail_expand",
+      "value": "Expand ▼"
+    },
+    {
+      "name": "eco_detail_view_detail",
+      "value": "View Eco-Score details"
+    },
+    {
+      "name": "eco_detail_basis",
+      "value": "Scoring basis: "
+    },
+    {
+      "name": "paywall_close",
+      "value": "Close"
+    },
+    {
+      "name": "paywall_need",
+      "value": "Requires "
+    },
+    {
+      "name": "paywall_permission",
+      "value": " permission"
+    },
+    {
+      "name": "paywall_upgrade",
+      "value": "Upgrade"
+    },
+    {
+      "name": "paywall_not_now",
+      "value": "Not Now"
+    },
+    {
+      "name": "credibility_radar_identity",
+      "value": "Identity Clear"
+    },
+    {
+      "name": "credibility_radar_license",
+      "value": "License Info"
+    },
+    {
+      "name": "credibility_radar_trace",
+      "value": "Trace Entry"
+    },
+    {
+      "name": "credibility_radar_public",
+      "value": "Public Query"
+    },
+    {
+      "name": "credibility_radar_boundary",
+      "value": "Boundary"
+    },
+    {
+      "name": "credibility_query_keyword",
+      "value": "Query keyword: "
+    },
+    {
+      "name": "credibility_copied",
+      "value": "Copied to clipboard"
+    },
+    {
+      "name": "credibility_copy_fail",
+      "value": "Copy failed"
+    },
+    {
+      "name": "credibility_view_detail",
+      "value": "View credibility details"
+    },
+    {
+      "name": "share_card_app_name",
+      "value": "Family Food Advisor"
+    },
+    {
+      "name": "share_card_slogan",
+      "value": "Care Early"
+    },
+    {
+      "name": "share_card_max",
+      "value": "Max "
+    },
+    {
+      "name": "intolerance_warning",
+      "value": "Intolerance Warning"
+    },
+    {
+      "name": "intolerance_items_unit",
+      "value": " items"
+    },
+    {
+      "name": "intolerance_caution",
+      "value": "Caution"
+    },
+    {
+      "name": "intolerance_avoid",
+      "value": "Avoid"
+    },
+    {
+      "name": "intolerance_unknown_severity",
+      "value": "Unknown"
+    },
+    {
+      "name": "hot_food_scan_now",
+      "value": "Scan Now"
+    },
+    {
+      "name": "hot_food_view_hot_foods",
+      "value": "View Hot Foods"
+    },
+    {
+      "name": "hot_food_view_more",
+      "value": "View More"
+    },
+    {
+      "name": "health_mock_data_estimated",
+      "value": "Some data is estimated"
+    },
+    {
+      "name": "health_mock_connect_hint",
+      "value": "Connect device for more accurate data"
+    },
+    {
+      "name": "health_mock_connect_device",
+      "value": "Connect Device"
+    },
+    {
+      "name": "checkup_report_summary",
+      "value": "Report Summary: "
+    },
+    {
+      "name": "checkup_risk_score",
+      "value": "Risk Score: "
+    },
+    {
+      "name": "checkup_reference_prefix",
+      "value": "Reference: "
+    },
+    {
+      "name": "checkup_new_alert",
+      "value": "New Alert: "
+    },
+    {
+      "name": "alt_food_unknown",
+      "value": "Unknown Food"
+    },
+    {
+      "name": "alt_food_score_unit",
+      "value": " pt"
+    },
+    {
+      "name": "alt_food_selected",
+      "value": "Selected: "
+    }
+  ]
+}

@@ -5,27 +5,33 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
 import { preferences } from '@kit.ArkData';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { HILOG_DOMAIN } from 'hsp_core';
 
 const TAG = 'CloudAuthService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
-export interface AuthUser {
-  uid: string;
-  isAnonymous: boolean;
-  createdAt: number;
-  /** 云端账户Token（有值代表已登录云端） */
-  cloudToken: string;
-  /** 云端账户名称 */
-  displayName: string;
-  /** 绑定邮箱/手机号 */
-  accountId: string;
+export class AuthUser {
+  uid: string = '';
+  isAnonymous: boolean = true;
+  createdAt: number = 0;
+  cloudToken: string = '';
+  displayName: string = '';
+  accountId: string = '';
 }
 
 export class CloudAuthService {
+  private static instance: CloudAuthService;
   private context: common.Context | null = null;
   private currentUser: AuthUser | null = null;
   private isInitialized: boolean = false;
+  private isProcessing: boolean = false;
+
+  static getInstance(): CloudAuthService {
+    if (!CloudAuthService.instance) {
+      CloudAuthService.instance = new CloudAuthService();
+    }
+    return CloudAuthService.instance;
+  }
 
   async init(context: common.Context): Promise<void> {
     this.context = context;
@@ -33,14 +39,14 @@ export class CloudAuthService {
       const prefs = await preferences.getPreferences(context, 'cloud_auth');
       const savedUid = prefs.getSync('uid', '') as string;
       if (savedUid.length > 0) {
-        this.currentUser = {
-          uid: savedUid,
-          isAnonymous: prefs.getSync('is_anonymous', true) as boolean,
-          createdAt: prefs.getSync('created_at', 0) as number,
-          cloudToken: prefs.getSync('cloud_token', '') as string,
-          displayName: prefs.getSync('display_name', '') as string,
-          accountId: prefs.getSync('account_id', '') as string
-        };
+        const user = new AuthUser();
+        user.uid = savedUid;
+        user.isAnonymous = prefs.getSync('is_anonymous', true) as boolean;
+        user.createdAt = prefs.getSync('created_at', 0) as number;
+        user.cloudToken = prefs.getSync('cloud_token', '') as string;
+        user.displayName = prefs.getSync('display_name', '') as string;
+        user.accountId = prefs.getSync('account_id', '') as string;
+        this.currentUser = user;
         hilog.info(DOMAIN_ZERO, TAG, 'Restored user: %{public}s', savedUid);
       } else {
         await this.signInAnonymously();
@@ -57,10 +63,19 @@ export class CloudAuthService {
    * 匿名登录
    */
   async signInAnonymously(): Promise<AuthUser> {
-    this.currentUser = this.generateLocalUid();
-    await this.persistUser();
-    hilog.info(DOMAIN_ZERO, TAG, 'Anonymous sign-in: %{public}s', this.currentUser.uid);
-    return this.currentUser;
+    if (this.isProcessing) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'signInAnonymously concurrent call blocked');
+      return this.currentUser ?? this.generateLocalUid();
+    }
+    this.isProcessing = true;
+    try {
+      this.currentUser = this.generateLocalUid();
+      await this.persistUser();
+      hilog.info(DOMAIN_ZERO, TAG, 'Anonymous sign-in: %{public}s', this.currentUser.uid);
+      return this.currentUser;
+    } finally {
+      this.isProcessing = false;
+    }
   }
 
   /**
@@ -70,17 +85,28 @@ export class CloudAuthService {
    * @param displayName 显示名
    */
   async bindCloudAccount(token: string, accountId: string, displayName: string): Promise<AuthUser> {
-    if (!this.currentUser) {
-      await this.signInAnonymously();
+    if (token.length === 0 || accountId.length === 0) {
+      throw new Error('token和accountId不能为空');
     }
-    if (this.currentUser) {
-      this.currentUser.isAnonymous = false;
-      this.currentUser.cloudToken = token;
-      this.currentUser.accountId = accountId;
-      this.currentUser.displayName = displayName;
-      await this.persistUser();
+    if (this.isProcessing) {
+      throw new Error('认证操作进行中，请稍后');
     }
-    return this.currentUser as AuthUser;
+    this.isProcessing = true;
+    try {
+      if (!this.currentUser) {
+        await this.signInAnonymously();
+      }
+      if (this.currentUser) {
+        this.currentUser.isAnonymous = false;
+        this.currentUser.cloudToken = token;
+        this.currentUser.accountId = accountId;
+        this.currentUser.displayName = displayName;
+        await this.persistUser();
+      }
+      return this.currentUser as AuthUser;
+    } finally {
+      this.isProcessing = false;
+    }
   }
 
   /**
@@ -143,14 +169,14 @@ export class CloudAuthService {
 
   private generateLocalUid(): AuthUser {
     const uid = `local_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
-    return {
-      uid: uid,
-      isAnonymous: true,
-      createdAt: Date.now(),
-      cloudToken: '',
-      displayName: '',
-      accountId: ''
-    };
+    const user = new AuthUser();
+    user.uid = uid;
+    user.isAnonymous = true;
+    user.createdAt = Date.now();
+    user.cloudToken = '';
+    user.displayName = '';
+    user.accountId = '';
+    return user;
   }
 
   private async persistUser(): Promise<void> {

@@ -10,18 +10,18 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AiServiceBase } from './ai/AiServiceBase';
 import { AI_SERVICE_DEFAULTS, SYSTEM_PROMPTS } from './ai/AiConfig';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { HILOG_DOMAIN } from 'hsp_core';
 
 const TAG = 'AiPolishService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 // 润色输入（已脱敏）
-export interface PolishInput {
-  healthGoal: string;    // 如"控压"
-  level: string;         // 如"今天谨慎"
-  maxAmount: number;     // 如25
-  reasons: string[];     // 原因列表（已脱敏）
-  reminders: string[];   // 提醒列表
+export class PolishInput {
+  healthGoal: string = '';
+  level: string = '';
+  maxAmount: number = 0;
+  reasons: string[] = [];
+  reminders: string[] = [];
 }
 
 export class AiPolishService extends AiServiceBase {
@@ -38,7 +38,7 @@ export class AiPolishService extends AiServiceBase {
   }
 
   protected getSystemPrompt(): string {
-    return SYSTEM_PROMPTS.POLISH;
+    return SYSTEM_PROMPTS.get('POLISH') || '';
   }
 
   /** 获取剩余 Token（从基类统一管理） */
@@ -83,9 +83,10 @@ export class AiPolishService extends AiServiceBase {
    * 保留兼容接口：低成本架构下不再让AI参与OCR结构化。
    * OCR字段提取统一由 FoodInputService + OcrService 完成。
    */
-  async structureOcrText(_ocrText: string): Promise<Record<string, string>> {
+  async structureOcrText(_ocrText: string): Promise<Map<string, string>> {
     hilog.info(DOMAIN_ZERO, TAG, 'AI OCR structuring disabled in low-cost architecture');
-    return {};
+    const result: Map<string, string> = new Map();
+    return result;
   }
 
   private buildRawText(input: PolishInput): string {

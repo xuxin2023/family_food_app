@@ -1,21 +1,13 @@
 // RecipeDetailPage.ets
 // 食谱详情页面 — 详情、评论、点赞
 
-import { router, promptAction } from '@kit.ArkUI';
+import {
+  ToastHelper, getPageParams, Recipe, RecipeComment, DietTag, RecipeIngredient, RecipeStep, COLORS, RADIUS, BasicDataSource, HILOG_DOMAIN, getCategoryLabel, getCategoryEmoji, getDifficultyLabel, getDietTagLabel, formatTime
+} from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
-import { Recipe, RecipeComment, DietTag, RecipeIngredient, RecipeStep } from '../model/Recipe';
-import { COLORS, RADIUS, BUTTON, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
-import { BasicDataSource } from '../utils/BasicDataSource';
-import {
-  getCategoryLabel,
-  getCategoryEmoji,
-  getDifficultyLabel,
-  getDietTagLabel,
-  formatTime
-} from '../utils/RecipeUtil';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+
 
 const TAG = 'RecipeDetailPage';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -29,6 +21,7 @@ struct RecipeDetailPage {
   @Local isLoading: boolean = true
   @Local commentText: string = ''
   @Local selectedSection: string = 'detail'
+  @Local currentBreakpoint: string = 'md'
 
   private appState: AppState = AppState.getInstance()
   private comments: RecipeComment[] = []
@@ -36,10 +29,9 @@ struct RecipeDetailPage {
   private recipeId: string = ''
 
   async aboutToAppear() {
-    const params = router.getParams() as Record<string, Object>
-    if (params) {
-      this.recipeId = (params.recipeId as string) || ''
-    }
+    const params = getPageParams()
+    const raw = params !== undefined ? params.get('recipeId') : undefined;
+    this.recipeId = (typeof raw === 'string' ? raw : '');
     await this.loadRecipe()
   }
 
@@ -49,9 +41,15 @@ struct RecipeDetailPage {
     try {
       this.recipe = await this.appState.getRecipeDetail(this.recipeId)
       if (this.recipe) {
-        this.comments = await this.appState.getRecipeComments(this.recipeId)
+        const allResults = await Promise.all([
+          this.appState.getRecipeComments(this.recipeId),
+          this.appState.hasLikedRecipe(this.recipeId)
+        ])
+        const comments = allResults[0] as RecipeComment[]
+        const hasLiked = allResults[1] as boolean
+        this.comments = comments
         this.commentDS.reload(this.comments)
-        this.hasLiked = await this.appState.hasLikedRecipe(this.recipeId)
+        this.hasLiked = hasLiked
       }
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'load error: %{public}s', JSON.stringify(e))
@@ -64,6 +62,8 @@ struct RecipeDetailPage {
       // 顶栏
       Row() {
         BackButton()
+        .accessibilityText('返回')
+        .accessibilityLevel('yes')
         Text($r('app.string.recipe_detail'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
@@ -77,33 +77,44 @@ struct RecipeDetailPage {
       } else if (!this.recipe) {
         Text($r('app.string.recipe_not_found')).fontSize(16).fontColor(COLORS.TEXT_GRAY_6161).margin({ top: 100 })
       } else {
-        Scroll() {
-          Column() {
-            // 封面
-            this.coverSection()
+        GridRow({
+          columns: { sm: 4, md: 8, lg: 12 },
+          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
+        }) {
+          GridCol({ span: { sm: 4, md: 8, lg: 10 }, offset: { sm: 0, md: 0, lg: 1 } }) {
+            Scroll() {
+              Column() {
+                // 封面
+                this.coverSection()
 
-            // 基本信息
-            this.infoSection()
+                // 基本信息
+                this.infoSection()
 
-            // Tab切换: 详情 / 评论
-            Row({ space: 0 }) {
-              this.sectionTab('食谱详情', 'detail')
-              this.sectionTab('评论', 'comment')
+                // Tab切换: 详情 / 评论
+                Row({ space: 0 }) {
+                  this.sectionTab($r('app.string.recipe_detail_tab_detail'), 'detail')
+                  this.sectionTab($r('app.string.recipe_detail_tab_comment'), 'comment')
+                }
+                .width('100%')
+                .padding({ left: 16, right: 16 })
+                .margin({ top: 8 })
+
+                if (this.selectedSection === 'detail') {
+                  this.detailSection()
+                } else {
+                  this.commentSection()
+                }
+              }
+              .width('100%')
+              .padding({ bottom: 80 })
             }
             .width('100%')
-            .padding({ left: 16, right: 16 })
-            .margin({ top: 8 })
-
-            if (this.selectedSection === 'detail') {
-              this.detailSection()
-            } else {
-              this.commentSection()
-            }
+            .layoutWeight(1)
           }
-          .width('100%')
-          .padding({ bottom: 80 })
         }
+        .width('100%')
         .layoutWeight(1)
+        .onBreakpointChange((bp: string) => { this.currentBreakpoint = bp })
       }
     }
     .width('100%')
@@ -113,15 +124,16 @@ struct RecipeDetailPage {
 
   @Builder
   coverSection() {
+    if (this.recipe === null) return
     Column() {
-      Text(getCategoryEmoji(this.recipe!.category))
+      Text(getCategoryEmoji(this.recipe.category))
         .fontSize(72)
-      Text(this.recipe!.title)
+      Text(this.recipe.title)
         .fontSize(24)
         .fontWeight(FontWeight.Bold)
         .fontColor(COLORS.WHITE)
         .margin({ top: 16 })
-      Text(getCategoryLabel(this.recipe!.category) + ' · ' + getDifficultyLabel(this.recipe!.difficulty))
+      Text(getCategoryLabel(this.recipe.category) + ' · ' + getDifficultyLabel(this.recipe.difficulty))
         .fontSize(14)
         .fontColor(COLORS.WHITE)
         .opacity(0.8)
@@ -136,10 +148,11 @@ struct RecipeDetailPage {
 
   @Builder
   infoSection() {
+    if (this.recipe === null) return
     Row({ space: 0 }) {
-      this.infoItem('⏱️', this.recipe!.totalMinutes.toString() + '分钟')
-      this.infoItem('🍽️', this.recipe!.servings.toString() + '人份')
-      this.infoItem('📝', this.recipe!.steps.length.toString() + '步')
+      this.infoItem('⏱️', this.recipe.totalMinutes.toString() + $r('app.string.recipe_detail_minute'))
+      this.infoItem('🍽️', this.recipe.servings.toString() + $r('app.string.recipe_detail_serving'))
+      this.infoItem('📝', this.recipe.steps.length.toString() + $r('app.string.recipe_detail_step'))
     }
     .width('100%')
     .padding(16)
@@ -150,7 +163,7 @@ struct RecipeDetailPage {
     Row({ space: 16 }) {
       Row({ space: 6 }) {
         Text(this.hasLiked ? '❤️' : '🤍').fontSize(20)
-        Text(this.recipe!.likeCount.toString()).fontSize(14).fontColor(COLORS.TEXT_SECONDARY)
+        Text(this.recipe.likeCount.toString()).fontSize(14).fontColor(COLORS.TEXT_SECONDARY)
       }
       .onClick(() => {
         this.appState.toggleRecipeLike(this.recipeId).then((newState: boolean) => {
@@ -163,6 +176,8 @@ struct RecipeDetailPage {
           this.hasLiked = newState
         })
       })
+      .accessibilityText('点赞')
+      .accessibilityLevel('yes')
       .padding({ left: 12, right: 12, top: 6, bottom: 6 })
       .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
       .borderRadius(20)
@@ -174,9 +189,11 @@ struct RecipeDetailPage {
       .onClick(() => {
         this.appState.toggleRecipeBookmark(this.recipeId, '').then((result: boolean) => {
           this.hasBookmarked = result
-          promptAction.showToast({ message: result ? '已收藏' : '已取消收藏' })
+          ToastHelper.show(this.getUIContext(), result ? $r('app.string.recipe_detail_favorited') : $r('app.string.recipe_detail_unfavorited'))
         })
       })
+      .accessibilityText('收藏')
+      .accessibilityLevel('yes')
       .padding({ left: 12, right: 12, top: 6, bottom: 6 })
       .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
       .borderRadius(20)
@@ -197,7 +214,7 @@ struct RecipeDetailPage {
   }
 
   @Builder
-  sectionTab(label: string, value: string) {
+  sectionTab(label: ResourceStr, value: string) {
     Column() {
       Text(label)
         .fontSize(15)
@@ -214,16 +231,19 @@ struct RecipeDetailPage {
     .layoutWeight(1)
     .alignItems(HorizontalAlign.Center)
     .onClick(() => { this.selectedSection = value })
+    .accessibilityText(label as string)
+    .accessibilityLevel('yes')
   }
 
   @Builder
   detailSection() {
+    if (this.recipe === null) return
     Column() {
       // 描述
-      if (this.recipe!.description.length > 0) {
+      if (this.recipe.description.length > 0) {
         Column() {
           Text($r('app.string.intro_label')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 8 })
-          Text(this.recipe!.description).fontSize(14).fontColor(COLORS.TEXT_SECONDARY).lineHeight(22)
+          Text(this.recipe.description).fontSize(14).fontColor(COLORS.TEXT_SECONDARY).lineHeight(22)
         }
         .width('100%')
         .padding(16)
@@ -232,36 +252,27 @@ struct RecipeDetailPage {
         .margin({ bottom: 12 })
       }
 
-      // 食材
-      Column() {
-        Text($r('app.string.ingredient_list')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
-        ForEach(this.recipe!.ingredients, (ing: RecipeIngredient) => {
-          Row() {
-            Text('•').fontSize(14).fontColor(COLORS.PRIMARY).margin({ right: 8 })
-            Text(ing.name).fontSize(14).fontWeight(FontWeight.Medium)
-            Blank()
-            Text(ing.amount).fontSize(13).fontColor(COLORS.TEXT_GRAY_6161)
+      // 食材 + 营养信息: lg 下并排，sm/md 下竖排
+      if (this.currentBreakpoint === 'lg') {
+        Row({ space: 12 }) {
+          this.ingredientsColumn()
+          if (this.recipe.nutrition) {
+            this.nutritionColumn()
           }
-          .width('100%')
-          .margin({ bottom: 6 })
-          if (ing.alternative.length > 0) {
-            Text('可选替代：' + ing.alternative)
-              .fontSize(12)
-              .fontColor(COLORS.TEXT_GRAY_9E9E)
-              .margin({ left: 16, bottom: 6 })
-          }
-        })
+        }
+        .width('100%')
+        .alignItems(VerticalAlign.Top)
+      } else {
+        this.ingredientsColumn()
+        if (this.recipe.nutrition) {
+          this.nutritionColumn()
+        }
       }
-      .width('100%')
-      .padding(16)
-      .backgroundColor(COLORS.WHITE)
-      .borderRadius(RADIUS.LG)
-      .margin({ bottom: 12 })
 
       // 步骤
       Column() {
         Text($r('app.string.cook_steps')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
-        ForEach(this.recipe!.steps, (step: RecipeStep) => {
+        ForEach(this.recipe.steps, (step: RecipeStep) => {
           Row() {
             Stack() {
               Circle()
@@ -284,7 +295,7 @@ struct RecipeDetailPage {
           .width('100%')
           .alignItems(VerticalAlign.Top)
           .margin({ bottom: 12 })
-        })
+        }, (step: RecipeStep, i: number) => `step_${i}`)
       }
       .width('100%')
       .padding(16)
@@ -292,37 +303,19 @@ struct RecipeDetailPage {
       .borderRadius(RADIUS.LG)
       .margin({ bottom: 12 })
 
-      // 营养信息
-      if (this.recipe!.nutrition) {
-        Column() {
-          Text($r('app.string.nutrition_per_serving')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
-          this.nutritionRow('热量', this.recipe!.nutrition!.calories.toString() + ' kcal')
-          this.nutritionRow('蛋白质', this.recipe!.nutrition!.protein)
-          this.nutritionRow('脂肪', this.recipe!.nutrition!.fat)
-          this.nutritionRow('碳水化合物', this.recipe!.nutrition!.carbohydrate)
-          this.nutritionRow('钠', this.recipe!.nutrition!.sodium)
-          this.nutritionRow('糖', this.recipe!.nutrition!.sugar)
-        }
-        .width('100%')
-        .padding(16)
-        .backgroundColor(COLORS.WHITE)
-        .borderRadius(RADIUS.LG)
-        .margin({ bottom: 12 })
-      }
-
       // 适配标签
-      if (this.recipe!.dietTags.length > 0) {
+      if (this.recipe.dietTags.length > 0) {
         Column() {
           Text($r('app.string.suitable_persons')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 8 })
           Row({ space: 8 }) {
-            ForEach(this.recipe!.dietTags, (tag: DietTag) => {
+            ForEach(this.recipe.dietTags, (tag: DietTag) => {
               Text(getDietTagLabel(tag))
                 .fontSize(12)
                 .fontColor(COLORS.ACCENT_GREEN_4CAF)
                 .backgroundColor(COLORS.BG_LIGHT_GREEN)
                 .padding({ left: 10, right: 10, top: 4, bottom: 4 })
                 .borderRadius(12)
-            })
+            }, (tag: DietTag) => tag)
           }
         }
         .width('100%')
@@ -334,7 +327,7 @@ struct RecipeDetailPage {
 
       // 作者
       Row() {
-        Text('👩‍🍳 发布者：' + this.recipe!.authorName)
+        Text($r('app.string.recipe_detail_author') + this.recipe.authorName)
           .fontSize(13)
           .fontColor(COLORS.TEXT_GRAY_9E9E)
       }
@@ -346,7 +339,55 @@ struct RecipeDetailPage {
   }
 
   @Builder
-  nutritionRow(label: string, value: string) {
+  ingredientsColumn() {
+    if (this.recipe === null) return
+    Column() {
+      Text($r('app.string.ingredient_list')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
+      ForEach(this.recipe.ingredients, (ing: RecipeIngredient) => {
+        Row() {
+          Text('•').fontSize(14).fontColor(COLORS.PRIMARY).margin({ right: 8 })
+          Text(ing.name).fontSize(14).fontWeight(FontWeight.Medium)
+          Blank()
+          Text(ing.amount).fontSize(13).fontColor(COLORS.TEXT_GRAY_6161)
+        }
+        .width('100%')
+        .margin({ bottom: 6 })
+        if (ing.alternative.length > 0) {
+          Text($r('app.string.recipe_detail_alt_replace') + ing.alternative)
+            .fontSize(12)
+            .fontColor(COLORS.TEXT_GRAY_9E9E)
+            .margin({ left: 16, bottom: 6 })
+        }
+      }, (ing: RecipeIngredient, i: number) => `ing_${i}`)
+    }
+    .layoutWeight(1)
+    .padding(16)
+    .backgroundColor(COLORS.WHITE)
+    .borderRadius(RADIUS.LG)
+    .margin({ bottom: 12 })
+  }
+
+  @Builder
+  nutritionColumn() {
+    if (this.recipe === null || this.recipe.nutrition === null) return
+    Column() {
+      Text($r('app.string.nutrition_per_serving')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
+      this.nutritionRow($r('app.string.recipe_detail_calories'), this.recipe.nutrition.calories.toString() + ' kcal')
+      this.nutritionRow($r('app.string.recipe_detail_protein'), this.recipe.nutrition.protein)
+      this.nutritionRow($r('app.string.recipe_detail_fat'), this.recipe.nutrition.fat)
+      this.nutritionRow($r('app.string.recipe_detail_carbohydrate'), this.recipe.nutrition.carbohydrate)
+      this.nutritionRow($r('app.string.recipe_detail_sodium'), this.recipe.nutrition.sodium)
+      this.nutritionRow($r('app.string.recipe_detail_sugar'), this.recipe.nutrition.sugar)
+    }
+    .layoutWeight(1)
+    .padding(16)
+    .backgroundColor(COLORS.WHITE)
+    .borderRadius(RADIUS.LG)
+    .margin({ bottom: 12 })
+  }
+
+  @Builder
+  nutritionRow(label: ResourceStr, value: string) {
     Row() {
       Text(label).fontSize(14).fontColor(COLORS.TEXT_SECONDARY)
       Blank()
@@ -361,14 +402,16 @@ struct RecipeDetailPage {
     Column() {
       // 评论输入区
       Row({ space: 8 }) {
-        TextInput({ placeholder: '写下你的评论...', text: this.commentText })
+        TextInput({ placeholder: $r('app.string.recipe_detail_comment_placeholder'), text: this.commentText })
           .layoutWeight(1)
           .height(40)
           .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
           .borderRadius(20)
           .padding({ left: 16 })
           .onChange((v: string) => { this.commentText = v })
-        Button('发送')
+          .accessibilityText('评论输入')
+          .accessibilityLevel('yes')
+        Button($r('app.string.recipe_detail_send'))
           .height(36)
           .backgroundColor(COLORS.PRIMARY)
           .borderRadius(18)
@@ -381,10 +424,12 @@ struct RecipeDetailPage {
               this.appState.getRecipeComments(this.recipeId).then((comments: RecipeComment[]) => {
                 this.comments = comments
                 this.commentDS.reload(this.comments)
-                promptAction.showToast({ message: '评论已发送' })
+                ToastHelper.show(this.getUIContext(), $r('app.string.recipe_detail_comment_sent'))
               })
             })
           })
+          .accessibilityText('发送评论')
+          .accessibilityLevel('yes')
       }
       .width('100%')
       .padding(12)
@@ -448,5 +493,12 @@ struct RecipeDetailPage {
       }
     }
     .width('100%')
+  }
+
+  pageTransition() {
+    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Right)
+    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
+      .slide(SlideEffect.Left)
   }
 }

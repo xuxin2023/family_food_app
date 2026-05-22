@@ -1,45 +1,40 @@
 // PushNotificationService.ets
 // 代理提醒服务 - 基于 @kit.BackgroundTasksKit 实现定时提醒
+// V2: 支持自定义 ReminderRule 替代硬编码提醒
 
+import { HILOG_DOMAIN, DB_NAME, ReminderRule, PRESET_REMINDER_RULES } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
-import { preferences } from '@kit.ArkData';
+import { preferences, relationalStore } from '@kit.ArkData';
 import { reminderAgentManager } from '@kit.BackgroundTasksKit';
 import { BusinessError } from '@kit.BasicServicesKit';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { ReminderRuleRepository } from '../repository/ReminderRuleRepository';
+import { notificationManager } from '@kit.NotificationKit';
 
 const TAG = 'PushNotificationService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
-export interface NotificationConfig {
-  dietReminderEnabled: boolean;
-  dietReminderHour: number;
-  dietReminderMinute: number;
-  weeklyReportEnabled: boolean;
-  weeklyReportDay: number;
-  weeklyReportHour: number;
-  budgetAlertEnabled: boolean;
+export class NotificationConfig {
+  dietReminderEnabled: boolean = true;
+  dietReminderHour: number = 19;
+  dietReminderMinute: number = 0;
+  weeklyReportEnabled: boolean = true;
+  weeklyReportDay: number = 0;
+  weeklyReportHour: number = 20;
+  budgetAlertEnabled: boolean = true;
 }
 
-export interface NotificationConfigUpdate {
-  dietReminderEnabled?: boolean;
-  dietReminderHour?: number;
-  dietReminderMinute?: number;
-  weeklyReportEnabled?: boolean;
-  weeklyReportDay?: number;
-  weeklyReportHour?: number;
-  budgetAlertEnabled?: boolean;
+export class NotificationConfigUpdate {
+  dietReminderEnabled: boolean = true;
+  dietReminderHour: number = 19;
+  dietReminderMinute: number = 0;
+  weeklyReportEnabled: boolean = true;
+  weeklyReportDay: number = 0;
+  weeklyReportHour: number = 20;
+  budgetAlertEnabled: boolean = true;
 }
 
-export const DEFAULT_NOTIFICATION_CONFIG: NotificationConfig = {
-  dietReminderEnabled: true,
-  dietReminderHour: 19,
-  dietReminderMinute: 0,
-  weeklyReportEnabled: true,
-  weeklyReportDay: 0,
-  weeklyReportHour: 20,
-  budgetAlertEnabled: true
-};
+export const DEFAULT_NOTIFICATION_CONFIG: NotificationConfig = new NotificationConfig();
 
 export class PushNotificationService {
   private context: common.Context | null = null;
@@ -62,6 +57,65 @@ export class PushNotificationService {
     }
 
     hilog.info(DOMAIN_ZERO, TAG, 'All reminders setup, count: %{public}d', this.reminderIds.length);
+  }
+
+  async setupAllRemindersFromRules(): Promise<void> {
+    await this.cancelAllReminders();
+
+    if (!this.context) return;
+
+    try {
+      const rdbConfig: relationalStore.StoreConfig = { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 };
+      const rdbStore = await relationalStore.getRdbStoreV9(this.context, rdbConfig);
+      const ruleRepo = new ReminderRuleRepository();
+      await ruleRepo.init(rdbStore);
+      const enabledRules = await ruleRepo.getEnabledRules();
+
+      for (const rule of enabledRules) {
+        if (rule.time.length === 0) continue;
+        const parts = rule.time.split(':');
+        if (parts.length < 2) continue;
+        const hour = parseInt(parts[0], 10);
+        const minute = parseInt(parts[1], 10);
+        if (isNaN(hour) || isNaN(minute)) continue;
+
+        try {
+          const wantAgent: reminderAgentManager.WantAgent = {
+            pkgName: this.context?.applicationInfo.name || '',
+            abilityName: 'EntryAbility'
+          };
+          const request: reminderAgentManager.ReminderRequestCalendar = {
+            reminderType: reminderAgentManager.ReminderType.REMINDER_TYPE_CALENDAR,
+            dateTime: {
+              year: 0,
+              month: 0,
+              day: 0,
+              hour: hour,
+              minute: minute
+            } as reminderAgentManager.LocalDateTime,
+            repeatMonths: [],
+            repeatDays: rule.repeatDays.length > 0 ? rule.repeatDays : [1, 2, 3, 4, 5, 6, 7],
+            title: '饮食提醒',
+            content: rule.message,
+            expiredContent: rule.message,
+            wantAgent: wantAgent,
+            ringDuration: 5,
+            snoozeTimes: 1,
+            timeInterval: 5
+          };
+          const reminderId: number = await reminderAgentManager.publishReminder(request);
+          this.reminderIds.push(reminderId);
+        } catch (error) {
+          const bizErr: BusinessError = error as BusinessError;
+          hilog.warn(DOMAIN_ZERO, TAG, 'Setup rule reminder failed: %{public}s', bizErr.message);
+        }
+      }
+
+      hilog.info(DOMAIN_ZERO, TAG, 'Rule-based reminders setup, count: %{public}d', this.reminderIds.length);
+    } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Setup rule reminders failed, fallback to default: %{public}s', JSON.stringify(error));
+      await this.setupAllReminders();
+    }
   }
 
   async setupDietReminder(): Promise<number> {
@@ -168,15 +222,14 @@ export class PushNotificationService {
   }
 
   async updateConfig(config: NotificationConfigUpdate): Promise<void> {
-    const merged: NotificationConfig = {
-      dietReminderEnabled: config.dietReminderEnabled ?? this.config.dietReminderEnabled,
-      dietReminderHour: config.dietReminderHour ?? this.config.dietReminderHour,
-      dietReminderMinute: config.dietReminderMinute ?? this.config.dietReminderMinute,
-      weeklyReportEnabled: config.weeklyReportEnabled ?? this.config.weeklyReportEnabled,
-      weeklyReportDay: config.weeklyReportDay ?? this.config.weeklyReportDay,
-      weeklyReportHour: config.weeklyReportHour ?? this.config.weeklyReportHour,
-      budgetAlertEnabled: config.budgetAlertEnabled ?? this.config.budgetAlertEnabled
-    };
+    const merged = new NotificationConfig();
+    merged.dietReminderEnabled = config.dietReminderEnabled;
+    merged.dietReminderHour = config.dietReminderHour;
+    merged.dietReminderMinute = config.dietReminderMinute;
+    merged.weeklyReportEnabled = config.weeklyReportEnabled;
+    merged.weeklyReportDay = config.weeklyReportDay;
+    merged.weeklyReportHour = config.weeklyReportHour;
+    merged.budgetAlertEnabled = config.budgetAlertEnabled;
     this.config = merged;
     await this.saveConfig();
     await this.setupAllReminders();
@@ -184,8 +237,8 @@ export class PushNotificationService {
 
   async getHasReminderPermission(): Promise<boolean> {
     try {
-      void import('@kit.NotificationKit');
-      return true;
+      const isEnabled = await notificationManager.isNotificationEnabled();
+      return isEnabled;
     } catch (_) {
       return false;
     }
@@ -195,15 +248,14 @@ export class PushNotificationService {
     if (!this.context) return;
     try {
       const prefs = await preferences.getPreferences(this.context, 'notification_config');
-      this.config = {
-        dietReminderEnabled: prefs.getSync('diet_reminder', true) as boolean,
-        dietReminderHour: prefs.getSync('diet_hour', 19) as number,
-        dietReminderMinute: prefs.getSync('diet_minute', 0) as number,
-        weeklyReportEnabled: prefs.getSync('weekly_report', true) as boolean,
-        weeklyReportDay: prefs.getSync('weekly_day', 0) as number,
-        weeklyReportHour: prefs.getSync('weekly_hour', 20) as number,
-        budgetAlertEnabled: prefs.getSync('budget_alert', true) as boolean
-      };
+      this.config = new NotificationConfig();
+      this.config.dietReminderEnabled = prefs.getSync('diet_reminder', true) as boolean;
+      this.config.dietReminderHour = prefs.getSync('diet_hour', 19) as number;
+      this.config.dietReminderMinute = prefs.getSync('diet_minute', 0) as number;
+      this.config.weeklyReportEnabled = prefs.getSync('weekly_report', true) as boolean;
+      this.config.weeklyReportDay = prefs.getSync('weekly_day', 0) as number;
+      this.config.weeklyReportHour = prefs.getSync('weekly_hour', 20) as number;
+      this.config.budgetAlertEnabled = prefs.getSync('budget_alert', true) as boolean;
     } catch (_) {
       // use defaults
     }

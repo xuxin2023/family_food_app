@@ -5,7 +5,7 @@
       {
         "cleartextPermitted": false,
         "domains": [
-          { "domain": "api.familyfood.example.com" }
+          { "domain": "cn-north-4.myhuaweicloud.com" }
         ],
         "certificates": [
           {

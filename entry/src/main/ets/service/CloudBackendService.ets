@@ -10,16 +10,13 @@
  */
 
 import { hilog } from '@kit.PerformanceAnalysisKit'
-import { HILOG_DOMAIN } from '../constants/AppConfig'
+import { http } from '@kit.NetworkKit'
+import { HILOG_DOMAIN, API_CONFIG } from 'hsp_core'
 import { ServiceGateway } from './ServiceGateway'
 
 const TAG = 'CloudBackendService'
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT
 
-// 华为云 API Gateway 地址（部署后替换为实际地址）
-const API_BASE_URL = 'https://api.familyfood.helper/v1'
-
-// 请求超时配置
 const REQUEST_TIMEOUT_MS = 10000
 
 /** 云端商品查询响应 */
@@ -225,35 +222,34 @@ export class CloudBackendService {
   // ==================== HTTP 请求封装 ====================
 
   private async httpPost(path: string, body: Record<string, Object>): Promise<Record<string, Object>> {
-    const url = `${API_BASE_URL}${path}`
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+    const url = `${API_CONFIG.HUAWEI_CLOUD_BASE_URL}${path}`
+    const httpClient = http.createHttp()
 
     try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
+      const response = await httpClient.request(url, {
+        method: http.RequestMethod.POST,
+        header: {
           'Content-Type': 'application/json',
           'X-App-Version': '4.0.0',
           'X-Platform': 'HarmonyOS'
         },
-        body: JSON.stringify(body),
-        signal: controller.signal as unknown as AbortSignal
+        extraData: JSON.stringify(body),
+        connectTimeout: REQUEST_TIMEOUT_MS,
+        readTimeout: REQUEST_TIMEOUT_MS
       })
-      clearTimeout(timeoutId)
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
+      if (response.responseCode < 200 || response.responseCode >= 300) {
+        throw new Error(`HTTP ${response.responseCode}`)
       }
 
-      const text = await response.text()
+      const result = response.result as string
       try {
-        return JSON.parse(text) as Record<string, Object>
+        return JSON.parse(result) as Record<string, Object>
       } catch {
         return { code: 500, message: 'Invalid JSON response', data: null }
       }
     } finally {
-      clearTimeout(timeoutId)
+      httpClient.destroy()
     }
   }
 }

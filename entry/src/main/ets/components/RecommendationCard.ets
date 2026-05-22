@@ -1,9 +1,8 @@
-// 适配结论卡组件
+import { Recommendation, getLevelColorValue, COLORS } from 'hsp_core';
+// 适配结论卡组件 — @ReusableV2 高频复用
 
-import { Recommendation, getLevelColorValue } from '../model/Recommendation';
-import { COLORS } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
+@ReusableV2
 @ComponentV2
 export struct RecommendationCard {
   @Param recommendation: Recommendation = new Recommendation();
@@ -83,5 +82,6 @@ export struct RecommendationCard {
     .backgroundColor(COLORS.WHITE)
     .borderRadius(12)
     .alignItems(HorizontalAlign.Start)
+    .accessibilityText(`适配建议：${this.memberName}，${this.recommendation?.reasons?.join('，') ?? ''}`)
   }
 }

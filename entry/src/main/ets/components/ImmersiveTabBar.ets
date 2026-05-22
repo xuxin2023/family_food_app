@@ -27,11 +27,11 @@ export struct ImmersiveTabBar {
   aboutToAppear(): void {
     // 默认Tab配置
     this.tabs = [
-      { text: '首页', icon: $r('sys.media.ohos_ic_public_notes'), selectedIcon: $r('sys.media.ohos_ic_public_notes') },
-      { text: '扫码', icon: $r('sys.media.ohos_ic_public_scan'), selectedIcon: $r('sys.media.ohos_ic_public_scan') },
-      { text: '食谱', icon: $r('sys.media.ohos_ic_public_save'), selectedIcon: $r('sys.media.ohos_ic_public_save') },
-      { text: '报告', icon: $r('sys.media.ohos_ic_public_email'), selectedIcon: $r('sys.media.ohos_ic_public_email') },
-      { text: '我的', icon: $r('sys.media.ohos_ic_public_person'), selectedIcon: $r('sys.media.ohos_ic_public_person') }
+      { text: $r('app.string.tab_home') as string, icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') },
+      { text: $r('app.string.tab_scan') as string, icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') },
+      { text: $r('app.string.tab_recipe') as string, icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') },
+      { text: $r('app.string.tab_report') as string, icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') },
+      { text: $r('app.string.tab_mine') as string, icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') }
     ];
   }
 
@@ -54,6 +54,8 @@ export struct ImmersiveTabBar {
           .layoutWeight(1)
           .alignItems(HorizontalAlign.Center)
           .padding({ top: 8, bottom: 4 })
+          .accessibilityText(tab.text)
+          .accessibilityLevel('yes')
           .onClick(() => {
             if (this.isMinimized) {
               // 迷你栏状态：轻点退出最小化
@@ -77,6 +79,8 @@ export struct ImmersiveTabBar {
         color: 'rgba(0,0,0,0.08)',
         offsetY: this.isMinimized ? 2 : 4
       })
+      .accessibilityText($r('app.string.minimize_nav'))
+      .accessibilityLevel('yes')
       // 迷你栏交互：长按触发最小化
       .gesture(
         LongPressGesture({ repeat: false, duration: 500 })
@@ -107,7 +111,7 @@ export struct ImmersiveContainer {
 
   @Builder
   defaultContent() {
-    Text('内容区域')
+    Text($r('app.string.content_area'))
   }
 
   build() {

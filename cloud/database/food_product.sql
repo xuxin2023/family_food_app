@@ -48,7 +48,8 @@ CREATE TABLE IF NOT EXISTS food_products (
     INDEX idx_nutrition_grades (nutrition_grades),
     INDEX idx_categories (categories(255)),
     INDEX idx_source (source),
-    INDEX idx_search_count (search_count DESC)
+    INDEX idx_search_count (search_count DESC),
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT '软删除时间戳'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='食品商品信息主表';
 
@@ -65,7 +66,8 @@ CREATE TABLE IF NOT EXISTS scan_history (
     INDEX idx_uid (uid),
     INDEX idx_member_id (member_id),
     INDEX idx_barcode (barcode),
-    INDEX idx_created_at (created_at DESC)
+    INDEX idx_created_at (created_at DESC),
+    CONSTRAINT fk_scan_product FOREIGN KEY (product_id) REFERENCES food_products(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='用户扫描历史记录';
 

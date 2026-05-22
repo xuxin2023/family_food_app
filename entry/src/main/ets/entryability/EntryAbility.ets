@@ -1,6 +1,9 @@
 // 应用入口Ability - V4完整生命周期管理
 // V5新增：首次启动隐私政策与用户协议确认弹窗
 
+import {
+  DataSource, MemberTier, TIME_INTERVAL_CONFIG, CRASH_LOG_CONFIG, HILOG_DOMAIN, DB_NAME, NavigationManager, LocaleManager
+} from 'hsp_core';
 import { UIAbility, Want, AbilityConstant, errorManager } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
@@ -8,10 +11,14 @@ import { fileIo } from '@kit.CoreFileKit';
 import { AppState } from '../AppState';
 import { AnalyticsService } from '../service/AnalyticsService';
 import { PermissionManager } from '../service/PermissionManager';
-import { DataSource } from '../model/HealthSignal';
-import { MemberTier } from '../model/MemberStatus';
-import { preferences } from '@kit.ArkData';
-import { TIME_INTERVAL_CONFIG, CRASH_LOG_CONFIG, HILOG_DOMAIN } from '../constants/AppConfig';
+import { preferences, relationalStore } from '@kit.ArkData';
+import { warmUpOfflineDatabase } from '../service/OfflineFoodDatabase';
+import { SecureHttpClient } from '../service/SecureHttpClient';
+import { GlobalErrorHandler } from '../utils/GlobalErrorHandler';
+import { NetworkMonitorService } from '../service/NetworkMonitorService';
+import { DeepLinkHandler } from '../utils/DeepLinkHandler';
+import { PrivacyManager } from '../service/PrivacyManager';
+import { UpdateChecker, UpdateInfo } from '../service/UpdateChecker';
 
 const TAG = 'EntryAbility';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -23,8 +30,13 @@ export default class EntryAbility extends UIAbility {
   private crashLogDir: string = '';  // 崩溃日志目录
   private crashObserverId: number = -1;  // 崩溃观察器ID
 
+  private onCreateStartMs: number = 0;
+  private deferredInitTimer: number = -1;
+  private updateCheckTimer: number = -1;
+
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
-    hilog.info(DOMAIN_ZERO, TAG, 'onCreate');
+    this.onCreateStartMs = Date.now();
+    hilog.info(DOMAIN_ZERO, TAG, 'onCreate start %{public}d ms', this.onCreateStartMs);
 
     // ===== 处理来自卡片的 router 跳转 =====
     this.handleCardWant(want);
@@ -32,43 +44,136 @@ export default class EntryAbility extends UIAbility {
     // ===== 崩溃监控初始化 =====
     this.initCrashMonitor();
 
+    // ===== 全局错误处理初始化 =====
+    GlobalErrorHandler.getInstance().init(this.context);
+    GlobalErrorHandler.getInstance().registerGlobalHandler();
+
+    // ===== 全局网络监听初始化 =====
+    NetworkMonitorService.getInstance().register();
+
     // 初始化权限管理器（仅缓存上下文，不请求任何权限）
     PermissionManager.getInstance().init(this.context);
-
-    // 初始化埋点统计服务（不阻塞启动流程）
-    AnalyticsService.getInstance().init(this.context).then(() => {
-      hilog.info(DOMAIN_ZERO, TAG, 'AnalyticsService init success');
-    }).catch((err: Error) => {
-      hilog.warn(DOMAIN_ZERO, TAG, 'AnalyticsService init failed: %{public}s', err.message);
-    });
 
     // 标记初始化进行中
     AppStorage.setOrCreate('appStateReady', false);
 
-    // 异步初始化（不阻塞UI线程，但页面需等待 ready 标记）
-    // 注意：init 中不再调用涉及敏感权限的服务（DISTRIBUTED_DATASYNC、ACTIVITY_MOTION等）
-    this.appState.init(this.context)
-      .then(async () => {
-        hilog.info(DOMAIN_ZERO, TAG, 'AppState init success');
-        // 恢复订阅状态
-        await this.restoreSubscriptionState();
-        // 标记初始化完成
-        AppStorage.setOrCreate('appStateReady', true);
-      })
-      .catch((err: Error) => {
-        hilog.error(DOMAIN_ZERO, TAG, 'AppState init failed: %{public}s', err.message);
-        // 即使失败也标记完成（使用默认数据兜底）
-        AppStorage.setOrCreate('appStateReady', true);
-      });
+    // 初始化多语言管理器
+    LocaleManager.getInstance().init();
+
+    // AppStorage-V2 关键状态初始化
+    AppStorage.setOrCreate('networkIsOnline', false);
+    AppStorage.setOrCreate('currentMemberId', '');
+    AppStorage.setOrCreate('familyMemberCount', 0);
+    AppStorage.setOrCreate('favoriteCount', 0);
+
+    // 初始化 NavPathStack（供 Navigation 组件绑定）
+    NavigationManager.getStack();
 
     // 将context存入AppStorage供隐私弹窗使用
     AppStorage.setOrCreate('appContext', this.context);
+
+    // 异步初始化：不阻塞 void onCreate
+    this.initAsync();
+
+    hilog.info(DOMAIN_ZERO, TAG, 'onCreate end, cost %{public}d ms', Date.now() - this.onCreateStartMs);
+  }
+
+  private async initAsync(): Promise<void> {
+    try {
+      // 隐私合规检查 — 必须在数据初始化之前
+      const privacyAgreed = await this.checkPrivacyCompliance();
+
+      if (privacyAgreed) {
+        const rdbStore = await relationalStore.getRdbStoreV9(this.context,
+          { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 });
+        await this.appState.init(this.context, rdbStore);
+        const initEndMs = Date.now();
+        hilog.info(DOMAIN_ZERO, TAG, 'AppState init done, cost %{public}d ms', initEndMs - this.onCreateStartMs);
+
+        // SSL 证书钉定初始化 (HM 6.1 TOFU 模式)
+        SecureHttpClient.getInstance().init(this.context, false).then(() => {
+          hilog.info(DOMAIN_ZERO, TAG, 'SSL Pinning initialized (TOFU mode)');
+        }).catch((err: Error) => {
+          hilog.warn(DOMAIN_ZERO, TAG, 'SSL Pinning init failed: %{public}s', err.message);
+        });
+
+        // 预构建离线数据库索引（从JSON加载，失败则用硬编码回退）
+        await warmUpOfflineDatabase(this.context);
+
+        // 恢复订阅状态
+        await this.restoreSubscriptionState();
+      } else {
+        hilog.warn(DOMAIN_ZERO, TAG, 'Privacy not agreed, skip data init');
+      }
+    } catch (err) {
+      hilog.error(DOMAIN_ZERO, TAG, 'initAsync failed: %{public}s', JSON.stringify(err));
+    } finally {
+      AppStorage.setOrCreate('appStateReady', true);
+      this.deferredInitTimer = setTimeout(() => {
+        this.initDeferredServices();
+      }, 0);
+    }
+  }
+
+  private initDeferredServices(): void {
+    // 埋点统计服务
+    AnalyticsService.getInstance().init(this.context).then(() => {
+      hilog.info(DOMAIN_ZERO, TAG, 'AnalyticsService init success (deferred)');
+    }).catch((err: Error) => {
+      hilog.warn(DOMAIN_ZERO, TAG, 'AnalyticsService init failed: %{public}s', err.message);
+    });
+
+    // 隐私合规检查
+    this.checkPrivacyCompliance();
+
+    this.updateCheckTimer = setTimeout(() => {
+      this.silentCheckUpdate();
+    }, 5000);
+  }
+
+  private async checkPrivacyCompliance(): Promise<boolean> {
+    try {
+      const needReConsent = await PrivacyManager.needReConsent(this.context);
+      if (needReConsent) {
+        hilog.info(DOMAIN_ZERO, TAG, 'Privacy policy updated, re-consent required');
+        return false;
+      }
+      const agreed = await PrivacyManager.checkPrivacyAgreed(this.context);
+      return agreed;
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Privacy compliance check failed: %{public}s', JSON.stringify(e));
+      return false;
+    }
+  }
+
+  private async silentCheckUpdate(): Promise<void> {
+    try {
+      const shouldCheck = await UpdateChecker.shouldSilentCheck(this.context);
+      if (!shouldCheck) {
+        return;
+      }
+      const info: UpdateInfo | null = await UpdateChecker.checkUpdate(this.context);
+      if (info !== null) {
+        hilog.info(DOMAIN_ZERO, TAG, 'New version available: %{public}s', info.latestVersion);
+      }
+      await UpdateChecker.markChecked(this.context);
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Silent check update failed: %{public}s', JSON.stringify(e));
+    }
   }
 
   onDestroy(): void {
     hilog.info(DOMAIN_ZERO, TAG, 'onDestroy');
 
     // 清理定时器
+    if (this.deferredInitTimer !== -1) {
+      clearTimeout(this.deferredInitTimer);
+      this.deferredInitTimer = -1;
+    }
+    if (this.updateCheckTimer !== -1) {
+      clearTimeout(this.updateCheckTimer);
+      this.updateCheckTimer = -1;
+    }
     if (this.healthRefreshInterval !== -1) {
       try {
         clearInterval(this.healthRefreshInterval);
@@ -98,10 +203,20 @@ export default class EntryAbility extends UIAbility {
 
     // 停止 AnalyticsService 定时器并刷出剩余数据
     AnalyticsService.getInstance().destroy();
+
+    // 注销全局错误处理器
+    GlobalErrorHandler.getInstance().unregisterGlobalHandler();
+
+    // 注销全局网络监听
+    NetworkMonitorService.getInstance().unregister();
+
+    // 释放 AppState 持有的 Context 引用，防内存泄漏
+    this.appState.destroy();
   }
 
   onWindowStageCreate(windowStage: window.WindowStage): void {
-    hilog.info(DOMAIN_ZERO, TAG, 'onWindowStageCreate');
+    hilog.info(DOMAIN_ZERO, TAG, 'onWindowStageCreate, elapsed %{public}d ms from onCreate start',
+      Date.now() - this.onCreateStartMs);
 
     // 设置主窗口 - 先加载隐私确认页面，同意后跳转到HomePage
     windowStage.loadContent('pages/PrivacyDialogPage', (err, data) => {
@@ -109,12 +224,26 @@ export default class EntryAbility extends UIAbility {
         hilog.error(DOMAIN_ZERO, TAG, 'Failed to load content: %{public}s', JSON.stringify(err));
         return;
       }
-      hilog.info(DOMAIN_ZERO, TAG, 'Succeeded in loading content');
+      hilog.info(DOMAIN_ZERO, TAG, 'Succeeded in loading content, elapsed %{public}d ms',
+        Date.now() - this.onCreateStartMs);
     });
 
     // 设置窗口沉浸式状态栏
     windowStage.getMainWindow().then((win) => {
-      win.setWindowLayoutFullScreen(true);
+      try {
+        win.setWindowLayoutFullScreen(true);
+        // HarmonyOS 6.1: 沉浸光感模式（状态栏/导航栏自适应内容颜色）
+        win.setWindowSystemBarProperties({
+          statusBarColor: '#00000000',
+          navigationBarColor: '#00000000',
+          statusBarContentColor: '#000000'
+        });
+        // 悬浮导航指示条（minibar）在需要时显示
+        win.setSpecificSystemBarEnabled('navigationIndicator', false);
+      } catch (e) {
+        // ignore if not supported on older API levels
+      }
+      hilog.info(DOMAIN_ZERO, TAG, 'Window fullscreen layout set (HarmonyOS 6.1 immersive)');
     }).catch((err: Error) => {
       hilog.warn(DOMAIN_ZERO, TAG, 'Set fullscreen failed: %{public}s', err.message);
     });
@@ -122,6 +251,28 @@ export default class EntryAbility extends UIAbility {
 
   onWindowStageDestroy(): void {
     hilog.info(DOMAIN_ZERO, TAG, 'onWindowStageDestroy');
+  }
+
+  onNewWant(want: Want, launchParam: AbilityConstant.LaunchParam): void {
+    hilog.info(DOMAIN_ZERO, TAG, 'onNewWant received');
+    try {
+      const uri: string | undefined = want.uri;
+      if (uri !== undefined && uri.length > 0) {
+        const ALLOWED_SCHEMES = ['https', 'http', 'foodscan'];
+        const ALLOWED_HOSTS = ['foodscan.familyfood.app', 'openfoodfacts.org'];
+        const scheme = uri.split('://')[0];
+        let host = '';
+        try { host = new URL(uri).hostname; } catch { host = ''; }
+        if (ALLOWED_SCHEMES.includes(scheme) && (ALLOWED_HOSTS.length === 0 || ALLOWED_HOSTS.includes(host))) {
+          hilog.info(DOMAIN_ZERO, TAG, 'Deep link URI validated: %{public}s', uri);
+          DeepLinkHandler.handleUri(uri as string);
+        } else {
+          hilog.warn(DOMAIN_ZERO, TAG, 'Deep link URI rejected (scheme/host not whitelisted): %{public}s', scheme);
+        }
+      }
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'onNewWant handle failed: %{public}s', JSON.stringify(e));
+    }
   }
 
   onForeground(): void {
@@ -139,8 +290,15 @@ export default class EntryAbility extends UIAbility {
     // 刷新成员缓存（可能其他设备修改了数据）
     this.refreshMembersCache();
 
-    // 启动健康数据定时刷新（每30分钟）
-    if (this.healthRefreshInterval === -1 && this.appState.member.hasFamilyAccess()) {
+    if (this.healthRefreshInterval !== -1) {
+      try {
+        clearInterval(this.healthRefreshInterval);
+      } catch (_e) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'clearInterval failed before re-creation');
+      }
+      this.healthRefreshInterval = -1;
+    }
+    if (this.appState.member.hasFamilyAccess()) {
       this.healthRefreshInterval = setInterval(() => {
         this.refreshHealthData();
       }, TIME_INTERVAL_CONFIG.HEALTH_REFRESH_INTERVAL_MS);
@@ -245,7 +403,7 @@ export default class EntryAbility extends UIAbility {
   private async restoreSubscriptionState(): Promise<void> {
     try {
       const prefs = await preferences.getPreferences(this.context, 'app_state');
-      const tierStr = prefs.getSync('subscription_tier', MemberTier.FREE) as string;
+      const tierStr = (await prefs.get('subscription_tier', MemberTier.FREE)) as string;
       // 兼容旧值：从字符串映射到 MemberTier 枚举
       const restoredTier = this.parseTier(tierStr);
       this.appState.member.memberStatus.tier = restoredTier;
@@ -277,8 +435,8 @@ export default class EntryAbility extends UIAbility {
   private async persistAppState(): Promise<void> {
     try {
       const prefs = await preferences.getPreferences(this.context, 'app_state');
-      prefs.putSync('subscription_tier', this.appState.member.memberStatus.tier);
-      prefs.putSync('last_save_time', Date.now().toString());
+      await prefs.put('subscription_tier', this.appState.member.memberStatus.tier);
+      await prefs.put('last_save_time', Date.now().toString());
       await prefs.flush();
       hilog.info(DOMAIN_ZERO, TAG, 'App state persisted');
     } catch (error) {

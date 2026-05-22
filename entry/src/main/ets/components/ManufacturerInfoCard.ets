@@ -1,9 +1,7 @@
+import { FoodLabel, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT } from 'hsp_core';
 // ManufacturerInfoCard.ets
 // 生产信息卡组件 - 展示食品生产主体信息、SC编号、委托生产关系
 
-import { FoodLabel } from '../model/FoodLabel';
-import { COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
 
 @ComponentV2
 export struct ManufacturerInfoCard {
@@ -50,6 +48,7 @@ export struct ManufacturerInfoCard {
         .onClick(() => {
           // 跳转到官方查询页面
         })
+        .accessibilityText('查看生产企业信息')
     }
     .width('100%')
     .padding(SPACING.MD)

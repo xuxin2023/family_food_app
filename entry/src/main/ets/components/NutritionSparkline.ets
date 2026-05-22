@@ -1,9 +1,8 @@
 // NutritionSparkline.ets
 // 营养成分迷你趋势图组件 - 展示营养素的历史趋势变化（真实数据驱动）
 
-import { SPACING, FONT_SIZE, RADIUS, COLORS } from '../constants/AppTheme';
-import { TrendDirection, NutrientTrendData, DailyNutrientPoint } from '../engine/NutritionTrendEngine';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { SPACING, FONT_SIZE, RADIUS, COLORS } from 'hsp_core';
+import { NutrientTrendData } from '../engine/NutritionTrendEngine';
 
 @ComponentV2
 export struct NutritionSparkline {
@@ -49,7 +48,7 @@ export struct NutritionSparkline {
             .width(14)
             .height(bar.height)
             .borderRadius(3)
-            .backgroundColor(this.data!.color)
+            .backgroundColor(this.data?.color ?? COLORS.PRIMARY)
             .opacity(bar.opacity)
             .margin({ right: 3 })
           }, (_bar: BarItem, index: number) => index.toString())
@@ -76,7 +75,7 @@ export struct NutritionSparkline {
     if (points.length === 0) {
       // 无数据时展示占位柱
       for (let i = 0; i < 4; i++) {
-        bars.push({ height: 8, opacity: 0.3 });
+        bars.push(makeBarItem(8, 0.3));
       }
       return bars;
     }
@@ -85,22 +84,29 @@ export struct NutritionSparkline {
     const recent = points.slice(-8);
     for (let i = 0; i < recent.length; i++) {
       const ratio = Math.min(recent[i].value / maxVal, 1);
-      bars.push({
-        height: Math.max(3, Math.round(ratio * maxBarHeight)),
-        opacity: 0.5 + ratio * 0.5
-      });
+      bars.push(makeBarItem(
+        Math.max(3, Math.round(ratio * maxBarHeight)),
+        0.5 + ratio * 0.5
+      ));
     }
 
     // 如果不足8个，补充占位
     while (bars.length < 8) {
-      bars.unshift({ height: 4, opacity: 0.2 });
+      bars.unshift(makeBarItem(4, 0.2));
     }
 
     return bars;
   }
 }
 
-interface BarItem {
-  height: number;
-  opacity: number;
+class BarItem {
+  height: number = 0;
+  opacity: number = 0;
+}
+
+function makeBarItem(height: number, opacity: number): BarItem {
+  const item = new BarItem();
+  item.height = height;
+  item.opacity = opacity;
+  return item;
 }

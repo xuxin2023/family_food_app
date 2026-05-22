@@ -2,8 +2,7 @@
 // 食谱社区领域服务 - 从 AppState 剥离的食谱相关业务逻辑
 
 import { CreateRecipeParams, RecipeCommunityService } from '../service/RecipeCommunityService';
-import { Recipe, RecipeQueryParams, RecipeComment } from '../model/Recipe';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { Recipe, RecipeQueryParams, RecipeComment } from 'hsp_core';
 
 export class RecipeDomainService {
   private rs: RecipeCommunityService | null = null;

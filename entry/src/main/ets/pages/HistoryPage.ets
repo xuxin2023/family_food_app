@@ -1,14 +1,13 @@
-import { safeBack } from '../utils/RouterUtil';
+import { safeBack, FamilyProfile, DateUtil, COLORS, BasicDataSource, HILOG_DOMAIN } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
-import { FamilyProfile } from '../model/FamilyProfile';
 import { ScanHistoryRecord } from '../repository/HistoryRepository';
-import { DateUtil } from '../utils/DateUtil';
 import { EmptyState } from '../components/EmptyState';
 import { LoadingSkeleton } from '../components/SkeletonScreen';
-import { COLORS } from '../constants/AppTheme';
-import { BasicDataSource } from '../utils/BasicDataSource';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+
+const TAG = 'HistoryPage';
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 @Entry
 @ComponentV2
@@ -16,6 +15,7 @@ struct HistoryPage {
   @Local familyMembers: FamilyProfile[] = []
   @Local selectedMemberId: string = 'all'
   @Local isLoading: boolean = true
+  private componentActive: boolean = true
 
   private appState: AppState = AppState.getInstance()
   private historyRecords: ScanHistoryRecord[] = []
@@ -27,10 +27,14 @@ struct HistoryPage {
       this.familyMembers = await this.appState.getAllMembers()
       this.historyRecords = await this.appState.getRecentScanHistory(100)
       this.historyDS.reload(this.getVisibleRecords())
-    } catch (_e) {
-      // 异常时保留空列表，EmptyState 会展示
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, '加载历史记录失败: %{public}s', JSON.stringify(e));
     }
     this.isLoading = false
+  }
+
+  aboutToDisappear(): void {
+    this.componentActive = false
   }
 
   build() {
@@ -38,6 +42,8 @@ struct HistoryPage {
       Row() {
         BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
           .onClick(() => { safeBack() })
+          .accessibilityText('返回')
+          .accessibilityLevel('yes')
         Text($r('app.string.history_record'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
@@ -63,6 +69,8 @@ struct HistoryPage {
                   this.selectedMemberId = 'all'
                   this.historyDS.reload(this.getVisibleRecords())
                 })
+              .accessibilityText('全部')
+              .accessibilityLevel('yes')
 
             ForEach(this.familyMembers, (member: FamilyProfile) => {
               Text(member.nickname)
@@ -76,6 +84,8 @@ struct HistoryPage {
                   this.selectedMemberId = member.memberId
                   this.historyDS.reload(this.getVisibleRecords())
                 })
+                .accessibilityText(member.nickname)
+                .accessibilityLevel('yes')
             }, (member: FamilyProfile) => member.memberId)
           }
         }
@@ -87,8 +97,8 @@ struct HistoryPage {
         if (this.historyDS.totalCount() === 0) {
           EmptyState({
             icon: '📭',
-            title: '还没有历史记录',
-            subtitle: '先去拍标签或扫码，再回来查看'
+            title: $r('app.string.history_empty'),
+            subtitle: $r('app.string.history_empty_hint')
           })
         } else {
           List() {

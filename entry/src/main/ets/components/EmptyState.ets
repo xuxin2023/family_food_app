@@ -2,12 +2,11 @@
 // 可复用的空状态组件 - 统一管理各页面的"暂无数据"展示
 // 支持：自定义图标、主标题、副标题、操作按钮、顶部间距
 
-import { COLORS, FONT_SIZE, SPACING, RADIUS } from '../constants/AppTheme';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { COLORS, FONT_SIZE, SPACING, RADIUS } from 'hsp_core';
 
-export interface EmptyStateAction {
-  text: string;
-  onClick: () => void;
+export class EmptyStateAction {
+  text: string = '';
+  onClick: () => void = () => {};
 }
 
 @ComponentV2
@@ -16,10 +15,10 @@ export struct EmptyState {
   @Param icon: string = '📭';
 
   // 主标题
-  @Param title: string = '暂无内容';
+  @Param title: ResourceStr = '暂无内容';
 
   // 副标题（可选）
-  @Param subtitle: string = '';
+  @Param subtitle: ResourceStr = '';
 
   // 操作按钮（可选）
   @Param action: EmptyStateAction | null = null;
@@ -46,7 +45,7 @@ export struct EmptyState {
         .textAlign(TextAlign.Center)
 
       // 副标题
-      if (this.subtitle.length > 0) {
+      if (typeof this.subtitle === 'string' && this.subtitle.length > 0) {
         Text(this.subtitle)
           .fontSize(FONT_SIZE.SMALL)
           .fontColor(COLORS.TEXT_TERTIARY)
@@ -56,7 +55,7 @@ export struct EmptyState {
 
       // 操作按钮
       if (this.action !== null) {
-        Button(this.action!.text)
+        Button(this.action.text)
           .width(160)
           .height(40)
           .backgroundColor(COLORS.PRIMARY)
@@ -64,7 +63,8 @@ export struct EmptyState {
           .fontSize(FONT_SIZE.BODY)
           .fontColor(COLORS.TEXT_WHITE)
           .margin({ top: SPACING.LG })
-          .onClick(() => { this.action!.onClick() })
+          .onClick(() => { this.action?.onClick() })
+          .accessibilityText('执行操作')
       }
     }
     .width('100%')

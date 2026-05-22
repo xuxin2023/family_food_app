@@ -3,7 +3,7 @@
 // V2: 从 AppState 获取真实营养数据，支持降级到友好占位
 
 import { FormExtensionAbility, formBindingData, formInfo, formProvider } from '@kit.FormKit';
-import { Want } from '@kit.AbilityKit';
+import { Want, Configuration } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferences } from '@kit.ArkData';
@@ -20,11 +20,10 @@ const FORM_PREFS_NAME = 'form_store';
  */
 async function storeFormInfo(formId: string, formName: string, tempFlag: boolean,
   context: common.FormExtensionContext): Promise<void> {
-  const formInfoData: Record<string, string | boolean | number> = {
-    'formName': formName,
-    'tempFlag': tempFlag,
-    'updateCount': 0,
-  };
+  const formInfoData: Map<string, string | boolean | number> = new Map();
+  formInfoData.set('formName', formName);
+  formInfoData.set('tempFlag', tempFlag);
+  formInfoData.set('updateCount', 0);
   try {
     const storage = await preferences.getPreferences(context, { name: FORM_PREFS_NAME });
     await storage.put(formId, JSON.stringify(formInfoData));
@@ -169,7 +168,7 @@ export default class EntryFormAbility extends FormExtensionAbility {
     deleteFormInfo(formId, this.context);
   }
 
-  onConfigurationUpdate(config: import('@kit.AbilityKit').Configuration): void {
+  onConfigurationUpdate(config: Configuration): void {
     hilog.info(DOMAIN_NUMBER, TAG, `onConfigurationUpdate: ${JSON.stringify(config)}`);
   }
 

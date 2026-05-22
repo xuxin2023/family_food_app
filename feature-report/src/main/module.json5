@@ -1,0 +1,13 @@
+{
+  "module": {
+    "name": "feature-report",
+    "type": "shared",
+    "description": "报告功能模块 — 营养报告、健康预警、数据分析",
+    "deviceTypes": [
+      "phone",
+      "tablet",
+      "2in1"
+    ],
+    "deliveryWithInstall": true
+  }
+}

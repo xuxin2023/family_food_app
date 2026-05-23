@@ -128,7 +128,8 @@
             "EntryAbility"
           ],
           "when": "inuse"
-        }
+        },
+        "accessMode": "user_grant"
       },
       {
         "name": "ohos.permission.READ_HEALTH_DATA",
@@ -138,7 +139,8 @@
             "EntryAbility"
           ],
           "when": "inuse"
-        }
+        },
+        "accessMode": "user_grant"
       },
       {
         "name": "ohos.permission.ACTIVITY_MOTION",
@@ -148,7 +150,8 @@
             "EntryAbility"
           ],
           "when": "inuse"
-        }
+        },
+        "accessMode": "user_grant"
       },
       {
         "name": "ohos.permission.DISTRIBUTED_DATASYNC",
@@ -158,7 +161,8 @@
             "EntryAbility"
           ],
           "when": "inuse"
-        }
+        },
+        "accessMode": "user_grant"
       },
       {
         "name": "ohos.permission.MICROPHONE",

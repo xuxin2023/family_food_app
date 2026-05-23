@@ -1,7 +1,11 @@
 // 成员管理页 - 家庭成员列表
 
-import { safeBack, safePushUrl, FamilyProfile, BUTTON, COLORS } from 'hsp_core';
+import { safeBack, safePushUrl, FamilyProfile, BUTTON, COLORS, HILOG_DOMAIN } from 'hsp_core';
 import { AppState } from '../AppState';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+
+const TAG = 'MemberPage';
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 @Entry
 @ComponentV2
@@ -14,7 +18,8 @@ struct MemberPage {
   async aboutToAppear() {
     try {
       await this.loadMembers();
-    } catch (_e) {
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'aboutToAppear failed: %{public}s', JSON.stringify(e));
     }
   }
 

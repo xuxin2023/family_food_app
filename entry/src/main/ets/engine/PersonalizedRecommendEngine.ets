@@ -1,5 +1,5 @@
 import {
-  FamilyProfile, AgeGroup, HealthGoal, HealthSignal, BpStatus, BsStatus, FoodLabel, NutritionTarget, DailyBudget
+  FamilyProfile, AgeGroup, HealthGoal, HealthSignal, BpStatus, BsStatus, FoodLabel, NutritionTarget, DailyBudget, NutritionThreshold
 } from 'hsp_core';
 // PersonalizedRecommendEngine.ets
 // 个性化数据驱动推荐引擎
@@ -103,9 +103,9 @@ export class PersonalizedRecommendEngine {
     result.overallScore = Math.max(0, Math.min(100, result.overallScore));
 
     // 评级
-    if (result.overallScore >= 80) result.level = '推荐';
-    else if (result.overallScore >= 60) result.level = '可以';
-    else if (result.overallScore >= 40) result.level = '谨慎';
+    if (result.overallScore >= NutritionThreshold.SCORE_THRESHOLD_A) result.level = '推荐';
+    else if (result.overallScore >= NutritionThreshold.SCORE_THRESHOLD_B) result.level = '可以';
+    else if (result.overallScore >= NutritionThreshold.SCORE_THRESHOLD_C) result.level = '谨慎';
     else result.level = '不建议';
 
     // 个性化总结
@@ -128,7 +128,7 @@ export class PersonalizedRecommendEngine {
       switch (goal) {
         case HealthGoal.CONTROL_BP:
           if (food.nutrition.sodium >= 500) score -= 30;
-          else if (food.nutrition.sodium >= 300) score -= 15;
+          else if (food.nutrition.sodium >= NutritionThreshold.HIGH_SODIUM_MG) score -= 15;
           else if (food.nutrition.sodium <= 100) score += 10;
           break;
         case HealthGoal.CONTROL_SUGAR:
@@ -137,13 +137,13 @@ export class PersonalizedRecommendEngine {
           break;
         case HealthGoal.CONTROL_FAT:
         case HealthGoal.LOSE_FAT:
-          if (food.nutrition.fat >= 20) score -= 25;
+          if (food.nutrition.fat >= NutritionThreshold.HIGH_FAT_G) score -= 25;
           else if (food.nutrition.calories >= 400) score -= 20;
           else if (food.nutrition.fat <= 5) score += 5;
           break;
         case HealthGoal.CHILD:
           if (food.nutrition.sodium >= 400) score -= 10;
-          if (food.nutrition.sugar >= 20) score -= 10;
+          if (food.nutrition.sugar >= NutritionThreshold.HIGH_SUGAR_G) score -= 10;
           break;
       }
     }
@@ -168,11 +168,11 @@ export class PersonalizedRecommendEngine {
     const sugarRatio = food.nutrition.sugar / ctx.budget.sugarRemaining;
     const calorieRatio = food.nutrition.calories / ctx.budget.calorieRemaining;
 
-    if (sodiumRatio > 0.5) score -= 30;
+    if (sodiumRatio > NutritionThreshold.INTAKE_RATIO_LIMIT) score -= 30;
     else if (sodiumRatio > 0.3) score -= 15;
-    if (sugarRatio > 0.5) score -= 20;
+    if (sugarRatio > NutritionThreshold.INTAKE_RATIO_LIMIT) score -= 20;
     else if (sugarRatio > 0.3) score -= 10;
-    if (calorieRatio > 0.5) score -= 20;
+    if (calorieRatio > NutritionThreshold.INTAKE_RATIO_LIMIT) score -= 20;
 
     return Math.max(0, Math.min(100, score));
   }

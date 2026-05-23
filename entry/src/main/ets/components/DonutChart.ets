@@ -30,6 +30,7 @@ export struct DonutChart {
       .height(this.chartSize + 40)
       .justifyContent(FlexAlign.Center)
       .alignItems(HorizontalAlign.Center)
+      .accessibilityLevel('no')
     } else {
       Column() {
         // 圆环图
@@ -86,6 +87,7 @@ export struct DonutChart {
       }
       .width(this.chartSize)
       .alignItems(HorizontalAlign.Center)
+      .accessibilityLevel('no')
     }
   }
 

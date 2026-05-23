@@ -22,6 +22,17 @@ NUTRI_GRADE_MAP.set('nutri_c', 'C');
 NUTRI_GRADE_MAP.set('nutri_d', 'D');
 NUTRI_GRADE_MAP.set('nutri_e', 'E');
 
+@ObservedV2
+class FavoritePageViewModel {
+  @Trace allFavorites: FavoriteItem[] = []
+  @Trace filteredFavorites: FavoriteItem[] = []
+  @Trace isLoading: boolean = true
+  @Trace isRefreshing: boolean = false
+  @Trace favoriteCount: number = 0
+  @Trace filterTags: FilterTag[] = createAllFilterTags()
+  @Trace selectedFilterKeys: string[] = []
+}
+
 @ComponentV2
 struct FavoriteItemRow {
   @Param item: FavoriteItem = new FavoriteItem()
@@ -139,34 +150,33 @@ struct FavoriteItemRow {
 @Entry
 @ComponentV2
 struct FavoritePage {
-  @Local allFavorites: FavoriteItem[] = []
-  @Local filteredFavorites: FavoriteItem[] = []
-  @Local isLoading: boolean = true
-  @Local isRefreshing: boolean = false
-  @Local favoriteCount: number = 0
-  @Local filterTags: FilterTag[] = createAllFilterTags()
-  @Local selectedFilterKeys: string[] = []
+  @Local vm: FavoritePageViewModel = new FavoritePageViewModel()
 
+  private componentActive: boolean = true
   private appState: AppState = AppState.getInstance()
   private favoriteDS: FavoriteDataSource = new FavoriteDataSource()
 
   async aboutToAppear() {
+    this.componentActive = true
     await this.loadFavorites();
-    this.isLoading = false;
+    this.vm.isLoading = false;
   }
 
-  async onPageShow() {
-    await this.loadFavorites();
+  onPageShow(): void {
+    if (!this.vm.isLoading && this.favoriteDS.totalCount() === 0) {
+      this.loadFavorites();
+    }
   }
 
   aboutToDisappear(): void {
+    this.componentActive = false
     ImageCache.clear();
   }
 
   private async loadFavorites(): Promise<void> {
     try {
-      this.allFavorites = await this.appState.getAllFavorites();
-      this.favoriteCount = this.allFavorites.length;
+      this.vm.allFavorites = await this.appState.getAllFavorites();
+      this.vm.favoriteCount = this.vm.allFavorites.length;
       this.applyFilter();
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Load favorites failed: %{public}s', JSON.stringify(error));
@@ -174,14 +184,14 @@ struct FavoritePage {
   }
 
   private applyFilter(): void {
-    if (this.selectedFilterKeys.length === 0) {
-      this.filteredFavorites = this.allFavorites;
+    if (this.vm.selectedFilterKeys.length === 0) {
+      this.vm.filteredFavorites = this.vm.allFavorites;
     } else {
-      this.filteredFavorites = this.allFavorites.filter((item: FavoriteItem) => {
-        return this.selectedFilterKeys.some((key: string) => this.matchFilter(item, key));
+      this.vm.filteredFavorites = this.vm.allFavorites.filter((item: FavoriteItem) => {
+        return this.vm.selectedFilterKeys.some((key: string) => this.matchFilter(item, key));
       });
     }
-    this.favoriteDS.setData(this.filteredFavorites);
+    this.favoriteDS.setData(this.vm.filteredFavorites);
   }
 
   private matchFilter(item: FavoriteItem, key: string): boolean {
@@ -211,7 +221,7 @@ struct FavoritePage {
   }
 
   private onFilterChange(selectedKeys: string[]): void {
-    this.selectedFilterKeys = selectedKeys;
+    this.vm.selectedFilterKeys = selectedKeys;
     this.applyFilter();
   }
 
@@ -261,7 +271,7 @@ struct FavoritePage {
           .layoutWeight(1)
           .textAlign(TextAlign.Center)
 
-        Text(`${this.favoriteCount}`)
+        Text(`${this.vm.favoriteCount}`)
           .fontSize(FONT_SIZE.SMALL)
           .fontColor(COLORS.PRIMARY)
           .fontWeight(FONT_WEIGHT.BOLD)
@@ -274,15 +284,15 @@ struct FavoritePage {
       .backgroundColor(COLORS.BG_CARD)
 
       // 标签筛选栏
-      if (!this.isLoading && this.allFavorites.length > 0) {
+      if (!this.vm.isLoading && this.vm.allFavorites.length > 0) {
         FoodTagFilter({
-          tags: this.filterTags,
+          tags: this.vm.filterTags,
           onFilterChange: (selectedTags: string[]) => { this.onFilterChange(selectedTags) }
         })
           .margin({ top: SPACING.XS, bottom: SPACING.XS })
       }
 
-      if (this.isLoading) {
+      if (this.vm.isLoading) {
         Column() {
           LoadingProgress()
             .width(40)
@@ -292,13 +302,13 @@ struct FavoritePage {
         .width('100%')
         .layoutWeight(1)
         .justifyContent(FlexAlign.Center)
-      } else if (this.allFavorites.length === 0) {
+      } else if (this.vm.allFavorites.length === 0) {
         EmptyState({
           icon: '❤️',
           title: $r('app.string.favorite_empty_title'),
           subtitle: $r('app.string.favorite_empty_subtitle')
         })
-      } else if (this.filteredFavorites.length === 0 && this.selectedFilterKeys.length > 0) {
+      } else if (this.vm.filteredFavorites.length === 0 && this.vm.selectedFilterKeys.length > 0) {
         Column() {
           Text('🔍')
             .fontSize(48)
@@ -315,7 +325,7 @@ struct FavoritePage {
         .layoutWeight(1)
         .justifyContent(FlexAlign.Center)
       } else {
-        Refresh({ refreshing: $$this.isRefreshing }) {
+        Refresh({ refreshing: $$this.vm.isRefreshing }) {
           List({ space: 0 }) {
             LazyForEach(this.favoriteDS, (item: FavoriteItem) => {
               FavoriteItemRow({
@@ -332,12 +342,12 @@ struct FavoritePage {
         }
         .onRefreshing(async () => {
           await this.loadFavorites();
-          this.isRefreshing = false;
+          this.vm.isRefreshing = false;
         })
         .layoutWeight(1)
       }
 
-      if (this.favoriteCount >= FREE_FAVORITE_LIMIT) {
+      if (this.vm.favoriteCount >= FREE_FAVORITE_LIMIT) {
         Column() {
           Row() {
             Text($r('app.string.favorite_limit_hint'))

@@ -3,7 +3,7 @@
 // 参考《上海市食品营养分级标准》试行版（沪卫食品〔2023〕X号）
 // 分级依据：每100g/ml中能量、脂肪、糖、钠的综合判定
 
-import { NutritionPer100g } from 'hsp_core';
+import { NutritionPer100g, NutritionThreshold } from 'hsp_core';
 
 /**
  * 上海营养分级
@@ -209,9 +209,9 @@ export class ShanghaiGradeEngine {
    * 用于数据不足时的估算
    */
   static estimateFromScore(nutriScore: number): ShanghaiGrade {
-    if (nutriScore >= 80) return ShanghaiGrade.GRADE_A;
-    if (nutriScore >= 60) return ShanghaiGrade.GRADE_B;
-    if (nutriScore >= 40) return ShanghaiGrade.GRADE_C;
+    if (nutriScore >= NutritionThreshold.SCORE_THRESHOLD_A) return ShanghaiGrade.GRADE_A;
+    if (nutriScore >= NutritionThreshold.SCORE_THRESHOLD_B) return ShanghaiGrade.GRADE_B;
+    if (nutriScore >= NutritionThreshold.SCORE_THRESHOLD_C) return ShanghaiGrade.GRADE_C;
     return ShanghaiGrade.GRADE_D;
   }
 

@@ -1,9 +1,13 @@
 import {
-  COLORS, safeBack, FoodLabel, FamilyProfile, HealthSignal, NutritionTarget, createDefaultNutritionTarget, DailyBudget, PersonalizedRecommendation
+  COLORS, safeBack, FoodLabel, FamilyProfile, HealthSignal, NutritionTarget, createDefaultNutritionTarget, DailyBudget, PersonalizedRecommendation, HILOG_DOMAIN
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { PersonalizedContext, PersonalizedFactor } from '../engine/PersonalizedRecommendEngine';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+
+const TAG = 'PersonalizedRecommendPage';
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 @Entry
 @ComponentV2
@@ -31,7 +35,8 @@ struct PersonalizedRecommendPage {
         this.currentTarget = await this.appState.getNutritionTargetOrDefault(firstMember.memberId)
         this.currentBudget = await this.appState.getDailyBudget(firstMember.memberId)
       }
-    } catch (_e) {
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'aboutToAppear failed: %{public}s', JSON.stringify(e));
     }
     this.isLoading = false
   }

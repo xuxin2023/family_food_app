@@ -3,7 +3,7 @@
 // 参考: https://docs.score-environnemental.com/
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from 'hsp_core';
+import { HILOG_DOMAIN, NutritionThreshold } from 'hsp_core';
 
 const TAG = 'EcoScoreEngine';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -141,10 +141,10 @@ export class EcoScoreEngine {
   }
 
   private scoreToGrade(score: number): EcoScoreGrade {
-    if (score >= 80) return EcoScoreGrade.A;
-    if (score >= 60) return EcoScoreGrade.B;
-    if (score >= 40) return EcoScoreGrade.C;
-    if (score >= 20) return EcoScoreGrade.D;
+    if (score >= NutritionThreshold.SCORE_THRESHOLD_A) return EcoScoreGrade.A;
+    if (score >= NutritionThreshold.SCORE_THRESHOLD_B) return EcoScoreGrade.B;
+    if (score >= NutritionThreshold.SCORE_THRESHOLD_C) return EcoScoreGrade.C;
+    if (score >= NutritionThreshold.SCORE_THRESHOLD_D) return EcoScoreGrade.D;
     return EcoScoreGrade.E;
   }
 }

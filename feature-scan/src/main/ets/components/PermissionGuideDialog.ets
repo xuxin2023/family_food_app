@@ -4,7 +4,7 @@
 
 import { Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { getGlobalState } from '../utils/GlobalStateProvider';
+import { getGlobalState } from 'hsp-service';
 import { HILOG_DOMAIN } from 'hsp_core';
 
 const TAG = 'PermissionGuideDialog';

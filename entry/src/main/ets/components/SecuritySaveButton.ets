@@ -19,5 +19,7 @@ export struct SecuritySaveButton {
       .borderRadius(RADIUS.LG)
       .enabled(!this.isWorking)
       .onClick(() => { this.onSave() })
+      .accessibilityText('安全保存')
+      .accessibilityLevel('yes')
   }
 }

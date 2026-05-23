@@ -48,5 +48,7 @@ export struct NovaGroupBadge {
       }
     }
     .alignItems(VerticalAlign.Center)
+    .accessibilityText(`Nova ${this.group}，${getNovaLabel(this.group)}`)
+    .accessibilityLevel('yes')
   }
 }

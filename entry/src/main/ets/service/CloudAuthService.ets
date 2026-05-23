@@ -5,7 +5,7 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
 import { preferences } from '@kit.ArkData';
-import { HILOG_DOMAIN } from 'hsp_core';
+import { HILOG_DOMAIN, SecureDataStore } from 'hsp_core';
 
 const TAG = 'CloudAuthService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -25,6 +25,8 @@ export class CloudAuthService {
   private currentUser: AuthUser | null = null;
   private isInitialized: boolean = false;
   private isProcessing: boolean = false;
+  private tokenExpiryTs: number = 0;
+  private static readonly TOKEN_REFRESH_MARGIN_MS: number = 5 * 60 * 1000;
 
   static getInstance(): CloudAuthService {
     if (!CloudAuthService.instance) {
@@ -43,7 +45,7 @@ export class CloudAuthService {
         user.uid = savedUid;
         user.isAnonymous = prefs.getSync('is_anonymous', true) as boolean;
         user.createdAt = prefs.getSync('created_at', 0) as number;
-        user.cloudToken = prefs.getSync('cloud_token', '') as string;
+        user.cloudToken = await SecureDataStore.loadAndDecrypt('cloud_token') ?? '';
         user.displayName = prefs.getSync('display_name', '') as string;
         user.accountId = prefs.getSync('account_id', '') as string;
         this.currentUser = user;
@@ -157,7 +159,7 @@ export class CloudAuthService {
         prefs.deleteSync('uid');
         prefs.deleteSync('is_anonymous');
         prefs.deleteSync('created_at');
-        prefs.deleteSync('cloud_token');
+        await SecureDataStore.remove('cloud_token');
         prefs.deleteSync('display_name');
         prefs.deleteSync('account_id');
         await prefs.flush();
@@ -186,12 +188,38 @@ export class CloudAuthService {
       prefs.putSync('uid', this.currentUser.uid);
       prefs.putSync('is_anonymous', this.currentUser.isAnonymous);
       prefs.putSync('created_at', this.currentUser.createdAt);
-      prefs.putSync('cloud_token', this.currentUser.cloudToken);
+      await SecureDataStore.encryptAndSave('cloud_token', this.currentUser.cloudToken);
       prefs.putSync('display_name', this.currentUser.displayName);
       prefs.putSync('account_id', this.currentUser.accountId);
+      if (this.tokenExpiryTs > 0) {
+        prefs.putSync('token_expiry', this.tokenExpiryTs);
+      }
       await prefs.flush();
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Persist user failed: %{public}s', JSON.stringify(error));
     }
+  }
+
+  isTokenExpired(): boolean {
+    if (this.tokenExpiryTs <= 0) return true;
+    return Date.now() >= (this.tokenExpiryTs - CloudAuthService.TOKEN_REFRESH_MARGIN_MS);
+  }
+
+  getTokenExpiryMs(): number {
+    return this.tokenExpiryTs;
+  }
+
+  setTokenExpiry(expiryTs: number): void {
+    this.tokenExpiryTs = expiryTs;
+  }
+
+  async ensureValidToken(): Promise<boolean> {
+    if (!this.currentUser || !this.currentUser.cloudToken) return false;
+    if (!this.isTokenExpired()) return true;
+    hilog.info(DOMAIN_ZERO, TAG, 'Token expired or near-expiry, re-authenticating');
+    if (this.currentUser.isAnonymous) {
+      return await this.signInAnonymously();
+    }
+    return false;
   }
 }

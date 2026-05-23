@@ -136,7 +136,8 @@ export class SubscriptionVerifyService {
         return safeParseMemberTier(tierStr);
       }
       return null;
-    } catch (_) {
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'getCachedVerifyResult failed: %{public}s', JSON.stringify(e));
       return null;
     }
   }

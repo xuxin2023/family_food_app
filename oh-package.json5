@@ -6,8 +6,25 @@
   "main": "",
   "author": "",
   "license": "",
-  "dependencies": {},
+  "dependencies": {
+    "cjcalendar": "^2.3.5",
+    "@visactor/harmony-vchart": "^1.13.5",
+    "@ohos/zxing": "^2.1.2",
+    "@tencent/mmkv": "^2.4.0",
+    "class-transformer": "^0.5.1",
+    "validator": "^13.15.0",
+    "pinyin-pro": "^3.26.0",
+    "bignumber.js": "^9.3.0",
+    "json-bigint": "^1.0.0",
+    "punycode": "^1.2.0",
+    "mdurl": "^2.0.0",
+    "mime": "^4.0.7",
+    "rxjs": "^7.8.2",
+    "@pura/harmony-utils": "^1.4.0",
+    "@ohos/crypto-js": "^2.0.5"
+  },
   "devDependencies": {
     "@ohos/hypium": "1.0.25"
-  }
+  },
+  "dynamicDependencies": {}
 }

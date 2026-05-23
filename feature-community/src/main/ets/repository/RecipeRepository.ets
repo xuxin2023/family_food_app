@@ -586,6 +586,7 @@ export class RecipeRepository {
     try {
       return JSON.parse(jsonStr) as T[];
     } catch (e) {
+      hilog.warn(HILOG_DOMAIN, TAG, 'parseJSONArray failed: %{public}s', JSON.stringify(e));
       return [] as T[];
     }
   }
@@ -594,6 +595,7 @@ export class RecipeRepository {
     try {
       return JSON.parse(jsonStr) as T;
     } catch (e) {
+      hilog.warn(HILOG_DOMAIN, TAG, 'parseJSON failed: %{public}s', JSON.stringify(e));
       return null;
     }
   }

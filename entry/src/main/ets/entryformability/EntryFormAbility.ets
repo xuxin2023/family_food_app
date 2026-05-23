@@ -28,7 +28,7 @@ async function storeFormInfo(formId: string, formName: string, tempFlag: boolean
     const storage = await preferences.getPreferences(context, { name: FORM_PREFS_NAME });
     await storage.put(formId, JSON.stringify(formInfoData));
     await storage.flush();
-    hilog.info(DOMAIN_NUMBER, TAG, `storeFormInfo success, formId: ${formId}`);
+    hilog.info(DOMAIN_NUMBER, TAG, 'storeFormInfo success, formId: %{private}s', formId);
   } catch (err) {
     hilog.error(DOMAIN_NUMBER, TAG, `storeFormInfo failed, err: ${JSON.stringify(err as BusinessError)}`);
   }
@@ -39,7 +39,7 @@ async function deleteFormInfo(formId: string, context: common.FormExtensionConte
     const storage = await preferences.getPreferences(context, { name: FORM_PREFS_NAME });
     await storage.delete(formId);
     await storage.flush();
-    hilog.info(DOMAIN_NUMBER, TAG, `deleteFormInfo success, formId: ${formId}`);
+    hilog.info(DOMAIN_NUMBER, TAG, 'deleteFormInfo success, formId: %{private}s', formId);
   } catch (err) {
     hilog.error(DOMAIN_NUMBER, TAG, `deleteFormInfo failed, err: ${JSON.stringify(err as BusinessError)}`);
   }
@@ -127,7 +127,7 @@ export default class EntryFormAbility extends FormExtensionAbility {
   }
 
   onCastToNormalForm(formId: string): void {
-    hilog.info(DOMAIN_NUMBER, TAG, `onCastToNormalForm, formId: ${formId}`);
+    hilog.info(DOMAIN_NUMBER, TAG, 'onCastToNormalForm, formId: %{private}s', formId);
   }
 
   onUpdateForm(formId: string): void {
@@ -142,6 +142,8 @@ export default class EntryFormAbility extends FormExtensionAbility {
       formProvider.updateForm(formId, updatedData).catch((err: BusinessError) => {
         hilog.error(DOMAIN_NUMBER, TAG, `updateForm failed, code: ${err.code}, msg: ${err.message}`);
       });
+    }).catch((err: Error) => {
+      hilog.error(DOMAIN_NUMBER, TAG, `buildFormData failed: ${err.message}`);
     });
   }
 
@@ -150,7 +152,7 @@ export default class EntryFormAbility extends FormExtensionAbility {
   }
 
   onFormEvent(formId: string, message: string): void {
-    hilog.info(DOMAIN_NUMBER, TAG, `onFormEvent, formId: ${formId}, message: ${message}`);
+    hilog.info(DOMAIN_NUMBER, TAG, 'onFormEvent, formId: %{private}s, message: %{private}s', formId, message);
     // 点击刷新时获取真实数据
     buildFormData(this.context).then((formData) => {
       const rawData: Object = JSON.parse(JSON.stringify(formData));
@@ -160,11 +162,13 @@ export default class EntryFormAbility extends FormExtensionAbility {
       formProvider.updateForm(formId, updatedData).catch((err: BusinessError) => {
         hilog.error(DOMAIN_NUMBER, TAG, `onFormEvent updateForm failed: ${err.message}`);
       });
+    }).catch((err: Error) => {
+      hilog.error(DOMAIN_NUMBER, TAG, `onFormEvent buildFormData failed: ${err.message}`);
     });
   }
 
   onRemoveForm(formId: string): void {
-    hilog.info(DOMAIN_NUMBER, TAG, `onRemoveForm, formId: ${formId}`);
+    hilog.info(DOMAIN_NUMBER, TAG, 'onRemoveForm, formId: %{private}s', formId);
     deleteFormInfo(formId, this.context);
   }
 

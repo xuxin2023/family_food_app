@@ -48,6 +48,8 @@ export struct TrendPredictionBar {
       .padding(SPACING.MD)
       .borderRadius(RADIUS.MD)
       .backgroundColor(COLORS.BG_WHITE)
+      .accessibilityText('趋势预测')
+      .accessibilityLevel('yes')
     }
   }
 

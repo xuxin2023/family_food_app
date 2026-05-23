@@ -340,7 +340,16 @@ export class OnlineShoppingParser {
 
     // 发起HTTP POST请求
     const result = await this.httpPostForm(JD_API_URL, params);
-    const parsed = JSON.parse(result) as Record<string, Object>;
+    let parsed: Record<string, Object> = {};
+    try {
+      parsed = JSON.parse(result) as Record<string, Object>;
+    } catch (e) {
+      hilog.warn(HILOG_DOMAIN, TAG, 'parseJdGoodsDetail JSON.parse failed: %{public}s', JSON.stringify(e));
+      const emptyDetail = new GoodsDetail();
+      emptyDetail.productName = '京东商品';
+      emptyDetail.price = 0;
+      return emptyDetail;
+    }
 
     const responseWrapper = parsed['jd_union_open_goods_detail_query_response'] as Record<string, Object>;
     if (responseWrapper === undefined) {
@@ -360,7 +369,16 @@ export class OnlineShoppingParser {
       return emptyDetail;
     }
 
-    const queryResult = JSON.parse(queryResultStr) as Array<Record<string, Object>>;
+    let queryResult: Array<Record<string, Object>> = [];
+    try {
+      queryResult = JSON.parse(queryResultStr) as Array<Record<string, Object>>;
+    } catch (e) {
+      hilog.warn(HILOG_DOMAIN, TAG, 'parseJdQueryResult JSON.parse failed: %{public}s', JSON.stringify(e));
+      const emptyDetail = new GoodsDetail();
+      emptyDetail.productName = '京东商品';
+      emptyDetail.price = 0;
+      return emptyDetail;
+    }
 
     if (queryResult.length === 0) {
       const emptyDetail = new GoodsDetail();
@@ -434,7 +452,16 @@ export class OnlineShoppingParser {
 
     // 发起HTTP POST请求
     const result = await this.httpPostForm(TAOBAO_API_URL, params);
-    const parsed = JSON.parse(result) as Record<string, Object>;
+    let parsed: Record<string, Object> = {};
+    try {
+      parsed = JSON.parse(result) as Record<string, Object>;
+    } catch (e) {
+      hilog.warn(HILOG_DOMAIN, TAG, 'parseTaobaoGoodsDetail JSON.parse failed: %{public}s', JSON.stringify(e));
+      const emptyDetail = new GoodsDetail();
+      emptyDetail.productName = '淘宝商品';
+      emptyDetail.price = 0;
+      return emptyDetail;
+    }
 
     // 淘宝API返回格式：{ "item_get_response": { "item": { ... } } }
     const responseObj = parsed['item_get_response'] as Record<string, Object>;

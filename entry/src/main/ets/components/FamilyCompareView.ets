@@ -31,6 +31,8 @@ export struct FamilyCompareView {
     .backgroundColor(COLORS.WHITE)
     .borderRadius(12)
     .alignItems(HorizontalAlign.Start)
+    .accessibilityText('家庭成员对比')
+    .accessibilityLevel('yes')
   }
 
   @Builder

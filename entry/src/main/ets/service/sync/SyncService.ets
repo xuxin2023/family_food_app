@@ -119,7 +119,7 @@ export class SyncService {
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'SyncService init failed: %{public}s',
         JSON.stringify(error));
-      this.isInitialized = true;
+      // 不标记 isInitialized，允许下次重试
     }
   }
 
@@ -559,6 +559,7 @@ export class SyncService {
       }
       return deviceId;
     } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'getOrCreateDeviceId failed: %{public}s', JSON.stringify(error));
       return `device_${Date.now()}`;
     }
   }

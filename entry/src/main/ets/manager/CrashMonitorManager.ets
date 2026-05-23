@@ -134,8 +134,8 @@ export class CrashMonitorManager {
           const oldPath = this.crashLogDir + fileList[i];
           fileIo.unlinkSync(oldPath);
           hilog.info(DOMAIN_ZERO, TAG, 'Removed old crash log: %{public}s', oldPath);
-        } catch (_e) {
-          // 单个文件删除失败不影响其他文件
+        } catch (e) {
+          hilog.warn(DOMAIN_ZERO, TAG, 'delete old crash log failed: %{public}s', JSON.stringify(e));
         }
       }
     } catch (e) {

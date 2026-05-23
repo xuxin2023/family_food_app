@@ -9,28 +9,37 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 const TAG = 'HistoryPage';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
+@ObservedV2
+class HistoryPageViewModel {
+  @Trace familyMembers: FamilyProfile[] = []
+  @Trace selectedMemberId: string = 'all'
+  @Trace isLoading: boolean = true
+  @Trace isLoadingMore: boolean = false
+  @Trace hasMore: boolean = true
+}
+
 @Entry
 @ComponentV2
 struct HistoryPage {
-  @Local familyMembers: FamilyProfile[] = []
-  @Local selectedMemberId: string = 'all'
-  @Local isLoading: boolean = true
+  @Local vm: HistoryPageViewModel = new HistoryPageViewModel()
+
   private componentActive: boolean = true
+  private currentPage: number = 0
+  private readonly PAGE_SIZE: number = 20
 
   private appState: AppState = AppState.getInstance()
   private historyRecords: ScanHistoryRecord[] = []
   private historyDS = new BasicDataSource<ScanHistoryRecord>()
 
   async aboutToAppear() {
-    this.isLoading = true
+    this.vm.isLoading = true
     try {
-      this.familyMembers = await this.appState.getAllMembers()
-      this.historyRecords = await this.appState.getRecentScanHistory(100)
-      this.historyDS.reload(this.getVisibleRecords())
+      this.vm.familyMembers = await this.appState.getAllMembers()
+      await this.loadMoreRecords()
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, '加载历史记录失败: %{public}s', JSON.stringify(e));
     }
-    this.isLoading = false
+    this.vm.isLoading = false
   }
 
   aboutToDisappear(): void {
@@ -52,7 +61,7 @@ struct HistoryPage {
       .width('100%')
       .padding({ left: 16, right: 16, top: 16, bottom: 16 })
 
-      if (this.isLoading) {
+      if (this.vm.isLoading) {
         LoadingSkeleton({ variant: 'list', rowCount: 6 })
           .layoutWeight(1)
       } else {
@@ -62,26 +71,26 @@ struct HistoryPage {
               .fontSize(13)
               .padding({ left: 12, right: 12, top: 6, bottom: 6 })
               .borderRadius(16)
-              .backgroundColor(this.selectedMemberId === 'all' ? COLORS.PRIMARY : COLORS.WHITE)
-              .fontColor(this.selectedMemberId === 'all' ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
+              .backgroundColor(this.vm.selectedMemberId === 'all' ? COLORS.PRIMARY : COLORS.WHITE)
+              .fontColor(this.vm.selectedMemberId === 'all' ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
               .margin({ right: 8 })
               .onClick(() => {
-                  this.selectedMemberId = 'all'
+                  this.vm.selectedMemberId = 'all'
                   this.historyDS.reload(this.getVisibleRecords())
                 })
               .accessibilityText('全部')
               .accessibilityLevel('yes')
 
-            ForEach(this.familyMembers, (member: FamilyProfile) => {
+            ForEach(this.vm.familyMembers, (member: FamilyProfile) => {
               Text(member.nickname)
                 .fontSize(13)
                 .padding({ left: 12, right: 12, top: 6, bottom: 6 })
                 .borderRadius(16)
-                .backgroundColor(this.selectedMemberId === member.memberId ? COLORS.PRIMARY : COLORS.WHITE)
-                .fontColor(this.selectedMemberId === member.memberId ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
+                .backgroundColor(this.vm.selectedMemberId === member.memberId ? COLORS.PRIMARY : COLORS.WHITE)
+                .fontColor(this.vm.selectedMemberId === member.memberId ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
                 .margin({ right: 8 })
                 .onClick(() => {
-                  this.selectedMemberId = member.memberId
+                  this.vm.selectedMemberId = member.memberId
                   this.historyDS.reload(this.getVisibleRecords())
                 })
                 .accessibilityText(member.nickname)
@@ -112,6 +121,11 @@ struct HistoryPage {
           .layoutWeight(1)
           .padding({ left: 16, right: 16 })
           .cachedCount(5)
+          .onReachEnd(() => {
+            if (!this.vm.isLoadingMore && this.vm.hasMore) {
+              this.loadMoreRecords();
+            }
+          })
         }
       }
     }
@@ -172,14 +186,32 @@ struct HistoryPage {
   }
 
   private getVisibleRecords(): ScanHistoryRecord[] {
-    if (this.selectedMemberId === 'all') {
+    if (this.vm.selectedMemberId === 'all') {
       return this.historyRecords
     }
-    return this.historyRecords.filter(record => record.memberId === this.selectedMemberId)
+    return this.historyRecords.filter(record => record.memberId === this.vm.selectedMemberId)
+  }
+
+  private async loadMoreRecords(): Promise<void> {
+    if (this.vm.isLoadingMore) return;
+    this.vm.isLoadingMore = true;
+    try {
+      const offset = this.currentPage * this.PAGE_SIZE;
+      const newRecords = await this.appState.getRecentScanHistory(this.PAGE_SIZE + offset);
+      if (newRecords.length <= this.historyRecords.length) {
+        this.vm.hasMore = false;
+      }
+      this.historyRecords = newRecords;
+      this.historyDS.reload(this.getVisibleRecords());
+      this.currentPage++;
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, '加载更多失败: %{public}s', JSON.stringify(e));
+    }
+    this.vm.isLoadingMore = false;
   }
 
   private getMemberName(memberId: string): string {
-    const member = this.familyMembers.find(item => item.memberId === memberId)
+    const member = this.vm.familyMembers.find(item => item.memberId === memberId)
     return member ? member.nickname : memberId
   }
 

@@ -66,7 +66,7 @@ export class PushNotificationService {
 
     try {
       const rdbConfig: relationalStore.StoreConfig = { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 };
-      const rdbStore = await relationalStore.getRdbStoreV9(this.context, rdbConfig);
+      const rdbStore = await relationalStore.getRdbStore(this.context, rdbConfig);
       const ruleRepo = new ReminderRuleRepository();
       await ruleRepo.init(rdbStore);
       const enabledRules = await ruleRepo.getEnabledRules();
@@ -239,7 +239,8 @@ export class PushNotificationService {
     try {
       const isEnabled = await notificationManager.isNotificationEnabled();
       return isEnabled;
-    } catch (_) {
+    } catch (e) {
+      hilog.warn(HILOG_DOMAIN, TAG, 'getHasReminderPermission failed: %{public}s', JSON.stringify(e));
       return false;
     }
   }
@@ -256,8 +257,8 @@ export class PushNotificationService {
       this.config.weeklyReportDay = prefs.getSync('weekly_day', 0) as number;
       this.config.weeklyReportHour = prefs.getSync('weekly_hour', 20) as number;
       this.config.budgetAlertEnabled = prefs.getSync('budget_alert', true) as boolean;
-    } catch (_) {
-      // use defaults
+    } catch (e) {
+      hilog.warn(HILOG_DOMAIN, TAG, 'loadConfig failed, use defaults: %{public}s', JSON.stringify(e));
     }
   }
 

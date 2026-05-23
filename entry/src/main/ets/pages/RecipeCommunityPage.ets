@@ -2,7 +2,7 @@
 // 食谱社区页面 — 浏览热门/最新食谱、分类筛选
 
 import {
-  safeBack, safePushUrl, getPageParams, Recipe, RecipeCategory, DietTag, RecipeQueryParams, safeParseRecipeCategory, COLORS, RADIUS, BUTTON, BasicDataSource, PAGE_SIZE_CONFIG, HILOG_DOMAIN, AiRecipeRecommendation, AiRecipeRecommendationResult, AiRecipeRequest, getCategoryLabel, getCategoryEmoji, getDietTagLabel
+  safeBack, safePushUrl, getPageParams, Recipe, RecipeCategory, DietTag, RecipeQueryParams, safeParseRecipeCategory, COLORS, RADIUS, BUTTON, BasicDataSource, PAGE_SIZE_CONFIG, HILOG_DOMAIN, AiRecipeRecommendation, AiRecipeRecommendationResult, AiRecipeRequest, getCategoryLabel, getCategoryEmoji, getDietTagLabel, ImageCache
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -334,11 +334,13 @@ struct RecipeCommunityPage {
       // 封面图占位
       Column() {
         if (recipe.coverImageUrl.length > 0) {
-          Image(recipe.coverImageUrl)
+          Image(ImageCache.has(recipe.coverImageUrl) ? ImageCache.get(recipe.coverImageUrl)! : recipe.coverImageUrl)
             .width('100%')
             .height(160)
             .objectFit(ImageFit.Cover)
+            .autoResize(true)
             .borderRadius({ topLeft: RADIUS.LG, topRight: RADIUS.LG })
+            .onComplete(() => { ImageCache.put(recipe.coverImageUrl, recipe.coverImageUrl); })
         } else {
           Column() {
             Text(getCategoryEmoji(recipe.category))

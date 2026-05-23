@@ -1,4 +1,4 @@
-import { FoodLabel, NutritionPer100g, IOfflineFoodProvider, OfflineFoodEntry } from 'hsp_core';
+import { FoodLabel, NutritionPer100g, IOfflineFoodProvider, OfflineFoodEntry, NutritionThreshold } from 'hsp_core';
 import { NutriScoreEngine } from './NutriScoreEngine';
 
 export class AlternativeCandidate {
@@ -86,7 +86,7 @@ export class AlternativeRecommender {
     candidate.nutriGrade = breakdown.grade;
 
     const improvements: string[] = [];
-    if (current.sodium > 300 && entry.nutrition.sodium < current.sodium * 0.7) {
+    if (current.sodium > NutritionThreshold.HIGH_SODIUM_MG && entry.nutrition.sodium < current.sodium * 0.7) {
       const pct = Math.round((1 - entry.nutrition.sodium / current.sodium) * 100);
       improvements.push('钠减少' + pct + '%');
     }

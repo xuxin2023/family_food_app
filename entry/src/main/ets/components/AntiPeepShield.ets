@@ -87,6 +87,7 @@ export struct AntiPeepShield {
     }
     .width('100%')
     .height('100%')
+    .accessibilityLevel('no')
   }
 
   @Builder

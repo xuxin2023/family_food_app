@@ -1,8 +1,12 @@
 // 健康数据服务 - 只负责健康信号提供者的适配与切换
 
-import { HealthSignal } from 'hsp_core';
+import { HealthSignal, HILOG_DOMAIN } from 'hsp_core';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 import { ManualHealthSignalProvider } from './health/ManualHealthSignalProvider';
 import { HealthSignalProvider } from './health/HealthSignalProvider';
+
+const TAG = 'HealthService';
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 export class HealthService {
   private provider: HealthSignalProvider;
@@ -16,8 +20,8 @@ export class HealthService {
     if (this.provider.release !== undefined) {
       try {
         this.provider.release();
-      } catch (_e) {
-        // 释放失败不影响主流程
+      } catch (e) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'release provider failed: %{public}s', JSON.stringify(e));
       }
     }
     this.provider = provider;

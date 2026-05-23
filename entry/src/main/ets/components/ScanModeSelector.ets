@@ -21,6 +21,8 @@ export struct ScanModeSelector {
       .backgroundColor(this.scanMode === 'barcode' ? COLORS.BG_CARD_HIGHLIGHT : COLORS.BG_PAGE_LIGHT)
       .borderRadius({ topLeft: RADIUS.MD, bottomLeft: RADIUS.MD })
       .onClick(() => { this.onModeChange('barcode') })
+      .accessibilityText($r('app.string.scan_mode_barcode'))
+      .accessibilityLevel('yes')
 
       Column() {
         Text($r('app.string.scan_mode_camera'))
@@ -34,6 +36,8 @@ export struct ScanModeSelector {
       .backgroundColor(this.scanMode === 'camera' ? COLORS.BG_CARD_HIGHLIGHT : COLORS.BG_PAGE_LIGHT)
       .borderRadius({ topRight: RADIUS.MD, bottomRight: RADIUS.MD })
       .onClick(() => { this.onModeChange('camera') })
+      .accessibilityText($r('app.string.scan_mode_camera'))
+      .accessibilityLevel('yes')
     }
     .width('92%')
     .height(40)

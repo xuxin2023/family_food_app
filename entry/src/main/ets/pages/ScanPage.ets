@@ -101,6 +101,8 @@ class ScanViewModel {
   @Trace paywallTrigger: PaywallTrigger | null = null
   @Trace editPanel: EditPanelData = new EditPanelData()
   @Trace retryCount: number = 0
+  @Trace continuousMode: boolean = false
+  @Trace batchResults: FoodLabel[] = []
   @Trace lastError: string = ''
   @Trace showErrorBanner: boolean = false
   @Trace isLoadingRetry: boolean = false
@@ -147,7 +149,8 @@ struct ScanPage {
 
       // 4. 零点击自动启动识别
       this.triggerAutoScan()
-    } catch (_e) {
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'aboutToAppear failed: %{public}s', JSON.stringify(e));
     }
   }
 
@@ -478,6 +481,48 @@ struct ScanPage {
               this.calculateScoreForCurrentLabel()
             }
           })
+
+          // ---- 连续扫描批量结果 ----
+          if (this.vm.continuousMode && this.vm.batchResults.length > 0) {
+            Column() {
+              Text(`已扫描${this.vm.batchResults.length}件商品`)
+                .fontSize(FONT_SIZE.BODY_SM)
+                .fontColor(COLORS.TEXT_SECONDARY)
+                .margin({ bottom: SPACING.SM })
+
+              Scroll() {
+                Row() {
+                  ForEach(this.vm.batchResults, (item: FoodLabel) => {
+                    Column() {
+                      Text(item.foodName)
+                        .fontSize(FONT_SIZE.TINY)
+                        .fontColor(COLORS.TEXT_PRIMARY)
+                        .maxLines(1)
+                        .textOverflow({ overflow: TextOverflow.Ellipsis })
+                    }
+                    .width(72)
+                    .height(40)
+                    .padding(SPACING.XS)
+                    .backgroundColor(COLORS.BG_CARD_HIGHLIGHT)
+                    .borderRadius(RADIUS.SM)
+                    .margin({ right: SPACING.SM })
+                    .alignItems(HorizontalAlign.Center)
+                    .justifyContent(FlexAlign.Center)
+                  }, (item: FoodLabel) => item.foodId)
+                }
+              }
+              .scrollable(ScrollDirection.Horizontal)
+              .scrollBar(BarState.Off)
+            }
+            .width('92%')
+            .padding(SPACING.MD)
+            .backgroundColor(COLORS.BG_CARD)
+            .borderRadius(RADIUS.LG)
+            .margin({ bottom: SPACING.MD })
+            .alignItems(HorizontalAlign.Start)
+            .accessibilityText(`已扫描${this.vm.batchResults.length}件商品`)
+            .accessibilityLevel('yes')
+          }
 
           // ---- 扫描历史快捷入口 ----
           if (this.vm.foodLabel.foodId.length === 0 && this.vm.recentScans.length > 0 &&

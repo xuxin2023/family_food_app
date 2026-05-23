@@ -1,0 +1,301 @@
+﻿<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#5824">181</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="679407685"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(679407685)" id="679407685">
+<div id="d679407685" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>design.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md">鈥.codeartsdoer\specs\hm6_adapt\design.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#2414">103</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#2962">111</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#3383">118</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#3598">124</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4072">131</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4289">137</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4531">143</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#5824">181</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="668305971"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(668305971)" id="668305971">
+<div id="d668305971" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>design.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md">鈥.codeartsdoer\specs\hm6_adapt\design.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#2414">103</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#2962">111</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#3383">118</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#3598">124</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4072">131</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4289">137</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4531">143</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#5824">181</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="1733613990"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1733613990)" id="1733613990">
+<div id="d1733613990" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>design.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md">鈥.codeartsdoer\specs\hm6_adapt\design.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#2414">103</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#2962">111</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#3383">118</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#3598">124</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4072">131</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4289">137</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4531">143</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#5824">181</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="1161973449"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1161973449)" id="1161973449">
+<div id="d1161973449" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>design.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md">鈥.codeartsdoer\specs\hm6_adapt\design.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#2414">103</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#2962">111</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#3383">118</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#3598">124</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4072">131</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4289">137</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4531">143</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#5824">181</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+</ol>
+<li><label for="325801819">file&nbsp;<b>design.md</b>&nbsp;<span class="grayout">&nbsp;&nbsp;6&nbsp;涓急璀﹀憡&nbsp;</span></label><input type="checkbox" onclick="navigate(325801819)" id="325801819">
+<div id="d325801819" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>design.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md">鈥.codeartsdoer\specs\food_helper\design.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#1785">74</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#6195">214</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#14221">548</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#14408">555</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#14942">577</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#15446">599</a>)
+</ul>
+</div></div>
+<ol class="tree">
+<li><label for="154987426"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(154987426)" id="154987426">
+<div id="d154987426" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>design.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md">鈥.codeartsdoer\specs\food_helper\design.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#1785">74</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#6195">214</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#14221">548</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#14408">555</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#14942">577</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#15446">599</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="985914185"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(985914185)" id="985914185">
+<div id="d985914185" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>design.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md">鈥.codeartsdoer\specs\food_helper\design.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#1785">74</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#6195">214</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#14221">548</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#14408">555</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#14942">577</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#15446">599</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="1352072947"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1352072947)" id="1352072947">
+<div id="d1352072947" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>design.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md">鈥.codeartsdoer\specs\food_helper\design.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#1785">74</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#6195">214</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#14221">548</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#14408">555</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#14942">577</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#15446">599</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="134583098"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(134583098)" id="134583098">
+<div id="d134583098" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>design.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md">鈥.codeartsdoer\specs\food_helper\design.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#1785">74</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#6195">214</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#14221">548</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#14408">555</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#14942">577</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#15446">599</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="1846528728"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1846528728)" id="1846528728">
+<div id="d1846528728" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>design.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md">鈥.codeartsdoer\specs\food_helper\design.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#1785">74</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#6195">214</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#14221">548</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#14408">555</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#14942">577</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#15446">599</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="32024782"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(32024782)" id="32024782">
+<div id="d32024782" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>design.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md">鈥.codeartsdoer\specs\food_helper\design.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#1785">74</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#6195">214</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#14221">548</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#14408">555</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#14942">577</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/food_helper/design.md#15446">599</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+</ol>
+<li><label for="176069573">file&nbsp;<b>HSP_MODULE_SPLIT_PLAN.md</b>&nbsp;<span class="grayout">&nbsp;&nbsp;5&nbsp;涓急璀﹀憡&nbsp;</span></label><input type="checkbox" onclick="navigate(176069573)" id="176069573">
+<div id="d176069573" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>HSP_MODULE_SPLIT_PLAN.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md">鈥docs\HSP_MODULE_SPLIT_PLAN.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#2045">83</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#2556">92</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#2820">99</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#3139">110</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#3798">127</a>)
+</ul>
+</div></div>
+<ol class="tree">
+<li><label for="1234146698"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1234146698)" id="1234146698">
+<div id="d1234146698" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>HSP_MODULE_SPLIT_PLAN.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md">鈥docs\HSP_MODULE_SPLIT_PLAN.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#2045">83</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#2556">92</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#2820">99</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#3139">110</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#3798">127</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="1478143624"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1478143624)" id="1478143624">
+<div id="d1478143624" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>HSP_MODULE_SPLIT_PLAN.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md">鈥docs\HSP_MODULE_SPLIT_PLAN.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#2045">83</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#2556">92</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#2820">99</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#3139">110</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#3798">127</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="1609268666"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1609268666)" id="1609268666">
+<div id="d1609268666" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>HSP_MODULE_SPLIT_PLAN.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md">鈥docs\HSP_MODULE_SPLIT_PLAN.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#2045">83</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#2556">92</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#2820">99</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#3139">110</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#3798">127</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="2108092857"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(2108092857)" id="2108092857">
+<div id="d2108092857" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>HSP_MODULE_SPLIT_PLAN.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md">鈥docs\HSP_MODULE_SPLIT_PLAN.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#2045">83</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#2556">92</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#2820">99</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#3139">110</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#3798">127</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="1214269469"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1214269469)" id="1214269469">
+<div id="d1214269469" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>HSP_MODULE_SPLIT_PLAN.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md">鈥docs\HSP_MODULE_SPLIT_PLAN.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#2045">83</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#2556">92</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#2820">99</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#3139">110</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/HSP_MODULE_SPLIT_PLAN.md#3798">127</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+</ol>
+<li><label for="95707229">file&nbsp;<b>ON_DEVICE_LLM_INTEGRATION_PLAN.md</b>&nbsp;<span class="grayout">&nbsp;&nbsp;2&nbsp;涓急璀﹀憡&nbsp;</span></label><input type="checkbox" onclick="navigate(95707229)" id="95707229">
+<div id="d95707229" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>ON_DEVICE_LLM_INTEGRATION_PLAN.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/docs/ON_DEVICE_LLM_INTEGRATION_PLAN.md">鈥docs\ON_DEVICE_LLM_INTEGRATION_PLAN.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/ON_DEVICE_LLM_INTEGRATION_PLAN.md#3110">122</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/ON_DEVICE_LLM_INTEGRATION_PLAN.md#3677">138</a>)
+</ul>
+</div></div>
+<ol class="tree">
+<li><label for="1586637087"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1586637087)" id="1586637087">
+<div id="d1586637087" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>ON_DEVICE_LLM_INTEGRATION_PLAN.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/docs/ON_DEVICE_LLM_INTEGRATION_PLAN.md">鈥docs\ON_DEVICE_LLM_INTEGRATION_PLAN.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/ON_DEVICE_LLM_INTEGRATION_PLAN.md#3110">122</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/ON_DEVICE_LLM_INTEGRATION_PLAN.md#3677">138</a>)
+</ul>
+</div></div>

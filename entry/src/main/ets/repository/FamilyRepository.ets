@@ -90,7 +90,8 @@ export class FamilyRepository {
   private safeGetString(rs: relationalStore.ResultSet, col: string): string {
     try {
       return rs.getString(rs.getColumnIndex(col));
-    } catch (_) {
+    } catch (e) {
+      hilog.debug(DOMAIN_ZERO, TAG, 'safeGetString failed: %{public}s', JSON.stringify(e));
       return '';
     }
   }
@@ -99,7 +100,8 @@ export class FamilyRepository {
   private safeGetDouble(rs: relationalStore.ResultSet, col: string): number {
     try {
       return rs.getDouble(rs.getColumnIndex(col));
-    } catch (_) {
+    } catch (e) {
+      hilog.debug(DOMAIN_ZERO, TAG, 'safeGetDouble failed: %{public}s', JSON.stringify(e));
       return 0;
     }
   }
@@ -108,7 +110,8 @@ export class FamilyRepository {
   private safeGetLong(rs: relationalStore.ResultSet, col: string): number {
     try {
       return rs.getLong(rs.getColumnIndex(col));
-    } catch (_) {
+    } catch (e) {
+      hilog.debug(DOMAIN_ZERO, TAG, 'safeGetLong failed: %{public}s', JSON.stringify(e));
       return 0;
     }
   }
@@ -133,12 +136,14 @@ export class FamilyRepository {
         try {
           profile.healthGoals = JSON.parse(this.safeGetString(resultSet, COL_HEALTH_GOALS)) as HealthGoal[];
         } catch (e) {
+          hilog.debug(DOMAIN_ZERO, TAG, 'queryMembers healthGoals failed: %{public}s', JSON.stringify(e));
           profile.healthGoals = [];
         }
         try {
           const allergensRaw: string = this.safeGetString(resultSet, COL_ALLERGENS);
           profile.allergens = (allergensRaw.length > 0) ? JSON.parse(allergensRaw) as string[] : [];
         } catch (e) {
+          hilog.debug(DOMAIN_ZERO, TAG, 'queryMembers allergens failed: %{public}s', JSON.stringify(e));
           profile.allergens = [];
         }
 
@@ -159,6 +164,7 @@ export class FamilyRepository {
             profile.mealTimes.lunch = parsed.lunch || '12:00';
             profile.mealTimes.dinner = parsed.dinner || '18:00';
           } catch (e) {
+            hilog.debug(DOMAIN_ZERO, TAG, 'queryMembers mealTimes failed: %{public}s', JSON.stringify(e));
             profile.mealTimes = new MealTimes();
           }
         }

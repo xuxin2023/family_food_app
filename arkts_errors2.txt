@@ -1,0 +1,582 @@
+﻿</ol>
+<li><label for="438783005"><b>JavaScript&nbsp;TypeScript&nbsp;ArkTS</b>&nbsp;group&nbsp;<span class="grayout">&nbsp;&nbsp;15&nbsp;涓敊璇?nbsp;</span></label><input type="checkbox" checked onclick="navigate(438783005)" id="438783005">
+<ol class="tree">
+<li><label for="675299192"><b>ArkTS寮曠敤妫€鏌?/b>&nbsp;inspection&nbsp;<span class="grayout">&nbsp;&nbsp;15&nbsp;涓敊璇?nbsp;</span></label><input type="checkbox" onclick="navigate(675299192)" id="675299192">
+<ol class="tree">
+<li><label for="2044791463">file&nbsp;<b>HealthMockIndicator.ets</b>&nbsp;<span class="grayout">&nbsp;&nbsp;6&nbsp;涓敊璇?nbsp;</span></label><input type="checkbox" onclick="navigate(2044791463)" id="2044791463">
+<div id="d2044791463" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>HealthMockIndicator.ets</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets">鈥entry\src\main\ets\components\HealthMockIndicator.ets [entry]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'partial_data_estimated' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#474">19</a>)
+<li>Unknown resource name 'accent_orange' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#558">21</a>)
+<li>Unknown resource name 'connect_device_hint' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#653">23</a>)
+<li>Unknown resource name 'text_hint' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#734">25</a>)
+<li>Unknown resource name 'connect_device' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#883">32</a>)
+<li>Unknown resource name 'link_blue' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#955">34</a>)
+</ul>
+</div></div>
+<ol class="tree">
+<li><label for="500965604"><span style="margin:1px;background:#ffabab">閿欒</span>&nbsp;Unknown&nbsp;resource&nbsp;name&nbsp;&#39;partial_data_estimated&#39;&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(500965604)" id="500965604">
+<div id="d500965604" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>HealthMockIndicator.ets</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets">鈥entry\src\main\ets\components\HealthMockIndicator.ets [entry]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'partial_data_estimated' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#474">19</a>)
+<li>Unknown resource name 'accent_orange' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#558">21</a>)
+<li>Unknown resource name 'connect_device_hint' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#653">23</a>)
+<li>Unknown resource name 'text_hint' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#734">25</a>)
+<li>Unknown resource name 'connect_device' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#883">32</a>)
+<li>Unknown resource name 'link_blue' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#955">34</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="202266543"><span style="margin:1px;background:#ffabab">閿欒</span>&nbsp;Unknown&nbsp;resource&nbsp;name&nbsp;&#39;accent_orange&#39;&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(202266543)" id="202266543">
+<div id="d202266543" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>HealthMockIndicator.ets</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets">鈥entry\src\main\ets\components\HealthMockIndicator.ets [entry]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'partial_data_estimated' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#474">19</a>)
+<li>Unknown resource name 'accent_orange' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#558">21</a>)
+<li>Unknown resource name 'connect_device_hint' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#653">23</a>)
+<li>Unknown resource name 'text_hint' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#734">25</a>)
+<li>Unknown resource name 'connect_device' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#883">32</a>)
+<li>Unknown resource name 'link_blue' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#955">34</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="40946371"><span style="margin:1px;background:#ffabab">閿欒</span>&nbsp;Unknown&nbsp;resource&nbsp;name&nbsp;&#39;connect_device_hint&#39;&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(40946371)" id="40946371">
+<div id="d40946371" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>HealthMockIndicator.ets</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets">鈥entry\src\main\ets\components\HealthMockIndicator.ets [entry]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'partial_data_estimated' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#474">19</a>)
+<li>Unknown resource name 'accent_orange' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#558">21</a>)
+<li>Unknown resource name 'connect_device_hint' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#653">23</a>)
+<li>Unknown resource name 'text_hint' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#734">25</a>)
+<li>Unknown resource name 'connect_device' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#883">32</a>)
+<li>Unknown resource name 'link_blue' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#955">34</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="1966731973"><span style="margin:1px;background:#ffabab">閿欒</span>&nbsp;Unknown&nbsp;resource&nbsp;name&nbsp;&#39;text_hint&#39;&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1966731973)" id="1966731973">
+<div id="d1966731973" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>HealthMockIndicator.ets</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets">鈥entry\src\main\ets\components\HealthMockIndicator.ets [entry]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'partial_data_estimated' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#474">19</a>)
+<li>Unknown resource name 'accent_orange' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#558">21</a>)
+<li>Unknown resource name 'connect_device_hint' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#653">23</a>)
+<li>Unknown resource name 'text_hint' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#734">25</a>)
+<li>Unknown resource name 'connect_device' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#883">32</a>)
+<li>Unknown resource name 'link_blue' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#955">34</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="1825850611"><span style="margin:1px;background:#ffabab">閿欒</span>&nbsp;Unknown&nbsp;resource&nbsp;name&nbsp;&#39;connect_device&#39;&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1825850611)" id="1825850611">
+<div id="d1825850611" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>HealthMockIndicator.ets</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets">鈥entry\src\main\ets\components\HealthMockIndicator.ets [entry]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'partial_data_estimated' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#474">19</a>)
+<li>Unknown resource name 'accent_orange' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#558">21</a>)
+<li>Unknown resource name 'connect_device_hint' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#653">23</a>)
+<li>Unknown resource name 'text_hint' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#734">25</a>)
+<li>Unknown resource name 'connect_device' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#883">32</a>)
+<li>Unknown resource name 'link_blue' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#955">34</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="1899857905"><span style="margin:1px;background:#ffabab">閿欒</span>&nbsp;Unknown&nbsp;resource&nbsp;name&nbsp;&#39;link_blue&#39;&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1899857905)" id="1899857905">
+<div id="d1899857905" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>HealthMockIndicator.ets</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets">鈥entry\src\main\ets\components\HealthMockIndicator.ets [entry]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'partial_data_estimated' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#474">19</a>)
+<li>Unknown resource name 'accent_orange' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#558">21</a>)
+<li>Unknown resource name 'connect_device_hint' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#653">23</a>)
+<li>Unknown resource name 'text_hint' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#734">25</a>)
+<li>Unknown resource name 'connect_device' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#883">32</a>)
+<li>Unknown resource name 'link_blue' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#955">34</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+</ol>
+<li><label for="594792996">file&nbsp;<b>ImmersiveTabBar.ets</b>&nbsp;<span class="grayout">&nbsp;&nbsp;6&nbsp;涓敊璇?nbsp;</span></label><input type="checkbox" onclick="navigate(594792996)" id="594792996">
+<div id="d594792996" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>ImmersiveTabBar.ets</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets">鈥entry\src\main\ets\components\ImmersiveTabBar.ets [entry]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'ohos_ic_public_notes' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#658">30</a>)
+<li>Unknown resource name 'ohos_ic_public_notes' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#658">30</a>)
+<li>Unknown resource name 'ohos_ic_public_save' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#892">32</a>)
+<li>Unknown resource name 'ohos_ic_public_save' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#892">32</a>)
+<li>Unknown resource name 'ohos_ic_public_person' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#1126">34</a>)
+<li>Unknown resource name 'ohos_ic_public_person' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#1126">34</a>)
+</ul>
+</div></div>
+<ol class="tree">
+<li><label for="755743395"><span style="margin:1px;background:#ffabab">閿欒</span>&nbsp;Unknown&nbsp;resource&nbsp;name&nbsp;&#39;ohos_ic_public_notes&#39;&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(755743395)" id="755743395">
+<div id="d755743395" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>ImmersiveTabBar.ets</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets">鈥entry\src\main\ets\components\ImmersiveTabBar.ets [entry]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'ohos_ic_public_notes' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#658">30</a>)
+<li>Unknown resource name 'ohos_ic_public_notes' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#658">30</a>)
+<li>Unknown resource name 'ohos_ic_public_save' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#892">32</a>)
+<li>Unknown resource name 'ohos_ic_public_save' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#892">32</a>)
+<li>Unknown resource name 'ohos_ic_public_person' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#1126">34</a>)
+<li>Unknown resource name 'ohos_ic_public_person' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#1126">34</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="707883754"><span style="margin:1px;background:#ffabab">閿欒</span>&nbsp;Unknown&nbsp;resource&nbsp;name&nbsp;&#39;ohos_ic_public_notes&#39;&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(707883754)" id="707883754">
+<div id="d707883754" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>ImmersiveTabBar.ets</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets">鈥entry\src\main\ets\components\ImmersiveTabBar.ets [entry]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'ohos_ic_public_notes' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#658">30</a>)
+<li>Unknown resource name 'ohos_ic_public_notes' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#658">30</a>)
+<li>Unknown resource name 'ohos_ic_public_save' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#892">32</a>)
+<li>Unknown resource name 'ohos_ic_public_save' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#892">32</a>)
+<li>Unknown resource name 'ohos_ic_public_person' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#1126">34</a>)
+<li>Unknown resource name 'ohos_ic_public_person' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#1126">34</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="305776953"><span style="margin:1px;background:#ffabab">閿欒</span>&nbsp;Unknown&nbsp;resource&nbsp;name&nbsp;&#39;ohos_ic_public_save&#39;&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(305776953)" id="305776953">
+<div id="d305776953" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>ImmersiveTabBar.ets</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets">鈥entry\src\main\ets\components\ImmersiveTabBar.ets [entry]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'ohos_ic_public_notes' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#658">30</a>)
+<li>Unknown resource name 'ohos_ic_public_notes' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#658">30</a>)
+<li>Unknown resource name 'ohos_ic_public_save' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#892">32</a>)
+<li>Unknown resource name 'ohos_ic_public_save' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#892">32</a>)
+<li>Unknown resource name 'ohos_ic_public_person' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#1126">34</a>)
+<li>Unknown resource name 'ohos_ic_public_person' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#1126">34</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="784961668"><span style="margin:1px;background:#ffabab">閿欒</span>&nbsp;Unknown&nbsp;resource&nbsp;name&nbsp;&#39;ohos_ic_public_save&#39;&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(784961668)" id="784961668">
+<div id="d784961668" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>ImmersiveTabBar.ets</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets">鈥entry\src\main\ets\components\ImmersiveTabBar.ets [entry]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'ohos_ic_public_notes' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#658">30</a>)
+<li>Unknown resource name 'ohos_ic_public_notes' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#658">30</a>)
+<li>Unknown resource name 'ohos_ic_public_save' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#892">32</a>)
+<li>Unknown resource name 'ohos_ic_public_save' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#892">32</a>)
+<li>Unknown resource name 'ohos_ic_public_person' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#1126">34</a>)
+<li>Unknown resource name 'ohos_ic_public_person' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#1126">34</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="710696459"><span style="margin:1px;background:#ffabab">閿欒</span>&nbsp;Unknown&nbsp;resource&nbsp;name&nbsp;&#39;ohos_ic_public_person&#39;&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(710696459)" id="710696459">
+<div id="d710696459" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>ImmersiveTabBar.ets</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets">鈥entry\src\main\ets\components\ImmersiveTabBar.ets [entry]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'ohos_ic_public_notes' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#658">30</a>)
+<li>Unknown resource name 'ohos_ic_public_notes' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#658">30</a>)
+<li>Unknown resource name 'ohos_ic_public_save' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#892">32</a>)
+<li>Unknown resource name 'ohos_ic_public_save' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#892">32</a>)
+<li>Unknown resource name 'ohos_ic_public_person' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#1126">34</a>)
+<li>Unknown resource name 'ohos_ic_public_person' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#1126">34</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="458996037"><span style="margin:1px;background:#ffabab">閿欒</span>&nbsp;Unknown&nbsp;resource&nbsp;name&nbsp;&#39;ohos_ic_public_person&#39;&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(458996037)" id="458996037">
+<div id="d458996037" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>ImmersiveTabBar.ets</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets">鈥entry\src\main\ets\components\ImmersiveTabBar.ets [entry]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'ohos_ic_public_notes' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#658">30</a>)
+<li>Unknown resource name 'ohos_ic_public_notes' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#658">30</a>)
+<li>Unknown resource name 'ohos_ic_public_save' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#892">32</a>)
+<li>Unknown resource name 'ohos_ic_public_save' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#892">32</a>)
+<li>Unknown resource name 'ohos_ic_public_person' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#1126">34</a>)
+<li>Unknown resource name 'ohos_ic_public_person' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#1126">34</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+</ol>
+<li><label for="2146754265">file&nbsp;<b>SecuritySaveButton.ets</b>&nbsp;<span class="grayout">&nbsp;&nbsp;1&nbsp;涓敊璇?nbsp;</span></label><input type="checkbox" onclick="navigate(2146754265)" id="2146754265">
+<div id="d2146754265" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>SecuritySaveButton.ets</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/SecuritySaveButton.ets">鈥entry\src\main\ets\components\SecuritySaveButton.ets [entry]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'ohos_save_button' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/SecuritySaveButton.ets#418">16</a>)
+</ul>
+</div></div>
+<ol class="tree">
+<li><label for="2142602296"><span style="margin:1px;background:#ffabab">閿欒</span>&nbsp;Unknown&nbsp;resource&nbsp;name&nbsp;&#39;ohos_save_button&#39;&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(2142602296)" id="2142602296">
+<div id="d2142602296" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>SecuritySaveButton.ets</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/SecuritySaveButton.ets">鈥entry\src\main\ets\components\SecuritySaveButton.ets [entry]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'ohos_save_button' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/SecuritySaveButton.ets#418">16</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+</ol>
+<li><label for="24975495">file&nbsp;<b>SyncConflictResolver.ets</b>&nbsp;<span class="grayout">&nbsp;&nbsp;2&nbsp;涓敊璇?nbsp;</span></label><input type="checkbox" onclick="navigate(24975495)" id="24975495">
+<div id="d24975495" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>SyncConflictResolver.ets</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/SyncConflictResolver.ets">鈥entry\src\main\ets\components\SyncConflictResolver.ets [entry]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'text_hint' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/SyncConflictResolver.ets#907">33</a>)
+<li>Unknown resource name 'text_hint' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/SyncConflictResolver.ets#1442">52</a>)
+</ul>
+</div></div>
+<ol class="tree">
+<li><label for="1073111764"><span style="margin:1px;background:#ffabab">閿欒</span>&nbsp;Unknown&nbsp;resource&nbsp;name&nbsp;&#39;text_hint&#39;&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1073111764)" id="1073111764">
+<div id="d1073111764" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>SyncConflictResolver.ets</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/SyncConflictResolver.ets">鈥entry\src\main\ets\components\SyncConflictResolver.ets [entry]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'text_hint' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/SyncConflictResolver.ets#907">33</a>)
+<li>Unknown resource name 'text_hint' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/SyncConflictResolver.ets#1442">52</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="604447307"><span style="margin:1px;background:#ffabab">閿欒</span>&nbsp;Unknown&nbsp;resource&nbsp;name&nbsp;&#39;text_hint&#39;&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(604447307)" id="604447307">
+<div id="d604447307" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>SyncConflictResolver.ets</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/SyncConflictResolver.ets">鈥entry\src\main\ets\components\SyncConflictResolver.ets [entry]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'text_hint' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/SyncConflictResolver.ets#907">33</a>)
+<li>Unknown resource name 'text_hint' (琛?<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/SyncConflictResolver.ets#1442">52</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+</ol>
+</ol>
+</ol>
+<li><label for="587968638"><b>Markdown</b>&nbsp;group&nbsp;<span class="grayout">&nbsp;&nbsp;57&nbsp;涓急璀﹀憡&nbsp;</span></label><input type="checkbox" checked onclick="navigate(587968638)" id="587968638">
+<ol class="tree">
+<li><label for="1054604327"><b>琛ㄦ牸寮忚缃笉姝ｇ‘</b>&nbsp;inspection&nbsp;<span class="grayout">&nbsp;&nbsp;57&nbsp;涓急璀﹀憡&nbsp;</span></label><input type="checkbox" onclick="navigate(1054604327)" id="1054604327">
+<ol class="tree">
+<li><label for="230358380">file&nbsp;<b>CODE_REVIEW_REPORT.md</b>&nbsp;<span class="grayout">&nbsp;&nbsp;4&nbsp;涓急璀﹀憡&nbsp;</span></label><input type="checkbox" onclick="navigate(230358380)" id="230358380">
+<div id="d230358380" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>CODE_REVIEW_REPORT.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md">鈥CODE_REVIEW_REPORT.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md#127">12</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md#1545">80</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md#1991">93</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md#3219">142</a>)
+</ul>
+</div></div>
+<ol class="tree">
+<li><label for="1370286991"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1370286991)" id="1370286991">
+<div id="d1370286991" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>CODE_REVIEW_REPORT.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md">鈥CODE_REVIEW_REPORT.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md#127">12</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md#1545">80</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md#1991">93</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md#3219">142</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="170581517"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(170581517)" id="170581517">
+<div id="d170581517" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>CODE_REVIEW_REPORT.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md">鈥CODE_REVIEW_REPORT.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md#127">12</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md#1545">80</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md#1991">93</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md#3219">142</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="1421977106"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1421977106)" id="1421977106">
+<div id="d1421977106" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>CODE_REVIEW_REPORT.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md">鈥CODE_REVIEW_REPORT.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md#127">12</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md#1545">80</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md#1991">93</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md#3219">142</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="1059137202"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1059137202)" id="1059137202">
+<div id="d1059137202" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>CODE_REVIEW_REPORT.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md">鈥CODE_REVIEW_REPORT.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md#127">12</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md#1545">80</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md#1991">93</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/CODE_REVIEW_REPORT.md#3219">142</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+</ol>
+<li><label for="586105748">file&nbsp;<b>compatibility_checklist.md</b>&nbsp;<span class="grayout">&nbsp;&nbsp;6&nbsp;涓急璀﹀憡&nbsp;</span></label><input type="checkbox" onclick="navigate(586105748)" id="586105748">
+<div id="d586105748" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>compatibility_checklist.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md">鈥docs\compatibility_checklist.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#114">8</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#1204">27</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#1957">40</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#2891">54</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#3693">67</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#4387">80</a>)
+</ul>
+</div></div>
+<ol class="tree">
+<li><label for="1547069038"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1547069038)" id="1547069038">
+<div id="d1547069038" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>compatibility_checklist.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md">鈥docs\compatibility_checklist.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#114">8</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#1204">27</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#1957">40</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#2891">54</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#3693">67</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#4387">80</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="136344823"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(136344823)" id="136344823">
+<div id="d136344823" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>compatibility_checklist.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md">鈥docs\compatibility_checklist.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#114">8</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#1204">27</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#1957">40</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#2891">54</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#3693">67</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#4387">80</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="1121833968"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1121833968)" id="1121833968">
+<div id="d1121833968" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>compatibility_checklist.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md">鈥docs\compatibility_checklist.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#114">8</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#1204">27</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#1957">40</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#2891">54</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#3693">67</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#4387">80</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="982741051"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(982741051)" id="982741051">
+<div id="d982741051" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>compatibility_checklist.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md">鈥docs\compatibility_checklist.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#114">8</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#1204">27</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#1957">40</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#2891">54</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#3693">67</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#4387">80</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="1273399666"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1273399666)" id="1273399666">
+<div id="d1273399666" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>compatibility_checklist.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md">鈥docs\compatibility_checklist.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#114">8</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#1204">27</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#1957">40</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#2891">54</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#3693">67</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#4387">80</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="643185083"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(643185083)" id="643185083">
+<div id="d643185083" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>compatibility_checklist.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md">鈥docs\compatibility_checklist.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#114">8</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#1204">27</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#1957">40</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#2891">54</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#3693">67</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/docs/compatibility_checklist.md#4387">80</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+</ol>
+<li><label for="1284994691">file&nbsp;<b>DEPLOY_GUIDE.md</b>&nbsp;<span class="grayout">&nbsp;&nbsp;1&nbsp;涓急璀﹀憡&nbsp;</span></label><input type="checkbox" onclick="navigate(1284994691)" id="1284994691">
+<div id="d1284994691" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>DEPLOY_GUIDE.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/cloud/DEPLOY_GUIDE.md">鈥cloud\DEPLOY_GUIDE.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/cloud/DEPLOY_GUIDE.md#1887">98</a>)
+</ul>
+</div></div>
+<ol class="tree">
+<li><label for="1354536160"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1354536160)" id="1354536160">
+<div id="d1354536160" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>DEPLOY_GUIDE.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/cloud/DEPLOY_GUIDE.md">鈥cloud\DEPLOY_GUIDE.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/cloud/DEPLOY_GUIDE.md#1887">98</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+</ol>
+<li><label for="1611152940">file&nbsp;<b>design.md</b>&nbsp;<span class="grayout">&nbsp;&nbsp;8&nbsp;涓急璀﹀憡&nbsp;</span></label><input type="checkbox" onclick="navigate(1611152940)" id="1611152940">
+<div id="d1611152940" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>design.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md">鈥.codeartsdoer\specs\hm6_adapt\design.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#2414">103</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#2962">111</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#3383">118</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#3598">124</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4072">131</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4289">137</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4531">143</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#5824">181</a>)
+</ul>
+</div></div>
+<ol class="tree">
+<li><label for="1886984538"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1886984538)" id="1886984538">
+<div id="d1886984538" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>design.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md">鈥.codeartsdoer\specs\hm6_adapt\design.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#2414">103</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#2962">111</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#3383">118</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#3598">124</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4072">131</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4289">137</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4531">143</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#5824">181</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="239819793"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(239819793)" id="239819793">
+<div id="d239819793" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>design.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md">鈥.codeartsdoer\specs\hm6_adapt\design.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#2414">103</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#2962">111</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#3383">118</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#3598">124</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4072">131</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4289">137</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4531">143</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#5824">181</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="1103660544"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1103660544)" id="1103660544">
+<div id="d1103660544" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>design.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md">鈥.codeartsdoer\specs\hm6_adapt\design.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#2414">103</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#2962">111</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#3383">118</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#3598">124</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4072">131</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4289">137</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4531">143</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#5824">181</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="244234036"><span style="margin:1px;">寮辫鍛?/span>&nbsp;琛ㄧ殑鏍煎紡涓嶆纭?nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(244234036)" id="244234036">
+<div id="d244234036" style="display:none">
+<p class="problem-description-group">浣嶇疆</p><div class="location"><b>design.md</b><br>in 鏂囦欢&nbsp;<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md">鈥.codeartsdoer\specs\hm6_adapt\design.md [family_food_app]</a></div>
+<p class="problem-description-group">闂鎽樿</p>
+<div class="problem-description">
+<ul>
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#2414">103</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#2962">111</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#3383">118</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#3598">124</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4072">131</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4289">137</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#4531">143</a>)
+<li>琛ㄧ殑鏍煎紡涓嶆纭?(琛?<a href="file://E:/APP/family_food_app/.codeartsdoer/specs/hm6_adapt/design.md#5824">181</a>)

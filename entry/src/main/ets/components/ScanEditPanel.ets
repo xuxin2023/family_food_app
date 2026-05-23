@@ -37,6 +37,8 @@ struct FormInput {
         .backgroundColor(COLORS.BG_PAGE_LIGHT)
         .borderRadius(12)
         .onChange(this.onChange)
+        .accessibilityText(this.title)
+        .accessibilityDescription(this.placeholder)
     }
     .width('100%')
     .alignItems(HorizontalAlign.Start)
@@ -75,6 +77,8 @@ export struct ScanEditPanel {
           .backgroundColor(COLORS.BG_PAGE_LIGHT)
           .borderRadius(12)
           .onChange((value: string) => { this.editPanel.ingredients = value })
+          .accessibilityText($r('app.string.scan_ingredients') as string)
+          .accessibilityDescription($r('app.string.scan_ingredients_placeholder') as string)
       }
       .width('100%')
       .alignItems(HorizontalAlign.Start)

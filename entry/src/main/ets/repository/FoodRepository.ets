@@ -173,7 +173,8 @@ export class FoodRepository {
   private safeGetString(rs: relationalStore.ResultSet, col: string): string {
     try {
       return rs.getString(rs.getColumnIndex(col));
-    } catch (_) {
+    } catch (e) {
+      hilog.debug(DOMAIN_ZERO, TAG, 'safeGetString failed: %{public}s', JSON.stringify(e));
       return '';
     }
   }
@@ -182,7 +183,8 @@ export class FoodRepository {
   private safeGetLong(rs: relationalStore.ResultSet, col: string): number {
     try {
       return rs.getLong(rs.getColumnIndex(col));
-    } catch (_) {
+    } catch (e) {
+      hilog.debug(DOMAIN_ZERO, TAG, 'safeGetLong failed: %{public}s', JSON.stringify(e));
       return 0;
     }
   }
@@ -193,7 +195,8 @@ export class FoodRepository {
       const raw: string = this.safeGetString(rs, col);
       if (raw.length === 0) return fallback;
       return JSON.parse(raw) as Object;
-    } catch (_) {
+    } catch (e) {
+      hilog.debug(DOMAIN_ZERO, TAG, 'safeParseJson failed: %{public}s', JSON.stringify(e));
       return fallback;
     }
   }

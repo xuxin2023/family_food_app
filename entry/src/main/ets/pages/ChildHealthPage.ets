@@ -1,7 +1,11 @@
-import { COLORS, safeBack, FoodLabel, FamilyProfile, AgeGroup, ChildHealthAssessment } from 'hsp_core';
+import { COLORS, safeBack, FoodLabel, FamilyProfile, AgeGroup, ChildHealthAssessment, HILOG_DOMAIN } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { SnackImpactAssessment, AdditiveSafetyResult, AdditiveSafetyLevel } from '../engine/ChildHealthAssessmentEngine';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+
+const TAG = 'ChildHealthPage';
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 @Entry
 @ComponentV2
@@ -25,7 +29,8 @@ struct ChildHealthPage {
       if (children.length > 0) {
         this.childProfile = children[0]
       }
-    } catch (_e) {
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'aboutToAppear failed: %{public}s', JSON.stringify(e));
     }
     this.isLoading = false
   }

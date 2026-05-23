@@ -61,7 +61,9 @@ struct SharePage {
       this.refreshShareText()
       this.myGroups = myGroups
       this.isLoading = false
-    } catch (_e) {
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'aboutToAppear failed: %{public}s', JSON.stringify(e));
+      this.isLoading = false
     }
   }
 

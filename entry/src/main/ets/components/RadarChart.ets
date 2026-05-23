@@ -154,6 +154,7 @@ export struct RadarChart {
     .width(this.chartSize)
     .height(this.axes.length === 0 ? this.chartSize : 'auto')
     .alignItems(HorizontalAlign.Center)
+    .accessibilityLevel('no')
   }
 
   getAxisCount(): number {

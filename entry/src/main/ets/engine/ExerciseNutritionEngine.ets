@@ -1,4 +1,4 @@
-import { FamilyProfile, AgeGroup, HealthSignal, BpStatus, BsStatus, NutritionTarget } from 'hsp_core';
+import { FamilyProfile, AgeGroup, HealthSignal, BpStatus, BsStatus, NutritionTarget, NutritionThreshold } from 'hsp_core';
 // ExerciseNutritionEngine.ets
 // 运动后实时营养推荐引擎
 // 根据运动类型、时长、强度及成员健康状态，生成补水/补能/补蛋白等营养建议
@@ -126,7 +126,7 @@ export class ExerciseNutritionEngine {
       supplements.push(pro);
     }
     // 长时间有氧 → 碳水
-    if (session.durationMinutes >= 60 && (session.type === ExerciseType.RUN || session.type === ExerciseType.CYCLE)) {
+    if (session.durationMinutes >= NutritionThreshold.LONG_EXERCISE_MINUTES && (session.type === ExerciseType.RUN || session.type === ExerciseType.CYCLE)) {
       const carb = new NutrientSupplement();
       carb.name = '碳水化合物';
       carb.amount = `${Math.round(session.estimatedCalorieBurn * 0.15)}g`;

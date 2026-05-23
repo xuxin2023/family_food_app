@@ -1,0 +1,471 @@
+﻿<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name="author" content="JetBrains">
+  <script type="text/javascript" src="script.js"></script>
+  <link rel="stylesheet" type="text/css" href="styles.css">
+  <title>项目 'family_food_app' 上的检查  </title>
+</head>
+<body>
+<div id="inspection-tree">
+<h4>项目 'family_food_app' 上的检查</h4>
+
+<ol class="tree">
+<li><label for="1606128195"><b>检查结果</b>&nbsp;<span class="grayout">&nbsp;&#39;Project&nbsp;Default&#39;&nbsp;配置文件&nbsp;&nbsp;132&nbsp;个错误&nbsp;14&nbsp;个警告&nbsp;57&nbsp;个弱警告&nbsp;384&nbsp;个拼写错误&nbsp;</span></label><input type="checkbox" checked onclick="navigate(1606128195)" id="1606128195">
+<ol class="tree">
+<li><label for="2133329324"><b>JSON&nbsp;and&nbsp;JSON5</b>&nbsp;group&nbsp;<span class="grayout">&nbsp;&nbsp;8&nbsp;个警告&nbsp;</span></label><input type="checkbox" checked onclick="navigate(2133329324)" id="2133329324">
+<ol class="tree">
+<li><label for="373383539"><b>Translation&nbsp;not&nbsp;provided</b>&nbsp;inspection&nbsp;<span class="grayout">&nbsp;&nbsp;8&nbsp;个警告&nbsp;</span></label><input type="checkbox" checked onclick="navigate(373383539)" id="373383539">
+<ol class="tree">
+<li><label for="1483525113">file&nbsp;<b>string.json</b>&nbsp;<span class="grayout">&nbsp;&nbsp;8&nbsp;个警告&nbsp;</span></label><input type="checkbox" onclick="navigate(1483525113)" id="1483525113">
+<div id="d1483525113" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>string.json</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json">…\entry\src\main\resources\base\element\string.json [entry]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>此处配置的alternative_food_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29048">1704</a>)
+<li>此处配置的meal_plan_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29126">1708</a>)
+<li>此处配置的nutrition_knowledge_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29196">1712</a>)
+<li>此处配置的add_to_diet_record在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29275">1716</a>)
+<li>此处配置的alternative_food_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29048">1704</a>)
+<li>此处配置的meal_plan_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29126">1708</a>)
+<li>此处配置的nutrition_knowledge_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29196">1712</a>)
+<li>此处配置的add_to_diet_record在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29275">1716</a>)
+</ul>
+</div></div>
+<ol class="tree">
+<li><label for="895773968"><span style="margin:1px;background:#f2f794">警告</span>&nbsp;此处配置的alternative_food_title在en_US(American&nbsp;English)&nbsp;和&nbsp;zh_CN(Chinese&nbsp;(大陆))路径下相同文件中未找到。&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(895773968)" id="895773968">
+<div id="d895773968" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>string.json</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json">…\entry\src\main\resources\base\element\string.json [entry]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>此处配置的alternative_food_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29048">1704</a>)
+<li>此处配置的meal_plan_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29126">1708</a>)
+<li>此处配置的nutrition_knowledge_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29196">1712</a>)
+<li>此处配置的add_to_diet_record在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29275">1716</a>)
+<li>此处配置的alternative_food_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29048">1704</a>)
+<li>此处配置的meal_plan_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29126">1708</a>)
+<li>此处配置的nutrition_knowledge_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29196">1712</a>)
+<li>此处配置的add_to_diet_record在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29275">1716</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="526570199"><span style="margin:1px;background:#f2f794">警告</span>&nbsp;此处配置的alternative_food_title在en_US(American&nbsp;English)&nbsp;和&nbsp;zh_CN(Chinese&nbsp;(大陆))路径下相同文件中未找到。&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(526570199)" id="526570199">
+<div id="d526570199" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>string.json</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json">…\entry\src\main\resources\base\element\string.json [entry]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>此处配置的alternative_food_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29048">1704</a>)
+<li>此处配置的meal_plan_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29126">1708</a>)
+<li>此处配置的nutrition_knowledge_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29196">1712</a>)
+<li>此处配置的add_to_diet_record在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29275">1716</a>)
+<li>此处配置的alternative_food_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29048">1704</a>)
+<li>此处配置的meal_plan_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29126">1708</a>)
+<li>此处配置的nutrition_knowledge_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29196">1712</a>)
+<li>此处配置的add_to_diet_record在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29275">1716</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="1199976417"><span style="margin:1px;background:#f2f794">警告</span>&nbsp;此处配置的meal_plan_title在en_US(American&nbsp;English)&nbsp;和&nbsp;zh_CN(Chinese&nbsp;(大陆))路径下相同文件中未找到。&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1199976417)" id="1199976417">
+<div id="d1199976417" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>string.json</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json">…\entry\src\main\resources\base\element\string.json [entry]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>此处配置的alternative_food_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29048">1704</a>)
+<li>此处配置的meal_plan_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29126">1708</a>)
+<li>此处配置的nutrition_knowledge_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29196">1712</a>)
+<li>此处配置的add_to_diet_record在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29275">1716</a>)
+<li>此处配置的alternative_food_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29048">1704</a>)
+<li>此处配置的meal_plan_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29126">1708</a>)
+<li>此处配置的nutrition_knowledge_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29196">1712</a>)
+<li>此处配置的add_to_diet_record在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29275">1716</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="1411667469"><span style="margin:1px;background:#f2f794">警告</span>&nbsp;此处配置的meal_plan_title在en_US(American&nbsp;English)&nbsp;和&nbsp;zh_CN(Chinese&nbsp;(大陆))路径下相同文件中未找到。&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1411667469)" id="1411667469">
+<div id="d1411667469" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>string.json</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json">…\entry\src\main\resources\base\element\string.json [entry]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>此处配置的alternative_food_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29048">1704</a>)
+<li>此处配置的meal_plan_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29126">1708</a>)
+<li>此处配置的nutrition_knowledge_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29196">1712</a>)
+<li>此处配置的add_to_diet_record在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29275">1716</a>)
+<li>此处配置的alternative_food_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29048">1704</a>)
+<li>此处配置的meal_plan_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29126">1708</a>)
+<li>此处配置的nutrition_knowledge_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29196">1712</a>)
+<li>此处配置的add_to_diet_record在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29275">1716</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="312396064"><span style="margin:1px;background:#f2f794">警告</span>&nbsp;此处配置的nutrition_knowledge_title在en_US(American&nbsp;English)&nbsp;和&nbsp;zh_CN(Chinese&nbsp;(大陆))路径下相同文件中未找到。&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(312396064)" id="312396064">
+<div id="d312396064" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>string.json</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json">…\entry\src\main\resources\base\element\string.json [entry]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>此处配置的alternative_food_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29048">1704</a>)
+<li>此处配置的meal_plan_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29126">1708</a>)
+<li>此处配置的nutrition_knowledge_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29196">1712</a>)
+<li>此处配置的add_to_diet_record在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29275">1716</a>)
+<li>此处配置的alternative_food_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29048">1704</a>)
+<li>此处配置的meal_plan_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29126">1708</a>)
+<li>此处配置的nutrition_knowledge_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29196">1712</a>)
+<li>此处配置的add_to_diet_record在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29275">1716</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="281388396"><span style="margin:1px;background:#f2f794">警告</span>&nbsp;此处配置的nutrition_knowledge_title在en_US(American&nbsp;English)&nbsp;和&nbsp;zh_CN(Chinese&nbsp;(大陆))路径下相同文件中未找到。&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(281388396)" id="281388396">
+<div id="d281388396" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>string.json</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json">…\entry\src\main\resources\base\element\string.json [entry]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>此处配置的alternative_food_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29048">1704</a>)
+<li>此处配置的meal_plan_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29126">1708</a>)
+<li>此处配置的nutrition_knowledge_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29196">1712</a>)
+<li>此处配置的add_to_diet_record在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29275">1716</a>)
+<li>此处配置的alternative_food_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29048">1704</a>)
+<li>此处配置的meal_plan_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29126">1708</a>)
+<li>此处配置的nutrition_knowledge_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29196">1712</a>)
+<li>此处配置的add_to_diet_record在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29275">1716</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="1311140527"><span style="margin:1px;background:#f2f794">警告</span>&nbsp;此处配置的add_to_diet_record在en_US(American&nbsp;English)&nbsp;和&nbsp;zh_CN(Chinese&nbsp;(大陆))路径下相同文件中未找到。&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1311140527)" id="1311140527">
+<div id="d1311140527" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>string.json</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json">…\entry\src\main\resources\base\element\string.json [entry]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>此处配置的alternative_food_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29048">1704</a>)
+<li>此处配置的meal_plan_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29126">1708</a>)
+<li>此处配置的nutrition_knowledge_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29196">1712</a>)
+<li>此处配置的add_to_diet_record在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29275">1716</a>)
+<li>此处配置的alternative_food_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29048">1704</a>)
+<li>此处配置的meal_plan_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29126">1708</a>)
+<li>此处配置的nutrition_knowledge_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29196">1712</a>)
+<li>此处配置的add_to_diet_record在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29275">1716</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="1740225343"><span style="margin:1px;background:#f2f794">警告</span>&nbsp;此处配置的add_to_diet_record在en_US(American&nbsp;English)&nbsp;和&nbsp;zh_CN(Chinese&nbsp;(大陆))路径下相同文件中未找到。&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1740225343)" id="1740225343">
+<div id="d1740225343" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>string.json</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json">…\entry\src\main\resources\base\element\string.json [entry]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>此处配置的alternative_food_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29048">1704</a>)
+<li>此处配置的meal_plan_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29126">1708</a>)
+<li>此处配置的nutrition_knowledge_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29196">1712</a>)
+<li>此处配置的add_to_diet_record在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29275">1716</a>)
+<li>此处配置的alternative_food_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29048">1704</a>)
+<li>此处配置的meal_plan_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29126">1708</a>)
+<li>此处配置的nutrition_knowledge_title在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29196">1712</a>)
+<li>此处配置的add_to_diet_record在en_US(American English) 和 zh_CN(Chinese (大陆))路径下相同文件中未找到。 (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/element/string.json#29275">1716</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+</ol>
+</ol>
+</ol>
+<li><label for="1827792149"><b>JSON&nbsp;和&nbsp;JSON5</b>&nbsp;group&nbsp;<span class="grayout">&nbsp;&nbsp;1&nbsp;个错误&nbsp;6&nbsp;个警告&nbsp;</span></label><input type="checkbox" onclick="navigate(1827792149)" id="1827792149">
+<ol class="tree">
+<li><label for="358695813"><b>分层图像检查</b>&nbsp;inspection&nbsp;<span class="grayout">&nbsp;&nbsp;6&nbsp;个警告&nbsp;</span></label><input type="checkbox" onclick="navigate(358695813)" id="358695813">
+<ol class="tree">
+<li><label for="1588670076">file&nbsp;<b>app_icon.json</b>&nbsp;<span class="grayout">&nbsp;&nbsp;4&nbsp;个警告&nbsp;</span></label><input type="checkbox" onclick="navigate(1588670076)" id="1588670076">
+<div id="d1588670076" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>app_icon.json</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json">…\entry\src\main\resources\base\media\app_icon.json [entry]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>输入图像不是1024 x 1024像素。请重新选择。(/entry/src/main/resources/base/media/background.png) (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json#27">3</a>)
+<li>输入图像不是1024 x 1024像素。请重新选择。(/AppScope/resources/base/media/background.png) (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json#27">3</a>)
+<li>输入图像不是1024 x 1024像素。请重新选择。(/entry/src/main/resources/base/media/foreground.png) (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json#66">4</a>)
+<li>输入图像不是1024 x 1024像素。请重新选择。(/AppScope/resources/base/media/foreground.png) (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json#66">4</a>)
+</ul>
+</div></div>
+<ol class="tree">
+<li><label for="886451943"><span style="margin:1px;background:#ffabab">错误</span>&nbsp;输入图像不是1024&nbsp;x&nbsp;1024像素。请重新选择。(/AppScope/resources/base/media/background.png)&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(886451943)" id="886451943">
+<div id="d886451943" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>app_icon.json</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json">…\entry\src\main\resources\base\media\app_icon.json [entry]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>输入图像不是1024 x 1024像素。请重新选择。(/entry/src/main/resources/base/media/background.png) (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json#27">3</a>)
+<li>输入图像不是1024 x 1024像素。请重新选择。(/AppScope/resources/base/media/background.png) (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json#27">3</a>)
+<li>输入图像不是1024 x 1024像素。请重新选择。(/entry/src/main/resources/base/media/foreground.png) (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json#66">4</a>)
+<li>输入图像不是1024 x 1024像素。请重新选择。(/AppScope/resources/base/media/foreground.png) (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json#66">4</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="1518937114"><span style="margin:1px;background:#ffabab">错误</span>&nbsp;输入图像不是1024&nbsp;x&nbsp;1024像素。请重新选择。(/entry/src/main/resources/base/media/background.png)&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1518937114)" id="1518937114">
+<div id="d1518937114" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>app_icon.json</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json">…\entry\src\main\resources\base\media\app_icon.json [entry]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>输入图像不是1024 x 1024像素。请重新选择。(/entry/src/main/resources/base/media/background.png) (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json#27">3</a>)
+<li>输入图像不是1024 x 1024像素。请重新选择。(/AppScope/resources/base/media/background.png) (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json#27">3</a>)
+<li>输入图像不是1024 x 1024像素。请重新选择。(/entry/src/main/resources/base/media/foreground.png) (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json#66">4</a>)
+<li>输入图像不是1024 x 1024像素。请重新选择。(/AppScope/resources/base/media/foreground.png) (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json#66">4</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="659311604"><span style="margin:1px;background:#ffabab">错误</span>&nbsp;输入图像不是1024&nbsp;x&nbsp;1024像素。请重新选择。(/AppScope/resources/base/media/foreground.png)&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(659311604)" id="659311604">
+<div id="d659311604" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>app_icon.json</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json">…\entry\src\main\resources\base\media\app_icon.json [entry]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>输入图像不是1024 x 1024像素。请重新选择。(/entry/src/main/resources/base/media/background.png) (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json#27">3</a>)
+<li>输入图像不是1024 x 1024像素。请重新选择。(/AppScope/resources/base/media/background.png) (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json#27">3</a>)
+<li>输入图像不是1024 x 1024像素。请重新选择。(/entry/src/main/resources/base/media/foreground.png) (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json#66">4</a>)
+<li>输入图像不是1024 x 1024像素。请重新选择。(/AppScope/resources/base/media/foreground.png) (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json#66">4</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="502740676"><span style="margin:1px;background:#ffabab">错误</span>&nbsp;输入图像不是1024&nbsp;x&nbsp;1024像素。请重新选择。(/entry/src/main/resources/base/media/foreground.png)&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(502740676)" id="502740676">
+<div id="d502740676" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>app_icon.json</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json">…\entry\src\main\resources\base\media\app_icon.json [entry]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>输入图像不是1024 x 1024像素。请重新选择。(/entry/src/main/resources/base/media/background.png) (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json#27">3</a>)
+<li>输入图像不是1024 x 1024像素。请重新选择。(/AppScope/resources/base/media/background.png) (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json#27">3</a>)
+<li>输入图像不是1024 x 1024像素。请重新选择。(/entry/src/main/resources/base/media/foreground.png) (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json#66">4</a>)
+<li>输入图像不是1024 x 1024像素。请重新选择。(/AppScope/resources/base/media/foreground.png) (行 <a href="file://E:/APP/family_food_app/entry/src/main/resources/base/media/app_icon.json#66">4</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+</ol>
+<li><label for="1574984394">file&nbsp;<b>layered_image.json</b>&nbsp;<span class="grayout">&nbsp;&nbsp;2&nbsp;个警告&nbsp;</span></label><input type="checkbox" onclick="navigate(1574984394)" id="1574984394">
+<div id="d1574984394" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>layered_image.json</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/AppScope/resources/base/media/layered_image.json">…\AppScope\resources\base\media\layered_image.json [family_food_app]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>输入图像不是1024 x 1024像素。请重新选择。(/AppScope/resources/base/media/background.png) (行 <a href="file://E:/APP/family_food_app/AppScope/resources/base/media/layered_image.json#27">3</a>)
+<li>输入图像不是1024 x 1024像素。请重新选择。(/AppScope/resources/base/media/foreground.png) (行 <a href="file://E:/APP/family_food_app/AppScope/resources/base/media/layered_image.json#66">4</a>)
+</ul>
+</div></div>
+<ol class="tree">
+<li><label for="557210661"><span style="margin:1px;background:#ffabab">错误</span>&nbsp;输入图像不是1024&nbsp;x&nbsp;1024像素。请重新选择。(/AppScope/resources/base/media/background.png)&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(557210661)" id="557210661">
+<div id="d557210661" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>layered_image.json</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/AppScope/resources/base/media/layered_image.json">…\AppScope\resources\base\media\layered_image.json [family_food_app]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>输入图像不是1024 x 1024像素。请重新选择。(/AppScope/resources/base/media/background.png) (行 <a href="file://E:/APP/family_food_app/AppScope/resources/base/media/layered_image.json#27">3</a>)
+<li>输入图像不是1024 x 1024像素。请重新选择。(/AppScope/resources/base/media/foreground.png) (行 <a href="file://E:/APP/family_food_app/AppScope/resources/base/media/layered_image.json#66">4</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="998101780"><span style="margin:1px;background:#ffabab">错误</span>&nbsp;输入图像不是1024&nbsp;x&nbsp;1024像素。请重新选择。(/AppScope/resources/base/media/foreground.png)&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(998101780)" id="998101780">
+<div id="d998101780" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>layered_image.json</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/AppScope/resources/base/media/layered_image.json">…\AppScope\resources\base\media\layered_image.json [family_food_app]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>输入图像不是1024 x 1024像素。请重新选择。(/AppScope/resources/base/media/background.png) (行 <a href="file://E:/APP/family_food_app/AppScope/resources/base/media/layered_image.json#27">3</a>)
+<li>输入图像不是1024 x 1024像素。请重新选择。(/AppScope/resources/base/media/foreground.png) (行 <a href="file://E:/APP/family_food_app/AppScope/resources/base/media/layered_image.json#66">4</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+</ol>
+</ol>
+<li><label for="1056815549"><b>符合&nbsp;JSON&nbsp;架构</b>&nbsp;inspection&nbsp;<span class="grayout">&nbsp;&nbsp;1&nbsp;个错误&nbsp;</span></label><input type="checkbox" onclick="navigate(1056815549)" id="1056815549">
+<ol class="tree">
+<li><label for="829719674">file&nbsp;<b>module.json5</b>&nbsp;<span class="grayout">&nbsp;&nbsp;1&nbsp;个错误&nbsp;</span></label><input type="checkbox" onclick="navigate(829719674)" id="829719674">
+<div id="d829719674" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>module.json5</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/hsp_core/src/main/module.json5">…\hsp_core\src\main\module.json5 [hsp_core]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>字符串违反模式: '^[$]profile:[0-9a-zA-Z_.]+$' (行 <a href="file://E:/APP/family_food_app/hsp_core/src/main/module.json5#216">12</a>)
+</ul>
+</div></div>
+<ol class="tree">
+<li><label for="1189894056"><span style="margin:1px;background:#ffabab">错误</span>&nbsp;字符串违反模式:&nbsp;&#39;^[$]profile:[0&#8209;9a&#8209;zA&#8209;Z_.]+$&#39;&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1189894056)" id="1189894056">
+<div id="d1189894056" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>module.json5</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/hsp_core/src/main/module.json5">…\hsp_core\src\main\module.json5 [hsp_core]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>字符串违反模式: '^[$]profile:[0-9a-zA-Z_.]+$' (行 <a href="file://E:/APP/family_food_app/hsp_core/src/main/module.json5#216">12</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+</ol>
+</ol>
+</ol>
+<li><label for="438783005"><b>JavaScript&nbsp;TypeScript&nbsp;ArkTS</b>&nbsp;group&nbsp;<span class="grayout">&nbsp;&nbsp;15&nbsp;个错误&nbsp;</span></label><input type="checkbox" checked onclick="navigate(438783005)" id="438783005">
+<ol class="tree">
+<li><label for="675299192"><b>ArkTS引用检查</b>&nbsp;inspection&nbsp;<span class="grayout">&nbsp;&nbsp;15&nbsp;个错误&nbsp;</span></label><input type="checkbox" onclick="navigate(675299192)" id="675299192">
+<ol class="tree">
+<li><label for="2044791463">file&nbsp;<b>HealthMockIndicator.ets</b>&nbsp;<span class="grayout">&nbsp;&nbsp;6&nbsp;个错误&nbsp;</span></label><input type="checkbox" onclick="navigate(2044791463)" id="2044791463">
+<div id="d2044791463" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>HealthMockIndicator.ets</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets">…\entry\src\main\ets\components\HealthMockIndicator.ets [entry]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'partial_data_estimated' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#474">19</a>)
+<li>Unknown resource name 'accent_orange' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#558">21</a>)
+<li>Unknown resource name 'connect_device_hint' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#653">23</a>)
+<li>Unknown resource name 'text_hint' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#734">25</a>)
+<li>Unknown resource name 'connect_device' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#883">32</a>)
+<li>Unknown resource name 'link_blue' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#955">34</a>)
+</ul>
+</div></div>
+<ol class="tree">
+<li><label for="500965604"><span style="margin:1px;background:#ffabab">错误</span>&nbsp;Unknown&nbsp;resource&nbsp;name&nbsp;&#39;partial_data_estimated&#39;&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(500965604)" id="500965604">
+<div id="d500965604" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>HealthMockIndicator.ets</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets">…\entry\src\main\ets\components\HealthMockIndicator.ets [entry]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'partial_data_estimated' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#474">19</a>)
+<li>Unknown resource name 'accent_orange' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#558">21</a>)
+<li>Unknown resource name 'connect_device_hint' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#653">23</a>)
+<li>Unknown resource name 'text_hint' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#734">25</a>)
+<li>Unknown resource name 'connect_device' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#883">32</a>)
+<li>Unknown resource name 'link_blue' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#955">34</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="202266543"><span style="margin:1px;background:#ffabab">错误</span>&nbsp;Unknown&nbsp;resource&nbsp;name&nbsp;&#39;accent_orange&#39;&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(202266543)" id="202266543">
+<div id="d202266543" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>HealthMockIndicator.ets</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets">…\entry\src\main\ets\components\HealthMockIndicator.ets [entry]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'partial_data_estimated' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#474">19</a>)
+<li>Unknown resource name 'accent_orange' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#558">21</a>)
+<li>Unknown resource name 'connect_device_hint' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#653">23</a>)
+<li>Unknown resource name 'text_hint' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#734">25</a>)
+<li>Unknown resource name 'connect_device' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#883">32</a>)
+<li>Unknown resource name 'link_blue' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#955">34</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="40946371"><span style="margin:1px;background:#ffabab">错误</span>&nbsp;Unknown&nbsp;resource&nbsp;name&nbsp;&#39;connect_device_hint&#39;&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(40946371)" id="40946371">
+<div id="d40946371" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>HealthMockIndicator.ets</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets">…\entry\src\main\ets\components\HealthMockIndicator.ets [entry]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'partial_data_estimated' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#474">19</a>)
+<li>Unknown resource name 'accent_orange' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#558">21</a>)
+<li>Unknown resource name 'connect_device_hint' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#653">23</a>)
+<li>Unknown resource name 'text_hint' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#734">25</a>)
+<li>Unknown resource name 'connect_device' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#883">32</a>)
+<li>Unknown resource name 'link_blue' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#955">34</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="1966731973"><span style="margin:1px;background:#ffabab">错误</span>&nbsp;Unknown&nbsp;resource&nbsp;name&nbsp;&#39;text_hint&#39;&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1966731973)" id="1966731973">
+<div id="d1966731973" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>HealthMockIndicator.ets</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets">…\entry\src\main\ets\components\HealthMockIndicator.ets [entry]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'partial_data_estimated' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#474">19</a>)
+<li>Unknown resource name 'accent_orange' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#558">21</a>)
+<li>Unknown resource name 'connect_device_hint' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#653">23</a>)
+<li>Unknown resource name 'text_hint' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#734">25</a>)
+<li>Unknown resource name 'connect_device' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#883">32</a>)
+<li>Unknown resource name 'link_blue' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#955">34</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="1825850611"><span style="margin:1px;background:#ffabab">错误</span>&nbsp;Unknown&nbsp;resource&nbsp;name&nbsp;&#39;connect_device&#39;&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1825850611)" id="1825850611">
+<div id="d1825850611" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>HealthMockIndicator.ets</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets">…\entry\src\main\ets\components\HealthMockIndicator.ets [entry]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'partial_data_estimated' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#474">19</a>)
+<li>Unknown resource name 'accent_orange' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#558">21</a>)
+<li>Unknown resource name 'connect_device_hint' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#653">23</a>)
+<li>Unknown resource name 'text_hint' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#734">25</a>)
+<li>Unknown resource name 'connect_device' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#883">32</a>)
+<li>Unknown resource name 'link_blue' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#955">34</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="1899857905"><span style="margin:1px;background:#ffabab">错误</span>&nbsp;Unknown&nbsp;resource&nbsp;name&nbsp;&#39;link_blue&#39;&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(1899857905)" id="1899857905">
+<div id="d1899857905" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>HealthMockIndicator.ets</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets">…\entry\src\main\ets\components\HealthMockIndicator.ets [entry]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'partial_data_estimated' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#474">19</a>)
+<li>Unknown resource name 'accent_orange' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#558">21</a>)
+<li>Unknown resource name 'connect_device_hint' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#653">23</a>)
+<li>Unknown resource name 'text_hint' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#734">25</a>)
+<li>Unknown resource name 'connect_device' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#883">32</a>)
+<li>Unknown resource name 'link_blue' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/HealthMockIndicator.ets#955">34</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+</ol>
+<li><label for="594792996">file&nbsp;<b>ImmersiveTabBar.ets</b>&nbsp;<span class="grayout">&nbsp;&nbsp;6&nbsp;个错误&nbsp;</span></label><input type="checkbox" onclick="navigate(594792996)" id="594792996">
+<div id="d594792996" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>ImmersiveTabBar.ets</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets">…\entry\src\main\ets\components\ImmersiveTabBar.ets [entry]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'ohos_ic_public_notes' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#658">30</a>)
+<li>Unknown resource name 'ohos_ic_public_notes' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#658">30</a>)
+<li>Unknown resource name 'ohos_ic_public_save' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#892">32</a>)
+<li>Unknown resource name 'ohos_ic_public_save' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#892">32</a>)
+<li>Unknown resource name 'ohos_ic_public_person' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#1126">34</a>)
+<li>Unknown resource name 'ohos_ic_public_person' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#1126">34</a>)
+</ul>
+</div></div>
+<ol class="tree">
+<li><label for="755743395"><span style="margin:1px;background:#ffabab">错误</span>&nbsp;Unknown&nbsp;resource&nbsp;name&nbsp;&#39;ohos_ic_public_notes&#39;&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(755743395)" id="755743395">
+<div id="d755743395" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>ImmersiveTabBar.ets</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets">…\entry\src\main\ets\components\ImmersiveTabBar.ets [entry]</a></div>
+<p class="problem-description-group">问题摘要</p>
+<div class="problem-description">
+<ul>
+<li>Unknown resource name 'ohos_ic_public_notes' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#658">30</a>)
+<li>Unknown resource name 'ohos_ic_public_notes' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#658">30</a>)
+<li>Unknown resource name 'ohos_ic_public_save' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#892">32</a>)
+<li>Unknown resource name 'ohos_ic_public_save' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#892">32</a>)
+<li>Unknown resource name 'ohos_ic_public_person' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#1126">34</a>)
+<li>Unknown resource name 'ohos_ic_public_person' (行 <a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets#1126">34</a>)
+</ul>
+</div></div>
+<ol class="tree">
+</ol>
+<li><label for="707883754"><span style="margin:1px;background:#ffabab">错误</span>&nbsp;Unknown&nbsp;resource&nbsp;name&nbsp;&#39;ohos_ic_public_notes&#39;&nbsp;<span class="grayout"></span></label><input type="checkbox" onclick="navigate(707883754)" id="707883754">
+<div id="d707883754" style="display:none">
+<p class="problem-description-group">位置</p><div class="location"><b>ImmersiveTabBar.ets</b><br>in 文件&nbsp;<a href="file://E:/APP/family_food_app/entry/src/main/ets/components/ImmersiveTabBar.ets">…\entry\src\main\ets\components\ImmersiveTabBar.ets [entry]</a></div>
+<p class="pro

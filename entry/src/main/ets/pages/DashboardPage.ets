@@ -77,11 +77,13 @@ class DashboardViewModel {
 @ComponentV2
 struct DashboardPage {
   @Local vm: DashboardViewModel = new DashboardViewModel()
+  private componentActive: boolean = true
   private chartDelayTimer: number = -1
   private appState: AppState = AppState.getInstance()
   private trendPredictor: HealthTrendPredictor = new HealthTrendPredictor()
 
   async aboutToAppear() {
+    this.componentActive = true
     try {
       const params = getPageParams();
       if (params !== undefined) {
@@ -1245,6 +1247,7 @@ struct DashboardPage {
   }
 
   aboutToDisappear(): void {
+    this.componentActive = false
     if (this.chartDelayTimer !== -1) {
       clearTimeout(this.chartDelayTimer);
       this.chartDelayTimer = -1;

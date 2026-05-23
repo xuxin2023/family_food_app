@@ -92,5 +92,7 @@ export struct ChildProtectionCard {
     .backgroundColor(COLORS.BG_WARM_YELLOW)
     .borderRadius(12)
     .alignItems(HorizontalAlign.Start)
+    .accessibilityText($r('app.string.child_protection_tip'))
+    .accessibilityLevel('yes')
   }
 }

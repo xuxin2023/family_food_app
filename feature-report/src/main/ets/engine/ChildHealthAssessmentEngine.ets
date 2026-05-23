@@ -1,4 +1,4 @@
-import { FamilyProfile, AgeGroup, FoodLabel } from 'hsp_core';
+import { FamilyProfile, AgeGroup, FoodLabel, NutritionThreshold } from 'hsp_core';
 // ChildHealthAssessmentEngine.ets
 // 儿童专属健康评估与推荐引擎
 // 评估零食/食品对儿童的影响（食欲、糖分、添加剂），生成综合安全评分
@@ -213,7 +213,7 @@ export class ChildHealthAssessmentEngine {
 
     // 扣分：高钠
     if (food.nutrition.sodium >= 500) score -= 15;
-    else if (food.nutrition.sodium >= 300) score -= 10;
+    else if (food.nutrition.sodium >= NutritionThreshold.HIGH_SODIUM_MG) score -= 10;
 
     // 扣分：AVOID 添加剂
     const avoidCount = result.additiveResults.filter(a => a.safetyLevel === AdditiveSafetyLevel.AVOID_FOR_CHILD).length;
@@ -239,7 +239,7 @@ export class ChildHealthAssessmentEngine {
   ): string {
     const nick = profile.nickname || '孩子';
 
-    if (result.overallSafetyScore >= 80) {
+    if (result.overallSafetyScore >= NutritionThreshold.CHILD_SAFETY_SCORE_GOOD) {
       return `${nick}食用「${food.foodName}」总体安全，适可而止哦。`;
     }
 

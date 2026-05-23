@@ -21,6 +21,7 @@ export struct TrendChart {
       .padding(SPACING.MD)
       .backgroundColor(COLORS.WHITE)
       .borderRadius(RADIUS.MD)
+      .accessibilityLevel('no')
     } else {
       Column() {
         // 标题行
@@ -103,6 +104,7 @@ export struct TrendChart {
       .borderRadius(RADIUS.MD)
       .margin({ bottom: SPACING.MD })
       .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
+      .accessibilityLevel('no')
     }
   }
 

@@ -1,0 +1,10 @@
+{
+  "name": "hsp_core",
+  "version": "1.0.0",
+  "description": "family_food_app 核心共享模块 — 数据模型、工具类、常量定义（零业务依赖）",
+  "main": "Index.ets",
+  "author": "",
+  "license": "",
+  "dependencies": {},
+  "devDependencies": {}
+}

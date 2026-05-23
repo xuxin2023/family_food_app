@@ -52,7 +52,7 @@ export class AnalyticsService {
     try {
       // 创建或打开事件数据库
       const rdbConfig: relationalStore.StoreConfig = { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 };
-      this.rdbStore = await relationalStore.getRdbStoreV9(context, rdbConfig);
+      this.rdbStore = await relationalStore.getRdbStore(context, rdbConfig);
 
       // 创建事件表
       await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${ANALYTICS_TABLE_NAME} (

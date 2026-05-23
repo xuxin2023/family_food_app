@@ -109,6 +109,11 @@ export class MemberFacade {
   refreshMemberCache(): void {
     this.cache.clearHealthSignalsCache();
     this._membersCache = [];
+    this.familyRepo.getAllMembers().then(members => {
+      this._membersCache = members;
+    }).catch((_e: Error) => {
+      hilog.warn(DOMAIN_ZERO, TAG, 'refreshMemberCache failed: %{public}s', JSON.stringify(_e));
+    });
   }
 
   refreshBudgetCache(): void {

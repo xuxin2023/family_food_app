@@ -55,7 +55,8 @@ struct FoodComparePage {
       const savedSnapshots = allResults[1] as NutritionSnapshot[]
       this.recentFoods = recentFoods
       this.savedSnapshots = savedSnapshots
-    } catch (_e) {
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'aboutToAppear failed: %{public}s', JSON.stringify(e));
       this.recentFoods = []
       this.savedSnapshots = []
     }

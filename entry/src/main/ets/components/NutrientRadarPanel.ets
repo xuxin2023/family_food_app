@@ -156,5 +156,7 @@ export struct NutrientRadarPanel {
     }
     .width('100%')
     .alignItems(HorizontalAlign.Center)
+    .accessibilityText('营养雷达图')
+    .accessibilityLevel('yes')
   }
 }

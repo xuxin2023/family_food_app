@@ -3,7 +3,7 @@
 // 参考: https://docs.score-environnemental.com/
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from 'hsp_core';
+import { HILOG_DOMAIN, NutritionThreshold } from 'hsp_core';
 
 const TAG = 'EcoScoreEngine';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -28,6 +28,14 @@ export class EcoScoreFactor {
   name: string = '';
   impact: number = 0;
   description: string = '';
+}
+
+export class LcaFactors {
+  agriculturalScore: number = 50;
+  processingScore: number = 50;
+  packagingScore: number = 50;
+  transportScore: number = 50;
+  impactAdjustments: number = 0;
 }
 
 export class EcoScoreEngine {
@@ -141,10 +149,75 @@ export class EcoScoreEngine {
   }
 
   private scoreToGrade(score: number): EcoScoreGrade {
-    if (score >= 80) return EcoScoreGrade.A;
-    if (score >= 60) return EcoScoreGrade.B;
-    if (score >= 40) return EcoScoreGrade.C;
-    if (score >= 20) return EcoScoreGrade.D;
+    if (score >= NutritionThreshold.SCORE_THRESHOLD_A) return EcoScoreGrade.A;
+    if (score >= NutritionThreshold.SCORE_THRESHOLD_B) return EcoScoreGrade.B;
+    if (score >= NutritionThreshold.SCORE_THRESHOLD_C) return EcoScoreGrade.C;
+    if (score >= NutritionThreshold.SCORE_THRESHOLD_D) return EcoScoreGrade.D;
     return EcoScoreGrade.E;
+  }
+
+  evaluateWithLca(lca: LcaFactors, labels: string | undefined): EcoScoreResult {
+    const result = new EcoScoreResult();
+    const factors: EcoScoreFactor[] = [];
+
+    const f1 = new EcoScoreFactor();
+    f1.name = '农业生产影响';
+    f1.impact = lca.agriculturalScore;
+    f1.description = `农业得分 ${lca.agriculturalScore}/100`;
+    factors.push(f1);
+
+    const f2 = new EcoScoreFactor();
+    f2.name = '加工影响';
+    f2.impact = lca.processingScore;
+    f2.description = `加工得分 ${lca.processingScore}/100`;
+    factors.push(f2);
+
+    const f3 = new EcoScoreFactor();
+    f3.name = '包装影响';
+    f3.impact = lca.packagingScore;
+    f3.description = `包装得分 ${lca.packagingScore}/100`;
+    factors.push(f3);
+
+    const f4 = new EcoScoreFactor();
+    f4.name = '运输影响';
+    f4.impact = lca.transportScore;
+    f4.description = `运输得分 ${lca.transportScore}/100`;
+    factors.push(f4);
+
+    const labelStr = (labels ?? '').toLowerCase();
+    let adjustment = lca.impactAdjustments;
+    if (labelStr.includes('bio') || labelStr.includes('organic') || labelStr.includes('有机')) {
+      adjustment += 15;
+      const f = new EcoScoreFactor();
+      f.name = '有机认证';
+      f.impact = 15;
+      f.description = '有机生产减少环境影响';
+      factors.push(f);
+    }
+    if (labelStr.includes('fair-trade') || labelStr.includes('fairtrade')) {
+      adjustment += 10;
+      const f = new EcoScoreFactor();
+      f.name = '公平贸易';
+      f.impact = 10;
+      f.description = '公平贸易认证';
+      factors.push(f);
+    }
+
+    const weights = { agri: 0.35, process: 0.25, pack: 0.20, transport: 0.20 };
+    const weightedScore =
+      lca.agriculturalScore * weights.agri +
+      lca.processingScore * weights.process +
+      lca.packagingScore * weights.pack +
+      lca.transportScore * weights.transport +
+      adjustment;
+
+    result.score = Math.max(0, Math.min(100, weightedScore));
+    result.confidence = 0.8;
+    result.grade = this.scoreToGrade(result.score);
+    result.factors = factors;
+
+    hilog.info(DOMAIN_ZERO, TAG, 'EcoScore LCA: %{public}s (%{public}d/100)',
+      result.grade, result.score);
+    return result;
   }
 }

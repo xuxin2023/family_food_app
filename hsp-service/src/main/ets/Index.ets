@@ -27,21 +27,28 @@ export { AnalyticsService } from './src/main/ets/service/AnalyticsService';
 export { NetworkMonitorService } from './src/main/ets/service/NetworkMonitorService';
 
 // ===== Service 层导出（仍代理 entry，Sprint3 迁移源码） =====
+// TODO(Sprint3): 以下12个Service需物理迁移至 hsp-service/src/main/ets/service/
 export { CloudAuthService } from '../../entry/src/main/ets/service/CloudAuthService';
 export { CloudBackendService } from '../../entry/src/main/ets/service/CloudBackendService';
 export { DataService } from '../../entry/src/main/ets/service/DataService';
 export { ScanService } from '../../entry/src/main/ets/service/ScanService';
 export { ScanDirectService } from '../../entry/src/main/ets/service/ScanDirectService';
 export { OpenFoodFactsService } from '../../entry/src/main/ets/service/OpenFoodFactsService';
-export { FamilyGroupService } from '../../entry/src/main/ets/service/FamilyGroupService';
-export { RecipeCommunityService, CreateRecipeParams } from '../../entry/src/main/ets/service/RecipeCommunityService';
 export { HuaweiCloudService } from '../../entry/src/main/ets/service/HuaweiCloudService';
 export { PrivacyService } from '../../entry/src/main/ets/service/PrivacyService';
 export { UpdateChecker, UpdateInfo } from '../../entry/src/main/ets/service/UpdateChecker';
 export { SyncService, SyncEvent } from '../../entry/src/main/ets/service/sync/SyncService';
+// FamilyGroupService/RecipeCommunityService 已在 feature-community 本地实现，移除冗余代理
+// CreateRecipeParams 已在 hsp_core Recipe 模型中导出
 
 // ===== Manager 层导出（仍代理 entry，Sprint3 迁移源码） =====
+// TODO(Sprint3): 以下4个Manager需物理迁移至 hsp-service/src/main/ets/manager/
 export { MemberManager } from '../../entry/src/main/ets/manager/MemberManager';
 export { BasketManager } from '../../entry/src/main/ets/manager/BasketManager';
 export { ReportCacheManager } from '../../entry/src/main/ets/manager/ReportCacheManager';
 export { RepositoryManager } from '../../entry/src/main/ets/manager/RepositoryManager';
+
+// ===== 工具层导出（仍代理 entry，Sprint3 迁移源码） =====
+// TODO(Sprint3): OfflineFoodDatabase/getGlobalState 需物理迁移至 hsp_core
+export { OfflineFoodDatabase, lookupByBarcode, convertToFoodLabel } from '../../entry/src/main/ets/service/OfflineFoodDatabase';
+export { getGlobalState } from '../../entry/src/main/ets/utils/GlobalStateProvider';

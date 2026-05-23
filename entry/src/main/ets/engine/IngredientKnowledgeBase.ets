@@ -1,4 +1,4 @@
-import { FamilyProfile, HealthGoal, FoodLabel, DislikedAdditive } from 'hsp_core';
+import { FamilyProfile, HealthGoal, FoodLabel, DislikedAdditive, NutritionThreshold } from 'hsp_core';
 // IngredientKnowledgeBase.ets
 // 配料知识库引擎 - 提供配料与食品添加剂的风险评估、健康分类与科普信息
 // 数据参考：《GB 2760-2024 食品添加剂使用标准》、《中国居民膳食指南2022》
@@ -664,7 +664,7 @@ export class IngredientKnowledgeBase {
 
       if (assessment.riskScore >= 70) {
         highRiskIngredients.push(ingredients[i].trim());
-      } else if (assessment.riskScore >= 40) {
+      } else if (assessment.riskScore >= NutritionThreshold.SCORE_THRESHOLD_C) {
         moderateRiskIngredients.push(ingredients[i].trim());
       }
 
@@ -869,18 +869,18 @@ export class IngredientKnowledgeBase {
   }
 
   private static scoreToLevel(score: number): IngredientRiskLevel {
-    if (score >= 80) return IngredientRiskLevel.AVOID;
-    if (score >= 60) return IngredientRiskLevel.HIGH_RISK;
-    if (score >= 40) return IngredientRiskLevel.MODERATE_RISK;
-    if (score >= 20) return IngredientRiskLevel.LOW_RISK;
+    if (score >= NutritionThreshold.SCORE_THRESHOLD_A) return IngredientRiskLevel.AVOID;
+    if (score >= NutritionThreshold.SCORE_THRESHOLD_B) return IngredientRiskLevel.HIGH_RISK;
+    if (score >= NutritionThreshold.SCORE_THRESHOLD_C) return IngredientRiskLevel.MODERATE_RISK;
+    if (score >= NutritionThreshold.SCORE_THRESHOLD_D) return IngredientRiskLevel.LOW_RISK;
     return IngredientRiskLevel.SAFE;
   }
 
   private static getRiskColor(score: number): string {
-    if (score >= 80) return '#F44336';
-    if (score >= 60) return '#FF7043';
-    if (score >= 40) return '#FFA726';
-    if (score >= 20) return '#8BC34A';
+    if (score >= NutritionThreshold.SCORE_THRESHOLD_A) return '#F44336';
+    if (score >= NutritionThreshold.SCORE_THRESHOLD_B) return '#FF7043';
+    if (score >= NutritionThreshold.SCORE_THRESHOLD_C) return '#FFA726';
+    if (score >= NutritionThreshold.SCORE_THRESHOLD_D) return '#8BC34A';
     return '#4CAF50';
   }
 }

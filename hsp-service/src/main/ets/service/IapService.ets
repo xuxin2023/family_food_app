@@ -213,6 +213,7 @@ function safeJsonParse<T>(jsonStr: string): T | null {
   try {
     return JSON.parse(jsonStr) as T;
   } catch (e) {
+    hilog.debug(DOMAIN_ZERO, TAG, 'safeJsonParse failed: %{public}s', JSON.stringify(e));
     return null;
   }
 }
@@ -355,6 +356,7 @@ export class IapService {
       // 沙箱错误码常见：-1(未知), -2(网络), -3(沙箱特有), 1001, 1002
       return IS_SANDBOX_ENABLED;
     } catch (err) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'isSandboxEnvironment failed: %{public}s', JSON.stringify(err));
       return false;
     }
   }
@@ -375,15 +377,15 @@ export class IapService {
       promise.then((result: iap.CreatePurchaseResult) => {
         try {
           clearTimeout(timer);
-        } catch (_e) {
-          // ignore clearTimeout error
+        } catch (e) {
+          hilog.warn(DOMAIN_ZERO, TAG, 'clearTimeout failed: %{public}s', JSON.stringify(e));
         }
         resolve(result);
       }).catch((err: Error) => {
         try {
           clearTimeout(timer);
-        } catch (_e) {
-          // ignore clearTimeout error
+        } catch (e) {
+          hilog.warn(DOMAIN_ZERO, TAG, 'clearTimeout failed: %{public}s', JSON.stringify(e));
         }
         reject(err);
       });
@@ -873,6 +875,7 @@ export class IapService {
       const prefs = await preferences.getPreferences(this.context, PREF_IAP);
       return prefs.getSync(KEY_PRODUCT_ID, '') as string;
     } catch (err) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'getActiveProductId failed: %{public}s', JSON.stringify(err));
       return '';
     }
   }
@@ -888,6 +891,7 @@ export class IapService {
       const prefs = await preferences.getPreferences(this.context, PREF_IAP);
       return prefs.getSync(KEY_TIER, '') as string;
     } catch (err) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'getSavedPurchaseTier failed: %{public}s', JSON.stringify(err));
       return '';
     }
   }
@@ -1308,6 +1312,7 @@ export class IapService {
       const history: PurchaseRecord[] = JSON.parse(historyJson);
       return history;
     } catch (err) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'getPurchaseHistory failed: %{public}s', JSON.stringify(err));
       return [];
     }
   }

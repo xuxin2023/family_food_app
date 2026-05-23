@@ -5,8 +5,10 @@ import { safeBack, getPageParams, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGH
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { TrendChart } from '../components/TrendChart';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const TAG = 'NutritionTrendPage';
 
 class PeriodOption {
   label: string = '';
@@ -53,7 +55,8 @@ struct NutritionTrendPage {
       }
 
       await this.loadData()
-    } catch (_e) {
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'aboutToAppear failed: %{public}s', JSON.stringify(e));
     }
   }
 

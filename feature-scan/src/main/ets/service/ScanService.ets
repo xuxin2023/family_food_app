@@ -7,10 +7,10 @@ import { common } from '@kit.AbilityKit';
 import { scanBarcode, scanCore } from '@kit.ScanKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { connection } from '@kit.NetworkKit';
-import { AppState } from '../AppState';
-import { lookupByBarcode as offlineLookupByBarcode, convertToFoodLabel } from './OfflineFoodDatabase';
-import { OpenFoodFactsService } from './OpenFoodFactsService';
-import { DataLineage } from '../utils/DataLineage';
+import { AppState } from 'hsp-service';
+import { OpenFoodFactsService } from 'hsp-service';
+import { lookupByBarcode as offlineLookupByBarcode, convertToFoodLabel } from 'hsp-service';
+import { DataLineage } from 'hsp_core';
 
 const TAG = 'ScanService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;

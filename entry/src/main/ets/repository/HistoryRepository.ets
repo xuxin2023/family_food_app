@@ -337,6 +337,7 @@ export class HistoryRepository {
     try {
       reasons = JSON.parse(resultSet.getString(resultSet.getColumnIndex(COL_REASONS)) || '[]') as string[];
     } catch (e) {
+      hilog.debug(DOMAIN_ZERO, TAG, 'fromScanRecord reasons failed: %{public}s', JSON.stringify(e));
       reasons = [];
     }
     const record = new ScanHistoryRecord();
@@ -360,7 +361,8 @@ export class HistoryRepository {
     let mealTypeCol = -1;
     try {
       mealTypeCol = resultSet.getColumnIndex(COL_MEAL_TYPE);
-    } catch (_e) {
+    } catch (e) {
+      hilog.debug(DOMAIN_ZERO, TAG, 'fromScanRecord mealType failed: %{public}s', JSON.stringify(e));
       // 兼容旧数据：meal_type 列可能不存在
     }
     if (mealTypeCol >= 0) {

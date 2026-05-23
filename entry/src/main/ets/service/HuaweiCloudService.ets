@@ -231,12 +231,12 @@ export class HuaweiCloudService {
       }
       const apiKey = await AssetKeyManager.getInstance().getKey(KeyAlias.AGENT_ARTS);
       if (apiKey.length > 0) {
-        hilog.warn(DOMAIN_ZERO, TAG, 'Using API key as fallback token (cloud account not bound)');
+        hilog.warn(DOMAIN_ZERO, TAG, 'Auth fallback: cloud account not bound, using alternative');
         this.accessToken = apiKey;
         this.tokenExpireAt = Date.now() + 3600000;
         return this.accessToken;
       }
-      hilog.warn(DOMAIN_ZERO, TAG, 'No token available');
+      hilog.warn(DOMAIN_ZERO, TAG, 'No auth credential available');
       return '';
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'ensureAccessToken failed: %{public}s', JSON.stringify(error));

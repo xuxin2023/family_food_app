@@ -1,9 +1,13 @@
 // QuickFoodInput.ets
 // 饮食记录快捷录入组件 - 底部弹窗形式
 
-import { NutritionPer100g, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, DietRecord, OfflineFoodEntry } from 'hsp_core';
+import { NutritionPer100g, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, DietRecord, OfflineFoodEntry, HILOG_DOMAIN } from 'hsp_core';
 import { getOfflineFoodDatabase } from '../service/OfflineFoodDatabase';
 import { AppState } from '../AppState';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+
+const TAG_QFI = 'QuickFoodInput';
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 export class QuickFoodInputResult {
   foodName: string = '';
@@ -50,7 +54,8 @@ export struct QuickFoodInput {
     this.selectedMealType = this.defaultMealType;
     try {
       this.recentFoods = await this.appState.getTodayDietRecords(this.memberId);
-    } catch (_e) {
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG_QFI, 'aboutToAppear failed: %{public}s', JSON.stringify(e));
       this.recentFoods = [];
     }
   }

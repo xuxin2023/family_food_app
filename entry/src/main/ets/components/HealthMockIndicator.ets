@@ -39,6 +39,8 @@ export struct HealthMockIndicator {
       .borderRadius(8)
       .backgroundColor($r('app.color.bg_warm_orange'))
       .alignItems(VerticalAlign.Center)
+      .accessibilityText('健康指标')
+      .accessibilityLevel('yes')
     }
   }
 }

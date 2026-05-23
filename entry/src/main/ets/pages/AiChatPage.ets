@@ -64,7 +64,12 @@ struct AiChatPage {
 
       // 从持久化存储加载该成员的历史消息
       const savedJson = await this.chatHistoryService.getMessages(this.selectedMemberId);
-      const savedMessages: ChatMessage[] = JSON.parse(savedJson);
+      let savedMessages: ChatMessage[] = [];
+      try {
+        savedMessages = JSON.parse(savedJson) as ChatMessage[];
+      } catch (_e) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'Parse chat history failed, starting fresh');
+      }
       if (savedMessages.length > 0) {
         this.messages = savedMessages;
       } else {

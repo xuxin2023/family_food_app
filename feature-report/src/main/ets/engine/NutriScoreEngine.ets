@@ -3,7 +3,7 @@
 // 评分模型基于中国居民膳食营养素参考摄入量（DRIs 2023）
 // 参考Nutri-Score算法思路，调整权重适应中国标准
 
-import { NutritionPer100g } from 'hsp_core';
+import { NutritionPer100g, NutritionThreshold } from 'hsp_core';
 
 /**
  * 评分营养数据
@@ -233,7 +233,7 @@ export class NutriScoreEngine {
    * ≥6g: 加3分, ≥10g: 加5分, ≥20g: 加8分
    */
   private static calcProteinBonus(protein: number): number {
-    if (protein >= 20) return 8;
+    if (protein >= NutritionThreshold.PROTEIN_BONUS_THRESHOLD) return 8;
     if (protein >= 10) return 5;
     if (protein >= 6) return 3;
     return 0;

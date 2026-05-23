@@ -154,6 +154,7 @@ export class InspectionDataService {
       }
       return [];
     } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'queryByKeyword failed: %{public}s', JSON.stringify(error));
       return [];
     }
   }

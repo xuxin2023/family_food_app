@@ -71,7 +71,7 @@ export class CertPinExtractor {
       });
       const certHash = resp.header?.['x-ssl-cert-sha256'] as string ?? '';
       if (certHash.length > 0) {
-        hilog.info(DOMAIN_ZERO, TAG, `Extracted cert pin for ${hostname}: sha256/${certHash}`);
+        hilog.debug(DOMAIN_ZERO, TAG, 'Extracted cert pin for %{private}s', hostname);
         return `sha256/${certHash}`;
       }
       hilog.warn(DOMAIN_ZERO, TAG, `No cert hash header from ${hostname}, use TOFU or manual extraction`);
@@ -220,11 +220,35 @@ export class SecureHttpClient {
    * HarmonyOS 6.1: HttpResponse 中 certificates 属性仅 API 14+ 可用
    */
   private verifyResponseCertFingerprint(hostname: string, response: http.HttpResponse): void {
-    // 尝试从响应中提取证书信息
-    // API 14+ 设备: response.result 中可能包含 TLS 握手信息
-    // 当前降级方案：依赖系统 TLS 校验 + JWT API 层认证
-    hilog.info(DOMAIN_ZERO, TAG,
-      'Cert verification for %{public}s: relying on system TLS validation', hostname);
+    const expectedPins: string[] = this.getExpectedPins(hostname);
+    if (expectedPins.length === 0) {
+      hilog.warn(DOMAIN_ZERO, TAG,
+        'Cert verification for %{public}s: no expected pins, TOFU mode', hostname);
+      return;
+    }
+    const hasPlaceholder = expectedPins.some((pin: string) =>
+      pin.includes('FILL_FROM_CERT') || pin.includes('FILL_BACKUP'));
+    if (hasPlaceholder) {
+      hilog.warn(DOMAIN_ZERO, TAG,
+        'Cert verification for %{public}s: placeholder pins detected, falling back to system TLS', hostname);
+      return;
+    }
+    const responseCertHash = response.header?.['x-ssl-cert-sha256'] as string ?? '';
+    if (responseCertHash.length > 0) {
+      const fullPin = `sha256/${responseCertHash}`;
+      const matched = expectedPins.some((pin: string) => pin === fullPin);
+      if (!matched) {
+        hilog.error(DOMAIN_ZERO, TAG,
+          'CERT PIN MISMATCH for %{public}s! Expected one of %s, got %s',
+          hostname, expectedPins.join(','), fullPin);
+      } else {
+        hilog.info(DOMAIN_ZERO, TAG,
+          'Cert pin verified for %{public}s', hostname);
+      }
+    } else {
+      hilog.info(DOMAIN_ZERO, TAG,
+        'Cert verification for %{public}s: no cert hash in response, relying on system TLS', hostname);
+    }
   }
 
   private getExpectedPins(hostname: string): string[] {
@@ -271,8 +295,8 @@ export class SecureHttpClient {
           const parsed: Object = JSON.parse(stored);
           this.tofuPins.set(rule.hostname, parsed as string[]);
         }
-      } catch (_) {
-        // 忽略解析错误
+      } catch (e) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'loadPins failed: %{public}s', JSON.stringify(e));
       }
     }
   }
@@ -281,8 +305,8 @@ export class SecureHttpClient {
     try {
       const match: RegExpMatchArray | null = url.match(/^https?:\/\/([^/:]+)/);
       if (match !== null && match.length > 1) return match[1];
-    } catch (_) {
-      // ignore
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'extractHostname failed: %{public}s', JSON.stringify(e));
     }
     return null;
   }

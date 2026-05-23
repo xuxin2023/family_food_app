@@ -18,10 +18,12 @@ struct NutritionTargetPage {
   @Local isSaving: boolean = false
   @Local isLoading: boolean = true
 
+  private componentActive: boolean = true
   private appState: AppState = AppState.getInstance()
   private sliderDebounceTimer: number = -1
 
   async aboutToAppear() {
+    this.componentActive = true
     try {
       this.isLoading = true
       this.familyMembers = await this.appState.getAllMembers()
@@ -30,11 +32,14 @@ struct NutritionTargetPage {
       }
       await this.loadTarget()
       this.isLoading = false
-    } catch (_e) {
+    } catch (e) {
+      hilog.error(NUTRI_DOMAIN, NUTRI_TAG, 'aboutToAppear failed: %{public}s', JSON.stringify(e));
+      this.isLoading = false
     }
   }
 
   aboutToDisappear(): void {
+    this.componentActive = false
     if (this.sliderDebounceTimer !== -1) {
       clearTimeout(this.sliderDebounceTimer)
       this.sliderDebounceTimer = -1

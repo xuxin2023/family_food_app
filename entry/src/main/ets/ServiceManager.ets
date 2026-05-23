@@ -224,13 +224,7 @@ export class ServiceManager {
   }
 
   destroy(): void {
-    if (FEATURE_FLAGS.ENABLE_CLOUD_SYNC) {
-      try {
-        this.syncService.offEventAll();
-      } catch (_e) {
-        // ignore
-      }
-    }
+    // syncEvent 监听器由 AppState.destroy() 统一清理，此处不再重复调用
     this.groupService = null;
     this.recipeCommunityService = null;
     hilog.info(DOMAIN_ZERO, TAG, 'ServiceManager destroyed');

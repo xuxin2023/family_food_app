@@ -31,6 +31,7 @@ export struct RingChart {
       .height(this.ringSize)
       .justifyContent(FlexAlign.Center)
       .alignItems(HorizontalAlign.Center)
+      .accessibilityLevel('no')
     } else {
       Column() {
         // 环形进度
@@ -90,6 +91,7 @@ export struct RingChart {
         }
       }
       .alignItems(HorizontalAlign.Center)
+      .accessibilityLevel('no')
     }
   }
 

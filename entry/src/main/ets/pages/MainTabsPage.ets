@@ -8,6 +8,10 @@
 // Tab 结构: 首页 | 饮食 | AI | 社区 | 我的
 
 import { safePushUrl, COLORS, HILOG_DOMAIN, NavigationManager } from 'hsp_core';
+// @kit.UIDesignKit: HarmonyOS Design System 组件库 (HDS Tabs)
+// 降级路径：若 SDK 未集成 @kit.UIDesignKit，替换为 Tabs + BottomTabBarStyle
+//   import 替换: HdsTabs -> Tabs, HdsTabsController -> TabsController
+//   属性替换: hdsMaterial() -> BarMode.Fixed + 自定义动画
 import { HdsTabs, HdsTabsController } from '@kit.UIDesignKit';
 import { hdsMaterial } from '@kit.UIDesignKit';
 import { SymbolGlyphModifier } from '@kit.ArkUI';
@@ -21,6 +25,7 @@ const TAG = 'MainTabsPage';
 struct MainTabsPage {
   private tabsController: HdsTabsController = new HdsTabsController();
   @Local currentIndex: number = 0;
+  @Local appInitFailed: boolean = AppStorage.get<boolean>('appStateInitFailed') ?? false;
 
   // 懒加载状态：记录各 Tab 是否已被访问过
   // Tab 0（首页）始终加载
@@ -50,6 +55,27 @@ struct MainTabsPage {
   build() {
     Navigation(NavigationManager.getStack()) {
     Column() {
+    if (this.appInitFailed) {
+      Column() {
+        Text('应用初始化异常')
+          .fontSize(18)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(COLORS.TEXT_PRIMARY)
+        Text('请重启应用，如问题持续请联系客服')
+          .fontSize(14)
+          .fontColor(COLORS.TEXT_TERTIARY)
+          .margin({ top: 8 })
+        Button('重试')
+          .margin({ top: 16 })
+          .onClick(() => {
+            this.appInitFailed = AppStorage.get<boolean>('appStateInitFailed') ?? false;
+          })
+      }
+      .width('100%')
+      .height('100%')
+      .justifyContent(FlexAlign.Center)
+      .alignItems(HorizontalAlign.Center)
+    } else {
     HdsTabs({
       controller: this.tabsController,
       index: this.currentIndex
@@ -165,6 +191,7 @@ struct MainTabsPage {
     })
     .width('100%')
     .height('100%')
+    }
   }
 }
     .navDestination(this.buildNavDestination)

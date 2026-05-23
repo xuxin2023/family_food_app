@@ -1,7 +1,11 @@
-import { COLORS, safeBack, FamilyProfile, HealthSignal, NutritionTarget, createDefaultNutritionTarget, ExerciseNutritionRecommendation } from 'hsp_core';
+import { COLORS, safeBack, FamilyProfile, HealthSignal, NutritionTarget, createDefaultNutritionTarget, ExerciseNutritionRecommendation, HILOG_DOMAIN } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { NutrientSupplement } from '../engine/ExerciseNutritionEngine';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+
+const TAG = 'ExerciseNutritionPage';
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 @Entry
 @ComponentV2
@@ -27,7 +31,8 @@ struct ExerciseNutritionPage {
         this.currentSignal = this.appState.getHealthSignal(firstMember.memberId)
         this.currentTarget = await this.appState.getNutritionTargetOrDefault(firstMember.memberId)
       }
-    } catch (_e) {
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'aboutToAppear failed: %{public}s', JSON.stringify(e));
     }
     this.isLoading = false
   }

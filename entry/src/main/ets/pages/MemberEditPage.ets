@@ -1,10 +1,14 @@
 // 成员编辑页 - 创建/编辑家庭成员画像
 
 import {
-  safeBack, getPageParams, FamilyProfile, AgeGroup, HealthGoal, HealthSignal, StepLevel, SleepStatus, BpStatus, BsStatus, DateUtil, PaywallTrigger, MemberTier, getTierDisplayName, BUTTON, COLORS
+  safeBack, getPageParams, FamilyProfile, AgeGroup, HealthGoal, HealthSignal, StepLevel, SleepStatus, BpStatus, BsStatus, DateUtil, PaywallTrigger, MemberTier, getTierDisplayName, BUTTON, COLORS, HILOG_DOMAIN
 } from 'hsp_core';
 import { AppState } from '../AppState';
 import { PaywallDialog } from '../components/PaywallDialog';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+
+const TAG = 'MemberEditPage';
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 // AgeGroup 枚举值数组
 const AGE_GROUP_VALUES: AgeGroup[] = [AgeGroup.CHILD, AgeGroup.TEEN, AgeGroup.ADULT, AgeGroup.MIDDLE_OLD, AgeGroup.OLD];
@@ -308,7 +312,9 @@ struct MemberEditPage {
         }
       }
       this.isLoading = false
-    } catch (_e) {
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'aboutToAppear failed: %{public}s', JSON.stringify(e));
+      this.isLoading = false
     }
   }
 

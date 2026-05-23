@@ -55,16 +55,19 @@ struct CloudSyncSettingsPage {
   @Local private showStrategyPicker: boolean = false;
   @Local private showConflictPicker: boolean = false;
 
+  private componentActive: boolean = true;
   private appState: AppState = AppState.getInstance();
   private syncService: SyncService = this.appState.services.syncService;
   private cloudAuth = this.appState.services.cloudAuthService;
 
   aboutToAppear(): void {
+    this.componentActive = true;
     this.refreshAllState();
     this.syncService.onEvent(this.onSyncEvent);
   }
 
   aboutToDisappear(): void {
+    this.componentActive = false;
     this.syncService.offEvent(this.onSyncEvent);
   }
 

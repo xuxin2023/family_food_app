@@ -16,22 +16,26 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 const TAG = 'WeeklyReportPage';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
-// 周范围
 class WeekRange {
   startDate: string = '';
   endDate: string = '';
 }
 
+@ObservedV2
+class WeeklyReportViewModel {
+  @Trace reports: WeeklyReport[] = []
+  @Trace weekLabel: string = ''
+  @Trace showPaywallDialog: boolean = false
+  @Trace paywallTrigger: PaywallTrigger | null = null
+  @Trace showLockedPlaceholder: boolean = false
+  @Trace isLoading: boolean = true
+  @Trace currentBreakpoint: string = 'md'
+}
+
 @Entry
 @ComponentV2
 struct WeeklyReportPage {
-  @Local reports: WeeklyReport[] = []
-  @Local weekLabel: string = ''
-  @Local showPaywallDialog: boolean = false
-  @Local paywallTrigger: PaywallTrigger | null = null
-  @Local showLockedPlaceholder: boolean = false
-  @Local isLoading: boolean = true
-  @Local currentBreakpoint: string = 'md'
+  @Local vm: WeeklyReportViewModel = new WeeklyReportViewModel()
 
   private appState: AppState = AppState.getInstance()
   private componentActive: boolean = true
@@ -45,10 +49,10 @@ struct WeeklyReportPage {
       const trigger = this.appState.member.getPaywallTrigger('weekly_report')
       if (trigger !== null && trigger.requiredTier !== MemberTier.FREE) {
         // 当前等级无权限，显示付费墙
-        this.paywallTrigger = trigger
-        this.showPaywallDialog = true
-        this.showLockedPlaceholder = true
-        this.isLoading = false
+        this.vm.paywallTrigger = trigger
+        this.vm.showPaywallDialog = true
+        this.vm.showLockedPlaceholder = true
+        this.vm.isLoading = false
         return
       }
 
@@ -59,7 +63,7 @@ struct WeeklyReportPage {
       const members = allResults[0] as FamilyProfile[]
       const scanHistory = allResults[1] as ScanHistoryRecord[]
       const weekRange = this.getCurrentWeekRange()
-      this.weekLabel = `${weekRange.startDate} ~ ${weekRange.endDate}`
+      this.vm.weekLabel = `${weekRange.startDate} ~ ${weekRange.endDate}`
 
       const reports: WeeklyReport[] = []
       const engine = new WeeklyReportEngine()
@@ -67,9 +71,11 @@ struct WeeklyReportPage {
         const data = await this.buildWeeklyData(member, weekRange.startDate, weekRange.endDate, scanHistory)
         reports.push(engine.generate(data, member))
       }
-      this.reports = reports
-      this.isLoading = false
-    } catch (_e) {
+      this.vm.reports = reports
+      this.vm.isLoading = false
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'aboutToAppear failed: %{public}s', JSON.stringify(e));
+      this.vm.isLoading = false;
     }
   }
 
@@ -108,8 +114,8 @@ struct WeeklyReportPage {
           GridCol({ span: { sm: 4, md: 8, lg: 10 }, offset: { sm: 0, md: 0, lg: 1 } }) {
             Scroll() {
               Column() {
-                if (this.weekLabel.length > 0) {
-                  Text(this.weekLabel)
+                if (this.vm.weekLabel.length > 0) {
+                  Text(this.vm.weekLabel)
                     .fontSize(13)
                     .fontColor(COLORS.TEXT_GRAY_7575)
                     .width('92%')
@@ -117,7 +123,7 @@ struct WeeklyReportPage {
                     .textAlign(TextAlign.Start)
                 }
 
-                if (this.showLockedPlaceholder) {
+                if (this.vm.showLockedPlaceholder) {
                   Column() {
                     Text('🔒')
                       .fontSize(48)
@@ -137,7 +143,7 @@ struct WeeklyReportPage {
                   .height('60%')
                   .justifyContent(FlexAlign.Center)
                   .alignItems(HorizontalAlign.Center)
-                } else if (this.reports.length === 0) {
+                } else if (this.vm.reports.length === 0) {
                   EmptyState({
                     icon: '📊',
                     title: $r('app.string.weekly_report_no_records'),
@@ -146,7 +152,7 @@ struct WeeklyReportPage {
                   .width('100%')
                   .height('70%')
                 } else {
-                  ForEach(this.reports, (report: WeeklyReport) => {
+                  ForEach(this.vm.reports, (report: WeeklyReport) => {
                     this.MemberWeeklyCard(report)
                   }, (report: WeeklyReport) => report.memberId)
                 }
@@ -160,18 +166,18 @@ struct WeeklyReportPage {
         }
         .width('100%')
         .layoutWeight(1)
-        .onBreakpointChange((bp: string) => { this.currentBreakpoint = bp })
+        .onBreakpointChange((bp: string) => { this.vm.currentBreakpoint = bp })
       }
       .width('100%')
       .height('100%')
       .backgroundColor(COLORS.BG_PAGE)
 
       // 付费墙弹窗（覆盖在内容之上）
-      if (this.paywallTrigger !== null) {
+      if (this.vm.paywallTrigger !== null) {
         PaywallDialog({
-          trigger: this.paywallTrigger,
-          showDialog: this.showPaywallDialog,
-      onUpdateShowDialog: (val: boolean) => { this.showPaywallDialog = val }
+          trigger: this.vm.paywallTrigger,
+          showDialog: this.vm.showPaywallDialog,
+      onUpdateShowDialog: (val: boolean) => { this.vm.showPaywallDialog = val }
         })
       }
     }
@@ -269,7 +275,7 @@ struct WeeklyReportPage {
     }
     try {
       const rdbConfig: relationalStore.StoreConfig = { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 };
-      const rdbStore = await relationalStore.getRdbStoreV9(ctx, rdbConfig);
+      const rdbStore = await relationalStore.getRdbStore(ctx, rdbConfig);
       const repo = new ShoppingListRepository();
       await repo.init(rdbStore);
 
@@ -382,15 +388,15 @@ struct WeeklyReportPage {
   }
 
   private async doExportReport(): Promise<void> {
-    if (this.reports.length === 0) {
+    if (this.vm.reports.length === 0) {
       ToastHelper.show(this.getUIContext(), $r('app.string.no_content'));
       return;
     }
     try {
       const members = await this.appState.getAllMembers();
       const allText: string[] = [];
-      for (let i = 0; i < this.reports.length; i++) {
-        const report = this.reports[i];
+      for (let i = 0; i < this.vm.reports.length; i++) {
+        const report = this.vm.reports[i];
         const member = members.find(m => m.memberId === report.memberId) ?? new FamilyProfile();
         allText.push(ReportExporter.exportWeeklyReportAsText(report, member));
         allText.push('');

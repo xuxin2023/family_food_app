@@ -35,7 +35,7 @@ struct ReminderRulePage {
     if (ctx) {
       try {
         const rdbConfig: relationalStore.StoreConfig = { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 };
-        const rdbStore = await relationalStore.getRdbStoreV9(ctx, rdbConfig);
+        const rdbStore = await relationalStore.getRdbStore(ctx, rdbConfig);
         await this.repo.init(rdbStore);
       } catch (error) {
         hilog.error(DOMAIN_ZERO, TAG, 'Init repo failed: %{public}s', JSON.stringify(error));

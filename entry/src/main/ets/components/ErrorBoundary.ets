@@ -18,13 +18,16 @@ export struct ErrorBoundary {
   }
 
   build() {
-    if (this.hasError) {
-      ErrorFallback({
-        message: this.fallbackMessage,
-        onRetry: this.onRetry !== null ? () => { this.onRetry?.() } : undefined
-      })
-    } else {
-      this.content()
+    Column() {
+      if (this.hasError) {
+        ErrorFallback({
+          message: this.fallbackMessage,
+          onRetry: this.onRetry !== null ? () => { this.onRetry?.() } : undefined
+        })
+      } else {
+        this.content()
+      }
     }
+    .accessibilityLevel('no')
   }
 }

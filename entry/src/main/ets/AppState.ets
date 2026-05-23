@@ -5,7 +5,7 @@
 // 同步(Group+RecipeCommunity+Sync) → SyncFacade
 
 import {
-  FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig, createDefaultMembers, FoodLabel, FoodLabelJson, DailyBudget, Recommendation, MealBalance, MealScenario, ChildProtection, CredibilityResult, NutritionTarget, NutritionSnapshot, GroupSummary, GroupFeed, FeedType, Recipe, RecipeQueryParams, RecipeComment, EnhancedFoodRecommendation, FamilyComparisonItem, DateUtil, CacheManager, DB_NAME, HILOG_DOMAIN, HealthSignal, StepLevel, SleepStatus, WeightTrend, DataSource, BpStatus, BsStatus, HeartRateZone, SpO2Level, StressLevel, MemberTier, MemberStatus, PaywallTrigger, createDefaultMemberStatus, createMemberStatusForTier, getPaywallTriggerForFeature, hasTierAccess, getTierDisplayName, TIER_DAILY_SCAN_LIMIT, TIER_MEMBER_LIMIT, TIER_WEEKLY_REPORT_LIMIT, AiRecipeRecommendationResult, AiRecipeRequest, AiNutritionAdvice, DietRecord
+  FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig, createDefaultMembers, FoodLabel, FoodLabelJson, DailyBudget, Recommendation, MealBalance, MealScenario, ChildProtection, CredibilityResult, NutritionTarget, NutritionSnapshot, GroupSummary, GroupFeed, FeedType, Recipe, RecipeQueryParams, RecipeComment, EnhancedFoodRecommendation, FamilyComparisonItem, DateUtil, CacheManager, DB_NAME, HILOG_DOMAIN, HealthSignal, StepLevel, SleepStatus, WeightTrend, DataSource, BpStatus, BsStatus, HeartRateZone, SpO2Level, StressLevel, MemberTier, MemberStatus, PaywallTrigger, createDefaultMemberStatus, createMemberStatusForTier, getPaywallTriggerForFeature, hasTierAccess, getTierDisplayName, TIER_DAILY_SCAN_LIMIT, TIER_MEMBER_LIMIT, TIER_WEEKLY_REPORT_LIMIT, AiRecipeRecommendationResult, AiRecipeRequest, AiNutritionAdvice, DietRecord, DomainEventBus, DomainEvents
 } from 'hsp_core';
 import { FamilyRepository } from './repository/FamilyRepository';
 import { FoodRepository } from './repository/FoodRepository';
@@ -75,6 +75,7 @@ export class AppState {
   private readyPromise: Promise<void> = new Promise<void>((resolve) => {
     this.readyResolver = resolve;
   });
+  private syncEventHandler: ((event: SyncEvent) => void) | null = null;
 
   // ===== 领域门面（init 后可用） =====
   readonly food: FoodFacade = new FoodFacade(
@@ -120,7 +121,7 @@ export class AppState {
         securityLevel: relationalStore.SecurityLevel.S3,
         encrypt: true
       };
-      store = await relationalStore.getRdbStoreV9(context, rdbConfig);
+      store = await relationalStore.getRdbStore(context, rdbConfig);
     }
     await migrateDatabase(context, store);
 
@@ -144,14 +145,15 @@ export class AppState {
 
     await this.memberFacade.loadCache();
 
-    this.services.onSyncEvent((event: SyncEvent) => {
+    this.syncEventHandler = (event: SyncEvent) => {
       try {
         hilog.info(DOMAIN_ZERO, TAG, 'sync event received: ' + event.type);
         this.refreshCache();
       } catch (_e) {
         hilog.warn(DOMAIN_ZERO, 'AppState', 'sync event parse failed: %{public}s', JSON.stringify(_e));
       }
-    });
+    };
+    this.services.onSyncEvent(this.syncEventHandler);
 
     if (this.readyResolver) {
       this.readyResolver();
@@ -418,6 +420,7 @@ export class AppState {
     this.memberFacade.refreshBudgetCache();
     this.engines.cleanExpiredEngineCache();
     AppStorage.setOrCreate<number>('scanVersion', (AppStorage.get<number>('scanVersion') ?? 0) + 1);
+    DomainEventBus.emit(DomainEvents.CACHE_INVALIDATED, { source: 'sync' });
   }
 
   refreshMemberCache(): void {
@@ -428,9 +431,28 @@ export class AppState {
     this.memberFacade.refreshBudgetCache();
   }
 
+  persistAllHealthSignals(): void {
+    this.cache.clearHealthSignalsCache();
+  }
+
+  trimCache(): void {
+    this.cache.clearAll();
+    this.engines.cleanExpiredEngineCache();
+  }
+
   destroy(): void {
+    // 清理 syncEvent 监听器
+    if (this.syncEventHandler) {
+      try {
+        this.services.syncService.offEvent(this.syncEventHandler);
+      } catch (_e) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'offSyncEvent failed: %{public}s', JSON.stringify(_e));
+      }
+      this.syncEventHandler = null;
+    }
     this.member.clearContext();
     this.basket.clearContext();
+    this.cache.clearAll();
     this.engines.cleanExpiredEngineCache();
     DistributedSyncHelper.getInstance().destroy();
     this.initPhase = 'none';

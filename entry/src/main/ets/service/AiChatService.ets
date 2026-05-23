@@ -59,7 +59,7 @@ export class AiChatService extends AiServiceBase {
   bindMember(memberId: string): void {
     this.currentMemberId = memberId;
     this.conversationHistory = [];
-    hilog.info(DOMAIN_ZERO, TAG, 'Bound to member: %{public}s', memberId);
+    hilog.info(DOMAIN_ZERO, TAG, 'Bound to member: %{private}s', (memberId ?? '').substring(0, 4) + '***');
   }
 
   /**
@@ -224,7 +224,8 @@ export class AiChatService extends AiServiceBase {
       }
 
       return `${contextParts.join('；')}\n\n用户问题：${userMessage}`;
-    } catch (_e) {
+    } catch (e) {
+      hilog.warn(HILOG_DOMAIN, TAG, 'buildContextPrompt failed: %{public}s', JSON.stringify(e));
       return userMessage;
     }
   }

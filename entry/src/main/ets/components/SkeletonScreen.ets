@@ -224,6 +224,7 @@ export struct LoadingSkeleton {
     }
     .width('100%')
     .padding(SPACING.LG)
+    .accessibilityLevel('no')
   }
 }
 
@@ -248,5 +249,6 @@ export struct SkeletonScreen {
     }
     .width('100%')
     .padding(SPACING.LG)
+    .accessibilityLevel('no')
   }
 }

@@ -79,6 +79,8 @@ export struct SyncStatusIndicator {
           .opacity(0.8)
       }
     }
+    .accessibilityText('同步状态')
+    .accessibilityLevel('yes')
   }
 
   private refreshState(): void {

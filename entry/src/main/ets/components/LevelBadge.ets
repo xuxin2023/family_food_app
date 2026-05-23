@@ -15,5 +15,7 @@ export struct LevelBadge {
       .padding({ left: 10, right: 10, top: 3, bottom: 3 })
       .borderRadius(10)
       .backgroundColor(getLevelColorValue(this.levelColor))
+      .accessibilityText(this.level)
+      .accessibilityLevel('yes')
   }
 }

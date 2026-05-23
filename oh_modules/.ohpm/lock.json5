@@ -10,7 +10,68 @@
   "modules": {
     ".": {
       "name": "",
-      "dependencies": {},
+      "dependencies": {
+        "cjcalendar": {
+          "specifier": "^2.3.5",
+          "version": "2.3.5"
+        },
+        "@visactor/harmony-vchart": {
+          "specifier": "^1.13.5",
+          "version": "1.13.5"
+        },
+        "@ohos/zxing": {
+          "specifier": "^2.1.2",
+          "version": "2.1.2"
+        },
+        "@tencent/mmkv": {
+          "specifier": "^2.4.0",
+          "version": "2.4.0"
+        },
+        "class-transformer": {
+          "specifier": "^0.5.1",
+          "version": "0.5.1"
+        },
+        "validator": {
+          "specifier": "^13.15.0",
+          "version": "13.15.0"
+        },
+        "pinyin-pro": {
+          "specifier": "^3.26.0",
+          "version": "3.26.0"
+        },
+        "bignumber.js": {
+          "specifier": "^9.3.0",
+          "version": "9.3.0"
+        },
+        "json-bigint": {
+          "specifier": "^1.0.0",
+          "version": "1.0.0"
+        },
+        "punycode": {
+          "specifier": "^1.2.0",
+          "version": "1.2.0"
+        },
+        "mdurl": {
+          "specifier": "^2.0.0",
+          "version": "2.0.0"
+        },
+        "mime": {
+          "specifier": "^4.0.7",
+          "version": "4.0.7"
+        },
+        "rxjs": {
+          "specifier": "^7.8.2",
+          "version": "7.8.2"
+        },
+        "@pura/harmony-utils": {
+          "specifier": "^1.4.0",
+          "version": "1.4.0"
+        },
+        "@ohos/crypto-js": {
+          "specifier": "^2.0.5",
+          "version": "2.0.5"
+        }
+      },
       "devDependencies": {
         "@ohos/hypium": {
           "specifier": "1.0.25",
@@ -22,7 +83,12 @@
     },
     "entry": {
       "name": "entry",
-      "dependencies": {},
+      "dependencies": {
+        "hsp_core": {
+          "specifier": "file:hsp_core",
+          "version": "file:hsp_core"
+        }
+      },
       "devDependencies": {
         "@ohos/hypium": {
           "specifier": "1.0.25",
@@ -31,15 +97,210 @@
       },
       "dynamicDependencies": {},
       "maskedByOverrideDependencyMap": false
+    },
+    "hsp_core": {
+      "name": "hsp_core",
+      "dependencies": {},
+      "devDependencies": {},
+      "dynamicDependencies": {},
+      "maskedByOverrideDependencyMap": false
     }
   },
   "packages": {
+    "hsp_core@file:hsp_core": {
+      "storePath": "hsp_core",
+      "dependencies": {},
+      "dynamicDependencies": {},
+      "dev": false,
+      "dynamic": false,
+      "maskedByOverrideDependencyMap": false
+    },
     "@ohos/hypium@1.0.25": {
       "integrity": "sha512-l6uO2pjl8HyEKdekLqQt7tUpWbDqX/42zoAzkagtUVZAW9jT6lMvbe54MVjoLxq/RwQGygRvi6j4GpypSMFSHw==",
       "storePath": "oh_modules/.ohpm/@ohos+hypium@1.0.25",
       "dependencies": {},
       "dynamicDependencies": {},
       "dev": true,
+      "dynamic": false,
+      "maskedByOverrideDependencyMap": false
+    },
+    "cjcalendar@2.3.5": {
+      "integrity": "sha512-ZAmfdJxv1gt6gh6cg5kUeB7lVX7qa+sR5V+xyjHx2muihtaonFxDvOg+Bi80vPAXjftFafeVc4MMm9m/ncUQ4g==",
+      "storePath": "oh_modules/.ohpm/cjcalendar@2.3.5",
+      "dependencies": {
+        "lunar": "1.0.0"
+      },
+      "dynamicDependencies": {},
+      "dev": false,
+      "dynamic": false,
+      "maskedByOverrideDependencyMap": false
+    },
+    "@visactor/harmony-vchart@1.13.5": {
+      "integrity": "sha512-ciB4P6F2dcRlrnCGpPn5ZmOqqVoQ9XLVZrx93uhzj5EK+XM/3BUizjT3a4QmH8Ug+elF4r2e61IbhAnEjB7W9w==",
+      "storePath": "oh_modules/.ohpm/@visactor+harmony-vchart@1.13.5",
+      "dependencies": {},
+      "dynamicDependencies": {},
+      "dev": false,
+      "dynamic": false,
+      "maskedByOverrideDependencyMap": false
+    },
+    "@ohos/zxing@2.1.2": {
+      "integrity": "sha512-hCyGlG0Usv3Gp2ivxbMa7Oqlhc6wPJ/mPCam3OqELzwDYIMyTflhKOlubaKAt/538wdbHeWth4v/+h1lIwh2KQ==",
+      "storePath": "oh_modules/.ohpm/@ohos+zxing@2.1.2",
+      "dependencies": {
+        "@zxing/text-encoding": "0.9.0"
+      },
+      "dynamicDependencies": {},
+      "dev": false,
+      "dynamic": false,
+      "maskedByOverrideDependencyMap": false
+    },
+    "class-transformer@0.5.1": {
+      "integrity": "sha512-SQa1Ws6hUbfC98vKGxZH3KFY0Y1lm5Zm0SY8XX9zbK7FJCyVEac3ATW0RIpwzW+oOfmHE5PMPufDG9hCfoEOMw==",
+      "storePath": "oh_modules/.ohpm/class-transformer@0.5.1",
+      "dependencies": {},
+      "dynamicDependencies": {},
+      "dev": false,
+      "dynamic": false,
+      "maskedByOverrideDependencyMap": false
+    },
+    "validator@13.15.0": {
+      "integrity": "sha512-36B2ryl4+oL5QxZ3AzD0t5SsMNGvTtQHpjgFO5tbNxfXbMFkY822ktCDe1MnlqV3301QQI9SLHDNJokDI+Z9pA==",
+      "storePath": "oh_modules/.ohpm/validator@13.15.0",
+      "dependencies": {},
+      "dynamicDependencies": {},
+      "dev": false,
+      "dynamic": false,
+      "maskedByOverrideDependencyMap": false
+    },
+    "pinyin-pro@3.26.0": {
+      "integrity": "sha512-HcBZZb0pvm0/JkPhZHWA5Hqp2cWHXrrW/WrV+OtaYYM+kf35ffvZppIUuGmyuQ7gDr1JDJKMkbEE+GN0wfMoGg==",
+      "storePath": "oh_modules/.ohpm/pinyin-pro@3.26.0",
+      "dependencies": {},
+      "dynamicDependencies": {},
+      "dev": false,
+      "dynamic": false,
+      "maskedByOverrideDependencyMap": false
+    },
+    "bignumber.js@9.3.0": {
+      "integrity": "sha512-EM7aMFTXbptt/wZdMlBv2t8IViwQL+h6SLHosp8Yf0dqJMTnY6iL32opnAB6kAdL0SZPuvcAzFr31o0c/R3/RA==",
+      "storePath": "oh_modules/.ohpm/bignumber.js@9.3.0",
+      "dependencies": {},
+      "dynamicDependencies": {},
+      "dev": false,
+      "dynamic": false,
+      "maskedByOverrideDependencyMap": false
+    },
+    "json-bigint@1.0.0": {
+      "integrity": "sha512-SiPv/8VpZuWbvLSMtTDU8hEfrZWg/mH/nV/b4o0CYbSxu1UIQPLdwKOCIyLQX+VIPO5vrLX3i8qtqFyhdPSUSQ==",
+      "storePath": "oh_modules/.ohpm/json-bigint@1.0.0",
+      "dependencies": {
+        "bignumber.js": "9.3.0"
+      },
+      "dynamicDependencies": {},
+      "dev": false,
+      "dynamic": false,
+      "maskedByOverrideDependencyMap": false
+    },
+    "punycode@1.2.0": {
+      "integrity": "sha512-/drL2e4Q9RtsUDTR5euEL84DQWCwf/1Wdo/e+qiQBIs1uDZ6OK/FJDV0KGp5XqBWrpBFgLaderWhhY7tMV+JSQ==",
+      "storePath": "oh_modules/.ohpm/punycode@1.2.0",
+      "dependencies": {},
+      "dynamicDependencies": {},
+      "dev": false,
+      "dynamic": false,
+      "maskedByOverrideDependencyMap": false
+    },
+    "mdurl@2.0.0": {
+      "integrity": "sha512-Lf+9+2r+Tdp5wXDXC4PcIBjTDtq4UKjCPMQhKIuzpJNW0b96kVqSwW0bT7FhRSfmAiFYgP+SCRvdrDozfh0U5w==",
+      "storePath": "oh_modules/.ohpm/mdurl@2.0.0",
+      "dependencies": {},
+      "dynamicDependencies": {},
+      "dev": false,
+      "dynamic": false,
+      "maskedByOverrideDependencyMap": false
+    },
+    "mime@4.0.7": {
+      "integrity": "sha512-2OfDPL+e03E0LrXaGYOtTFIYhiuzep94NSsuhrNULq+stylcJedcHdzHtz0atMUuGwJfFYs0YL5xeC/Ca2x0eQ==",
+      "storePath": "oh_modules/.ohpm/mime@4.0.7",
+      "dependencies": {},
+      "dynamicDependencies": {},
+      "dev": false,
+      "dynamic": false,
+      "maskedByOverrideDependencyMap": false
+    },
+    "rxjs@7.8.2": {
+      "integrity": "sha512-dhKf903U/PQZY6boNNtAGdWbG85WAbjT/1xYoZIC7FAY0yWapOBQVsVrDl58W86//e1VpMNBtRV4MaXfdMySFA==",
+      "storePath": "oh_modules/.ohpm/rxjs@7.8.2",
+      "dependencies": {
+        "tslib": "2.1.0"
+      },
+      "dynamicDependencies": {},
+      "dev": false,
+      "dynamic": false,
+      "maskedByOverrideDependencyMap": false
+    },
+    "@pura/harmony-utils@1.4.0": {
+      "integrity": "sha512-nxEYuXZCQHY+ycjsJ3u6oHCsJMlXfYePhbTz+k0yAn6AzvqvuhbJcUpZj02CBF4ym/1jXICsDVcHKnQGoVMGaw==",
+      "storePath": "oh_modules/.ohpm/@pura+harmony-utils@1.4.0",
+      "dependencies": {},
+      "dynamicDependencies": {},
+      "dev": false,
+      "dynamic": false,
+      "maskedByOverrideDependencyMap": false
+    },
+    "@ohos/crypto-js@2.0.5": {
+      "integrity": "sha512-QPW+vxSambzep39qnnvGLk2lItqPqt+HBTo7FsTdL9edv3z35h4D80ClnEPNPfXQzIp8DgVDMIgbAWa1hWq8ug==",
+      "storePath": "oh_modules/.ohpm/@ohos+crypto-js@2.0.5",
+      "dependencies": {},
+      "dynamicDependencies": {},
+      "dev": false,
+      "dynamic": false,
+      "maskedByOverrideDependencyMap": false
+    },
+    "lunar@1.0.0": {
+      "integrity": "sha512-sAMOxbVr7Sn/QEzEQZHz0CwYjOROTgDLc4842CX2d7f+1D2nlHc6T5jtZJoleIMPZItNJLj0GuOaB/JR+Iwe7Q==",
+      "storePath": "oh_modules/.ohpm/lunar@1.0.0",
+      "dependencies": {},
+      "dynamicDependencies": {},
+      "dev": false,
+      "dynamic": false,
+      "maskedByOverrideDependencyMap": false
+    },
+    "@zxing/text-encoding@0.9.0": {
+      "integrity": "sha512-U/4aVJ2mxI0aDNI8Uq0wEhMgY+u4CNtEb0om3+y3+niDAsoTCOB33UF0sxpzqzdqXLqmvc+vZyAt4O8pPdfkwA==",
+      "storePath": "oh_modules/.ohpm/@zxing+text-encoding@0.9.0",
+      "dependencies": {},
+      "dynamicDependencies": {},
+      "dev": false,
+      "dynamic": false,
+      "maskedByOverrideDependencyMap": false
+    },
+    "tslib@2.1.0": {
+      "integrity": "sha512-hcVC3wYEziELGGmEEXue7D75zbwIIVUMWAVbHItGPx0ziyXxrOMQx4rQEVEV45Ut/1IotuEvwqPopzIOkDMf0A==",
+      "storePath": "oh_modules/.ohpm/tslib@2.1.0",
+      "dependencies": {},
+      "dynamicDependencies": {},
+      "dev": false,
+      "dynamic": false,
+      "maskedByOverrideDependencyMap": false
+    },
+    "@tencent/mmkv@2.4.0": {
+      "integrity": "sha512-joYd28l1hczo3WsUnhTf84OL1yA+PztVZEqoDfPJZvG0uS/HJ+iOqiApwZlXShxpc7bK8Xxz34nBDZXAo0Elpw==",
+      "storePath": "oh_modules/.ohpm/@tencent+mmkv@2.4.0",
+      "dependencies": {
+        "libmmkv.so": "oh_modules/.ohpm/@tencent+mmkv@2.4.0/oh_modules/@tencent/mmkv/src/main/cpp/types/libmmkv"
+      },
+      "dynamicDependencies": {},
+      "dev": false,
+      "dynamic": false,
+      "maskedByOverrideDependencyMap": false
+    },
+    "libmmkv.so@file:oh_modules/.ohpm/@tencent+mmkv@2.4.0/oh_modules/@tencent/mmkv/src/main/cpp/types/libmmkv": {
+      "storePath": "oh_modules/.ohpm/@tencent+mmkv@2.4.0/oh_modules/@tencent/mmkv/src/main/cpp/types/libmmkv",
+      "dependencies": {},
+      "dynamicDependencies": {},
+      "dev": false,
       "dynamic": false,
       "maskedByOverrideDependencyMap": false
     }

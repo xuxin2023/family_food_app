@@ -59,6 +59,8 @@ export struct HotFoodGuideCard {
       .alignItems(HorizontalAlign.Start)
     }
     .width('100%')
+    .accessibilityText('热门食品推荐')
+    .accessibilityLevel('yes')
   }
 
   @Builder

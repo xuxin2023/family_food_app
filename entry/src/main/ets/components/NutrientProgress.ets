@@ -56,6 +56,8 @@ export struct NutrientProgress {
       .width('100%')
     }
     .layoutWeight(1)
+    .accessibilityText(`${this.label}：${this.getPercent()}%`)
+    .accessibilityLevel('yes')
   }
 
   @Builder
@@ -100,5 +102,7 @@ export struct NutrientProgress {
     .borderRadius(RADIUS.MD)
     .margin({ left: SPACING.LG, right: SPACING.LG, bottom: SPACING.MD })
     .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
+    .accessibilityText(`${this.label}：${this.current.toFixed(1)}${this.unit}，目标${this.target.toFixed(0)}${this.unit}`)
+    .accessibilityLevel('yes')
   }
 }

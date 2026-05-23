@@ -311,6 +311,7 @@ export class DataService {
     try {
       alternatives = this.altRecommender.recommendAlternatives(label, membersList, 3);
     } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'generateFullReport failed: %{public}s', JSON.stringify(error));
       alternatives = [];
     }
 

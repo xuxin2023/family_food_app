@@ -95,5 +95,7 @@ export struct BalanceAdviceCard {
     .backgroundColor(COLORS.WHITE)
     .borderRadius(12)
     .alignItems(HorizontalAlign.Start)
+    .accessibilityText($r('app.string.balance_advice'))
+    .accessibilityLevel('yes')
   }
 }

@@ -448,6 +448,8 @@ export struct ShareCard {
     .backgroundColor(COLORS.WHITE)
     .borderRadius(16)
     .shadow({ radius: 8, color: '#1A000000', offsetY: 2 })
+    .accessibilityText(`分享卡片：${this.foodName}`)
+    .accessibilityLevel('yes')
   }
 
   @Builder

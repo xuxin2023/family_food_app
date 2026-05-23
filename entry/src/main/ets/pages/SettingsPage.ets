@@ -1,5 +1,5 @@
 import {
-  ToastHelper, safeBack, safePushUrl, safeReplaceUrl, FamilyProfile, DateUtil, COLORS, RADIUS, ThemeColors, ThemeMode, getPrivacyPolicyHtml, getUserAgreementHtml, HILOG_DOMAIN, ROUTE_NUTRITION_TARGET_PAGE, ROUTE_NUTRITION_KNOWLEDGE_PAGE, ROUTE_MEAL_PLAN_PAGE, ROUTE_SHOPPING_LIST_PAGE, ROUTE_REMINDER_RULE_PAGE, ROUTE_FEEDBACK_PAGE, LocaleManager, SUPPORTED_LOCALES, LOCALE_DISPLAY_NAMES, DATA_VERSION, DB_NAME, HealthSignal, StepLevel, SleepStatus, BpStatus, BsStatus, DataSource
+  ToastHelper, safeBack, safePushUrl, safeReplaceUrl, FamilyProfile, DateUtil, COLORS, RADIUS, ThemeColors, ThemeMode, getPrivacyPolicyHtml, getUserAgreementHtml, HILOG_DOMAIN, ROUTE_NUTRITION_TARGET_PAGE, ROUTE_NUTRITION_KNOWLEDGE_PAGE, ROUTE_MEAL_PLAN_PAGE, ROUTE_SHOPPING_LIST_PAGE, ROUTE_REMINDER_RULE_PAGE, ROUTE_FEEDBACK_PAGE, LocaleManager, SUPPORTED_LOCALES, LOCALE_DISPLAY_NAMES, DATA_VERSION, DB_NAME, HealthSignal, StepLevel, SleepStatus, BpStatus, BsStatus, DataSource, LEGAL_CONFIG
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
@@ -16,6 +16,7 @@ import { UpdateChecker, UpdateInfo } from '../service/UpdateChecker';
 import { AuthService } from '../service/AuthService';
 
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const TAG = 'SettingsPage';
 
 @Entry
 @ComponentV2
@@ -41,10 +42,12 @@ struct SettingsPage {
   @Local showLocalePicker: boolean = false
   @Local currentBreakpoint: string = 'md'
 
+  private componentActive: boolean = true
   private appState: AppState = AppState.getInstance()
   private restartTimer: number = -1  // 重启定时器ID，用于防止内存泄漏
 
   async aboutToAppear() {
+    this.componentActive = true
     try {
       this.isLoading = true
       this.currentThemeMode = AppStorage.get<ThemeMode>('currentThemeMode') ?? ThemeMode.LIGHT
@@ -54,11 +57,14 @@ struct SettingsPage {
         this.loadMemberSignal(this.selectedMemberId)
       }
       this.isLoading = false
-    } catch (_e) {
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'aboutToAppear failed: %{public}s', JSON.stringify(e));
+      this.isLoading = false
     }
   }
 
   aboutToDisappear(): void {
+    this.componentActive = false
     if (this.restartTimer !== -1) {
       clearTimeout(this.restartTimer)
       this.restartTimer = -1
@@ -252,6 +258,18 @@ struct SettingsPage {
               RichText(this.privacyHtml)
                 .width('100%')
                 .height(300)
+
+              Text($r('app.string.view_online_version'))
+                .fontSize(12)
+                .fontColor(COLORS.PRIMARY)
+                .margin({ top: 6 })
+                .onClick(() => {
+                  const want: Want = { action: 'ohos.want.action.view', entities: ['entity.system.browser'], uri: LEGAL_CONFIG.PRIVACY_POLICY_URL };
+                  const ctx = AppStorage.get<common.Context>('appContext');
+                  if (ctx) { (ctx as common.UIAbilityContext).startAbility(want); }
+                })
+                .accessibilityText('在线查看隐私政策')
+                .accessibilityLevel('yes')
             }
             .width('100%')
             .padding(8)
@@ -290,6 +308,18 @@ struct SettingsPage {
               RichText(this.agreementHtml)
                 .width('100%')
                 .height(300)
+
+              Text($r('app.string.view_online_version'))
+                .fontSize(12)
+                .fontColor(COLORS.PRIMARY)
+                .margin({ top: 6 })
+                .onClick(() => {
+                  const want: Want = { action: 'ohos.want.action.view', entities: ['entity.system.browser'], uri: LEGAL_CONFIG.USER_AGREEMENT_URL };
+                  const ctx = AppStorage.get<common.Context>('appContext');
+                  if (ctx) { (ctx as common.UIAbilityContext).startAbility(want); }
+                })
+                .accessibilityText('在线查看用户协议')
+                .accessibilityLevel('yes')
             }
             .width('100%')
             .padding(8)
@@ -837,8 +867,8 @@ struct SettingsPage {
         hilog.warn(DOMAIN_ZERO, 'SettingsPage', 'clear preferences failed: ' + JSON.stringify(_prefErr))
       }
 
-      // 3. 重置 AppState 内部缓存
-      this.appState.cache.clearAll()
+      // 3. 重置 AppState 单例（释放已关闭的 rdbStore 引用）
+      this.appState.destroy()
 
       // 4. 重置页面状态
       this.familyMembers = []

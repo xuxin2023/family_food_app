@@ -76,6 +76,8 @@ export struct ContinuousScanView {
             .fontColor($r('sys.color.ohos_id_color_text_primary_activated'))
             .borderRadius(RADIUS.FULL)
             .padding({ left: SPACING.MD, right: SPACING.MD, top: SPACING.SM, bottom: SPACING.SM })
+            .accessibilityText(this.torchOn ? '关闭闪光灯' : '开启闪光灯')
+            .accessibilityLevel('yes')
         }
       }
       .width('100%')
@@ -161,7 +163,7 @@ export struct ContinuousScanView {
     }
     this.lastDecodedText = text;
     this.lastDecodeTime = now;
-    hilog.info(DOMAIN_ZERO, TAG, 'Barcode decoded: %{public}s', text);
+    hilog.info(DOMAIN_ZERO, TAG, 'Barcode decoded: %{private}s', text);
     if (this.onBarcodeScanned) {
       this.onBarcodeScanned(text);
     }

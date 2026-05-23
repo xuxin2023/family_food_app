@@ -120,7 +120,7 @@ export class FoodWidgetManager {
     const summary = new ScanSummary();
     try {
       const rdbConfig: relationalStore.StoreConfig = { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 };
-      const store = await relationalStore.getRdbStoreV9(context, rdbConfig);
+      const store = await relationalStore.getRdbStore(context, rdbConfig);
       const resultSet = await store.querySql(
         'SELECT food_name, level FROM scan_history ORDER BY scanned_at DESC LIMIT 1'
       );
@@ -153,7 +153,8 @@ export class FoodWidgetManager {
     try {
       const prefs = await preferences.getPreferences(context, 'app_state');
       return prefs.getSync('member_count', 4) as number;
-    } catch (_) {
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'getCachedMemberCount failed: %{public}s', JSON.stringify(e));
       return 4;
     }
   }

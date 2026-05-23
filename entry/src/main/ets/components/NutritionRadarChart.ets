@@ -64,6 +64,7 @@ export struct NutritionRadarChart {
     }
     .width(this.size)
     .height(this.size)
+    .accessibilityLevel('no')
   }
 
   private hexagonPath(level: number): string {

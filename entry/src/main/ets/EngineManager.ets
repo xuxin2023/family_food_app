@@ -3,7 +3,7 @@
 // AppState 通过此管理器委托所有引擎调用
 
 import {
-  FamilyProfile, AgeGroup, HealthSignal, StepLevel, SleepStatus, FoodLabel, DailyBudget, Recommendation, MealBalance, MealScenario, ChildProtection, CredibilityResult, EnhancedFoodRecommendation, AlternativeFood, IDietRecordProvider
+  FamilyProfile, AgeGroup, HealthSignal, StepLevel, SleepStatus, FoodLabel, DailyBudget, Recommendation, MealBalance, MealScenario, ChildProtection, CredibilityResult, EnhancedFoodRecommendation, AlternativeFood, IDietRecordProvider, NutritionThreshold
 } from 'hsp_core';
 import { BasketCheckResult, BasketCheckEngine } from './engine/BasketCheckEngine';
 import { ElderFriendlyReport, ElderFriendlyEngine } from './engine/ElderFriendlyEngine';
@@ -303,11 +303,11 @@ export class EngineManager {
       let heavyFlavorCount = 0;
       let sweetNearMealCount = 0;
       for (const r of records) {
-        if (r.sodiumIntake > 500) highSodiumDays++;
-        if (r.sugarIntake > 25) highSugarDays++;
-        if (r.fatIntake > 20) highFatDays++;
+        if (r.sodiumIntake > NutritionThreshold.SODIUM_DAILY_LIMIT_MG) highSodiumDays++;
+        if (r.sugarIntake > NutritionThreshold.SUGAR_DAILY_LIMIT_G) highSugarDays++;
+        if (r.fatIntake > NutritionThreshold.FAT_DAILY_LIMIT_G) highFatDays++;
         if (r.scenario === 'bbq' || r.scenario === 'hotpot' || r.scenario === 'braised') heavyFlavorCount++;
-        if (r.sugarIntake > 30) sweetNearMealCount++;
+        if (r.sugarIntake > NutritionThreshold.SWEET_SNACK_DAILY_LIMIT_G) sweetNearMealCount++;
       }
       const data: WeeklyDietData = {
         memberId: memberId,

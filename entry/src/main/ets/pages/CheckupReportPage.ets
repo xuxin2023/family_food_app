@@ -1,7 +1,11 @@
-import { COLORS, safeBack, HealthSignal, FamilyProfile, CheckupReport, HealthArchiveUpdate } from 'hsp_core';
+import { COLORS, safeBack, HealthSignal, FamilyProfile, CheckupReport, HealthArchiveUpdate, HILOG_DOMAIN } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { CheckupItem } from '../engine/CheckupReportEngine';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+
+const TAG = 'CheckupReportPage';
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 @Entry
 @ComponentV2
@@ -23,7 +27,8 @@ struct CheckupReportPage {
         const firstMemberId = members[0].memberId
         this.currentSignal = this.appState.getHealthSignal(firstMemberId)
       }
-    } catch (_e) {
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'aboutToAppear failed: %{public}s', JSON.stringify(e));
     }
     this.isLoading = false
   }
@@ -190,7 +195,8 @@ struct CheckupReportPage {
       this.archiveUpdate = await this.appState.generateHealthArchiveUpdate(
         this.memberId, report
       );
-    } catch (_e) {
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'parseReport failed: %{public}s', JSON.stringify(e));
       this.report = null;
       this.archiveUpdate = null;
     }

@@ -394,8 +394,8 @@ export class AnalyticsService {
     if (this.flushTimerId !== -1) {
       try {
         clearInterval(this.flushTimerId);
-      } catch (_e) {
-        // ignore clearInterval error
+      } catch (e) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'clearInterval failed: %{public}s', JSON.stringify(e));
       }
       this.flushTimerId = -1;
     }
@@ -445,8 +445,8 @@ export class AnalyticsService {
     if (this.flushTimerId !== -1) {
       try {
         clearTimeout(this.flushTimerId);
-      } catch (_e) {
-        // ignore clearTimeout error
+      } catch (e) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'clearTimeout failed: %{public}s', JSON.stringify(e));
       }
     }
     this.flushTimerId = setInterval(() => {

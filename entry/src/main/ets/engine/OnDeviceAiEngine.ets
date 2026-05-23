@@ -18,12 +18,13 @@ const TAG = 'OnDeviceAiEngine'
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT
 
 let mindSporeLiteAvailable = false;
+let mindSporeLite: typeof import('@kit.MindSporeLiteKit').mindSporeLite | null = null;
 try {
-  // HarmonyOS 6.1: @kit.MindSporeLiteKit 提供 MindSpore Lite 端侧推理
-  // 需在 oh-package.json5 中声明 @kit.MindSporeLiteKit 依赖
-  // 部署 .ms 模型至 rawfile/models/ 后取消下方注释
-  // import { mindSporeLite } from '@kit.MindSporeLiteKit'
-  mindSporeLiteAvailable = false;
+  const mslKit = requireNapi('@kit.MindSporeLiteKit');
+  if (mslKit) {
+    mindSporeLite = mslKit.mindSporeLite;
+    mindSporeLiteAvailable = true;
+  }
 } catch {
   mindSporeLiteAvailable = false;
 }
@@ -104,21 +105,19 @@ export class OnDeviceAiEngine {
       return true
     }
 
-    if (!mindSporeLiteAvailable) {
+    if (!mindSporeLiteAvailable || !mindSporeLite) {
       hilog.warn(DOMAIN_ZERO, TAG, 'MindSpore Lite not available, cannot load model: %{public}s', modelPath)
       return false
     }
 
     try {
-      // 实际部署取消注释:
-      // const context = getContext(this)
-      // const fullModelPath = context.resourceDir + '/rawfile/' + modelPath
-      // this.msContext = mindSporeLite.createContext()
-      // this.msModel = mindSporeLite.loadModelFromFile(fullModelPath, this.msContext)
-      // this.modelLoaded = true
-      // hilog.info(DOMAIN_ZERO, TAG, 'Model loaded from: %{public}s', modelPath)
-      hilog.info(DOMAIN_ZERO, TAG, 'loadModel() called with: %{public}s (MindSpore Lite pending)', modelPath)
-      return false
+      const context = this.context ?? getContext(this)
+      const fullModelPath = context.resourceDir + '/rawfile/' + modelPath
+      const msContext = mindSporeLite.createContext()
+      const msModel = mindSporeLite.loadModelFromFile(fullModelPath, msContext)
+      this.modelLoaded = msModel !== null && msModel !== undefined
+      hilog.info(DOMAIN_ZERO, TAG, 'Model loaded from: %{public}s, success=%{public}s', modelPath, String(this.modelLoaded))
+      return this.modelLoaded
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Failed to load model %{public}s: %{public}s', modelPath, JSON.stringify(error))
       return false

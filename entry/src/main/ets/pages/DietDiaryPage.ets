@@ -14,6 +14,7 @@ import { QuickFoodInput, QuickFoodInputResult } from '../components/QuickFoodInp
 import { MealGroupDataSource } from '../utils/MealGroupDataSource';
 
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const TAG = 'DietDiaryPage';
 
 // 场景emoji映射
 const SCENARIO_EMOJI: Map<string, string> = new Map();
@@ -91,7 +92,8 @@ struct DietDiaryPage {
         this.showAiSection = true
       }
       await this.refreshData()
-    } catch (_e) {
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'aboutToAppear failed: %{public}s', JSON.stringify(e));
     }
   }
 

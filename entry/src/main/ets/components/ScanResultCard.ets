@@ -156,6 +156,8 @@ export struct ScanResultCard {
                 .borderRadius(RADIUS.SM)
                 .margin({ right: SPACING.SM })
                 .onClick(() => { this.onFrequentItemTap(item) })
+                .accessibilityText(`选择${item.foodName}`)
+                .accessibilityLevel('yes')
               }, (item: FoodLabel) => item.foodId)
             }
           }

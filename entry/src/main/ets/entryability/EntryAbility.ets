@@ -56,6 +56,7 @@ export default class EntryAbility extends UIAbility {
 
     // 标记初始化进行中
     AppStorage.setOrCreate('appStateReady', false);
+    AppStorage.setOrCreate('appStateInitFailed', false);
 
     // 初始化多语言管理器
     LocaleManager.getInstance().init();
@@ -72,8 +73,9 @@ export default class EntryAbility extends UIAbility {
     // 将context存入AppStorage供隐私弹窗使用
     AppStorage.setOrCreate('appContext', this.context);
 
-    // 异步初始化：不阻塞 void onCreate
-    this.initAsync();
+    // 异步初始化：不阻塞 void onCreate，但通过 AppStorage 门控
+    const initPromise = this.initAsync();
+    AppStorage.setOrCreate('appStateInitPromise', initPromise);
 
     hilog.info(DOMAIN_ZERO, TAG, 'onCreate end, cost %{public}d ms', Date.now() - this.onCreateStartMs);
   }
@@ -84,7 +86,7 @@ export default class EntryAbility extends UIAbility {
       const privacyAgreed = await this.checkPrivacyCompliance();
 
       if (privacyAgreed) {
-        const rdbStore = await relationalStore.getRdbStoreV9(this.context,
+        const rdbStore = await relationalStore.getRdbStore(this.context,
           { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 });
         await this.appState.init(this.context, rdbStore);
         const initEndMs = Date.now();
@@ -107,6 +109,8 @@ export default class EntryAbility extends UIAbility {
       }
     } catch (err) {
       hilog.error(DOMAIN_ZERO, TAG, 'initAsync failed: %{public}s', JSON.stringify(err));
+      // AppState 未就绪时，标记失败状态，页面据此展示兜底 UI
+      AppStorage.setOrCreate('appStateInitFailed', true);
     } finally {
       AppStorage.setOrCreate('appStateReady', true);
       this.deferredInitTimer = setTimeout(() => {
@@ -377,7 +381,7 @@ export default class EntryAbility extends UIAbility {
         const signal = this.appState.getHealthSignal(member.memberId);
         if (signal && signal.source !== DataSource.MANUAL) {
           await this.appState.getHealthSignalAsync(member.memberId);
-          hilog.info(DOMAIN_ZERO, TAG, 'Health data refreshed for %{public}s', member.memberId);
+          hilog.info(DOMAIN_ZERO, TAG, 'Health data refreshed for %{private}s', member.memberId.substring(0, 4) + '***');
         }
       }
     } catch (error) {

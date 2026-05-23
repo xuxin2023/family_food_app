@@ -1,4 +1,4 @@
-import { FoodLabel, FamilyProfile } from 'hsp_core';
+import { FoodLabel, FamilyProfile, NutritionThreshold } from 'hsp_core';
 // 家庭购物篮检查引擎 - 连续扫多个食品后，检查这一篮子是否高盐高糖高脂
 
 
@@ -88,7 +88,7 @@ export class BasketCheckEngine {
 
     // 高盐高糖整体占比过高
     const riskRatio = (result.highSodiumCount + result.highSugarCount + result.highFatCount) / Math.max(1, items.length);
-    if (riskRatio > 0.5) {
+    if (riskRatio > NutritionThreshold.RISK_RATIO_THRESHOLD) {
       result.warnings.push('这一篮子高盐/高糖/高脂食品占比超过一半，建议增加蔬菜、水果和清淡蛋白');
     }
 

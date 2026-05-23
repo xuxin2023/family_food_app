@@ -36,7 +36,7 @@ export class DataPortability {
   static async exportAllData(context: common.Context): Promise<string> {
     try {
       const rdbConfig: relationalStore.StoreConfig = { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 };
-      const rdbStore = await relationalStore.getRdbStoreV9(context, rdbConfig);
+      const rdbStore = await relationalStore.getRdbStore(context, rdbConfig);
 
       const data: Record<string, Object[]> = {};
 
@@ -102,7 +102,7 @@ export class DataPortability {
 
     try {
       const rdbConfig: relationalStore.StoreConfig = { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 };
-      const rdbStore = await relationalStore.getRdbStoreV9(context, rdbConfig);
+      const rdbStore = await relationalStore.getRdbStore(context, rdbConfig);
 
       const tableImportMap: Map<string, (rows: Record<string, Object>[]) => Promise<number>> = new Map();
 
@@ -214,5 +214,34 @@ export class DataPortability {
       }
     }
     return count;
+  }
+
+  static async deleteUserData(context: common.Context, memberId: string): Promise<boolean> {
+    try {
+      const rdbConfig: relationalStore.StoreConfig = { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 };
+      const rdbStore = await relationalStore.getRdbStore(context, rdbConfig);
+
+      const memberPredicates = new relationalStore.RdbPredicates(TABLE_FAMILY_PROFILE);
+      memberPredicates.equalTo('member_id', memberId);
+      await rdbStore.delete(memberPredicates);
+
+      const dietPredicates = new relationalStore.RdbPredicates(TABLE_DIET_RECORD);
+      dietPredicates.equalTo('member_id', memberId);
+      await rdbStore.delete(dietPredicates);
+
+      const targetPredicates = new relationalStore.RdbPredicates(TABLE_NUTRITION_TARGET);
+      targetPredicates.equalTo('member_id', memberId);
+      await rdbStore.delete(targetPredicates);
+
+      const snapshotPredicates = new relationalStore.RdbPredicates(TABLE_NUTRITION_SNAPSHOT);
+      snapshotPredicates.equalTo('member_id', memberId);
+      await rdbStore.delete(snapshotPredicates);
+
+      hilog.info(DOMAIN_ZERO, TAG, 'User data deleted for member: %{private}s', memberId.substring(0, 4) + '***');
+      return true;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'Delete user data failed: %{public}s', JSON.stringify(error));
+      return false;
+    }
   }
 }

@@ -1,5 +1,9 @@
-import { FamilyProfile, AgeGroup, COLORS, BUTTON, RADIUS, SPACING, FONT_SIZE, safePushUrl, DateUtil } from 'hsp_core';
+import { FamilyProfile, AgeGroup, COLORS, BUTTON, RADIUS, SPACING, FONT_SIZE, safePushUrl, DateUtil, HILOG_DOMAIN } from 'hsp_core';
 import { AppState } from '../AppState';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+
+const TAG = 'HomePage';
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 @Entry
 @ComponentV2
@@ -14,7 +18,8 @@ struct HomePage {
   async aboutToAppear() {
     try {
       await this.loadMembers()
-    } catch (_e) {
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'aboutToAppear failed: %{public}s', JSON.stringify(e));
     }
   }
 

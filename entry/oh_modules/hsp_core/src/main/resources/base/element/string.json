@@ -1,0 +1,12 @@
+{
+  "string": [
+    {
+      "name": "hsp_core_name",
+      "value": "食品适配核心"
+    },
+    {
+      "name": "hsp_core_desc",
+      "value": "家庭食品适配助手共享核心模块"
+    }
+  ]
+}

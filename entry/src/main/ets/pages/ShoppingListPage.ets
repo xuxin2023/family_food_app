@@ -1,4 +1,4 @@
-import { ToastHelper, safeBack, ShoppingItem, SHOPPING_CATEGORIES, COLORS, HILOG_DOMAIN, DB_NAME } from 'hsp_core';
+import { ToastHelper, safeBack, ShoppingItem, SHOPPING_CATEGORIES, COLORS, HILOG_DOMAIN, DB_NAME, BasicDataSource } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { ShoppingListRepository } from '../repository/ShoppingListRepository';
@@ -9,28 +9,40 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 const TAG = 'ShoppingListPage';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
+class ShoppingListDataSource extends BasicDataSource<ShoppingItem> {
+  filter(purchased: boolean): ShoppingItem[] {
+    return this.dataArray.filter((item: ShoppingItem) => item.isPurchased === purchased);
+  }
+}
+
+@ObservedV2
+class ShoppingListPageViewModel {
+  @Trace isLoading: boolean = true
+  @Trace unpurchasedCount: number = 0
+  @Trace totalCount: number = 0
+  @Trace newItemName: string = ''
+  @Trace newItemCategory: string = '其他'
+  @Trace newItemQuantity: string = ''
+  @Trace showCategoryPicker: boolean = false
+  @Trace hasPurchased: boolean = false
+}
+
 @Entry
 @ComponentV2
 struct ShoppingListPage {
-  @Local isLoading: boolean = true
-  @Local items: ShoppingItem[] = []
-  @Local newItemName: string = ''
-  @Local newItemCategory: string = '其他'
-  @Local newItemQuantity: string = ''
-  @Local showCategoryPicker: boolean = false
-  @Local unpurchasedCount: number = 0
-  @Local totalCount: number = 0
+  @Local vm: ShoppingListPageViewModel = new ShoppingListPageViewModel()
 
+  private dataSource: ShoppingListDataSource = new ShoppingListDataSource()
   private repo: ShoppingListRepository = new ShoppingListRepository()
   private appState: AppState = AppState.getInstance()
 
   async aboutToAppear() {
-    this.isLoading = true
+    this.vm.isLoading = true
     const ctx = AppStorage.get<common.Context>('appContext')
     if (ctx) {
       try {
         const rdbConfig: relationalStore.StoreConfig = { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 };
-        const rdbStore = await relationalStore.getRdbStoreV9(ctx, rdbConfig);
+        const rdbStore = await relationalStore.getRdbStore(ctx, rdbConfig);
         await this.repo.init(rdbStore);
       } catch (error) {
         hilog.error(DOMAIN_ZERO, TAG, 'Init repo failed: %{public}s', JSON.stringify(error));
@@ -41,7 +53,7 @@ struct ShoppingListPage {
     } catch (_e) {
       hilog.error(DOMAIN_ZERO, TAG, 'refreshList failed: %{public}s', JSON.stringify(_e));
     }
-    this.isLoading = false
+    this.vm.isLoading = false
   }
 
   build() {
@@ -56,7 +68,7 @@ struct ShoppingListPage {
           .fontWeight(FontWeight.Bold)
           .margin({ left: 16 })
         Blank()
-        Text(`${this.unpurchasedCount}/${this.totalCount}`)
+        Text(`${this.vm.unpurchasedCount}/${this.vm.totalCount}`)
           .fontSize(14)
           .fontColor(COLORS.TEXT_GRAY_7575)
       }
@@ -74,7 +86,7 @@ struct ShoppingListPage {
       }
       .layoutWeight(1)
 
-      if (this.items.some((item: ShoppingItem) => item.isPurchased)) {
+      if (this.vm.hasPurchased) {
         Button($r('app.string.shopping_clear_purchased'))
           .width('90%')
           .height(44)
@@ -99,17 +111,17 @@ struct ShoppingListPage {
         TextInput({ placeholder: $r('app.string.shopping_add_item_hint') })
           .width('40%')
           .height(40)
-          .onChange((value: string) => { this.newItemName = value })
+          .onChange((value: string) => { this.vm.newItemName = value })
           .accessibilityText('物品名称')
           .accessibilityLevel('yes')
 
-        Text(this.newItemCategory)
+        Text(this.vm.newItemCategory)
           .fontSize(14)
           .fontColor(COLORS.PRIMARY)
           .padding({ left: 12, right: 12, top: 8, bottom: 8 })
           .border({ width: 1, color: COLORS.PRIMARY, radius: 16 })
           .margin({ left: 8 })
-          .onClick(() => { this.showCategoryPicker = !this.showCategoryPicker })
+          .onClick(() => { this.vm.showCategoryPicker = !this.vm.showCategoryPicker })
           .accessibilityText('选择分类')
           .accessibilityLevel('yes')
 
@@ -117,7 +129,7 @@ struct ShoppingListPage {
           .width('20%')
           .height(40)
           .margin({ left: 8 })
-          .onChange((value: string) => { this.newItemQuantity = value })
+          .onChange((value: string) => { this.vm.newItemQuantity = value })
           .accessibilityText('数量')
           .accessibilityLevel('yes')
 
@@ -133,19 +145,19 @@ struct ShoppingListPage {
       }
       .width('100%')
 
-      if (this.showCategoryPicker) {
+      if (this.vm.showCategoryPicker) {
         Flex({ wrap: FlexWrap.Wrap }) {
           ForEach(SHOPPING_CATEGORIES, (cat: string) => {
             Text(cat)
               .fontSize(13)
               .padding({ left: 10, right: 10, top: 6, bottom: 6 })
               .borderRadius(14)
-              .backgroundColor(this.newItemCategory === cat ? COLORS.PRIMARY : '#F5F5F5')
-              .fontColor(this.newItemCategory === cat ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
+              .backgroundColor(this.vm.newItemCategory === cat ? COLORS.PRIMARY : '#F5F5F5')
+              .fontColor(this.vm.newItemCategory === cat ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
               .margin({ right: 6, top: 6 })
               .onClick(() => {
-                this.newItemCategory = cat
-                this.showCategoryPicker = false
+                this.vm.newItemCategory = cat
+                this.vm.showCategoryPicker = false
               })
               .accessibilityText(cat)
               .accessibilityLevel('yes')
@@ -165,25 +177,32 @@ struct ShoppingListPage {
 
   @Builder
   UnpurchasedSection() {
-    // Pre-computed in aboutToAppear
     Column() {
       Text($r('app.string.shopping_unpurchased'))
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
         .margin({ bottom: 8 })
 
-      ForEach(this.items.filter((item: ShoppingItem) => !item.isPurchased), (item: ShoppingItem) => {
-        Column() {
-          Text(item.category)
-            .fontSize(13)
-            .fontColor(COLORS.TEXT_GRAY_7575)
-            .margin({ bottom: 4, top: 8 })
+      List() {
+        LazyForEach(this.dataSource, (item: ShoppingItem) => {
+          if (!item.isPurchased) {
+            ListItem() {
+              Column() {
+                Text(item.category)
+                  .fontSize(13)
+                  .fontColor(COLORS.TEXT_GRAY_7575)
+                  .margin({ bottom: 4, top: 8 })
 
-          this.ShoppingItemRow(item, false)
-        }
-        .width('100%')
-        .alignItems(HorizontalAlign.Start)
-      }, (item: ShoppingItem) => item.id)
+                this.ShoppingItemRow(item, false)
+              }
+              .width('100%')
+              .alignItems(HorizontalAlign.Start)
+            }
+          }
+        }, (item: ShoppingItem) => item.id)
+      }
+      .cachedCount(5)
+      .width('100%')
     }
     .width('92%')
     .padding(12)
@@ -202,9 +221,17 @@ struct ShoppingListPage {
         .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ bottom: 8 })
 
-      ForEach(this.items.filter((item: ShoppingItem) => item.isPurchased), (item: ShoppingItem) => {
-        this.ShoppingItemRow(item, true)
-      }, (item: ShoppingItem) => item.id)
+      List() {
+        LazyForEach(this.dataSource, (item: ShoppingItem) => {
+          if (item.isPurchased) {
+            ListItem() {
+              this.ShoppingItemRow(item, true)
+            }
+          }
+        }, (item: ShoppingItem) => `p_${item.id}`)
+      }
+      .cachedCount(5)
+      .width('100%')
     }
     .width('92%')
     .padding(12)
@@ -250,33 +277,25 @@ struct ShoppingListPage {
     .padding({ top: 8, bottom: 8 })
   }
 
-  private getUniqueCategories(items: ShoppingItem[]): string[] {
-    const set = new Set<string>();
-    for (const item of items) {
-      set.add(item.category);
-    }
-    return Array.from(set);
-  }
-
   private async addItem(): Promise<void> {
-    if (this.newItemName.length === 0) {
+    if (this.vm.newItemName.length === 0) {
       ToastHelper.show(this.getUIContext(), $r('app.string.shopping_input_name_toast'));
       return;
     }
 
     const item = new ShoppingItem();
     item.id = `shop_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-    item.name = this.newItemName;
-    item.category = this.newItemCategory;
-    item.quantity = this.newItemQuantity;
+    item.name = this.vm.newItemName;
+    item.category = this.vm.newItemCategory;
+    item.quantity = this.vm.newItemQuantity;
     item.isPurchased = false;
     item.addedBy = this.appState.member.getCurrentMemberId();
     item.addedAt = Date.now();
 
     const success = await this.repo.addItem(item);
     if (success) {
-      this.newItemName = '';
-      this.newItemQuantity = '';
+      this.vm.newItemName = '';
+      this.vm.newItemQuantity = '';
       await this.refreshList();
       ToastHelper.show(this.getUIContext(), $r('app.string.shopping_added_toast'));
     } else {
@@ -301,9 +320,11 @@ struct ShoppingListPage {
   }
 
   private async refreshList(): Promise<void> {
-    this.items = await this.repo.getAllItems();
-    this.totalCount = this.items.length;
-    this.unpurchasedCount = this.items.filter((item: ShoppingItem) => !item.isPurchased).length;
+    const items = await this.repo.getAllItems();
+    this.dataSource.reload(items);
+    this.vm.totalCount = items.length;
+    this.vm.unpurchasedCount = items.filter((item: ShoppingItem) => !item.isPurchased).length;
+    this.vm.hasPurchased = items.some((item: ShoppingItem) => item.isPurchased);
   }
 
   pageTransition() {

@@ -1,4 +1,4 @@
-import { ChildProtection, FamilyProfile, FoodLabel, REMINDER_PRESETS, NUTRIENT_LIMITS_V2 } from 'hsp_core';
+import { ChildProtection, FamilyProfile, FoodLabel, REMINDER_PRESETS, NUTRIENT_LIMITS_V2, NutritionThreshold } from 'hsp_core';
 // ChildProtectionEngine.ets
 // 儿童保护引擎 - 正餐保护、睡前保护、口味保护、甜食次数检查
 // V3增强：getChildMealAdvice 生活化呵护式建议、咖啡因+时间检查
@@ -155,7 +155,7 @@ export class ChildProtectionEngine {
     }
 
     // 规则5：距下一餐1-2小时
-    if (diffToMeal > 60 && diffToMeal <= 120 && (isSweet || isFat)) {
+    if (diffToMeal > NutritionThreshold.MEAL_TIME_GAP_MIN && diffToMeal <= 120 && (isSweet || isFat)) {
       result.affectMeal = true;
       result.advice = `还有${Math.round(diffToMeal / 60)}小时吃饭，先少吃一点解解馋，留着肚子吃正餐哦～`;
       result.level = '黄色注意';
@@ -171,7 +171,7 @@ export class ChildProtectionEngine {
     }
 
     // 规则7：20:00后含糖
-    if (currentHour >= 20 && isSweet) {
+    if (currentHour >= NutritionThreshold.LATE_NIGHT_HOUR && isSweet) {
       result.affectSleep = true;
       result.advice = '已经8点多了，晚上吃甜的容易影响睡眠，明天白天再吃吧～';
       result.level = '黄色注意';
@@ -234,7 +234,7 @@ export class ChildProtectionEngine {
     if (currentHour >= 18) {
       sleepRiskFoods.push('含咖啡因饮品');
     }
-    if (currentHour >= 20) {
+    if (currentHour >= NutritionThreshold.LATE_NIGHT_HOUR) {
       sleepRiskFoods.push('高糖零食');
       sleepRiskFoods.push('油炸食品');
     }
@@ -394,7 +394,7 @@ export class ChildProtectionEngine {
     const isFried = FRIED_FOODS.some(s => foodName.includes(s)) || foodLabel.isHighFat();
     const isCaffeine = CAFFEINE_DRINKS.some(s => foodName.includes(s));
 
-    if (currentHour >= 20) {
+    if (currentHour >= NutritionThreshold.LATE_NIGHT_HOUR) {
       if (isSweet) {
         return '已经8点多了，晚上吃甜的容易影响睡眠和牙齿健康，明天白天再吃好不好？';
       }

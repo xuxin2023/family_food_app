@@ -54,7 +54,8 @@ export class SecureHttpHelper {
         if (typeof raw === 'string' && raw.length > 0) {
           try {
             result.data = JSON.parse(raw) as Record<string, Object>;
-          } catch (_) {
+          } catch (e) {
+            hilog.warn(DOMAIN_ZERO, TAG, 'JSON.parse fallback to raw: %{public}s', JSON.stringify(e));
             const rawObj: RawResponse = new RawResponse();
             rawObj.raw = raw;
             // RawResponse is not a Record; wrap in a Record for type compatibility
@@ -63,11 +64,11 @@ export class SecureHttpHelper {
         }
       } else {
         result.error = `HTTP ${response.responseCode}`;
-        hilog.warn(DOMAIN_ZERO, TAG, 'Request failed: %{public}s -> HTTP %{public}d', url, response.responseCode);
+        hilog.warn(DOMAIN_ZERO, TAG, 'Request failed: %{private}s -> HTTP %{public}d', url, response.responseCode);
       }
     } catch (e) {
       result.error = (e as Error).message;
-      hilog.warn(DOMAIN_ZERO, TAG, 'Request error: %{public}s -> %{public}s', url, result.error);
+      hilog.warn(DOMAIN_ZERO, TAG, 'Request error: %{private}s -> %{private}s', url, String(result.error));
     }
     return result;
   }
@@ -85,7 +86,8 @@ export class SecureHttpHelper {
         return response.result as ArrayBuffer;
       }
       return null;
-    } catch (_) {
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'downloadBinary failed: %{public}s', JSON.stringify(e));
       return null;
     }
   }

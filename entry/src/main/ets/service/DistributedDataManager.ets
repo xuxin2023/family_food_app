@@ -15,6 +15,26 @@ const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 const STORE_ID = 'family_food_distributed';
 const SYNC_DELAY_MS = 500;
 
+export class ConflictStrategy {
+  static LAST_WRITE_WINS(localEntry: distributedKVStore.Entry, remoteEntry: distributedKVStore.Entry):
+    distributedKVStore.Entry {
+    if (localEntry.version >= remoteEntry.version) {
+      return localEntry;
+    }
+    return remoteEntry;
+  }
+
+  static LOCAL_PRIORITY(localEntry: distributedKVStore.Entry, _remoteEntry: distributedKVStore.Entry):
+    distributedKVStore.Entry {
+    return localEntry;
+  }
+
+  static REMOTE_PRIORITY(_localEntry: distributedKVStore.Entry, remoteEntry: distributedKVStore.Entry):
+    distributedKVStore.Entry {
+    return remoteEntry;
+  }
+}
+
 export class DistributedDataManager {
   private static instance: DistributedDataManager | null = null;
   private kvStore: distributedKVStore.SingleKVStore | null = null;
@@ -66,7 +86,7 @@ export class DistributedDataManager {
     try {
       const key = `member_${memberId}`;
       await this.kvStore.put(key, data);
-      hilog.info(DOMAIN_ZERO, TAG, 'Put member data: %{public}s', memberId);
+      hilog.info(DOMAIN_ZERO, TAG, 'Put member data: %{private}s', memberId.substring(0, 4) + '***');
       return true;
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Put member data failed: %{public}s', JSON.stringify(error));
@@ -81,6 +101,7 @@ export class DistributedDataManager {
       const result = await this.kvStore.get(key);
       return result as string;
     } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'getMemberData failed: %{public}s', JSON.stringify(error));
       return '';
     }
   }
@@ -139,7 +160,9 @@ export class DistributedDataManager {
     if (this.kvStore) {
       try {
         this.kvStore.off('dataChange');
-      } catch (_) {}
+      } catch (e) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'destroy failed: %{public}s', JSON.stringify(e));
+      }
       this.kvStore = null;
     }
     this.isInitialized = false;

@@ -9,16 +9,11 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
 import { fileIo } from '@kit.CoreFileKit';
 import { AppState } from '../AppState';
-import { AnalyticsService } from '../service/AnalyticsService';
-import { PermissionManager } from '../service/PermissionManager';
+import { AnalyticsService, PermissionManager, NetworkMonitorService, PrivacyManager, SecureHttpClient, UpdateChecker, UpdateInfo } from 'hsp-service';
 import { preferences, relationalStore } from '@kit.ArkData';
-import { warmUpOfflineDatabase } from '../service/OfflineFoodDatabase';
-import { SecureHttpClient } from '../service/SecureHttpClient';
+import { warmUpOfflineDatabase } from 'hsp_core';
 import { GlobalErrorHandler } from '../utils/GlobalErrorHandler';
-import { NetworkMonitorService } from '../service/NetworkMonitorService';
 import { DeepLinkHandler } from '../utils/DeepLinkHandler';
-import { PrivacyManager } from '../service/PrivacyManager';
-import { UpdateChecker, UpdateInfo } from '../service/UpdateChecker';
 
 const TAG = 'EntryAbility';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -194,11 +189,7 @@ export default class EntryAbility extends UIAbility {
 
     // 注销崩溃观察器
     if (this.crashObserverId !== -1) {
-      errorManager.off('error', this.crashObserverId, (err) => {
-        if (err) {
-          hilog.warn(DOMAIN_ZERO, TAG, 'Unregister error observer failed: %{public}s', JSON.stringify(err));
-        }
-      });
+      errorManager.off('error', this.crashObserverId);
       this.crashObserverId = -1;
     }
 
@@ -421,11 +412,10 @@ export default class EntryAbility extends UIAbility {
   private parseTier(value: string): MemberTier {
     const normalized = (value ?? '').toLowerCase();
     switch (normalized) {
+      case MemberTier.FREE:     return MemberTier.FREE;
       case MemberTier.PERSONAL: return MemberTier.PERSONAL;
       case MemberTier.FAMILY:   return MemberTier.FAMILY;
       case MemberTier.PREMIUM:  return MemberTier.PREMIUM;
-      // 兼容可能的旧值变体
-      case 'free': return MemberTier.FREE;
       default:
         hilog.warn(DOMAIN_ZERO, TAG, 'Unknown tier stored in prefs: %{public}s, defaulting to FREE', value);
         return MemberTier.FREE;

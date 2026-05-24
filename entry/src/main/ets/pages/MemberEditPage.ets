@@ -4,7 +4,7 @@ import {
   safeBack, getPageParams, FamilyProfile, AgeGroup, HealthGoal, HealthSignal, StepLevel, SleepStatus, BpStatus, BsStatus, DateUtil, PaywallTrigger, MemberTier, getTierDisplayName, BUTTON, COLORS, HILOG_DOMAIN
 } from 'hsp_core';
 import { AppState } from '../AppState';
-import { PaywallDialog } from '../components/PaywallDialog';
+import { PaywallDialog } from 'feature-scan';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'MemberEditPage';

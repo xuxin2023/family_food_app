@@ -4,7 +4,7 @@
 
 import { ToastHelper, safeBack, COLORS, HILOG_DOMAIN } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
-import { HuaweiCloudService } from '../service/HuaweiCloudService';
+import { HuaweiCloudService } from 'hsp-service';
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferences } from '@kit.ArkData';

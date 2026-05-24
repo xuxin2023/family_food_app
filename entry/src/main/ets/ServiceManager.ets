@@ -8,11 +8,9 @@ import {
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HealthService } from './service/HealthService';
-import { AuthService } from './service/AuthService';
-import { CloudAuthService } from './service/CloudAuthService';
-import { SyncService, SyncEventCallback, SyncEvent } from './service/sync/SyncService';
-import { FamilyGroupService } from './service/FamilyGroupService';
-import { RecipeCommunityService } from './service/RecipeCommunityService';
+import { AuthService, CloudAuthService } from 'hsp-service';
+import { SyncService, SyncEventCallback, SyncEvent } from 'hsp-service';
+import { FamilyGroupService, RecipeCommunityService } from 'feature-community';
 import { HwHealthSignalProvider } from './service/health/HwHealthSignalProvider';
 import { ManualHealthSignalProvider } from './service/health/ManualHealthSignalProvider';
 import { AiNutritionistService } from './service/AiNutritionistService';

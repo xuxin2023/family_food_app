@@ -6,7 +6,7 @@
 export { FamilyRepository } from './src/main/ets/repository/FamilyRepository';
 export { FoodRepository } from './src/main/ets/repository/FoodRepository';
 export { HistoryRepository, ScanHistoryRecord, ScanHistoryInput, DietRecordInput, RiskDaysResult } from './src/main/ets/repository/HistoryRepository';
-export { RuleRepository } from './src/main/ets/repository/RuleRepository';
+export { RuleRepository, GoalAdjustment, DynamicFactor, DynamicModifiers, NutritionBudgetRule, MealBalanceTemplate, AllergenKeywordMap } from './src/main/ets/repository/RuleRepository';
 export { FamilyGroupRepository } from './src/main/ets/repository/FamilyGroupRepository';
 export { RecipeRepository } from './src/main/ets/repository/RecipeRepository';
 export { FavoriteRepository, FavoriteItem } from './src/main/ets/repository/FavoriteRepository';
@@ -17,38 +17,47 @@ export { NutritionSnapshotRepository } from './src/main/ets/repository/Nutrition
 export { SyncQueueRepository } from './src/main/ets/repository/SyncQueueRepository';
 
 // ===== Service 层导出（Sprint2 已迁移） =====
-export { AuthService } from './src/main/ets/service/AuthService';
-export { PermissionManager } from './src/main/ets/service/PermissionManager';
+export { AuthService, AuthUser } from './src/main/ets/service/AuthService';
+export { PermissionManager, PermissionStatus } from './src/main/ets/service/PermissionManager';
 export { IapService } from './src/main/ets/service/IapService';
 export { TeenModeManager } from './src/main/ets/service/TeenModeManager';
 export { migrateDatabase } from './src/main/ets/service/DatabaseMigrationService';
 export { PrivacyManager } from './src/main/ets/service/PrivacyManager';
 export { AnalyticsService } from './src/main/ets/service/AnalyticsService';
-export { NetworkMonitorService } from './src/main/ets/service/NetworkMonitorService';
+export { NetworkMonitorService, NetType, NetworkState, NetworkStateChangeCallback } from './src/main/ets/service/NetworkMonitorService';
+export { DataExportService } from './src/main/ets/service/DataExportService';
 
-// ===== Service 层导出（仍代理 entry，Sprint3 迁移源码） =====
-// TODO(Sprint3): 以下12个Service需物理迁移至 hsp-service/src/main/ets/service/
-export { CloudAuthService } from '../../entry/src/main/ets/service/CloudAuthService';
-export { CloudBackendService } from '../../entry/src/main/ets/service/CloudBackendService';
-export { DataService } from '../../entry/src/main/ets/service/DataService';
-export { ScanService } from '../../entry/src/main/ets/service/ScanService';
-export { ScanDirectService } from '../../entry/src/main/ets/service/ScanDirectService';
-export { OpenFoodFactsService } from '../../entry/src/main/ets/service/OpenFoodFactsService';
-export { HuaweiCloudService } from '../../entry/src/main/ets/service/HuaweiCloudService';
-export { PrivacyService } from '../../entry/src/main/ets/service/PrivacyService';
-export { UpdateChecker, UpdateInfo } from '../../entry/src/main/ets/service/UpdateChecker';
-export { SyncService, SyncEvent } from '../../entry/src/main/ets/service/sync/SyncService';
-// FamilyGroupService/RecipeCommunityService 已在 feature-community 本地实现，移除冗余代理
-// CreateRecipeParams 已在 hsp_core Recipe 模型中导出
+// ===== Service 层导出（Sprint3 批次1 已迁移） =====
+export { CloudAuthService } from './src/main/ets/service/CloudAuthService';
+export { ScanDirectService } from './src/main/ets/service/ScanDirectService';
+export { OpenFoodFactsService } from './src/main/ets/service/OpenFoodFactsService';
+export { PrivacyService } from './src/main/ets/service/PrivacyService';
+export { SecureHttpClient, SecureRequestOptions } from './src/main/ets/service/SecureHttpClient';
+export { SecureHttpHelper, SecureJsonResponse, RawResponse } from './src/main/ets/service/SecureHttpHelper';
+export { HuaweiCloudBackend } from './src/main/ets/service/HuaweiCloudBackend';
 
-// ===== Manager 层导出（仍代理 entry，Sprint3 迁移源码） =====
-// TODO(Sprint3): 以下4个Manager需物理迁移至 hsp-service/src/main/ets/manager/
-export { MemberManager } from '../../entry/src/main/ets/manager/MemberManager';
-export { BasketManager } from '../../entry/src/main/ets/manager/BasketManager';
-export { ReportCacheManager } from '../../entry/src/main/ets/manager/ReportCacheManager';
-export { RepositoryManager } from '../../entry/src/main/ets/manager/RepositoryManager';
+// ===== Service 层导出（Sprint3 批次3-Step2 已迁移） =====
+export { HuaweiCloudService } from './src/main/ets/service/HuaweiCloudService';
+export { UpdateChecker, UpdateInfo } from './src/main/ets/service/UpdateChecker';
+export { SyncService, SyncEvent, SyncEventCallback } from './src/main/ets/service/sync/SyncService';
+export { DataService } from './src/main/ets/service/DataService';
+export { ScanService, ScanLookupResult, ILocalCacheProvider } from './src/main/ets/service/ScanService';
+export { ServiceGateway } from './src/main/ets/service/ServiceGateway';
+export { CloudBackendService, CloudProductResponse, CloudProductRecord, CloudNutritionInfo, FoodSubmissionRequest, AlternativeQueryRequest, SyncMemberDataRequest } from './src/main/ets/service/CloudBackendService';
+export { OnlineAlternativeSearchService, OnlineSearchResult } from './src/main/ets/service/OnlineAlternativeSearchService';
 
-// ===== 工具层导出（仍代理 entry，Sprint3 迁移源码） =====
-// TODO(Sprint3): OfflineFoodDatabase/getGlobalState 需物理迁移至 hsp_core
-export { OfflineFoodDatabase, lookupByBarcode, convertToFoodLabel } from '../../entry/src/main/ets/service/OfflineFoodDatabase';
-export { getGlobalState } from '../../entry/src/main/ets/utils/GlobalStateProvider';
+// ===== Sync 基础层导出（Sprint3 批次3-Step1 已迁移） =====
+export { SyncableEntity, SyncChangeType } from './src/main/ets/service/sync/Syncable';
+export { CloudStorageProvider, AuthResult, DeviceRegisterResult } from './src/main/ets/service/sync/CloudStorageProvider';
+
+// ===== Utils 导出（Sprint3 批次3-Step1 已迁移） =====
+export { DataLineage, LineageRecord } from './src/main/ets/utils/DataLineage';
+
+// ===== Manager 层导出（Sprint3 批次1 已迁移） =====
+export { MemberManager } from './src/main/ets/manager/MemberManager';
+export { BasketManager } from './src/main/ets/manager/BasketManager';
+export { ReportCacheManager } from './src/main/ets/manager/ReportCacheManager';
+export { RepositoryManager } from './src/main/ets/manager/RepositoryManager';
+
+// ===== 工具层导出（Sprint3 批次2 已迁移至 hsp_core） =====
+// OfflineFoodDatabase 和 GlobalStateProvider 已迁移至 hsp_core

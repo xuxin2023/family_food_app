@@ -5,7 +5,7 @@ import { ToastHelper, EventType, HILOG_DOMAIN, JsonHelper } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
 import { preferences } from '@kit.ArkData';
-import { AnalyticsService } from './AnalyticsService';
+import { AnalyticsService } from 'hsp-service';
 
 const TAG = 'MilestoneService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;

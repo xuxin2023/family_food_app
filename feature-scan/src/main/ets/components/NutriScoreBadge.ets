@@ -164,6 +164,7 @@ export struct NutriScoreBadge {
     .height(this.diameter * 1.5)
     .alignContent(Alignment.Center)
     .accessibilityText(`营养评分${getGradeLetter(this.score)}，${Math.round(this.score)}分`)
+    .accessibilityLevel('yes')
     .onClick(() => {
       if (!this.isHovered) {
         this.overlayScale = 0;

@@ -92,5 +92,7 @@ export struct ChildProtectionCard {
     .backgroundColor(COLORS.BG_WARM_YELLOW)
     .borderRadius(12)
     .alignItems(HorizontalAlign.Start)
+    .accessibilityText(`儿童保护建议：${this.protection.mealProtection.length > 0 ? '正餐' + this.protection.mealProtection + '；' : ''}${this.protection.bedtimeProtection.length > 0 ? '睡前' + this.protection.bedtimeProtection + '；' : ''}${this.protection.tasteProtection.length > 0 ? '口味' + this.protection.tasteProtection : ''}`)
+    .accessibilityLevel('yes')
   }
 }

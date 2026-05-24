@@ -10,7 +10,7 @@ const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 export struct HotFoodGuideCard {
   @Local currentTipIndex: number = 0
   @Param scanHistoryCount: number = 0
-  private tipTimer: number = 0
+  private tipTimer: number = -1
 
   aboutToAppear() {
     this.currentTipIndex = Math.floor(Math.random() * DAILY_TIPS.length)
@@ -20,12 +20,9 @@ export struct HotFoodGuideCard {
   }
 
   aboutToDisappear() {
-    if (this.tipTimer) {
-      try {
-        clearInterval(this.tipTimer);
-      } catch (e) {
-        hilog.warn(DOMAIN_ZERO, TAG, 'clearInterval失败: %{public}s', JSON.stringify(e));
-      }
+    if (this.tipTimer !== -1) {
+      clearInterval(this.tipTimer);
+      this.tipTimer = -1;
     }
   }
 

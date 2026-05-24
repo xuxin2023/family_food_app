@@ -19,7 +19,7 @@ export {
 } from './src/main/ets/constants/AppConfig';
 
 export {
-  COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON
+  COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON, SCORE_COLORS
 } from './src/main/ets/constants/AppTheme';
 
 export {
@@ -219,3 +219,13 @@ export { NutritionThreshold } from './src/main/ets/constants/NutritionThreshold'
 
 // ===== 补全工具导出（第二批） =====
 export { DomainEventBus, DomainEvents } from './src/main/ets/utils/DomainEventBus';
+
+// ===== 服务层导出（批次2迁移） =====
+export {
+  getOfflineFoodDatabase, warmUpOfflineDatabase, lookupByBarcode,
+  convertToFoodLabel, getOfflineFoodCount, OfflineFoodProvider
+} from './src/main/ets/utils/OfflineFoodDatabase';
+
+export {
+  GlobalAppState, getGlobalState, AppStorageV2Compat
+} from './src/main/ets/utils/GlobalStateProvider';

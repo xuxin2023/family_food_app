@@ -392,12 +392,13 @@ export class HistoryRepository {
 
   async getNutritionSnapshots(memberId: string, limit: number): Promise<NutritionSnapshot[]> {
     if (!this.rdbStore) return [];
+    let resultSet: relationalStore.ResultSet | null = null;
     try {
       const predicates = new relationalStore.RdbPredicates(TABLE_DIET_RECORD);
       predicates.equalTo(COL_MEMBER_ID, memberId);
       predicates.orderByDesc(COL_DATE);
-      predicates.limit(limit);
-      const resultSet = await this.rdbStore.query(predicates);
+      predicates.limitAs(limit);
+      resultSet = await this.rdbStore.query(predicates);
       const snapshots: NutritionSnapshot[] = [];
       while (resultSet.goToNextRow()) {
         const snap = new NutritionSnapshot();
@@ -409,11 +410,12 @@ export class HistoryRepository {
         snap.fat = resultSet.getDouble(resultSet.getColumnIndex(COL_FAT_INTAKE));
         snapshots.push(snap);
       }
-      resultSet.close();
       return snapshots;
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'getNutritionSnapshots failed: %{public}s', JSON.stringify(e));
       return [];
+    } finally {
+      resultSet?.close();
     }
   }
 

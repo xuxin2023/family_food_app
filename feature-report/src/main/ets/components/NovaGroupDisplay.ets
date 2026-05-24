@@ -2,7 +2,7 @@
 // Nova Group 加工度展示组件 — 图标+等级+颜色+描述（增强版）
 
 import { COLORS, FONT_SIZE, FONT_WEIGHT, RADIUS, SPACING, safeParseNovaGroup } from 'hsp_core';
-import { NovaGroup, NovaEvaluationResult } from '../engine/NovaGroupEngine';
+import { NovaGroup, NovaEvaluationResult } from 'feature-scan';
 
 const NOVA_COLOR_MAP: Map<number, string> = new Map();
 NOVA_COLOR_MAP.set(1, '#4CAF50');
@@ -106,6 +106,7 @@ export struct NovaGroupDisplay {
         this.showDescription = !this.showDescription;
       })
       .accessibilityText($r('app.string.nova_display_detail_acc'))
+      .accessibilityLevel('yes')
 
       if (this.showDescription) {
         Column() {

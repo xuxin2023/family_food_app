@@ -3,6 +3,7 @@
 // 支持：自定义图标、主标题、副标题、操作按钮、顶部间距
 
 import { COLORS, FONT_SIZE, SPACING, RADIUS } from 'hsp_core';
+import { ElderModeManager } from '../service/ElderModeManager';
 
 export class EmptyStateAction {
   text: string = '';
@@ -57,13 +58,14 @@ export struct EmptyState {
       if (this.action !== null) {
         Button(this.action.text)
           .width(160)
-          .height(40)
+          .height(ElderModeManager.getInstance().getTouchTarget())
           .backgroundColor(COLORS.PRIMARY)
           .borderRadius(RADIUS.MD)
           .fontSize(FONT_SIZE.BODY)
           .fontColor(COLORS.TEXT_WHITE)
           .margin({ top: SPACING.LG })
           .onClick(() => { this.action?.onClick() })
+          .focusable(true)
           .accessibilityText('执行操作')
       }
     }

@@ -61,5 +61,6 @@ export struct EcoScoreBadge {
     }
     .alignItems(VerticalAlign.Center)
     .accessibilityText(`生态评分${this.grade}级，${getEcoLabel(this.grade)}`)
+    .accessibilityLevel('yes')
   }
 }

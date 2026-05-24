@@ -4,9 +4,8 @@
 import { relationalStore } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import {
-  Recipe, RecipeComment, RecipeLike, RecipeBookmark, RecipeIngredient, RecipeStep, RecipeNutrition, RecipeDifficulty, RecipeCategory, DietTag, RecipeQueryParams, HILOG_DOMAIN
+  Recipe, RecipeComment, RecipeLike, RecipeBookmark, RecipeIngredient, RecipeStep, RecipeNutrition, RecipeDifficulty, RecipeCategory, DietTag, RecipeQueryParams, CreateRecipeParams, HILOG_DOMAIN
 } from 'hsp_core';
-import { CreateRecipeParams } from '../service/RecipeCommunityService';
 
 
 const TAG = 'RecipeRepository';

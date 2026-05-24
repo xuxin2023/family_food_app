@@ -1,5 +1,5 @@
 import { safeBack, COLORS, BUTTON, SPACING, FONT_SIZE } from 'hsp_core';
-import { TeenModeManager } from '../service/TeenModeManager';
+import { TeenModeManager } from 'hsp-service';
 import { promptAction } from '@kit.ArkUI';
 
 @Entry

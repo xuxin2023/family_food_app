@@ -3,6 +3,7 @@
 
 import { COLORS, FONT_SIZE, FONT_WEIGHT, RADIUS, SPACING, SCORE_COLORS } from 'hsp_core';
 import { NovaGroup } from '../engine/NovaGroupEngine';
+import { ElderModeManager } from '../service/ElderModeManager';
 
 function getNovaColor(group: NovaGroup): string {
   switch (group) {
@@ -39,6 +40,7 @@ export struct NovaGroupBadge {
         .padding({ left: 8, right: 8, top: 3, bottom: 3 })
         .borderRadius(RADIUS.SM)
         .backgroundColor(getNovaColor(this.group))
+        .responseRegion({ x: 0, y: 0, width: ElderModeManager.getInstance().getTouchTarget(), height: ElderModeManager.getInstance().getTouchTarget() })
 
       if (this.showLabel) {
         Text(getNovaLabel(this.group))

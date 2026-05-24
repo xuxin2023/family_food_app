@@ -8,10 +8,10 @@ export { FoodInputService, FoodInputResult } from './src/main/ets/service/FoodIn
 // ===== 扫描相关引擎 =====
 export { FoodAdapterEngine, TodayIntakeInput } from './src/main/ets/engine/FoodAdapterEngine';
 export { NutriScoreEngine } from './src/main/ets/engine/NutriScoreEngine';
-export { NovaGroupEngine } from './src/main/ets/engine/NovaGroupEngine';
-export { EcoScoreEngine } from './src/main/ets/engine/EcoScoreEngine';
+export { NovaGroupEngine, NovaGroup, NovaGroupOne, NovaGroupTwo, NovaGroupThree, NovaGroupFour, NovaEvaluationResult } from './src/main/ets/engine/NovaGroupEngine';
+export { EcoScoreEngine, EcoScoreGrade, EcoScoreResult, EcoScoreFactor } from './src/main/ets/engine/EcoScoreEngine';
 export { AlternativeFoodRecommender } from './src/main/ets/engine/AlternativeFoodRecommender';
-export { IntoleranceEngine } from './src/main/ets/engine/IntoleranceEngine';
+export { IntoleranceEngine, IntoleranceType, IntoleranceSeverity, IntoleranceWarning, IntoleranceCheckResult } from './src/main/ets/engine/IntoleranceEngine';
 export { IngredientKnowledgeBase, IngredientRiskLevel, IngredientAssessment } from './src/main/ets/engine/IngredientKnowledgeBase';
 export { IngredientSemanticEngine } from './src/main/ets/engine/IngredientSemanticEngine';
 export { CrossRiskAssessor } from './src/main/ets/engine/CrossRiskAssessor';

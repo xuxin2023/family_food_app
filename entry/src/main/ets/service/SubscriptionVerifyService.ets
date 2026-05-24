@@ -6,8 +6,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { http } from '@kit.NetworkKit';
 import { common } from '@kit.AbilityKit';
 import { preferences } from '@kit.ArkData';
-import { AuthService } from './AuthService';
-import { SecureHttpClient, SecureRequestOptions } from './SecureHttpClient';
+import { AuthService, SecureHttpClient, SecureRequestOptions } from 'hsp-service';
 import { GlobalErrorHandler } from '../utils/GlobalErrorHandler';
 
 const TAG = 'SubscriptionVerifyService';

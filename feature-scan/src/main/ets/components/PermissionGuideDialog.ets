@@ -4,7 +4,7 @@
 
 import { Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { getGlobalState } from 'hsp-service';
+import { getGlobalState } from 'hsp_core';
 import { HILOG_DOMAIN } from 'hsp_core';
 
 const TAG = 'PermissionGuideDialog';
@@ -66,6 +66,8 @@ export struct PermissionGuideDialog {
     .padding(20)
     .backgroundColor(Color.White)
     .borderRadius(16)
+    .accessibilityText($r('app.string.perm_guide_title'))
+    .accessibilityLevel('yes')
   }
 
   private openAppSettings(): void {

@@ -12,8 +12,7 @@ import { DataPortability, ImportResult } from '../utils/DataPortability';
 import { fileIo } from '@kit.CoreFileKit';
 import { picker } from '@kit.CoreFileKit';
 import { util } from '@kit.ArkTS';
-import { UpdateChecker, UpdateInfo } from '../service/UpdateChecker';
-import { AuthService } from '../service/AuthService';
+import { UpdateChecker, UpdateInfo, AuthService } from 'hsp-service';
 
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 const TAG = 'SettingsPage';

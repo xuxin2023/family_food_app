@@ -51,7 +51,7 @@ export class AccessibilityManager {
   }
 
   getRecommendedMinTouchTarget(): number {
-    return this.isScreenReaderActive ? 48 : 44;
+    return this.isScreenReaderActive ? 56 : 48;
   }
 
   buildA11yText(parts: (string | number | null | undefined)[]): string {

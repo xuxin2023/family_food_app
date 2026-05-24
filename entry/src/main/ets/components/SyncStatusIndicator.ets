@@ -1,7 +1,7 @@
 // SyncStatusIndicator.ets
 // 同步状态指示器组件 - 显示当前同步状态图标和待同步数量
 
-import { SyncService, SyncEvent } from '../service/sync/SyncService';
+import { SyncService, SyncEvent } from 'hsp-service';
 import { AppState } from '../AppState';
 
 @ComponentV2

@@ -6,7 +6,7 @@ import {
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
-import { SyncService, SyncEvent } from '../service/sync/SyncService';
+import { SyncService, SyncEvent } from 'hsp-service';
 
 class StrategyItem { label: ResourceStr = ''; value: SyncStrategy = SyncStrategy.WIFI_ONLY; }
 class ConflictItem { label: ResourceStr = ''; value: ConflictResolution = ConflictResolution.LOCAL_FIRST; }

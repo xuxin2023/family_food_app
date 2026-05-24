@@ -3,7 +3,7 @@
 import { safeBack, safePushUrl, FoodLabel, PaywallTrigger, BUTTON, COLORS } from 'hsp_core';
 import { BasketCheckResult, BasketCheckEngine } from '../engine/BasketCheckEngine';
 import { AppState } from '../AppState';
-import { PaywallDialog } from '../components/PaywallDialog';
+import { PaywallDialog } from 'feature-scan';
 
 @Entry
 @ComponentV2

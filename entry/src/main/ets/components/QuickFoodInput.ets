@@ -2,8 +2,9 @@
 // 饮食记录快捷录入组件 - 底部弹窗形式
 
 import { NutritionPer100g, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, DietRecord, OfflineFoodEntry, HILOG_DOMAIN } from 'hsp_core';
-import { getOfflineFoodDatabase } from '../service/OfflineFoodDatabase';
+import { getOfflineFoodDatabase } from 'hsp_core';
 import { AppState } from '../AppState';
+import { ElderModeManager } from '../service/ElderModeManager';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG_QFI = 'QuickFoodInput';
@@ -49,6 +50,7 @@ export struct QuickFoodInput {
 
   private appState: AppState = AppState.getInstance()
   private mContext: UIContext | undefined = undefined
+  private touchTarget: number = ElderModeManager.getInstance().getTouchTarget()
 
   async aboutToAppear(): Promise<void> {
     this.selectedMealType = this.defaultMealType;
@@ -93,6 +95,7 @@ export struct QuickFoodInput {
             .padding({ left: SPACING.MD, right: SPACING.MD, top: SPACING.SM, bottom: SPACING.SM })
             .borderRadius(RADIUS.FULL)
             .backgroundColor(this.selectedMealType === meal ? COLORS.PRIMARY : COLORS.BG_LIGHT_GRAY_F5)
+            .responseRegion({ x: 0, y: 0, width: this.touchTarget, height: this.touchTarget })
             .onClick(() => { this.selectedMealType = meal; })
             .accessibilityText($r('app.string.select_meal'))
         }, (meal: string) => meal)
@@ -103,7 +106,7 @@ export struct QuickFoodInput {
       // 搜索输入
       TextInput({ placeholder: $r('app.string.search_food_name'), text: $$this.searchQuery })
         .width('100%')
-        .height(40)
+        .height(this.touchTarget)
         .borderRadius(RADIUS.MD)
         .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
         .padding({ left: SPACING.MD })
@@ -196,6 +199,7 @@ export struct QuickFoodInput {
               .padding({ left: SPACING.MD, right: SPACING.MD, top: SPACING.SM, bottom: SPACING.SM })
               .borderRadius(RADIUS.SM)
               .backgroundColor(this.selectedServings === s ? COLORS.PRIMARY : COLORS.BG_LIGHT_GRAY_F5)
+              .responseRegion({ x: 0, y: 0, width: this.touchTarget, height: this.touchTarget })
               .onClick(() => { this.selectedServings = s; this.useGrams = false; })
               .accessibilityText($r('app.string.select_servings'))
           }, (s: number) => s.toString())
@@ -203,6 +207,7 @@ export struct QuickFoodInput {
             .fontSize(FONT_SIZE.SMALL)
             .fontColor(COLORS.PRIMARY)
             .margin({ left: SPACING.SM })
+            .responseRegion({ x: 0, y: 0, width: this.touchTarget, height: this.touchTarget })
             .onClick(() => { this.useGrams = !this.useGrams; })
             .accessibilityText($r('app.string.toggle_grams'))
         }
@@ -212,7 +217,7 @@ export struct QuickFoodInput {
         if (this.useGrams) {
           TextInput({ placeholder: $r('app.string.grams_placeholder') as string, text: $$this.gramsInput })
             .width('100%')
-            .height(36)
+            .height(this.touchTarget)
             .type(InputType.Number)
             .borderRadius(RADIUS.SM)
             .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
@@ -227,6 +232,7 @@ export struct QuickFoodInput {
         Text($r('app.string.advanced_mode'))
           .fontSize(FONT_SIZE.SMALL)
           .fontColor(COLORS.PRIMARY)
+          .responseRegion({ x: 0, y: 0, width: this.touchTarget, height: this.touchTarget })
           .onClick(() => { this.showAdvanced = !this.showAdvanced; })
           .accessibilityText($r('app.string.toggle_advanced'))
       }
@@ -240,7 +246,7 @@ export struct QuickFoodInput {
       // 确认按钮
       Button($r('app.string.confirm_add'))
         .width('100%')
-        .height(44)
+        .height(this.touchTarget)
         .margin({ top: SPACING.LG })
         .backgroundColor(COLORS.PRIMARY)
         .fontColor(COLORS.WHITE)
@@ -257,19 +263,19 @@ export struct QuickFoodInput {
   buildAdvancedInputs() {
     Column({ space: SPACING.SM }) {
       TextInput({ placeholder: $r('app.string.food_name_hint'), text: $$this.manualFoodName })
-        .width('100%').height(36).borderRadius(RADIUS.SM).backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
+        .width('100%').height(this.touchTarget).borderRadius(RADIUS.SM).backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
         .accessibilityText($r('app.string.input_food_name')).accessibilityDescription($r('app.string.input_food_name_desc'))
       TextInput({ placeholder: $r('app.string.calories_placeholder') as string, text: $$this.manualCalories })
-        .width('100%').height(36).type(InputType.Number).borderRadius(RADIUS.SM).backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
+        .width('100%').height(this.touchTarget).type(InputType.Number).borderRadius(RADIUS.SM).backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
         .accessibilityText($r('app.string.input_calories')).accessibilityDescription($r('app.string.input_calories_desc'))
       TextInput({ placeholder: $r('app.string.sodium_placeholder') as string, text: $$this.manualSodium })
-        .width('100%').height(36).type(InputType.Number).borderRadius(RADIUS.SM).backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
+        .width('100%').height(this.touchTarget).type(InputType.Number).borderRadius(RADIUS.SM).backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
         .accessibilityText($r('app.string.input_sodium')).accessibilityDescription($r('app.string.input_sodium_desc'))
       TextInput({ placeholder: $r('app.string.sugar_placeholder') as string, text: $$this.manualSugar })
-        .width('100%').height(36).type(InputType.Number).borderRadius(RADIUS.SM).backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
+        .width('100%').height(this.touchTarget).type(InputType.Number).borderRadius(RADIUS.SM).backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
         .accessibilityText($r('app.string.input_sugar')).accessibilityDescription($r('app.string.input_sugar_desc'))
       TextInput({ placeholder: $r('app.string.fat_placeholder') as string, text: $$this.manualFat })
-        .width('100%').height(36).type(InputType.Number).borderRadius(RADIUS.SM).backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
+        .width('100%').height(this.touchTarget).type(InputType.Number).borderRadius(RADIUS.SM).backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
         .accessibilityText($r('app.string.input_fat')).accessibilityDescription($r('app.string.input_fat_desc'))
     }
     .width('100%')

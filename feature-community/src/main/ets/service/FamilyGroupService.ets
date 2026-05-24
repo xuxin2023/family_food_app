@@ -7,7 +7,7 @@ import {
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FamilyGroupRepository } from '../repository/FamilyGroupRepository';
 
-import { AuthService } from './AuthService';
+import { AuthService } from 'hsp-service';
 
 const TAG = 'FamilyGroupService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;

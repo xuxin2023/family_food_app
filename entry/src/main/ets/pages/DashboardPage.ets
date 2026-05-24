@@ -10,11 +10,11 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
 // 导入图表组件
 import { DonutChart, DonutSegment } from '../components/DonutChart';
-import { NutrientRadarPanel, NutrientScores } from '../components/NutrientRadarPanel';
+import { NutrientRadarPanel, NutrientScores } from 'feature-report';
 import { ReportExporter } from '../utils/ReportExporter';
 import { common } from '@kit.AbilityKit';
 import { HealthTrendPredictor, TrendPrediction } from '../engine/HealthTrendPredictor';
-import { TrendPredictionBar } from '../components/TrendPredictionBar';
+import { TrendPredictionBar } from 'feature-report';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;

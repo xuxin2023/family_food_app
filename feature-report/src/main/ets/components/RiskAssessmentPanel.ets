@@ -51,6 +51,7 @@ export struct RiskAssessmentPanel {
       .borderRadius(RADIUS.MD)
       .backgroundColor(COLORS.BG_WHITE)
       .accessibilityText(rr.summary)
+      .accessibilityLevel('yes')
     }
   }
 

@@ -85,6 +85,8 @@ export struct PregnancySafetyCard {
       .backgroundColor(COLORS.BG_CARD)
       .borderRadius(RADIUS.MD)
       .shadow({ radius: 2, color: '#1A000000', offsetX: 0, offsetY: 1 })
+      .accessibilityText(`${this.status === PregnancyStatus.PREGNANT ? '孕期' : '哺乳期'}安全${res?.safe ? '安全' : '注意'}，${res?.summary ?? ''}`)
+      .accessibilityLevel('yes')
     }
   }
 }

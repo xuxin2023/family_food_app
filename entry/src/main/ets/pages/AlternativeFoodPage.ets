@@ -5,8 +5,9 @@ import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { AlternativeRecommender, AlternativeCandidate } from '../engine/AlternativeRecommender';
 import { alternativeFoodRecommender } from '../engine/AlternativeFoodRecommender';
-import { OfflineFoodProvider } from '../service/OfflineFoodDatabase';
+import { OfflineFoodProvider } from 'hsp_core';
 import { EmptyState } from '../components/EmptyState';
+import { OnlineAlternativeSearchService } from 'hsp-service';
 
 @Entry
 @ComponentV2
@@ -17,6 +18,7 @@ struct AlternativeFoodPage {
   @Local familyMembers: FamilyProfile[] = []
   @Local isLoading: boolean = true
   @Local recommendReady: boolean = false
+  @Local onlineAlternatives: AlternativeFood[] = []
   @Local currentBreakpoint: string = 'md'
 
   private appState: AppState = AppState.getInstance()
@@ -39,8 +41,18 @@ struct AlternativeFoodPage {
       this.foodLabel, this.familyMembers, 5
     )
     this.isLoading = false
-    // 推荐计算完成后才渲染列表
     this.recommendReady = true
+    this.loadOnlineAlternatives()
+  }
+
+  private async loadOnlineAlternatives(): Promise<void> {
+    try {
+      const onlineService = OnlineAlternativeSearchService.getInstance()
+      const results = await onlineService.searchAlternatives(this.foodLabel, undefined, 5)
+      this.onlineAlternatives = onlineService.toAlternativeFoods(results)
+    } catch (_) {
+      this.onlineAlternatives = []
+    }
   }
 
   build() {

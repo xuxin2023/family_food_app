@@ -4,7 +4,7 @@ import {
 } from 'hsp_core';
 import { common } from '@kit.AbilityKit';
 import { FamilyRepository } from '../repository/FamilyRepository';
-import { MemberManager } from '../manager/MemberManager';
+import { MemberManager } from 'hsp-service';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'MemberFacade';
@@ -108,7 +108,6 @@ export class MemberFacade {
 
   refreshMemberCache(): void {
     this.cache.clearHealthSignalsCache();
-    this._membersCache = [];
     this.familyRepo.getAllMembers().then(members => {
       this._membersCache = members;
     }).catch((_e: Error) => {

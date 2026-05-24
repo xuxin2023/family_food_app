@@ -4,9 +4,9 @@ import {
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { BalanceAdviceCard } from '../components/BalanceAdviceCard';
-import { ChildProtectionCard } from '../components/ChildProtectionCard';
+import { ChildProtectionCard } from 'feature-report';
 import { DietRecordInput } from '../repository/HistoryRepository';
-import { PaywallDialog } from '../components/PaywallDialog';
+import { PaywallDialog } from 'feature-scan';
 
 // 美食场景选项
 class ScenarioOption {

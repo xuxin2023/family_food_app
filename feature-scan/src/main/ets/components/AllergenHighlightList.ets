@@ -35,6 +35,8 @@ export struct AllergenHighlightList {
         }, (item: string, idx: number) => `${idx}`)
       }
       .width('100%')
+      .accessibilityText(`配料表，共${this.ingredients.length}项，其中${this.ingredients.filter((i: string) => this.isAllergen(i)).length}项含过敏原`)
+      .accessibilityLevel('yes')
     }
   }
 }

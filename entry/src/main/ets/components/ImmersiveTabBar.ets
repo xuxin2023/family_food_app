@@ -6,6 +6,8 @@
 /**
  * 沉浸式Tab配置
  */
+import { ElderModeManager } from '../service/ElderModeManager';
+
 export class ImmersiveTabConfig {
   text: string = '';
   icon: ResourceStr = '';
@@ -20,9 +22,9 @@ export struct ImmersiveTabBar {
   @Local isMinimized: boolean = false;
   @Event onTabChange?: (index: number) => void;
 
-  // 沉浸光感动画参数
   @Local blurRadius: number = 20;
   @Local bgOpacity: number = 0.85;
+  private touchTarget: number = ElderModeManager.getInstance().getTouchTarget()
 
   aboutToAppear(): void {
     // 默认Tab配置
@@ -54,6 +56,7 @@ export struct ImmersiveTabBar {
           .layoutWeight(1)
           .alignItems(HorizontalAlign.Center)
           .padding({ top: 8, bottom: 4 })
+          .focusable(true)
           .accessibilityText(tab.text)
           .accessibilityLevel('yes')
           .onClick(() => {
@@ -69,7 +72,7 @@ export struct ImmersiveTabBar {
         })
       }
       .width(this.isMinimized ? '60%' : '92%')
-      .height(this.isMinimized ? 36 : 56)
+      .height(this.isMinimized ? this.touchTarget : 56)
       .backgroundColor(`rgba(255,255,255,${this.bgOpacity})`)
       .borderRadius(28)
       // 沉浸光感 - 背景模糊效果（HarmonyOS 6.1 特性）

@@ -2,6 +2,7 @@
 // 食品标签筛选组件 — 横向可滚动 Chip 样式标签，支持多选
 
 import { COLORS, FONT_SIZE, FONT_WEIGHT, RADIUS, SPACING, SCORE_COLORS } from 'hsp_core';
+import { ElderModeManager } from '../service/ElderModeManager';
 
 export class FilterTag {
   key: string = '';
@@ -72,6 +73,7 @@ export function createAllFilterTags(): FilterTag[] {
 export struct FoodTagFilter {
   @Param tags: FilterTag[] = [];
   @Event onFilterChange?: (selectedTags: string[]) => void;
+  private touchTarget: number = ElderModeManager.getInstance().getTouchTarget()
 
   private toggleTag(tag: FilterTag): void {
     tag.selected = !tag.selected;
@@ -94,6 +96,7 @@ export struct FoodTagFilter {
             .backgroundColor(tag.selected ? tag.color : COLORS.BG_LIGHT)
             .borderRadius(RADIUS.SM)
             .padding({ left: 10, right: 10, top: 5, bottom: 5 })
+            .responseRegion({ x: 0, y: 0, width: this.touchTarget, height: this.touchTarget })
             .borderWidth(1)
             .borderColor(tag.selected ? tag.color : COLORS.BORDER)
             .accessibilityText(`${tag.label}${tag.selected ? $r('app.string.tag_selected') as string : $r('app.string.tag_unselected') as string}`)
@@ -105,7 +108,7 @@ export struct FoodTagFilter {
     .scrollable(ScrollDirection.Horizontal)
     .scrollBar(BarState.Off)
     .width('100%')
-    .height(40)
+    .height(this.touchTarget)
     .align(Alignment.Start)
   }
 }

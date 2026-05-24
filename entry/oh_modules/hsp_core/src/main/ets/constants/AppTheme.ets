@@ -428,6 +428,7 @@ export class FONT_SIZE {
   static readonly BODY_SM: number = 12;
   static readonly SMALL: number = 13;
   static readonly BODY: number = 14;
+  static readonly BODY_MD: number = 14;
   static readonly MEDIUM: number = 15;
   static readonly SUBTITLE: number = 16;
   static readonly TITLE: number = 18;

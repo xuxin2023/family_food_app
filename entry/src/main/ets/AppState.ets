@@ -14,14 +14,9 @@ import { RuleRepository } from './repository/RuleRepository';
 import { FamilyGroupRepository } from './repository/FamilyGroupRepository';
 import { RecipeRepository } from './repository/RecipeRepository';
 import { FavoriteItem, FavoriteRepository } from './repository/FavoriteRepository';
-import { SyncService, SyncEvent } from './service/sync/SyncService';
-import { CreateRecipeParams } from './service/RecipeCommunityService';
-import { migrateDatabase } from './service/DatabaseMigrationService';
-import { PermissionManager } from './service/PermissionManager';
-import { NetworkMonitorService } from './service/NetworkMonitorService';
-import { ScanService } from './service/ScanService';
+import { SyncService, SyncEvent, ScanService, ILocalCacheProvider, migrateDatabase, PermissionManager, NetworkMonitorService, PrivacyManager, MemberManager, BasketManager, ReportCacheManager } from 'hsp-service';
+import { CreateRecipeParams } from 'hsp_core';
 import { FoodInputService, FoodInputResult } from './service/FoodInputService';
-import { PrivacyManager } from './service/PrivacyManager';
 import { DistributedSyncHelper } from './service/sync/DistributedSyncHelper';
 import { OnDeviceAiEngine } from './engine/OnDeviceAiEngine';
 import { ExerciseNutritionRecommendation } from './engine/ExerciseNutritionEngine';
@@ -31,9 +26,6 @@ import { PersonalizedRecommendation } from './engine/PersonalizedRecommendEngine
 import { DailyNutritionSummary, MealGroup } from './engine/NutritionTrendEngine';
 import { EngineManager } from './EngineManager';
 import { ServiceManager } from './ServiceManager';
-import { MemberManager } from './manager/MemberManager';
-import { BasketManager } from './manager/BasketManager';
-import { ReportCacheManager } from './manager/ReportCacheManager';
 import { FoodFacade } from './facade/FoodFacade';
 import { MemberFacade } from './facade/MemberFacade';
 import { HealthFacade } from './facade/HealthFacade';
@@ -69,6 +61,12 @@ export class AppState {
 
   hasShownGuide: boolean = false;
   readonly cache: CacheManager = new CacheManager();
+
+  constructor() {
+    this.scanService.setCacheProvider({
+      findFoodByBarcode: (barcode: string) => this.findFoodByBarcode(barcode)
+    });
+  }
 
   private initPhase: 'none' | 'initializing' | 'ready' = 'none';
   private readyResolver: (() => void) | null = null;

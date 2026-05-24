@@ -24,6 +24,10 @@ export struct NutrientRadarPanel {
 
   private readonly labels: string[] = ['蛋白质', '膳食纤维', '维生素', '矿物质', '健康脂肪']
 
+  private getAccessibilitySummary(): string {
+    return `营养雷达图：蛋白质${this.scores.protein}分，膳食纤维${this.scores.fiber}分，维生素${this.scores.vitamins}分，矿物质${this.scores.minerals}分，健康脂肪${this.scores.healthyFats}分`
+  }
+
   private getScore(key: string): number {
     if (key === 'protein') return this.scores.protein
     if (key === 'fiber') return this.scores.fiber
@@ -156,5 +160,7 @@ export struct NutrientRadarPanel {
     }
     .width('100%')
     .alignItems(HorizontalAlign.Center)
+    .accessibilityText(this.getAccessibilitySummary())
+    .accessibilityLevel('yes')
   }
 }

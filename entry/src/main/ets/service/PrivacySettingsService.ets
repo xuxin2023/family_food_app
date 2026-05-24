@@ -1,7 +1,7 @@
 import { preferences } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN } from 'hsp_core';
-import { getGlobalState } from '../utils/GlobalStateProvider';
+import { getGlobalState } from 'hsp_core';
 
 const TAG = 'PrivacySettingsSvc';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;

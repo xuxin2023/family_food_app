@@ -2,7 +2,7 @@ import {
   ToastHelper, safeBack, safePushUrl, getPageParams, Recommendation, FamilyProfile, GroupSummary, FeedType, BUTTON, COLORS, HILOG_DOMAIN
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
-import { ShareCard } from '../components/ShareCard';
+import { ShareCard } from 'feature-report';
 import { ShareService } from '../service/ShareService';
 import { AppState } from '../AppState';
 import { hilog } from '@kit.PerformanceAnalysisKit';

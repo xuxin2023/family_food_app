@@ -2,7 +2,7 @@
 // 不耐受预警卡片 — 展示成分不耐受检测结果
 
 import { COLORS, FONT_SIZE, FONT_WEIGHT, RADIUS, SPACING } from 'hsp_core';
-import { IntoleranceCheckResult, IntoleranceWarning, IntoleranceSeverity } from '../engine/IntoleranceEngine';
+import { IntoleranceCheckResult, IntoleranceWarning, IntoleranceSeverity } from 'feature-scan';
 
 function getSeverityColor(severity: IntoleranceSeverity): string {
   switch (severity) {
@@ -86,6 +86,7 @@ export struct IntoleranceWarningCard {
       .borderRadius(RADIUS.MD)
       .border({ width: 1, color: '#FFE0B2' })
       .accessibilityText(`${$r('app.string.intolerance_warning')}：${res.warnings.length}${$r('app.string.intolerance_items_unit')}${res.summary}`)
+      .accessibilityLevel('yes')
     }
   }
 }

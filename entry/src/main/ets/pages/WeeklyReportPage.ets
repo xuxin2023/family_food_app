@@ -5,7 +5,7 @@ import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { WeeklyDietData, WeeklyReport, WeeklyReportEngine } from '../engine/WeeklyReportEngine';
 import { ScanHistoryRecord } from '../repository/HistoryRepository';
-import { PaywallDialog } from '../components/PaywallDialog';
+import { PaywallDialog } from 'feature-scan';
 import { EmptyState } from '../components/EmptyState';
 import { ReportExporter } from '../utils/ReportExporter';
 import { common } from '@kit.AbilityKit';

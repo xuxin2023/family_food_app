@@ -209,6 +209,8 @@ export struct AdditiveTrafficLight {
     .width('100%')
     .height(28)
     .alignItems(VerticalAlign.Center)
+    .accessibilityText(`${this.entry.name}${this.entry.eNumber.length > 0 ? ' ' + this.entry.eNumber : ''}，风险等级${this.entry.riskLevel}`)
+    .accessibilityLevel('yes')
 
     if (this.showDescription && this.entry.description.length > 0) {
       Text(this.entry.description)

@@ -6,7 +6,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import {
   Recipe, RecipeComment, RecipeLike, RecipeBookmark, RecipeIngredient, RecipeStep, RecipeNutrition, RecipeDifficulty, RecipeCategory, DietTag, RecipeQueryParams, HILOG_DOMAIN
 } from 'hsp_core';
-import { CreateRecipeParams } from '../service/RecipeCommunityService';
+import { CreateRecipeParams } from 'hsp_core';
 
 
 const TAG = 'RecipeRepository';

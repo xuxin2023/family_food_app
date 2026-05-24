@@ -2,7 +2,7 @@
 // EcoScore 详情展开组件 — 展示等级/分数/评分依据/估算标注
 
 import { COLORS, FONT_SIZE, FONT_WEIGHT, RADIUS, SPACING } from 'hsp_core';
-import { EcoScoreResult, EcoScoreGrade, EcoScoreFactor } from '../engine/EcoScoreEngine';
+import { EcoScoreResult, EcoScoreGrade, EcoScoreFactor } from 'feature-scan';
 
 const ECO_COLOR_MAP: Map<string, string> = new Map();
 ECO_COLOR_MAP.set(EcoScoreGrade.A, '#2E7D32');
@@ -106,6 +106,7 @@ export struct EcoScoreDetail {
           this.showDetail = !this.showDetail;
         })
         .accessibilityText($r('app.string.eco_detail_view_detail'))
+        .accessibilityLevel('yes')
 
         if (this.showDetail && eco.factors.length > 0) {
           Column() {

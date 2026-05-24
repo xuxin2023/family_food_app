@@ -3,7 +3,7 @@ import {
   RecipeComment, CreateRecipeParams, HILOG_DOMAIN
 } from 'hsp_core';
 import { ServiceManager } from '../ServiceManager';
-import { SyncService, SyncEvent } from '../service/sync/SyncService';
+import { SyncService, SyncEvent } from 'hsp-service';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'SyncFacade';

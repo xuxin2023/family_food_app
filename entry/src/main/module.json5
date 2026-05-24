@@ -47,6 +47,23 @@
             ]
           }
         ]
+      },
+      {
+        "name": "ScanDirectAbility",
+        "srcEntry": "./ets/scanability/ScanDirectAbility.ets",
+        "description": "$string:ability_desc",
+        "icon": "$media:app_icon",
+        "label": "$string:ability_label",
+        "startWindowIcon": "$media:app_icon",
+        "startWindowBackground": "$color:start_window_background",
+        "exported": true,
+        "skills": [
+          {
+            "actions": [
+              "action.system.scan"
+            ]
+          }
+        ]
       }
     ],
     "requestPermissions": [
@@ -55,7 +72,8 @@
         "reason": "$string:camera_reason",
         "usedScene": {
           "abilities": [
-            "EntryAbility"
+            "EntryAbility",
+            "ScanDirectAbility"
           ],
           "when": "inuse"
         }

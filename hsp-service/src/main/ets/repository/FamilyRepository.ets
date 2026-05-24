@@ -9,7 +9,6 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'FamilyRepository';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
-const DB_NAME = 'food_helper.db';
 
 export class FamilyRepository {
   private rdbStore: relationalStore.RdbStore | null = null;

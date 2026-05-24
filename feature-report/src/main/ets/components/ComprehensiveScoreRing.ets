@@ -116,5 +116,7 @@ export struct ComprehensiveScoreRing {
     }
     .alignItems(HorizontalAlign.Center)
     .opacity(this.ringOpacity)
+    .accessibilityText(`综合健康评分${Math.round(this.animatedScore)}分，${getScoreGrade(this.animatedScore)}`)
+    .accessibilityLevel('yes')
   }
 }

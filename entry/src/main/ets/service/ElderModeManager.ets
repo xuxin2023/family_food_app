@@ -63,7 +63,7 @@ export class ElderModeManager {
   }
 
   getTouchTarget(): number {
-    return this.isEnabled ? 56 : 44;
+    return this.isEnabled ? 56 : 48;
   }
 
   getCardPadding(): number {

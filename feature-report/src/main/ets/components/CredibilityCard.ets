@@ -206,6 +206,7 @@ export struct CredibilityCard {
               this.copyToClipboard(entry.keyword);
             })
             .accessibilityText($r('app.string.credibility_view_detail'))
+            .accessibilityLevel('yes')
         }
         .width('100%')
         .padding(8)

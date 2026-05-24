@@ -86,6 +86,7 @@ export struct IntoleranceWarningCard {
       .borderRadius(RADIUS.MD)
       .border({ width: 1, color: '#FFE0B2' })
       .accessibilityText(`${$r('app.string.intolerance_warning')}：${res.warnings.length}${$r('app.string.intolerance_items_unit')}${res.summary}`)
+      .accessibilityLevel('yes')
     }
   }
 }

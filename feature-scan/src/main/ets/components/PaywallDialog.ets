@@ -44,6 +44,7 @@ export struct PaywallDialog {
             }
           })
           .accessibilityText($r('app.string.paywall_close'))
+          .accessibilityLevel('yes')
 
         // 白色圆角卡片
         Column() {

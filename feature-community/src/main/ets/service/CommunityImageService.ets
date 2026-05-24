@@ -1,0 +1,101 @@
+import { hilog } from '@kit.PerformanceAnalysisKit';
+import { HILOG_DOMAIN } from 'hsp_core';
+import { SecureHttpHelper } from 'hsp-service';
+import { common } from '@kit.AbilityKit';
+import { fileIo } from '@kit.CoreFileKit';
+import { http } from '@kit.NetworkKit';
+
+const TAG = 'CommunityImageService';
+const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+const COMPRESSION_QUALITY = 80;
+
+export class ImageUploadResult {
+  url: string = '';
+  thumbnailUrl: string = '';
+  width: number = 0;
+  height: number = 0;
+  sizeKB: number = 0;
+}
+
+export class CommunityImageService {
+  private static instance: CommunityImageService | null = null;
+  private context: common.Context | null = null;
+
+  static getInstance(): CommunityImageService {
+    if (!CommunityImageService.instance) {
+      CommunityImageService.instance = new CommunityImageService();
+    }
+    return CommunityImageService.instance;
+  }
+
+  init(context: common.Context): void {
+    this.context = context;
+  }
+
+  async uploadImage(localPath: string, category: string = 'recipe'): Promise<ImageUploadResult> {
+    const result = new ImageUploadResult();
+
+    try {
+      const stat = await fileIo.stat(localPath);
+      if (stat.size > MAX_IMAGE_SIZE_BYTES) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'Image too large: %{public}d bytes', stat.size);
+        throw new Error('图片大小超过5MB限制');
+      }
+
+      result.sizeKB = Math.round(stat.size / 1024);
+
+      const fileName = `${category}_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.jpg`;
+      const uploadUrl = `/upload/image?category=${category}&fileName=${fileName}`;
+
+      const secureHelper = SecureHttpHelper.getInstance();
+      const response = await secureHelper.postMultipart(uploadUrl, localPath, 'image');
+
+      if (response.responseCode === 200 && response.data) {
+        const data = response.data as Record<string, Object>;
+        result.url = (data['url'] as string) ?? '';
+        result.thumbnailUrl = (data['thumbnailUrl'] as string) ?? result.url;
+        result.width = (data['width'] as number) ?? 0;
+        result.height = (data['height'] as number) ?? 0;
+
+        hilog.info(DOMAIN_ZERO, TAG, 'Image uploaded: %{public}s (%{public}dKB)',
+          result.url, result.sizeKB);
+      } else {
+        result.url = await this.saveToLocal(localPath, fileName);
+        result.thumbnailUrl = result.url;
+        hilog.info(DOMAIN_ZERO, TAG, 'Cloud upload failed, saved locally: %{public}s', result.url);
+      }
+    } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Image upload failed: %{public}s', JSON.stringify(error));
+      throw error;
+    }
+
+    return result;
+  }
+
+  async uploadMultipleImages(paths: string[], category: string = 'recipe'): Promise<ImageUploadResult[]> {
+    const results: ImageUploadResult[] = [];
+    for (const path of paths) {
+      try {
+        const result = await this.uploadImage(path, category);
+        results.push(result);
+      } catch (_) {
+        continue;
+      }
+    }
+    return results;
+  }
+
+  private async saveToLocal(srcPath: string, fileName: string): Promise<string> {
+    if (!this.context) return '';
+    const filesDir = this.context.filesDir + '/community_images';
+    try {
+      await fileIo.access(filesDir);
+    } catch (_) {
+      await fileIo.mkdir(filesDir);
+    }
+    const destPath = filesDir + '/' + fileName;
+    await fileIo.copyFile(srcPath, destPath);
+    return destPath;
+  }
+}

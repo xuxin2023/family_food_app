@@ -6,7 +6,7 @@ import { RecipeRepository } from '../repository/RecipeRepository';
 import {
   Recipe, RecipeComment, RecipeIngredient, RecipeStep, RecipeNutrition, RecipeDifficulty, RecipeCategory, DietTag, RecipeQueryParams, CreateRecipeParams, HILOG_DOMAIN
 } from 'hsp_core';
-import { AuthService } from './AuthService';
+import { AuthService } from 'hsp-service';
 
 
 const TAG = 'RecipeCommunityService';

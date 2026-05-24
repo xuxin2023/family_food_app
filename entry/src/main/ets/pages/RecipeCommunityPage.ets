@@ -8,7 +8,7 @@ import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
 import { ErrorFallback } from '../components/ErrorFallback';
-import {
+import { RecipeCard, LikeButton } from 'feature-community';
 
 
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;

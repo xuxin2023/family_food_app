@@ -6,7 +6,7 @@ import {
   ToastHelper, safeBack, MemberTier, PurchaseResult, ProductPlan, getProductPlanForTier, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, HILOG_DOMAIN
 } from 'hsp_core';
 import { AppState } from '../AppState';
-import { IapService } from '../service/IapService';
+import { IapService } from 'hsp-service';
 import { promptAction } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 

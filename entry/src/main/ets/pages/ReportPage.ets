@@ -9,13 +9,8 @@ import { promptAction, curves } from '@kit.ArkUI';
 import { BackButton } from '../components/BackButton';
 import { common } from '@kit.AbilityKit';
 import { AppState } from '../AppState';
-import { NutriScoreBadge } from '../components/NutriScoreBadge';
-import { NovaGroupBadge } from '../../feature-report/src/main/ets/components/NovaGroupBadge';
-import { EcoScoreBadge } from '../components/EcoScoreBadge';
-import { AllergenHighlightList } from '../components/AllergenHighlightList';
-import { RiskAssessmentPanel } from '../components/RiskAssessmentPanel';
-import { ShareCardGenerator, MemberShareInfo, ShareImageParams } from '../components/ShareCard';
-import { PaywallDialog } from '../components/PaywallDialog';
+import { NutriScoreBadge, AllergenHighlightList, PaywallDialog } from 'feature-scan';
+import { NovaGroupBadge, EcoScoreBadge, RiskAssessmentPanel, ShareCardGenerator, MemberShareInfo, ShareImageParams } from 'feature-report';
 
 // ===== 页面级别类型 =====
 

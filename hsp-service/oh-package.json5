@@ -6,7 +6,9 @@
   "author": "",
   "license": "",
   "dependencies": {
-    "hsp_core": "file:../hsp_core"
+    "hsp_core": "file:../hsp_core",
+    "feature-scan": "file:../feature-scan",
+    "feature-report": "file:../feature-report"
   },
   "devDependencies": {}
 }

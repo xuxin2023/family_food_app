@@ -7,6 +7,7 @@ import {
 import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
+import { LikeButton } from 'feature-community';
 
 
 const TAG = 'RecipeDetailPage';
@@ -161,26 +162,20 @@ struct RecipeDetailPage {
 
     // 互动按钮组
     Row({ space: 16 }) {
-      Row({ space: 6 }) {
-        Text(this.hasLiked ? '❤️' : '🤍').fontSize(20)
-        Text(this.recipe.likeCount.toString()).fontSize(14).fontColor(COLORS.TEXT_SECONDARY)
-      }
-      .onClick(() => {
-        this.appState.toggleRecipeLike(this.recipeId).then((newState: boolean) => {
-          // 本地乐观更新点赞数，避免全量刷新
-          if (this.recipe) {
-            if (newState !== this.hasLiked) {
-              this.recipe.likeCount += newState ? 1 : -1
+      LikeButton({
+        isLiked: this.hasLiked,
+        likeCount: this.recipe.likeCount,
+        onToggle: () => {
+          this.appState.toggleRecipeLike(this.recipeId).then((newState: boolean) => {
+            if (this.recipe) {
+              if (newState !== this.hasLiked) {
+                this.recipe.likeCount += newState ? 1 : -1
+              }
             }
-          }
-          this.hasLiked = newState
-        })
+            this.hasLiked = newState
+          })
+        }
       })
-      .accessibilityText('点赞')
-      .accessibilityLevel('yes')
-      .padding({ left: 12, right: 12, top: 6, bottom: 6 })
-      .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
-      .borderRadius(20)
 
       Row({ space: 6 }) {
         Text(this.hasBookmarked ? '🔖' : '🏷️').fontSize(20)

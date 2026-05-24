@@ -5,6 +5,7 @@
 import { common } from '@kit.AbilityKit';
 import { bundleManager } from '@kit.AbilityKit';
 import { preferences } from '@kit.ArkData';
+import { ElderModeManager } from '../service/ElderModeManager';
 
 const PREF_KEY_PRIVACY_AGREED = 'privacy_agreed_v2';
 
@@ -14,6 +15,7 @@ export struct PrivacyConsentDialog {
   @Event onRejected?: () => void;
   @Local isVisible: boolean = false;
   @Local hasAgreed: boolean = false;
+  private touchTarget: number = ElderModeManager.getInstance().getTouchTarget()
 
   async aboutToAppear(): Promise<void> {
     const ctx = getContext(this) as common.UIAbilityContext;
@@ -103,7 +105,7 @@ export struct PrivacyConsentDialog {
         Row() {
           Button($r('app.string.disagree_exit'))
             .layoutWeight(1)
-            .height(44)
+            .height(this.touchTarget)
             .backgroundColor(Color.White)
             .fontColor('#666666')
             .border({ width: 1, color: '#DDDDDD' })
@@ -117,7 +119,7 @@ export struct PrivacyConsentDialog {
 
           Button($r('app.string.agree_continue'))
             .layoutWeight(1)
-            .height(44)
+            .height(this.touchTarget)
             .backgroundColor('#4CAF50')
             .fontColor(Color.White)
             .borderRadius(22)

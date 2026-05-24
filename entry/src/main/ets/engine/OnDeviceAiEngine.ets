@@ -13,6 +13,7 @@
 import { hilog } from '@kit.PerformanceAnalysisKit'
 import { HILOG_DOMAIN } from 'hsp_core'
 import { common } from '@kit.AbilityKit'
+import { OnDeviceInferenceEngine, InferenceModelType, InferenceBackend } from './OnDeviceInferenceEngine'
 
 const TAG = 'OnDeviceAiEngine'
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT
@@ -67,6 +68,7 @@ export class OnDeviceAiEngine {
   private static instance: OnDeviceAiEngine
   private modelLoaded: boolean = false
   private npuAvailable: boolean = false
+  private inferenceEngine: OnDeviceInferenceEngine = OnDeviceInferenceEngine.getInstance()
   // MindSpore Lite 模型引用（实际部署时取消注释）
   // private msModel: MSLiteModel | null = null
   // private msContext: MSLiteContext | null = null
@@ -165,7 +167,21 @@ export class OnDeviceAiEngine {
         this.context = context;
       }
 
-      // 1. 检测 NPU 可用性
+      // 1. 尝试初始化 OnDeviceInferenceEngine (MindSpore Lite)
+      const inferenceReady = await this.inferenceEngine.init(
+        context ?? getContext(this),
+        InferenceModelType.FOOD_CLASSIFIER,
+        InferenceBackend.AUTO
+      )
+
+      if (inferenceReady) {
+        this.npuAvailable = true
+        this.modelLoaded = true
+        hilog.info(DOMAIN_ZERO, TAG, 'OnDeviceAiEngine initialized with MindSpore Lite (NPU/CPU)')
+        return
+      }
+
+      // 2. 降级: 检测 NPU 可用性
       this.npuAvailable = await this.detectNpu()
 
       if (this.npuAvailable) {

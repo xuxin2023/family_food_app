@@ -122,16 +122,27 @@ export class FoodFacade {
     return this.engines.calculateEnhancedAdaptation(member, foodLabel, signal, todayIntake, 1);
   }
 
-  calculateMealBalance(scenario: MealScenario): MealBalance {
-    return this.engines.getMealBalance(new FamilyProfile(), new DailyBudget(), scenario, 3);
+  calculateMealBalance(
+    scenario: MealScenario,
+    member?: FamilyProfile,
+    budget?: DailyBudget
+  ): MealBalance {
+    return this.engines.getMealBalance(member ?? new FamilyProfile(), budget ?? new DailyBudget(), scenario, 3);
   }
 
-  generatePositiveAdvice(): PositiveAdvice | null {
-    const advices = this.engines.getPositiveAdvice(new FoodLabel(), new Recommendation());
+  generatePositiveAdvice(
+    foodLabel?: FoodLabel,
+    recommendation?: Recommendation
+  ): PositiveAdvice | null {
+    const advices = this.engines.getPositiveAdvice(foodLabel ?? new FoodLabel(), recommendation ?? new Recommendation());
     return advices.length > 0 ? advices[0] : null;
   }
 
-  calculateChildProtection(foodLabel: FoodLabel): ChildProtection {
-    return this.engines.getChildProtection(new FamilyProfile(), foodLabel, new Recommendation());
+  calculateChildProtection(
+    foodLabel: FoodLabel,
+    member?: FamilyProfile,
+    recommendation?: Recommendation
+  ): ChildProtection {
+    return this.engines.getChildProtection(member ?? new FamilyProfile(), foodLabel, recommendation ?? new Recommendation());
   }
 }

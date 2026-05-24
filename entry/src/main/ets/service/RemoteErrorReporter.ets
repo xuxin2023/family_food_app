@@ -6,7 +6,7 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { http } from '@kit.NetworkKit';
 import { API_CONFIG, API_TIMEOUT_CONFIG, HILOG_DOMAIN } from 'hsp_core';
-import { SecureHttpClient, SecureRequestOptions } from './SecureHttpClient';
+import { SecureHttpClient, SecureRequestOptions } from 'hsp-service';
 import { GlobalErrorHandler } from '../utils/GlobalErrorHandler';
 
 const TAG = 'RemoteErrorReporter';

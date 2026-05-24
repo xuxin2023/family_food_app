@@ -1,8 +1,10 @@
+import { MealScenario } from './MealBalance';
+
 export class DietRecord {
   id: number = 0;
   memberId: string = '';
   date: string = '';
-  scenario: string = '';
+  scenario: MealScenario | string = MealScenario.NORMAL;
   mealType: string = 'breakfast';
   foodId: string = '';
   amountG: number = 0;

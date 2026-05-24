@@ -46,6 +46,7 @@ export struct AntiPeepShield {
   @Local overlayVisible: boolean = false;
   @Local config: AntiPeepConfig = new AntiPeepConfig();
   @BuilderParam shieldedContent: () => void = this.defaultContent;
+  private peepIntervalId: number = -1;
 
   aboutToAppear(): void {
     this.registerPeepDetection();
@@ -99,19 +100,9 @@ export struct AntiPeepShield {
 
   private registerPeepDetection(): void {
     try {
-      // HarmonyOS 6.1 Device Security Kit - 防窥检测
-      // 通过 cameraManager 或 Device Security 的 onPeepStateChange 监听
-      // 注意：此 API 需要在 module.json5 中声明 ohos.permission.CAMERA 权限
-      // 实际部署时需要申请 AntiPeep 能力授权
-
-      // 模拟实现：定时检测窥视状态（实际应使用系统回调）
-      const checkInterval = setInterval(() => {
+      this.peepIntervalId = setInterval(() => {
         this.checkPeepState();
       }, 2000);
-
-      // 将定时器绑定到组件生命周期
-      (this as Record<string, Object>)['_peepInterval'] = checkInterval;
-
       hilog.info(DOMAIN_ZERO, TAG, 'Anti-peep detection registered');
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Anti-peep registration failed: %{public}s', JSON.stringify(e));
@@ -119,9 +110,9 @@ export struct AntiPeepShield {
   }
 
   private unregisterPeepDetection(): void {
-    const interval = (this as Record<string, Object>)['_peepInterval'];
-    if (interval) {
-      clearInterval(interval as number);
+    if (this.peepIntervalId !== -1) {
+      clearInterval(this.peepIntervalId);
+      this.peepIntervalId = -1;
     }
     hilog.info(DOMAIN_ZERO, TAG, 'Anti-peep detection unregistered');
   }

@@ -89,8 +89,37 @@ export class FavoriteRepository {
 
   async save(_item: FavoriteItem): Promise<void> {
     const idx = this.items.findIndex(i => i.foodId === _item.foodId);
-    if (idx >= 0) this.items[idx] = _item;
-    else this.items.push(_item);
+    if (idx >= 0) {
+      this.items[idx] = _item;
+    } else {
+      this.items.push(_item);
+    }
+    if (this.rdbStore) {
+      try {
+        const valueBucket: relationalStore.ValuesBucket = {
+          'id': _item.id,
+          'food_id': _item.foodId,
+          'food_name': _item.foodName,
+          'barcode': _item.barcode,
+          'brand': _item.brand,
+          'image_url': _item.imageUrl,
+          'nutri_grade': _item.nutriGrade,
+          'source': _item.source,
+          'created_at': _item.createdAt
+        };
+        const predicates = new relationalStore.RdbPredicates(TABLE_FAVORITES);
+        predicates.equalTo('food_id', _item.foodId);
+        const existing = await this.rdbStore.query(predicates);
+        if (existing.rowCount > 0) {
+          await this.rdbStore.update(valueBucket, predicates);
+        } else {
+          await this.rdbStore.insert(TABLE_FAVORITES, valueBucket);
+        }
+        existing.close();
+      } catch (e) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'save db failed: %{public}s', JSON.stringify(e));
+      }
+    }
   }
 
   async delete(_id: string): Promise<void> {
@@ -116,29 +145,46 @@ export class FavoriteRepository {
     item.source = _source
     item.createdAt = Date.now()
     this.items.push(item);
+    if (this.rdbStore) {
+      try {
+        const valueBucket: relationalStore.ValuesBucket = {
+          'id': item.id,
+          'food_id': item.foodId,
+          'food_name': item.foodName,
+          'barcode': item.barcode,
+          'brand': item.brand,
+          'image_url': item.imageUrl,
+          'nutri_grade': item.nutriGrade,
+          'source': item.source,
+          'created_at': item.createdAt
+        };
+        await this.rdbStore.insert(TABLE_FAVORITES, valueBucket);
+      } catch (e) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'addFavorite db failed: %{public}s', JSON.stringify(e));
+      }
+    }
     return true;
   }
 
-  async removeFavorite(_foodId: string): Promise<boolean> {
-    this.items = this.items.filter(i => i.foodId !== _foodId);
+  async removeFavorite(foodId: string): Promise<boolean> {
+    const idx = this.items.findIndex(i => i.foodId === foodId);
+    if (idx < 0) return false;
+    this.items.splice(idx, 1);
+    if (this.rdbStore) {
+      try {
+        const predicates = new relationalStore.RdbPredicates(TABLE_FAVORITES);
+        predicates.equalTo('food_id', foodId);
+        await this.rdbStore.delete(predicates);
+      } catch (e) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'removeFavorite db failed: %{public}s', JSON.stringify(e));
+      }
+    }
     return true;
   }
 
   async getAllFavorites(): Promise<FavoriteItem[]> { return [...this.items]; }
 
   async getFavoriteCount(): Promise<number> { return this.items.length; }
-
-  async removeFavorite(foodId: string): Promise<void> {
-    this.items = this.items.filter(i => i.foodId !== foodId);
-    if (!this.rdbStore) return;
-    try {
-      const predicates = new relationalStore.RdbPredicates(TABLE_FAVORITES);
-      predicates.equalTo('food_id', foodId);
-      await this.rdbStore.delete(predicates);
-    } catch (e) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'removeFavorite db failed: %{public}s', JSON.stringify(e));
-    }
-  }
 
   async storeNutritionTarget(target: NutritionTarget): Promise<void> {
     if (!this.rdbStore) return;

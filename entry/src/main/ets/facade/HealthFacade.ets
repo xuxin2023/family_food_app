@@ -105,29 +105,23 @@ export class HealthFacade {
     return this.engines.generateWeeklyReport(memberId, this.historyRepo, membersCache, getDailyBudgetSync);
   }
 
-  async calculateExerciseNutrition(_memberId: string): Promise<ExerciseNutritionRecommendation> {
-    return new ExerciseNutritionRecommendation();
+  async calculateExerciseNutrition(memberId: string): Promise<ExerciseNutritionRecommendation> {
+    return this.engines.calculateExerciseNutrition(memberId);
   }
 
   async parseCheckupReport(content: string, memberId: string): Promise<CheckupReport> {
-    const r = new CheckupReport();
-    r.memberId = memberId;
-    return r;
+    return this.engines.parseCheckupReport(content, memberId);
   }
 
-  async generateHealthArchiveUpdate(memberId: string, _report: CheckupReport): Promise<HealthArchiveUpdate> {
-    const u = new HealthArchiveUpdate();
-    u.memberId = memberId;
-    return u;
+  async generateHealthArchiveUpdate(memberId: string, report: CheckupReport): Promise<HealthArchiveUpdate> {
+    return this.engines.generateHealthArchiveUpdate(memberId, report);
   }
 
-  async assessChildHealth(memberId: string, _foodLabel: FoodLabel): Promise<ChildHealthAssessment> {
-    const a = new ChildHealthAssessment();
-    a.memberId = memberId;
-    return a;
+  async assessChildHealth(memberId: string, foodLabel: FoodLabel): Promise<ChildHealthAssessment> {
+    return this.engines.assessChildHealth(memberId, foodLabel);
   }
 
-  async getPersonalizedRecommendation(_memberId: string): Promise<PersonalizedRecommendation> {
-    return new PersonalizedRecommendation();
+  async getPersonalizedRecommendation(memberId: string): Promise<PersonalizedRecommendation> {
+    return this.engines.getPersonalizedRecommendation(memberId);
   }
 }

@@ -4,7 +4,7 @@ import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN, API_TIMEOUT_CONFIG } from 'hsp_core';
 import { AssetKeyManager } from './AssetKeyManager';
-import { SecureHttpClient, SecureRequestOptions } from './SecureHttpClient';
+import { SecureHttpClient, SecureRequestOptions } from 'hsp-service';
 import { asset } from '@kit.AssetStoreKit';
 import { util } from '@kit.ArkTS';
 import { BusinessError } from '@kit.BasicServicesKit';

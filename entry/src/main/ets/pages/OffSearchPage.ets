@@ -4,7 +4,7 @@
 import {
   FoodLabel, safeBack, safePushUrl, ROUTE_REPORT_PAGE, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, HILOG_DOMAIN, Debouncer, ImageCache, FoodSearchDataSource
 } from 'hsp_core';
-import { OpenFoodFactsService, OnlineLookupResult } from '../service/OpenFoodFactsService';
+import { OpenFoodFactsService, OnlineLookupResult } from 'hsp-service';
 import { AppState } from '../AppState';
 import { BackButton } from '../components/BackButton';
 import { FoodTagFilter, FilterTag, createAllFilterTags } from '../components/FoodTagFilter';

@@ -1,7 +1,6 @@
 import { FoodLabel, FoodSource, NutritionPer100g, API_TIMEOUT_CONFIG, API_CONFIG, HILOG_DOMAIN } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { AuthService } from './AuthService';
-import { SecureHttpHelper } from './SecureHttpHelper';
+import { AuthService, SecureHttpHelper } from 'hsp-service';
 
 const TAG = 'CommunityFoodService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -54,7 +53,7 @@ class RecordIdResponse {
 }
 
 export class CommunityFoodService {
-  private authService: AuthService = new AuthService();
+  private authService: AuthService | null = null;
   private localCache: Map<string, CommunityFoodRecord> = new Map();
 
   async init(authService: AuthService): Promise<void> {

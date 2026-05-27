@@ -21,7 +21,7 @@ export struct CommentList {
     }
     .width('100%')
     .divider({ strokeWidth: 0.5, color: COLORS.DIVIDER })
-    .accessibilityRole('list')
+    .accessibilityRole(AccessibilityRoleType.LIST)
     .accessibilityText(`${this.comments.length}条评论`)
     .accessibilityLevel('yes')
   }
@@ -57,7 +57,7 @@ export struct CommentList {
         if (comment.isEdited) {
           Text('已编辑')
             .fontSize(10)
-            .fontColor(COLORS.TEXT_HINT)
+            .fontColor(COLORS.TEXT_WHITE)
         }
       }
       .width('100%')

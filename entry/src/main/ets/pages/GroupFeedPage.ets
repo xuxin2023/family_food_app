@@ -204,7 +204,7 @@ struct GroupFeedPage {
   private showGroupInfo() {
     AlertDialog.show({
       title: $r('app.string.group_feed_info_title'),
-      message: $r('app.string.group_feed_group_label') + `${this.groupName}\n` + $r('app.string.group_feed_group_id_label') + `${this.groupId}`,
+      message: `群组: ${this.groupName}\n群组ID: ${this.groupId}`,
       primaryButton: {
         value: $r('app.string.group_feed_copy_group_id'),
         action: () => {
@@ -224,12 +224,12 @@ struct GroupFeedPage {
     })
   }
 
-  private formatTime(timestamp: number): string {
+  private formatTime(timestamp: number): ResourceStr {
     const now = Date.now()
     const diff = now - timestamp
-    if (diff < 60000) return $r('app.string.group_feed_just_now') as string
-    if (diff < 3600000) return `${Math.floor(diff / 60000)}` + $r('app.string.group_feed_minutes_ago') as string
-    if (diff < 86400000) return `${Math.floor(diff / 3600000)}` + $r('app.string.group_feed_hours_ago') as string
+    if (diff < 60000) return $r('app.string.group_feed_just_now') as ResourceStr
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}` + ($r('app.string.group_feed_minutes_ago') as ResourceStr)
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}` + ($r('app.string.group_feed_hours_ago') as ResourceStr)
     const d = new Date(timestamp)
     return `${d.getMonth() + 1}/${d.getDate()}`
   }

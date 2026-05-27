@@ -8,101 +8,51 @@ import { MemberTier, ProductInfo, TIER_DAILY_SCAN_LIMIT, TIER_MEMBER_LIMIT, TIER
 
 // ==================== 会员套餐配置 ====================
 
-export interface ProductPlan {
-  tier: MemberTier;
-  productId: string;
-  title: string;
-  price: string;
-  priceValue: number;
-  isYearly: boolean;
-  features: string[];
-  limitations: string[];
-  badge: string;
+export class ProductPlan {
+  tier: MemberTier = MemberTier.FREE;
+  productId: string = '';
+  title: string = '';
+  price: string = '';
+  priceValue: number = 0;
+  isYearly: boolean = false;
+  features: string[] = [];
+  limitations: string[] = [];
+  badge: string = '';
+}
+
+function createProductPlan(
+  tier: MemberTier, productId: string, title: string, price: string,
+  priceValue: number, isYearly: boolean, features: string[], limitations: string[], badge: string
+): ProductPlan {
+  const plan = new ProductPlan();
+  plan.tier = tier;
+  plan.productId = productId;
+  plan.title = title;
+  plan.price = price;
+  plan.priceValue = priceValue;
+  plan.isYearly = isYearly;
+  plan.features = features;
+  plan.limitations = limitations;
+  plan.badge = badge;
+  return plan;
 }
 
 /**
  * 产品方案列表（供订阅页展示）
  */
 export const PRODUCT_PLANS: ProductPlan[] = [
-  {
-    tier: MemberTier.FREE,
-    productId: 'free_tier',
-    title: '免费版',
-    price: '0元',
-    priceValue: 0,
-    isYearly: false,
-    features: [
-      '每天3次扫描',
-      '1个家庭成员',
-      '基础食品适配',
-      '基础美食平衡',
-      '分享卡'
-    ],
-    limitations: [
-      '扫描次数限制',
-      '仅1位家庭成员',
-      '无健康数据联动',
-      '无周报'
-    ],
-    badge: ''
-  },
-  {
-    tier: MemberTier.PERSONAL,
-    productId: 'family_food_personal_yearly',
-    title: '个人版',
-    price: '29-49元/年',
-    priceValue: 39,
-    isYearly: true,
-    features: [
-      '无限扫码',
-      '个人历史记录',
-      '今日预算',
-      '饮食平衡建议',
-      '购物清单'
-    ],
-    limitations: [
-      '仅本人档案',
-      '无家庭对比',
-      '无健康数据联动'
-    ],
-    badge: '推荐'
-  },
-  {
-    tier: MemberTier.FAMILY,
-    productId: 'family_food_family_yearly',
-    title: '家庭版',
-    price: '89-129元/年',
-    priceValue: 109,
-    isYearly: true,
-    features: [
-      '最多4位家庭成员',
-      '家庭购物清单',
-      '家庭饮食周报',
-      '儿童正餐保护',
-      '美食平衡建议'
-    ],
-    limitations: [
-      '无深度可信度报告'
-    ],
-    badge: '最惠'
-  },
-  {
-    tier: MemberTier.PREMIUM,
-    productId: 'family_food_premium_yearly',
-    title: '高级版',
-    price: '129-199元/年',
-    priceValue: 169,
-    isYearly: true,
-    features: [
-      '无限家庭成员',
-      '动态健康数据联动',
-      '深度可信度报告',
-      '个性化周报',
-      '外卖透明度'
-    ],
-    limitations: [],
-    badge: '尊享'
-  }
+  createProductPlan(MemberTier.FREE, 'free_tier', '免费版', '0元', 0, false,
+    ['每天3次扫描', '1个家庭成员', '基础食品适配', '基础美食平衡', '分享卡'],
+    ['扫描次数限制', '仅1位家庭成员', '无健康数据联动', '无周报'], ''),
+  createProductPlan(MemberTier.PERSONAL, 'family_food_personal_yearly', '个人版', '29-49元/年', 39, true,
+    ['无限扫码', '个人历史记录', '今日预算', '饮食平衡建议', '购物清单'],
+    ['仅本人档案', '无家庭对比', '无健康数据联动'], '推荐'),
+  createProductPlan(MemberTier.FAMILY, 'family_food_family_yearly', '家庭版', '89-129元/年', 109, true,
+    ['最多4位家庭成员', '家庭购物清单', '家庭饮食周报', '儿童正餐保护', '美食平衡建议'],
+    ['无深度可信度报告'], '最惠'),
+  createProductPlan(MemberTier.PREMIUM, 'family_food_premium_yearly', '高级版', '129-199元/年', 169, true,
+    ['无限家庭成员', '动态健康数据联动', '深度可信度报告', '个性化周报', '外卖透明度'],
+    [], '尊享')
 ];
 
 /**
@@ -117,12 +67,12 @@ export function getProductPlanForTier(tier: MemberTier): ProductPlan | null {
  */
 export function getProductInfoForTier(tier: MemberTier, price: string): ProductInfo {
   const plan = getProductPlanForTier(tier);
-  return {
-    productId: plan?.productId || `product_${tier}`,
-    tier,
-    price: price || plan?.price || '0元',
-    originalPrice: price || plan?.price || '0元',
-    title: plan?.title || tier,
-    description: plan?.features.join('、') || ''
-  };
+  const info = new ProductInfo();
+  info.productId = plan?.productId || `product_${tier}`;
+  info.tier = tier;
+  info.price = price || plan?.price || '0元';
+  info.originalPrice = price || plan?.price || '0元';
+  info.title = plan?.title || tier;
+  info.description = plan?.features.join('、') || '';
+  return info;
 }

@@ -1,4 +1,5 @@
-import { COLORS, safeBack, FamilyProfile, HealthSignal, NutritionTarget, createDefaultNutritionTarget, ExerciseNutritionRecommendation, HILOG_DOMAIN } from 'hsp_core';
+import { COLORS, safeBack, FamilyProfile, HealthSignal, NutritionTarget, createDefaultNutritionTarget, HILOG_DOMAIN } from 'hsp_core';
+import { ExerciseNutritionRecommendation } from 'feature_report';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { NutrientSupplement } from '../engine/ExerciseNutritionEngine';
@@ -146,25 +147,25 @@ struct ExerciseNutritionPage {
                   .fontWeight(FontWeight.Bold)
                   .margin({ bottom: 12 })
 
-                Text($r('app.string.exercise_nutrition_recovery_phase') + `${(this.result as ExerciseNutritionRecommendation).recoveryPhase}`)
+                Text() { Span($r('app.string.exercise_nutrition_recovery_phase')); Span(`${(this.result as ExerciseNutritionRecommendation).recoveryPhase}`) }
                   .fontSize(14)
                   .margin({ bottom: 6 })
-                Text($r('app.string.exercise_nutrition_recommended_cal') + `${(this.result as ExerciseNutritionRecommendation).totalRecommendedCalories}kcal`)
+                Text() { Span($r('app.string.exercise_nutrition_recommended_cal')); Span(`${(this.result as ExerciseNutritionRecommendation).totalRecommendedCalories}kcal`) }
                   .fontSize(14)
                   .margin({ bottom: 6 })
-                Text($r('app.string.exercise_nutrition_hydration') + `${(this.result as ExerciseNutritionRecommendation).hydrationMl}ml`)
+                Text() { Span($r('app.string.exercise_nutrition_hydration')); Span(`${(this.result as ExerciseNutritionRecommendation).hydrationMl}ml`) }
                   .fontSize(14)
                   .margin({ bottom: 6 })
 
                 if ((this.result as ExerciseNutritionRecommendation).timingAdvice.length > 0) {
-                  Text($r('app.string.exercise_nutrition_timing') + `${(this.result as ExerciseNutritionRecommendation).timingAdvice}`)
+                  Text() { Span($r('app.string.exercise_nutrition_timing')); Span(`${(this.result as ExerciseNutritionRecommendation).timingAdvice}`) }
                     .fontSize(14)
                     .fontColor(COLORS.TEXT_GRAY_7575)
                     .margin({ bottom: 6 })
                 }
 
                 if ((this.result as ExerciseNutritionRecommendation).memberSpecificNote.length > 0) {
-                  Text($r('app.string.exercise_nutrition_personal_note') + `${(this.result as ExerciseNutritionRecommendation).memberSpecificNote}`)
+                  Text() { Span($r('app.string.exercise_nutrition_personal_note')); Span(`${(this.result as ExerciseNutritionRecommendation).memberSpecificNote}`) }
                     .fontSize(13)
                     .fontColor(COLORS.TEXT_GRAY_7575)
                     .margin({ bottom: 6 })
@@ -184,7 +185,7 @@ struct ExerciseNutritionPage {
                 }
 
                 if ((this.result as ExerciseNutritionRecommendation).avoidItems.length > 0) {
-                  Text($r('app.string.exercise_nutrition_avoid') + `${(this.result as ExerciseNutritionRecommendation).avoidItems.join('、')}`)
+                  Text() { Span($r('app.string.exercise_nutrition_avoid')); Span(`${(this.result as ExerciseNutritionRecommendation).avoidItems.join('、')}`) }
                     .fontSize(13)
                     .fontColor('#E53935')
                     .margin({ top: 8 })
@@ -211,9 +212,9 @@ struct ExerciseNutritionPage {
 
   private async calculateRecommendation(): Promise<void> {
     const minutes: number = parseInt(this.durationMinutes) || 30;
-    this.result = await this.appState.calculateExerciseNutrition(
+    this.result = (await this.appState.calculateExerciseNutrition(
       this.currentProfile.memberId, this.exerciseType, minutes, 'medium'
-    );
+    )) as Object as ExerciseNutritionRecommendation;
   }
 
   pageTransition() {

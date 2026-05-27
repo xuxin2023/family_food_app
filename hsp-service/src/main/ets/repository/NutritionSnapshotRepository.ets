@@ -41,16 +41,16 @@ export class NutritionSnapshotRepository {
       this.snapshots = [];
       while (resultSet.goToNextRow()) {
         const s = new NutritionSnapshot();
-        s.snapshotId = resultSet.getString(0);
+        s.id = resultSet.getString(0);
         s.memberId = resultSet.getString(1);
         s.date = resultSet.getString(2);
         s.sodium = resultSet.getDouble(3);
         s.sugar = resultSet.getDouble(4);
         s.calories = resultSet.getDouble(5);
         s.fat = resultSet.getDouble(6);
-        s.protein = resultSet.getDouble(7);
-        s.carbohydrate = resultSet.getDouble(8);
-        s.fiber = resultSet.getDouble(9);
+        s.nutrition.protein = resultSet.getDouble(7);
+        s.nutrition.carbohydrate = resultSet.getDouble(8);
+        s.nutrition.fiber = resultSet.getDouble(9);
         this.snapshots.push(s);
       }
       resultSet.close();
@@ -64,16 +64,16 @@ export class NutritionSnapshotRepository {
     if (this.rdbStore) {
       try {
         const valueBucket: relationalStore.ValuesBucket = {
-          'snapshot_id': snapshot.snapshotId,
+          'snapshot_id': snapshot.id,
           'member_id': snapshot.memberId,
           'date': snapshot.date,
           'sodium': snapshot.sodium,
           'sugar': snapshot.sugar,
           'calories': snapshot.calories,
           'fat': snapshot.fat,
-          'protein': snapshot.protein,
-          'carbohydrate': snapshot.carbohydrate,
-          'fiber': snapshot.fiber,
+          'protein': snapshot.nutrition.protein,
+          'carbohydrate': snapshot.nutrition.carbohydrate,
+          'fiber': snapshot.nutrition.fiber,
           'created_at': Date.now()
         };
         await this.rdbStore.insert(TABLE_NAME, valueBucket);
@@ -85,8 +85,8 @@ export class NutritionSnapshotRepository {
 
   async getRecentByMemberId(memberId: string, limit: number): Promise<NutritionSnapshot[]> {
     return this.snapshots
-      .filter(s => s.memberId === memberId)
-      .sort((a, b) => b.date.localeCompare(a.date))
+      .filter((s: NutritionSnapshot) => s.memberId === memberId)
+      .sort((a: NutritionSnapshot, b: NutritionSnapshot) => b.date.localeCompare(a.date))
       .slice(0, limit);
   }
 

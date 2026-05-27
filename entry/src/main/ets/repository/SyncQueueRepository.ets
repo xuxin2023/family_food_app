@@ -1,6 +1,2 @@
-// repository/SyncQueueRepository.ets
-import { relationalStore } from '@kit.ArkData';
-
-export class SyncQueueRepository {
-  async init(_rdbStore: relationalStore.RdbStore): Promise<void> {}
-}
+// 同步队列表数据仓库 — 从 hsp_service 重导出
+export { SyncQueueRepository } from 'hsp_service';

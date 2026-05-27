@@ -540,7 +540,7 @@ ${includeMealPlan ? '请包含明日饮食计划建议（3餐+加餐）' : ''}
         return null;
       }
 
-      const rawParsed = JSON.parse(jsonMatch[0]) as Record<string, Object>;
+      const rawParsed: Record<string, Object> = JSON.parse(jsonMatch[0]) as Record<string, Object>;
       const parsed = JsonHelper.recordToMap(rawParsed);
 
       const aiMealAnalyses = (parsed.get('mealAnalyses') as Map<string, Object>[]) || [];

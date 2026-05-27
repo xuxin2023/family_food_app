@@ -7,7 +7,7 @@ import { AlternativeRecommender, AlternativeCandidate } from '../engine/Alternat
 import { alternativeFoodRecommender } from '../engine/AlternativeFoodRecommender';
 import { OfflineFoodProvider } from 'hsp_core';
 import { EmptyState } from '../components/EmptyState';
-import { OnlineAlternativeSearchService } from 'hsp-service';
+import { OnlineAlternativeSearchService } from 'hsp_service';
 
 @Entry
 @ComponentV2
@@ -22,6 +22,7 @@ struct AlternativeFoodPage {
   @Local currentBreakpoint: string = 'md'
 
   private appState: AppState = AppState.getInstance()
+  private componentActive: boolean = true
 
   aboutToAppear(): void {
     const cachedFoodLabel = this.appState.reportCache.consumeFoodLabel()
@@ -37,12 +38,18 @@ struct AlternativeFoodPage {
     this.recommendReady = false
     const recommender = new AlternativeRecommender(new OfflineFoodProvider())
     this.candidates = recommender.recommend(this.foodLabel)
-    this.legacyAlternatives = alternativeFoodRecommender.recommendAlternatives(
+    alternativeFoodRecommender.recommendAlternatives(
       this.foodLabel, this.familyMembers, 5
-    )
-    this.isLoading = false
-    this.recommendReady = true
-    this.loadOnlineAlternatives()
+    ).then((alts: AlternativeFood[]) => {
+      this.legacyAlternatives = alts
+      this.isLoading = false
+      this.recommendReady = true
+      this.loadOnlineAlternatives()
+    }).catch(() => {
+      this.isLoading = false
+      this.recommendReady = true
+      this.loadOnlineAlternatives()
+    })
   }
 
   private async loadOnlineAlternatives(): Promise<void> {
@@ -73,7 +80,7 @@ struct AlternativeFoodPage {
 
         GridRow({
           columns: { sm: 4, md: 8, lg: 12 },
-          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
+          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] } as BreakPoints
         }) {
           GridCol({ span: { sm: 4, md: 8, lg: 10 }, offset: { sm: 0, md: 0, lg: 1 } }) {
             Column() {
@@ -358,7 +365,7 @@ struct AlternativeFoodPage {
             .layoutWeight(1)
 
             Column() {
-              Text(alt.healthScore + $r('app.string.alt_food_score_unit'))
+              Text(`${alt.healthScore}分`)
                 .fontSize(14)
                 .fontWeight(FontWeight.Bold)
                 .fontColor(COLORS.SUCCESS)
@@ -382,7 +389,7 @@ struct AlternativeFoodPage {
     if (item.barcode && item.barcode.length > 0) {
       safePushUrl(`pages/ReportPage?barcode=${item.barcode}`)
     } else {
-      ToastHelper.show(this.getUIContext(), $r('app.string.alt_food_selected') + item.foodName)
+      ToastHelper.show(this.getUIContext(), `已选择: ${item.foodName}`)
     }
   }
 
@@ -407,5 +414,9 @@ struct AlternativeFoodPage {
       .slide(SlideEffect.Right)
     PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
       .slide(SlideEffect.Left)
+  }
+
+  aboutToDisappear(): void {
+    this.componentActive = false;
   }
 }

@@ -19,6 +19,8 @@ export class ApiConfig {
   readonly SYNC_API_VERSION: string = '/v1';
   /** 请求超时时间（毫秒） */
   readonly SYNC_TIMEOUT_MS: number = 30000;
+  /** 错误上报 API Key（默认为空，部署时配置） */
+  readonly ERROR_REPORT_API_KEY: string = '';
 }
 
 export const API_CONFIG = new ApiConfig();
@@ -203,11 +205,10 @@ export const GROUP_CONFIG = new GroupConfig();
  * 通用 hilog 日志 domain 值（避免各文件重复定义 DOMAIN_ZERO）
  */
 export class HilogDomain {
-  /** 默认 domain */
   readonly DEFAULT: number = 0;
 }
 
-export const HILOG_DOMAIN = new HilogDomain();
+export const HILOG_DOMAIN: HilogDomain = new HilogDomain();
 
 /** 数据库 schema 版本号 —— 每次表结构变更时 +1，触发迁移脚本执行 */
 export const DB_SCHEMA_VERSION: number = 5;

@@ -92,14 +92,14 @@ export class OcrService {
 
   private static getConfig(): textRecognition.TextRecognitionConfiguration {
     if (!OcrService.cachedConfig) {
-      OcrService.cachedConfig = { isDirectionDetectionSupported: false };
+      OcrService.cachedConfig = { isDirectionDetectionSupported: false } as textRecognition.TextRecognitionConfiguration;
     }
     return OcrService.cachedConfig;
   }
 
   async recognizeFromPixelMap(pixelMap: image.PixelMap): Promise<OcrResult> {
     try {
-      const visionInfo: textRecognition.VisionInfo = { pixelMap: pixelMap };
+      const visionInfo: textRecognition.VisionInfo = { pixelMap: pixelMap } as textRecognition.VisionInfo;
       const textResult = await textRecognition.recognizeText(visionInfo, OcrService.getConfig());
       return this.parseOcrResult(textResult);
     } catch (error) {

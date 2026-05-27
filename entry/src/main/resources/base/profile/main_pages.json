@@ -42,6 +42,7 @@
     "pages/ChildHealthPage",
     "pages/PersonalizedRecommendPage",
     "pages/TeenModePage",
-    "pages/AllergenConfigPage"
+    "pages/AllergenConfigPage",
+    "pages/AllergenSetupWizard"
   ]
 }

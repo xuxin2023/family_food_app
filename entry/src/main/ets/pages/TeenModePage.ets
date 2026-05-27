@@ -1,5 +1,5 @@
 import { safeBack, COLORS, BUTTON, SPACING, FONT_SIZE } from 'hsp_core';
-import { TeenModeManager } from 'hsp-service';
+import { TeenModeManager } from 'hsp_service';
 import { promptAction } from '@kit.ArkUI';
 
 @Entry
@@ -37,7 +37,7 @@ struct TeenModePage {
               .margin({ bottom: 12 })
 
             Text($r('app.string.teen_mode_restrict_desc'))
-              .fontSize(FONT_SIZE.MD)
+              .fontSize(FONT_SIZE.SM)
               .fontColor(COLORS.TEXT_GRAY_7575)
               .margin({ bottom: 16 })
 
@@ -53,7 +53,7 @@ struct TeenModePage {
 
             Row() {
               Text($r('app.string.teen_mode_enable_label'))
-                .fontSize(FONT_SIZE.MD)
+                .fontSize(FONT_SIZE.SM)
                 .fontColor(COLORS.TEXT_GRAY_2121)
                 .layoutWeight(1)
               Toggle({ type: ToggleType.Switch, isOn: this.isTeenModeEnabled })

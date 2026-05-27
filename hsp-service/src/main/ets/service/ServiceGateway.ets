@@ -32,7 +32,7 @@ export class ServiceGateway {
     try {
       const result = await primary();
       if (cacheKey) {
-        await gateway.saveCache(cacheKey, result);
+        await gateway.saveCache(cacheKey, result as Object);
       }
       return result;
     } catch (error) {

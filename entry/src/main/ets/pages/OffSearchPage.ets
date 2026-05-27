@@ -4,7 +4,7 @@
 import {
   FoodLabel, safeBack, safePushUrl, ROUTE_REPORT_PAGE, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, HILOG_DOMAIN, Debouncer, ImageCache, FoodSearchDataSource
 } from 'hsp_core';
-import { OpenFoodFactsService, OnlineLookupResult } from 'hsp-service';
+import { OpenFoodFactsService, OnlineLookupResult } from 'hsp_service';
 import { AppState } from '../AppState';
 import { BackButton } from '../components/BackButton';
 import { FoodTagFilter, FilterTag, createAllFilterTags } from '../components/FoodTagFilter';
@@ -34,7 +34,7 @@ struct OffSearchPage {
   @Local filterTags: FilterTag[] = createAllFilterTags();
   @Local selectedFilterKeys: string[] = [];
   @Local validationHint: string = '';
-  @Local loadMoreError: boolean = false
+  @Local loadMoreError: boolean = false;
   @Local isOffline: boolean = false;
 
   private offService: OpenFoodFactsService = OpenFoodFactsService.getInstance();
@@ -66,7 +66,7 @@ struct OffSearchPage {
       return;
     }
     if (trimmed.length < SEARCH_MIN_LENGTH) {
-      this.validationHint = $r('app.string.off_search_min_length_hint')
+      this.validationHint = '请输入至少2个字符';
       return;
     }
     this.validationHint = '';
@@ -80,7 +80,7 @@ struct OffSearchPage {
       timedOut = true;
       this.isSearching = false;
       this.hasSearched = true;
-      this.errorMessage = $r('app.string.off_search_timeout_error')
+      this.errorMessage = '搜索超时，请重试';
       hilog.warn(DOMAIN_ZERO, TAG, 'Search timeout for: %{public}s', trimmed);
     }, SEARCH_TIMEOUT_MS);
     this.searchTimeoutIds.push(timeoutId);
@@ -89,7 +89,7 @@ struct OffSearchPage {
       if (timedOut || !this.componentActive) return;
       clearTimeout(timeoutId);
       const idx = this.searchTimeoutIds.indexOf(timeoutId);
-      if (idx >= 0) this.searchTimeoutIds.splice(idx, 1);
+      if (idx >= 0) { this.searchTimeoutIds.splice(idx, 1); this.searchTimeoutIds = [...this.searchTimeoutIds]; }
       const labels: FoodLabel[] = results
         .filter((r: OnlineLookupResult) => r.foodLabel !== null)
         .map((r: OnlineLookupResult) => r.foodLabel as FoodLabel);
@@ -102,11 +102,11 @@ struct OffSearchPage {
       if (timedOut || !this.componentActive) return;
       clearTimeout(timeoutId);
       const idx = this.searchTimeoutIds.indexOf(timeoutId);
-      if (idx >= 0) this.searchTimeoutIds.splice(idx, 1);
+      if (idx >= 0) { this.searchTimeoutIds.splice(idx, 1); this.searchTimeoutIds = [...this.searchTimeoutIds]; }
       this.isSearching = false;
       this.hasSearched = true;
-      const httpCode = (err as Record<string, Object>)?.code as number ?? 0;
-      this.errorMessage = $r('app.string.off_search_failed_prefix') + ` (${httpCode})`;
+      const httpCode = (err as Record<string, Object>)?.['code'] as number ?? 0;
+      this.errorMessage = '搜索失败' + ` (${httpCode})`;
       hilog.error(DOMAIN_ZERO, TAG, 'Search failed: code=%{public}d', httpCode);
     });
   }
@@ -176,7 +176,7 @@ struct OffSearchPage {
   private onSearchInput(value: string): void {
     this.searchQuery = value;
     if (value.trim().length > 0 && value.trim().length < SEARCH_MIN_LENGTH) {
-      this.validationHint = $r('app.string.off_search_min_length_hint');
+      this.validationHint = '请输入至少2个字符';
       this.searchDebouncer.cancel();
       return;
     }
@@ -321,6 +321,11 @@ struct OffSearchPage {
             .onClick(() => { this.performSearch() })
             .accessibilityText('重试搜索')
             .accessibilityLevel('yes')
+        }
+        .width('100%')
+        .layoutWeight(1)
+        .justifyContent(FlexAlign.Center)
+      } else if (!this.hasSearched) {
         Column() {
           Text('🌍')
             .fontSize(48)
@@ -430,14 +435,14 @@ struct OffSearchPage {
             .fontSize(10)
             .fontColor(COLORS.TEXT_TERTIARY)
             .margin({ left: 4, right: 4 })
-          Text($r('app.string.off_search_sodium_prefix') + `${Math.round(food.nutrition.sodium)}mg`)
+          Text('钠 ' + `${Math.round(food.nutrition.sodium)}mg`)
             .fontSize(10)
             .fontColor(COLORS.TEXT_SECONDARY)
           Text('·')
             .fontSize(10)
             .fontColor(COLORS.TEXT_TERTIARY)
             .margin({ left: 4, right: 4 })
-          Text($r('app.string.off_search_sugar_prefix') + `${food.nutrition.sugar}g`)
+          Text('糖 ' + `${food.nutrition.sugar}g`)
             .fontSize(10)
             .fontColor(COLORS.TEXT_SECONDARY)
         }

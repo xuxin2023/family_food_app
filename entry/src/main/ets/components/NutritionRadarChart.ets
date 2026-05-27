@@ -1,10 +1,12 @@
 // NutritionRadarChart.ets
 // 六维营养雷达图 — 直观展示食品营养分布
+// V2: @Monitor 缓存 path 计算，避免每次 build 重复运算
 
 import { COLORS } from 'hsp_core';
 
 export class NutrientDimension {
   name: string = '';
+  label: string = '';
   value: number = 0;
   maxValue: number = 100;
   unit: string = '';
@@ -15,9 +17,34 @@ export struct NutritionRadarChart {
   @Param dimensions: NutrientDimension[] = [];
   @Param size: number = 200;
 
+  @Local private cachedHexPaths: string[] = [];
+  @Local private cachedDataPath: string = '';
+  @Local private cachedLabelPositions: Position[] = [];
+  private lastDimsSignature: string = '';
+  private lastSize: number = 0;
+
   private normalize(val: number, max: number): number {
     if (max <= 0) return 0;
     return Math.min(1, Math.max(0, val / max));
+  }
+
+  private computeSignature(): string {
+    const dimSig = this.dimensions.map(d => `${d.value}:${d.maxValue}`).join('|');
+    return `${this.size}:${this.dimensions.length}:${dimSig}`;
+  }
+
+  private recomputePaths(): void {
+    const sig = this.computeSignature();
+    if (sig === this.lastDimsSignature && this.size === this.lastSize) {
+      return;
+    }
+    this.lastDimsSignature = sig;
+    this.lastSize = this.size;
+
+    const levels = [0.2, 0.4, 0.6, 0.8, 1.0];
+    this.cachedHexPaths = levels.map((level: number) => this.hexagonPath(level));
+    this.cachedDataPath = this.dataPath();
+    this.cachedLabelPositions = this.dimensions.map((_: NutrientDimension, idx: number) => this.labelPosition(idx));
   }
 
   build() {
@@ -27,44 +54,48 @@ export struct NutritionRadarChart {
           .fontSize(12)
           .fontColor(COLORS.TEXT_TERTIARY)
       } else {
-        ForEach([0.2, 0.4, 0.6, 0.8, 1.0], (level: number) => {
+        this.recomputePaths()
+
+        ForEach([0, 1, 2, 3, 4], (idx: number) => {
+          Shape() {
+            Path()
+              .commands(this.cachedHexPaths[idx])
+          }
+          .width(this.size)
+          .height(this.size)
+          .stroke(COLORS.BORDER_LIGHT_DD)
+          .strokeWidth(0.5)
+          .fill('none')
+        }, (idx: number) => `${idx}`)
+
         Shape() {
           Path()
-            .commands(this.hexagonPath(level))
+            .commands(this.cachedDataPath)
         }
         .width(this.size)
         .height(this.size)
-        .stroke(COLORS.BORDER_LIGHT_DD)
-        .strokeWidth(0.5)
-        .fill('none')
-      }, (level: number) => `${level}`)
+        .fill(COLORS.PRIMARY + '33')
+        .stroke(COLORS.PRIMARY)
+        .strokeWidth(2)
 
-      Shape() {
-        Path()
-          .commands(this.dataPath())
-      }
-      .width(this.size)
-      .height(this.size)
-      .fill(COLORS.PRIMARY + '33')
-      .stroke(COLORS.PRIMARY)
-      .strokeWidth(2)
-
-      ForEach(this.dimensions, (dim: NutrientDimension, idx: number) => {
-        Column() {
-          Text(dim.name)
-            .fontSize(9)
-            .fontColor(COLORS.TEXT_TERTIARY)
-          Text(`${Math.round(dim.value)}${dim.unit}`)
-            .fontSize(8)
-            .fontColor(COLORS.TEXT_SECONDARY)
-        }
-        .position(this.labelPosition(idx))
-      }, (dim: NutrientDimension, idx: number) => `${idx}`)
+        ForEach(this.dimensions, (dim: NutrientDimension, idx: number) => {
+          Column() {
+            Text(dim.name)
+              .fontSize(9)
+              .fontColor(COLORS.TEXT_TERTIARY)
+            Text(`${Math.round(dim.value)}${dim.unit}`)
+              .fontSize(8)
+              .fontColor(COLORS.TEXT_SECONDARY)
+          }
+          .position(this.cachedLabelPositions[idx])
+        }, (dim: NutrientDimension, idx: number) => `${idx}`)
       }
     }
     .width(this.size)
     .height(this.size)
-    .accessibilityLevel('no')
+    .accessibilityLevel('auto')
+    .accessibilityText(this.dimensions.filter((d: NutrientDimension) => d.value > 0)
+      .map((d: NutrientDimension) => `${d.label || d.name}${Math.round(d.value / d.maxValue * 100)}%`).join('，'))
   }
 
   private hexagonPath(level: number): string {
@@ -107,9 +138,6 @@ export struct NutritionRadarChart {
     const r = this.size / 2 - 2;
     const n = this.dimensions.length;
     const angle = (2 * Math.PI * idx) / n;
-    const pos = new Position();
-    pos.x = cx + r * Math.cos(angle) - 20;
-    pos.y = cy + r * Math.sin(angle) - 10;
-    return pos;
+    return { x: cx + r * Math.cos(angle) - 20, y: cy + r * Math.sin(angle) - 10 } as Position;
   }
 }

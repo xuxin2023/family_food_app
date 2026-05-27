@@ -386,7 +386,7 @@ struct FoodComparePage {
       }
     }
     const d = new NutrientDiff();
-    d.name = name; d.unit = unit; d.value1 = v1; d.value2 = v2; d.diff = diff; d.betterSide = betterSide;
+    d.name = name as string; d.unit = unit; d.value1 = v1; d.value2 = v2; d.diff = diff; d.betterSide = betterSide;
     return d;
   }
 
@@ -394,15 +394,15 @@ struct FoodComparePage {
     const diffs = this.buildNutrientDiffs();
     const better1 = diffs.filter(d => d.betterSide === 1);
     const better2 = diffs.filter(d => d.betterSide === 2);
-    const name1 = this.food1?.foodName ?? $r('app.string.food_compare_food_a_short');
-    const name2 = this.food2?.foodName ?? $r('app.string.food_compare_food_b_short');
+    const name1 = this.food1?.foodName ?? '食品A';
+    const name2 = this.food2?.foodName ?? '食品B';
 
     if (better1.length > better2.length) {
-      return `${$r('app.string.food_compare_conclusion_prefix')}${name1} ${$r('app.string.food_compare_conclusion_in')} ${better1.map(d => d.name).join('、')} ${$r('app.string.food_compare_conclusion_better')}${name2} ${$r('app.string.food_compare_conclusion_in')} ${better2.map(d => d.name).join('、') || $r('app.string.food_compare_conclusion_no_advantage')} ${$r('app.string.food_compare_conclusion_better')}`;
+      return `综合来看，${name1} 在 ${better1.map(d => d.name).join('、')} 方面优于${name2} 在 ${better2.map(d => d.name).join('、') || '无明显优势'} 方面`;
     } else if (better2.length > better1.length) {
-      return `${$r('app.string.food_compare_conclusion_prefix')}${name2} ${$r('app.string.food_compare_conclusion_in')} ${better2.map(d => d.name).join('、')} ${$r('app.string.food_compare_conclusion_better')}${name1} ${$r('app.string.food_compare_conclusion_in')} ${better1.map(d => d.name).join('、') || $r('app.string.food_compare_conclusion_no_advantage')} ${$r('app.string.food_compare_conclusion_better')}`;
+      return `综合来看，${name2} 在 ${better2.map(d => d.name).join('、')} 方面优于${name1} 在 ${better1.map(d => d.name).join('、') || '无明显优势'} 方面`;
     }
-    return $r('app.string.food_compare_conclusion_equal');
+    return '两种食品营养表现相当';
   }
 
   private async searchByBarcode(side: 1 | 2): Promise<void> {

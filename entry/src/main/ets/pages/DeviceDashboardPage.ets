@@ -12,7 +12,7 @@ import { AppState } from '../AppState';
 import { common } from '@kit.AbilityKit';
 
 import { promptAction } from '@kit.ArkUI';
-import { PermissionGuideDialog } from '../components/PermissionGuideDialog';
+import { PermissionGuideDialog } from 'feature_scan';
 
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 const TAG = 'DeviceDashboardPage';
@@ -113,8 +113,8 @@ struct DeviceDashboardPage {
   @Builder
   buildPermissionGuide() {
     PermissionGuideDialog({
-      permissionName: $r('app.string.device_dash_health_data'),
-      reason: $r('app.string.device_dash_permission_reason')
+      permissionName: '健康数据',
+      reason: '需要访问健康数据以提供设备仪表盘功能'
     })
   }
 
@@ -135,7 +135,7 @@ struct DeviceDashboardPage {
           .fontWeight(FontWeight.Bold)
           .fontColor(COLORS.TEXT_PRIMARY)
         if (this.lastSyncTime.length > 0) {
-          Text($r('app.string.device_dash_last_sync') + ': ' + this.lastSyncTime)
+          Text() { Span($r('app.string.device_dash_last_sync')); Span(`: ${this.lastSyncTime}`) }
             .fontSize(10)
             .fontColor(COLORS.TEXT_TERTIARY)
         }
@@ -185,7 +185,7 @@ struct DeviceDashboardPage {
           .padding({ left: 12, right: 12, top: 6, bottom: 6 })
           .backgroundColor('#FFFFFF30')
           .borderRadius(16)
-          .onClick(() => { safePushUrl('pages/PricingPage') })
+          .onClick(() => { safePushUrl('pages/SubscriptionPage') })
       }
       .padding(12)
       .backgroundColor(COLORS.PRIMARY_DARK)
@@ -314,7 +314,7 @@ struct DeviceDashboardPage {
   @Builder
   buildDetailSections() {
     this.buildDetailSection($r('app.string.device_dash_step_detail_title'), [
-      makeDetail($r('app.string.device_dash_today_total_steps'), this.healthSignal.stepCount + ' ' + $r('app.string.device_dash_step_unit')),
+      makeDetail($r('app.string.device_dash_today_total_steps'), `${this.healthSignal.stepCount} 步`),
       makeDetail($r('app.string.device_dash_activity_level'), this.healthSignal.stepLevel),
       makeDetail($r('app.string.device_dash_step_goal'), this.healthSignal.stepCount >= HealthConfig.DAILY_STEP_GOAL ? $r('app.string.device_dash_goal_reached_icon') : $r('app.string.device_dash_goal_not_reached_icon')),
       makeDetail($r('app.string.device_dash_diet_impact'), this.getStepDietImpact())
@@ -335,7 +335,7 @@ struct DeviceDashboardPage {
       makeDetail($r('app.string.device_dash_diet_impact'), this.healthSignal.isPoorSleep() ? $r('app.string.device_dash_poor_sleep_reduce_sugar') : $r('app.string.device_dash_normal'))
     ])
 
-    this.buildDetailSection($r('app.string.device_dash_body_metrics_title')), [
+    this.buildDetailSection($r('app.string.device_dash_body_metrics_title'), [
       makeDetail($r('app.string.device_dash_spo2'), `${this.healthSignal.spo2}%`),
       makeDetail($r('app.string.device_dash_spo2_status'), this.healthSignal.spo2Level),
       makeDetail($r('app.string.device_dash_stress_level'), this.healthSignal.stressLevel),
@@ -414,51 +414,59 @@ struct DeviceDashboardPage {
 
   private getHealthMetricsInner(): MetricCardData[] {
     const signal = this.healthSignal
-    return [
-      {
-        icon: '🚶', label: $r('app.string.device_dash_steps'),
-        value: signal.stepCount > 0 ? `${signal.stepCount}` : '--',
-        unit: $r('app.string.device_dash_step_unit'),
-        status: signal.stepCount >= HealthConfig.DAILY_STEP_GOAL ? 'good' : (signal.stepCount >= HealthConfig.STEP_LOW_THRESHOLD ? 'warning' : 'error'),
-        detail: signal.stepCount >= HealthConfig.DAILY_STEP_GOAL ? $r('app.string.device_dash_goal_reached') : $r('app.string.device_dash_goal_not_reached')
-      },
-      {
-        icon: '❤️', label: $r('app.string.device_dash_heart_rate'),
-        value: signal.heartRate > 0 ? `${signal.heartRate}` : '--',
-        unit: 'bpm',
-        status: signal.heartRate > 120 ? 'warning' : 'good',
-        detail: signal.heartRate > 0 ? signal.getHeartRateZoneText() : ''
-      },
-      {
-        icon: '😴', label: $r('app.string.device_dash_sleep'),
-        value: signal.totalSleepMinutes > 0 ? `${Math.floor(signal.totalSleepMinutes / 60)}h` : '--',
-        unit: signal.totalSleepMinutes > 0 ? `${signal.totalSleepMinutes % 60}m` : '',
-        status: signal.isPoorSleep() ? 'error' : (signal.sleepStatus === SleepStatus.FAIR ? 'warning' : 'good'),
-        detail: signal.sleepStatus
-      },
-      {
-        icon: '🫁', label: $r('app.string.device_dash_spo2_short'),
-        value: signal.spo2 > 0 ? `${signal.spo2}%` : '--',
-        unit: '',
-        status: signal.spo2 >= 95 ? 'good' : (signal.spo2 >= 90 ? 'warning' : 'error'),
-        detail: signal.spo2Level
-      },
-      {
-        icon: '🧘', label: $r('app.string.device_dash_stress'),
-        value: signal.stressLevel,
-        unit: '',
-        status: signal.stressLevel === StressLevel.HIGH ? 'error' :
-          (signal.stressLevel === StressLevel.MEDIUM ? 'warning' : 'good'),
-        detail: ''
-      },
-      {
-        icon: '🌡️', label: $r('app.string.device_dash_body_temp'),
-        value: signal.bodyTemperature > 0 ? `${signal.bodyTemperature.toFixed(1)}°` : '--',
-        unit: '',
-        status: signal.bodyTemperature > 37.3 ? 'warning' : 'good',
-        detail: ''
-      }
-    ]
+    const cards: MetricCardData[] = []
+    let c: MetricCardData
+
+    c = new MetricCardData()
+    c.icon = '🚶'; c.label = $r('app.string.device_dash_steps');
+    c.value = signal.stepCount > 0 ? `${signal.stepCount}` : '--';
+    c.unit = $r('app.string.device_dash_step_unit');
+    c.status = signal.stepCount >= HealthConfig.DAILY_STEP_GOAL ? 'good' : (signal.stepCount >= HealthConfig.STEP_LOW_THRESHOLD ? 'warning' : 'error');
+    c.detail = signal.stepCount >= HealthConfig.DAILY_STEP_GOAL ? '已达标' : '未达标';
+    cards.push(c)
+
+    c = new MetricCardData()
+    c.icon = '❤️'; c.label = $r('app.string.device_dash_heart_rate');
+    c.value = signal.heartRate > 0 ? `${signal.heartRate}` : '--';
+    c.unit = 'bpm';
+    c.status = signal.heartRate > 120 ? 'warning' : 'good';
+    c.detail = signal.heartRate > 0 ? signal.getHeartRateZoneText() : '';
+    cards.push(c)
+
+    c = new MetricCardData()
+    c.icon = '😴'; c.label = $r('app.string.device_dash_sleep');
+    c.value = signal.totalSleepMinutes > 0 ? `${Math.floor(signal.totalSleepMinutes / 60)}h` : '--';
+    c.unit = signal.totalSleepMinutes > 0 ? `${signal.totalSleepMinutes % 60}m` : '';
+    c.status = signal.isPoorSleep() ? 'error' : (signal.sleepStatus === SleepStatus.FAIR ? 'warning' : 'good');
+    c.detail = signal.sleepStatus;
+    cards.push(c)
+
+    c = new MetricCardData()
+    c.icon = '🫁'; c.label = $r('app.string.device_dash_spo2_short');
+    c.value = signal.spo2 > 0 ? `${signal.spo2}%` : '--';
+    c.unit = '';
+    c.status = signal.spo2 >= 95 ? 'good' : (signal.spo2 >= 90 ? 'warning' : 'error');
+    c.detail = signal.spo2Level;
+    cards.push(c)
+
+    c = new MetricCardData()
+    c.icon = '🧘'; c.label = $r('app.string.device_dash_stress');
+    c.value = signal.stressLevel;
+    c.unit = '';
+    c.status = signal.stressLevel === StressLevel.HIGH ? 'error' :
+      (signal.stressLevel === StressLevel.MEDIUM ? 'warning' : 'good');
+    c.detail = '';
+    cards.push(c)
+
+    c = new MetricCardData()
+    c.icon = '🌡️'; c.label = $r('app.string.device_dash_body_temp');
+    c.value = signal.bodyTemperature > 0 ? `${signal.bodyTemperature.toFixed(1)}°` : '--';
+    c.unit = '';
+    c.status = signal.bodyTemperature > 37.3 ? 'warning' : 'good';
+    c.detail = '';
+    cards.push(c)
+
+    return cards
   }
 
   private getStatusColorInner(status: string): string {
@@ -475,7 +483,7 @@ struct DeviceDashboardPage {
     if (minutes <= 0) {
       return '--'
     }
-    return Math.floor(minutes / 60) + $r('app.string.device_dash_hours') + (minutes % 60) + $r('app.string.device_dash_minutes')
+    return Math.floor(minutes / 60) + '时' + (minutes % 60) + '分'
   }
 
   private getStepDietImpact(): ResourceStr {
@@ -548,19 +556,19 @@ struct DeviceDashboardPage {
   private getImpactTexts(): string[] {
     const texts: string[] = []
     if (this.healthSignal.stepCount > 0 && this.healthSignal.stepCount < HealthConfig.STEP_LOW_THRESHOLD) {
-      texts.push($r('app.string.device_dash_impact_step_low').replace('%s', `${this.healthSignal.stepCount}`))
+      texts.push('步数偏低(' + `${this.healthSignal.stepCount}` + ')，建议减少热量摄入')
     }
     if (this.healthSignal.stepCount >= HealthConfig.STEP_HIGH_THRESHOLD) {
-      texts.push($r('app.string.device_dash_impact_step_high').replace('%s', `${this.healthSignal.stepCount}`))
+      texts.push('步数较高(' + `${this.healthSignal.stepCount}` + ')，可适当增加热量')
     }
     if (this.healthSignal.isPoorSleep()) {
-      texts.push($r('app.string.device_dash_impact_poor_sleep'))
+      texts.push('睡眠质量差，建议减少糖分摄入')
     }
     if (this.healthSignal.isStressed()) {
-      texts.push($r('app.string.device_dash_impact_stress'))
+      texts.push('压力较大，建议补充富含镁和B族维生素的食物')
     }
     if (this.healthSignal.heartRate > 120) {
-      texts.push($r('app.string.device_dash_impact_heart_high').replace('%s', `${this.healthSignal.heartRate}`))
+      texts.push('心率偏高(' + `${this.healthSignal.heartRate}` + 'bpm)，建议减少咖啡因摄入')
     }
     return texts
   }

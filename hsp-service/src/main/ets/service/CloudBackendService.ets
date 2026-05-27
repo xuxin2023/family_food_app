@@ -12,7 +12,7 @@
 import { hilog } from '@kit.PerformanceAnalysisKit'
 import { http } from '@kit.NetworkKit'
 import { HILOG_DOMAIN, API_CONFIG } from 'hsp_core'
-import { ServiceGateway } from 'hsp-service'
+import { ServiceGateway } from './ServiceGateway'
 
 const TAG = 'CloudBackendService'
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT
@@ -20,10 +20,10 @@ const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT
 const REQUEST_TIMEOUT_MS = 10000
 
 /** 云端商品查询响应 */
-export interface CloudProductResponse {
-  found: boolean
-  product?: CloudProductRecord
-  similarProducts?: CloudProductRecord[]
+export class CloudProductResponse {
+  found: boolean = false
+  product?: CloudProductRecord = undefined
+  similarProducts?: CloudProductRecord[] = undefined
 }
 
 /** 云端商品记录 */
@@ -88,14 +88,44 @@ export interface AlternativeQueryRequest {
 }
 
 /** 家庭数据同步参数 */
-export interface SyncMemberDataRequest {
-  uid: string
-  memberId: string
-  nickname: string
-  ageGroup: string
-  healthGoals: string[]
-  allergens: string[]
-  chronicConditions: string[]
+export class SyncMemberDataRequest {
+  uid: string = ''
+  memberId: string = ''
+  nickname: string = ''
+  ageGroup: string = ''
+  healthGoals: string[] = []
+  allergens: string[] = []
+  chronicConditions: string[] = []
+}
+
+class SearchBarcodeBody {
+  barcode: string = ''
+  uid: string = ''
+  memberId: string = ''
+}
+
+class SubmitFoodBody {
+  barcode: string = ''
+  product_name: string = ''
+  ingredients_text: string = ''
+  frontPhotoBase64: string = ''
+  nutritionPhotoBase64: string = ''
+  ingredientsPhotoBase64: string = ''
+  uid: string = ''
+}
+
+class SyncMemberParam {
+  memberId: string = ''
+  nickname: string = ''
+  ageGroup: string = ''
+  healthGoals: string[] = []
+  allergens: string[] = []
+  chronicConditions: string[] = []
+}
+
+class SyncAllResult {
+  success: number = 0
+  failed: number = 0
 }
 
 export class CloudBackendService {
@@ -119,20 +149,26 @@ export class CloudBackendService {
   ): Promise<CloudProductResponse> {
     return ServiceGateway.callWithFallback(
       async () => {
-        const response = await this.httpPost('/search/barcode', {
-          barcode,
-          uid,
-          memberId
-        })
+        const body = new SearchBarcodeBody()
+        body.barcode = barcode
+        body.uid = uid ?? ''
+        body.memberId = memberId ?? ''
+        const response = await this.httpPost('/search/barcode', body as Object as Record<string, Object>)
         if (response.code === 200 && response.data) {
           return response.data as CloudProductResponse
         }
-        return { found: false, similarProducts: [] }
+        const notFound = new CloudProductResponse()
+        notFound.found = false
+        notFound.similarProducts = []
+        return notFound
       },
       async () => {
         // 离线降级：返回空结果
         hilog.info(DOMAIN_ZERO, TAG, 'Offline mode: using local cache only')
-        return { found: false, similarProducts: [] }
+        const offlineResult = new CloudProductResponse()
+        offlineResult.found = false
+        offlineResult.similarProducts = []
+        return offlineResult
       },
       `cloud_product_${barcode}`
     )
@@ -144,10 +180,15 @@ export class CloudBackendService {
    */
   async submitFoodLabel(submission: FoodSubmissionRequest, uid: string): Promise<boolean> {
     try {
-      const response = await this.httpPost('/contribute/food', {
-        ...submission,
-        uid
-      })
+      const body = new SubmitFoodBody()
+      body.barcode = submission.barcode
+      body.product_name = submission.product_name
+      body.ingredients_text = submission.ingredients_text
+      body.frontPhotoBase64 = submission.frontPhotoBase64 ?? ''
+      body.nutritionPhotoBase64 = submission.nutritionPhotoBase64 ?? ''
+      body.ingredientsPhotoBase64 = submission.ingredientsPhotoBase64 ?? ''
+      body.uid = uid
+      const response = await this.httpPost('/contribute/food', body as Object as Record<string, Object>)
       return response.code === 200
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'submitFoodLabel failed: %{public}s', JSON.stringify(error))
@@ -161,7 +202,7 @@ export class CloudBackendService {
   async getAlternatives(query: AlternativeQueryRequest): Promise<CloudProductRecord[]> {
     return ServiceGateway.callWithFallback(
       async () => {
-        const response = await this.httpPost('/recommend/alternatives', query)
+        const response = await this.httpPost('/recommend/alternatives', query as Object as Record<string, Object>)
         if (response.code === 200 && Array.isArray(response.data)) {
           return response.data as CloudProductRecord[]
         }
@@ -179,7 +220,7 @@ export class CloudBackendService {
    */
   async syncMemberData(data: SyncMemberDataRequest): Promise<boolean> {
     try {
-      const response = await this.httpPost('/sync/member', data)
+      const response = await this.httpPost('/sync/member', data as Object as Record<string, Object>)
       return response.code === 200
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'syncMemberData failed: %{public}s', JSON.stringify(error))
@@ -192,31 +233,28 @@ export class CloudBackendService {
    */
   async syncAllMembers(
     uid: string,
-    members: Array<{
-      memberId: string
-      nickname: string
-      ageGroup: string
-      healthGoals: string[]
-      allergens: string[]
-      chronicConditions: string[]
-    }>
-  ): Promise<{ success: number; failed: number }> {
-    let success = 0
-    let failed = 0
+    members: SyncMemberParam[]
+  ): Promise<SyncAllResult> {
+    const result = new SyncAllResult()
 
     for (const member of members) {
-      const result = await this.syncMemberData({
-        uid,
-        ...member
-      })
-      if (result) {
-        success++
+      const req = new SyncMemberDataRequest()
+      req.uid = uid
+      req.memberId = member.memberId
+      req.nickname = member.nickname
+      req.ageGroup = member.ageGroup
+      req.healthGoals = member.healthGoals
+      req.allergens = member.allergens
+      req.chronicConditions = member.chronicConditions
+      const synced = await this.syncMemberData(req)
+      if (synced) {
+        result.success++
       } else {
-        failed++
+        result.failed++
       }
     }
 
-    return { success, failed }
+    return result
   }
 
   // ==================== HTTP 请求封装 ====================
@@ -243,10 +281,11 @@ export class CloudBackendService {
       }
 
       const result = response.result as string
+      const errorResult: Record<string, Object> = { 'code': 500, 'message': 'Invalid JSON response', 'data': '' as Object }
       try {
         return JSON.parse(result) as Record<string, Object>
       } catch {
-        return { code: 500, message: 'Invalid JSON response', data: null }
+        return errorResult
       }
     } finally {
       httpClient.destroy()

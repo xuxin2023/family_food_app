@@ -4,7 +4,7 @@ export class DietRecord {
   id: number = 0;
   memberId: string = '';
   date: string = '';
-  scenario: MealScenario | string = MealScenario.NORMAL;
+  scenario: MealScenario | string = MealScenario.OTHER;
   mealType: string = 'breakfast';
   foodId: string = '';
   amountG: number = 0;

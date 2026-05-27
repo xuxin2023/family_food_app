@@ -3,7 +3,8 @@ import {
   RecipeComment, CreateRecipeParams, HILOG_DOMAIN
 } from 'hsp_core';
 import { ServiceManager } from '../ServiceManager';
-import { SyncService, SyncEvent } from 'hsp-service';
+import { SyncService, SyncEvent } from 'hsp_service';
+import { FamilyGroupService, CreateGroupParams } from 'feature_community';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'SyncFacade';
@@ -29,7 +30,11 @@ export class SyncFacade {
     if (!this.services.groupService) {
       throw new Error('Group service not initialized');
     }
-    return this.services.groupService.createGroup({ groupName: name, description: '', ownerName: '' });
+    const params = new CreateGroupParams();
+    params.groupName = name;
+    params.description = '';
+    params.ownerName = '';
+    return this.services.groupService.createGroup(params);
   }
 
   async getOrCreateGroupSummary(): Promise<GroupSummary | null> {

@@ -19,7 +19,7 @@ export enum TrendDirection {
 }
 
 export class NutrientTrendData {
-  nutrientName: string = '';
+  nutrientName: ResourceStr = '';
   unit: string = '';
   dailyValues: DailyNutrientPoint[] = [];
   currentValue: number = 0;

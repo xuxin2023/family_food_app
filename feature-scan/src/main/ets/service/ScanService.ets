@@ -2,21 +2,26 @@
 // API参考：https://developer.huawei.com/consumer/cn/doc/harmonyos-references-V5/scanbarcode-V5
 // 深化：接入数据血缘追踪 (DataLineage)
 
-import { FoodLabel, FoodSource, HILOG_DOMAIN } from 'hsp_core';
+import { FoodLabel, FoodSource, HILOG_DOMAIN, lookupByBarcode as offlineLookupByBarcode, convertToFoodLabel } from 'hsp_core';
 import { common } from '@kit.AbilityKit';
-import { scanBarcode, scanCore } from '@kit.ScanKit';
+import { scanBarcode } from '@kit.ScanKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { connection } from '@kit.NetworkKit';
-import { AppState } from 'hsp-service';
-import { OpenFoodFactsService } from 'hsp-service';
-import { lookupByBarcode as offlineLookupByBarcode, convertToFoodLabel } from 'hsp-service';
-import { DataLineage } from 'hsp_core';
+import { OpenFoodFactsService, DataLineage } from 'hsp_service';
+
+export interface ILocalCacheProvider {
+  findFoodByBarcode(barcode: string): Promise<FoodLabel | null>;
+}
 
 const TAG = 'ScanService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 export class ScanService {
-  private appState: AppState = AppState.getInstance();
+  private cacheProvider: ILocalCacheProvider | null = null;
+
+  setCacheProvider(provider: ILocalCacheProvider): void {
+    this.cacheProvider = provider;
+  }
 
   /**
    * 启动扫码识别（默认模式）
@@ -26,7 +31,6 @@ export class ScanService {
   async scanBarcode(context: common.Context): Promise<string> {
     try {
       const options: scanBarcode.ScanOptions = {
-        scanTypes: [scanCore.ScanType.ALL],
         enableMultiMode: false,
         enableAlbum: true
       };
@@ -50,7 +54,6 @@ export class ScanService {
   async scanFoodBarcode(context: common.Context): Promise<string> {
     try {
       const options: scanBarcode.ScanOptions = {
-        scanTypes: [scanCore.ScanType.EAN13_CODE, scanCore.ScanType.QR_CODE],
         enableMultiMode: false,
         enableAlbum: true
       };
@@ -74,7 +77,10 @@ export class ScanService {
    */
   async lookupLocalCache(barcode: string): Promise<FoodLabel | null> {
     try {
-      const foodLabel = await this.appState.findFoodByBarcode(barcode);
+      if (!this.cacheProvider) {
+        return null;
+      }
+      const foodLabel = await this.cacheProvider.findFoodByBarcode(barcode);
       if (foodLabel) {
         hilog.info(DOMAIN_ZERO, TAG, 'Cache hit for barcode: %{public}s', barcode);
         return foodLabel;

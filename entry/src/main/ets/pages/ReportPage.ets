@@ -3,26 +3,26 @@
 // 三段式布局：顶部评测区 | 家庭矩阵区 | 辅助信息区
 
 import {
-  safeBack, FamilyProfile, FoodLabel, Recommendation, RecommendLevel, LevelColor, getLevelColorValue, AlternativeFood, ChildProtection, CredibilityResult, PaywallTrigger, MemberTier, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON, AccessibilityUtil, NavigationManager
+  safeBack, safePushUrl, FamilyProfile, FoodLabel, Recommendation, RecommendLevel, LevelColor, getLevelColorValue, AlternativeFood, ChildProtection, CredibilityResult, PaywallTrigger, MemberTier, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON, AccessibilityUtil, NavigationManager
 } from 'hsp_core';
 import { promptAction, curves } from '@kit.ArkUI';
 import { BackButton } from '../components/BackButton';
 import { common } from '@kit.AbilityKit';
 import { AppState } from '../AppState';
-import { NutriScoreBadge, AllergenHighlightList, PaywallDialog } from 'feature-scan';
-import { NovaGroupBadge, EcoScoreBadge, RiskAssessmentPanel, ShareCardGenerator, MemberShareInfo, ShareImageParams } from 'feature-report';
+import { NutriScoreBadge, AllergenHighlightList, PaywallDialog, AdditiveTrafficLightList, AdditiveClassifier } from 'feature_scan';
+import { NovaGroupBadge, EcoScoreBadge, EcoScore, RiskAssessmentPanel, ShareCardGenerator, MemberShareInfo, ShareImageParams } from 'feature_report';
 
 // ===== 页面级别类型 =====
 
 /** ReportPage 路由参数接口（通过 AppState.setReportParams 传入） */
-export interface ReportPageParams {
-  foodLabel: FoodLabel;
-  recommendations: Recommendation[];
-  members: FamilyProfile[];
-  alternatives: AlternativeFood[];
-  nutriScore: number;
-  credibilityResult: CredibilityResult;
-  childProtection: ChildProtection[];
+export class ReportPageParams {
+  foodLabel: FoodLabel = new FoodLabel();
+  recommendations: Recommendation[] = [];
+  members: FamilyProfile[] = [];
+  alternatives: AlternativeFood[] = [];
+  nutriScore: number = 50;
+  credibilityResult: CredibilityResult = new CredibilityResult();
+  childProtection: ChildProtection[] = [];
 }
 
 @Entry
@@ -98,7 +98,7 @@ struct ReportPage {
       fallback.memberId = 'none'
       fallback.level = RecommendLevel.SUITABLE
       fallback.levelColor = LevelColor.GREEN
-      fallback.reasons = [$r('app.string.report_no_adaptation_data') as string]
+      fallback.reasons = ['暂无适配数据']
       return fallback
     }
     const idx = Math.min(this.selectedMemberIndex, this.recommendations.length - 1)
@@ -123,7 +123,7 @@ struct ReportPage {
       Scroll() {
         GridRow({
           columns: { sm: 4, md: 8, lg: 12 },
-          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
+          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] } as BreakPoints
         }) {
           GridCol({ span: { sm: 4, md: 8, lg: 12 } }) {
             // ---- 顶部导航 ----
@@ -243,18 +243,27 @@ struct ReportPage {
 
         // Nova 加工分级 + EcoScore 生态评级
         Column({ space: 4 }) {
-          NovaGroupBadge({ novaGroup: this.foodLabel.novaGroup ?? 0 })
-          EcoScoreBadge({ grade: this.foodLabel.ecoscoreGrade ?? 'unknown', score: this.foodLabel.ecoscoreScore ?? 0 })
+          NovaGroupBadge({ group: this.foodLabel.novaGroup ?? 0 })
+          EcoScoreBadge({ grade: (this.foodLabel.ecoScoreGrade ?? 'unknown') as EcoScore })
         }.margin({ left: 8 })
 
         // 过敏原高亮列表
         if (this.foodLabel.allergens.length > 0) {
-          AllergenHighlightList({ allergens: this.foodLabel.allergens, ingredients: this.foodLabel.ingredients })
+          AllergenHighlightList({ allergenHints: this.foodLabel.allergens, ingredients: this.foodLabel.ingredients })
+        }
+
+        // 添加剂红绿灯可视化（对标 Yuka/Olive）
+        if (this.foodLabel.ingredients.length > 0) {
+          AdditiveTrafficLightList({
+            entries: AdditiveClassifier.classifyIngredients(this.foodLabel.ingredients),
+            showSummary: true,
+            maxDisplay: 8
+          })
         }
 
         // 交叉过敏/健康风险预警
         if (this.selectedRec !== null) {
-          RiskAssessmentPanel({ foodLabel: this.foodLabel, recommendation: this.selectedRec })
+          RiskAssessmentPanel({ riskResult: null })
         }
 
         // 右侧：适配结论 + 最大可吃量 + 成员胶囊
@@ -269,7 +278,7 @@ struct ReportPage {
                 .fontSize(FONT_SIZE.XL)
                 .fontWeight(FONT_WEIGHT.BOLD)
                 .fontColor(COLORS.TEXT_PRIMARY)
-              Text(' / ' + $r('app.string.report_per_100g'))
+              Text(' / 100g')
                 .fontSize(FONT_SIZE.TINY)
                 .fontColor(COLORS.TEXT_TERTIARY)
                 .margin({ left: 2 })
@@ -582,7 +591,7 @@ struct ReportPage {
 
         // 最大量
         if (rec.maxAmount > 0) {
-          Text($r('app.string.report_max_amount', rec.maxAmount.toString()) + 'g')
+          Text(`最多${rec.maxAmount}g`)
             .fontSize(FONT_SIZE.LG)
             .fontWeight(FONT_WEIGHT.BOLD)
             .fontColor(COLORS.TEXT_PRIMARY)
@@ -634,7 +643,7 @@ struct ReportPage {
       // 食品对比入口
       if (this.foodLabel.barcode.length > 0) {
         Row() {
-          Text($r('app.string.compare_food'))
+          Text('对比食品')
             .fontSize(16)
             .fontWeight(FontWeight.Medium)
             .fontColor(COLORS.PRIMARY)
@@ -793,7 +802,7 @@ struct ReportPage {
           .fontWeight(FONT_WEIGHT.MEDIUM)
           .fontColor(COLORS.TEXT_PRIMARY)
         Blank()
-        Text(`${this.credibilityResult.score}` + $r('app.string.report_score_unit'))
+        Text(`${this.credibilityResult.score}分`)
           .fontSize(FONT_SIZE.BODY)
           .fontWeight(FONT_WEIGHT.BOLD)
           .fontColor(this.credibilityResult.score >= 60 ? COLORS.LEVEL_GREEN : COLORS.LEVEL_ORANGE)
@@ -854,13 +863,13 @@ struct ReportPage {
           if (cp.hasAnyAdvice()) {
             Column() {
               if (cp.mealProtection.length > 0) {
-                this.ProtectionRow('\uD83C\uDF7D', $r('app.string.report_meal') as string, cp.mealProtection)
+                this.ProtectionRow('\uD83C\uDF7D', $r('app.string.report_meal') as ResourceStr, cp.mealProtection)
               }
               if (cp.bedtimeProtection.length > 0) {
-                this.ProtectionRow('\uD83D\uDCA4', $r('app.string.report_bedtime') as string, cp.bedtimeProtection)
+                this.ProtectionRow('\uD83D\uDCA4', $r('app.string.report_bedtime') as ResourceStr, cp.bedtimeProtection)
               }
               if (cp.tasteProtection.length > 0) {
-                this.ProtectionRow('\uD83D\uDC43', $r('app.string.report_taste') as string, cp.tasteProtection)
+                this.ProtectionRow('\uD83D\uDC43', $r('app.string.report_taste') as ResourceStr, cp.tasteProtection)
               }
             }
             .width('100%')
@@ -877,9 +886,9 @@ struct ReportPage {
   }
 
   @Builder
-  ProtectionRow(icon: string, label: string, text: string) {
+  ProtectionRow(icon: string, label: ResourceStr, text: string) {
     Row() {
-      Text(`${icon} ${label}`)
+      Text(label)
         .fontSize(FONT_SIZE.SMALL)
         .fontWeight(FONT_WEIGHT.MEDIUM)
         .fontColor(COLORS.TEXT_PRIMARY)
@@ -914,7 +923,7 @@ struct ReportPage {
 
         if (this.foodLabel.manufacturer.length > 0) {
           Row() {
-            Text($r('app.string.producer') + ': ')
+            Text('生产者: ')
               .fontSize(FONT_SIZE.BODY)
               .fontColor(COLORS.TEXT_TERTIARY)
             Text(this.foodLabel.manufacturer)
@@ -928,7 +937,7 @@ struct ReportPage {
 
         if (this.foodLabel.scNumber.length > 0) {
           Row() {
-            Text($r('app.string.producer_info') + ': ')
+            Text('生产许可证: ')
               .fontSize(FONT_SIZE.BODY)
               .fontColor(COLORS.TEXT_TERTIARY)
             Text(this.foodLabel.scNumber)
@@ -942,7 +951,7 @@ struct ReportPage {
 
         if (this.foodLabel.principal.length > 0) {
           Row() {
-            Text($r('app.string.principal') + ': ')
+            Text('委托方: ')
               .fontSize(FONT_SIZE.BODY)
               .fontColor(COLORS.TEXT_TERTIARY)
             Text(this.foodLabel.principal)
@@ -1023,30 +1032,31 @@ struct ReportPage {
   private getPageParams(): ReportPageParams | null {
     try {
       const navStack = NavigationManager.getStack()
-      const routerParams = navStack.getParamByName('ReportPage') as Record<string, Object>
+      const routerParams = navStack.getParamByName('ReportPage') as Object
       if (routerParams === null || routerParams === undefined) return null
+      const params = routerParams as Record<string, Object>
 
-      const foodLabel = (routerParams['foodLabel'] as FoodLabel) || new FoodLabel()
-      const recommendations = (routerParams['recommendations'] as Recommendation[]) || []
-      const members = (routerParams['members'] as FamilyProfile[]) || []
-      const alternatives = (routerParams['alternatives'] as AlternativeFood[]) || []
-      const nutriScore = (routerParams['nutriScore'] as number) || 50
+      const foodLabel = (params['foodLabel'] as FoodLabel) || new FoodLabel()
+      const recommendations = (params['recommendations'] as Recommendation[]) || []
+      const members = (params['members'] as FamilyProfile[]) || []
+      const alternatives = (params['alternatives'] as AlternativeFood[]) || []
+      const nutriScore = (params['nutriScore'] as number) || 50
 
-      const credJson = routerParams['credibilityResult'] as CredibilityResult
+      const credJson = params['credibilityResult'] as CredibilityResult
       const credibilityResult = credJson || new CredibilityResult()
 
-      const childJson = routerParams['childProtection'] as ChildProtection[]
+      const childJson = params['childProtection'] as ChildProtection[]
       const childProtection = childJson || []
 
-      return {
-        foodLabel: foodLabel,
-        recommendations: recommendations,
-        members: members,
-        alternatives: alternatives,
-        nutriScore: nutriScore,
-        credibilityResult: credibilityResult,
-        childProtection: childProtection
-      }
+      const pageParams = new ReportPageParams();
+      pageParams.foodLabel = foodLabel;
+      pageParams.recommendations = recommendations;
+      pageParams.members = members;
+      pageParams.alternatives = alternatives;
+      pageParams.nutriScore = nutriScore;
+      pageParams.credibilityResult = credibilityResult;
+      pageParams.childProtection = childProtection;
+      return pageParams;
     } catch (_error) {
       return null
     }
@@ -1075,23 +1085,21 @@ struct ReportPage {
 
       const memberResults: MemberShareInfo[] = this.recommendations.map((rec) => {
         const member = this.familyMembers.find(m => m.memberId === rec.memberId)
-        const info: MemberShareInfo = {
-          name: member?.nickname || '',
-          levelText: rec.level,
-          levelColor: getLevelColorValue(rec.levelColor),
-          maxIntake: rec.maxAmount > 0 ? $r('app.string.report_max_amount', rec.maxAmount.toString()) + 'g' : ''
-        }
+        const info = new MemberShareInfo()
+        info.name = member?.nickname || ''
+        info.levelText = rec.level
+        info.levelColor = getLevelColorValue(rec.levelColor)
+        info.maxIntake = rec.maxAmount > 0 ? `最多${rec.maxAmount}g` : ''
         return info
       })
 
-      const params: ShareImageParams = {
-        foodName: this.foodLabel.foodName,
-        nutriScore: this.nutriScore,
-        levelColor: this.levelColorHex,
-        memberResults: memberResults,
-        cardType: 'FAMILY_COMPARE',
-        qrPlaceholder: $r('app.string.food_adapt_assistant') as string
-      }
+      const params = new ShareImageParams()
+      params.foodName = this.foodLabel.foodName
+      params.nutriScore = this.nutriScore
+      params.levelColor = this.levelColorHex
+      params.memberResults = memberResults
+      params.cardType = 'FAMILY_COMPARE'
+      params.qrPlaceholder = '家庭食品适配助手'
 
       await ShareCardGenerator.generateShareImage(context, params)
       promptAction.showToast({ message: $r('app.string.report_image_saved') })
@@ -1117,9 +1125,9 @@ struct ReportPage {
   /**
    * 获取成员名称
    */
-  private getMemberName(memberId: string): string {
+  private getMemberName(memberId: string): ResourceStr {
     const member = this.familyMembers.find(m => m.memberId === memberId)
-    return member?.nickname || $r('app.string.report_member_default') as string
+    return member?.nickname || $r('app.string.report_member_default') as ResourceStr
   }
 
   /**
@@ -1128,7 +1136,7 @@ struct ReportPage {
   private getMemberGoal(memberId: string): string {
     const member = this.familyMembers.find(m => m.memberId === memberId)
     if (member === undefined || member.healthGoals.length === 0) return ''
-    return member.healthGoals[0]
+    return member.healthGoals[0] as string
   }
 
   /**

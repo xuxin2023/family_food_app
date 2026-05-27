@@ -8,9 +8,9 @@ import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 
 class OptionItem {
-  label: string = '';
+  label: ResourceStr = '';
   value: string = '';
-  constructor(label: string, value: string) {
+  constructor(label: ResourceStr, value: string) {
     this.label = label;
     this.value = value;
   }
@@ -140,7 +140,7 @@ struct RecipeCreatePage {
   }
 
   @Builder
-  sectionHeader(title: string) {
+  sectionHeader(title: ResourceStr) {
     Text(title)
       .fontSize(16)
       .fontWeight(FontWeight.Bold)
@@ -321,7 +321,7 @@ struct RecipeCreatePage {
             }
             .width(24)
             .height(24)
-            Text(`${$r('app.string.recipe_create_label_step')} ${index + 1}`)
+            Text() { Span($r('app.string.recipe_create_label_step')); Span(` ${index + 1}`) }
               .fontSize(14)
               .fontWeight(FontWeight.Medium)
               .margin({ left: 8 })
@@ -420,7 +420,7 @@ struct RecipeCreatePage {
               }
               this.selectedDietTags = [...this.selectedDietTags]
             })
-            .accessibilityText(option.label)
+            .accessibilityText(option.label as Resource)
             .accessibilityLevel('yes')
         }, (option: OptionItem, i: number) => `tag_${i}`)
       }
@@ -492,7 +492,7 @@ struct RecipeCreatePage {
       ToastHelper.show(this.getUIContext(), $r('app.string.recipe_create_toast_publish_success'))
       safeBack()
     } catch (e) {
-      ToastHelper.show(this.getUIContext(), `${$r('app.string.recipe_create_toast_publish_fail')}：${(e as Error).message}`)
+      ToastHelper.show(this.getUIContext(), `发布失败：${(e as Error).message}`)
     }
   }
 

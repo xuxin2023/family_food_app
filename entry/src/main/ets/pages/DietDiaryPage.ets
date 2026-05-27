@@ -69,7 +69,7 @@ struct DietDiaryPage {
   @Local dateInputText: string = ''
   @Local showDatePicker: boolean = false
   @Local isLoading: boolean = false
-  @Local errorMessage: string = ''
+  @Local errorMessage: ResourceStr = ''
   @Local aiAdvice: AiNutritionAdvice | null = null
   @Local isLoadingAi: boolean = false
   @Local showAiSection: boolean = false
@@ -125,7 +125,7 @@ struct DietDiaryPage {
       this.budget = this.appState.getDailyBudgetSync(this.selectedMemberId)
     } catch (_e) {
       hilog.error(DOMAIN_ZERO, 'DietDiaryPage', 'refreshData failed: %{public}s', JSON.stringify(_e))
-      this.errorMessage = $r('app.string.diary_load_failed') as string
+      this.errorMessage = $r('app.string.diary_load_failed') as ResourceStr
     }
 
     this.isLoading = false
@@ -150,13 +150,13 @@ struct DietDiaryPage {
     this.refreshData()
   }
 
-  private getDateLabel(): string {
+  private getDateLabel(): ResourceStr {
     const today = DateUtil.getToday()
-    if (this.currentDate === today) return $r('app.string.diary_today') as string
+    if (this.currentDate === today) return $r('app.string.diary_today') as ResourceStr
     const d = new Date(this.currentDate)
     const yesterday = new Date()
     yesterday.setDate(yesterday.getDate() - 1)
-    if (this.currentDate === DateUtil.formatDate(yesterday)) return $r('app.string.diary_yesterday') as string
+    if (this.currentDate === DateUtil.formatDate(yesterday)) return $r('app.string.diary_yesterday') as ResourceStr
     const weekDays: Resource[] = [
       $r('app.string.diary_week_sun'),
       $r('app.string.diary_week_mon'),
@@ -323,10 +323,10 @@ struct DietDiaryPage {
       // 内容区 - 响应式布局
       GridRow({
         columns: { sm: 4, md: 8, lg: 12 },
-        breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
+        breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] } as BreakPoints
       }) {
         GridCol({ span: { sm: 4, md: 8, lg: this.currentBreakpoint === 'lg' ? 8 : 12 } }) {
-      if (this.errorMessage.length > 0) {
+      if (this.errorMessage) {
         ErrorFallback({
           message: this.errorMessage,
           icon: '📊',
@@ -712,7 +712,7 @@ struct DietDiaryPage {
         .fontSize(16)
         .margin({ right: SPACING.SM })
       Column() {
-        Text(record.scenario || $r('app.string.diary_unknown_scene') as string)
+        Text(record.scenario || $r('app.string.diary_unknown_scene') as ResourceStr)
           .fontSize(FONT_SIZE.BODY)
           .fontColor(COLORS.TEXT_PRIMARY)
           .fontWeight(FONT_WEIGHT.MEDIUM)

@@ -172,19 +172,18 @@ export class SyncService {
       (r.syncStatus === SyncStatus.PENDING || r.syncStatus === SyncStatus.FAILED)
     );
 
-    const record: SyncChangeRecord = {
-      recordId: `sync_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
-      changeType: changeType,
-      entityType: entityType,
-      entityId: entityId,
-      changedAt: Date.now(),
-      dataJson: dataJson,
-      version: version,
-      syncStatus: SyncStatus.PENDING,
-      retryCount: 0,
-      lastAttemptAt: 0,
-      conflictDataJson: ''
-    };
+    const record = new SyncChangeRecord();
+    record.recordId = `sync_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    record.changeType = changeType;
+    record.entityType = entityType;
+    record.entityId = entityId;
+    record.changedAt = Date.now();
+    record.dataJson = dataJson;
+    record.version = version;
+    record.syncStatus = SyncStatus.PENDING;
+    record.retryCount = 0;
+    record.lastAttemptAt = 0;
+    record.conflictDataJson = '';
 
     if (existingIndex >= 0) {
       // 更新已有记录（替换为最新变更）
@@ -342,16 +341,15 @@ export class SyncService {
 
   private async executeSync(): Promise<SyncResult> {
     const startTime = Date.now();
-    const result: SyncResult = {
-      success: true,
-      errorMessage: '',
-      syncedIds: [],
-      failedIds: [],
-      conflictIds: [],
-      durationMs: 0,
-      progressPercent: 0,
-      progressPhase: '开始同步...'
-    };
+    const result = new SyncResult();
+    result.success = true;
+    result.errorMessage = '';
+    result.syncedIds = [];
+    result.failedIds = [];
+    result.conflictIds = [];
+    result.durationMs = 0;
+    result.progressPercent = 0;
+    result.progressPhase = '开始同步...';
 
     // 1. 获取待上传的变更（最多batchSize条）
     const pendingItems = this.syncQueue.filter(r =>
@@ -445,8 +443,8 @@ export class SyncService {
               localItem.syncStatus = SyncStatus.PENDING;
             } else if (this.config.conflictResolution === ConflictResolution.LOCAL_FIRST) {
               // 本地优先：若本地更新时间 >= 远程，保留本地；否则采用远程
-              const localUpdated = localItem.updatedAt ?? 0;
-              const remoteUpdated = conflict.remoteData?.updatedAt ?? 0;
+              const localUpdated: number = localItem.updatedAt ?? 0;
+              const remoteUpdated: number = (conflict.remoteData as Object as Record<string, Object>)?.['updatedAt'] as number ?? 0;
               if (localUpdated >= remoteUpdated) {
                 localItem.syncStatus = SyncStatus.PENDING;
               } else {
@@ -657,37 +655,37 @@ export class SyncService {
   }
 
   private cloneConfig(config: CloudSyncConfig): CloudSyncConfig {
-    return {
-      enabled: config.enabled,
-      strategy: config.strategy,
-      conflictResolution: config.conflictResolution,
-      syncIntervalMinutes: config.syncIntervalMinutes,
-      batchSize: config.batchSize,
-      lastFullSyncAt: config.lastFullSyncAt,
-      pendingCount: config.pendingCount,
-      maxRetries: config.maxRetries,
-      retryBaseIntervalSeconds: config.retryBaseIntervalSeconds
-    };
+    const cloned = new CloudSyncConfig();
+    cloned.enabled = config.enabled;
+    cloned.strategy = config.strategy;
+    cloned.conflictResolution = config.conflictResolution;
+    cloned.syncIntervalMinutes = config.syncIntervalMinutes;
+    cloned.batchSize = config.batchSize;
+    cloned.lastFullSyncAt = config.lastFullSyncAt;
+    cloned.pendingCount = config.pendingCount;
+    cloned.maxRetries = config.maxRetries;
+    cloned.retryBaseIntervalSeconds = config.retryBaseIntervalSeconds;
+    return cloned;
   }
 
   private makeBatchItem(r: SyncChangeRecord): SyncBatchItem {
-    return {
-      entityType: r.entityType,
-      entityId: r.entityId,
-      changeType: r.changeType,
-      data: r.dataJson,
-      version: r.version,
-      changedAt: r.changedAt
-    };
+    const item = new SyncBatchItem();
+    item.entityType = r.entityType;
+    item.entityId = r.entityId;
+    item.changeType = r.changeType;
+    item.data = r.dataJson;
+    item.version = r.version;
+    item.changedAt = r.changedAt;
+    return item;
   }
 
   private makeBatchRequest(token: string, deviceId: string, lastSyncAt: number, uploads: SyncBatchItem[]): SyncBatchRequest {
-    return {
-      token: token,
-      deviceId: deviceId,
-      lastSyncAt: lastSyncAt,
-      uploads: uploads
-    };
+    const req = new SyncBatchRequest();
+    req.token = token;
+    req.deviceId = deviceId;
+    req.lastSyncAt = lastSyncAt;
+    req.uploads = uploads;
+    return req;
   }
 
   private applyConfigUpdates(updates: CloudSyncConfig): void {

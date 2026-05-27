@@ -9,7 +9,7 @@
 import { ElderModeManager } from '../service/ElderModeManager';
 
 export class ImmersiveTabConfig {
-  text: string = '';
+  text: ResourceStr = '';
   icon: ResourceStr = '';
   selectedIcon: ResourceStr = '';
   badge?: number;
@@ -29,11 +29,11 @@ export struct ImmersiveTabBar {
   aboutToAppear(): void {
     // 默认Tab配置
     this.tabs = [
-      { text: $r('app.string.tab_home') as string, icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') },
-      { text: $r('app.string.tab_scan') as string, icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') },
-      { text: $r('app.string.tab_recipe') as string, icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') },
-      { text: $r('app.string.tab_report') as string, icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') },
-      { text: $r('app.string.tab_mine') as string, icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') }
+      { text: $r('app.string.tab_home') as ResourceStr, icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') },
+      { text: $r('app.string.tab_scan') as ResourceStr, icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') },
+      { text: $r('app.string.tab_recipe') as ResourceStr, icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') },
+      { text: $r('app.string.tab_report') as ResourceStr, icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') },
+      { text: $r('app.string.tab_mine') as ResourceStr, icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') }
     ];
   }
 

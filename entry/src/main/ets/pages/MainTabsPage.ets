@@ -8,14 +8,37 @@
 // Tab 结构: 首页 | 饮食 | AI | 社区 | 我的
 
 import { safePushUrl, COLORS, HILOG_DOMAIN, NavigationManager } from 'hsp_core';
-// @kit.UIDesignKit: HarmonyOS Design System 组件库 (HDS Tabs)
-// 降级路径：若 SDK 未集成 @kit.UIDesignKit，替换为 Tabs + BottomTabBarStyle
-//   import 替换: HdsTabs -> Tabs, HdsTabsController -> TabsController
-//   属性替换: hdsMaterial() -> BarMode.Fixed + 自定义动画
 import { HdsTabs, HdsTabsController } from '@kit.UIDesignKit';
 import { hdsMaterial } from '@kit.UIDesignKit';
 import { SymbolGlyphModifier } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { ScanPage } from './ScanPage';
+import { ReportPage } from './ReportPage';
+import { MemberPage } from './MemberPage';
+import { SettingsPage } from './SettingsPage';
+import { AiChatPage } from './AiChatPage';
+import { AlternativeFoodPage } from './AlternativeFoodPage';
+import { AllergenConfigPage } from './AllergenConfigPage';
+import { DashboardPage } from './DashboardPage';
+import { HistoryPage } from './HistoryPage';
+import { FavoritePage } from './FavoritePage';
+import { SubscriptionPage } from './SubscriptionPage';
+import { DietDiaryPage } from './DietDiaryPage';
+import { MemberEditPage } from './MemberEditPage';
+import { RecipeCommunityPage } from './RecipeCommunityPage';
+import { RecipeDetailPage } from './RecipeDetailPage';
+import { RecipeCreatePage } from './RecipeCreatePage';
+import { BalancePage } from './BalancePage';
+import { NutritionTrendPage } from './NutritionTrendPage';
+import { WeeklyReportPage } from './WeeklyReportPage';
+import { SharePage } from './SharePage';
+import { BasketCheckPage } from './BasketCheckPage';
+import { FoodComparePage } from './FoodComparePage';
+import { MealPlanPage } from './MealPlanPage';
+import { ShoppingListPage } from './ShoppingListPage';
+import { ChildHealthPage } from './ChildHealthPage';
+import { TeenModePage } from './TeenModePage';
+import { AllergenSetupWizard } from './AllergenSetupWizard';
 
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 const TAG = 'MainTabsPage';
@@ -202,14 +225,46 @@ struct MainTabsPage {
 
   @Builder
   buildNavDestination(name: string, param: Object) {
-    Column() {
-      Text(name)
-        .fontSize(16)
-        .fontColor(COLORS.TEXT_PRIMARY)
+    NavDestination() {
+      if (name === 'pages/ScanPage') { ScanPage() }
+      else if (name === 'pages/ReportPage') { ReportPage() }
+      else if (name === 'pages/MemberPage') { MemberPage() }
+      else if (name === 'pages/SettingsPage') { SettingsPage() }
+      else if (name === 'pages/AiChatPage') { AiChatPage() }
+      else if (name === 'pages/AlternativeFoodPage') { AlternativeFoodPage() }
+      else if (name === 'pages/AllergenConfigPage') { AllergenConfigPage() }
+      else if (name === 'pages/DashboardPage') { DashboardPage() }
+      else if (name === 'pages/HistoryPage') { HistoryPage() }
+      else if (name === 'pages/FavoritePage') { FavoritePage() }
+      else if (name === 'pages/SubscriptionPage') { SubscriptionPage() }
+      else if (name === 'pages/DietDiaryPage') { DietDiaryPage() }
+      else if (name === 'pages/MemberEditPage') { MemberEditPage() }
+      else if (name === 'pages/RecipeCommunityPage') { RecipeCommunityPage() }
+      else if (name === 'pages/RecipeDetailPage') { RecipeDetailPage() }
+      else if (name === 'pages/RecipeCreatePage') { RecipeCreatePage() }
+      else if (name === 'pages/BalancePage') { BalancePage() }
+      else if (name === 'pages/NutritionTrendPage') { NutritionTrendPage() }
+      else if (name === 'pages/WeeklyReportPage') { WeeklyReportPage() }
+      else if (name === 'pages/SharePage') { SharePage() }
+      else if (name === 'pages/BasketCheckPage') { BasketCheckPage() }
+      else if (name === 'pages/FoodComparePage') { FoodComparePage() }
+      else if (name === 'pages/MealPlanPage') { MealPlanPage() }
+      else if (name === 'pages/ShoppingListPage') { ShoppingListPage() }
+      else if (name === 'pages/ChildHealthPage') { ChildHealthPage() }
+      else if (name === 'pages/TeenModePage') { TeenModePage() }
+      else if (name === 'pages/AllergenSetupWizard') { AllergenSetupWizard() }
+      else {
+        Column() {
+          Text(name)
+            .fontSize(16)
+            .fontColor(COLORS.TEXT_PRIMARY)
+        }
+        .width('100%')
+        .height('100%')
+        .justifyContent(FlexAlign.Center)
+      }
     }
-    .width('100%')
-    .height('100%')
-    .justifyContent(FlexAlign.Center)
+    .hideTitleBar(true)
   }
 
   // ──── Tab 占位符（未加载时的空白页面）────
@@ -315,7 +370,7 @@ struct MainTabsPage {
             'pages/HistoryPage')
           this.QuickEntryCard('📊', $r('app.string.main_tabs_nutrition_dashboard'), $r('app.string.main_tabs_nutrition_dashboard_desc'),
             'pages/DashboardPage')
-          this.QuickEntryCard('🛒', $r('app.string.main_tabs_basket_analysis'), $r('app.string.main_tabs_basket_analysis_desc')),
+          this.QuickEntryCard('🛒', $r('app.string.main_tabs_basket_analysis'), $r('app.string.main_tabs_basket_analysis_desc'),
             'pages/BasketCheckPage')
         }
         .padding({ left: 16, right: 16, bottom: 80 })
@@ -348,7 +403,7 @@ struct MainTabsPage {
             'pages/RecipeCommunityPage', new Map([['aiMode', 'recommend']]))
           this.QuickEntryCard('🧪', $r('app.string.main_tabs_nutrition_trend'), $r('app.string.main_tabs_nutrition_trend_desc'),
             'pages/NutritionTrendPage')
-          this.QuickEntryCard('📈', $r('app.string.main_tabs_weekly_report'), $r('app.string.main_tabs_weekly_report_desc')),
+          this.QuickEntryCard('📈', $r('app.string.main_tabs_weekly_report'), $r('app.string.main_tabs_weekly_report_desc'),
             'pages/WeeklyReportPage')
         }
         .padding({ left: 16, right: 16, bottom: 80 })
@@ -379,7 +434,7 @@ struct MainTabsPage {
             'pages/RecipeCommunityPage')
           this.QuickEntryCard('👨‍👩‍👧‍👦', $r('app.string.main_tabs_family_group'), $r('app.string.main_tabs_family_group_desc'),
             'pages/FamilyGroupPage')
-          this.QuickEntryCard('✨', $r('app.string.main_tabs_create_recipe'), $r('app.string.main_tabs_create_recipe_desc')),
+          this.QuickEntryCard('✨', $r('app.string.main_tabs_create_recipe'), $r('app.string.main_tabs_create_recipe_desc'),
             'pages/RecipeCreatePage')
         }
         .padding({ left: 16, right: 16, bottom: 80 })
@@ -408,17 +463,17 @@ struct MainTabsPage {
         Column({ space: 12 }) {
           this.QuickEntryCard('👤', $r('app.string.main_tabs_member_management'), $r('app.string.main_tabs_member_management_desc'),
             'pages/MemberPage')
-          this.QuickEntryCard('📊', $r('app.string.main_tabs_nutrition_dashboard'), $r('app.string.main_tabs_nutrition_dashboard_all')),
+          this.QuickEntryCard('📊', $r('app.string.main_tabs_nutrition_dashboard'), $r('app.string.main_tabs_nutrition_dashboard_all'),
             'pages/DashboardPage')
-          this.QuickEntryCard('🏥', $r('app.string.main_tabs_health_device'), $r('app.string.main_tabs_health_device_desc')),
+          this.QuickEntryCard('🏥', $r('app.string.main_tabs_health_device'), $r('app.string.main_tabs_health_device_desc'),
             'pages/DeviceDashboardPage')
-          this.QuickEntryCard('💎', $r('app.string.main_tabs_subscription'), $r('app.string.main_tabs_subscription_desc')),
+          this.QuickEntryCard('💎', $r('app.string.main_tabs_subscription'), $r('app.string.main_tabs_subscription_desc'),
             'pages/SubscriptionPage')
-          this.QuickEntryCard('☁️', $r('app.string.main_tabs_cloud_sync'), $r('app.string.main_tabs_cloud_sync_desc')),
+          this.QuickEntryCard('☁️', $r('app.string.main_tabs_cloud_sync'), $r('app.string.main_tabs_cloud_sync_desc'),
             'pages/CloudSyncSettingsPage')
-          this.QuickEntryCard('🔧', $r('app.string.main_tabs_settings'), $r('app.string.main_tabs_settings_desc')),
+          this.QuickEntryCard('🔧', $r('app.string.main_tabs_settings'), $r('app.string.main_tabs_settings_desc'),
             'pages/SettingsPage')
-          this.QuickEntryCard('🧪', $r('app.string.main_tabs_api_lab'), $r('app.string.main_tabs_api_lab_desc')),
+          this.QuickEntryCard('🧪', $r('app.string.main_tabs_api_lab'), $r('app.string.main_tabs_api_lab_desc'),
             'pages/V2DemoPage')
         }
         .padding({ left: 16, right: 16, bottom: 80 })
@@ -460,7 +515,7 @@ struct MainTabsPage {
     .backgroundColor(COLORS.BG_CARD)
     .borderRadius(12)
     .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
-    .accessibilityText(title)
+    .accessibilityText(title as Resource)
     .accessibilityLevel('yes')
     .onClick(() => {
       safePushUrl(targetUrl, extraParams)

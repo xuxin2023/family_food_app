@@ -186,15 +186,15 @@ export class AlternativeFoodRecommender implements IAlternativeRecommender {
   /**
    * 根据食品标签信息和家庭成员健康画像，推荐替代食品
    */
-  recommendAlternatives(
+  async recommendAlternatives(
     foodLabel: FoodLabel,
     members: FamilyProfile[],
     topN: number = 3
-  ): AlternativeFood[] {
+  ): Promise<AlternativeFood[]> {
     const categories = this.identifyCategory(foodLabel);
 
     if (categories.length === 0) {
-      return this.getNutritionBasedAlternatives(foodLabel, members, topN);
+      return await this.getNutritionBasedAlternatives(foodLabel, members, topN);
     }
 
     const allCandidates: AlternativeFood[] = [];
@@ -238,11 +238,11 @@ export class AlternativeFoodRecommender implements IAlternativeRecommender {
   /**
    * 基于营养数据的通用替代方向推荐
    */
-  private getNutritionBasedAlternatives(
+  private async getNutritionBasedAlternatives(
     foodLabel: FoodLabel,
     members: FamilyProfile[],
     topN: number
-  ): AlternativeFood[] {
+  ): Promise<AlternativeFood[]> {
     const nutrition = foodLabel.nutrition;
     const suggestions: AlternativeFood[] = [];
 
@@ -394,10 +394,10 @@ export class AlternativeFoodRecommender implements IAlternativeRecommender {
   /**
    * 根据食品营养数据查找替代方案
    */
-  recommendByNutrition(
+  async recommendByNutrition(
     nutrition: NutritionPer100g,
     members: FamilyProfile[]
-  ): AlternativeFood[] {
+  ): Promise<AlternativeFood[]> {
     const foodLabel = new FoodLabel();
     foodLabel.foodName = '扫描食品';
     foodLabel.nutrition = nutrition;

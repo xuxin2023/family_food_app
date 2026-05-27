@@ -20,8 +20,9 @@
 //     └─ 离线模式 → 纯本地规则引擎
 
 import {
-  ToastHelper, safePushUrl, getPageParams, FoodLabel, Throttler, PaywallTrigger, TIER_DAILY_SCAN_LIMIT, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON, SCAN_CONFIG, HILOG_DOMAIN, EnhancedFoodRecommendation, AccessibilityUtil, TodayIntakeInput, FoodInputResult
+  ToastHelper, safePushUrl, getPageParams, FoodLabel, FamilyProfile, HealthSignal, Throttler, PaywallTrigger, TIER_DAILY_SCAN_LIMIT, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON, SCAN_CONFIG, HILOG_DOMAIN, EnhancedFoodRecommendation, AccessibilityUtil, TodayIntakeInput
 } from 'hsp_core';
+import { FoodInputResult } from 'feature_scan';
 import { common } from '@kit.AbilityKit';
 import { curves } from '@kit.ArkUI';
 import { vibrator } from '@kit.SensorServiceKit';
@@ -29,7 +30,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { scanBarcode, scanCore } from '@kit.ScanKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { AppState } from '../AppState';
-import { PermissionGuideDialog, NutriScoreBadge, PaywallDialog } from 'feature-scan';
+import { PermissionGuideDialog, NutriScoreBadge, PaywallDialog } from 'feature_scan';
 import { BackButton } from '../components/BackButton';
 import { ScanResultCard } from '../components/ScanResultCard';
 import { ScanEditPanel } from '../components/ScanEditPanel';
@@ -378,7 +379,7 @@ struct ScanPage {
     Stack() {
       GridRow({
         columns: { sm: 4, md: 8, lg: 12 },
-        breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
+        breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] } as BreakPoints
       }) {
         GridCol({ span: { sm: 4, md: 8, lg: this.vm.showEditPanel ? 8 : 12 }, offset: { sm: 0, md: 0, lg: 0 } }) {
           Scroll() {
@@ -402,7 +403,7 @@ struct ScanPage {
           // ---- 离线提示 ----
           if (this.vm.isOffline) {
             Row() {
-              Text('📡 ' + $r('app.string.offline_mode'))
+              Text() { Span('📡 '); Span($r('app.string.offline_mode')) }
                 .fontSize(FONT_SIZE.SMALL)
                 .fontColor(COLORS.WARNING)
             }
@@ -414,7 +415,7 @@ struct ScanPage {
           // ---- 权限拒绝提示 ----
           if (this.vm.permissionDenied) {
             Row() {
-              Text('📷 ' + $r('app.string.scan_camera_permission_denied'))
+              Text() { Span('📷 '); Span($r('app.string.scan_camera_permission_denied')) }
                 .fontSize(FONT_SIZE.SMALL)
                 .fontColor(COLORS.LEVEL_RED)
             }
@@ -454,9 +455,15 @@ struct ScanPage {
           // ---- 扫描次数 ----
           if (this.appState.member.memberStatus.scansRemainingToday >= 0) {
             Row() {
-              Text(this.vm.scanLimitReached ? $r('app.string.scan_today_used_up') : $r('app.string.scan_today_remaining') + `：${this.vm.remainingScans} ` + $r('app.string.scan_times'))
-                .fontSize(FONT_SIZE.SMALL)
-                .fontColor(this.vm.scanLimitReached ? COLORS.LEVEL_RED : '#F57C00')
+              if (this.vm.scanLimitReached) {
+                Text($r('app.string.scan_today_used_up'))
+                  .fontSize(FONT_SIZE.SMALL)
+                  .fontColor(COLORS.LEVEL_RED)
+              } else {
+                Text() { Span($r('app.string.scan_today_remaining')); Span(`：${this.vm.remainingScans} `); Span($r('app.string.scan_times')) }
+                  .fontSize(FONT_SIZE.SMALL)
+                  .fontColor('#F57C00')
+              }
             }
             .width('100%')
             .padding({ left: SPACING.LG, right: SPACING.LG })
@@ -676,7 +683,7 @@ struct ScanPage {
   @Builder
   RecentScanBar() {
     Column() {
-      Text('⏱ ' + $r('app.string.scan_recent_scans'))
+      Text() { Span('⏱ '); Span($r('app.string.scan_recent_scans')) }
         .fontSize(FONT_SIZE.SMALL)
         .fontColor(COLORS.TEXT_SECONDARY)
         .margin({ bottom: SPACING.SM })
@@ -832,7 +839,7 @@ struct ScanPage {
           lookupResult.source, lookupResult.confidence)
         this.vm.foodLabel = lookupResult.foodLabel
         if (this.vm.isOffline && lookupResult.source !== 'barcode_scan') {
-          this.vm.recognitionHint = '📡 ' + $r('app.string.scan_offline_data')
+          this.vm.recognitionHint = '📡 离线数据'
         }
         this.vm.scanPhase = ScanPhase.SCORING
         this.calculateScoreForCurrentLabel()
@@ -848,7 +855,7 @@ struct ScanPage {
         const localFood = await this.appState.foodRepo.findByBarcode(barcode)
         if (localFood !== null) {
           this.vm.foodLabel = localFood
-          this.vm.recognitionHint = '📡 ' + $r('app.string.scan_offline_data')
+          this.vm.recognitionHint = '📡 离线数据'
           this.vm.scanPhase = ScanPhase.SCORING
           this.calculateScoreForCurrentLabel()
           return
@@ -858,7 +865,7 @@ struct ScanPage {
       }
       // 降级路径：网络不可用时尝试端侧AI推理
       const onDeviceAi = this.appState.getOnDeviceAiEngine();
-      if (onDeviceAi && (onDeviceAi as Record<string, Object>).isAvailable !== undefined) {
+      if (onDeviceAi && ((onDeviceAi as Object as Record<string, Object>)['isAvailable']) !== undefined) {
         hilog.info(DOMAIN_ZERO, TAG, 'Attempting on-device AI inference fallback');
         // TODO: 当端侧模型可推理营养评分时，使用 onDeviceAi.inferNutritionScore(localData) 结果
       }
@@ -876,7 +883,7 @@ struct ScanPage {
   // ==================== 识别入口 ====================
 
   private startManualEntry() {
-    this.applyFoodInputResult(this.foodInputService.createManualDraft())
+    this.applyFoodInputResult(this.foodInputService.createManualDraft() as Object as FoodInputResult)
   }
 
   private async startRecognition() {
@@ -907,7 +914,7 @@ struct ScanPage {
       const hasCameraPermission = await this.appState.permission.requestCameraPermission();
       if (!hasCameraPermission) {
         this.vm.permissionDenied = true
-        this.vm.showPermissionGuideDialog($r('app.string.scan_camera') as string, $r('app.string.scan_camera_permission_reason') as string)
+        this.showPermissionGuideDialog($r('app.string.scan_camera') as ResourceStr, $r('app.string.scan_camera_permission_reason') as ResourceStr)
         this.vm.scanPhase = ScanPhase.ERROR
         return
       }
@@ -918,14 +925,14 @@ struct ScanPage {
         const result = await this.foodInputService.scanBarcode(context)
         if (result) {
           this.vm.scanPhase = ScanPhase.DB_QUERYING
-          this.applyFoodInputResult(result)
+          this.applyFoodInputResult(result as Object as FoodInputResult)
         } else {
           ToastHelper.show(this.getUIContext(), $r('app.string.barcode_not_found'))
         }
       } else {
         // 拍照模式：直接生成草稿 + 提示后续手动修正
         this.vm.scanPhase = ScanPhase.DB_QUERYING
-        this.applyFoodInputResult(this.foodInputService.createCameraDraft())
+        this.applyFoodInputResult(this.foodInputService.createCameraDraft() as Object as FoodInputResult)
       }
 
       if (this.vm.foodLabel.foodId.length > 0) {
@@ -1035,13 +1042,10 @@ struct ScanPage {
       todayIntake.sugar_g = Math.max(0, budget.sugarBudget - budget.sugarRemaining)
       todayIntake.energy_kcal = Math.max(0, budget.calorieBudget - budget.calorieRemaining)
       todayIntake.fat_g = Math.max(0, budget.fatBudget - budget.fatRemaining)
-      const enhanced: EnhancedFoodRecommendation | null = this.appState.engines.calculateEnhancedAdaptation(
-        this.appState.getAllMembersSync()[0], this.vm.foodLabel, this.appState.getHealthSignal(this.memberId),
-        todayIntake, scanToday
-      )
-      if (enhanced !== null) {
-        hilog.info(DOMAIN_ZERO, 'ScanPage', 'Enhanced adaptation computed for %{public}s', this.vm.foodLabel.foodName)
-      }
+      const members: FamilyProfile[] = this.appState.getAllMembersSync()
+      const m: FamilyProfile = members.length > 0 ? members[0] : new FamilyProfile()
+      const s: HealthSignal = this.appState.getHealthSignal(this.memberId)
+      hilog.info(DOMAIN_ZERO, 'ScanPage', 'Viewing report for %{public}s', this.vm.foodLabel.foodName)
       const navParams = new Map<string, Object>();
       navParams.set('memberId', this.memberId);
       navParams.set('foodId', this.vm.foodLabel.foodId);
@@ -1051,7 +1055,7 @@ struct ScanPage {
     }
   }
 
-  private showPermissionGuideDialog(_permissionName: string, _reason: string): void {
+  private showPermissionGuideDialog(_permissionName: ResourceStr, _reason: ResourceStr): void {
     this.vm.showPermissionGuide = true
   }
 

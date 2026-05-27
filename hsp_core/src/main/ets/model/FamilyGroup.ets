@@ -64,49 +64,30 @@ export class FamilyGroup {
 }
 
 /** 群组成员 */
-export interface GroupMember {
-  /** 成员记录ID */
-  id: string;
-  /** 群组ID */
-  groupId: string;
-  /** 用户UID */
-  uid: string;
-  /** 在该群组的昵称 */
-  displayName: string;
-  /** 角色 */
-  role: GroupRole;
-  /** 加入方式 */
-  joinMethod: JoinMethod;
-  /** 加入时间戳(ms) */
-  joinedAt: number;
-  /** 最后活跃时间戳(ms) */
-  lastActiveAt: number;
-  /** 是否已退出群组 */
-  isLeft: boolean;
-  /** 本地家庭成员memberId映射（可选，关联本地成员） */
-  localMemberId: string;
+export class GroupMember {
+  id: string = '';
+  groupId: string = '';
+  uid: string = '';
+  displayName: string = '';
+  role: GroupRole = GroupRole.MEMBER;
+  joinMethod: JoinMethod = JoinMethod.MANUAL;
+  joinedAt: number = 0;
+  lastActiveAt: number = 0;
+  isLeft: boolean = false;
+  localMemberId: string = '';
 }
 
 /** 加群申请 */
-export interface JoinRequest {
-  /** 申请ID */
-  requestId: string;
-  /** 群组ID */
-  groupId: string;
-  /** 申请人UID */
-  requesterUid: string;
-  /** 申请人昵称 */
-  requesterName: string;
-  /** 申请附言 */
-  message: string;
-  /** 审核状态 */
-  status: JoinRequestStatus;
-  /** 申请时间戳(ms) */
-  requestedAt: number;
-  /** 审核时间戳(ms) */
-  reviewedAt: number;
-  /** 审核人UID */
-  reviewerUid: string;
+export class JoinRequest {
+  requestId: string = '';
+  groupId: string = '';
+  requesterUid: string = '';
+  requesterName: string = '';
+  message: string = '';
+  status: JoinRequestStatus = JoinRequestStatus.PENDING;
+  requestedAt: number = 0;
+  reviewedAt: number = 0;
+  reviewerUid: string = '';
 }
 
 /** 群组动态 */
@@ -127,12 +108,12 @@ export class GroupFeed {
 }
 
 /** 群组动态 — 食品扫描分享内容 */
-export interface FoodScanFeedContent {
-  foodName: string;
-  foodId: string;
-  nutriScore: number;
-  summary: string;
-  memberResults: string;
+export class FoodScanFeedContent {
+  foodName: string = '';
+  foodId: string = '';
+  nutriScore: number = 0;
+  summary: string = '';
+  memberResults: string = '';
 }
 
 /** 群组动态 — 食谱分享内容 */

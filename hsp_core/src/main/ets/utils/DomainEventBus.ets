@@ -1,5 +1,9 @@
 type DomainEventHandler = (data: Object) => void;
 
+export class CacheInvalidationData {
+  source: string = '';
+}
+
 export class DomainEventBus {
   private static bus: Map<string, DomainEventHandler[]> = new Map();
 

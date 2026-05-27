@@ -5,7 +5,7 @@ import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { WeeklyDietData, WeeklyReport, WeeklyReportEngine } from '../engine/WeeklyReportEngine';
 import { ScanHistoryRecord } from '../repository/HistoryRepository';
-import { PaywallDialog } from 'feature-scan';
+import { PaywallDialog } from 'feature_scan';
 import { EmptyState } from '../components/EmptyState';
 import { ReportExporter } from '../utils/ReportExporter';
 import { common } from '@kit.AbilityKit';
@@ -44,7 +44,7 @@ struct WeeklyReportPage {
   async aboutToAppear() {
     try {
       this.componentActive = true
-      this.isLoading = true
+      this.vm.isLoading = true
       // 检查付费墙 - 周报需要个人版以上
       const trigger = this.appState.member.getPaywallTrigger('weekly_report')
       if (trigger !== null && trigger.requiredTier !== MemberTier.FREE) {
@@ -109,7 +109,7 @@ struct WeeklyReportPage {
 
         GridRow({
           columns: { sm: 4, md: 8, lg: 12 },
-          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
+          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] } as BreakPoints
         }) {
           GridCol({ span: { sm: 4, md: 8, lg: 10 }, offset: { sm: 0, md: 0, lg: 1 } }) {
             Scroll() {
@@ -231,14 +231,14 @@ struct WeeklyReportPage {
           .margin({ top: 8, bottom: 6 })
 
         if (report.buyLess.length > 0) {
-          Text($r('app.string.weekly_report_buy_less') + report.buyLess.join('、'))
+          Text() { Span($r('app.string.weekly_report_buy_less')); Span(report.buyLess.join('、')) }
             .fontSize(12)
             .fontColor('#D32F2F')
             .margin({ bottom: 4 })
         }
 
         if (report.buyMore.length > 0) {
-          Text($r('app.string.weekly_report_buy_more') + report.buyMore.join('、'))
+          Text() { Span($r('app.string.weekly_report_buy_more')); Span(report.buyMore.join('、')) }
             .fontSize(12)
             .fontColor('#2E7D32')
         }
@@ -284,7 +284,7 @@ struct WeeklyReportPage {
         const item = new ShoppingItem();
         item.id = `shop_${Date.now()}_${addedCount}`;
         item.name = advice;
-        item.category = $r('app.string.weekly_report_category_other') as string;
+        item.category = '其他';
         item.quantity = '';
         item.isPurchased = false;
         item.addedBy = '';

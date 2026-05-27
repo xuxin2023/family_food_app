@@ -24,6 +24,7 @@ export struct ContinuousScanView {
   @Local torchOn: boolean = false;
   @Local lastDecodedText: string = '';
   @Local lastDecodeTime: number = 0;
+  @Local scanLineOffset: number = 0;
 
   private xComponentController: XComponentController = new XComponentController();
   private cameraManager: camera.CameraManager | null = null;
@@ -32,9 +33,28 @@ export struct ContinuousScanView {
   private captureSession: camera.Session | null = null;
   private frameCallbackId: number = -1;
   private onBarcodeScanned: ((barcode: string) => void) | null = null;
+  private scanLineTimer: number = -1;
 
   aboutToDisappear(): void {
+    if (this.scanLineTimer !== -1) {
+      clearInterval(this.scanLineTimer);
+      this.scanLineTimer = -1;
+    }
     this.releaseCamera();
+  }
+
+  private startScanLineAnimation(): void {
+    if (this.scanLineTimer !== -1) {
+      clearInterval(this.scanLineTimer);
+    }
+    let offset = 0;
+    const step = 2;
+    const maxOffset = 280;
+    this.scanLineTimer = setInterval(() => {
+      offset += step;
+      if (offset > maxOffset) offset = 0;
+      this.scanLineOffset = offset;
+    }, 16);
   }
 
   build() {
@@ -51,15 +71,28 @@ export struct ContinuousScanView {
           this.initCamera();
         })
 
-      // 扫描框指示
+      // 扫描框指示 + 扫描线
       Column() {
-        Row()
-          .width(280)
-          .height(280)
-          .borderWidth(2)
-          .borderColor(COLORS.ACCENT_GREEN_4CAF)
-          .borderRadius(RADIUS.MD)
-          .opacity(0.8)
+        Stack() {
+          Row()
+            .width(280)
+            .height(280)
+            .borderWidth(2)
+            .borderColor(COLORS.ACCENT_GREEN_4CAF)
+            .borderRadius(RADIUS.MD)
+            .opacity(0.8)
+          // 扫描线
+          Row()
+            .width(260)
+            .height(2)
+            .linearGradient({
+              direction: GradientDirection.Right,
+              colors: [['transparent', 0], [COLORS.ACCENT_GREEN_4CAF, 0.5], ['transparent', 1]]
+            })
+            .offset({ y: this.scanLineOffset - 140 })
+        }
+        .width(280)
+        .height(280)
       }
       .width('100%')
       .height('100%')
@@ -95,6 +128,10 @@ export struct ContinuousScanView {
   }
 
   private async initCamera(): Promise<void> {
+    if (this.isScanning) {
+      hilog.info(DOMAIN_ZERO, TAG, 'Camera already initialized, skip');
+      return;
+    }
     try {
       const context = getContext(this);
       this.cameraManager = camera.getCameraManager(context);
@@ -125,6 +162,7 @@ export struct ContinuousScanView {
 
       this.isScanning = true;
       this.checkTorchSupport();
+      this.startScanLineAnimation();
 
       hilog.info(DOMAIN_ZERO, TAG, 'Camera initialized for continuous scan');
     } catch (error) {

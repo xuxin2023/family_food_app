@@ -1,7 +1,7 @@
 import { common } from '@kit.AbilityKit';
 import { FoodLabel, FoodSource } from 'hsp_core';
 import { OcrService } from './OcrService';
-import { ScanService } from 'hsp-service';
+import { ScanService, ScanLookupResult } from 'hsp_service';
 
 export class FoodInputResult {
   foodLabel: FoodLabel = new FoodLabel();
@@ -45,9 +45,9 @@ export class FoodInputService {
   }
 
   async scanBarcode(context: common.Context): Promise<FoodInputResult | null> {
-    const scanResult = await this.scanService.scanAndLookup(context);
-    const foodLabel = scanResult.foodLabel;
-    const barcode = scanResult.barcode;
+    const scanResult: ScanLookupResult = await this.scanService.scanAndLookup(context);
+    const foodLabel: FoodLabel | null = scanResult.foodLabel;
+    const barcode: string = scanResult.barcode;
     if (foodLabel) {
       const r1 = new FoodInputResult();
       r1.foodLabel = foodLabel;

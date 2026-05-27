@@ -59,7 +59,7 @@ export class SecureHttpHelper {
             const rawObj: RawResponse = new RawResponse();
             rawObj.raw = raw;
             // RawResponse is not a Record; wrap in a Record for type compatibility
-            result.data = { raw: rawObj.raw } as Record<string, Object>;
+            result.data = { 'raw': rawObj.raw } as Record<string, Object>;
           }
         }
       } else {

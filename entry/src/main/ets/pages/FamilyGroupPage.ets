@@ -287,7 +287,7 @@ struct FamilyGroupPage {
   }
 
   private showMemberManage(summary: GroupSummary): void {
-    let memberListText = $r('app.string.family_group_current_members') + '\n'
+    let memberListText = '当前成员\n'
     for (const m of summary.members) {
       const roleLabel = m.role === GroupRole.OWNER ? '👑 ' : (m.role === GroupRole.ADMIN ? '🛡️ ' : '')
       memberListText += roleLabel + m.displayName + '\n'
@@ -315,7 +315,7 @@ struct FamilyGroupPage {
       this.groupSummaries = await this.appState.getMyGroups()
       this.groupDS.reload(this.groupSummaries)
     } catch (e) {
-      ToastHelper.show(this.getUIContext(), $r('app.string.family_group_create_failed') + (e as Error).message)
+      ToastHelper.show(this.getUIContext(), `创建失败: ${(e as Error).message}`)
     }
   }
 
@@ -331,7 +331,7 @@ struct FamilyGroupPage {
       this.groupSummaries = await this.appState.getMyGroups()
       this.groupDS.reload(this.groupSummaries)
     } catch (e) {
-      ToastHelper.show(this.getUIContext(), $r('app.string.family_group_join_failed') + (e as Error).message)
+      ToastHelper.show(this.getUIContext(), `加入失败: ${(e as Error).message}`)
     }
   }
 

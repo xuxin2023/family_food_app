@@ -39,7 +39,7 @@ export struct FeatureButton {
     .backgroundColor(this.btnBg)
     .borderRadius(this.btnRadius)
     .margin({ bottom: 12 })
-    .accessibilityText(this.text as string)
+    .accessibilityText(this.text)
     .accessibilityLevel('yes')
     .onClick(() => {
       if (this.targetUrl.length > 0) {
@@ -66,7 +66,7 @@ export struct NavLinkText {
       .fontSize(13)
       .fontColor(this.color)
       .fontWeight(this.fontWeight as FontWeight)
-      .accessibilityText(this.text as string)
+      .accessibilityText(this.text)
       .accessibilityLevel('yes')
       .onClick(() => {
         safePushUrl(this.targetUrl);

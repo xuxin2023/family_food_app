@@ -63,20 +63,20 @@ export struct PrivacyConsentDialog {
         // 协议内容摘要
         Column() {
           this.buildPolicyItem(
-            $r('app.string.privacy_policy') as string,
-            $r('app.string.privacy_policy_desc') as string,
+            $r('app.string.privacy_policy') as ResourceStr,
+            $r('app.string.privacy_policy_desc') as ResourceStr,
             () => this.openUrl('https://www.familyfood.app/privacy')
           )
           Divider().color('#EEEEEE').margin({ left: 16, right: 16 })
           this.buildPolicyItem(
-            $r('app.string.user_agreement') as string,
-            $r('app.string.user_agreement_desc') as string,
+            $r('app.string.user_agreement') as ResourceStr,
+            $r('app.string.user_agreement_desc') as ResourceStr,
             () => this.openUrl('https://www.familyfood.app/terms')
           )
           Divider().color('#EEEEEE').margin({ left: 16, right: 16 })
           this.buildPolicyItem(
-            $r('app.string.data_collection_list') as string,
-            $r('app.string.data_collection_list_desc') as string,
+            $r('app.string.data_collection_list') as ResourceStr,
+            $r('app.string.data_collection_list_desc') as ResourceStr,
             () => this.openUrl('https://www.familyfood.app/data-list')
           )
         }
@@ -148,7 +148,7 @@ export struct PrivacyConsentDialog {
   }
 
   @Builder
-  buildPolicyItem(title: string, desc: string, onClick: () => void) {
+  buildPolicyItem(title: ResourceStr, desc: ResourceStr, onClick: () => void) {
     Row() {
       Column() {
         Text(title)

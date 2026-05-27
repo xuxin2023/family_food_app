@@ -10,8 +10,8 @@ import { RecipeCategory, RecipeDifficulty, DietTag } from '../model/Recipe';
 import { GroupRole, JoinMethod, JoinRequestStatus, FeedType } from '../model/FamilyGroup';
 import { MemberTier } from '../model/MemberStatus';
 import { MealScenario, RiskTag } from '../model/MealBalance';
-import { NovaGroup } from '../engine/NovaGroupEngine';
-import { ExerciseType } from '../engine/ExerciseNutritionEngine';
+import { NovaGroup } from '../model/NovaGroupDef';
+import { ExerciseType } from '../model/ExerciseTypeDef';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN } from '../constants/AppConfig';
 

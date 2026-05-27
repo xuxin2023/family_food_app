@@ -67,7 +67,7 @@ struct V2DemoPage {
           .borderRadius(16)
           .backgroundColor('#E8E8E8')
           .onClick(() => {
-            this.newMemberName = $r('app.string.v2_demo_member_prefix') + (this.manager.members.length + 1);
+            this.newMemberName = '成员' + (this.manager.members.length + 1);
             this.manager.addMember(this.newMemberName);
           })
           .accessibilityText('添加成员')
@@ -91,15 +91,15 @@ struct V2DemoPage {
       if (this.manager.selectedMember) {
         Row({ space: 8 }) {
           Button($r('app.string.v2_demo_add_breakfast')).fontSize(13)
-            .onClick(() => this.addMeal($r('app.string.v2_demo_breakfast'), 350, 200, 10, 8))
+            .onClick(() => this.addMeal('早餐', 350, 200, 10, 8))
             .accessibilityText('添加早餐')
             .accessibilityLevel('yes')
           Button($r('app.string.v2_demo_add_lunch')).fontSize(13)
-            .onClick(() => this.addMeal($r('app.string.v2_demo_lunch'), 650, 500, 12, 18))
+            .onClick(() => this.addMeal('午餐', 650, 500, 12, 18))
             .accessibilityText('添加午餐')
             .accessibilityLevel('yes')
           Button($r('app.string.v2_demo_add_dinner')).fontSize(13)
-            .onClick(() => this.addMeal($r('app.string.v2_demo_dinner'), 500, 400, 10, 15))
+            .onClick(() => this.addMeal('晚餐', 500, 400, 10, 15))
             .accessibilityText('添加晚餐')
             .accessibilityLevel('yes')
         }
@@ -162,7 +162,7 @@ struct MemberSummary {
 
   build() {
     Column() {
-      Text(this.member.name + ' · ' + $r('app.string.v2_demo_today_intake'))
+      Text() { Span(`${this.member.name} · `); Span($r('app.string.v2_demo_today_intake')) }
         .fontSize(16).fontWeight(FontWeight.Medium)
         .margin({ bottom: 12 })
 
@@ -274,7 +274,7 @@ struct MealItem {
       // 内联编辑 — 展示 @Local 组件内部状态
       if (this.editing) {
         Row({ space: 6 }) {
-          Text($r('app.string.v2_demo_calorie_inline') + ': ' + this.meal.calories).fontSize(12)
+          Text() { Span($r('app.string.v2_demo_calorie_inline')); Span(`: ${this.meal.calories}`) }.fontSize(12)
           Button('+50').fontSize(11).height(24)
             .onClick(() => { this.meal.calories += 50; })
             .accessibilityText('增加50卡路里')

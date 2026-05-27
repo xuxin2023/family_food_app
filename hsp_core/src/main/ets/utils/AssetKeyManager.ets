@@ -15,13 +15,13 @@ const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 // 工具函数：string <-> Uint8Array
 function stringToArray(str: string): Uint8Array {
   const textEncoder = new util.TextEncoder();
-  return textEncoder.encodeInto(str);
+  return textEncoder.encode(str);
 }
 
 function arrayToString(arr: Uint8Array): string {
   if (!arr || arr.length === 0) return '';
   const textDecoder = util.TextDecoder.create('utf-8', { ignoreBOM: true });
-  return textDecoder.decodeToString(arr, { stream: false });
+  return textDecoder.decodeWithStream(arr, { stream: false });
 }
 
 // 预定义的 Key 别名（每条 Key 在 Asset 中唯一）

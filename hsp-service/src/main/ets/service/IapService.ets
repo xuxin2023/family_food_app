@@ -3,48 +3,23 @@
 //
 // 沙箱测试配置说明：
 // ======================== 沙箱测试账号配置 ========================
-// 1. 在 AppGallery Connect 中配置沙箱测试账号（华为账号）
-// 2. 测试手机登录该华为账号后，在 Developer Options 中开启沙箱模式
-// 3. 沙箱模式下所有支付都是模拟支付，不会产生真实扣款
-// 4. 沙箱模式会自动返回 PRODUCT_OWNED 错误用于测试补发货流程
-// 5. 测试完成后记得关闭沙箱模式
-//
-// ======================== 发布检查清单 ========================
-// ✓ IS_SANDBOX_ENABLED 已设为 false（第274行）
-// ✓ 沙箱测试全部完成（见下方清单）
-// 沙箱测试清单（发布前逐项确认通过）：
-//   - [x] 查询商品列表
-//   - [x] 购买非续期订阅商品（个人/家庭/高级版）
-//   - [x] 购买消耗品（透明度报告/品牌溯源）
-//   - [x] 取消购买
-//   - [x] 恢复购买
-//   - [x] 补发货流程（PRODUCT_OWNED 触发）
-//   - [x] 购买超时（手动断网）
-//   - [x] 重复购买同一商品
-// ================================================================
-//
-// 数据流：
-//   queryProducts → 展示商品列表 → createPurchase → 解码JWS → 发放权益 → finishPurchase
-//   应用启动 / 购买失败(PRODUCT_OWNED/SYSTEM_ERROR) → queryPurchases(UNFINISHED) → 补发货
-//   restorePurchases → queryPurchases(CURRENT_ENTITLEMENT) → 恢复本地会员状态
-//
-// 商品配置表：
-// | productId                       | tier      | price      | originalPrice | 商品类型     |
-// |---------------------------------|-----------|------------|---------------|-------------|
-// | family_food_personal_monthly    | PERSONAL  | ¥9/月      | —             | NONRENEWABLE |
-// | family_food_personal_yearly     | PERSONAL  | ¥39/年     | ¥108          | NONRENEWABLE |
-// | family_food_family_yearly       | FAMILY    | ¥69/年     | ¥199          | NONRENEWABLE |
-// | family_food_premium_yearly      | PREMIUM   | ¥129/年    | ¥299          | NONRENEWABLE |
-// | family_food_transparency_report | —         | ¥3.9/次    | —             | CONSUMABLE   |
-// | family_food_brand_trace         | —         | ¥2.9/次    | —             | CONSUMABLE   |
 
-import { ToastHelper, StringRes, HILOG_DOMAIN, MemberTier, ProductInfo, PurchaseResult } from 'hsp_core';
+import { ToastHelper, StringRes, HILOG_DOMAIN, MemberTier, PurchaseResult } from 'hsp_core';
 import { iap } from '@kit.IAPKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { util } from '@kit.ArkTS';
+
+class ProductInfo {
+  productId: string = '';
+  tier: MemberTier = MemberTier.FREE;
+  price: string = '';
+  originalPrice: string = '';
+  title: string = '';
+  description: string = '';
+}
 
 
 // ==================== 沙箱测试报告类型 ====================
@@ -57,7 +32,7 @@ export class SandboxTestStep {
   success: boolean = false
   duration: number = 0
   errorCode: number = 0
-  errorMessage: string = ''
+  errorMessage: ResourceStr = ''
   details: string = ''
 }
 
@@ -182,7 +157,7 @@ function base64UrlDecode(input: string): string {
     const helper = new util.Base64Helper();
     const decoded: Uint8Array = helper.decodeSync(base64);
     const textDecoder: util.TextDecoder = util.TextDecoder.create('utf-8');
-    return textDecoder.decodeToString(decoded);
+    return textDecoder.decodeWithStream(decoded, { stream: false });
   } catch (e) {
     hilog.warn(DOMAIN_ZERO, TAG, 'Base64 decode failed: %{public}s', JSON.stringify(e));
     return '';
@@ -426,31 +401,31 @@ export class IapService {
    *   PRODUCT_OWNED (7000002) = 商品已拥有（可用于测试补发货）
    *   SYSTEM_ERROR (7000003) = 系统错误（可触发补发货流程）
    */
-  private parseIapError(err: BusinessError): string {
+  private parseIapError(err: BusinessError): ResourceStr {
     // 先匹配 IAP Kit 内置错误码
     if (err.code === iap.IAPErrorCode.PRODUCT_OWNED) {
-      return $r('app.string.iap_err_product_owned') as string;
+      return $r('app.string.iap_err_product_owned') as ResourceStr;
     }
     if (err.code === iap.IAPErrorCode.SYSTEM_ERROR) {
-      return $r('app.string.iap_err_system_busy') as string;
+      return $r('app.string.iap_err_system_busy') as ResourceStr;
     }
     if (err.code === iap.IAPErrorCode.USER_CANCELED) {
-      return $r('app.string.iap_err_user_canceled') as string;
+      return $r('app.string.iap_err_user_canceled') as ResourceStr;
     }
     if (err.code === iap.IAPErrorCode.PURCHASE_NOT_PAID) {
-      return $r('app.string.iap_err_no_record') as string;
+      return $r('app.string.iap_err_no_record') as ResourceStr;
     }
     if (err.code === iap.IAPErrorCode.FREQUENT_CALLS) {
-      return $r('app.string.iap_err_frequent') as string;
+      return $r('app.string.iap_err_frequent') as ResourceStr;
     }
     if (err.code === iap.IAPErrorCode.NETWORK_ERROR) {
-      return $r('app.string.iap_err_network_unstable') as string;
+      return $r('app.string.iap_err_network_unstable') as ResourceStr;
     }
     if (err.code === iap.IAPErrorCode.ACCOUNT_NOT_TEST) {
-      return $r('app.string.iap_err_not_test_account') as string;
+      return $r('app.string.iap_err_not_test_account') as ResourceStr;
     }
     if (err.code === iap.IAPErrorCode.APP_NOT_DEBUG) {
-      return $r('app.string.iap_err_not_debug') as string;
+      return $r('app.string.iap_err_not_debug') as ResourceStr;
     }
 
     // 匹配扩展错误码
@@ -461,43 +436,43 @@ export class IapService {
 
     // 沙箱环境特殊提示
     if (IS_SANDBOX_ENABLED) {
-      return `${$r('app.string.iap_err_sandbox_anomaly') as string}`.replace('%s', `${err.code}`);
+      return `${$r('app.string.iap_err_sandbox_anomaly') as ResourceStr}`.replace('%s', `${err.code}`);
     }
 
-    return `${$r('app.string.iap_err_payment_failed') as string}`.replace('%s', `${err.code}`);
+    return `${$r('app.string.iap_err_payment_failed') as ResourceStr}`.replace('%s', `${err.code}`);
   }
 
   /**
    * 映射扩展错误码（避免在普通方法中使用 Record<number, string> 的语法限制）
    */
-  private mapExtendedErrorCode(code: number): string | undefined {
+  private mapExtendedErrorCode(code: number): ResourceStr | undefined {
     switch (code) {
       case -1:
-        return $r('app.string.iap_err_internal') as string;
+        return $r('app.string.iap_err_internal') as ResourceStr;
       case -2:
-        return $r('app.string.iap_err_network_error') as string;
+        return $r('app.string.iap_err_network_error') as ResourceStr;
       case -3:
-        return $r('app.string.iap_err_sandbox_config') as string;
+        return $r('app.string.iap_err_sandbox_config') as ResourceStr;
       case 1001:
-        return $r('app.string.iap_err_huawei_not_ready') as string;
+        return $r('app.string.iap_err_huawei_not_ready') as ResourceStr;
       case 1002:
-        return $r('app.string.iap_err_api_incompatible') as string;
+        return $r('app.string.iap_err_api_incompatible') as ResourceStr;
       case 35001:
-        return $r('app.string.iap_err_service_exception') as string;
+        return $r('app.string.iap_err_service_exception') as ResourceStr;
       case 35002:
-        return $r('app.string.iap_err_param_invalid') as string;
+        return $r('app.string.iap_err_param_invalid') as ResourceStr;
       case 35003:
-        return $r('app.string.iap_err_product_invalid') as string;
+        return $r('app.string.iap_err_product_invalid') as ResourceStr;
       case 35004:
-        return $r('app.string.iap_err_order_failed') as string;
+        return $r('app.string.iap_err_order_failed') as ResourceStr;
       case 35005:
-        return $r('app.string.iap_err_purchase_canceled') as string;
+        return $r('app.string.iap_err_purchase_canceled') as ResourceStr;
       case 35006:
-        return $r('app.string.iap_err_password_failed') as string;
+        return $r('app.string.iap_err_password_failed') as ResourceStr;
       case 35007:
-        return $r('app.string.iap_err_insufficient_balance') as string;
+        return $r('app.string.iap_err_insufficient_balance') as ResourceStr;
       case 35008:
-        return $r('app.string.iap_err_daily_limit') as string;
+        return $r('app.string.iap_err_daily_limit') as ResourceStr;
       default:
         return undefined;
     }
@@ -609,7 +584,7 @@ export class IapService {
    */
   async purchase(productId: string): Promise<PurchaseResult> {
     if (!this.context) {
-      return this.failResult(productId, $r('app.string.iap_service_not_init') as string);
+      return this.failResult(productId, $r('app.string.iap_service_not_init') as ResourceStr);
     }
 
     const def = PRODUCT_DEFINITIONS.find(d => d.productId === productId);
@@ -642,7 +617,7 @@ export class IapService {
       const result: iap.CreatePurchaseResult = await (this.withTimeout(
         iap.createPurchase(uiContext, purchaseParam),
         PURCHASE_TIMEOUT_MS,
-        $r('app.string.iap_purchase_timeout') as string
+        '购买超时，请重试'
       ) as Promise<iap.CreatePurchaseResult>);
 
       // 解析购买结果
@@ -682,7 +657,7 @@ export class IapService {
       if (payload.purchaseOrderRevocationReasonCode !== undefined &&
           payload.purchaseOrderRevocationReasonCode !== null &&
           payload.purchaseOrderRevocationReasonCode.length > 0) {
-        return this.failResult(productId, $r('app.string.iap_order_revoked') as string);
+        return this.failResult(productId, $r('app.string.iap_order_revoked') as ResourceStr);
       }
 
       // 记录订单
@@ -1058,7 +1033,7 @@ export class IapService {
   /**
    * 构造失败结果
    */
-  private failResult(productId: string, message: string): PurchaseResult {
+  private failResult(productId: string, message: ResourceStr): PurchaseResult {
     const r = new PurchaseResult();
     r.success = false;
     r.productId = productId;
@@ -1072,7 +1047,7 @@ export class IapService {
     r.success = true;
     r.productId = productId;
     r.errorCode = 0;
-    r.errorMessage = $r('app.string.iap_purchase_success') as string;
+    r.errorMessage = $r('app.string.iap_purchase_success') as ResourceStr;
     return r;
   }
 
@@ -1082,50 +1057,50 @@ export class IapService {
    * 将错误码转为用户友好的提示文本
    * 覆盖沙箱测试中的常见错误码场景
    */
-  handlePurchaseError(code: number, message?: string): string {
+  handlePurchaseError(code: number, message?: string): ResourceStr {
     // 自定义错误码映射（沙箱测试扩展）
     switch (code) {
       case -1:
-        return $r('app.string.iap_err_pay_canceled') as string;
+        return $r('app.string.iap_err_pay_canceled') as ResourceStr;
       case -2:
-        return $r('app.string.iap_err_network_retry') as string;
+        return $r('app.string.iap_err_network_retry') as ResourceStr;
       case -3:
-        return $r('app.string.iap_err_pay_fail_retry') as string;
+        return $r('app.string.iap_err_pay_fail_retry') as ResourceStr;
       case 1001:
-        return $r('app.string.iap_err_already_subscribed') as string;
+        return $r('app.string.iap_err_already_subscribed') as ResourceStr;
       case 1002:
-        return $r('app.string.iap_err_product_not_exist') as string;
+        return $r('app.string.iap_err_product_not_exist') as ResourceStr;
       case 1003:
-        return $r('app.string.iap_err_login_first') as string;
+        return $r('app.string.iap_err_login_first') as ResourceStr;
       default:
         break;
     }
     // IAP Kit 内置错误码映射
     if (code === iap.IAPErrorCode.USER_CANCELED) {
-      return $r('app.string.iap_err_pay_canceled') as string;
+      return $r('app.string.iap_err_pay_canceled') as ResourceStr;
     }
     if (code === iap.IAPErrorCode.SYSTEM_ERROR) {
-      return $r('app.string.iap_err_system_busy_retry') as string;
+      return $r('app.string.iap_err_system_busy_retry') as ResourceStr;
     }
     if (code === iap.IAPErrorCode.PRODUCT_OWNED) {
-      return $r('app.string.iap_err_no_repeat_purchase') as string;
+      return $r('app.string.iap_err_no_repeat_purchase') as ResourceStr;
     }
     if (code === iap.IAPErrorCode.NETWORK_ERROR) {
-      return $r('app.string.iap_err_network_retry') as string;
+      return $r('app.string.iap_err_network_retry') as ResourceStr;
     }
     if (code === iap.IAPErrorCode.PURCHASE_NOT_PAID) {
-      return $r('app.string.iap_err_no_record') as string;
+      return $r('app.string.iap_err_no_record') as ResourceStr;
     }
     if (code === iap.IAPErrorCode.FREQUENT_CALLS) {
-      return $r('app.string.iap_err_too_frequent') as string;
+      return $r('app.string.iap_err_too_frequent') as ResourceStr;
     }
     if (code === iap.IAPErrorCode.ACCOUNT_NOT_LOGGED_IN) {
-      return $r('app.string.iap_err_login_first') as string;
+      return $r('app.string.iap_err_login_first') as ResourceStr;
     }
     if (code === iap.IAPErrorCode.PURCHASE_FINISHED) {
-      return $r('app.string.iap_err_already_delivered') as string;
+      return $r('app.string.iap_err_already_delivered') as ResourceStr;
     }
-    return message && message.length > 0 ? message : `${$r('app.string.iap_err_anomaly') as string}`.replace('%s', `${code}`);
+    return message && message.length > 0 ? message : `${$r('app.string.iap_err_anomaly') as ResourceStr}`.replace('%s', `${code}`);
   }
 
   // ==================== 购买超时检查 ====================
@@ -1143,7 +1118,7 @@ export class IapService {
           success: false,
           productId: productId,
           errorCode: -2,
-          errorMessage: $r('app.string.iap_payment_processing') as string
+          errorMessage: $r('app.string.iap_payment_processing') as ResourceStr
         });
       }, timeoutMs);
     });
@@ -1171,7 +1146,7 @@ export class IapService {
     const startTime = Date.now();
     const steps: SandboxTestStep[] = [];
     const recordStep = (name: string, success: boolean, duration: number,
-      errorCode: number, errorMessage: string, details: string): void => {
+      errorCode: number, errorMessage: ResourceStr, details: string): void => {
       const step = new SandboxTestStep();
       step.name = name;
       step.success = success;

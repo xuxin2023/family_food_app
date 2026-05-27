@@ -82,7 +82,7 @@ export struct NutriScoreCrossVerify {
                 .textAlign(TextAlign.Center)
                 .borderRadius(RADIUS.SM)
                 .backgroundColor(getGradeColor(vd.localGrade))
-              Text(`${vd.localScore}${$r('app.string.nutri_cross_score_unit')}`)
+              Text() { Span(`${vd.localScore}`); Span($r('app.string.nutri_cross_score_unit')) }
                 .fontSize(FONT_SIZE.SMALL)
                 .fontColor(COLORS.TEXT_SECONDARY)
                 .margin({ left: 6 })
@@ -107,7 +107,7 @@ export struct NutriScoreCrossVerify {
                 .textAlign(TextAlign.Center)
                 .borderRadius(RADIUS.SM)
                 .backgroundColor(getGradeColor(vd.offGrade))
-              Text(`${vd.offScore}${$r('app.string.nutri_cross_score_unit')}`)
+              Text() { Span(`${vd.offScore}`); Span($r('app.string.nutri_cross_score_unit')) }
                 .fontSize(FONT_SIZE.SMALL)
                 .fontColor(COLORS.TEXT_SECONDARY)
                 .margin({ left: 6 })

@@ -7,10 +7,10 @@
   "license": "",
   "dependencies": {
     "hsp_core": "file:../hsp_core",
-    "hsp-service": "file:../hsp-service",
-    "feature-scan": "file:../feature-scan",
-    "feature-report": "file:../feature-report",
-    "feature-community": "file:../feature-community"
+    "hsp_service": "file:../hsp-service",
+    "feature_scan": "file:../feature-scan",
+    "feature_report": "file:../feature-report",
+    "feature_community": "file:../feature-community"
   },
   "devDependencies": {
     "@ohos/hypium": "1.0.25"

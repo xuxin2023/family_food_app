@@ -26,40 +26,31 @@ export enum ConflictResolution {
 /**
  * 云同步全局配置
  */
-export interface CloudSyncConfig {
-  /** 是否启用云同步 */
-  enabled: boolean;
-  /** 同步策略 */
-  strategy: SyncStrategy;
-  /** 冲突解决策略 */
-  conflictResolution: ConflictResolution;
-  /** 同步间隔（分钟），默认15分钟 */
-  syncIntervalMinutes: number;
-  /** 批量同步大小，默认50条 */
-  batchSize: number;
-  /** 最大重试次数，默认5次 */
-  maxRetries: number;
-  /** 重试间隔（秒），递增 */
-  retryBaseIntervalSeconds: number;
-  /** 上次全量同步时间戳 */
-  lastFullSyncAt: number;
-  /** 同步队列中的记录数 */
-  pendingCount: number;
+export class CloudSyncConfig {
+  enabled: boolean = false;
+  strategy: SyncStrategy = SyncStrategy.ALWAYS;
+  conflictResolution: ConflictResolution = ConflictResolution.LOCAL_WINS;
+  syncIntervalMinutes: number = 15;
+  batchSize: number = 50;
+  maxRetries: number = 5;
+  retryBaseIntervalSeconds: number = 30;
+  lastFullSyncAt: number = 0;
+  pendingCount: number = 0;
 }
 
 /**
  * 创建默认同步配置
  */
 export function createDefaultSyncConfig(): CloudSyncConfig {
-  return {
-    enabled: false,
-    strategy: SyncStrategy.ALWAYS,
-    conflictResolution: ConflictResolution.LOCAL_WINS,
-    syncIntervalMinutes: 15,
-    batchSize: 50,
-    maxRetries: 5,
-    retryBaseIntervalSeconds: 30,
-    lastFullSyncAt: 0,
-    pendingCount: 0
-  };
+  const config = new CloudSyncConfig();
+  config.enabled = false;
+  config.strategy = SyncStrategy.ALWAYS;
+  config.conflictResolution = ConflictResolution.LOCAL_WINS;
+  config.syncIntervalMinutes = 15;
+  config.batchSize = 50;
+  config.maxRetries = 5;
+  config.retryBaseIntervalSeconds = 30;
+  config.lastFullSyncAt = 0;
+  config.pendingCount = 0;
+  return config;
 }

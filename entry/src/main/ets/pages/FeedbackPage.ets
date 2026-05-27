@@ -4,7 +4,7 @@
 
 import { ToastHelper, safeBack, COLORS, HILOG_DOMAIN } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
-import { HuaweiCloudService } from 'hsp-service';
+import { HuaweiCloudService } from 'hsp_service';
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferences } from '@kit.ArkData';
@@ -265,7 +265,7 @@ struct FeedbackPage {
     this.isSubmitting = true;
 
     const feedbackData = new FeedbackData();
-    feedbackData.type = FEEDBACK_TYPES[this.selectedTypeIndex];
+    feedbackData.type = FEEDBACK_TYPES[this.selectedTypeIndex] as string;
     feedbackData.content = this.content;
     feedbackData.contact = this.contact;
     feedbackData.screenshots = [...this.screenshotUris];

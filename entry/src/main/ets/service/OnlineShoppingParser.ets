@@ -9,7 +9,7 @@ import { FoodLabel, NutritionPer100g, FoodSource, API_TIMEOUT_CONFIG, HILOG_DOMA
 import { http } from '@kit.NetworkKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { OcrService } from './OcrService';
-import { SecureHttpHelper } from 'hsp-service';
+import { SecureHttpHelper } from 'hsp_service';
 
 const TAG = 'OnlineShoppingParser';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;

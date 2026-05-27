@@ -4,7 +4,7 @@
 
 import { huks } from '@kit.UniversalKeystoreKit';
 import { cryptoFramework } from '@kit.CryptoArchitectureKit';
-import { util } from '@kit.BasicServicesKit';
+import { util } from '@kit.ArkTS';
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -20,7 +20,8 @@ const TAG_LENGTH = 16; // GCM Tag 16 字节
 
 export class SecureDataStore {
   private static instance: SecureDataStore;
-  private keyMaterial: huks.HuksResult | null = null;
+  private keyMaterial: huks.HuksReturnResult | null = null;
+  private keyExists: boolean = false;
   private context: common.Context | null = null;
 
   static getInstance(): SecureDataStore {
@@ -82,24 +83,24 @@ export class SecureDataStore {
     await this.ensureKey();
     const symKeyGenerator = cryptoFramework.createSymKeyGenerator('AES256');
     const keyData = new Uint8Array(this.keyMaterial!.outData!);
-    const symKey = await symKeyGenerator.convertKey({ data: keyData.buffer as ArrayBuffer });
+    const symKey = await symKeyGenerator.convertKey({ data: new Uint8Array(keyData.buffer as ArrayBuffer) });
 
     const cipher = cryptoFramework.createCipher('AES256|GCM|NONE');
-    const iv = cryptoFramework.createIv(new Uint8Array(IV_LENGTH));
+    const ivBytes = new Uint8Array(IV_LENGTH);
     const params: cryptoFramework.GcmParamsSpec = {
-      iv: { data: new Uint8Array(IV_LENGTH).buffer as ArrayBuffer },
-      aad: { data: new Uint8Array(0).buffer as ArrayBuffer },
-      authTag: { data: new Uint8Array(TAG_LENGTH).buffer as ArrayBuffer },
-      algoName: 'GcmParamsSpec'
+      iv: { data: new Uint8Array(ivBytes.buffer as ArrayBuffer) },
+      aad: { data: new Uint8Array(0) },
+      authTag: { data: new Uint8Array(TAG_LENGTH) },
+      algName: 'GcmParamsSpec'
     };
 
     await cipher.init(cryptoFramework.CryptoMode.ENCRYPT_MODE, symKey, params);
     const input: cryptoFramework.DataBlob = {
-      data: this.stringToArrayBuffer(plainText)
+      data: new Uint8Array(this.stringToArrayBuffer(plainText))
     };
     const result = await cipher.doFinal(input);
     // 返回 IV + 密文 + AuthTag 的拼接
-    return this.concatBuffers(iv.data, result.data);
+    return this.concatBuffers(ivBytes.buffer as ArrayBuffer, result.data);
   }
 
   /** 解密数据 */
@@ -107,7 +108,7 @@ export class SecureDataStore {
     await this.ensureKey();
     const symKeyGenerator = cryptoFramework.createSymKeyGenerator('AES256');
     const keyData = new Uint8Array(this.keyMaterial!.outData!);
-    const symKey = await symKeyGenerator.convertKey({ data: keyData.buffer as ArrayBuffer });
+    const symKey = await symKeyGenerator.convertKey({ data: new Uint8Array(keyData.buffer as ArrayBuffer) });
 
     if (encryptedData.byteLength < IV_LENGTH + TAG_LENGTH) {
       throw new Error('Invalid encrypted data length');
@@ -120,14 +121,14 @@ export class SecureDataStore {
 
     const decipher = cryptoFramework.createCipher('AES256|GCM|NONE');
     const params: cryptoFramework.GcmParamsSpec = {
-      iv: { data: iv.buffer as ArrayBuffer },
-      aad: { data: new Uint8Array(0).buffer as ArrayBuffer },
-      authTag: { data: tag.buffer as ArrayBuffer },
-      algoName: 'GcmParamsSpec'
+      iv: { data: new Uint8Array(iv.buffer as ArrayBuffer) },
+      aad: { data: new Uint8Array(0) },
+      authTag: { data: new Uint8Array(tag.buffer as ArrayBuffer) },
+      algName: 'GcmParamsSpec'
     };
 
     await decipher.init(cryptoFramework.CryptoMode.DECRYPT_MODE, symKey, params);
-    const input: cryptoFramework.DataBlob = { data: cipherData.buffer as ArrayBuffer };
+    const input: cryptoFramework.DataBlob = { data: new Uint8Array(cipherData.buffer as ArrayBuffer) };
     const result = await decipher.doFinal(input);
     return this.arrayBufferToString(result.data);
   }
@@ -135,48 +136,64 @@ export class SecureDataStore {
   // ========== 内部方法 ==========
 
   private async ensureKey(): Promise<void> {
-    if (this.keyMaterial) return;
+    if (this.keyMaterial && this.keyExists) return;
     try {
-      // 尝试获取已有密钥
-      const keyProperties: huks.HuksKeyProperties = {
-        alias: KEY_ALIAS
+      const isExistOptions: huks.HuksOptions = {
+        properties: [
+          { tag: huks.HuksTag.HUKS_TAG_AUTH_STORAGE_LEVEL, value: huks.HuksAuthStorageLevel.HUKS_AUTH_STORAGE_LEVEL_DE } as huks.HuksParam
+        ]
       };
-      this.keyMaterial = await huks.getKeyProperties(keyProperties);
+      const isExistResult = await huks.isKeyItemExist(KEY_ALIAS, isExistOptions);
+      if (isExistResult) {
+        this.keyExists = true;
+        this.keyMaterial = await this.exportKeyMaterial();
+      } else {
+        await this.generateKey();
+      }
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'ensureKey failed: %{public}s', JSON.stringify(e));
       await this.generateKey();
     }
   }
 
-  private async generateKey(): Promise<void> {
-    const keyGenParams: huks.HuksKeyGenOptions = {
+  private async exportKeyMaterial(): Promise<huks.HuksReturnResult> {
+    const exportOptions: huks.HuksOptions = {
       properties: [
-        { tag: huks.HuksTag.HUKS_TAG_ALGORITHM, value: huks.HuksKeyAlg.HUKS_ALG_AES },
-        { tag: huks.HuksTag.HUKS_TAG_KEY_SIZE, value: huks.HuksKeySize.HUKS_AES_KEY_SIZE_256 },
-        { tag: huks.HuksTag.HUKS_TAG_PURPOSE, value: huks.HuksKeyPurpose.HUKS_KEY_PURPOSE_ENCRYPT | huks.HuksKeyPurpose.HUKS_KEY_PURPOSE_DECRYPT },
-        { tag: huks.HuksTag.HUKS_TAG_DIGEST, value: huks.HuksKeyDigest.HUKS_DIGEST_SHA256 },
-        { tag: huks.HuksTag.HUKS_TAG_BLOCK_MODE, value: huks.HuksCipherMode.HUKS_MODE_GCM },
-        { tag: huks.HuksTag.HUKS_TAG_PADDING, value: huks.HuksKeyPadding.HUKS_PADDING_NONE },
-        { tag: huks.HuksTag.HUKS_TAG_AUTH_STORAGE_LEVEL, value: huks.HuksAuthStorageLevel.HUKS_AUTH_STORAGE_LEVEL_DE }
-      ],
-      alias: KEY_ALIAS
+        { tag: huks.HuksTag.HUKS_TAG_AUTH_STORAGE_LEVEL, value: huks.HuksAuthStorageLevel.HUKS_AUTH_STORAGE_LEVEL_DE } as huks.HuksParam
+      ]
     };
-    await huks.generateKeyItem(keyGenParams);
-    // 重新获取
-    const keyProperties2: huks.HuksKeyProperties = {
-      alias: KEY_ALIAS
+    return await huks.exportKeyItem(KEY_ALIAS, exportOptions);
+  }
+
+  private async generateKey(): Promise<void> {
+    const keyGenProperties: huks.HuksParam[] = [
+      { tag: huks.HuksTag.HUKS_TAG_ALGORITHM, value: huks.HuksKeyAlg.HUKS_ALG_AES } as huks.HuksParam,
+      { tag: huks.HuksTag.HUKS_TAG_KEY_SIZE, value: huks.HuksKeySize.HUKS_AES_KEY_SIZE_256 } as huks.HuksParam,
+      { tag: huks.HuksTag.HUKS_TAG_PURPOSE, value: huks.HuksKeyPurpose.HUKS_KEY_PURPOSE_ENCRYPT | huks.HuksKeyPurpose.HUKS_KEY_PURPOSE_DECRYPT } as huks.HuksParam,
+      { tag: huks.HuksTag.HUKS_TAG_DIGEST, value: huks.HuksKeyDigest.HUKS_DIGEST_SHA256 } as huks.HuksParam,
+      { tag: huks.HuksTag.HUKS_TAG_BLOCK_MODE, value: huks.HuksCipherMode.HUKS_MODE_GCM } as huks.HuksParam,
+      { tag: huks.HuksTag.HUKS_TAG_PADDING, value: huks.HuksKeyPadding.HUKS_PADDING_NONE } as huks.HuksParam,
+      { tag: huks.HuksTag.HUKS_TAG_AUTH_STORAGE_LEVEL, value: huks.HuksAuthStorageLevel.HUKS_AUTH_STORAGE_LEVEL_DE } as huks.HuksParam
+    ];
+    const keyGenOptions: huks.HuksOptions = {
+      properties: keyGenProperties
     };
-    this.keyMaterial = await huks.getKeyProperties(keyProperties2);
+    await huks.generateKeyItem(KEY_ALIAS, keyGenOptions);
+    this.keyMaterial = await this.exportKeyMaterial();
+    this.keyExists = true;
   }
 
   private stringToArrayBuffer(str: string): ArrayBuffer {
-    const encoder = new util.TextEncoder();
-    return encoder.encodeInto(str).buffer as ArrayBuffer;
+    const encoder: util.TextEncoder = new util.TextEncoder();
+    const encoded: Uint8Array = encoder.encodeInto(str);
+    return encoded.buffer as ArrayBuffer;
   }
 
   private arrayBufferToString(buffer: ArrayBuffer): string {
-    const decoder = new util.TextDecoder('utf-8');
-    return decoder.decodeWithStream(new Uint8Array(buffer));
+    const decoder: util.TextDecoder = new util.TextDecoder('utf-8');
+    const bytes = new Uint8Array(buffer);
+    const decoded: string = decoder.decodeToString(bytes);
+    return decoded;
   }
 
   private arrayBufferToHex(buffer: ArrayBuffer): string {

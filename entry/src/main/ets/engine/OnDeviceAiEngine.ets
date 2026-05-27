@@ -21,47 +21,72 @@ const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT
 let mindSporeLiteAvailable = false;
 let mindSporeLite: typeof import('@kit.MindSporeLiteKit').mindSporeLite | null = null;
 try {
-  const mslKit = requireNapi('@kit.MindSporeLiteKit');
+  const mslKit = globalThis.requireNapi?.('@kit.MindSporeLiteKit') as Record<string, Object> | null;
   if (mslKit) {
-    mindSporeLite = mslKit.mindSporeLite;
+    mindSporeLite = mslKit.mindSporeLite as typeof import('@kit.MindSporeLiteKit').mindSporeLite;
     mindSporeLiteAvailable = true;
   }
 } catch {
   mindSporeLiteAvailable = false;
 }
 
-/** AI 推理配置 */
-interface InferenceConfig {
-  deviceType: 'npu' | 'cpu'    // 优先 NPU，不可用时降级 CPU
-  threadNum: number             // CPU 线程数
-  enableFp16: boolean           // FP16 量化加速
-  maxPromptTokens: number       // 最大输入 tokens
-  maxOutputTokens: number       // 最大输出 tokens
+class InferenceConfig {
+  deviceType: 'npu' | 'cpu' = 'npu'
+  threadNum: number = 4
+  enableFp16: boolean = true
+  maxPromptTokens: number = 2048
+  maxOutputTokens: number = 512
+}
+
+class HarmfulAdditive {
+  name: string = ''
+  code: string = ''
+  risk: string = ''
+}
+
+class AllergenRisk {
+  allergen: string = ''
+  confidence: number = 0
 }
 
 /** 食品成分分析结果 */
-export interface IngredientAnalysis {
-  harmfulAdditives: Array<{ name: string; code: string; risk: string }>
-  nutritionScore: number        // 0-100
-  novaGroup: number             // 1-4
-  allergenRisks: Array<{ allergen: string; confidence: number }>
-  summary: string
-  suggestion: string
+export class IngredientAnalysis {
+  harmfulAdditives: HarmfulAdditive[] = []
+  nutritionScore: number = 50
+  novaGroup: number = 2
+  allergenRisks: AllergenRisk[] = []
+  summary: string = ''
+  suggestion: string = ''
 }
 
-/** 个性化建议输出 */
-export interface PersonalizedAdviceOutput {
-  recommendation: string
-  alternatives: string[]
-  warnings: string[]
-  motivationalMessage: string
+export class PersonalizedAdviceOutput {
+  recommendation: string = ''
+  alternatives: string[] = []
+  warnings: string[] = []
+  motivationalMessage: string = ''
 }
 
 /** NPU 状态 */
-interface NpuStatus {
-  available: boolean
-  modelLoaded: boolean
-  memoryUsageMB: number
+class NpuStatus {
+  available: boolean = false
+  modelLoaded: boolean = false
+  memoryUsageMB: number = 0
+}
+
+class InferenceOptions {
+  outputType: string = ''
+}
+
+class MemberProfile {
+  ageGroup: string = ''
+  healthGoals: string[] = []
+  allergens: string[] = []
+}
+
+class FoodLabel {
+  foodName: string = ''
+  nutritionGrade: string = ''
+  harmfulAdditives: string[] = []
 }
 
 export class OnDeviceAiEngine {
@@ -72,13 +97,7 @@ export class OnDeviceAiEngine {
   // MindSpore Lite 模型引用（实际部署时取消注释）
   // private msModel: MSLiteModel | null = null
   // private msContext: MSLiteContext | null = null
-  private inferenceConfig: InferenceConfig = {
-    deviceType: 'npu',
-    threadNum: 4,
-    enableFp16: true,
-    maxPromptTokens: 2048,
-    maxOutputTokens: 512
-  }
+  private inferenceConfig: InferenceConfig = new InferenceConfig()
 
   private context: common.Context | null = null
 
@@ -115,7 +134,9 @@ export class OnDeviceAiEngine {
     try {
       const context = this.context ?? getContext(this)
       const fullModelPath = context.resourceDir + '/rawfile/' + modelPath
-      const msContext = mindSporeLite.createContext()
+      const msLite = mindSporeLite as Record<string, Object>
+      const createContextFn = msLite['createContext'] as (() => Object) | undefined
+      const msContext: Object = createContextFn?.() as Object
       const msModel = mindSporeLite.loadModelFromFile(fullModelPath, msContext)
       this.modelLoaded = msModel !== null && msModel !== undefined
       hilog.info(DOMAIN_ZERO, TAG, 'Model loaded from: %{public}s, success=%{public}s', modelPath, String(this.modelLoaded))
@@ -131,7 +152,7 @@ export class OnDeviceAiEngine {
    * @param input - 输入特征向量 (float32)
    * @returns 输出特征向量 (float32)
    */
-  infer(input: float[]): float[] {
+  infer(input: number[]): number[] {
     if (!this.modelLoaded) {
       hilog.warn(DOMAIN_ZERO, TAG, 'infer() called but model not loaded')
       return []
@@ -142,7 +163,7 @@ export class OnDeviceAiEngine {
       // const inputTensors: MSLiteTensor[] = this.msModel!.getInputs()
       // inputTensors[0].setData(input)
       // const outputTensors: MSLiteTensor[] = this.msModel!.predict(inputTensors)
-      // const result: float[] = outputTensors[0].getData() as float[]
+      // const result: number[] = outputTensors[0].getData() as number[]
       // hilog.info(DOMAIN_ZERO, TAG, 'Inference completed, output size: %{public}d', result.length)
       // return result
       hilog.info(DOMAIN_ZERO, TAG, 'infer() called with input size: %{public}d (MindSpore Lite pending)', input.length)
@@ -222,9 +243,9 @@ export class OnDeviceAiEngine {
     const prompt = this.buildIngredientPrompt(ingredients)
 
     try {
-      const result = await this.runInference(prompt, {
-        outputType: 'ingredient_analysis'
-      })
+      const opts = new InferenceOptions()
+      opts.outputType = 'ingredient_analysis'
+      const result = await this.runInference(prompt, opts)
 
       return this.parseIngredientResult(result)
     } catch (error) {
@@ -238,16 +259,8 @@ export class OnDeviceAiEngine {
    * 基于家庭成员健康画像 + 当前食品分析结果
    */
   async generatePersonalizedAdvice(
-    member: {
-      ageGroup: string
-      healthGoals: string[]
-      allergens: string[]
-    },
-    foodLabel: {
-      foodName: string
-      nutritionGrade: string
-      harmfulAdditives: string[]
-    }
+    member: MemberProfile,
+    foodLabel: FoodLabel
   ): Promise<PersonalizedAdviceOutput> {
     if (!this.modelLoaded) {
       await this.initialize()
@@ -256,9 +269,9 @@ export class OnDeviceAiEngine {
     const prompt = this.buildAdvicePrompt(member, foodLabel)
 
     try {
-      const result = await this.runInference(prompt, {
-        outputType: 'personalized_advice'
-      })
+      const opts = new InferenceOptions()
+      opts.outputType = 'personalized_advice'
+      const result = await this.runInference(prompt, opts)
 
       return this.parseAdviceResult(result)
     } catch (error) {
@@ -271,11 +284,11 @@ export class OnDeviceAiEngine {
    * 检查引擎状态
    */
   getStatus(): NpuStatus {
-    return {
-      available: this.npuAvailable,
-      modelLoaded: this.modelLoaded,
-      memoryUsageMB: this.modelLoaded ? 120 : 0  // INT8量化模型约120MB
-    }
+    const status = new NpuStatus();
+    status.available = this.npuAvailable;
+    status.modelLoaded = this.modelLoaded;
+    status.memoryUsageMB = this.modelLoaded ? 120 : 0;
+    return status;
   }
 
   /**
@@ -327,27 +340,29 @@ export class OnDeviceAiEngine {
 
   private async runInference(
     prompt: string,
-    options: { outputType: string }
+    options: InferenceOptions
   ): Promise<string> {
     // 实际推理调用
     // const outputs = await this.session!.predict({ inputs: prompt })
     // return String(outputs.result)
 
     // 占位模拟
-    return JSON.stringify({
-      harmfulAdditives: [
-        { name: '亚硝酸钠', code: 'E250', risk: '高' },
-        { name: '阿斯巴甜', code: 'E951', risk: '中' }
-      ],
-      nutritionScore: 65,
-      novaGroup: 3,
-      allergenRisks: [
-        { allergen: '谷蛋白', confidence: 0.85 },
-        { allergen: '乳制品', confidence: 0.42 }
-      ],
-      summary: '该食品含有 2 种有害添加剂，营养评分 65/100，属于 NOVA 第 3 级加工食品。',
-      suggestion: '建议选择 NOVA 第 1-2 级的替代品，减少加工食品摄入。'
-    })
+    const ha1 = new HarmfulAdditive()
+    ha1.name = '亚硝酸钠'; ha1.code = 'E250'; ha1.risk = '高'
+    const ha2 = new HarmfulAdditive()
+    ha2.name = '阿斯巴甜'; ha2.code = 'E951'; ha2.risk = '中'
+    const ar1 = new AllergenRisk()
+    ar1.allergen = '谷蛋白'; ar1.confidence = 0.85
+    const ar2 = new AllergenRisk()
+    ar2.allergen = '乳制品'; ar2.confidence = 0.42
+    const mockResult = new IngredientAnalysis()
+    mockResult.harmfulAdditives = [ha1, ha2]
+    mockResult.nutritionScore = 65
+    mockResult.novaGroup = 3
+    mockResult.allergenRisks = [ar1, ar2]
+    mockResult.summary = '该食品含有 2 种有害添加剂，营养评分 65/100，属于 NOVA 第 3 级加工食品。'
+    mockResult.suggestion = '建议选择 NOVA 第 1-2 级的替代品，减少加工食品摄入。'
+    return JSON.stringify(mockResult)
   }
 
   private buildIngredientPrompt(ingredients: string[]): string {
@@ -355,8 +370,8 @@ export class OnDeviceAiEngine {
   }
 
   private buildAdvicePrompt(
-    member: { ageGroup: string; healthGoals: string[]; allergens: string[] },
-    foodLabel: { foodName: string; nutritionGrade: string; harmfulAdditives: string[] }
+    member: MemberProfile,
+    foodLabel: FoodLabel
   ): string {
     return `基于以下用户画像生成个性化饮食建议:\n` +
       `年龄段: ${member.ageGroup}\n` +
@@ -371,18 +386,18 @@ export class OnDeviceAiEngine {
   private parseIngredientResult(result: string): IngredientAnalysis {
     try {
       const parsed = JSON.parse(result) as Record<string, Object>
-      return {
-        harmfulAdditives: Array.isArray(parsed.harmfulAdditives)
-          ? (parsed.harmfulAdditives as Array<{ name: string; code: string; risk: string }>)
-          : [],
-        nutritionScore: typeof parsed.nutritionScore === 'number' ? parsed.nutritionScore : 50,
-        novaGroup: typeof parsed.novaGroup === 'number' ? parsed.novaGroup : 2,
-        allergenRisks: Array.isArray(parsed.allergenRisks)
-          ? (parsed.allergenRisks as Array<{ allergen: string; confidence: number }>)
-          : [],
-        summary: typeof parsed.summary === 'string' ? parsed.summary : '分析完成',
-        suggestion: typeof parsed.suggestion === 'string' ? parsed.suggestion : ''
-      }
+      const analysis = new IngredientAnalysis();
+      analysis.harmfulAdditives = Array.isArray(parsed.harmfulAdditives)
+        ? (parsed.harmfulAdditives as HarmfulAdditive[])
+        : [];
+      analysis.nutritionScore = typeof parsed.nutritionScore === 'number' ? parsed.nutritionScore as number : 50;
+      analysis.novaGroup = typeof parsed.novaGroup === 'number' ? parsed.novaGroup as number : 2;
+      analysis.allergenRisks = Array.isArray(parsed.allergenRisks)
+        ? (parsed.allergenRisks as AllergenRisk[])
+        : [];
+      analysis.summary = typeof parsed.summary === 'string' ? parsed.summary as string : '分析完成';
+      analysis.suggestion = typeof parsed.suggestion === 'string' ? parsed.suggestion as string : '';
+      return analysis;
     } catch {
       return this.fallbackIngredientAnalysis([])
     }
@@ -391,37 +406,37 @@ export class OnDeviceAiEngine {
   private parseAdviceResult(result: string): PersonalizedAdviceOutput {
     try {
       const parsed = JSON.parse(result) as Record<string, Object>
-      return {
-        recommendation: typeof parsed.recommendation === 'string' ? parsed.recommendation : '',
-        alternatives: Array.isArray(parsed.alternatives) ? parsed.alternatives as string[] : [],
-        warnings: Array.isArray(parsed.warnings) ? parsed.warnings as string[] : [],
-        motivationalMessage: typeof parsed.motivationalMessage === 'string'
-          ? parsed.motivationalMessage : ''
-      }
+      const output = new PersonalizedAdviceOutput();
+      output.recommendation = typeof parsed.recommendation === 'string' ? parsed.recommendation as string : '';
+      output.alternatives = Array.isArray(parsed.alternatives) ? parsed.alternatives as string[] : [];
+      output.warnings = Array.isArray(parsed.warnings) ? parsed.warnings as string[] : [];
+      output.motivationalMessage = typeof parsed.motivationalMessage === 'string'
+        ? parsed.motivationalMessage as string : '';
+      return output;
     } catch {
       return this.fallbackAdvice()
     }
   }
 
   private fallbackIngredientAnalysis(ingredients: string[]): IngredientAnalysis {
-    return {
-      harmfulAdditives: [],
-      nutritionScore: 50,
-      novaGroup: 2,
-      allergenRisks: [],
-      summary: ingredients.length > 0
-        ? `含 ${ingredients.length} 种成分，建议仔细查看配料表`
-        : '暂无成分信息',
-      suggestion: '请通过拍照补录完整配料表，以获得更准确的分析'
-    }
+    const analysis = new IngredientAnalysis();
+    analysis.harmfulAdditives = [];
+    analysis.nutritionScore = 50;
+    analysis.novaGroup = 2;
+    analysis.allergenRisks = [];
+    analysis.summary = ingredients.length > 0
+      ? `含 ${ingredients.length} 种成分，建议仔细查看配料表`
+      : '暂无成分信息';
+    analysis.suggestion = '请通过拍照补录完整配料表，以获得更准确的分析';
+    return analysis;
   }
 
   private fallbackAdvice(): PersonalizedAdviceOutput {
-    return {
-      recommendation: '基于规则引擎的分析已生成',
-      alternatives: [],
-      warnings: [],
-      motivationalMessage: '健康饮食，从每一次选择开始'
-    }
+    const output = new PersonalizedAdviceOutput();
+    output.recommendation = '基于规则引擎的分析已生成';
+    output.alternatives = [];
+    output.warnings = [];
+    output.motivationalMessage = '健康饮食，从每一次选择开始';
+    return output;
   }
 }

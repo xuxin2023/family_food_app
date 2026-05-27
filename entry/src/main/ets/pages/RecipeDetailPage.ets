@@ -7,7 +7,7 @@ import {
 import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
-import { LikeButton } from 'feature-community';
+import { LikeButton } from 'feature_community';
 
 
 const TAG = 'RecipeDetailPage';
@@ -80,7 +80,7 @@ struct RecipeDetailPage {
       } else {
         GridRow({
           columns: { sm: 4, md: 8, lg: 12 },
-          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
+          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] } as BreakPoints
         }) {
           GridCol({ span: { sm: 4, md: 8, lg: 10 }, offset: { sm: 0, md: 0, lg: 1 } }) {
             Scroll() {
@@ -125,7 +125,7 @@ struct RecipeDetailPage {
 
   @Builder
   coverSection() {
-    if (this.recipe === null) return
+    if (this.recipe !== null) {
     Column() {
       Text(getCategoryEmoji(this.recipe.category))
         .fontSize(72)
@@ -145,15 +145,16 @@ struct RecipeDetailPage {
     .backgroundColor(COLORS.PRIMARY)
     .justifyContent(FlexAlign.Center)
     .alignItems(HorizontalAlign.Center)
+    }
   }
 
   @Builder
   infoSection() {
-    if (this.recipe === null) return
+    if (this.recipe !== null) {
     Row({ space: 0 }) {
-      this.infoItem('⏱️', this.recipe.totalMinutes.toString() + $r('app.string.recipe_detail_minute'))
-      this.infoItem('🍽️', this.recipe.servings.toString() + $r('app.string.recipe_detail_serving'))
-      this.infoItem('📝', this.recipe.steps.length.toString() + $r('app.string.recipe_detail_step'))
+      this.infoItem('⏱️', `${this.recipe.totalMinutes}分钟`)
+      this.infoItem('🍽️', `${this.recipe.servings}人份`)
+      this.infoItem('📝', `${this.recipe.steps.length}步`)
     }
     .width('100%')
     .padding(16)
@@ -196,6 +197,7 @@ struct RecipeDetailPage {
     .width('100%')
     .padding(16)
     .backgroundColor(COLORS.WHITE)
+    }
   }
 
   @Builder
@@ -226,13 +228,13 @@ struct RecipeDetailPage {
     .layoutWeight(1)
     .alignItems(HorizontalAlign.Center)
     .onClick(() => { this.selectedSection = value })
-    .accessibilityText(label as string)
+    .accessibilityText(label as Resource)
     .accessibilityLevel('yes')
   }
 
   @Builder
   detailSection() {
-    if (this.recipe === null) return
+    if (this.recipe !== null) {
     Column() {
       // 描述
       if (this.recipe.description.length > 0) {
@@ -322,7 +324,7 @@ struct RecipeDetailPage {
 
       // 作者
       Row() {
-        Text($r('app.string.recipe_detail_author') + this.recipe.authorName)
+        Text(`👩‍🍳 发布者：${this.recipe.authorName}`)
           .fontSize(13)
           .fontColor(COLORS.TEXT_GRAY_9E9E)
       }
@@ -331,11 +333,12 @@ struct RecipeDetailPage {
     }
     .width('100%')
     .padding(16)
+    }
   }
 
   @Builder
   ingredientsColumn() {
-    if (this.recipe === null) return
+    if (this.recipe !== null) {
     Column() {
       Text($r('app.string.ingredient_list')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
       ForEach(this.recipe.ingredients, (ing: RecipeIngredient) => {
@@ -348,7 +351,7 @@ struct RecipeDetailPage {
         .width('100%')
         .margin({ bottom: 6 })
         if (ing.alternative.length > 0) {
-          Text($r('app.string.recipe_detail_alt_replace') + ing.alternative)
+          Text(`可选替代：${ing.alternative}`)
             .fontSize(12)
             .fontColor(COLORS.TEXT_GRAY_9E9E)
             .margin({ left: 16, bottom: 6 })
@@ -360,25 +363,27 @@ struct RecipeDetailPage {
     .backgroundColor(COLORS.WHITE)
     .borderRadius(RADIUS.LG)
     .margin({ bottom: 12 })
+    }
   }
 
   @Builder
   nutritionColumn() {
-    if (this.recipe === null || this.recipe.nutrition === null) return
+    if (this.recipe !== null && this.recipe.nutrition !== null) {
     Column() {
       Text($r('app.string.nutrition_per_serving')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
       this.nutritionRow($r('app.string.recipe_detail_calories'), this.recipe.nutrition.calories.toString() + ' kcal')
-      this.nutritionRow($r('app.string.recipe_detail_protein'), this.recipe.nutrition.protein)
-      this.nutritionRow($r('app.string.recipe_detail_fat'), this.recipe.nutrition.fat)
-      this.nutritionRow($r('app.string.recipe_detail_carbohydrate'), this.recipe.nutrition.carbohydrate)
-      this.nutritionRow($r('app.string.recipe_detail_sodium'), this.recipe.nutrition.sodium)
-      this.nutritionRow($r('app.string.recipe_detail_sugar'), this.recipe.nutrition.sugar)
+      this.nutritionRow($r('app.string.recipe_detail_protein'), this.recipe.nutrition.protein.toString())
+      this.nutritionRow($r('app.string.recipe_detail_fat'), this.recipe.nutrition.fat.toString())
+      this.nutritionRow($r('app.string.recipe_detail_carbohydrate'), this.recipe.nutrition.carbohydrate.toString())
+      this.nutritionRow($r('app.string.recipe_detail_sodium'), this.recipe.nutrition.sodium.toString())
+      this.nutritionRow($r('app.string.recipe_detail_sugar'), this.recipe.nutrition.sugar.toString())
     }
     .layoutWeight(1)
     .padding(16)
     .backgroundColor(COLORS.WHITE)
     .borderRadius(RADIUS.LG)
     .margin({ bottom: 12 })
+    }
   }
 
   @Builder

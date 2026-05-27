@@ -150,7 +150,7 @@ export class AiChatService extends AiServiceBase {
       if (msg.role === ChatRole.ASSISTANT || msg.role === ChatRole.USER) {
         const item = new ChatHistoryItem();
         item.role = msg.role === ChatRole.USER ? 'user' : 'assistant';
-        item.content = msg.content;
+        item.content = msg.content as string;
         items.push(item);
       }
     }
@@ -225,7 +225,7 @@ export class AiChatService extends AiServiceBase {
 
       return `${contextParts.join('；')}\n\n用户问题：${userMessage}`;
     } catch (e) {
-      hilog.warn(HILOG_DOMAIN, TAG, 'buildContextPrompt failed: %{public}s', JSON.stringify(e));
+      hilog.warn(HILOG_DOMAIN.DEFAULT, TAG, 'buildContextPrompt failed: %{public}s', JSON.stringify(e));
       return userMessage;
     }
   }

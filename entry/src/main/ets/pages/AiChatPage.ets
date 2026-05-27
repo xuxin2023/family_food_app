@@ -353,7 +353,7 @@ struct AiChatPage {
     // 滚动到底部
     const tid1 = setTimeout(() => {
       const idx = this.pendingTimers.indexOf(tid1);
-      if (idx >= 0) this.pendingTimers.splice(idx, 1);
+      if (idx >= 0) { this.pendingTimers.splice(idx, 1); this.pendingTimers = [...this.pendingTimers]; }
       if (!this.componentActive) return;
       this.scrollController.scrollEdge(Edge.End)
     }, 100)
@@ -377,7 +377,7 @@ struct AiChatPage {
 
       const errorMsg = new ChatMessage(
         generateMessageId(),
-        $r('app.string.ai_chat_error_reply') as string,
+        $r('app.string.ai_chat_error_reply') as ResourceStr,
         ChatRole.ASSISTANT,
         Date.now()
       )
@@ -390,7 +390,7 @@ struct AiChatPage {
     // 滚动到底部
     const tid2 = setTimeout(() => {
       const idx2 = this.pendingTimers.indexOf(tid2);
-      if (idx2 >= 0) this.pendingTimers.splice(idx2, 1);
+      if (idx2 >= 0) { this.pendingTimers.splice(idx2, 1); this.pendingTimers = [...this.pendingTimers]; }
       if (!this.componentActive) return;
       this.scrollController.scrollEdge(Edge.End)
     }, 100)
@@ -401,20 +401,22 @@ struct AiChatPage {
   private showMemberPicker(): void {
     const items: string[] = this.familyMembers.map(m => m.nickname)
     const maxButtons = Math.min(items.length, 6)
-    const buttons: promptAction.ButtonInfo[] = []
-    for (let i = 0; i < maxButtons; i++) {
-      buttons.push(makeActionMenuButton(items[i], COLORS.TEXT_PRIMARY))
-    }
+    const btn0: promptAction.Button = maxButtons > 0 ? { text: items[0], color: COLORS.TEXT_PRIMARY } : { text: '', color: '' }
+    const btn1: promptAction.Button | undefined = maxButtons > 1 ? { text: items[1], color: COLORS.TEXT_PRIMARY } : undefined
+    const btn2: promptAction.Button | undefined = maxButtons > 2 ? { text: items[2], color: COLORS.TEXT_PRIMARY } : undefined
+    const btn3: promptAction.Button | undefined = maxButtons > 3 ? { text: items[3], color: COLORS.TEXT_PRIMARY } : undefined
+    const btn4: promptAction.Button | undefined = maxButtons > 4 ? { text: items[4], color: COLORS.TEXT_PRIMARY } : undefined
+    const btn5: promptAction.Button | undefined = maxButtons > 5 ? { text: items[5], color: COLORS.TEXT_PRIMARY } : undefined
 
     promptAction.showActionMenu({
-      title: $r('app.string.ai_chat_switch_member') as string,
-      buttons: buttons
+      title: $r('app.string.ai_chat_switch_member') as ResourceStr,
+      buttons: [btn0, btn1, btn2, btn3, btn4, btn5]
     }, async (err: Error, data: promptAction.ActionMenuSuccessResponse) => {
       if (err) {
         hilog.warn(0x0000, 'AiChatPage', 'showActionMenu err: %{public}s', JSON.stringify(err));
         return;
       }
-      const index = data.index
+      const index: number = data.index ?? 0
       if (index >= 0 && index < this.familyMembers.length) {
         const member = this.familyMembers[index]
 
@@ -439,7 +441,7 @@ struct AiChatPage {
           } else {
             const switchMsg = new ChatMessage(
               generateMessageId(),
-              $r('app.string.ai_chat_switched_member', member.nickname) as string,
+              $r('app.string.ai_chat_switched_member', member.nickname) as ResourceStr,
               ChatRole.ASSISTANT,
               Date.now()
             )
@@ -448,7 +450,7 @@ struct AiChatPage {
         } catch (e) {
           const switchMsg = new ChatMessage(
             generateMessageId(),
-            $r('app.string.ai_chat_switched_member', member.nickname) as string,
+            $r('app.string.ai_chat_switched_member', member.nickname) as ResourceStr,
             ChatRole.ASSISTANT,
             Date.now()
           )

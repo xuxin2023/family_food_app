@@ -35,10 +35,11 @@ export class AccessibilityManager {
   private async checkScreenReaderStatus(): Promise<void> {
     if (!this.context) return;
     try {
-      const abilityLists = await accessibility.getAccessibilityAbilityList(
-        accessibility.AccessibilityAbilityType.SCREEN_READER,
-        accessibility.AccessibilityAbilityState.ENABLE
-      );
+      const abilityLists: accessibility.AccessibilityAbilityInfo[] =
+        await accessibility.getAccessibilityExtensionList(
+          'spoken',
+          'enable'
+        );
       this.isScreenReaderActive = abilityLists !== undefined && abilityLists.length > 0;
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'checkScreenReader failed: %{public}s', JSON.stringify(e));

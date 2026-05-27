@@ -4,7 +4,7 @@ import {
   safeBack, getPageParams, FamilyProfile, AgeGroup, HealthGoal, HealthSignal, StepLevel, SleepStatus, BpStatus, BsStatus, DateUtil, PaywallTrigger, MemberTier, getTierDisplayName, BUTTON, COLORS, HILOG_DOMAIN
 } from 'hsp_core';
 import { AppState } from '../AppState';
-import { PaywallDialog } from 'feature-scan';
+import { PaywallDialog } from 'feature_scan';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'MemberEditPage';
@@ -104,7 +104,7 @@ struct MemberEditPage {
                 .fontColor(this.selectedAgeGroup === index ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
                 .margin({ right: 8, bottom: 8 })
                 .onClick(() => { this.selectedAgeGroup = index })
-                .accessibilityText(group as string)
+                .accessibilityText(group as Resource)
                 .accessibilityLevel('yes')
             }, (group: string, index: number) => `${index}`)
           }
@@ -128,7 +128,7 @@ struct MemberEditPage {
                 .onClick(() => {
                   this.selectedGoals[index] = !this.selectedGoals[index]
                 })
-                .accessibilityText(goal as string)
+                .accessibilityText(goal as Resource)
                 .accessibilityLevel('yes')
             }, (goal: string, index: number) => `${index}`)
           }
@@ -152,7 +152,7 @@ struct MemberEditPage {
                 .onClick(() => {
                   this.selectedAllergens[index] = !this.selectedAllergens[index]
                 })
-                .accessibilityText(label as string)
+                .accessibilityText(label as Resource)
                 .accessibilityLevel('yes')
             }, (label: ResourceStr, index: number) => `${index}`)
           }
@@ -187,7 +187,7 @@ struct MemberEditPage {
                 .fontColor(this.stepLevelIndex === index ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
                 .margin({ right: 6 })
                 .onClick(() => { this.stepLevelIndex = index })
-                .accessibilityText(level as string)
+                .accessibilityText(level as Resource)
                 .accessibilityLevel('yes')
             }, (level: ResourceStr, index: number) => `${index}`)
           }
@@ -205,7 +205,7 @@ struct MemberEditPage {
                 .fontColor(this.sleepStatusIndex === index ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
                 .margin({ right: 6 })
                 .onClick(() => { this.sleepStatusIndex = index })
-                .accessibilityText(status as string)
+                .accessibilityText(status as Resource)
                 .accessibilityLevel('yes')
             }, (status: ResourceStr, index: number) => `${index}`)
           }
@@ -223,7 +223,7 @@ struct MemberEditPage {
                 .fontColor(this.bpStatusIndex === index ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
                 .margin({ right: 6 })
                 .onClick(() => { this.bpStatusIndex = index })
-                .accessibilityText(status as string)
+                .accessibilityText(status as Resource)
                 .accessibilityLevel('yes')
             }, (status: ResourceStr, index: number) => `${index}`)
           }
@@ -241,7 +241,7 @@ struct MemberEditPage {
                 .fontColor(this.bsStatusIndex === index ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
                 .margin({ right: 6 })
                 .onClick(() => { this.bsStatusIndex = index })
-                .accessibilityText(status as string)
+                .accessibilityText(status as Resource)
                 .accessibilityLevel('yes')
             }, (status: ResourceStr, index: number) => `${index}`)
           }
@@ -328,7 +328,7 @@ struct MemberEditPage {
         const tierName = getTierDisplayName(MemberTier.FAMILY)
         const allMembers = await this.appState.getAllMembers()
         const memberCount = allMembers.length
-        trigger.message = $r('app.string.member_edit_paywall_msg_prefix') + ` ${memberCount} ` + $r('app.string.member_edit_paywall_msg_middle') + `${tierName}` + $r('app.string.member_edit_paywall_msg_suffix')
+        trigger.message = `当前已添加 ${memberCount} 位家庭成员。升级${tierName}后，可添加无限数量的家庭成员，所有成员均可享受个性化饮食建议。`
         this.paywallTrigger = trigger
         this.showPaywallDialog = true
         return

@@ -7,6 +7,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { AppState } from '../AppState';
+import { PrivacyManager, PrivacyDocumentUrls } from 'hsp_service';
 
 const TAG = 'PrivacyDialogPage';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -21,19 +22,27 @@ struct PrivacyDialogPage {
   @Local showAgreementContent: boolean = false
   @Local privacyHtml: string = ''
   @Local agreementHtml: string = ''
+  @Local onlineDocUrls: PrivacyDocumentUrls | null = null
 
   private appState: AppState = AppState.getInstance()
 
   async aboutToAppear() {
     try {
       this.isLoading = true
-      // 等待 AppState 初始化完成（避免竞态条件）
       await AppState.waitForReady()
 
-      // 检查是否已经同意过
+      const context = AppStorage.get<common.Context>('appContext')
+      if (context) {
+        PrivacyManager.getDocumentUrls(context).then((urls: PrivacyDocumentUrls) => {
+          this.onlineDocUrls = urls
+          hilog.info(DOMAIN_ZERO, TAG, 'Online doc URLs loaded, isOnline=%{public}s', urls.isOnline ? 'true' : 'false');
+        }).catch((_e: Error) => {
+          hilog.warn(DOMAIN_ZERO, TAG, 'Failed to load online doc URLs');
+        })
+      }
+
       const agreed = await this.checkPrivacyAgreed()
       if (agreed) {
-        // 已同意过，直接跳转到首页
         this.navigateToHome()
       }
       this.isLoading = false
@@ -279,7 +288,11 @@ struct PrivacyDialogPage {
               .fontColor('#666666')
               .margin({ left: 8 })
 
-            Text('《' + $r('app.string.privacy_policy') + '》')
+            Text() {
+              Span('《')
+              Span($r('app.string.privacy_policy'))
+              Span('》')
+            }
               .fontSize(13)
               .fontColor(COLORS.PRIMARY)
               .onClick(() => {
@@ -293,7 +306,11 @@ struct PrivacyDialogPage {
               .fontSize(13)
               .fontColor('#666666')
 
-            Text('《' + $r('app.string.user_agreement') + '》')
+            Text() {
+              Span('《')
+              Span($r('app.string.user_agreement'))
+              Span('》')
+            }
               .fontSize(13)
               .fontColor(COLORS.PRIMARY)
               .onClick(() => {

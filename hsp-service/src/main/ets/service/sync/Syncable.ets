@@ -62,6 +62,8 @@ export class SyncChangeRecord {
   retryCount: number = 0;
   /** 最近一次同步尝试时间 */
   lastAttemptAt: number = 0;
+  /** 更新时间戳 */
+  updatedAt: number = 0;
   /** 冲突数据（冲突时记录远程数据JSON） */
   conflictDataJson: string = '';
 }

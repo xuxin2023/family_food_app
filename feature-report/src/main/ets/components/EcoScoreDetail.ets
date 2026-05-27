@@ -2,7 +2,7 @@
 // EcoScore 详情展开组件 — 展示等级/分数/评分依据/估算标注
 
 import { COLORS, FONT_SIZE, FONT_WEIGHT, RADIUS, SPACING } from 'hsp_core';
-import { EcoScoreResult, EcoScoreGrade, EcoScoreFactor } from 'feature-scan';
+import { EcoScoreResult, EcoScoreGrade, EcoScoreFactor } from 'feature_scan';
 
 const ECO_COLOR_MAP: Map<string, string> = new Map();
 ECO_COLOR_MAP.set(EcoScoreGrade.A, '#2E7D32');

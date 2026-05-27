@@ -2,7 +2,7 @@
 // 添加剂红黄绿三色可视化标记组件 — 对标 Olive 添加剂风险标记
 // 规则：E编号添加剂按EU风险评估分级，中文添加剂按GB 2760分类
 
-import { AppTheme } from 'hsp_core';
+import { COLORS } from 'hsp_core';
 
 export enum AdditiveRiskLevel {
   SAFE = 'safe',

@@ -1,6 +1,6 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN } from 'hsp_core';
-import { SecureHttpHelper } from 'hsp-service';
+import { SecureHttpHelper, SecureJsonResponse } from 'hsp_service';
 import { common } from '@kit.AbilityKit';
 import { fileIo } from '@kit.CoreFileKit';
 import { http } from '@kit.NetworkKit';
@@ -48,8 +48,12 @@ export class CommunityImageService {
       const fileName = `${category}_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.jpg`;
       const uploadUrl = `/upload/image?category=${category}&fileName=${fileName}`;
 
-      const secureHelper = SecureHttpHelper.getInstance();
-      const response = await secureHelper.postMultipart(uploadUrl, localPath, 'image');
+      const header = new Map<string, string>();
+      header.set('Content-Type', 'multipart/form-data');
+      const uploadBody = new Map<string, Object>();
+      uploadBody.set('localPath', localPath as Object);
+      uploadBody.set('field', 'image' as Object);
+      const response: SecureJsonResponse = await SecureHttpHelper.post(uploadUrl, uploadBody as Object, header, 30000);
 
       if (response.responseCode === 200 && response.data) {
         const data = response.data as Record<string, Object>;
@@ -67,7 +71,7 @@ export class CommunityImageService {
       }
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Image upload failed: %{public}s', JSON.stringify(error));
-      throw error;
+      throw new Error(JSON.stringify(error));
     }
 
     return result;

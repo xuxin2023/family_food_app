@@ -1,5 +1,5 @@
 {
-  "name": "feature-scan",
+  "name": "feature_scan",
   "version": "1.0.0",
   "description": "家庭食品适配助手扫描功能模块 — 条码扫描、OCR识别、食品录入",
   "main": "Index.ets",
@@ -7,7 +7,7 @@
   "license": "",
   "dependencies": {
     "hsp_core": "file:../hsp_core",
-    "hsp-service": "file:../hsp-service"
+    "hsp_service": "file:../hsp-service"
   },
   "devDependencies": {}
 }

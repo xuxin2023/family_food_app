@@ -22,7 +22,8 @@ export enum FoodSource {
   BARCODE_HIT = '扫码命中',
   BARCODE_SCAN = '扫码未命中',
   OCR_RECOGNIZE = 'OCR识别',
-  OFFLINE = '离线'
+  OFFLINE = '离线',
+  CLOUD = '云端'
 }
 
 // FoodLabel JSON 输出类

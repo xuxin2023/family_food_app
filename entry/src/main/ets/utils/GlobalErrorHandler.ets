@@ -4,8 +4,8 @@
 import { common, errorManager } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN } from 'hsp_core';
-import { ToastHelper } from './ToastHelper';
-import { AnalyticsService } from 'hsp-service';
+import { ToastHelper } from 'hsp_core';
+import { AnalyticsService } from 'hsp_service';
 import { remoteErrorReporter } from '../service/RemoteErrorReporter';
 
 const TAG = 'GlobalErrorHandler';

@@ -2,7 +2,7 @@
 // Nova Group 加工度展示组件 — 图标+等级+颜色+描述（增强版）
 
 import { COLORS, FONT_SIZE, FONT_WEIGHT, RADIUS, SPACING, safeParseNovaGroup } from 'hsp_core';
-import { NovaGroup, NovaEvaluationResult } from 'feature-scan';
+import { NovaGroup, NovaEvaluationResult } from 'feature_scan';
 
 const NOVA_COLOR_MAP: Map<number, string> = new Map();
 NOVA_COLOR_MAP.set(1, '#4CAF50');
@@ -10,11 +10,11 @@ NOVA_COLOR_MAP.set(2, '#FFC107');
 NOVA_COLOR_MAP.set(3, '#FF9800');
 NOVA_COLOR_MAP.set(4, '#F44336');
 
-const NOVA_DESCRIPTION_MAP: Map<number, string> = new Map();
-NOVA_DESCRIPTION_MAP.set(1, $r('app.string.nova_display_group_1') as string);
-NOVA_DESCRIPTION_MAP.set(2, $r('app.string.nova_display_group_2') as string);
-NOVA_DESCRIPTION_MAP.set(3, $r('app.string.nova_display_group_3') as string);
-NOVA_DESCRIPTION_MAP.set(4, $r('app.string.nova_display_group_4') as string);
+const NOVA_DESCRIPTION_MAP: Map<number, ResourceStr> = new Map();
+NOVA_DESCRIPTION_MAP.set(1, $r('app.string.nova_display_group_1') as ResourceStr);
+NOVA_DESCRIPTION_MAP.set(2, $r('app.string.nova_display_group_2') as ResourceStr);
+NOVA_DESCRIPTION_MAP.set(3, $r('app.string.nova_display_group_3') as ResourceStr);
+NOVA_DESCRIPTION_MAP.set(4, $r('app.string.nova_display_group_4') as ResourceStr);
 
 const NOVA_ICON_MAP: Map<number, string> = new Map();
 NOVA_ICON_MAP.set(1, '🌿');
@@ -26,8 +26,8 @@ function getNovaColor(group: NovaGroup): string {
   return NOVA_COLOR_MAP.get(group) ?? '#9E9E9E';
 }
 
-function getNovaDescription(group: NovaGroup): string {
-  return NOVA_DESCRIPTION_MAP.get(group) ?? $r('app.string.nova_display_unknown') as string;
+function getNovaDescription(group: NovaGroup): ResourceStr {
+  return NOVA_DESCRIPTION_MAP.get(group) ?? $r('app.string.nova_display_unknown') as ResourceStr;
 }
 
 function getNovaIcon(group: NovaGroup): string {

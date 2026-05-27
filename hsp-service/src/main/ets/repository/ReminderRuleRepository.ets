@@ -43,11 +43,17 @@ export class ReminderRuleRepository {
         rule.id = resultSet.getString(0);
         rule.type = resultSet.getString(1);
         rule.enabled = resultSet.getLong(2) === 1;
-        rule.conditionDesc = resultSet.getString(3);
+        rule.condition = resultSet.getString(3);
         rule.time = resultSet.getString(4);
-        rule.repeatDays = resultSet.getString(5);
+        const repeatDaysStr = resultSet.getString(5);
+        const dayStrs: string[] = repeatDaysStr.split(',');
+        const repeatDays: number[] = [];
+        for (let i = 0; i < dayStrs.length; i++) {
+          repeatDays.push(Number(dayStrs[i]));
+        }
+        rule.repeatDays = repeatDays;
         rule.message = resultSet.getString(6);
-        rule.priority = resultSet.getLong(7);
+        rule.priority = String(resultSet.getLong(7));
         rule.memberId = resultSet.getString(8);
         this.rules.push(rule);
       }
@@ -58,18 +64,18 @@ export class ReminderRuleRepository {
   }
 
   private toValuesBucket(rule: ReminderRule): relationalStore.ValuesBucket {
-    return {
-      'id': rule.id,
-      'rule_type': rule.type,
-      'enabled': rule.enabled ? 1 : 0,
-      'condition_desc': rule.conditionDesc,
-      'rule_time': rule.time,
-      'repeat_days': rule.repeatDays,
-      'rule_message': rule.message,
-      'priority': rule.priority,
-      'member_id': rule.memberId,
-      'created_at': Date.now()
-    };
+    const bucket: relationalStore.ValuesBucket = {};
+    bucket['id'] = rule.id;
+    bucket['rule_type'] = rule.type;
+    bucket['enabled'] = rule.enabled ? 1 : 0;
+    bucket['condition_desc'] = rule.condition;
+    bucket['rule_time'] = rule.time;
+    bucket['repeat_days'] = rule.repeatDays.join(',');
+    bucket['rule_message'] = rule.message;
+    bucket['priority'] = rule.priority;
+    bucket['member_id'] = rule.memberId;
+    bucket['created_at'] = Date.now();
+    return bucket;
   }
 
   async getAll(): Promise<ReminderRule[]> { return [...this.rules]; }
@@ -148,11 +154,17 @@ export class ReminderRuleRepository {
       rule.id = (row['id'] as string) ?? `rule_${Date.now()}_${count}`;
       rule.type = (row['rule_type'] as string) ?? '';
       rule.enabled = (row['enabled'] as number) !== 0;
-      rule.conditionDesc = (row['condition_desc'] as string) ?? '';
+      rule.condition = (row['condition_desc'] as string) ?? '';
       rule.time = (row['rule_time'] as string) ?? '';
-      rule.repeatDays = (row['repeat_days'] as string) ?? '';
+      const repeatDaysRaw: string = ((row['repeat_days'] as string) ?? '');
+      const dayParts: string[] = repeatDaysRaw.split(',');
+      const days: number[] = [];
+      for (let i = 0; i < dayParts.length; i++) {
+        days.push(Number(dayParts[i]));
+      }
+      rule.repeatDays = days;
       rule.message = (row['rule_message'] as string) ?? '';
-      rule.priority = (row['priority'] as number) ?? 0;
+      rule.priority = String(row['priority'] ?? 'normal');
       rule.memberId = (row['member_id'] as string) ?? '';
       this.rules.push(rule);
       count++;

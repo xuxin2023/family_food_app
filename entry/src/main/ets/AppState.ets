@@ -5,16 +5,14 @@
 // 同步(Group+RecipeCommunity+Sync) → SyncFacade
 
 import {
-  FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig, createDefaultMembers, FoodLabel, FoodLabelJson, DailyBudget, Recommendation, MealBalance, MealScenario, ChildProtection, CredibilityResult, NutritionTarget, NutritionSnapshot, GroupSummary, GroupFeed, FeedType, Recipe, RecipeQueryParams, RecipeComment, EnhancedFoodRecommendation, FamilyComparisonItem, DateUtil, CacheManager, DB_NAME, HILOG_DOMAIN, HealthSignal, StepLevel, SleepStatus, WeightTrend, DataSource, BpStatus, BsStatus, HeartRateZone, SpO2Level, StressLevel, MemberTier, MemberStatus, PaywallTrigger, createDefaultMemberStatus, createMemberStatusForTier, getPaywallTriggerForFeature, hasTierAccess, getTierDisplayName, TIER_DAILY_SCAN_LIMIT, TIER_MEMBER_LIMIT, TIER_WEEKLY_REPORT_LIMIT, AiRecipeRecommendationResult, AiRecipeRequest, AiNutritionAdvice, DietRecord, DomainEventBus, DomainEvents
+  FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig, createDefaultMembers, FoodLabel, FoodLabelJson, DailyBudget, Recommendation, MealBalance, MealScenario, ChildProtection, CredibilityResult, NutritionTarget, NutritionSnapshot, GroupSummary, GroupFeed, FeedType, Recipe, RecipeQueryParams, RecipeComment, EnhancedFoodRecommendation, FamilyComparisonItem, DateUtil, CacheManager, DB_NAME, HILOG_DOMAIN, HealthSignal, StepLevel, SleepStatus, WeightTrend, DataSource, BpStatus, BsStatus, HeartRateZone, SpO2Level, StressLevel, MemberTier, MemberStatus, PaywallTrigger, createDefaultMemberStatus, createMemberStatusForTier, getPaywallTriggerForFeature, hasTierAccess, getTierDisplayName, TIER_DAILY_SCAN_LIMIT, TIER_MEMBER_LIMIT, TIER_WEEKLY_REPORT_LIMIT, AiRecipeRecommendationResult, AiRecipeRequest, AiNutritionAdvice, DietRecord, DomainEventBus, DomainEvents, CacheInvalidationData
 } from 'hsp_core';
 import { FamilyRepository } from './repository/FamilyRepository';
 import { FoodRepository } from './repository/FoodRepository';
 import { HistoryRepository, ScanHistoryRecord, DietRecordInput } from './repository/HistoryRepository';
 import { RuleRepository } from './repository/RuleRepository';
-import { FamilyGroupRepository } from './repository/FamilyGroupRepository';
-import { RecipeRepository } from './repository/RecipeRepository';
+import { SyncService, SyncEvent, ScanService, ILocalCacheProvider, migrateDatabase, PermissionManager, NetworkMonitorService, PrivacyManager, MemberManager, BasketManager, ReportCacheManager, FamilyGroupRepository, RecipeRepository } from 'hsp_service';
 import { FavoriteItem, FavoriteRepository } from './repository/FavoriteRepository';
-import { SyncService, SyncEvent, ScanService, ILocalCacheProvider, migrateDatabase, PermissionManager, NetworkMonitorService, PrivacyManager, MemberManager, BasketManager, ReportCacheManager } from 'hsp-service';
 import { CreateRecipeParams } from 'hsp_core';
 import { FoodInputService, FoodInputResult } from './service/FoodInputService';
 import { DistributedSyncHelper } from './service/sync/DistributedSyncHelper';
@@ -54,7 +52,7 @@ export class AppState {
   readonly network: NetworkMonitorService = NetworkMonitorService.getInstance();
   readonly scanService: ScanService = new ScanService();
   readonly foodInput: FoodInputService = new FoodInputService();
-  readonly privacy: PrivacyManager = PrivacyManager.getInstance();
+  readonly privacy: PrivacyManager = new PrivacyManager();
   readonly member: MemberManager = new MemberManager();
   readonly basket: BasketManager = new BasketManager();
   readonly reportCache: ReportCacheManager = new ReportCacheManager();
@@ -63,9 +61,10 @@ export class AppState {
   readonly cache: CacheManager = new CacheManager();
 
   constructor() {
-    this.scanService.setCacheProvider({
-      findFoodByBarcode: (barcode: string) => this.findFoodByBarcode(barcode)
-    });
+    const self = this;
+    const cacheProvider = new ILocalCacheProvider();
+    cacheProvider.findFoodByBarcode = (barcode: string) => self.findFoodByBarcode(barcode);
+    this.scanService.setCacheProvider(cacheProvider);
   }
 
   private initPhase: 'none' | 'initializing' | 'ready' = 'none';
@@ -126,7 +125,7 @@ export class AppState {
     await this.familyRepo.init(store);
     await this.foodRepo.init(store);
     await this.historyRepo.init(store);
-    await this.ruleRepo.init(store);
+    this.ruleRepo.setContext(context);
     await this.groupRepo.init(store);
     await this.recipeRepo.init(store);
     await this.favoriteRepo.init(store);
@@ -142,6 +141,12 @@ export class AppState {
     await this.basket.restoreFromPrefs(context);
 
     await this.memberFacade.loadCache();
+
+    this.health.setMemberResolvers(
+      (memberId: string) => this.memberFacade.membersCache.find(m => m.memberId === memberId),
+      (memberId: string) => this.memberFacade.getHealthSignal(memberId),
+      (memberId: string) => this.memberFacade.getNutritionTargetSync(memberId)
+    );
 
     this.syncEventHandler = (event: SyncEvent) => {
       try {
@@ -301,7 +306,7 @@ export class AppState {
   calculateMealBalance(scenario: MealScenario, _memberId: string): MealBalance {
     return this.food.calculateMealBalance(scenario);
   }
-  generatePositiveAdvice(_scenario: MealScenario, _memberId: string): PositiveAdvice | null {
+  generatePositiveAdvice(_scenario: MealScenario, _memberId: string): Object | null {
     return this.food.generatePositiveAdvice();
   }
   calculateChildProtection(_memberId: string, foodLabel: FoodLabel): ChildProtection {
@@ -418,7 +423,9 @@ export class AppState {
     this.memberFacade.refreshBudgetCache();
     this.engines.cleanExpiredEngineCache();
     AppStorage.setOrCreate<number>('scanVersion', (AppStorage.get<number>('scanVersion') ?? 0) + 1);
-    DomainEventBus.emit(DomainEvents.CACHE_INVALIDATED, { source: 'sync' });
+    const cacheData = new CacheInvalidationData();
+    cacheData.source = 'sync';
+    DomainEventBus.emit(DomainEvents.CACHE_INVALIDATED, cacheData);
   }
 
   refreshMemberCache(): void {
@@ -439,7 +446,6 @@ export class AppState {
   }
 
   destroy(): void {
-    // 清理 syncEvent 监听器
     if (this.syncEventHandler) {
       try {
         this.services.syncService.offEvent(this.syncEventHandler);
@@ -452,6 +458,13 @@ export class AppState {
     this.basket.clearContext();
     this.cache.clearAll();
     this.engines.cleanExpiredEngineCache();
+    this.familyRepo.close().catch(() => {});
+    this.foodRepo.close().catch(() => {});
+    this.historyRepo.close().catch(() => {});
+    this.ruleRepo.close().catch(() => {});
+    this.groupRepo.close().catch(() => {});
+    this.recipeRepo.close().catch(() => {});
+    this.favoriteRepo.close().catch(() => {});
     DistributedSyncHelper.getInstance().destroy();
     this.initPhase = 'none';
     appStateInstance = null;

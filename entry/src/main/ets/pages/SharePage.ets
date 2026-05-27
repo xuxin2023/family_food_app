@@ -2,7 +2,7 @@ import {
   ToastHelper, safeBack, safePushUrl, getPageParams, Recommendation, FamilyProfile, GroupSummary, FeedType, BUTTON, COLORS, HILOG_DOMAIN
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
-import { ShareCard } from 'feature-report';
+import { ShareCard } from 'feature_report';
 import { ShareService } from '../service/ShareService';
 import { AppState } from '../AppState';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -85,7 +85,7 @@ struct SharePage {
 
         GridRow({
           columns: { sm: 4, md: 8, lg: 12 },
-          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
+          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] } as BreakPoints
         }) {
           GridCol({ span: { sm: 4, md: 8, lg: 10 }, offset: { sm: 0, md: 0, lg: 1 } }) {
             Column() {

@@ -1,6 +1,6 @@
 {
   "module": {
-    "name": "hsp-service",
+    "name": "hsp_service",
     "type": "shared",
     "description": "业务服务层 — 数据库操作、云函数调用、业务逻辑封装",
     "deviceTypes": [

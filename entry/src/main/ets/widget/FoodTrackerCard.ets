@@ -25,7 +25,11 @@ struct FoodTrackerCard {
 
   private updateWaterCups(): void {
     const filled = Math.min(8, Math.max(0, this.waterProgress));
-    this.waterCups = Array.from({ length: 8 }, (_, i) => i < filled);
+    const cups: boolean[] = [];
+    for (let i = 0; i < 8; i++) {
+      cups.push(i < filled);
+    }
+    this.waterCups = cups;
   }
 
   build() {

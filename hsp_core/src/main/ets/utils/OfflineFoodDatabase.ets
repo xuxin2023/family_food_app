@@ -128,7 +128,7 @@ class OfflineIndexHolder {
     try {
       const rawContent: Uint8Array = await context.resourceManager.getRawFileContent('offline_food_database.json');
       const decoder = new util.TextDecoder('utf-8');
-      const jsonStr = decoder.decodeWithStream(rawContent);
+      const jsonStr = decoder.decodeWithStream(rawContent, { stream: false });
       const entries = parseJsonToEntries(jsonStr);
       if (entries.length > 0) {
         this.activeDatabase = entries;

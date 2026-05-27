@@ -1,4 +1,4 @@
-import { BasicDataSource } from './BasicDataSource';
+import { BasicDataSource } from 'hsp_core';
 import { FavoriteItem } from '../repository/FavoriteRepository';
 
 export class FavoriteDataSource extends BasicDataSource<FavoriteItem> {

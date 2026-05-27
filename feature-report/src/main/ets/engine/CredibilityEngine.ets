@@ -11,10 +11,10 @@ const BASE_CREDIBILITY_SCORE = 55;
 export class CredibilityEngine {
   calculate(foodLabel: FoodLabel, crossVerified: boolean = false): CredibilityResult {
     const result = new CredibilityResult();
-    let score = BASE_CREDIBILITY_SCORE;
+    let score: number = BASE_CREDIBILITY_SCORE;
 
     // === 雷达维度1：身份清晰度 ===
-    const identityDim = new RadarDimension();
+    const identityDim: RadarDimension = new RadarDimension();
     identityDim.name = '身份清晰度';
     identityDim.status = '未识别';
     identityDim.grade = DataGrade.D;
@@ -54,7 +54,7 @@ export class CredibilityEngine {
     result.radarDimensions.push(identityDim);
 
     // === 雷达维度2：许可信息 ===
-    const licenseDim = new RadarDimension();
+    const licenseDim: RadarDimension = new RadarDimension();
     licenseDim.name = '许可信息';
     licenseDim.status = '未识别';
     licenseDim.grade = DataGrade.D;
@@ -77,7 +77,7 @@ export class CredibilityEngine {
     result.radarDimensions.push(licenseDim);
 
     // === 雷达维度3：追溯入口 ===
-    const traceDim = new RadarDimension();
+    const traceDim: RadarDimension = new RadarDimension();
     traceDim.name = '追溯入口';
     traceDim.status = '无';
     traceDim.grade = DataGrade.D;
@@ -98,7 +98,7 @@ export class CredibilityEngine {
     result.radarDimensions.push(traceDim);
 
     // === 雷达维度4：公开查询 ===
-    const queryDim = new RadarDimension();
+    const queryDim: RadarDimension = new RadarDimension();
     queryDim.name = '公开查询';
     queryDim.status = '可查询';
     queryDim.grade = DataGrade.A;
@@ -108,7 +108,7 @@ export class CredibilityEngine {
     result.publicQueryEntries = this.generatePublicQueryEntries(foodLabel);
 
     // === 雷达维度5：表达边界 ===
-    const riskDim = new RadarDimension();
+    const riskDim: RadarDimension = new RadarDimension();
     riskDim.name = '表达边界';
     riskDim.status = '克制';
     riskDim.grade = DataGrade.D;
@@ -231,7 +231,7 @@ export class CredibilityEngine {
     const entries: PublicQueryEntry[] = [];
 
     if (foodLabel.hasScNumber()) {
-      const scEntry = new PublicQueryEntry();
+      const scEntry: PublicQueryEntry = new PublicQueryEntry();
       scEntry.name = '食品生产许可查询';
       scEntry.keyword = foodLabel.scNumber;
       scEntry.url = 'https://zwfw.samr.gov.cn/needSearch';
@@ -239,7 +239,7 @@ export class CredibilityEngine {
       entries.push(scEntry);
     }
 
-    const cjEntry = new PublicQueryEntry();
+    const cjEntry: PublicQueryEntry = new PublicQueryEntry();
     cjEntry.name = '食品安全抽检查询';
     cjEntry.keyword = foodLabel.foodName;
     cjEntry.url = 'https://spcjsac.gsxt.gov.cn/';
@@ -247,7 +247,7 @@ export class CredibilityEngine {
     entries.push(cjEntry);
 
     if (foodLabel.hasManufacturer()) {
-      const mfrEntry = new PublicQueryEntry();
+      const mfrEntry: PublicQueryEntry = new PublicQueryEntry();
       mfrEntry.name = '生产企业信息查询';
       mfrEntry.keyword = foodLabel.manufacturer;
       mfrEntry.url = '';

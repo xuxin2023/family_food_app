@@ -2,7 +2,32 @@
 // 多维度风险交叉评估引擎 — 结合家庭成员画像、营养数据、过敏原、孕期安全进行综合风险评估
 
 import { FoodLabel, FamilyProfile, AgeGroup, HealthGoal, PregnancyStatus, NutritionTarget, NUTRIENT_LIMITS_V2 } from 'hsp_core';
-import { PregnancySafetyEngine, PregnancySafetyResult } from './PregnancySafetyEngine';
+
+export class PregnancyIngredientRule {
+  name: string = '';
+  maxDailyMg: number = 0;
+  hasMaxDaily: boolean = false;
+  severity: string = 'CAUTION';
+  reason: string = '';
+}
+
+export class PregnancyWarning {
+  ingredient: string = '';
+  matchedRule: PregnancyIngredientRule = new PregnancyIngredientRule();
+}
+
+export class PregnancySafetyResult {
+  safe: boolean = true;
+  warnings: PregnancyWarning[] = [];
+  summary: string = '';
+}
+
+const PREGNANCY_AVOID_KEYWORDS: string[] = [
+  '酒精', '生鱼片', '生肉', '生蛋', '含汞鱼类', '未经巴氏杀菌', '藏红花', '甘草'
+];
+const PREGNANCY_CAUTION_KEYWORDS: string[] = [
+  '咖啡因', '维生素A', '人参'
+];
 
 export class RiskFactor {
   category: string = '';
@@ -25,8 +50,6 @@ export class DailyIntakeSnapshot {
 }
 
 export class CrossRiskAssessor {
-  private pregnancyEngine: PregnancySafetyEngine = new PregnancySafetyEngine();
-
   private static readonly HIGH_SODIUM_MG: number = 500;
   private static readonly CHILD_HIGH_SUGAR_G: number = 15;
   private static readonly HIGH_FAT_G: number = 20;
@@ -171,16 +194,34 @@ export class CrossRiskAssessor {
       return;
     }
 
-    const pregnancyResult = this.pregnancyEngine.evaluate(member.pregnancyStatus, foodLabel.ingredients);
-    const avoidCount = pregnancyResult.warnings.filter(w => w.matchedRule.severity === 'AVOID').length;
-    const cautionCount = pregnancyResult.warnings.filter(w => w.matchedRule.severity === 'CAUTION').length;
+    const warnings: PregnancyWarning[] = [];
+    const ingredientsText = foodLabel.ingredients.join(',');
+    for (let i = 0; i < PREGNANCY_AVOID_KEYWORDS.length; i++) {
+      if (ingredientsText.includes(PREGNANCY_AVOID_KEYWORDS[i])) {
+        const w = new PregnancyWarning();
+        w.ingredient = PREGNANCY_AVOID_KEYWORDS[i];
+        w.matchedRule.severity = 'AVOID';
+        warnings.push(w);
+      }
+    }
+    for (let i = 0; i < PREGNANCY_CAUTION_KEYWORDS.length; i++) {
+      if (ingredientsText.includes(PREGNANCY_CAUTION_KEYWORDS[i])) {
+        const w = new PregnancyWarning();
+        w.ingredient = PREGNANCY_CAUTION_KEYWORDS[i];
+        w.matchedRule.severity = 'CAUTION';
+        warnings.push(w);
+      }
+    }
+
+    const avoidCount = warnings.filter((w: PregnancyWarning) => w.matchedRule.severity === 'AVOID').length;
+    const cautionCount = warnings.filter((w: PregnancyWarning) => w.matchedRule.severity === 'CAUTION').length;
 
     if (avoidCount > 0 || cautionCount > 0) {
       const f = new RiskFactor();
       f.category = '孕期不安全';
       f.severity = avoidCount > 0 ? 'high' : 'medium';
       const statusLabel = member.pregnancyStatus === PregnancyStatus.PREGNANT ? '孕期' : '哺乳期';
-      f.description = `${member.nickname}（${statusLabel}）：${pregnancyResult.summary}`;
+      f.description = `${member.nickname}（${statusLabel}）：发现${avoidCount}项避免成分、${cautionCount}项谨慎成分`;
       f.affectedMembers = [member.memberId];
       factors.push(f);
     }
@@ -237,7 +278,7 @@ export class CrossRiskAssessor {
       f.category = '钠超标预警';
       f.severity = 'medium';
       f.description = `今日钠已摄入${Math.round(dailyIntake.sodium)}mg + 本次${nutrition.sodium}mg = ${Math.round(projectedSodium)}mg，将超过目标${primaryTarget.sodiumMax_mg}mg`;
-      f.affectedMembers = members.map(m => m.memberId);
+      f.affectedMembers = members.map((m: FamilyProfile) => m.memberId);
       factors.push(f);
     }
 
@@ -247,7 +288,7 @@ export class CrossRiskAssessor {
       f.category = '糖超标预警';
       f.severity = 'medium';
       f.description = `今日糖已摄入${dailyIntake.sugar.toFixed(1)}g + 本次${nutrition.sugar}g = ${projectedSugar.toFixed(1)}g，将超过目标${primaryTarget.sugarMax_g}g`;
-      f.affectedMembers = members.map(m => m.memberId);
+      f.affectedMembers = members.map((m: FamilyProfile) => m.memberId);
       factors.push(f);
     }
 
@@ -257,7 +298,7 @@ export class CrossRiskAssessor {
       f.category = '热量超标预警';
       f.severity = 'low';
       f.description = `今日热量已摄入${Math.round(dailyIntake.calorie)}kcal + 本次${nutrition.calories}kcal = ${Math.round(projectedCalorie)}kcal，将超过目标${primaryTarget.caloriesTarget}kcal`;
-      f.affectedMembers = members.map(m => m.memberId);
+      f.affectedMembers = members.map((m: FamilyProfile) => m.memberId);
       factors.push(f);
     }
   }
@@ -285,9 +326,9 @@ export class CrossRiskAssessor {
     if (factors.length === 0) {
       return '当前食品对家庭成员无显著风险';
     }
-    const criticalCount = factors.filter(f => f.severity === 'critical').length;
-    const highCount = factors.filter(f => f.severity === 'high').length;
-    const mediumCount = factors.filter(f => f.severity === 'medium').length;
+    const criticalCount = factors.filter((f: RiskFactor) => f.severity === 'critical').length;
+    const highCount = factors.filter((f: RiskFactor) => f.severity === 'high').length;
+    const mediumCount = factors.filter((f: RiskFactor) => f.severity === 'medium').length;
     const parts: string[] = [];
     if (criticalCount > 0) parts.push(`${criticalCount}项严重风险`);
     if (highCount > 0) parts.push(`${highCount}项高风险`);

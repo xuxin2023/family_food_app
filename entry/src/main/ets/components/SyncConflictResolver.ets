@@ -17,7 +17,7 @@ export struct SyncConflictResolver {
         .fontWeight(FontWeight.Bold)
         .margin({ bottom: 12 })
 
-      Text(`${$r('app.string.sync_conflict_type_prefix')}${this.entityType}  ID: ${this.entityId}`)
+      Text() { Span($r('app.string.sync_conflict_type_prefix')); Span(`${this.entityType}  ID: ${this.entityId}`) }
         .fontSize(12)
         .fontColor($r('app.color.text_secondary'))
         .margin({ bottom: 12 })
@@ -28,7 +28,7 @@ export struct SyncConflictResolver {
             .fontSize(13)
             .fontWeight(FontWeight.Medium)
             .margin({ bottom: 4 })
-          Text(this.localSummary || $r('app.string.sync_conflict_local_default') as string)
+          Text(this.localSummary || $r('app.string.sync_conflict_local_default') as ResourceStr)
             .fontSize(11)
             .fontColor('#999999')
             .maxLines(2)
@@ -47,7 +47,7 @@ export struct SyncConflictResolver {
             .fontSize(13)
             .fontWeight(FontWeight.Medium)
             .margin({ bottom: 4 })
-          Text(this.remoteSummary || $r('app.string.sync_conflict_cloud_default') as string)
+          Text(this.remoteSummary || $r('app.string.sync_conflict_cloud_default') as ResourceStr)
             .fontSize(11)
             .fontColor('#999999')
             .maxLines(2)

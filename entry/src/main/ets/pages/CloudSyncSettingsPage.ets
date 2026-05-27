@@ -6,7 +6,7 @@ import {
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
-import { SyncService, SyncEvent } from 'hsp-service';
+import { SyncService, SyncEvent } from 'hsp_service';
 
 class StrategyItem { label: ResourceStr = ''; value: SyncStrategy = SyncStrategy.WIFI_ONLY; }
 class ConflictItem { label: ResourceStr = ''; value: ConflictResolution = ConflictResolution.LOCAL_FIRST; }
@@ -129,7 +129,7 @@ struct CloudSyncSettingsPage {
       .border({ width: { bottom: active ? 2 : 0 }, color: { bottom: active ? COLORS.PRIMARY : Color.Transparent } })
       .margin({ right: 24 })
       .onClick(onClick)
-      .accessibilityText(label)
+      .accessibilityText(label as Resource)
       .accessibilityLevel('yes')
   }
 
@@ -336,7 +336,7 @@ struct CloudSyncSettingsPage {
                 .fontSize(14)
                 .fontColor('#757575')
               Blank()
-              Text(`${this.syncConfig.syncIntervalMinutes}${$r('app.string.cloud_sync_unit_minutes')}`)
+              Text() { Span(`${this.syncConfig.syncIntervalMinutes}`); Span($r('app.string.cloud_sync_unit_minutes')) }
                 .fontSize(14)
                 .fontColor(COLORS.TEXT_GRAY_2121)
             }
@@ -383,7 +383,7 @@ struct CloudSyncSettingsPage {
           this.InfoRow($r('app.string.cloud_sync_label_device_id'), this.deviceId.length > 0 ?
             this.deviceId.substring(0, 20) + '...' : $r('app.string.cloud_sync_loading_text'))
           this.InfoRow($r('app.string.cloud_sync_label_network_status'), this.getNetworkStatusText())
-          this.InfoRow($r('app.string.cloud_sync_label_pending_items'), `${this.pendingCount} ${$r('app.string.cloud_sync_unit_items')}`)
+          this.InfoRow($r('app.string.cloud_sync_label_pending_items'), `${this.pendingCount} 项`)
         }
 
         Text($r('app.string.encrypt_transport'))
@@ -435,7 +435,7 @@ struct CloudSyncSettingsPage {
               .fontSize(14)
               .fontColor('#757575')
             Blank()
-            Text(`${this.pendingCount} ${$r('app.string.cloud_sync_unit_items')}`)
+            Text(`${this.pendingCount} 项`)
               .fontSize(14)
               .fontColor(this.pendingCount > 0 ? '#F57C00' : '#2E7D32')
           }

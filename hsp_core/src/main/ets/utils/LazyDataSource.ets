@@ -10,8 +10,10 @@
  *   LazyForEach(ds, (item: YourType, index: number) => { ... }, (item: YourType) => item.id.toString())
  */
 
+import { BasicDataSource } from './BasicDataSource';
+
 class LazyDataSource<T> extends BasicDataSource<T> {
-  private dataArray: T[] = []
+  protected dataArray: T[] = []
 
   totalCount(): number {
     return this.dataArray.length

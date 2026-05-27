@@ -227,20 +227,20 @@ export class RecipeRepository {
     return await this.queryRecipes(predicates, offset, limit);
   }
 
-  async updateRecipe(recipeId: string, updates: Partial<Recipe>): Promise<void> {
+  async updateRecipe(recipeId: string, updates: Record<string, Object>): Promise<void> {
     if (!this.rdbStore) {
       return;
     }
     try {
       const bucket: relationalStore.ValuesBucket = {};
       if (updates.title !== undefined) {
-        (bucket as Record<string, string | number | null>).title = updates.title;
+        (bucket as Record<string, string | number | null>).title = updates.title as string;
       }
       if (updates.description !== undefined) {
-        (bucket as Record<string, string>).description = updates.description;
+        (bucket as Record<string, string>).description = updates.description as string;
       }
       if (updates.coverImageUrl !== undefined) {
-        (bucket as Record<string, string>).cover_image_url = updates.coverImageUrl;
+        (bucket as Record<string, string>).cover_image_url = updates.coverImageUrl as string;
       }
       if (updates.ingredients !== undefined) {
         (bucket as Record<string, string>).ingredients = JSON.stringify(updates.ingredients);
@@ -255,13 +255,13 @@ export class RecipeRepository {
         (bucket as Record<string, string>).diet_tags = JSON.stringify(updates.dietTags);
       }
       if (updates.likeCount !== undefined) {
-        (bucket as Record<string, number>).like_count = updates.likeCount;
+        (bucket as Record<string, number>).like_count = updates.likeCount as number;
       }
       if (updates.commentCount !== undefined) {
-        (bucket as Record<string, number>).comment_count = updates.commentCount;
+        (bucket as Record<string, number>).comment_count = updates.commentCount as number;
       }
       if (updates.bookmarkCount !== undefined) {
-        (bucket as Record<string, number>).bookmark_count = updates.bookmarkCount;
+        (bucket as Record<string, number>).bookmark_count = updates.bookmarkCount as number;
       }
       if (updates.isApproved !== undefined) {
         (bucket as Record<string, number>).is_approved = updates.isApproved ? 1 : 0;
@@ -376,7 +376,8 @@ export class RecipeRepository {
         // 减少点赞数
         const recipe = await this.getRecipe(recipeId);
         if (recipe) {
-          await this.updateRecipe(recipeId, { likeCount: Math.max(0, recipe.likeCount - 1) });
+          const updateLike: Record<string, Object> = {}; updateLike['likeCount'] = Math.max(0, recipe.likeCount - 1);
+          await this.updateRecipe(recipeId, updateLike);
         }
         return false;
       }
@@ -396,7 +397,8 @@ export class RecipeRepository {
       // 增加点赞数
       const recipe = await this.getRecipe(recipeId);
       if (recipe) {
-        await this.updateRecipe(recipeId, { likeCount: recipe.likeCount + 1 });
+        const updateLike: Record<string, Object> = {}; updateLike['likeCount'] = recipe.likeCount + 1;
+        await this.updateRecipe(recipeId, updateLike);
       }
       return true;
     } catch (error) {
@@ -466,7 +468,8 @@ export class RecipeRepository {
         await this.rdbStore.delete(delPredicates);
         const recipe = await this.getRecipe(recipeId);
         if (recipe) {
-          await this.updateRecipe(recipeId, { bookmarkCount: Math.max(0, recipe.bookmarkCount - 1) });
+          const updateBm: Record<string, Object> = {}; updateBm['bookmarkCount'] = Math.max(0, recipe.bookmarkCount - 1);
+          await this.updateRecipe(recipeId, updateBm);
         }
         return false;
       }
@@ -485,7 +488,8 @@ export class RecipeRepository {
       await this.rdbStore.insert(TABLE_BOOKMARK, bmBucket);
       const recipe = await this.getRecipe(recipeId);
       if (recipe) {
-        await this.updateRecipe(recipeId, { bookmarkCount: recipe.bookmarkCount + 1 });
+        const updateBm: Record<string, Object> = {}; updateBm['bookmarkCount'] = recipe.bookmarkCount + 1;
+        await this.updateRecipe(recipeId, updateBm);
       }
       return true;
     } catch (error) {
@@ -585,7 +589,7 @@ export class RecipeRepository {
     try {
       return JSON.parse(jsonStr) as T[];
     } catch (e) {
-      hilog.warn(HILOG_DOMAIN, TAG, 'parseJSONArray failed: %{public}s', JSON.stringify(e));
+      hilog.warn(HILOG_DOMAIN.DEFAULT, TAG, 'parseJSONArray failed: %{public}s', JSON.stringify(e));
       return [] as T[];
     }
   }
@@ -594,7 +598,7 @@ export class RecipeRepository {
     try {
       return JSON.parse(jsonStr) as T;
     } catch (e) {
-      hilog.warn(HILOG_DOMAIN, TAG, 'parseJSON failed: %{public}s', JSON.stringify(e));
+      hilog.warn(HILOG_DOMAIN.DEFAULT, TAG, 'parseJSON failed: %{public}s', JSON.stringify(e));
       return null;
     }
   }

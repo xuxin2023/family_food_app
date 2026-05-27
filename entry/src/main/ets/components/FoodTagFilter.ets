@@ -6,7 +6,7 @@ import { ElderModeManager } from '../service/ElderModeManager';
 
 export class FilterTag {
   key: string = '';
-  label: string = '';
+  label: ResourceStr = '';
   color: string = '';
   selected: boolean = false;
 }
@@ -58,7 +58,7 @@ function buildSpecialTags(): FilterTag[] {
   return specials.map((s: [string, ResourceStr, string]) => {
     const tag = new FilterTag();
     tag.key = s[0];
-    tag.label = s[1] as string;
+    tag.label = s[1];
     tag.color = s[2];
     tag.selected = false;
     return tag;
@@ -99,7 +99,7 @@ export struct FoodTagFilter {
             .responseRegion({ x: 0, y: 0, width: this.touchTarget, height: this.touchTarget })
             .borderWidth(1)
             .borderColor(tag.selected ? tag.color : COLORS.BORDER)
-            .accessibilityText(`${tag.label}${tag.selected ? $r('app.string.tag_selected') as string : $r('app.string.tag_unselected') as string}`)
+            .accessibilityText(tag.selected ? $r('app.string.tag_selected') : $r('app.string.tag_unselected'))
             .onClick(() => { this.toggleTag(tag) })
         }, (tag: FilterTag) => tag.key)
       }

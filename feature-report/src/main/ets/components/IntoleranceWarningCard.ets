@@ -2,7 +2,7 @@
 // 不耐受预警卡片 — 展示成分不耐受检测结果
 
 import { COLORS, FONT_SIZE, FONT_WEIGHT, RADIUS, SPACING } from 'hsp_core';
-import { IntoleranceCheckResult, IntoleranceWarning, IntoleranceSeverity } from 'feature-scan';
+import { IntoleranceCheckResult, IntoleranceWarning, IntoleranceSeverity } from 'feature_scan';
 
 function getSeverityColor(severity: IntoleranceSeverity): string {
   switch (severity) {

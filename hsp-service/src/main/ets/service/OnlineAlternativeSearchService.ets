@@ -1,9 +1,22 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN, FoodLabel, NutritionPer100g, FoodSource, AlternativeFood } from 'hsp_core';
-import { OpenFoodFactsService } from 'hsp-service';
+import { HILOG_DOMAIN, FoodLabel, NutritionPer100g, FoodSource, AlternativeFood, RecommendationLevel, API_CONFIG } from 'hsp_core';
+import { OpenFoodFactsService } from './OpenFoodFactsService';
+import { HuaweiCloudBackend } from './HuaweiCloudBackend';
 
 const TAG = 'OnlineAlternativeSearch';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+
+export class CloudAlternativeResult {
+  barcode: string = '';
+  productName: string = '';
+  productNameZh: string = '';
+  brands: string = '';
+  nutritionGrade: string = '';
+  novaGroup: number = 0;
+  score: number = 0;
+  reasons: string[] = [];
+  imageUrl: string = '';
+}
 
 export class OnlineSearchResult {
   foodLabel: FoodLabel = new FoodLabel();
@@ -13,6 +26,7 @@ export class OnlineSearchResult {
 
 export class OnlineAlternativeSearchService {
   private static instance: OnlineAlternativeSearchService | null = null;
+  private cloudEnabled: boolean = true;
 
   static getInstance(): OnlineAlternativeSearchService {
     if (!OnlineAlternativeSearchService.instance) {
@@ -26,6 +40,13 @@ export class OnlineAlternativeSearchService {
     category?: string,
     maxResults: number = 10
   ): Promise<OnlineSearchResult[]> {
+    if (this.cloudEnabled && API_CONFIG.HUAWEI_CLOUD_BASE_URL.length > 0) {
+      const cloudResults = await this.searchViaCloud(currentFood, category, maxResults);
+      if (cloudResults.length > 0) {
+        return cloudResults;
+      }
+    }
+
     try {
       const searchTerm = this.buildSearchTerm(currentFood, category);
       const offService = OpenFoodFactsService.getInstance();
@@ -50,7 +71,7 @@ export class OnlineAlternativeSearchService {
       }
 
       candidates.sort((a: OnlineSearchResult, b: OnlineSearchResult) => b.similarityScore - a.similarityScore);
-      hilog.info(DOMAIN_ZERO, TAG, 'Found %{public}d online alternatives', candidates.length);
+      hilog.info(DOMAIN_ZERO, TAG, 'Found %{public}d online alternatives (OFF fallback)', candidates.length);
       return candidates.slice(0, maxResults);
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Online search failed: %{public}s', JSON.stringify(error));
@@ -58,12 +79,96 @@ export class OnlineAlternativeSearchService {
     }
   }
 
+  private async searchViaCloud(
+    currentFood: FoodLabel,
+    category?: string,
+    maxResults: number = 10
+  ): Promise<OnlineSearchResult[]> {
+    try {
+      const payload: Record<string, Object> = {
+        barcode: currentFood.barcode || '',
+        categories: category || '',
+        nutritionGrade: currentFood.nutriScore !== undefined ? String(currentFood.nutriScore) : '',
+        novaGroup: currentFood.novaGroup ?? 0,
+        maxResults: maxResults
+      };
+
+      const response = await HuaweiCloudBackend.getInstance().callFunction('search-alternatives', payload);
+      if (!response) {
+        hilog.info(DOMAIN_ZERO, TAG, 'Cloud alt-recommend returned null');
+        return [];
+      }
+
+      const resp = response as Record<string, Object>;
+      const code = resp['code'] as number;
+      const data = resp['data'];
+
+      if (code !== 200 || !Array.isArray(data)) {
+        hilog.info(DOMAIN_ZERO, TAG, 'Cloud alt-recommend no data (code=%{public}d)', code);
+        return [];
+      }
+
+      const candidates: OnlineSearchResult[] = [];
+      for (const item of (data as Record<string, Object>[])) {
+        const product = item['product'] as Record<string, Object> | undefined;
+        const score = Number(item['score'] ?? 0);
+        if (!product) continue;
+
+        const result = new OnlineSearchResult();
+        result.foodLabel = this.mapCloudProductToFoodLabel(product);
+        result.similarityScore = score;
+        result.source = 'cloud';
+        candidates.push(result);
+      }
+
+      candidates.sort((a: OnlineSearchResult, b: OnlineSearchResult) => b.similarityScore - a.similarityScore);
+      hilog.info(DOMAIN_ZERO, TAG, 'Found %{public}d cloud alternatives', candidates.length);
+      return candidates.slice(0, maxResults);
+    } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Cloud search failed: %{public}s', JSON.stringify(error));
+      return [];
+    }
+  }
+
+  private mapCloudProductToFoodLabel(product: Record<string, Object>): FoodLabel {
+    const label = new FoodLabel();
+    label.foodId = String(product['barcode'] || '');
+    label.foodName = String(product['product_name_zh'] || product['product_name'] || '');
+    label.barcode = String(product['barcode'] || '');
+    label.manufacturer = String(product['brands'] || '');
+    const nutrition = product['nutrition'] as Record<string, Object> | undefined;
+    if (nutrition) {
+      label.nutrition = new NutritionPer100g(
+        Number(nutrition['energy_kj'] || 0),
+        Number(nutrition['fat'] || 0),
+        Number(nutrition['saturated_fat'] || 0),
+        Number(nutrition['carbohydrates'] || 0),
+        Number(nutrition['sugars'] || 0),
+        Number(nutrition['fiber'] || 0),
+        Number(nutrition['proteins'] || 0),
+        Number(nutrition['salt'] || 0),
+        Number(nutrition['sodium'] || 0)
+      );
+    }
+    const gradeStr = String(product['nutrition_grade'] || '');
+    if (gradeStr.length > 0) {
+      const gradeMap: Record<string, number> = { 'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5 };
+      label.nutriScore = gradeMap[gradeStr.toLowerCase()] ?? 0;
+    }
+    label.novaGroup = Number(product['nova_group'] ?? 0);
+    label.allergenHints = String(product['allergens_text'] || '').split(',').filter((s: string) => s.length > 0);
+    label.imageUrl = String(product['image_url'] || '');
+    label.source = FoodSource.CLOUD;
+    return label;
+  }
+
   toAlternativeFoods(results: OnlineSearchResult[]): AlternativeFood[] {
     return results.map((r: OnlineSearchResult) => {
-      const alt = new AlternativeFood();
-      alt.foodName = r.foodLabel.foodName;
-      alt.reason = `在线推荐 (相似度${Math.round(r.similarityScore * 100)}%)`;
-      return alt;
+      const sourceTag = r.source === 'cloud' ? '云端推荐' : '在线推荐';
+      return new AlternativeFood(
+        r.foodLabel.foodName, '', 0, RecommendationLevel.GREEN,
+        0, 0, 0, `${sourceTag} (相似度${Math.round(r.similarityScore * 100)}%)`
+      );
     });
   }
 
@@ -78,9 +183,9 @@ export class OnlineAlternativeSearchService {
 
   private computeSimilarity(current: FoodLabel, candidate: FoodLabel): number {
     let score = 0;
-    if (current.categories && candidate.categories) {
-      const currentCats = new Set(current.categories.split(',').map((s: string) => s.trim()));
-      const candidateCats = candidate.categories.split(',').map((s: string) => s.trim());
+    if (current.allergenHints.length > 0 && candidate.allergenHints.length > 0) {
+      const currentCats = new Set<string>(current.allergenHints.map((s: string) => s.trim()));
+      const candidateCats: string[] = candidate.allergenHints.map((s: string) => s.trim());
       const overlap = candidateCats.filter((c: string) => currentCats.has(c)).length;
       if (currentCats.size > 0) {
         score += overlap / currentCats.size * 0.5;

@@ -457,15 +457,17 @@ export class AnalyticsService {
   /**
    * 解析 properties 字段 JSON 字符串
    */
+  private emptyProperties: Record<string, string | number | boolean> = {};
+
   private parseProperties(jsonStr: string): Record<string, string | number | boolean> {
     if (jsonStr === null || jsonStr.length === 0) {
-      return {};
+      return this.emptyProperties;
     }
     try {
       const raw = JSON.parse(jsonStr) as Record<string, string | number | boolean>;
       return raw;
     } catch {
-      return {};
+      return this.emptyProperties;
     }
   }
 }

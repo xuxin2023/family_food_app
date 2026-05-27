@@ -294,7 +294,7 @@ struct ReminderRulePage {
   }
 
   @Builder
-  TypeChip(label: string, type: string) {
+  TypeChip(label: ResourceStr, type: string) {
     Text(label)
       .fontSize(13)
       .padding({ left: 10, right: 10, top: 6, bottom: 6 })
@@ -303,12 +303,12 @@ struct ReminderRulePage {
       .fontColor(this.editType === type ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
       .margin({ right: 6, top: 4 })
       .onClick(() => { this.editType = type })
-      .accessibilityText(label)
+      .accessibilityText(label as Resource)
       .accessibilityLevel('yes')
   }
 
   @Builder
-  PriorityChip(label: string, priority: string) {
+  PriorityChip(label: ResourceStr, priority: string) {
     Text(label)
       .fontSize(13)
       .padding({ left: 10, right: 10, top: 6, bottom: 6 })
@@ -317,7 +317,7 @@ struct ReminderRulePage {
       .fontColor(this.editPriority === priority ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
       .margin({ right: 6, top: 4 })
       .onClick(() => { this.editPriority = priority })
-      .accessibilityText(label)
+      .accessibilityText(label as Resource)
       .accessibilityLevel('yes')
   }
 

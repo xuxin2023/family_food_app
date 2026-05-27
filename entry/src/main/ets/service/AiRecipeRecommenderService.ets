@@ -12,7 +12,7 @@ import {
 } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
-import { RecipeRepository } from '../repository/RecipeRepository';
+import { RecipeRepository } from 'hsp_service';
 import { AiServiceBase } from './ai/AiServiceBase';
 import { AI_SERVICE_DEFAULTS } from './ai/AiConfig';
 

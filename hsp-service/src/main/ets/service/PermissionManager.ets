@@ -207,6 +207,38 @@ export class PermissionManager {
     );
   }
 
+  async requestWithFallback(
+    permission: Permissions,
+    rationale?: string
+  ): Promise<boolean> {
+    if (!this.context) return false;
+
+    const status = await this.checkPermission(permission);
+    if (status === PermissionStatus.GRANTED) {
+      return true;
+    }
+
+    try {
+      const atManager = abilityAccessCtrl.createAtManager();
+      const result = await atManager.requestPermissionsFromUser(
+        this.context,
+        [permission]
+      );
+      const granted = result.authResults[0] === 0;
+      this.permissionCache.set(permission,
+        granted ? PermissionStatus.GRANTED : PermissionStatus.DENIED
+      );
+      if (granted) {
+        return true;
+      }
+      hilog.warn(DOMAIN_ZERO, TAG, 'Permission %{public}s denied by user, running in degraded mode', permission);
+      return false;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'requestWithFallback failed: %{public}s', JSON.stringify(error));
+      return false;
+    }
+  }
+
   /**
    * 清除权限缓存（用户重置数据时调用）
    */

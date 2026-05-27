@@ -1,4 +1,4 @@
-import { FamilyProfile, HealthSignal, MealBalance, MealScenario, RiskTag, MEAL_TEMPLATES, safeParseRiskTag } from 'hsp_core';
+import { FamilyProfile, HealthSignal, MealBalance, MealScenario, RiskTag, MEAL_TEMPLATES, MealTemplate, safeParseRiskTag } from 'hsp_core';
 // MealBalanceEngine.ets
 // 餐次平衡引擎 - 美食平衡建议
 // V2增强：新增6种场景、具体菜品建议、明天早餐建议、下一餐营养素补充
@@ -13,7 +13,13 @@ export class MealBalanceEngine {
     result.memberId = profile.memberId;
     result.scenario = scenario;
 
-    const template = MEAL_TEMPLATES.find(t => t.scenario === scenario);
+    let template: MealTemplate | undefined = undefined;
+    for (let i = 0; i < MEAL_TEMPLATES.length; i++) {
+      if (MEAL_TEMPLATES[i].scenario === scenario) {
+        template = MEAL_TEMPLATES[i];
+        break;
+      }
+    }
     if (template === undefined) {
       result.riskTags = [RiskTag.HIGH_CALORIE];
       result.nextMealAdvice = '下一餐建议清淡均衡，增加蔬菜和水分';
@@ -22,7 +28,11 @@ export class MealBalanceEngine {
       return result;
     }
 
-    result.riskTags = template.riskTags.map(tag => safeParseRiskTag(tag));
+    const riskTags: RiskTag[] = [];
+    for (let i = 0; i < template.riskTags.length; i++) {
+      riskTags.push(safeParseRiskTag(template.riskTags[i]));
+    }
+    result.riskTags = riskTags;
     result.nextMealAdvice = template.nextMealAdvice;
     result.avoidStacking = template.avoidStacking;
     result.hydrationReminder = template.hydrationReminder;
@@ -30,8 +40,8 @@ export class MealBalanceEngine {
     const goalAdvices: string[] = [];
     for (const goal of profile.healthGoals) {
       const goalName = goal as string;
-      const advice = template.goalAdvice.get(goalName);
-      if (advice !== undefined) {
+      const advice: string | undefined = template.goalAdvice.get(goalName);
+      if (advice !== undefined && advice.length > 0) {
         goalAdvices.push(advice);
       }
     }
@@ -74,7 +84,13 @@ export class MealBalanceEngine {
    * 获取场景的生活化完整建议文案
    */
   getFriendlyAdvice(scenario: MealScenario): string {
-    const template = MEAL_TEMPLATES.find(t => t.scenario === scenario);
+    let template: MealTemplate | undefined = undefined;
+    for (let i = 0; i < MEAL_TEMPLATES.length; i++) {
+      if (MEAL_TEMPLATES[i].scenario === scenario) {
+        template = MEAL_TEMPLATES[i];
+        break;
+      }
+    }
     if (template === undefined) return '';
 
     const riskText = template.riskTags.join('、');

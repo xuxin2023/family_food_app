@@ -41,11 +41,11 @@ export class ShoppingListRepository {
         item.id = resultSet.getString(0);
         item.name = resultSet.getString(1);
         item.category = resultSet.getString(2);
-        item.quantity = resultSet.getDouble(3);
+        item.quantity = resultSet.getString(3);
         item.isPurchased = resultSet.getLong(4) === 1;
         item.addedBy = resultSet.getString(5);
         item.addedAt = resultSet.getLong(6);
-        item.relatedBarcode = resultSet.getString(7);
+        item.relatedFoodBarcode = resultSet.getString(7);
         this.items.push(item);
       }
       resultSet.close();
@@ -55,16 +55,16 @@ export class ShoppingListRepository {
   }
 
   private toValuesBucket(item: ShoppingItem): relationalStore.ValuesBucket {
-    return {
-      'id': item.id,
-      'name': item.name,
-      'category': item.category,
-      'quantity': item.quantity,
-      'is_purchased': item.isPurchased ? 1 : 0,
-      'added_by': item.addedBy,
-      'added_at': item.addedAt,
-      'related_barcode': item.relatedBarcode
-    };
+    const bucket: relationalStore.ValuesBucket = {};
+    bucket['id'] = item.id;
+    bucket['name'] = item.name;
+    bucket['category'] = item.category;
+    bucket['quantity'] = item.quantity;
+    bucket['is_purchased'] = item.isPurchased ? 1 : 0;
+    bucket['added_by'] = item.addedBy;
+    bucket['added_at'] = item.addedAt;
+    bucket['related_barcode'] = item.relatedFoodBarcode;
+    return bucket;
   }
 
   async getAll(): Promise<string[]> {
@@ -164,11 +164,11 @@ export class ShoppingListRepository {
       item.id = (row['id'] as string) ?? `shop_${Date.now()}_${count}`;
       item.name = (row['name'] as string) ?? '';
       item.category = (row['category'] as string) ?? '';
-      item.quantity = (row['quantity'] as number) ?? 1;
+      item.quantity = (row['quantity'] as string) ?? '1';
       item.isPurchased = (row['is_purchased'] as number) === 1;
       item.addedBy = (row['added_by'] as string) ?? '';
       item.addedAt = (row['added_at'] as number) ?? Date.now();
-      item.relatedBarcode = (row['related_barcode'] as string) ?? '';
+      item.relatedFoodBarcode = (row['related_barcode'] as string) ?? '';
       this.items.push(item);
       count++;
     }

@@ -63,7 +63,7 @@ struct HomePage {
       } else {
         GridRow({
           columns: { sm: 4, md: 8, lg: 12 },
-          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
+          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] } as BreakPoints
         }) {
           GridCol({ span: { sm: 4, md: 8, lg: 10 }, offset: { sm: 0, md: 0, lg: 1 } }) {
             Scroll() {
@@ -83,7 +83,7 @@ struct HomePage {
                   }, (member: FamilyProfile) => member.memberId)
                 } else {
                   Column() {
-                    Text($r('app.string.no_members_hint'))
+                    Text('暂无成员，请先添加')
                       .fontSize(14)
                       .fontColor(COLORS.TEXT_SECONDARY)
                       .textAlign(TextAlign.Center)
@@ -134,11 +134,11 @@ struct HomePage {
   ScanEntryCard() {
     Row() {
       Column() {
-        Text($r('app.string.scan_food'))
+        Text('扫码识食')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .fontColor(COLORS.WHITE)
-        Text($r('app.string.scan_food_subtitle'))
+        Text('扫条码/拍包装，秒出健康分析')
           .fontSize(13)
           .fontColor('#B3FFFFFF')
           .margin({ top: 6 })
@@ -155,4 +155,56 @@ struct HomePage {
     .borderRadius(RADIUS.LG)
     .margin({ top: 8 })
     .onClick(() => { safePushUrl('pages/ScanPage') })
-    .accessibilityText($r('app.string.scan_food'))
+    .accessibilityText('扫码识食')
+  }
+
+  @Builder
+  MemberCard(member: FamilyProfile) {
+    Row() {
+      Column() {
+        Text(member.nickname)
+          .fontSize(16)
+          .fontWeight(FontWeight.Medium)
+          .fontColor(COLORS.TEXT_PRIMARY)
+        Text(member.ageGroup)
+          .fontSize(12)
+          .fontColor(COLORS.TEXT_SECONDARY)
+          .margin({ top: 4 })
+      }
+      .alignItems(HorizontalAlign.Start)
+      .layoutWeight(1)
+
+      Text('›')
+        .fontSize(20)
+        .fontColor(COLORS.TEXT_GRAY_BDBD)
+    }
+    .width('92%')
+    .padding({ left: 16, right: 16, top: 12, bottom: 12 })
+    .backgroundColor(COLORS.WHITE)
+    .borderRadius(RADIUS.MD)
+    .margin({ top: 8 })
+    .onClick(() => {
+      this.selectedMemberId = member.memberId
+      safePushUrl('pages/DashboardPage')
+    })
+    .accessibilityText(member.nickname)
+    .accessibilityLevel('yes')
+  }
+
+  @Builder
+  BottomNavBar() {
+    Row() {
+      Button('扫码识食')
+        .layoutWeight(1)
+        .height(BUTTON.HEIGHT_LG)
+        .backgroundColor(COLORS.PRIMARY)
+        .fontColor(COLORS.WHITE)
+        .borderRadius(RADIUS.MD)
+        .onClick(() => { safePushUrl('pages/ScanPage') })
+        .accessibilityText('扫码')
+        .accessibilityLevel('yes')
+    }
+    .width('100%')
+    .padding({ left: 16, right: 16, bottom: 16 })
+  }
+}

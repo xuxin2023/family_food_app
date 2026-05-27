@@ -5,7 +5,7 @@
 import { COLORS, FONT_SIZE, SPACING } from 'hsp_core';
 
 export class DonutSegment {
-  label: string = '';
+  label: ResourceStr = '';
   value: number = 0;
   color: string = '';
 }

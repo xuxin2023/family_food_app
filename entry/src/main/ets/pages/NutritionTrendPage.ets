@@ -11,11 +11,11 @@ const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 const TAG = 'NutritionTrendPage';
 
 class PeriodOption {
-  label: string = '';
+  label: ResourceStr = '';
   days: number = 0;
 }
 
-function makePeriodOption(label: string, days: number): PeriodOption {
+function makePeriodOption(label: ResourceStr, days: number): PeriodOption {
   const opt = new PeriodOption();
   opt.label = label;
   opt.days = days;
@@ -74,7 +74,7 @@ struct NutritionTrendPage {
 
     this.isLoading = true
     const days = this.periodOptions[this.selectedPeriodIndex].days
-    this.periodLabel = $r('app.string.nutrition_trend_recent_prefix') + days + $r('app.string.nutrition_trend_recent_suffix')
+    this.periodLabel = `近${days}天`
     const endDate = new Date()
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - days)
@@ -99,10 +99,10 @@ struct NutritionTrendPage {
     const result: NutrientTrendData[] = []
     if (dailySummaries.length > 0) {
       const last = dailySummaries[dailySummaries.length - 1]
-      const t1 = new NutrientTrendData(); t1.nutrientName = $r('app.string.nutrition_trend_sodium') as string; t1.unit = 'mg'; t1.dailyValues = dailySummaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.sodium; return p }); t1.currentValue = last.sodium; t1.targetValue = 2000; t1.maxValue = 2500; t1.color = '#FF9800'; t1.trend = TrendDirection.STABLE; result.push(t1)
-      const t2 = new NutrientTrendData(); t2.nutrientName = $r('app.string.nutrition_trend_sugar') as string; t2.unit = 'g'; t2.dailyValues = dailySummaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.sugar; return p }); t2.currentValue = last.sugar; t2.targetValue = 50; t2.maxValue = 60; t2.color = '#FF5722'; t2.trend = TrendDirection.STABLE; result.push(t2)
-      const t3 = new NutrientTrendData(); t3.nutrientName = $r('app.string.nutrition_trend_calorie') as string; t3.unit = 'kcal'; t3.dailyValues = dailySummaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.calorie; return p }); t3.currentValue = last.calorie; t3.targetValue = 2000; t3.maxValue = 2200; t3.color = '#4CAF50'; t3.trend = TrendDirection.STABLE; result.push(t3)
-      const t4 = new NutrientTrendData(); t4.nutrientName = $r('app.string.nutrition_trend_fat') as string; t4.unit = 'g'; t4.dailyValues = dailySummaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.fat; return p }); t4.currentValue = last.fat; t4.targetValue = 65; t4.maxValue = 80; t4.color = '#2196F3'; t4.trend = TrendDirection.STABLE; result.push(t4)
+      const t1 = new NutrientTrendData(); t1.nutrientName = $r('app.string.nutrition_trend_sodium') as ResourceStr; t1.unit = 'mg'; t1.dailyValues = dailySummaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.sodium; return p }); t1.currentValue = last.sodium; t1.targetValue = 2000; t1.maxValue = 2500; t1.color = '#FF9800'; t1.trend = TrendDirection.STABLE; result.push(t1)
+      const t2 = new NutrientTrendData(); t2.nutrientName = $r('app.string.nutrition_trend_sugar') as ResourceStr; t2.unit = 'g'; t2.dailyValues = dailySummaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.sugar; return p }); t2.currentValue = last.sugar; t2.targetValue = 50; t2.maxValue = 60; t2.color = '#FF5722'; t2.trend = TrendDirection.STABLE; result.push(t2)
+      const t3 = new NutrientTrendData(); t3.nutrientName = $r('app.string.nutrition_trend_calorie') as ResourceStr; t3.unit = 'kcal'; t3.dailyValues = dailySummaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.calorie; return p }); t3.currentValue = last.calorie; t3.targetValue = 2000; t3.maxValue = 2200; t3.color = '#4CAF50'; t3.trend = TrendDirection.STABLE; result.push(t3)
+      const t4 = new NutrientTrendData(); t4.nutrientName = $r('app.string.nutrition_trend_fat') as ResourceStr; t4.unit = 'g'; t4.dailyValues = dailySummaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.fat; return p }); t4.currentValue = last.fat; t4.targetValue = 65; t4.maxValue = 80; t4.color = '#2196F3'; t4.trend = TrendDirection.STABLE; result.push(t4)
     }
     this.trends = result
     this.summaries = dailySummaries
@@ -158,7 +158,7 @@ struct NutritionTrendPage {
             .borderRadius(RADIUS.FULL)
             .backgroundColor(this.selectedPeriodIndex === index ? COLORS.PRIMARY : COLORS.BG_LIGHT_GRAY_F5)
             .onClick(() => { this.switchPeriod(index) })
-            .accessibilityText(option.label as string)
+            .accessibilityText(index.toString())
             .accessibilityLevel('yes')
         }, (_option: PeriodOption, index: number) => index.toString())
       }
@@ -185,7 +185,7 @@ struct NutritionTrendPage {
             .fontSize(FONT_SIZE.SMALL)
             .fontColor(COLORS.TEXT_GRAY_BDBD)
             .margin({ top: SPACING.SM })
-          Text($r('app.string.nutrition_trend_recent_prefix') + this.summaries.length + $r('app.string.nutrition_trend_recent_suffix'))
+          Text(`近${this.summaries.length}天`)
             .fontSize(FONT_SIZE.SMALL)
             .fontColor(COLORS.TEXT_GRAY_9E9E)
             .margin({ top: SPACING.MD })
@@ -211,7 +211,7 @@ struct NutritionTrendPage {
             ForEach(this.trends, (trend: NutrientTrendData) => {
               TrendChart({ data: trend })
                 .padding({ left: SPACING.LG, right: SPACING.LG })
-            }, (trend: NutrientTrendData) => trend.nutrientName)
+            }, (trend: NutrientTrendData) => trend.nutrientName as string)
 
             // 每日数值列表
             if (this.summaries.length > 0) {
@@ -238,7 +238,7 @@ struct NutritionTrendPage {
   @Builder
   buildOverviewCard() {
     Column() {
-      Text(this.periodLabel + '' + $r('app.string.nutrition_trend_overview'))
+      Text(this.periodLabel + ' 概览')
         .fontSize(FONT_SIZE.BODY)
         .fontWeight(FONT_WEIGHT.BOLD)
         .fontColor(COLORS.TEXT_PRIMARY)

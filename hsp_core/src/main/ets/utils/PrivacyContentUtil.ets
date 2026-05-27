@@ -13,7 +13,7 @@ async function readRawHtml(context: common.Context, fileName: string): Promise<s
     const resMgr = context.resourceManager;
     const content: Uint8Array = await resMgr.getRawFileContent(fileName);
     const textDecoder = util.TextDecoder.create('utf-8');
-    return textDecoder.decodeToString(content);
+    return textDecoder.decodeWithStream(content, { stream: false });
   } catch (error) {
     return `<p>加载内容失败: ${JSON.stringify(error)}</p>`;
   }

@@ -7,7 +7,7 @@ import { ErrorFallback } from './ErrorFallback';
 
 @ComponentV2
 export struct ErrorBoundary {
-  @Param fallbackMessage: string = '数据加载失败'
+  @Param fallbackMessage: ResourceStr = '数据加载失败'
   @Param onRetry: (() => void) | null = null
   @Param hasError: boolean = false
   @BuilderParam content: () => void = this.defaultContent

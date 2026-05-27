@@ -8,8 +8,9 @@ import { UIAbility, Want, AbilityConstant, errorManager } from '@kit.AbilityKit'
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
 import { fileIo } from '@kit.CoreFileKit';
+import { util } from '@kit.ArkTS';
 import { AppState } from '../AppState';
-import { AnalyticsService, PermissionManager, NetworkMonitorService, PrivacyManager, SecureHttpClient, UpdateChecker, UpdateInfo } from 'hsp-service';
+import { AnalyticsService, PermissionManager, NetworkMonitorService, PrivacyManager, SecureHttpClient, UpdateChecker, UpdateInfo } from 'hsp_service';
 import { preferences, relationalStore } from '@kit.ArkData';
 import { warmUpOfflineDatabase } from 'hsp_core';
 import { GlobalErrorHandler } from '../utils/GlobalErrorHandler';
@@ -132,12 +133,12 @@ export default class EntryAbility extends UIAbility {
 
   private async checkPrivacyCompliance(): Promise<boolean> {
     try {
-      const needReConsent = await PrivacyManager.needReConsent(this.context);
+      const needReConsent: boolean = await PrivacyManager.needReConsent(this.context);
       if (needReConsent) {
         hilog.info(DOMAIN_ZERO, TAG, 'Privacy policy updated, re-consent required');
         return false;
       }
-      const agreed = await PrivacyManager.checkPrivacyAgreed(this.context);
+      const agreed: boolean = await PrivacyManager.checkPrivacyAgreed(this.context);
       return agreed;
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Privacy compliance check failed: %{public}s', JSON.stringify(e));
@@ -248,6 +249,55 @@ export default class EntryAbility extends UIAbility {
     hilog.info(DOMAIN_ZERO, TAG, 'onWindowStageDestroy');
   }
 
+  onContinue(wantParam: Record<string, Object>): AbilityConstant.OnContinueResult {
+    try {
+      const currentPath = NavigationManager.getCurrentPath() || '';
+      const currentParam = NavigationManager.getCurrentParam() || {};
+
+      wantParam['continuePath'] = currentPath;
+      wantParam['continueParam'] = JSON.stringify(currentParam);
+      wantParam['continueMemberId'] = this.appState.member.memberId;
+      wantParam['continueTimestamp'] = Date.now().toString();
+
+      hilog.info(DOMAIN_ZERO, TAG, 'onContinue: path=%{public}s', currentPath);
+      return AbilityConstant.OnContinueResult.AGREE;
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'onContinue failed: %{public}s', JSON.stringify(e));
+      return AbilityConstant.OnContinueResult.REJECT;
+    }
+  }
+
+  onCreateWithWant(want: Want, launchParam: AbilityConstant.LaunchParam): void {
+    this.onCreate(want, launchParam);
+    this.restoreContinueData(want);
+  }
+
+  private restoreContinueData(want: Want): void {
+    try {
+      const continuePath = want.parameters?.['continuePath'] as string || '';
+      const continueParamStr = want.parameters?.['continueParam'] as string || '';
+      const continueMemberId = want.parameters?.['continueMemberId'] as string || '';
+
+      if (continuePath.length > 0) {
+        AppStorage.setOrCreate('continueDestinationPath', continuePath);
+        if (continueParamStr.length > 0) {
+          try {
+            const continueParam = JSON.parse(continueParamStr) as Object;
+            AppStorage.setOrCreate('continueDestinationParam', continueParam);
+          } catch (_e) {
+            AppStorage.setOrCreate('continueDestinationParam', {});
+          }
+        }
+        if (continueMemberId.length > 0) {
+          AppStorage.setOrCreate('currentMemberId', continueMemberId);
+        }
+        hilog.info(DOMAIN_ZERO, TAG, 'Distributed continue restored: path=%{public}s', continuePath);
+      }
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'restoreContinueData failed: %{public}s', JSON.stringify(e));
+    }
+  }
+
   onNewWant(want: Want, launchParam: AbilityConstant.LaunchParam): void {
     hilog.info(DOMAIN_ZERO, TAG, 'onNewWant received');
     try {
@@ -257,7 +307,11 @@ export default class EntryAbility extends UIAbility {
         const ALLOWED_HOSTS = ['foodscan.familyfood.app', 'openfoodfacts.org'];
         const scheme = uri.split('://')[0];
         let host = '';
-        try { host = new URL(uri).hostname; } catch { host = ''; }
+        try {
+          const urlStr = uri.toString();
+          const match = urlStr.match(/:\/\/([^\/]+)/);
+          host = match !== null ? match[1] : '';
+        } catch { host = ''; }
         if (ALLOWED_SCHEMES.includes(scheme) && (ALLOWED_HOSTS.length === 0 || ALLOWED_HOSTS.includes(host))) {
           hilog.info(DOMAIN_ZERO, TAG, 'Deep link URI validated: %{public}s', uri);
           DeepLinkHandler.handleUri(uri as string);
@@ -410,16 +464,19 @@ export default class EntryAbility extends UIAbility {
 
   /** 安全解析订阅等级字符串，兼容大小写不匹配 */
   private parseTier(value: string): MemberTier {
+    const tierMap: Record<string, MemberTier> = {
+      'free': MemberTier.FREE,
+      'personal': MemberTier.PERSONAL,
+      'family': MemberTier.FAMILY,
+      'premium': MemberTier.PREMIUM,
+    };
     const normalized = (value ?? '').toLowerCase();
-    switch (normalized) {
-      case MemberTier.FREE:     return MemberTier.FREE;
-      case MemberTier.PERSONAL: return MemberTier.PERSONAL;
-      case MemberTier.FAMILY:   return MemberTier.FAMILY;
-      case MemberTier.PREMIUM:  return MemberTier.PREMIUM;
-      default:
-        hilog.warn(DOMAIN_ZERO, TAG, 'Unknown tier stored in prefs: %{public}s, defaulting to FREE', value);
-        return MemberTier.FREE;
+    const result = tierMap[normalized];
+    if (result !== undefined) {
+      return result;
     }
+    hilog.warn(DOMAIN_ZERO, TAG, 'Unknown tier stored in prefs: %{public}s, defaulting to FREE', value);
+    return MemberTier.FREE;
   }
 
   /**

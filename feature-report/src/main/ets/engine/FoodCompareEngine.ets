@@ -108,14 +108,14 @@ export class FoodCompareEngine {
   ): MemberAdaptDiff[] {
     const diffs: MemberAdaptDiff[] = [];
     for (const member of members) {
-      const r1 = recs1.find(r => r.memberId === member.memberId);
-      const r2 = recs2.find(r => r.memberId === member.memberId);
+      const r1 = recs1.find((r: Recommendation) => r.memberId === member.memberId);
+      const r2 = recs2.find((r: Recommendation) => r.memberId === member.memberId);
       if (r1 && r2) {
         let recommendation = '';
-        if (r1.score > r2.score) {
-          recommendation = `食品A更适配(${r1.score} vs ${r2.score})`;
-        } else if (r2.score > r1.score) {
-          recommendation = `食品B更适配(${r2.score} vs ${r1.score})`;
+        if (r1.nutriScore > r2.nutriScore) {
+          recommendation = `食品A更适配(${r1.nutriScore} vs ${r2.nutriScore})`;
+        } else if (r2.nutriScore > r1.nutriScore) {
+          recommendation = `食品B更适配(${r2.nutriScore} vs ${r1.nutriScore})`;
         } else {
           recommendation = '两食品适配度相当';
         }
@@ -132,22 +132,22 @@ export class FoodCompareEngine {
   }
 
   private determineWinner(diffs: NutrientComparison[]): 1 | 2 | 0 {
-    const b1 = diffs.filter(d => d.betterSide === 1).length;
-    const b2 = diffs.filter(d => d.betterSide === 2).length;
+    const b1 = diffs.filter((d: NutrientComparison) => d.betterSide === 1).length;
+    const b2 = diffs.filter((d: NutrientComparison) => d.betterSide === 2).length;
     if (b1 > b2) return 1;
     if (b2 > b1) return 2;
     return 0;
   }
 
   private buildSummary(f1: FoodLabel, f2: FoodLabel, diffs: NutrientComparison[], winner: 1 | 2 | 0): string {
-    const better1 = diffs.filter(d => d.betterSide === 1);
-    const better2 = diffs.filter(d => d.betterSide === 2);
+    const better1 = diffs.filter((d: NutrientComparison) => d.betterSide === 1);
+    const better2 = diffs.filter((d: NutrientComparison) => d.betterSide === 2);
     const name1 = f1.foodName || '食品A';
     const name2 = f2.foodName || '食品B';
     if (winner === 1) {
-      return `${name1}在${better1.map(d => d.name).join('、')}方面更优；${name2}在${better2.map(d => d.name).join('、') || '暂无明显优势'}方面领先。`;
+      return `${name1}在${better1.map((d: NutrientComparison) => d.name).join('、')}方面更优；${name2}在${better2.map((d: NutrientComparison) => d.name).join('、') || '暂无明显优势'}方面领先。`;
     } else if (winner === 2) {
-      return `${name2}在${better2.map(d => d.name).join('、')}方面更优；${name1}在${better1.map(d => d.name).join('、') || '暂无明显优势'}方面领先。`;
+      return `${name2}在${better2.map((d: NutrientComparison) => d.name).join('、')}方面更优；${name1}在${better1.map((d: NutrientComparison) => d.name).join('、') || '暂无明显优势'}方面领先。`;
     }
     return '两食品营养指标基本相当，建议结合个人健康目标选择。';
   }
@@ -158,7 +158,7 @@ export class FoodCompareEngine {
   ): string {
     let summary = this.buildSummary(f1, f2, diffs, winner);
     if (memberDiffs.length > 0) {
-      summary += '\n\n家庭适配：' + memberDiffs.map(d => `${d.memberName}: ${d.recommendation}`).join('；');
+      summary += '\n\n家庭适配：' + memberDiffs.map((d: MemberAdaptDiff) => `${d.memberName}: ${d.recommendation}`).join('；');
     }
     return summary;
   }

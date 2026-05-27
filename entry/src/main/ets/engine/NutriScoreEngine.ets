@@ -19,13 +19,13 @@ export class NutriScoreInput {
 
   constructor(calories: number, sugar: number, sodium: number, fat: number,
     saturatedFat: number, protein: number, fiber: number) {
-    this.calories = calories;
-    this.sugar = sugar;
-    this.sodium = sodium;
-    this.fat = fat;
-    this.saturatedFat = saturatedFat;
-    this.protein = protein;
-    this.fiber = fiber;
+    this.calories = Math.max(0, calories);
+    this.sugar = Math.max(0, sugar);
+    this.sodium = Math.max(0, sodium);
+    this.fat = Math.max(0, fat);
+    this.saturatedFat = Math.max(0, saturatedFat);
+    this.protein = Math.max(0, protein);
+    this.fiber = Math.max(0, fiber);
   }
 }
 

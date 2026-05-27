@@ -193,9 +193,9 @@ export class FavoriteRepository {
       const valueBucket: relationalStore.ValuesBucket = {
         'member_id': memberId,
         'calories_target': target.caloriesTarget ?? 2000,
-        'sodium_target': target.sodiumTarget ?? 2000,
-        'sugar_target': target.sugarTarget ?? 50,
-        'fat_target': target.fatTarget ?? 65,
+        'sodium_target': target.sodiumMax_mg ?? 2000,
+        'sugar_target': target.sugarMax_g ?? 50,
+        'fat_target': target.fatMax_g ?? 65,
         'updated_at': Date.now()
       };
       const predicates = new relationalStore.RdbPredicates(TABLE_NUTRITION_TARGET);

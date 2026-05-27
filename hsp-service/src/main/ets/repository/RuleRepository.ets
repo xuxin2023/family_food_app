@@ -55,9 +55,9 @@ export interface MealBalanceTemplate {
 }
 
 // 过敏原关键词映射类型
-export interface AllergenKeywordMap {
-  allergenToKeywords: Record<string, string[]>;
-  commonAllergens: string[];
+export class AllergenKeywordMap {
+  allergenToKeywords: Record<string, string[]> = {};
+  commonAllergens: string[] = [];
 }
 
 export class RuleRepository {
@@ -122,15 +122,15 @@ export class RuleRepository {
    */
   async loadAllergenKeywords(): Promise<AllergenKeywordMap> {
     const data = await this.loadJsonFile('allergen_keywords.json');
+    const result = new AllergenKeywordMap();
     if (data) {
       const a2k = data.allergenToKeywords as Record<string, string[]>;
       const ca = data.commonAllergens as string[];
-      return {
-        allergenToKeywords: a2k ?? {},
-        commonAllergens: ca ?? []
-      };
+      result.allergenToKeywords = a2k ?? {};
+      result.commonAllergens = ca ?? [];
+      return result;
     }
-    return { allergenToKeywords: {}, commonAllergens: [] };
+    return result;
   }
 
   /**
@@ -159,6 +159,8 @@ export class RuleRepository {
   /**
    * 通用JSON文件加载（带缓存）
    */
+  private emptyRecord: Record<string, Object> = {};
+
   private async loadJsonFile(fileName: string): Promise<Record<string, Object>> {
     // 检查缓存
     const cached = this.cache.get(fileName);
@@ -168,7 +170,7 @@ export class RuleRepository {
 
     if (!this.context) {
       hilog.error(DOMAIN_ZERO, TAG, 'Context not set');
-      return {};
+      return this.emptyRecord;
     }
 
     try {
@@ -177,7 +179,7 @@ export class RuleRepository {
 
       // 将字节数组转为字符串
       const textDecoder = util.TextDecoder.create('utf-8');
-      const text = textDecoder.decodeToString(content);
+      const text = textDecoder.decodeWithStream(content, { stream: false });
       const result = JSON.parse(text) as Record<string, Object>;
 
       // 写入缓存
@@ -187,7 +189,7 @@ export class RuleRepository {
       return result;
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Load JSON file %{public}s failed: %{public}s', fileName, JSON.stringify(error));
-      return {};
+      return this.emptyRecord;
     }
   }
 }

@@ -1,4 +1,5 @@
-import { COLORS, safeBack, HealthSignal, FamilyProfile, CheckupReport, HealthArchiveUpdate, HILOG_DOMAIN } from 'hsp_core';
+import { COLORS, safeBack, HealthSignal, FamilyProfile, HILOG_DOMAIN } from 'hsp_core';
+import { CheckupReport, HealthArchiveUpdate } from '../engine/CheckupReportEngine';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { CheckupItem } from '../engine/CheckupReportEngine';
@@ -108,10 +109,10 @@ struct CheckupReportPage {
                   .fontWeight(FontWeight.Bold)
                   .margin({ bottom: 12 })
 
-                Text(`${$r('app.string.checkup_report_summary')}${(this.report as CheckupReport).summary}`)
+                Text() { Span($r('app.string.checkup_report_summary')); Span(`${(this.report as CheckupReport).summary}`) }
                   .fontSize(14)
                   .margin({ bottom: 6 })
-                Text(`${$r('app.string.checkup_risk_score')}${(this.report as CheckupReport).riskScore}`)
+                Text() { Span($r('app.string.checkup_risk_score')); Span(`${(this.report as CheckupReport).riskScore}`) }
                   .fontSize(14)
                   .margin({ bottom: 8 })
 
@@ -129,7 +130,7 @@ struct CheckupReportPage {
                       Column() {
                         Text(`${item.name}: ${item.value}${item.unit}`)
                           .fontSize(13)
-                        Text(`${$r('app.string.checkup_reference_prefix')}${item.referenceLow}-${item.referenceHigh}${item.unit}`)
+                        Text() { Span($r('app.string.checkup_reference_prefix')); Span(`${item.referenceLow}-${item.referenceHigh}${item.unit}`) }
                           .fontSize(11)
                           .fontColor(COLORS.TEXT_GRAY_7575)
                       }
@@ -149,7 +150,7 @@ struct CheckupReportPage {
                       .margin({ top: 12, bottom: 8 })
 
                     if ((this.archiveUpdate as HealthArchiveUpdate).newAlerts.length > 0) {
-                      Text(`${$r('app.string.checkup_new_alert')}${(this.archiveUpdate as HealthArchiveUpdate).newAlerts.join('、')}`)
+                      Text() { Span($r('app.string.checkup_new_alert')); Span(`${(this.archiveUpdate as HealthArchiveUpdate).newAlerts.join('、')}`) }
                         .fontSize(13)
                         .fontColor('#E53935')
                         .margin({ bottom: 4 })

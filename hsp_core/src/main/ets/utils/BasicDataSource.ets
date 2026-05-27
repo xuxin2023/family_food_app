@@ -91,7 +91,7 @@ export class BasicDataSource<T> implements IDataSource {
     if (to < 0 || to >= this.dataArray.length) return;
     const item: T = this.dataArray.splice(from, 1)[0];
     this.dataArray.splice(to, 0, item);
-    this.notifyDataMove(from, to);
+    this.notifyDataReload();
   }
 
   // 更新指定位置

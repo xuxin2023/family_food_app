@@ -1,6 +1,6 @@
 import { FoodLabel, FoodSource, NutritionPer100g, API_TIMEOUT_CONFIG, API_CONFIG, HILOG_DOMAIN } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { AuthService, SecureHttpHelper } from 'hsp-service';
+import { AuthService, SecureHttpHelper } from 'hsp_service';
 
 const TAG = 'CommunityFoodService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -68,7 +68,7 @@ export class CommunityFoodService {
     if (cached) return cached;
 
     try {
-      const uid = this.authService.getUid();
+      const uid: string = this.authService?.getUid() ?? '';
       const url = `${API_CONFIG.HUAWEI_CLOUD_BASE_URL}/food/lookup?barcode=${encodeURIComponent(barcode)}&uid=${encodeURIComponent(uid)}`;
 
       const getHeader = new Map<string, string>();
@@ -76,8 +76,8 @@ export class CommunityFoodService {
 
       const resp = await SecureHttpHelper.get(url, getHeader, API_TIMEOUT_CONFIG.DEFAULT_CONNECT_TIMEOUT_MS);
 
-      if (resp.responseCode === 200 && resp.data !== null) {
-        const result = resp.data as CommunityFoodRecord;
+      if (resp !== null && resp !== undefined && resp.responseCode === 200 && resp.data !== null) {
+        const result = resp.data as Object as CommunityFoodRecord;
         this.localCache.set(barcode, result);
         hilog.info(DOMAIN_ZERO, TAG, 'Community lookup hit: %{public}s', barcode);
         return result;
@@ -90,7 +90,7 @@ export class CommunityFoodService {
   }
 
   async contributeFood(foodLabel: FoodLabel): Promise<ContributeResult> {
-    const uid = this.authService.getUid();
+    const uid: string = this.authService?.getUid() ?? '';
     if (uid.length === 0) {
       const notLoggedIn = new ContributeResult();
       notLoggedIn.success = false;
@@ -128,8 +128,8 @@ export class CommunityFoodService {
 
       const resp = await SecureHttpHelper.post(url, payload, postHeader, API_TIMEOUT_CONFIG.DEFAULT_CONNECT_TIMEOUT_MS);
 
-      if ((resp.responseCode === 200 || resp.responseCode === 201) && resp.data !== null) {
-        const result = resp.data as RecordIdResponse;
+      if (resp !== null && resp !== undefined && (resp.responseCode === 200 || resp.responseCode === 201) && resp.data !== null) {
+        const result = resp.data as Object as RecordIdResponse;
         hilog.info(DOMAIN_ZERO, TAG, 'Contribute success: %{public}s', result.recordId);
         const successResult = new ContributeResult();
         successResult.success = true;

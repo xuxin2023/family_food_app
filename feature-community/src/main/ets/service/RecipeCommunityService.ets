@@ -6,7 +6,7 @@ import { RecipeRepository } from '../repository/RecipeRepository';
 import {
   Recipe, RecipeComment, RecipeIngredient, RecipeStep, RecipeNutrition, RecipeDifficulty, RecipeCategory, DietTag, RecipeQueryParams, CreateRecipeParams, HILOG_DOMAIN
 } from 'hsp_core';
-import { AuthService } from 'hsp-service';
+import { AuthService } from 'hsp_service';
 
 
 const TAG = 'RecipeCommunityService';
@@ -33,32 +33,31 @@ export class RecipeCommunityService {
     const user = this.authService.getCurrentUser();
 
     const now = Date.now();
-    const recipe: Recipe = {
-      recipeId: `recipe_${now}_${Math.random().toString(36).substring(2, 8)}`,
-      title: params.title,
-      description: params.description,
-      coverImageUrl: params.coverImageUrl,
-      authorUid: uid,
-      authorName: user?.isAnonymous ? '匿名用户' : uid.substring(0, 8),
-      authorAvatar: '',
-      category: params.category,
-      difficulty: params.difficulty,
-      totalMinutes: params.totalMinutes,
-      servings: params.servings,
-      ingredients: params.ingredients,
-      steps: params.steps,
-      nutrition: params.nutrition,
-      dietTags: params.dietTags,
-      relatedFoodId: params.relatedFoodId,
-      fromGroupId: params.fromGroupId,
-      createdAt: now,
-      updatedAt: now,
-      likeCount: 0,
-      commentCount: 0,
-      bookmarkCount: 0,
-      isApproved: true, // P0版本直接审核通过
-      isDraft: params.isDraft
-    };
+    const recipe = new Recipe();
+    recipe.recipeId = `recipe_${now}_${Math.random().toString(36).substring(2, 8)}`;
+    recipe.title = params.title;
+    recipe.description = params.description;
+    recipe.coverImageUrl = params.coverImageUrl;
+    recipe.authorUid = uid;
+    recipe.authorName = user?.isAnonymous ? '匿名用户' : uid.substring(0, 8);
+    recipe.authorAvatar = '';
+    recipe.category = params.category;
+    recipe.difficulty = params.difficulty;
+    recipe.totalMinutes = params.totalMinutes;
+    recipe.servings = params.servings;
+    recipe.ingredients = params.ingredients;
+    recipe.steps = params.steps;
+    recipe.nutrition = params.nutrition;
+    recipe.dietTags = params.dietTags;
+    recipe.relatedFoodId = params.relatedFoodId;
+    recipe.fromGroupId = params.fromGroupId;
+    recipe.createdAt = now;
+    recipe.updatedAt = now;
+    recipe.likeCount = 0;
+    recipe.commentCount = 0;
+    recipe.bookmarkCount = 0;
+    recipe.isApproved = true;
+    recipe.isDraft = params.isDraft;
 
     await this.recipeRepo.saveRecipe(recipe);
     hilog.info(DOMAIN_ZERO, TAG, 'Recipe created: %{public}s', recipe.recipeId);
@@ -75,25 +74,25 @@ export class RecipeCommunityService {
   /**
    * 更新食谱
    */
-  async updateRecipe(recipeId: string, params: Partial<CreateRecipeParams>): Promise<void> {
+  async updateRecipe(recipeId: string, params: Record<string, Object>): Promise<void> {
     const uid = this.authService.getUid();
     const recipe = await this.recipeRepo.getRecipe(recipeId);
     if (!recipe) throw new Error('食谱不存在');
     if (recipe.authorUid !== uid) throw new Error('仅作者可以编辑食谱');
 
-    const updates: Partial<Recipe> = {};
-    if (params.title !== undefined) updates.title = params.title;
-    if (params.description !== undefined) updates.description = params.description;
-    if (params.coverImageUrl !== undefined) updates.coverImageUrl = params.coverImageUrl;
-    if (params.category !== undefined) updates.category = params.category;
-    if (params.difficulty !== undefined) updates.difficulty = params.difficulty;
-    if (params.totalMinutes !== undefined) updates.totalMinutes = params.totalMinutes;
-    if (params.servings !== undefined) updates.servings = params.servings;
-    if (params.ingredients !== undefined) updates.ingredients = params.ingredients;
-    if (params.steps !== undefined) updates.steps = params.steps;
-    if (params.nutrition !== undefined) updates.nutrition = params.nutrition;
-    if (params.dietTags !== undefined) updates.dietTags = params.dietTags;
-    if (params.isDraft !== undefined) updates.isDraft = params.isDraft;
+    const updates: Record<string, Object> = {};
+    if (params['title'] !== undefined) updates['title'] = params['title'];
+    if (params['description'] !== undefined) updates['description'] = params['description'];
+    if (params['coverImageUrl'] !== undefined) updates['coverImageUrl'] = params['coverImageUrl'];
+    if (params['category'] !== undefined) updates['category'] = params['category'];
+    if (params['difficulty'] !== undefined) updates['difficulty'] = params['difficulty'];
+    if (params['totalMinutes'] !== undefined) updates['totalMinutes'] = params['totalMinutes'];
+    if (params['servings'] !== undefined) updates['servings'] = params['servings'];
+    if (params['ingredients'] !== undefined) updates['ingredients'] = params['ingredients'];
+    if (params['steps'] !== undefined) updates['steps'] = params['steps'];
+    if (params['nutrition'] !== undefined) updates['nutrition'] = params['nutrition'];
+    if (params['dietTags'] !== undefined) updates['dietTags'] = params['dietTags'];
+    if (params['isDraft'] !== undefined) updates['isDraft'] = params['isDraft'];
 
     await this.recipeRepo.updateRecipe(recipeId, updates);
   }
@@ -147,25 +146,25 @@ export class RecipeCommunityService {
     const uid = this.authService.getUid();
     const user = this.authService.getCurrentUser();
 
-    const comment: RecipeComment = {
-      commentId: `cmt_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
-      recipeId: recipeId,
-      authorUid: uid,
-      authorName: user?.isAnonymous ? '匿名用户' : uid.substring(0, 8),
-      authorAvatar: '',
-      content: content,
-      parentId: parentId,
-      createdAt: Date.now(),
-      likeCount: 0,
-      isEdited: false
-    };
+    const comment = new RecipeComment();
+    comment.commentId = `cmt_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    comment.recipeId = recipeId;
+    comment.authorUid = uid;
+    comment.authorName = user?.isAnonymous ? '匿名用户' : uid.substring(0, 8);
+    comment.authorAvatar = '';
+    comment.content = content;
+    comment.parentId = parentId;
+    comment.createdAt = Date.now();
+    comment.likeCount = 0;
+    comment.isEdited = false;
 
     await this.recipeRepo.saveComment(comment);
 
     // 更新评论数
     const recipe = await this.recipeRepo.getRecipe(recipeId);
     if (recipe) {
-      await this.recipeRepo.updateRecipe(recipeId, { commentCount: recipe.commentCount + 1 });
+      const updateData: Record<string, Object> = { 'commentCount': recipe.commentCount + 1 };
+      await this.recipeRepo.updateRecipe(recipeId, updateData);
     }
 
     return comment;

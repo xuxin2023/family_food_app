@@ -45,7 +45,7 @@ export class CloudAuthService {
         user.uid = savedUid;
         user.isAnonymous = prefs.getSync('is_anonymous', true) as boolean;
         user.createdAt = prefs.getSync('created_at', 0) as number;
-        user.cloudToken = await SecureDataStore.loadAndDecrypt('cloud_token') ?? '';
+        user.cloudToken = await SecureDataStore.getInstance().loadAndDecrypt('cloud_token') ?? '';
         user.displayName = prefs.getSync('display_name', '') as string;
         user.accountId = prefs.getSync('account_id', '') as string;
         this.currentUser = user;
@@ -159,7 +159,7 @@ export class CloudAuthService {
         prefs.deleteSync('uid');
         prefs.deleteSync('is_anonymous');
         prefs.deleteSync('created_at');
-        await SecureDataStore.remove('cloud_token');
+        await SecureDataStore.getInstance().deleteKey('cloud_token');
         prefs.deleteSync('display_name');
         prefs.deleteSync('account_id');
         await prefs.flush();
@@ -188,7 +188,7 @@ export class CloudAuthService {
       prefs.putSync('uid', this.currentUser.uid);
       prefs.putSync('is_anonymous', this.currentUser.isAnonymous);
       prefs.putSync('created_at', this.currentUser.createdAt);
-      await SecureDataStore.encryptAndSave('cloud_token', this.currentUser.cloudToken);
+      await SecureDataStore.getInstance().encryptAndStore('cloud_token', this.currentUser.cloudToken);
       prefs.putSync('display_name', this.currentUser.displayName);
       prefs.putSync('account_id', this.currentUser.accountId);
       if (this.tokenExpiryTs > 0) {
@@ -218,7 +218,7 @@ export class CloudAuthService {
     if (!this.isTokenExpired()) return true;
     hilog.info(DOMAIN_ZERO, TAG, 'Token expired or near-expiry, re-authenticating');
     if (this.currentUser.isAnonymous) {
-      return await this.signInAnonymously();
+      return !!(await this.signInAnonymously());
     }
     return false;
   }

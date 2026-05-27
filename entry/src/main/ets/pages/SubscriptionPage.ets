@@ -6,7 +6,7 @@ import {
   ToastHelper, safeBack, MemberTier, PurchaseResult, ProductPlan, getProductPlanForTier, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, HILOG_DOMAIN
 } from 'hsp_core';
 import { AppState } from '../AppState';
-import { IapService } from 'hsp-service';
+import { IapService } from 'hsp_service';
 import { promptAction } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
@@ -154,7 +154,7 @@ struct SubscriptionPage {
           .fontColor(COLORS.PRIMARY_DARK)
           .fontWeight(FONT_WEIGHT.MEDIUM)
       } else {
-        Text('✨ ' + this.getTierDisplayName(this.currentTier) + ' ' + $r('app.string.subscription_member_suffix'))
+        Text() { Span(`✨ ${this.getTierDisplayName(this.currentTier)} `); Span($r('app.string.subscription_member_suffix')) }
           .fontSize(FONT_SIZE.SUBTITLE)
           .fontWeight(FONT_WEIGHT.BOLD)
           .fontColor(COLORS.SUCCESS)
@@ -265,7 +265,7 @@ struct SubscriptionPage {
       const d = new PlanDisplay()
       d.index = i
       d.tier = tier
-      d.name = this.getTierDisplayName(tier)
+      d.name = this.getTierDisplayName(tier) as string
       d.price = plan.price
       d.isYearly = plan.isYearly
       d.features = plan.features
@@ -301,7 +301,7 @@ struct SubscriptionPage {
         this.appState.member.upgradeTier(plan.tier, 365)
         this.currentTier = plan.tier
         this.plans = this.buildPlanDisplays()
-        promptAction.showToast({ message: $r('app.string.subscription_switched_to') + ' ' + plan.name })
+        promptAction.showToast({ message: `已切换到 ${plan.name}` })
         return
       }
       const result: PurchaseResult = await this.iapService.purchase(productPlan.productId)

@@ -12,34 +12,39 @@ import { DataPortability, ImportResult } from '../utils/DataPortability';
 import { fileIo } from '@kit.CoreFileKit';
 import { picker } from '@kit.CoreFileKit';
 import { util } from '@kit.ArkTS';
-import { UpdateChecker, UpdateInfo, AuthService } from 'hsp-service';
+import { UpdateChecker, UpdateInfo, AuthService } from 'hsp_service';
 
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 const TAG = 'SettingsPage';
 
+@ObservedV2
+class SettingsViewModel {
+  @Trace familyMembers: FamilyProfile[] = []
+  @Trace selectedMemberId: string = ''
+  @Trace stepLevel: StepLevel = StepLevel.NORMAL
+  @Trace sleepStatus: SleepStatus = SleepStatus.GOOD
+  @Trace hadHighSodiumToday: boolean = false
+  @Trace hadHighSugarToday: boolean = false
+  @Trace showPrivacyDetail: boolean = false
+  @Trace showAgreementDetail: boolean = false
+  @Trace privacyHtml: string = ''
+  @Trace agreementHtml: string = ''
+  @Trace currentThemeMode: ThemeMode = ThemeMode.LIGHT
+  @Trace isExporting: boolean = false
+  @Trace isImporting: boolean = false
+  @Trace isCheckingUpdate: boolean = false
+  @Trace isLoading: boolean = true
+  @Trace showDeleteConfirm: boolean = false
+  @Trace showCollectionDetail: boolean = false
+  @Trace collectionHtml: string = ''
+  @Trace showLocalePicker: boolean = false
+  @Trace currentBreakpoint: string = 'md'
+}
+
 @Entry
 @ComponentV2
 struct SettingsPage {
-  @Local familyMembers: FamilyProfile[] = []
-  @Local selectedMemberId: string = ''
-  @Local stepLevel: StepLevel = StepLevel.NORMAL
-  @Local sleepStatus: SleepStatus = SleepStatus.GOOD
-  @Local hadHighSodiumToday: boolean = false
-  @Local hadHighSugarToday: boolean = false
-  @Local showPrivacyDetail: boolean = false
-  @Local showAgreementDetail: boolean = false
-  @Local privacyHtml: string = ''
-  @Local agreementHtml: string = ''
-  @Local currentThemeMode: ThemeMode = ThemeMode.LIGHT
-  @Local isExporting: boolean = false
-  @Local isImporting: boolean = false
-  @Local isCheckingUpdate: boolean = false
-  @Local isLoading: boolean = true
-  @Local showDeleteConfirm: boolean = false
-  @Local showCollectionDetail: boolean = false
-  @Local collectionHtml: string = ''
-  @Local showLocalePicker: boolean = false
-  @Local currentBreakpoint: string = 'md'
+  @Local vm: SettingsViewModel = new SettingsViewModel()
 
   private componentActive: boolean = true
   private appState: AppState = AppState.getInstance()
@@ -48,17 +53,17 @@ struct SettingsPage {
   async aboutToAppear() {
     this.componentActive = true
     try {
-      this.isLoading = true
-      this.currentThemeMode = AppStorage.get<ThemeMode>('currentThemeMode') ?? ThemeMode.LIGHT
-      this.familyMembers = await this.appState.getAllMembers()
-      if (this.familyMembers.length > 0) {
-        this.selectedMemberId = this.familyMembers[0].memberId
-        this.loadMemberSignal(this.selectedMemberId)
+      this.vm.isLoading = true
+      this.vm.currentThemeMode = AppStorage.get<ThemeMode>('currentThemeMode') ?? ThemeMode.LIGHT
+      this.vm.familyMembers = await this.appState.getAllMembers()
+      if (this.vm.familyMembers.length > 0 && this.vm.familyMembers[0]) {
+        this.vm.selectedMemberId = this.vm.familyMembers[0].memberId
+        this.loadMemberSignal(this.vm.selectedMemberId)
       }
-      this.isLoading = false
+      this.vm.isLoading = false
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'aboutToAppear failed: %{public}s', JSON.stringify(e));
-      this.isLoading = false
+      this.vm.isLoading = false
     }
   }
 
@@ -88,384 +93,380 @@ struct SettingsPage {
 
         GridRow({
           columns: { sm: 4, md: 8, lg: 12 },
-          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
+          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] } as BreakPoints
         }) {
           GridCol({ span: { sm: 4, md: 8, lg: 10 }, offset: { sm: 0, md: 0, lg: 1 } }) {
-
-        Column() {
-          Text($r('app.string.mvp_hint'))
-            .fontSize(16)
-            .fontWeight(FontWeight.Bold)
-            .margin({ bottom: 6 })
-          Text($r('app.string.mvp_detail'))
-            .fontSize(12)
-            .fontColor(COLORS.TEXT_GRAY_6161)
-            .lineHeight(18)
-        }
-        .width('92%')
-        .padding(16)
-        .backgroundColor(COLORS.WHITE)
-        .borderRadius(16)
-        .alignItems(HorizontalAlign.Start)
-        .margin({ bottom: 14 })
-
-        this.MemberSelector()
-        this.ManualHealthPanel()
-
-        Button($r('app.string.save_today_status'))
-          .width('90%')
-          .height(50)
-          .backgroundColor(COLORS.PRIMARY)
-          .borderRadius(25)
-          .margin({ top: 8, bottom: 24 })
-          .onClick(() => { this.saveManualStatus() })
-          .accessibilityText('保存今日状态')
-          .accessibilityLevel('yes')
-
-        // ---- 隐私与合规区域 ----
-        Column() {
-          Text($r('app.string.privacy_and_compliance'))
-            .fontSize(17)
-            .fontWeight(FontWeight.Bold)
-            .margin({ bottom: 12 })
-
-          this.buildSettingsItem($r('app.string.settings_user_agreement'), $r('app.string.settings_user_agreement_desc'), () => {
-            this.showAgreementDetail = !this.showAgreementDetail
-            this.showPrivacyDetail = false
-          })
-
-          this.buildSettingsItem($r('app.string.settings_feedback'), $r('app.string.settings_feedback_desc'), () => {
-            safePushUrl(ROUTE_FEEDBACK_PAGE)
-          })
-
-          this.buildSettingsItem($r('app.string.settings_check_update'), $r('app.string.settings_check_update_desc', DATA_VERSION.APP_VERSION), () => {
-            this.checkForUpdate()
-          })
-
-          this.buildSettingsItem($r('app.string.settings_privacy_policy'), $r('app.string.settings_privacy_policy_desc'), () => {
-            this.showPrivacyDetail = !this.showPrivacyDetail
-            this.showAgreementDetail = false
-          })
-
-          this.buildSettingsItem($r('app.string.settings_cloud_sync'), $r('app.string.settings_cloud_sync_desc'), () => {
-            safePushUrl('pages/CloudSyncSettingsPage')
-          })
-
-          this.buildSettingsItem($r('app.string.settings_nutrition_target'), $r('app.string.settings_nutrition_target_desc'), () => {
-            safePushUrl(ROUTE_NUTRITION_TARGET_PAGE)
-          })
-
-          this.buildSettingsItem($r('app.string.settings_nutrition_knowledge'), $r('app.string.settings_nutrition_knowledge_desc'), () => {
-            safePushUrl(ROUTE_NUTRITION_KNOWLEDGE_PAGE)
-          })
-
-          this.buildSettingsItem($r('app.string.settings_meal_plan'), $r('app.string.settings_meal_plan_desc'), () => {
-            safePushUrl(ROUTE_MEAL_PLAN_PAGE)
-          })
-
-          this.buildSettingsItem($r('app.string.settings_shopping_list'), $r('app.string.settings_shopping_list_desc'), () => {
-            safePushUrl(ROUTE_SHOPPING_LIST_PAGE)
-          })
-
-          this.buildSettingsItem($r('app.string.settings_reminder_rule'), $r('app.string.settings_reminder_rule_desc'), () => {
-            safePushUrl(ROUTE_REMINDER_RULE_PAGE)
-          })
-
-          this.buildSettingsItem($r('app.string.settings_locale'), $r('app.string.settings_locale_desc'), () => {
-            this.showLocalePicker = true
-          })
-
-          // 暗黑模式开关
-          Row() {
-            Text(this.currentThemeMode === 'dark' ? $r('app.string.settings_dark_mode') : $r('app.string.settings_light_mode'))
-              .fontSize(15)
-              .fontColor(COLORS.TEXT_PRIMARY)
-              .layoutWeight(1)
-            Toggle({ type: ToggleType.Switch, isOn: this.currentThemeMode === 'dark' })
-              .onChange((checked: boolean) => {
-                const newMode: ThemeMode = checked ? ThemeMode.DARK : ThemeMode.LIGHT;
-                ThemeColors.setTheme(newMode);
-              })
-              .accessibilityText('暗黑模式开关')
-              .accessibilityLevel('yes')
-          }
-          .width('100%')
-          .padding({ top: 12, bottom: 12 })
-          .border({ width: { bottom: 0.5 }, color: COLORS.DIVIDER })
-
-          // 语言选择弹窗
-          if (this.showLocalePicker) {
             Column() {
-              Text($r('app.string.settings_locale'))
+            Column() {
+              Text($r('app.string.mvp_hint'))
+                .fontSize(16)
+                .fontWeight(FontWeight.Bold)
+                .margin({ bottom: 6 })
+              Text($r('app.string.mvp_detail'))
+                .fontSize(12)
+                .fontColor(COLORS.TEXT_GRAY_6161)
+                .lineHeight(18)
+            }
+            .width('92%')
+            .padding(16)
+            .backgroundColor(COLORS.WHITE)
+            .borderRadius(16)
+            .alignItems(HorizontalAlign.Start)
+            .margin({ bottom: 14 })
+
+            this.MemberSelector()
+            this.ManualHealthPanel()
+
+            Button($r('app.string.save_today_status'))
+              .width('90%')
+              .height(50)
+              .backgroundColor(COLORS.PRIMARY)
+              .borderRadius(25)
+              .margin({ top: 8, bottom: 24 })
+              .onClick(() => { this.saveManualStatus() })
+              .accessibilityText('保存今日状态')
+              .accessibilityLevel('yes')
+
+            // ---- 隐私与合规区域 ----
+            Column() {
+              Text($r('app.string.privacy_and_compliance'))
                 .fontSize(17)
                 .fontWeight(FontWeight.Bold)
                 .margin({ bottom: 12 })
-              ForEach(SUPPORTED_LOCALES, (localeCode: string) => {
-                Row() {
-                  Text(LOCALE_DISPLAY_NAMES.get(localeCode) ?? localeCode)
-                    .fontSize(15)
-                    .fontColor(COLORS.TEXT_PRIMARY)
-                    .layoutWeight(1)
-                  if (LocaleManager.getInstance().getCurrentLocale() === localeCode) {
-                    Text('✓').fontSize(15).fontColor(COLORS.PRIMARY)
-                  }
-                }
-                .width('100%')
-                .padding({ top: 10, bottom: 10 })
-                .border({ width: { bottom: 0.5 }, color: COLORS.DIVIDER })
-                .onClick(() => {
-                  const success = LocaleManager.getInstance().switchLocale(localeCode);
-                  if (success) {
-                    this.showLocalePicker = false;
-                  }
-                })
-                .accessibilityText(LOCALE_DISPLAY_NAMES.get(localeCode) ?? localeCode)
-                .accessibilityLevel('yes')
-              }, (localeCode: string) => localeCode)
-              Text($r('app.string.settings_cancel'))
-                .fontSize(14)
-                .fontColor(COLORS.TEXT_GRAY_6161)
-                .margin({ top: 12 })
-                .onClick(() => { this.showLocalePicker = false })
-                .accessibilityText('取消')
-                .accessibilityLevel('yes')
-            }
-            .width('100%')
-            .padding(16)
-            .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
-            .borderRadius(RADIUS.MD)
-            .margin({ top: 8, bottom: 8 })
-          }
 
-          // 隐私政策详细内容
-          if (this.showPrivacyDetail) {
-            Column() {
+              this.buildSettingsItem($r('app.string.settings_user_agreement'), $r('app.string.settings_user_agreement_desc'), () => {
+                this.vm.showAgreementDetail = !this.vm.showAgreementDetail
+                this.vm.showPrivacyDetail = false
+              })
+
+              this.buildSettingsItem($r('app.string.settings_feedback'), $r('app.string.settings_feedback_desc'), () => {
+                safePushUrl(ROUTE_FEEDBACK_PAGE)
+              })
+
+              this.buildSettingsItem($r('app.string.settings_check_update'), $r('app.string.settings_check_update_desc', DATA_VERSION.APP_VERSION), () => {
+                this.checkForUpdate()
+              })
+
+              this.buildSettingsItem($r('app.string.settings_privacy_policy'), $r('app.string.settings_privacy_policy_desc'), () => {
+                this.vm.showPrivacyDetail = !this.vm.showPrivacyDetail
+                this.vm.showAgreementDetail = false
+              })
+
+              this.buildSettingsItem($r('app.string.settings_cloud_sync'), $r('app.string.settings_cloud_sync_desc'), () => {
+                safePushUrl('pages/CloudSyncSettingsPage')
+              })
+
+              this.buildSettingsItem($r('app.string.settings_nutrition_target'), $r('app.string.settings_nutrition_target_desc'), () => {
+                safePushUrl(ROUTE_NUTRITION_TARGET_PAGE)
+              })
+
+              this.buildSettingsItem($r('app.string.settings_nutrition_knowledge'), $r('app.string.settings_nutrition_knowledge_desc'), () => {
+                safePushUrl(ROUTE_NUTRITION_KNOWLEDGE_PAGE)
+              })
+
+              this.buildSettingsItem($r('app.string.settings_meal_plan'), $r('app.string.settings_meal_plan_desc'), () => {
+                safePushUrl(ROUTE_MEAL_PLAN_PAGE)
+              })
+
+              this.buildSettingsItem($r('app.string.settings_shopping_list'), $r('app.string.settings_shopping_list_desc'), () => {
+                safePushUrl(ROUTE_SHOPPING_LIST_PAGE)
+              })
+
+              this.buildSettingsItem($r('app.string.settings_reminder_rule'), $r('app.string.settings_reminder_rule_desc'), () => {
+                safePushUrl(ROUTE_REMINDER_RULE_PAGE)
+              })
+
+              this.buildSettingsItem($r('app.string.settings_locale'), $r('app.string.settings_locale_desc'), () => {
+                this.vm.showLocalePicker = true
+              })
+
+              // 暗黑模式开关
               Row() {
-                Text($r('app.string.collapse'))
-                  .fontSize(13)
-                  .fontColor(COLORS.PRIMARY)
-                  .onClick(() => {
-                    this.showPrivacyDetail = false
-                  })
-                  .accessibilityText('收起')
-                  .accessibilityLevel('yes')
-                Blank()
-              }
-              .width('100%')
-              .margin({ bottom: 6 })
-
-              RichText(this.privacyHtml)
-                .width('100%')
-                .height(300)
-
-              Text($r('app.string.view_online_version'))
-                .fontSize(12)
-                .fontColor(COLORS.PRIMARY)
-                .margin({ top: 6 })
-                .onClick(() => {
-                  const want: Want = { action: 'ohos.want.action.view', entities: ['entity.system.browser'], uri: LEGAL_CONFIG.PRIVACY_POLICY_URL };
-                  const ctx = AppStorage.get<common.Context>('appContext');
-                  if (ctx) { (ctx as common.UIAbilityContext).startAbility(want); }
-                })
-                .accessibilityText('在线查看隐私政策')
-                .accessibilityLevel('yes')
-            }
-            .width('100%')
-            .padding(8)
-            .backgroundColor(COLORS.BG_LIGHT_GRAY_F9)
-            .borderRadius(8)
-            .margin({ top: 8 })
-            .onAppear(() => {
-              if (this.privacyHtml.length === 0) {
-                const ctx = AppStorage.get<common.Context>('appContext')
-                if (ctx) {
-                  getPrivacyPolicyHtml(ctx).then(html => {
-                    this.privacyHtml = html
-                  })
-                }
-              }
-            })
-          }
-
-          // 用户协议详细内容
-          if (this.showAgreementDetail) {
-            Column() {
-              Row() {
-                Text($r('app.string.collapse'))
-                  .fontSize(13)
-                  .fontColor(COLORS.PRIMARY)
-                  .onClick(() => {
-                    this.showAgreementDetail = false
-                  })
-                  .accessibilityText('收起')
-                  .accessibilityLevel('yes')
-                Blank()
-              }
-              .width('100%')
-              .margin({ bottom: 6 })
-
-              RichText(this.agreementHtml)
-                .width('100%')
-                .height(300)
-
-              Text($r('app.string.view_online_version'))
-                .fontSize(12)
-                .fontColor(COLORS.PRIMARY)
-                .margin({ top: 6 })
-                .onClick(() => {
-                  const want: Want = { action: 'ohos.want.action.view', entities: ['entity.system.browser'], uri: LEGAL_CONFIG.USER_AGREEMENT_URL };
-                  const ctx = AppStorage.get<common.Context>('appContext');
-                  if (ctx) { (ctx as common.UIAbilityContext).startAbility(want); }
-                })
-                .accessibilityText('在线查看用户协议')
-                .accessibilityLevel('yes')
-            }
-            .width('100%')
-            .padding(8)
-            .backgroundColor(COLORS.BG_LIGHT_GRAY_F9)
-            .borderRadius(8)
-            .margin({ top: 8 })
-            .onAppear(() => {
-              if (this.agreementHtml.length === 0) {
-                const ctx = AppStorage.get<common.Context>('appContext')
-                if (ctx) {
-                  getUserAgreementHtml(ctx).then(html => {
-                    this.agreementHtml = html
-                  })
-                }
-              }
-            })
-          }
-
-          Text($r('app.string.version_label'))
-            .fontSize(12)
-            .fontColor(COLORS.TEXT_GRAY_9E9E)
-            .width('100%')
-            .textAlign(TextAlign.Center)
-            .margin({ top: 16 })
-        }
-        .width('92%')
-        .padding(16)
-        .backgroundColor(COLORS.WHITE)
-        .borderRadius(16)
-        .alignItems(HorizontalAlign.Start)
-        .margin({ bottom: 14 })
-
-        // ---- 数据管理区域 ----
-        Column() {
-          Text($r('app.string.settings_data_management'))
-            .fontSize(17)
-            .fontWeight(FontWeight.Bold)
-            .margin({ bottom: 12 })
-
-          this.buildSettingsItem($r('app.string.settings_export_data'), $r('app.string.settings_export_data_desc'), () => {
-            this.exportData()
-          })
-
-          this.buildSettingsItem($r('app.string.settings_import_data'), $r('app.string.settings_import_data_desc'), () => {
-            this.importData()
-          })
-
-          this.buildSettingsItem($r('app.string.settings_clear_data'), $r('app.string.settings_clear_data_desc'), () => {
-            this.confirmClearData()
-          })
-
-          this.buildSettingsItem($r('app.string.settings_delete_account'), $r('app.string.settings_delete_account_desc'), () => {
-            this.showDeleteConfirm = true
-          })
-
-          this.buildSettingsItem($r('app.string.settings_collection_list'), $r('app.string.settings_collection_list_desc'), () => {
-            this.showCollectionDetail = !this.showCollectionDetail
-          })
-
-          if (this.showDeleteConfirm) {
-            Column() {
-              Text($r('app.string.settings_delete_confirm_title'))
-                .fontSize(16)
-                .fontWeight(FontWeight.Bold)
-                .fontColor('#F44336')
-                .margin({ bottom: 8 })
-              Text($r('app.string.settings_delete_confirm_message'))
-                .fontSize(13)
-                .fontColor(COLORS.TEXT_PRIMARY)
-                .lineHeight(20)
-                .margin({ bottom: 12 })
-              Row() {
-                Button($r('app.string.settings_cancel'))
-                  .fontSize(14)
-                  .backgroundColor(COLORS.BG_LIGHT_GRAY_F9)
+                Text(this.vm.currentThemeMode === 'dark' ? $r('app.string.settings_dark_mode') : $r('app.string.settings_light_mode'))
+                  .fontSize(15)
                   .fontColor(COLORS.TEXT_PRIMARY)
                   .layoutWeight(1)
-                  .onClick(() => { this.showDeleteConfirm = false })
-                  .accessibilityText('取消')
-                  .accessibilityLevel('yes')
-                Button($r('app.string.settings_confirm_delete'))
-                  .fontSize(14)
-                  .backgroundColor('#F44336')
-                  .fontColor(COLORS.WHITE)
-                  .layoutWeight(1)
-                  .margin({ left: 12 })
-                  .onClick(() => { this.executeDeleteAccount() })
-                  .accessibilityText('确认删除')
+                Toggle({ type: ToggleType.Switch, isOn: this.vm.currentThemeMode === 'dark' })
+                  .onChange((checked: boolean) => {
+                    const newMode: ThemeMode = checked ? ThemeMode.DARK : ThemeMode.LIGHT;
+                    ThemeColors.setTheme(newMode);
+                  })
+                  .accessibilityText('暗黑模式开关')
                   .accessibilityLevel('yes')
               }
               .width('100%')
-            }
-            .width('100%')
-            .padding(12)
-            .backgroundColor('#FFF3F3')
-            .borderRadius(8)
-            .margin({ top: 8 })
-          }
+              .padding({ top: 12, bottom: 12 })
+              .border({ width: { bottom: 0.5 }, color: COLORS.DIVIDER })
 
-          if (this.showCollectionDetail) {
-            Column() {
-              Row() {
-                Text($r('app.string.collapse'))
-                  .fontSize(13)
-                  .fontColor(COLORS.PRIMARY)
-                  .onClick(() => { this.showCollectionDetail = false })
-                  .accessibilityText('收起')
-                  .accessibilityLevel('yes')
-                Blank()
-              }
-              .width('100%')
-              .margin({ bottom: 6 })
-              RichText(this.collectionHtml)
-                .width('100%')
-                .height(300)
-            }
-            .width('100%')
-            .padding(8)
-            .backgroundColor(COLORS.BG_LIGHT_GRAY_F9)
-            .borderRadius(8)
-            .margin({ top: 8 })
-            .onAppear(() => {
-              if (this.collectionHtml.length === 0) {
-                const ctx = AppStorage.get<common.Context>('appContext')
-                if (ctx) {
-                  this.collectionHtml = this.buildCollectionListHtml()
+              // 语言选择弹窗
+              if (this.vm.showLocalePicker) {
+                Column() {
+                  Text($r('app.string.settings_locale'))
+                    .fontSize(17)
+                    .fontWeight(FontWeight.Bold)
+                    .margin({ bottom: 12 })
+                  ForEach(SUPPORTED_LOCALES, (localeCode: string) => {
+                    Row() {
+                      Text(LOCALE_DISPLAY_NAMES.get(localeCode) ?? localeCode)
+                        .fontSize(15)
+                        .fontColor(COLORS.TEXT_PRIMARY)
+                        .layoutWeight(1)
+                      if (LocaleManager.getInstance().getCurrentLocale() === localeCode) {
+                        Text('✓').fontSize(15).fontColor(COLORS.PRIMARY)
+                      }
+                    }
+                    .width('100%')
+                    .padding({ top: 10, bottom: 10 })
+                    .border({ width: { bottom: 0.5 }, color: COLORS.DIVIDER })
+                    .onClick(() => {
+                      const success = LocaleManager.getInstance().switchLocale(localeCode);
+                      if (success) {
+                        this.vm.showLocalePicker = false;
+                      }
+                    })
+                    .accessibilityText(LOCALE_DISPLAY_NAMES.get(localeCode) ?? localeCode)
+                    .accessibilityLevel('yes')
+                  }, (localeCode: string) => localeCode)
+                  Text($r('app.string.settings_cancel'))
+                    .fontSize(14)
+                    .fontColor(COLORS.TEXT_GRAY_6161)
+                    .margin({ top: 12 })
+                    .onClick(() => { this.vm.showLocalePicker = false })
+                    .accessibilityText('取消')
+                    .accessibilityLevel('yes')
                 }
+                .width('100%')
+                .padding(16)
+                .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
+                .borderRadius(RADIUS.MD)
+                .margin({ top: 8, bottom: 8 })
               }
-            })
-          }
-        }
-        .width('92%')
-        .padding(16)
-        .backgroundColor(COLORS.WHITE)
-        .borderRadius(16)
-        .alignItems(HorizontalAlign.Start)
-        .margin({ bottom: 24 })
-      }
-      .width('100%')
-      .alignItems(HorizontalAlign.Center)
 
+              // 隐私政策详细内容
+              if (this.vm.showPrivacyDetail) {
+                Column() {
+                  Row() {
+                    Text($r('app.string.collapse'))
+                      .fontSize(13)
+                      .fontColor(COLORS.PRIMARY)
+                      .onClick(() => {
+                        this.vm.showPrivacyDetail = false
+                      })
+                      .accessibilityText('收起')
+                      .accessibilityLevel('yes')
+                    Blank()
+                  }
+                  .width('100%')
+                  .margin({ bottom: 6 })
+
+                  RichText(this.vm.privacyHtml)
+                    .width('100%')
+                    .height(300)
+
+                  Text('查看在线版本')
+                    .fontSize(12)
+                    .fontColor(COLORS.PRIMARY)
+                    .margin({ top: 6 })
+                    .onClick(() => {
+                      const want: Want = { action: 'ohos.want.action.view', entities: ['entity.system.browser'], uri: LEGAL_CONFIG.PRIVACY_POLICY_URL };
+                      const ctx = AppStorage.get<common.Context>('appContext');
+                      if (ctx) { (ctx as common.UIAbilityContext).startAbility(want); }
+                    })
+                    .accessibilityText('在线查看隐私政策')
+                    .accessibilityLevel('yes')
+                }
+                .width('100%')
+                .padding(8)
+                .backgroundColor(COLORS.BG_LIGHT_GRAY_F9)
+                .borderRadius(8)
+                .margin({ top: 8 })
+                .onAppear(() => {
+                  if (this.vm.privacyHtml.length === 0) {
+                    const ctx = AppStorage.get<common.Context>('appContext')
+                    if (ctx) {
+                      getPrivacyPolicyHtml(ctx).then((html: string) => {
+                        this.vm.privacyHtml = html
+                      })
+                    }
+                  }
+                })
+              }
+
+              // 用户协议详细内容
+              if (this.vm.showAgreementDetail) {
+                Column() {
+                  Row() {
+                    Text($r('app.string.collapse'))
+                      .fontSize(13)
+                      .fontColor(COLORS.PRIMARY)
+                      .onClick(() => {
+                        this.vm.showAgreementDetail = false
+                      })
+                      .accessibilityText('收起')
+                      .accessibilityLevel('yes')
+                    Blank()
+                  }
+                  .width('100%')
+                  .margin({ bottom: 6 })
+
+                  RichText(this.vm.agreementHtml)
+                    .width('100%')
+                    .height(300)
+
+                  Text('查看在线版本')
+                    .fontSize(12)
+                    .fontColor(COLORS.PRIMARY)
+                    .margin({ top: 6 })
+                    .onClick(() => {
+                      const want: Want = { action: 'ohos.want.action.view', entities: ['entity.system.browser'], uri: LEGAL_CONFIG.USER_AGREEMENT_URL };
+                      const ctx = AppStorage.get<common.Context>('appContext');
+                      if (ctx) { (ctx as common.UIAbilityContext).startAbility(want); }
+                    })
+                    .accessibilityText('在线查看用户协议')
+                    .accessibilityLevel('yes')
+                }
+                .width('100%')
+                .padding(8)
+                .backgroundColor(COLORS.BG_LIGHT_GRAY_F9)
+                .borderRadius(8)
+                .margin({ top: 8 })
+                .onAppear(() => {
+                  if (this.vm.agreementHtml.length === 0) {
+                    const ctx = AppStorage.get<common.Context>('appContext')
+                    if (ctx) {
+                      getUserAgreementHtml(ctx).then((html: string) => {
+                        this.vm.agreementHtml = html
+                      })
+                    }
+                  }
+                })
+              }
+
+              Text($r('app.string.version_label'))
+                .fontSize(12)
+                .fontColor(COLORS.TEXT_GRAY_9E9E)
+                .width('100%')
+                .textAlign(TextAlign.Center)
+                .margin({ top: 16 })
+            }
+            .width('92%')
+            .padding(16)
+            .backgroundColor(COLORS.WHITE)
+            .borderRadius(16)
+            .alignItems(HorizontalAlign.Start)
+            .margin({ bottom: 14 })
+
+            // ---- 数据管理区域 ----
+            Column() {
+              Text($r('app.string.settings_data_management'))
+                .fontSize(17)
+                .fontWeight(FontWeight.Bold)
+                .margin({ bottom: 12 })
+
+              this.buildSettingsItem($r('app.string.settings_export_data'), $r('app.string.settings_export_data_desc'), () => {
+                this.exportData()
+              })
+
+              this.buildSettingsItem($r('app.string.settings_import_data'), $r('app.string.settings_import_data_desc'), () => {
+                this.importData()
+              })
+
+              this.buildSettingsItem($r('app.string.settings_clear_data'), $r('app.string.settings_clear_data_desc'), () => {
+                this.confirmClearData()
+              })
+
+              this.buildSettingsItem($r('app.string.settings_delete_account'), $r('app.string.settings_delete_account_desc'), () => {
+                this.vm.showDeleteConfirm = true
+              })
+
+              this.buildSettingsItem($r('app.string.settings_collection_list'), $r('app.string.settings_collection_list_desc'), () => {
+                this.vm.showCollectionDetail = !this.vm.showCollectionDetail
+              })
+
+              if (this.vm.showDeleteConfirm) {
+                Column() {
+                  Text($r('app.string.settings_delete_confirm_title'))
+                    .fontSize(16)
+                    .fontWeight(FontWeight.Bold)
+                    .fontColor('#F44336')
+                    .margin({ bottom: 8 })
+                  Text($r('app.string.settings_delete_confirm_message'))
+                    .fontSize(13)
+                    .fontColor(COLORS.TEXT_PRIMARY)
+                    .lineHeight(20)
+                    .margin({ bottom: 12 })
+                  Row() {
+                    Button($r('app.string.settings_cancel'))
+                      .fontSize(14)
+                      .backgroundColor(COLORS.BG_LIGHT_GRAY_F9)
+                      .fontColor(COLORS.TEXT_PRIMARY)
+                      .layoutWeight(1)
+                      .onClick(() => { this.vm.showDeleteConfirm = false })
+                      .accessibilityText('取消')
+                      .accessibilityLevel('yes')
+                    Button($r('app.string.settings_confirm_delete'))
+                      .fontSize(14)
+                      .backgroundColor('#F44336')
+                      .fontColor(COLORS.WHITE)
+                      .layoutWeight(1)
+                      .margin({ left: 12 })
+                      .onClick(() => { this.executeDeleteAccount() })
+                      .accessibilityText('确认删除')
+                      .accessibilityLevel('yes')
+                  }
+                  .width('100%')
+                }
+                .width('100%')
+                .padding(12)
+                .backgroundColor('#FFF3F3')
+                .borderRadius(8)
+                .margin({ top: 8 })
+              }
+
+              if (this.vm.showCollectionDetail) {
+                Column() {
+                  Row() {
+                    Text($r('app.string.collapse'))
+                      .fontSize(13)
+                      .fontColor(COLORS.PRIMARY)
+                      .onClick(() => { this.vm.showCollectionDetail = false })
+                      .accessibilityText('收起')
+                      .accessibilityLevel('yes')
+                    Blank()
+                  }
+                  .width('100%')
+                  .margin({ bottom: 6 })
+                  RichText(this.vm.collectionHtml)
+                    .width('100%')
+                    .height(300)
+                }
+                .width('100%')
+                .padding(8)
+                .backgroundColor(COLORS.BG_LIGHT_GRAY_F9)
+                .borderRadius(8)
+                .margin({ top: 8 })
+                .onAppear(() => {
+                  if (this.vm.collectionHtml.length === 0) {
+                    const ctx = AppStorage.get<common.Context>('appContext')
+                    if (ctx) {
+                      this.vm.collectionHtml = this.buildCollectionListHtml()
+                    }
+                  }
+                })
+              }
+            }
+            .width('92%')
+            .padding(16)
+            .backgroundColor(COLORS.WHITE)
+            .borderRadius(16)
+            .alignItems(HorizontalAlign.Start)
+            .margin({ bottom: 24 })
+            }
           }
         }
         .width('100%')
-        .onBreakpointChange((bp: string) => { this.currentBreakpoint = bp })
+        .onBreakpointChange((bp: string) => { this.vm.currentBreakpoint = bp })
       }
-      .width('100%')
     }
     .width('100%')
     .height('100%')
@@ -480,16 +481,16 @@ struct SettingsPage {
         .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ bottom: 8 })
       Row() {
-        ForEach(this.familyMembers, (member: FamilyProfile) => {
+        ForEach(this.vm.familyMembers, (member: FamilyProfile) => {
           Text(member.nickname)
             .fontSize(13)
             .padding({ left: 12, right: 12, top: 6, bottom: 6 })
             .borderRadius(16)
-            .backgroundColor(this.selectedMemberId === member.memberId ? COLORS.PRIMARY : COLORS.WHITE)
-            .fontColor(this.selectedMemberId === member.memberId ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
+            .backgroundColor(this.vm.selectedMemberId === member.memberId ? COLORS.PRIMARY : COLORS.WHITE)
+            .fontColor(this.vm.selectedMemberId === member.memberId ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
             .margin({ right: 8 })
             .onClick(() => {
-              this.selectedMemberId = member.memberId
+              this.vm.selectedMemberId = member.memberId
               this.loadMemberSignal(member.memberId)
             })
             .accessibilityText(member.nickname)
@@ -518,9 +519,9 @@ struct SettingsPage {
         .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ bottom: 8 })
       Row() {
-        this.OptionChip($r('app.string.settings_activity_low'), this.stepLevel === StepLevel.LOW, () => { this.stepLevel = StepLevel.LOW })
-        this.OptionChip($r('app.string.settings_activity_normal'), this.stepLevel === StepLevel.NORMAL, () => { this.stepLevel = StepLevel.NORMAL })
-        this.OptionChip($r('app.string.settings_activity_high'), this.stepLevel === StepLevel.HIGH, () => { this.stepLevel = StepLevel.HIGH })
+        this.OptionChip($r('app.string.settings_activity_low'), this.vm.stepLevel === StepLevel.LOW, () => { this.vm.stepLevel = StepLevel.LOW })
+        this.OptionChip($r('app.string.settings_activity_normal'), this.vm.stepLevel === StepLevel.NORMAL, () => { this.vm.stepLevel = StepLevel.NORMAL })
+        this.OptionChip($r('app.string.settings_activity_high'), this.vm.stepLevel === StepLevel.HIGH, () => { this.vm.stepLevel = StepLevel.HIGH })
       }
       .margin({ bottom: 14 })
 
@@ -529,9 +530,9 @@ struct SettingsPage {
         .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ bottom: 8 })
       Row() {
-        this.OptionChip($r('app.string.settings_sleep_good'), this.sleepStatus === SleepStatus.GOOD, () => { this.sleepStatus = SleepStatus.GOOD })
-        this.OptionChip($r('app.string.settings_sleep_fair'), this.sleepStatus === SleepStatus.FAIR, () => { this.sleepStatus = SleepStatus.FAIR })
-        this.OptionChip($r('app.string.settings_sleep_poor'), this.sleepStatus === SleepStatus.POOR, () => { this.sleepStatus = SleepStatus.POOR })
+        this.OptionChip($r('app.string.settings_sleep_good'), this.vm.sleepStatus === SleepStatus.GOOD, () => { this.vm.sleepStatus = SleepStatus.GOOD })
+        this.OptionChip($r('app.string.settings_sleep_fair'), this.vm.sleepStatus === SleepStatus.FAIR, () => { this.vm.sleepStatus = SleepStatus.FAIR })
+        this.OptionChip($r('app.string.settings_sleep_poor'), this.vm.sleepStatus === SleepStatus.POOR, () => { this.vm.sleepStatus = SleepStatus.POOR })
       }
       .margin({ bottom: 14 })
 
@@ -540,8 +541,8 @@ struct SettingsPage {
         .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ bottom: 8 })
       Row() {
-        this.OptionChip($r('app.string.settings_high_sodium'), this.hadHighSodiumToday, () => { this.hadHighSodiumToday = !this.hadHighSodiumToday })
-        this.OptionChip($r('app.string.settings_high_sugar'), this.hadHighSugarToday, () => { this.hadHighSugarToday = !this.hadHighSugarToday })
+        this.OptionChip($r('app.string.settings_high_sodium'), this.vm.hadHighSodiumToday, () => { this.vm.hadHighSodiumToday = !this.vm.hadHighSodiumToday })
+        this.OptionChip($r('app.string.settings_high_sugar'), this.vm.hadHighSugarToday, () => { this.vm.hadHighSugarToday = !this.vm.hadHighSugarToday })
       }
 
       Text($r('app.string.status_affect_hint'))
@@ -557,7 +558,7 @@ struct SettingsPage {
   }
 
   @Builder
-  OptionChip(label: ResourceStr, active: boolean, onClick: () => void) {
+  OptionChip(label: ResourceStr, active: boolean, onTap: () => void) {
     Text(label)
       .fontSize(13)
       .padding({ left: 12, right: 12, top: 8, bottom: 8 })
@@ -565,34 +566,36 @@ struct SettingsPage {
       .backgroundColor(active ? COLORS.PRIMARY : '#F5F5F5')
       .fontColor(active ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
       .margin({ right: 8 })
-      .onClick(onClick)
-      .accessibilityText(label as string)
+      .onClick(onTap)
+      .accessibilityText(label as Resource)
       .accessibilityLevel('yes')
   }
 
   private loadMemberSignal(memberId: string) {
     const signal = this.appState.getHealthSignal(memberId)
-    this.stepLevel = signal.stepLevel
-    this.sleepStatus = signal.sleepStatus
-    this.hadHighSodiumToday = signal.hadHighSodiumToday
-    this.hadHighSugarToday = signal.hadHighSugarToday
+    if (signal) {
+      this.vm.stepLevel = signal.stepLevel
+      this.vm.sleepStatus = signal.sleepStatus
+      this.vm.hadHighSodiumToday = signal.hadHighSodiumToday
+      this.vm.hadHighSugarToday = signal.hadHighSugarToday
+    }
   }
 
   private saveManualStatus() {
-    if (this.selectedMemberId.length === 0) {
+    if (this.vm.selectedMemberId.length === 0) {
       return
     }
 
     const signal = new HealthSignal()
-    signal.memberId = this.selectedMemberId
+    signal.memberId = this.vm.selectedMemberId
     signal.date = DateUtil.getToday()
-    signal.stepLevel = this.stepLevel
-    signal.activityCaloriesLevel = this.stepLevel
-    signal.sleepStatus = this.sleepStatus
-    signal.manualBpStatus = this.hadHighSodiumToday ? BpStatus.ELEVATED : BpStatus.NORMAL
-    signal.manualBsStatus = this.hadHighSugarToday ? BsStatus.ELEVATED : BsStatus.NORMAL
-    signal.hadHighSodiumToday = this.hadHighSodiumToday
-    signal.hadHighSugarToday = this.hadHighSugarToday
+    signal.stepLevel = this.vm.stepLevel
+    signal.activityCaloriesLevel = this.vm.stepLevel
+    signal.sleepStatus = this.vm.sleepStatus
+    signal.manualBpStatus = this.vm.hadHighSodiumToday ? BpStatus.ELEVATED : BpStatus.NORMAL
+    signal.manualBsStatus = this.vm.hadHighSugarToday ? BsStatus.ELEVATED : BsStatus.NORMAL
+    signal.hadHighSodiumToday = this.vm.hadHighSodiumToday
+    signal.hadHighSugarToday = this.vm.hadHighSugarToday
     signal.source = DataSource.MANUAL
 
     this.appState.updateHealthSignal(signal)
@@ -603,7 +606,7 @@ struct SettingsPage {
    * 构建设置项行
    */
   @Builder
-  buildSettingsItem(title: ResourceStr, subtitle: ResourceStr, onClick: () => void) {
+  buildSettingsItem(title: ResourceStr, subtitle: ResourceStr, onTap: () => void) {
     Row() {
       Column() {
         Text(title)
@@ -629,12 +632,12 @@ struct SettingsPage {
     .borderRadius(8)
     .accessibilityText(`${title}，${subtitle}`)
     .accessibilityLevel('yes')
-    .onClick(onClick)
+    .onClick(onTap)
   }
 
   private async exportData(): Promise<void> {
-    if (this.isExporting) return;
-    this.isExporting = true;
+    if (this.vm.isExporting) return;
+    this.vm.isExporting = true;
     try {
       const ctx = AppStorage.get<common.Context>('appContext');
       if (!ctx) {
@@ -657,13 +660,13 @@ struct SettingsPage {
       hilog.warn(DOMAIN_ZERO, 'SettingsPage', 'Export failed: ' + JSON.stringify(error));
       ToastHelper.show(this.getUIContext(), $r('app.string.settings_export_failed_retry'));
     } finally {
-      this.isExporting = false;
+      this.vm.isExporting = false;
     }
   }
 
   private async importData(): Promise<void> {
-    if (this.isImporting) return;
-    this.isImporting = true;
+    if (this.vm.isImporting) return;
+    this.vm.isImporting = true;
     try {
       const ctx = AppStorage.get<common.Context>('appContext');
       if (!ctx) {
@@ -685,12 +688,19 @@ struct SettingsPage {
       fileIo.readSync(file.fd, buffer);
       fileIo.closeSync(file);
       const textDecoder = util.TextDecoder.create('utf-8');
-      const jsonStr = textDecoder.decodeWithStream(new Uint8Array(buffer));
+      const decoded: string = textDecoder.decodeWithStream(new Uint8Array(buffer)) as string;
+      const jsonStr: string = decoded;
       const result: ImportResult = await DataPortability.importData(jsonStr as string, ctx);
       if (result.success) {
-        const counts = Array.from(result.importedCounts.entries())
-          .map((item) => { const key = String(item[0]); const value = String(item[1]); return `${key}:${value}` })
-          .join(', ');
+        const entries: IterableIterator<[string, number]> = result.importedCounts.entries();
+        const parts: string[] = [];
+        let entry = entries.next();
+        while (!entry.done) {
+          const pair = entry.value;
+          parts.push(`${String(pair[0])}:${String(pair[1])}`);
+          entry = entries.next();
+        }
+        const counts: string = parts.join(', ');
         ToastHelper.show(this.getUIContext(), $r('app.string.settings_import_success', counts));
         this.appState.cache.clearAll();
       } else {
@@ -700,15 +710,15 @@ struct SettingsPage {
       hilog.warn(DOMAIN_ZERO, 'SettingsPage', 'Import failed: ' + JSON.stringify(error));
       ToastHelper.show(this.getUIContext(), $r('app.string.settings_import_failed_retry'));
     } finally {
-      this.isImporting = false;
+      this.vm.isImporting = false;
     }
   }
 
   private async checkForUpdate(): Promise<void> {
-    if (this.isCheckingUpdate) {
+    if (this.vm.isCheckingUpdate) {
       return;
     }
-    this.isCheckingUpdate = true;
+    this.vm.isCheckingUpdate = true;
     try {
       const ctx = AppStorage.get<common.Context>('appContext');
       if (!ctx) {
@@ -722,10 +732,10 @@ struct SettingsPage {
       }
       if (info.isForceUpdate) {
         AlertDialog.show({
-          title: $r('app.string.settings_update_required') as string,
-          message: $r('app.string.settings_force_update_msg', info.latestVersion, info.releaseNotes) as string,
+          title: $r('app.string.settings_update_required') as ResourceStr,
+          message: $r('app.string.settings_force_update_msg', info.latestVersion, info.releaseNotes) as ResourceStr,
           primaryButton: {
-            value: $r('app.string.settings_update_now') as string,
+            value: $r('app.string.settings_update_now') as ResourceStr,
             action: () => {
               this.downloadUpdate(info);
             }
@@ -733,14 +743,14 @@ struct SettingsPage {
         });
       } else {
         AlertDialog.show({
-          title: $r('app.string.settings_new_version_found') as string,
-          message: $r('app.string.settings_new_version_msg', info.latestVersion, info.releaseNotes) as string,
+          title: $r('app.string.settings_new_version_found') as ResourceStr,
+          message: $r('app.string.settings_new_version_msg', info.latestVersion, info.releaseNotes) as ResourceStr,
           primaryButton: {
-            value: $r('app.string.settings_later') as string,
+            value: $r('app.string.settings_later') as ResourceStr,
             action: () => {}
           },
           secondaryButton: {
-            value: $r('app.string.settings_update_now') as string,
+            value: $r('app.string.settings_update_now') as ResourceStr,
             action: () => {
               this.downloadUpdate(info);
             }
@@ -751,7 +761,7 @@ struct SettingsPage {
       hilog.warn(DOMAIN_ZERO, 'SettingsPage', 'checkForUpdate failed: ' + JSON.stringify(e));
       ToastHelper.show(this.getUIContext(), $r('app.string.settings_update_failed_retry'));
     } finally {
-      this.isCheckingUpdate = false;
+      this.vm.isCheckingUpdate = false;
     }
   }
 
@@ -777,7 +787,7 @@ struct SettingsPage {
   }
 
   private async executeDeleteAccount(): Promise<void> {
-    this.showDeleteConfirm = false
+    this.vm.showDeleteConfirm = false
     try {
       const authService = new AuthService()
       const ctx = AppStorage.get<common.Context>('appContext')
@@ -819,17 +829,16 @@ struct SettingsPage {
    */
   private confirmClearData(): void {
     AlertDialog.show({
-      title: $r('app.string.settings_confirm_clear_title') as string,
-      message: $r('app.string.settings_confirm_clear_msg') as string,
+      title: $r('app.string.settings_confirm_clear_title') as ResourceStr,
+      message: $r('app.string.settings_confirm_clear_msg') as ResourceStr,
       primaryButton: {
-        value: $r('app.string.settings_cancel') as string,
+        value: $r('app.string.settings_cancel') as ResourceStr,
         action: () => {
           // 不执行任何操作
         }
       },
       secondaryButton: {
-        value: $r('app.string.settings_confirm_clear') as string,
-        fontColor: '#F44336',
+        value: $r('app.string.settings_confirm_clear') as ResourceStr,
         action: () => {
           this.executeClearData()
         }
@@ -870,8 +879,8 @@ struct SettingsPage {
       this.appState.destroy()
 
       // 4. 重置页面状态
-      this.familyMembers = []
-      this.selectedMemberId = ''
+      this.vm.familyMembers = []
+      this.vm.selectedMemberId = ''
 
       ToastHelper.show(this.getUIContext(), $r('app.string.settings_data_cleared_restart'))
 

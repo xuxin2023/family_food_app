@@ -1,4 +1,4 @@
-import { ChildProtection, FamilyProfile, FoodLabel, REMINDER_PRESETS, NUTRIENT_LIMITS_V2, NutritionThreshold } from 'hsp_core';
+import { ChildProtection, FamilyProfile, FoodLabel, HealthGoal, REMINDER_PRESETS, NUTRIENT_LIMITS_V2, NutritionThreshold } from 'hsp_core';
 // ChildProtectionEngine.ets
 // 儿童保护引擎 - 正餐保护、睡前保护、口味保护、甜食次数检查
 // V3增强：getChildMealAdvice 生活化呵护式建议、咖啡因+时间检查
@@ -102,7 +102,7 @@ export class ChildProtectionEngine {
   ): ChildMealAdvice {
     const result = new ChildMealAdvice();
 
-    if (member.healthGoal !== 'children') {
+    if (!member.healthGoals.includes(HealthGoal.CHILD)) {
       result.advice = '非儿童成员，无需儿童保护建议';
       return result;
     }
@@ -359,6 +359,7 @@ export class ChildProtectionEngine {
       const parts = meal.time.split(':');
       const mealH = Number(parts[0]);
       const mealM = Number(parts[1]);
+      if (isNaN(mealH) || isNaN(mealM)) continue;
       const mealMinutes = mealH * 60 + mealM;
       const diffMin = mealMinutes - currentMinutes;
 
@@ -409,6 +410,7 @@ export class ChildProtectionEngine {
     const parts = bedtime.split(':');
     const bedH = Number(parts[0]);
     const bedM = Number(parts[1]);
+    if (isNaN(bedH) || isNaN(bedM)) return null;
     const currentMinutes = currentHour * 60 + currentMin;
     const bedMinutes = bedH * 60 + bedM;
     const diffMin = bedMinutes - currentMinutes;

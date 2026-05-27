@@ -79,3 +79,5 @@ export const ROUTE_CHILD_HEALTH_PAGE: string = 'pages/ChildHealthPage';
 export const ROUTE_PERSONALIZED_RECOMMEND_PAGE: string = 'pages/PersonalizedRecommendPage';
 /** 青少年模式 */
 export const ROUTE_TEEN_MODE_PAGE: string = 'pages/TeenModePage';
+/** 过敏原配置向导 */
+export const ROUTE_ALLERGEN_SETUP_WIZARD: string = 'pages/AllergenSetupWizard';

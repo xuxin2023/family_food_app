@@ -10,11 +10,11 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
 // 导入图表组件
 import { DonutChart, DonutSegment } from '../components/DonutChart';
-import { NutrientRadarPanel, NutrientScores } from 'feature-report';
+import { NutrientRadarPanel, NutrientScores } from 'feature_report';
 import { ReportExporter } from '../utils/ReportExporter';
 import { common } from '@kit.AbilityKit';
 import { HealthTrendPredictor, TrendPrediction } from '../engine/HealthTrendPredictor';
-import { TrendPredictionBar } from 'feature-report';
+import { TrendPredictionBar } from 'feature_report';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -61,7 +61,7 @@ class DashboardViewModel {
   @Trace healthScore: number = 85
   @Trace healthScoreLabel: Resource = $r('app.string.health_score_good')
   @Trace healthScoreColor: string = COLORS.ACCENT_GREEN_4CAF
-  @Trace healthInsight: string = ''
+  @Trace healthInsight: ResourceStr = ''
   @Trace nutritionTarget: NutritionTarget = new NutritionTarget()
   @Trace currentTab: number = 0
   @Trace familyOverviewLoaded: boolean = false
@@ -139,10 +139,10 @@ struct DashboardPage {
     const result: NutrientTrendData[] = []
     if (summaries.length > 0) {
       const last: DailyNutritionSummary = summaries[summaries.length - 1]
-      const t1 = new NutrientTrendData(); t1.nutrientName = $r('app.string.dashboard_sodium') as string; t1.unit = 'mg'; t1.dailyValues = summaries.map((s: DailyNutritionSummary): DailyNutrientPoint => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.sodium; return p }); t1.currentValue = last.sodium; t1.targetValue = nt.sodiumMax_mg; t1.maxValue = Math.round(nt.sodiumMax_mg * 1.25); t1.color = COLORS.ACCENT_ORANGE_FFA7; t1.trend = TrendDirection.STABLE; result.push(t1)
-      const t2 = new NutrientTrendData(); t2.nutrientName = $r('app.string.dashboard_sugar') as string; t2.unit = 'g'; t2.dailyValues = summaries.map((s: DailyNutritionSummary): DailyNutrientPoint => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.sugar; return p }); t2.currentValue = last.sugar; t2.targetValue = nt.sugarMax_g; t2.maxValue = Math.round(nt.sugarMax_g * 1.2); t2.color = COLORS.ACCENT_ORANGE; t2.trend = TrendDirection.STABLE; result.push(t2)
-      const t3 = new NutrientTrendData(); t3.nutrientName = $r('app.string.dashboard_calorie') as string; t3.unit = 'kcal'; t3.dailyValues = summaries.map((s: DailyNutritionSummary): DailyNutrientPoint => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.calorie; return p }); t3.currentValue = last.calorie; t3.targetValue = nt.caloriesTarget; t3.maxValue = Math.round(nt.caloriesTarget * 1.1); t3.color = COLORS.SUCCESS; t3.trend = TrendDirection.STABLE; result.push(t3)
-      const t4 = new NutrientTrendData(); t4.nutrientName = $r('app.string.dashboard_fat') as string; t4.unit = 'g'; t4.dailyValues = summaries.map((s: DailyNutritionSummary): DailyNutrientPoint => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.fat; return p }); t4.currentValue = last.fat; t4.targetValue = nt.fatMax_g; t4.maxValue = Math.round(nt.fatMax_g * 1.23); t4.color = COLORS.ACCENT_BLUE; t4.trend = TrendDirection.STABLE; result.push(t4)
+      const t1 = new NutrientTrendData(); t1.nutrientName = $r('app.string.dashboard_sodium') as ResourceStr; t1.unit = 'mg'; t1.dailyValues = summaries.map((s: DailyNutritionSummary): DailyNutrientPoint => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.sodium; return p }); t1.currentValue = last.sodium; t1.targetValue = nt.sodiumMax_mg; t1.maxValue = Math.round(nt.sodiumMax_mg * 1.25); t1.color = COLORS.ACCENT_ORANGE_FFA7; t1.trend = TrendDirection.STABLE; result.push(t1)
+      const t2 = new NutrientTrendData(); t2.nutrientName = $r('app.string.dashboard_sugar') as ResourceStr; t2.unit = 'g'; t2.dailyValues = summaries.map((s: DailyNutritionSummary): DailyNutrientPoint => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.sugar; return p }); t2.currentValue = last.sugar; t2.targetValue = nt.sugarMax_g; t2.maxValue = Math.round(nt.sugarMax_g * 1.2); t2.color = COLORS.ACCENT_ORANGE; t2.trend = TrendDirection.STABLE; result.push(t2)
+      const t3 = new NutrientTrendData(); t3.nutrientName = $r('app.string.dashboard_calorie') as ResourceStr; t3.unit = 'kcal'; t3.dailyValues = summaries.map((s: DailyNutritionSummary): DailyNutrientPoint => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.calorie; return p }); t3.currentValue = last.calorie; t3.targetValue = nt.caloriesTarget; t3.maxValue = Math.round(nt.caloriesTarget * 1.1); t3.color = COLORS.SUCCESS; t3.trend = TrendDirection.STABLE; result.push(t3)
+      const t4 = new NutrientTrendData(); t4.nutrientName = $r('app.string.dashboard_fat') as ResourceStr; t4.unit = 'g'; t4.dailyValues = summaries.map((s: DailyNutritionSummary): DailyNutrientPoint => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.fat; return p }); t4.currentValue = last.fat; t4.targetValue = nt.fatMax_g; t4.maxValue = Math.round(nt.fatMax_g * 1.23); t4.color = COLORS.ACCENT_BLUE; t4.trend = TrendDirection.STABLE; result.push(t4)
     }
     this.vm.trendsData = result
 
@@ -176,7 +176,7 @@ struct DashboardPage {
       this.vm.healthScore = 75
       this.vm.healthScoreLabel = $r('app.string.health_score_insufficient')
       this.vm.healthScoreColor = COLORS.TEXT_GRAY_9E9E
-      this.vm.healthInsight = $r('app.string.dashboard_insight_more_data') as string
+      this.vm.healthInsight = $r('app.string.dashboard_insight_more_data') as ResourceStr
       return
     }
 
@@ -212,9 +212,9 @@ struct DashboardPage {
     const proteinPct = 12
     const carbPct = Math.max(0, 100 - fatPct - proteinPct)
     this.vm.donutSegments = [
-      { label: $r('app.string.dashboard_carb') as string, value: Math.round(avgCalorie * carbPct / 100), color: '#FFB74D' },
-      { label: $r('app.string.dashboard_protein') as string, value: Math.round(avgCalorie * proteinPct / 100), color: '#4FC3F7' },
-      { label: $r('app.string.dashboard_fat') as string, value: Math.round(avgCalorie * fatPct / 100), color: '#BA68C8' }
+      { label: $r('app.string.dashboard_carb') as ResourceStr, value: Math.round(avgCalorie * carbPct / 100), color: '#FFB74D' },
+      { label: $r('app.string.dashboard_protein') as ResourceStr, value: Math.round(avgCalorie * proteinPct / 100), color: '#4FC3F7' },
+      { label: $r('app.string.dashboard_fat') as ResourceStr, value: Math.round(avgCalorie * fatPct / 100), color: '#BA68C8' }
     ]
 
     // ── 健康评分 ──
@@ -228,37 +228,37 @@ struct DashboardPage {
       this.vm.healthScore = 75
       this.vm.healthScoreLabel = $r('app.string.health_score_insufficient')
       this.vm.healthScoreColor = COLORS.TEXT_GRAY_9E9E
-      this.vm.healthInsight = $r('app.string.dashboard_insight_more_data') as string
+      this.vm.healthInsight = $r('app.string.dashboard_insight_more_data') as ResourceStr
       return
     }
 
     let score = 80
-    const insights: string[] = []
+    const insights: ResourceStr[] = []
 
     if (sodiumAvg > this.vm.nutritionTarget.sodiumMax_mg) {
       score -= 20
-      insights.push($r('app.string.dashboard_insight_sodium_high') as string)
+      insights.push($r('app.string.dashboard_insight_sodium_high') as ResourceStr)
     } else if (sodiumAvg > this.vm.nutritionTarget.sodiumMax_mg * 0.65) {
       score -= 10
-      insights.push($r('app.string.dashboard_insight_sodium_slightly_high') as string)
+      insights.push($r('app.string.dashboard_insight_sodium_slightly_high') as ResourceStr)
     } else if (sodiumAvg < this.vm.nutritionTarget.sodiumMax_mg * 0.35) {
       score += 5
-      insights.push($r('app.string.dashboard_insight_sodium_good') as string)
+      insights.push($r('app.string.dashboard_insight_sodium_good') as ResourceStr)
     }
 
     if (sugarAvg > this.vm.nutritionTarget.sugarMax_g * 0.8) {
       score -= 15
-      insights.push($r('app.string.dashboard_insight_sugar_high') as string)
+      insights.push($r('app.string.dashboard_insight_sugar_high') as ResourceStr)
     } else if (sugarAvg > 25) {
       score -= 5
     } else if (sugarAvg < 15) {
       score += 5
-      insights.push($r('app.string.dashboard_insight_sugar_excellent') as string)
+      insights.push($r('app.string.dashboard_insight_sugar_excellent') as ResourceStr)
     }
 
     if (dayCount >= 7) {
       score += 5
-      insights.push($r('app.string.dashboard_insight_keep_recording') as string)
+      insights.push($r('app.string.dashboard_insight_keep_recording') as ResourceStr)
     } else if (dayCount >= 3) {
       score += 3
     }
@@ -269,11 +269,11 @@ struct DashboardPage {
     if (score >= 85) {
       this.vm.healthScoreLabel = $r('app.string.health_score_excellent')
       this.vm.healthScoreColor = COLORS.ACCENT_GREEN_4CAF
-      if (insights.length === 0) insights.push($r('app.string.dashboard_insight_keep_going') as string)
+      if (insights.length === 0) insights.push($r('app.string.dashboard_insight_keep_going') as ResourceStr)
     } else if (score >= 70) {
       this.vm.healthScoreLabel = $r('app.string.health_score_good')
       this.vm.healthScoreColor = COLORS.ORANGE_ACCENT
-      if (insights.length === 0) insights.push($r('app.string.dashboard_insight_room_improve') as string)
+      if (insights.length === 0) insights.push($r('app.string.dashboard_insight_room_improve') as ResourceStr)
     } else if (score >= 50) {
       this.vm.healthScoreLabel = $r('app.string.health_score_fair')
       this.vm.healthScoreColor = COLORS.ORANGE_DEEP
@@ -282,7 +282,7 @@ struct DashboardPage {
       this.vm.healthScoreColor = COLORS.ACCENT_RED_F443
     }
 
-    this.vm.healthInsight = insights.length > 0 ? insights.join(' · ') : $r('app.string.dashboard_insight_balanced') as string
+    this.vm.healthInsight = insights.length > 0 ? insights[0] : $r('app.string.dashboard_insight_balanced') as ResourceStr
   }
 
   private switchMember(memberId: string) {
@@ -359,7 +359,7 @@ struct DashboardPage {
               .borderRadius(RADIUS.FULL)
               .backgroundColor(this.vm.selectedPeriodIndex === idx ? COLORS.PRIMARY : COLORS.BG_LIGHT_GRAY_F5)
               .onClick(() => { this.switchPeriod(idx) })
-              .accessibilityText($r('app.string.' + opt.labelKey) as string)
+              .accessibilityText($r('app.string.' + opt.labelKey) as Resource)
               .accessibilityLevel('yes')
           }, (opt: PeriodOption, idx: number) => `period_${idx}`)
         }
@@ -404,7 +404,7 @@ struct DashboardPage {
         // V2: Tab 切换（个人 / 家庭概览）
         GridRow({
           columns: { sm: 4, md: 8, lg: 12 },
-          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
+          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] } as BreakPoints
         }) {
           GridCol({ span: { sm: 4, md: 8, lg: 12 } }) {
             // Tab 栏
@@ -475,7 +475,7 @@ struct DashboardPage {
                 }
                 // ─══─④─ 趋势折线图 ─══─
                 ErrorBoundary({
-                  fallbackMessage: $r('app.string.dashboard_trend_load_failed') as string,
+                  fallbackMessage: $r('app.string.dashboard_trend_load_failed') as ResourceStr,
                   hasError: !this.vm.isLoading && this.vm.trendsData.length === 0 && this.vm.overviewDays > 0
                 }) {
                   this.buildTrendSection()
@@ -982,12 +982,12 @@ struct DashboardPage {
     return Math.min(100, Math.round((current / target) * 100))
   }
 
-  private getTrendDesc(trend: NutrientTrendData): string {
-    if (trend.dailyValues.length === 0) return $r('app.string.dashboard_no_data') as string
+  private getTrendDesc(trend: NutrientTrendData): ResourceStr {
+    if (trend.dailyValues.length === 0) return $r('app.string.dashboard_no_data') as ResourceStr
     const latest = trend.dailyValues[trend.dailyValues.length - 1]
-    if (trend.trend === TrendDirection.UP) return $r('app.string.dashboard_trend_up') as string
-    if (trend.trend === TrendDirection.DOWN) return $r('app.string.dashboard_trend_down') as string
-    return $r('app.string.dashboard_trend_stable') as string
+    if (trend.trend === TrendDirection.UP) return $r('app.string.dashboard_trend_up') as ResourceStr
+    if (trend.trend === TrendDirection.DOWN) return $r('app.string.dashboard_trend_down') as ResourceStr
+    return $r('app.string.dashboard_trend_stable') as ResourceStr
   }
 
   private getTrendArrow(trend: TrendDirection): string {

@@ -3,14 +3,16 @@
 // AppState 通过此管理器委托所有服务调用
 
 import {
-  FEATURE_FLAGS, HILOG_DOMAIN, FamilyProfile, HealthSignal, DailyBudget, NutritionTarget, AiNutritionAdvice, AiRecipeRecommendationResult, AiRecipeRequest
+  FEATURE_FLAGS, HILOG_DOMAIN, FamilyProfile, HealthSignal, DailyBudget, NutritionTarget, AiNutritionAdvice, AiRecipeRecommendationResult, AiRecipeRequest, DietRecord
 } from 'hsp_core';
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HealthService } from './service/HealthService';
-import { AuthService, CloudAuthService } from 'hsp-service';
-import { SyncService, SyncEventCallback, SyncEvent } from 'hsp-service';
-import { FamilyGroupService, RecipeCommunityService } from 'feature-community';
+import { AuthService, CloudAuthService, FamilyGroupRepository, RecipeRepository } from 'hsp_service';
+import { SyncService, SyncEventCallback, SyncEvent } from 'hsp_service';
+import { FamilyGroupService, RecipeCommunityService } from 'feature_community';
+import { FamilyGroupRepository as CommunityGroupRepo } from 'feature_community';
+import { RecipeRepository as CommunityRecipeRepo } from 'feature_community';
 import { HwHealthSignalProvider } from './service/health/HwHealthSignalProvider';
 import { ManualHealthSignalProvider } from './service/health/ManualHealthSignalProvider';
 import { AiNutritionistService } from './service/AiNutritionistService';
@@ -19,9 +21,6 @@ import { AiChatService } from './service/AiChatService';
 import { AiPolishService } from './service/AiPolishService';
 import { AiWeeklyReportService } from './service/AiWeeklyReportService';
 import { AiServiceBase } from './service/ai/AiServiceBase';
-import { FamilyGroupRepository } from './repository/FamilyGroupRepository';
-import { RecipeRepository } from './repository/RecipeRepository';
-import { DietRecord } from './repository/HistoryRepository';
 
 const TAG = 'ServiceManager';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -109,8 +108,8 @@ export class ServiceManager {
    * 初始化社交服务
    */
   initSocial(groupRepo: FamilyGroupRepository, recipeRepo: RecipeRepository): void {
-    this.groupService = new FamilyGroupService(groupRepo, this.authService);
-    this.recipeCommunityService = new RecipeCommunityService(recipeRepo, this.authService);
+    this.groupService = new FamilyGroupService(groupRepo as CommunityGroupRepo, this.authService);
+    this.recipeCommunityService = new RecipeCommunityService(recipeRepo as CommunityRecipeRepo, this.authService);
     hilog.info(DOMAIN_ZERO, TAG, 'Social services initialized');
   }
 

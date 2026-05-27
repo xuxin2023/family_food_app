@@ -26,6 +26,7 @@ export class DataExportPackage {
   settings: string = '';
   exportedAt: number = 0;
   format: string = 'json';
+  checksum: string = '';
 }
 
 export class ComplianceService {
@@ -98,8 +99,28 @@ export class ComplianceService {
     pkg.settings = settings;
     pkg.exportedAt = Date.now();
     pkg.format = 'json';
+    const payload = `${memberProfiles}|${scanHistory}|${dietRecords}|${favoriteItems}|${settings}|${pkg.exportedAt}`;
+    let hash = 0;
+    for (let i = 0; i < payload.length; i++) {
+      const chr = payload.charCodeAt(i);
+      hash = ((hash << 5) - hash) + chr;
+      hash |= 0;
+    }
+    pkg.checksum = `crc32:${hash.toString(16)}`;
     hilog.info(DOMAIN_ZERO, TAG, 'Data export package built at %{public}d', pkg.exportedAt);
     return pkg;
+  }
+
+  static verifyDataExportPackage(pkg: DataExportPackage): boolean {
+    const payload = `${pkg.memberProfiles}|${pkg.scanHistory}|${pkg.dietRecords}|${pkg.favoriteItems}|${pkg.settings}|${pkg.exportedAt}`;
+    let hash = 0;
+    for (let i = 0; i < payload.length; i++) {
+      const chr = payload.charCodeAt(i);
+      hash = ((hash << 5) - hash) + chr;
+      hash |= 0;
+    }
+    const expected = `crc32:${hash.toString(16)}`;
+    return pkg.checksum === expected;
   }
 
   static getDataRetentionDays(ageGroup: string): number {

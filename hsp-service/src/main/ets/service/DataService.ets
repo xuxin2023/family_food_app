@@ -7,8 +7,8 @@ import {
 } from 'hsp_core';
 import { common } from '@kit.AbilityKit';
 import { FoodRepository } from '../repository/FoodRepository';
-import { RuleEngine, RuleEngineParams } from 'feature-report';
-import { AlternativeFoodRecommender } from 'feature-scan';
+import { RuleEngine, RuleEngineParams } from './RuleEngineStub';
+import { AlternativeFoodRecommender } from './AlternativeRecommenderStub';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { SecureHttpHelper } from './SecureHttpHelper';
 
@@ -309,7 +309,11 @@ export class DataService {
     // 集成AlternativeFoodRecommender生成替代食品推荐
     let alternatives: AlternativeFood[] = [];
     try {
-      alternatives = this.altRecommender.recommendAlternatives(label, membersList, 3);
+      this.altRecommender.recommendAlternatives(label, membersList, 3).then((result: AlternativeFood[]) => {
+        alternatives = result;
+      }).catch(() => {
+        alternatives = [];
+      });
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'generateFullReport failed: %{public}s', JSON.stringify(error));
       alternatives = [];

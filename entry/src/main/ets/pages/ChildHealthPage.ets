@@ -1,4 +1,5 @@
-import { COLORS, safeBack, FoodLabel, FamilyProfile, AgeGroup, ChildHealthAssessment, HILOG_DOMAIN } from 'hsp_core';
+import { COLORS, safeBack, FoodLabel, FamilyProfile, AgeGroup, HILOG_DOMAIN } from 'hsp_core';
+import { ChildHealthAssessment } from 'feature_report';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { SnackImpactAssessment, AdditiveSafetyResult, AdditiveSafetyLevel } from '../engine/ChildHealthAssessmentEngine';
@@ -225,9 +226,9 @@ struct ChildHealthPage {
     if (this.foodName.length === 0) return;
     const foodLabel = new FoodLabel();
     foodLabel.foodName = this.foodName;
-    this.result = await this.appState.assessChildHealth(
+    this.result = (await this.appState.assessChildHealth(
       this.childProfile.memberId, foodLabel
-    );
+    )) as Object as ChildHealthAssessment;
   }
 
   pageTransition() {

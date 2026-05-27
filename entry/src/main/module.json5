@@ -3,7 +3,6 @@
     "name": "entry",
     "type": "entry",
     "description": "$string:module_desc",
-    "contentRating": "3+",
     "mainElement": "EntryAbility",
     "deviceTypes": [
       "phone",
@@ -23,6 +22,7 @@
         "startWindowIcon": "$media:app_icon",
         "startWindowBackground": "$color:start_window_background",
         "exported": true,
+        "continuable": true,
         "skills": [
           {
             "entities": [
@@ -139,37 +139,24 @@
         }
       },
       {
-        "name": "ohos.permission.HEALTH_DATA",
-        "reason": "$string:health_data_reason",
-        "usedScene": {
-          "abilities": [
-            "EntryAbility"
-          ],
-          "when": "inuse"
-        },
-        "accessMode": "user_grant"
-      },
-      {
         "name": "ohos.permission.READ_HEALTH_DATA",
-        "reason": "$string:health_data_reason",
+        "reason": "$string:read_health_data_reason",
         "usedScene": {
           "abilities": [
             "EntryAbility"
           ],
           "when": "inuse"
-        },
-        "accessMode": "user_grant"
+        }
       },
       {
         "name": "ohos.permission.ACTIVITY_MOTION",
-        "reason": "$string:health_data_reason",
+        "reason": "$string:activity_motion_reason",
         "usedScene": {
           "abilities": [
             "EntryAbility"
           ],
           "when": "inuse"
-        },
-        "accessMode": "user_grant"
+        }
       },
       {
         "name": "ohos.permission.DISTRIBUTED_DATASYNC",
@@ -179,8 +166,7 @@
             "EntryAbility"
           ],
           "when": "inuse"
-        },
-        "accessMode": "user_grant"
+        }
       },
       {
         "name": "ohos.permission.MICROPHONE",

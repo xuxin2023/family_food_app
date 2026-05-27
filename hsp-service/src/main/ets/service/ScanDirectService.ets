@@ -20,11 +20,11 @@ export class ScanDirectResult {
 }
 
 /** 扫描环境自适应配置 */
-interface ScanEnvironmentConfig {
-  enableLowLightEnhancement: boolean;
-  enableDistortionCorrection: boolean;
-  enableMultiAngleRecognition: boolean;
-  enableCurvedSurfaceRecognition: boolean;
+class ScanEnvironmentConfig {
+  enableLowLightEnhancement: boolean = false;
+  enableDistortionCorrection: boolean = false;
+  enableMultiAngleRecognition: boolean = false;
+  enableCurvedSurfaceRecognition: boolean = false;
 }
 
 /**
@@ -125,13 +125,12 @@ export class ScanDirectService {
   // ========== 内部方法 ==========
 
   private buildEnvironmentConfig(): ScanEnvironmentConfig {
-    // HarmonyOS 6.1: 根据系统能力自适应配置
-    return {
-      enableLowLightEnhancement: true,
-      enableDistortionCorrection: true,
-      enableMultiAngleRecognition: true,
-      enableCurvedSurfaceRecognition: true
-    };
+    const config = new ScanEnvironmentConfig();
+    config.enableLowLightEnhancement = true;
+    config.enableDistortionCorrection = true;
+    config.enableMultiAngleRecognition = true;
+    config.enableCurvedSurfaceRecognition = true;
+    return config;
   }
 
   private detectBarcodeFormat(barcode: string): string {

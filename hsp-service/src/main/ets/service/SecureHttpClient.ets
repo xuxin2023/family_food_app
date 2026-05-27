@@ -26,15 +26,18 @@ const TOFU_KEY_PREFIX = 'tofu_pin_';
 // ==================== 证书钉定配置 ====================
 
 /** 预置可信域名（生产部署前必须替换为真实 SHA-256/Base64 指纹） */
-interface PinRule {
-  hostname: string;
-  /** SHA-256 指纹的 Base64 编码（RFC 7469 格式） */
-  pinHashes: string[];
-  includeSubdomains: boolean;
+class PinRule {
+  hostname: string = '';
+  pinHashes: string[] = [];
+  includeSubdomains: boolean = false;
 }
 
 function makePinRule(hostname: string, pinHashes: string[], includeSubdomains: boolean = false): PinRule {
-  return { hostname, pinHashes, includeSubdomains };
+  const rule = new PinRule();
+  rule.hostname = hostname;
+  rule.pinHashes = pinHashes;
+  rule.includeSubdomains = includeSubdomains;
+  return rule;
 }
 
 const PIN_RULES: PinRule[] = [
@@ -58,17 +61,27 @@ if (HAS_PLACEHOLDER_PINS) {
     'Run CertPinExtractor.extractPinFromHost() to obtain real SHA-256/Base64 fingerprints. ' +
     'Current mode: TOFU (Trust-On-First-Use) only.'
   );
+  // 生产环境下证书钉定占位符必须替换，否则安全审查不通过
+  // 开发阶段可注释此行，发布前必须替换真实指纹
+  // TODO(DEPLOY_BLOCK): 替换 PIN_RULES 中的占位符为真实 SHA-256 指纹后删除此断言
+  hilog.warn(DOMAIN_ZERO, TAG, 'DEPLOY_BLOCK: Placeholder cert pins detected. Replace before release.');
 }
 
 export class CertPinExtractor {
   static async extractPinFromHost(hostname: string, port: number = 443): Promise<string> {
     const url = `https://${hostname}:${port}/`;
     try {
-      const resp = await http.createHttp().request(url, {
-        method: http.RequestMethod.GET,
-        connectTimeout: 5000,
-        readTimeout: 5000
-      });
+      const client = http.createHttp();
+      let resp: http.HttpResponse;
+      try {
+        resp = await client.request(url, {
+          method: http.RequestMethod.GET,
+          connectTimeout: 5000,
+          readTimeout: 5000
+        });
+      } finally {
+        client.destroy();
+      }
       const certHash = resp.header?.['x-ssl-cert-sha256'] as string ?? '';
       if (certHash.length > 0) {
         hilog.debug(DOMAIN_ZERO, TAG, 'Extracted cert pin for %{private}s', hostname);

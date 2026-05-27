@@ -1,5 +1,18 @@
-import { RiskFactor, CrossRiskResult } from '../engine/CrossRiskAssessor';
 import { COLORS, FONT_SIZE, SPACING, RADIUS } from 'hsp_core';
+
+export class RiskFactor {
+  name: string = '';
+  severity: string = '';
+  description: string = '';
+  affectedMembers: string[] = [];
+}
+
+export class CrossRiskResult {
+  riskFactors: RiskFactor[] = [];
+  overallRisk: string = '';
+  overallRiskLevel: string = '';
+  summary: string = '';
+}
 
 @ComponentV2
 export struct RiskAssessmentPanel {

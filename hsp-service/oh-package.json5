@@ -1,5 +1,5 @@
 {
-  "name": "hsp-service",
+  "name": "hsp_service",
   "version": "1.0.0",
   "description": "家庭食品适配助手业务服务层 — 数据库操作、云函数调用、业务逻辑封装",
   "main": "Index.ets",
@@ -7,8 +7,7 @@
   "license": "",
   "dependencies": {
     "hsp_core": "file:../hsp_core",
-    "feature-scan": "file:../feature-scan",
-    "feature-report": "file:../feature-report"
+    "feature_scan": "file:../feature-scan"
   },
   "devDependencies": {}
 }

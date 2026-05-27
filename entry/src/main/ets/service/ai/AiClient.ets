@@ -6,7 +6,7 @@ import { http } from '@kit.NetworkKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AGENT_ARTS_ENDPOINT, AGENT_ARTS_MODEL } from './AiConfig';
 import { API_CONFIG, API_TIMEOUT_CONFIG, HILOG_DOMAIN } from 'hsp_core';
-import { SecureHttpClient, SecureRequestOptions } from 'hsp-service';
+import { SecureHttpClient, SecureRequestOptions } from 'hsp_service';
 import { GlobalErrorHandler } from '../../utils/GlobalErrorHandler';
 
 const TAG = 'AiClient';
@@ -123,10 +123,10 @@ export class AiClient {
       opts.connectTimeout = API_TIMEOUT_CONFIG.AI_CONNECT_TIMEOUT_MS;
       opts.readTimeout = API_TIMEOUT_CONFIG.AI_READ_TIMEOUT_MS;
 
-      const response = await SecureHttpClient.getInstance().request(opts);
+      const response: http.HttpResponse = await SecureHttpClient.getInstance().request(opts);
 
       if (response.responseCode === 200) {
-        const rawResult = response.result;
+        const rawResult: Object | string = response.result as (Object | string);
         const rawStr = typeof rawResult === 'string' ? rawResult : JSON.stringify(rawResult);
         const parsed = this.parseAgentArtsResponse(rawStr);
         if (parsed !== null) {

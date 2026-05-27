@@ -1186,11 +1186,15 @@
     },
     {
       "name": "activity_motion_reason",
-      "value": "Used to obtain step count and activity data"
+      "value": "Used to obtain activity data for dynamic nutrition budget adjustment"
     },
     {
       "name": "health_data_reason",
-      "value": "Used to read heart rate, blood oxygen, sleep data for personalized advice"
+      "value": "Used to read health data such as steps and heart rate for personalized food recommendations"
+    },
+    {
+      "name": "read_health_data_reason",
+      "value": "Used to read health data such as steps and heart rate for personalized food recommendations"
     },
     {
       "name": "microphone_reason",

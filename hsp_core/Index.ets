@@ -15,17 +15,30 @@ export {
   PageSizeConfig, PAGE_SIZE_CONFIG,
   TIME_INTERVAL_CONFIG, CRASH_LOG_CONFIG,
   NUTRIENT_LIMITS_V2,
-  LegalConfig, LEGAL_CONFIG
+  LegalConfig, LEGAL_CONFIG,
+  AI_CACHE_CONFIG, API_TIMEOUT_CONFIG, ENGINE_CONFIG,
+  FEATURE_LIMITS, REMINDER_PRESETS, DATA_VERSION, HealthConfig, GROUP_CONFIG, DB_SCHEMA_VERSION
 } from './src/main/ets/constants/AppConfig';
 
 export {
-  COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON, SCORE_COLORS
+  COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON, SCORE_COLORS,
+  ThemeMode, ThemeColors
 } from './src/main/ets/constants/AppTheme';
 
 export {
   DB_NAME, DB_SECURITY_LEVEL,
   TABLE_FOOD_LABEL, COL_FOOD_ID, COL_BARCODE, COL_INGREDIENTS,
-  TABLE_FAMILY_PROFILE, COL_MEMBER_ID, COL_NICKNAME
+  TABLE_FAMILY_PROFILE, COL_MEMBER_ID, COL_NICKNAME,
+  TABLE_SCAN_HISTORY, TABLE_DIET_RECORD, TABLE_FAVORITE, TABLE_SHOPPING_LIST, TABLE_REMINDER_RULES,
+  TABLE_NUTRITION_TARGET, TABLE_NUTRITION_SNAPSHOT,
+  COL_FOOD_NAME, COL_ALLERGEN_HINTS, COL_ALLERGENS, COL_NUTRITION, COL_MANUFACTURER,
+  COL_SC_NUMBER, COL_PRINCIPAL, COL_TRUSTEE, COL_TRACE_CODE, COL_SOURCE,
+  COL_IDENTIFIED_AT, COL_AGE_GROUP, COL_HEALTH_GOALS,
+  COL_CALORIE_BUDGET, COL_FAT_BUDGET, COL_SODIUM_BUDGET, COL_SUGAR_BUDGET,
+  COL_MEAL_TIMES, COL_BEDTIME, COL_ID, COL_LEVEL, COL_MAX_AMOUNT,
+  COL_REASONS, COL_SCANNED_AT, COL_DATE, COL_SCENARIO, COL_MEAL_TYPE,
+  COL_AMOUNT_G, COL_CALORIE_INTAKE, COL_FAT_INTAKE, COL_SODIUM_INTAKE,
+  COL_SUGAR_INTAKE, COL_RECORDED_AT, COL_CREATED_AT, COL_UPDATED_AT
 } from './src/main/ets/constants/DbSchema';
 
 export {
@@ -43,12 +56,14 @@ export {
   ROUTE_REMINDER_RULE_PAGE, ROUTE_FEEDBACK_PAGE,
   ROUTE_EXERCISE_NUTRITION_PAGE, ROUTE_CHECKUP_REPORT_PAGE,
   ROUTE_CHILD_HEALTH_PAGE, ROUTE_PERSONALIZED_RECOMMEND_PAGE,
-  ROUTE_TEEN_MODE_PAGE
+  ROUTE_TEEN_MODE_PAGE,
+  ROUTE_ALLERGEN_SETUP_WIZARD
 } from './src/main/ets/constants/RoutePath';
 
 // ===== 核心模型 =====
 export {
-  FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig, createDefaultMembers
+  FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig, createDefaultMembers,
+  MealTimes, PregnancyStatus
 } from './src/main/ets/model/FamilyProfile';
 
 export {
@@ -77,11 +92,15 @@ export {
 } from './src/main/ets/model/Recommendation';
 
 export {
-  MealBalance, MealScenario
+  MealBalance, MealScenario, RiskTag
 } from './src/main/ets/model/MealBalance';
 
 export {
-  NutritionTarget
+  NutritionTarget, NutritionPreset
+} from './src/main/ets/model/NutritionTarget';
+
+export {
+  NUTRITION_PRESETS, applyPresetToTarget, createDefaultNutritionTarget
 } from './src/main/ets/model/NutritionTarget';
 
 export {
@@ -92,23 +111,25 @@ export {
   MemberTier, MemberStatus, PaywallTrigger,
   createDefaultMemberStatus, createMemberStatusForTier,
   getPaywallTriggerForFeature, hasTierAccess, getTierDisplayName,
-  TIER_DAILY_SCAN_LIMIT, TIER_MEMBER_LIMIT, TIER_WEEKLY_REPORT_LIMIT
+  TIER_DAILY_SCAN_LIMIT, TIER_MEMBER_LIMIT, TIER_WEEKLY_REPORT_LIMIT,
+  PurchaseResult
 } from './src/main/ets/model/MemberStatus';
 
 export {
-  FamilyGroup, GroupSummary, GroupFeed, FeedType
+  FamilyGroup, GroupSummary, GroupFeed, FeedType,
+  GroupRole, JoinMethod, JoinRequestStatus, GroupMember, JoinRequest, FoodScanFeedContent
 } from './src/main/ets/model/FamilyGroup';
 
 // ===== 工具类 =====
 export { DateUtil } from './src/main/ets/utils/DateUtil';
 export { CacheManager } from './src/main/ets/utils/CacheManager';
-export { EnumSafeParse } from './src/main/ets/utils/EnumSafeParse';
+export { safeParse, safeParseRiskTag, safeParseMealScenario, safeParseHealthGoal, safeParseRecipeCategory, safeParseDietTag, safeParseNovaGroup } from './src/main/ets/utils/EnumSafeParse';
 export { Logger } from './src/main/ets/utils/Logger';
-export { DebounceThrottle, Throttler } from './src/main/ets/utils/DebounceThrottle';
+export { Debouncer, Throttler } from './src/main/ets/utils/DebounceThrottle';
 export { SafeJsonParse } from './src/main/ets/utils/SafeJsonParse';
 export { MathUtil } from './src/main/ets/utils/MathUtil';
 export { LruCache } from './src/main/ets/utils/LruCache';
-export { JsonUtil } from './src/main/ets/utils/JsonUtil';
+export { getJsonString, getJsonNumber, getJsonBoolean } from './src/main/ets/utils/JsonUtil';
 export { MapUtil } from './src/main/ets/utils/MapUtil';
 export { ImageCache } from './src/main/ets/utils/ImageCache';
 export { ImageCacheUtil } from './src/main/ets/utils/ImageCacheUtil';
@@ -119,40 +140,46 @@ export { SecureKeyStore } from './src/main/ets/utils/SecureKeyStore';
 export { AccessibilityUtil } from './src/main/ets/utils/AccessibilityUtil';
 export { AccessibilityManager } from './src/main/ets/utils/AccessibilityManager';
 export { LocaleManager } from './src/main/ets/utils/LocaleManager';
+export { SUPPORTED_LOCALES, LOCALE_DISPLAY_NAMES } from './src/main/ets/utils/LocaleManager';
 export { NavigationManager } from './src/main/ets/utils/NavigationManager';
-export { PageTransitionConfig } from './src/main/ets/utils/PageTransitionConfig';
-export { RouterUtil } from './src/main/ets/utils/RouterUtil';
-export { safePushUrl, safeBack, clearToHome, getPageParams, getParamString, getParamNumber, getParamObject } from './src/main/ets/utils/RouterUtil';
+export { PAGE_ENTER_DURATION, PAGE_EXIT_DURATION, LIST_ENTER_DURATION, DETAIL_ENTER_DURATION } from './src/main/ets/utils/PageTransitionConfig';
+export { safePushUrl, safeBack, clearToHome, getPageParams, getParamString, getParamNumber, getParamObject, safeReplaceUrl } from './src/main/ets/utils/RouterUtil';
 export { AppStorageSync, AppStorageKeys } from './src/main/ets/utils/AppStorageSync';
 export { ToastHelper } from './src/main/ets/utils/ToastHelper';
 export { ErrorHandler } from './src/main/ets/utils/ErrorHandler';
 export { DataIntegrityChecker } from './src/main/ets/utils/DataIntegrityChecker';
 export { ObservableMap } from './src/main/ets/utils/ObservableMap';
-export { RecipeUtil } from './src/main/ets/utils/RecipeUtil';
-export { PrivacyContentUtil } from './src/main/ets/utils/PrivacyContentUtil';
+export { getCategoryLabel, getCategoryEmoji, formatTime, getDifficultyLabel, getDietTagLabel } from './src/main/ets/utils/RecipeUtil';
+export { getPrivacyPolicyHtml, getUserAgreementHtml } from './src/main/ets/utils/PrivacyContentUtil';
 
 // ===== 补全模型导出 =====
 export { ChildProtection } from './src/main/ets/model/ChildProtection';
 export { CredibilityResult } from './src/main/ets/model/CredibilityResult';
+export { DataGrade, RadarDimension, PublicQueryEntry } from './src/main/ets/model/CredibilityResult';
 export { TodayIntakeInput } from './src/main/ets/model/TodayIntakeInput';
 export { Recipe, RecipeQueryParams, RecipeComment, RecipeDifficulty, RecipeCategory, DietTag, RecipeIngredient, RecipeStep, RecipeNutrition, RecipeLike, RecipeBookmark, RecipeSortBy, CreateRecipeParams } from './src/main/ets/model/Recipe';
-export { CloudSyncConfig } from './src/main/ets/model/CloudSyncConfig';
-export { PricingModel } from './src/main/ets/model/PricingModel';
+export { CloudSyncConfig, SyncStrategy, ConflictResolution, createDefaultSyncConfig } from './src/main/ets/model/CloudSyncConfig';
+export { ProductPlan, PRODUCT_PLANS, getProductPlanForTier, getProductInfoForTier } from './src/main/ets/model/PricingModel';
 export { ReminderRule } from './src/main/ets/model/ReminderRule';
+export { PRESET_REMINDER_RULES, getReminderTypeLabel, getReminderTypeIcon } from './src/main/ets/model/ReminderRule';
 export { ShoppingItem } from './src/main/ets/model/ShoppingItem';
-export { MealPlan } from './src/main/ets/model/MealPlan';
+export { SHOPPING_CATEGORIES } from './src/main/ets/model/ShoppingItem';
+export { MealPlanDay, MealPlanItem, MealPlanTemplate } from './src/main/ets/model/MealPlan';
+export { createDefaultMealPlan, createLowSodiumMealPlan, createLowSugarMealPlan } from './src/main/ets/model/MealPlan';
 export { FamilyComparisonItem } from './src/main/ets/model/FamilyComparisonItem';
 export { ScoreWeightProfile } from './src/main/ets/model/ScoreWeightProfile';
 
 // ===== 补全常量导出 =====
-export { HotFoods } from './src/main/ets/constants/HotFoods';
-export { MealTemplates } from './src/main/ets/constants/MealTemplates';
-export { NutritionKnowledge } from './src/main/ets/constants/NutritionKnowledge';
+export { HotFoodItem, HOT_FOODS } from './src/main/ets/constants/HotFoods';
+export { MealTemplate, MEAL_TEMPLATES } from './src/main/ets/constants/MealTemplates';
+export { KnowledgeArticle, getAllKnowledgeArticles, getArticleCategories, getArticlesByCategory } from './src/main/ets/constants/NutritionKnowledge';
 export { PermissionDescriptions } from './src/main/ets/constants/PermissionDescriptions';
 export { RouteTable } from './src/main/ets/constants/RouteTable';
 
 // ===== 补全模型导出（第二批） =====
 export { JsonObject } from './src/main/ets/model/JsonTypes';
+export { NovaGroup } from './src/main/ets/model/NovaGroupDef';
+export { ExerciseType } from './src/main/ets/model/ExerciseTypeDef';
 
 export {
   MealNutrition, DailyDietRecord, MemberNutritionProfile,
@@ -218,7 +245,7 @@ export { StringRes } from './src/main/ets/constants/StringRes';
 export { NutritionThreshold } from './src/main/ets/constants/NutritionThreshold';
 
 // ===== 补全工具导出（第二批） =====
-export { DomainEventBus, DomainEvents } from './src/main/ets/utils/DomainEventBus';
+export { DomainEventBus, DomainEvents, CacheInvalidationData } from './src/main/ets/utils/DomainEventBus';
 
 // ===== 服务层导出（批次2迁移） =====
 export {

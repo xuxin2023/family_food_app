@@ -1,6 +1,7 @@
 import {
-  COLORS, safeBack, FoodLabel, FamilyProfile, HealthSignal, NutritionTarget, createDefaultNutritionTarget, DailyBudget, PersonalizedRecommendation, HILOG_DOMAIN
+  COLORS, safeBack, FoodLabel, FamilyProfile, HealthSignal, NutritionTarget, createDefaultNutritionTarget, DailyBudget, HILOG_DOMAIN
 } from 'hsp_core';
+import { PersonalizedRecommendation } from 'feature_report';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { PersonalizedContext, PersonalizedFactor } from '../engine/PersonalizedRecommendEngine';
@@ -127,26 +128,26 @@ struct PersonalizedRecommendPage {
                   .fontWeight(FontWeight.Bold)
                   .margin({ bottom: 12 })
 
-                Text($r('app.string.personalized_overall_score') + `${(this.result as PersonalizedRecommendation).overallScore}/100`)
+                Text() { Span($r('app.string.personalized_overall_score')); Span(`${(this.result as PersonalizedRecommendation).overallScore}/100`) }
                   .fontSize(14)
                   .fontWeight(FontWeight.Medium)
                   .margin({ bottom: 6 })
 
-                Text($r('app.string.personalized_recommend_level') + `${(this.result as PersonalizedRecommendation).level}`)
+                Text() { Span($r('app.string.personalized_recommend_level')); Span(`${(this.result as PersonalizedRecommendation).level}`) }
                   .fontSize(14)
                   .margin({ bottom: 6 })
 
-                Text($r('app.string.personalized_max_portion') + `${(this.result as PersonalizedRecommendation).maxPortion}`)
+                Text() { Span($r('app.string.personalized_max_portion')); Span(`${(this.result as PersonalizedRecommendation).maxPortion}`) }
                   .fontSize(14)
                   .margin({ bottom: 6 })
 
-                Text($r('app.string.personalized_confidence') + `${Math.round((this.result as PersonalizedRecommendation).dataConfidence * 100)}%`)
+                Text() { Span($r('app.string.personalized_confidence')); Span(`${Math.round((this.result as PersonalizedRecommendation).dataConfidence * 100)}%`) }
                   .fontSize(13)
                   .fontColor(COLORS.TEXT_GRAY_7575)
                   .margin({ bottom: 6 })
 
                 if ((this.result as PersonalizedRecommendation).urgencyNote.length > 0) {
-                  Text($r('app.string.personalized_urgency_note') + `${(this.result as PersonalizedRecommendation).urgencyNote}`)
+                  Text() { Span($r('app.string.personalized_urgency_note')); Span(`${(this.result as PersonalizedRecommendation).urgencyNote}`) }
                     .fontSize(13)
                     .fontColor('#E53935')
                     .margin({ bottom: 6 })
@@ -209,7 +210,7 @@ struct PersonalizedRecommendPage {
     if (this.foodName.length === 0) return;
     const foodLabel = new FoodLabel();
     foodLabel.foodName = this.foodName;
-    this.result = await this.appState.getPersonalizedRecommendation(this.currentProfile.memberId, foodLabel);
+    this.result = (await this.appState.getPersonalizedRecommendation(this.currentProfile.memberId, foodLabel)) as Object as PersonalizedRecommendation;
   }
 
   pageTransition() {

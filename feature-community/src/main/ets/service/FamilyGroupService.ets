@@ -7,7 +7,7 @@ import {
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FamilyGroupRepository } from '../repository/FamilyGroupRepository';
 
-import { AuthService } from 'hsp-service';
+import { AuthService } from 'hsp_service';
 
 const TAG = 'FamilyGroupService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -20,10 +20,10 @@ const INVITE_CODE_LENGTH = GROUP_CONFIG.INVITE_CODE_LENGTH;
 const FREE_GROUP_LIMIT = GROUP_CONFIG.FREE_GROUP_LIMIT;
 const FREE_MEMBER_LIMIT = GROUP_CONFIG.FREE_GROUP_MEMBER_LIMIT;
 
-export interface CreateGroupParams {
-  groupName: string;
-  description: string;
-  ownerName: string;
+export class CreateGroupParams {
+  groupName: string = '';
+  description: string = '';
+  ownerName: string = '';
 }
 
 function toGroupSummary(group: FamilyGroup, members: GroupMember[], myRole: GroupRole): GroupSummary {
@@ -61,37 +61,35 @@ export class FamilyGroupService {
     const inviteCode = this.generateInviteCode();
     const now = Date.now();
 
-    const group: FamilyGroup = {
-      groupId: groupId,
-      groupName: params.groupName,
-      groupAvatar: '',
-      description: params.description,
-      ownerUid: uid,
-      ownerName: params.ownerName,
-      inviteCode: inviteCode,
-      maxMembers: FREE_MEMBER_LIMIT,
-      memberCount: 1,
-      createdAt: now,
-      updatedAt: now,
-      isArchived: false
-    };
+    const group = new FamilyGroup();
+    group.groupId = groupId;
+    group.groupName = params.groupName;
+    group.groupAvatar = '';
+    group.description = params.description;
+    group.ownerUid = uid;
+    group.ownerName = params.ownerName;
+    group.inviteCode = inviteCode;
+    group.maxMembers = FREE_MEMBER_LIMIT;
+    group.memberCount = 1;
+    group.createdAt = now;
+    group.updatedAt = now;
+    group.isArchived = false;
 
     // 保存群组
     await this.groupRepo.saveGroup(group);
 
     // 添加创建者为群主
-    const ownerMember: GroupMember = {
-      id: `gm_${groupId}_${uid}`,
-      groupId: groupId,
-      uid: uid,
-      displayName: params.ownerName,
-      role: GroupRole.OWNER,
-      joinMethod: JoinMethod.MANUAL,
-      joinedAt: now,
-      lastActiveAt: now,
-      isLeft: false,
-      localMemberId: ''
-    };
+    const ownerMember = new GroupMember();
+    ownerMember.id = `gm_${groupId}_${uid}`;
+    ownerMember.groupId = groupId;
+    ownerMember.uid = uid;
+    ownerMember.displayName = params.ownerName;
+    ownerMember.role = GroupRole.OWNER;
+    ownerMember.joinMethod = JoinMethod.MANUAL;
+    ownerMember.joinedAt = now;
+    ownerMember.lastActiveAt = now;
+    ownerMember.isLeft = false;
+    ownerMember.localMemberId = '';
     await this.groupRepo.addMember(ownerMember);
 
     hilog.info(DOMAIN_ZERO, TAG, 'Group created: %{public}s', groupId);
@@ -129,23 +127,21 @@ export class FamilyGroupService {
     }
 
     const now = Date.now();
-    const member: GroupMember = {
-      id: `gm_${group.groupId}_${uid}`,
-      groupId: group.groupId,
-      uid: uid,
-      displayName: displayName,
-      role: GroupRole.MEMBER,
-      joinMethod: JoinMethod.LINK,
-      joinedAt: now,
-      lastActiveAt: now,
-      isLeft: false,
-      localMemberId: ''
-    };
+    const member = new GroupMember();
+    member.id = `gm_${group.groupId}_${uid}`;
+    member.groupId = group.groupId;
+    member.uid = uid;
+    member.displayName = displayName;
+    member.role = GroupRole.MEMBER;
+    member.joinMethod = JoinMethod.LINK;
+    member.joinedAt = now;
+    member.lastActiveAt = now;
+    member.isLeft = false;
+    member.localMemberId = '';
 
     await this.groupRepo.addMember(member);
-    await this.groupRepo.updateGroup(group.groupId, {
-      memberCount: group.memberCount + 1
-    });
+    const mcUpdate: Record<string, Object> = { 'memberCount': group.memberCount + 1 };
+    await this.groupRepo.updateGroup(group.groupId, mcUpdate);
 
     // 发送系统动态
     await this.addSystemFeed(group.groupId, uid, displayName, `${displayName} 加入了群组`);
@@ -154,20 +150,19 @@ export class FamilyGroupService {
 
     hilog.info(DOMAIN_ZERO, TAG, 'User %{public}s joined group %{public}s', uid, group.groupId);
 
-    const updatedGroup: FamilyGroup = {
-      groupId: group.groupId,
-      groupName: group.groupName,
-      groupAvatar: group.groupAvatar,
-      description: group.description,
-      ownerUid: group.ownerUid,
-      ownerName: group.ownerName,
-      inviteCode: group.inviteCode,
-      maxMembers: group.maxMembers,
-      memberCount: group.memberCount + 1,
-      createdAt: group.createdAt,
-      updatedAt: Date.now(),
-      isArchived: group.isArchived
-    };
+    const updatedGroup = new FamilyGroup();
+    updatedGroup.groupId = group.groupId;
+    updatedGroup.groupName = group.groupName;
+    updatedGroup.groupAvatar = group.groupAvatar;
+    updatedGroup.description = group.description;
+    updatedGroup.ownerUid = group.ownerUid;
+    updatedGroup.ownerName = group.ownerName;
+    updatedGroup.inviteCode = group.inviteCode;
+    updatedGroup.maxMembers = group.maxMembers;
+    updatedGroup.memberCount = group.memberCount + 1;
+    updatedGroup.createdAt = group.createdAt;
+    updatedGroup.updatedAt = Date.now();
+    updatedGroup.isArchived = group.isArchived;
 
     return toGroupSummary(updatedGroup, members, GroupRole.MEMBER);
   }
@@ -220,9 +215,8 @@ export class FamilyGroupService {
     }
 
     await this.groupRepo.removeMember(groupId, uid);
-    await this.groupRepo.updateGroup(groupId, {
-      memberCount: Math.max(0, group.memberCount - 1)
-    });
+    const leaveUpdate: Record<string, Object> = { 'memberCount': Math.max(0, group.memberCount - 1) };
+    await this.groupRepo.updateGroup(groupId, leaveUpdate);
   }
 
   /**
@@ -234,7 +228,8 @@ export class FamilyGroupService {
     if (!group) throw new Error('群组不存在');
     if (group.ownerUid !== uid) throw new Error('仅群主可以删除群组');
 
-    await this.groupRepo.updateGroup(groupId, { isArchived: true });
+    const archiveUpdate: Record<string, Object> = { 'isArchived': true };
+    await this.groupRepo.updateGroup(groupId, archiveUpdate);
   }
 
   // ========== 成员管理 ==========
@@ -253,9 +248,8 @@ export class FamilyGroupService {
     if (!group) throw new Error('群组不存在');
 
     await this.groupRepo.removeMember(groupId, targetUid);
-    await this.groupRepo.updateGroup(groupId, {
-      memberCount: Math.max(0, group.memberCount - 1)
-    });
+    const removeUpdate: Record<string, Object> = { 'memberCount': Math.max(0, group.memberCount - 1) };
+    await this.groupRepo.updateGroup(groupId, removeUpdate);
   }
 
   /**
@@ -299,13 +293,12 @@ export class FamilyGroupService {
     const member = await this.groupRepo.getMemberInGroup(groupId, uid);
     if (!member) throw new Error('您不是该群组成员');
 
-    const content: FoodScanFeedContent = {
-      foodName: foodName,
-      foodId: foodId,
-      nutriScore: nutriScore,
-      summary: summary,
-      memberResults: memberResults
-    };
+    const content = new FoodScanFeedContent();
+    content.foodName = foodName;
+    content.foodId = foodId;
+    content.nutriScore = nutriScore;
+    content.summary = summary;
+    content.memberResults = memberResults;
 
     const feed = new GroupFeed();
     feed.feedId = `feed_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
@@ -315,6 +308,31 @@ export class FamilyGroupService {
     feed.senderName = member.displayName;
     feed.content = JSON.stringify(content);
     feed.mediaUri = '';
+    feed.createdAt = Date.now();
+    feed.commentCount = 0;
+    feed.likeCount = 0;
+
+    await this.groupRepo.saveFeed(feed);
+  }
+
+  async postFeed(
+    groupId: string,
+    content: string,
+    feedType: FeedType,
+    mediaUri?: string
+  ): Promise<void> {
+    const uid = this.authService.getUid();
+    const member = await this.groupRepo.getMemberInGroup(groupId, uid);
+    if (!member) throw new Error('您不是该群组成员');
+
+    const feed = new GroupFeed();
+    feed.feedId = `feed_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    feed.groupId = groupId;
+    feed.feedType = feedType;
+    feed.senderUid = uid;
+    feed.senderName = member.displayName;
+    feed.content = content;
+    feed.mediaUri = mediaUri ?? '';
     feed.createdAt = Date.now();
     feed.commentCount = 0;
     feed.likeCount = 0;

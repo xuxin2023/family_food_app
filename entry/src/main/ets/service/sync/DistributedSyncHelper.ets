@@ -14,7 +14,7 @@ export interface DistributedMemberData {
 }
 
 export class DistributedSyncHelper {
-  private static instance: DistributedSyncHelper;
+  private static instance: DistributedSyncHelper | null = null;
   private distributedObj: distributedDataObject.DataObject | null = null;
   private sessionId: string = '';
 
@@ -27,10 +27,9 @@ export class DistributedSyncHelper {
 
   async init(context: common.Context, data: DistributedMemberData[]): Promise<void> {
     try {
-      this.distributedObj = distributedDataObject.create(context, 'family_member_sync', data);
-      this.distributedObj.on('change', (sessionId: string, fieldId: string, value: Object) => {
-        hilog.info(DOMAIN_ZERO, TAG, 'Distributed data changed: session=%{public}s, field=%{public}s',
-          sessionId, fieldId);
+      this.distributedObj = distributedDataObject.create(context, data);
+      this.distributedObj.on('progressChanged', () => {
+        hilog.info(DOMAIN_ZERO, TAG, 'Distributed data changed');
       });
       hilog.info(DOMAIN_ZERO, TAG, 'DistributedSyncHelper initialized');
     } catch (error) {

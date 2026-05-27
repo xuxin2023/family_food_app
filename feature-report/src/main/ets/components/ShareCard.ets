@@ -180,12 +180,12 @@ export class ShareCardGenerator {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.font = 'bold 28px sans-serif';
-      ctx.fillText($r('app.string.share_card_app_name'), canvasWidth / 2, bottomStartY + 50);
+      ctx.fillText('家食通', canvasWidth / 2, bottomStartY + 50);
 
       // 口号
       ctx.fillStyle = COLORS.TEXT_GRAY_9E9E;
       ctx.font = '20px sans-serif';
-      ctx.fillText($r('app.string.share_card_slogan'), canvasWidth / 2, bottomStartY + 90);
+      ctx.fillText('守护全家饮食健康', canvasWidth / 2, bottomStartY + 90);
 
       // 二维码占位（灰色方块 120x120px）
       const qrSize = 120;

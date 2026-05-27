@@ -23,7 +23,7 @@ export struct PermissionGuideDialog {
         .fontWeight(FontWeight.Bold)
         .margin({ bottom: 12 })
 
-      Text(this.reason || $r('app.string.perm_guide_default_reason') as string)
+      Text(this.reason || $r('app.string.perm_guide_default_reason') as ResourceStr)
         .fontSize(14)
         .fontColor('#333333')
         .margin({ bottom: 16 })

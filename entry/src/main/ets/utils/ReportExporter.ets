@@ -5,8 +5,7 @@ import { fileIo as fs } from '@kit.CoreFileKit';
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { WeeklyReport, NutrientComparison, NutrientStatus } from '../engine/WeeklyReportEngine';
-import { FamilyProfile, HILOG_DOMAIN } from 'hsp_core';
-import { DietRecord } from '../repository/HistoryRepository';
+import { FamilyProfile, HILOG_DOMAIN, DietRecord } from 'hsp_core';
 
 
 const TAG = 'ReportExporter';

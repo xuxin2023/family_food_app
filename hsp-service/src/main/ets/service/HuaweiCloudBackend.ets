@@ -3,12 +3,35 @@
 // 实际部署请使用华为云 AGC (AppGallery Connect) 控制台
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from 'hsp_core';
+import { HILOG_DOMAIN, API_CONFIG } from 'hsp_core';
 import { http } from '@kit.NetworkKit';
 import { SecureHttpClient, SecureRequestOptions } from './SecureHttpClient';
 
 const TAG = 'HuaweiCloudBackend';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+
+const DEV_BASE_URL = 'https://familyfood-dev.cn-north-4.myhuaweicloud.com';
+const PROD_BASE_URL = 'https://familyfood-api.cn-north-4.myhuaweicloud.com';
+
+const CLOUD_FUNCTION_IDS: Record<string, string> = {
+  'food-lookup': 'foodlookup',
+  'alt-recommend': 'altrecommend',
+  'search-alternatives': 'searchalternatives',
+  'iap-verify': 'iapverify',
+  'error-report': 'errorreport',
+  'sync-gateway': 'syncgateway',
+  'user-profile': 'userprofile',
+  'nutrition-analysis': 'nutritionanalysis',
+  'ai-chat': 'aichat'
+};
+
+function resolveBaseUrl(): string {
+  const configured = API_CONFIG.HUAWEI_CLOUD_BASE_URL;
+  if (configured.length > 0) {
+    return configured;
+  }
+  return DEV_BASE_URL;
+}
 
 export class CloudFunctionConfig {
   name: string = '';
@@ -32,42 +55,74 @@ export class CloudStorageConfig {
   description: string = '';
 }
 
+function createCloudFunctionConfig(name: string, path: string, method: http.RequestMethod,
+  timeout: number, description: string): CloudFunctionConfig {
+  const config = new CloudFunctionConfig();
+  config.name = name;
+  config.path = path;
+  config.method = method;
+  config.timeout = timeout;
+  config.description = description;
+  return config;
+}
+
+function createCloudDatabaseConfig(name: string, collection: string, schema: string, description: string): CloudDatabaseConfig {
+  const config = new CloudDatabaseConfig();
+  config.name = name;
+  config.collection = collection;
+  config.schema = schema;
+  config.description = description;
+  return config;
+}
+
+function createCloudStorageConfig(name: string, bucket: string, path: string, description: string): CloudStorageConfig {
+  const config = new CloudStorageConfig();
+  config.name = name;
+  config.bucket = bucket;
+  config.path = path;
+  config.description = description;
+  return config;
+}
+
 export const CLOUD_FUNCTIONS: CloudFunctionConfig[] = [
-  { name: 'food-lookup', path: '/api/food/lookup', method: http.RequestMethod.GET, timeout: 5000,
-    description: '食品查找 — 条码/名称查询，L1本地缓存/L2华为云数据库/L3 OFF API' },
-  { name: 'alt-recommend', path: '/api/food/alternatives', method: http.RequestMethod.POST, timeout: 8000,
-    description: '替代推荐 — 基于AI模型的食品替代方案生成' },
-  { name: 'iap-verify', path: '/api/iap/verify', method: http.RequestMethod.POST, timeout: 5000,
-    description: 'IAP验证 — 华为支付购买凭证服务端二次校验' },
-  { name: 'error-report', path: '/api/errors/report', method: http.RequestMethod.POST, timeout: 3000,
-    description: '错误上报 — 客户端异常聚合上报与告警' },
-  { name: 'sync-gateway', path: '/api/sync/batch', method: http.RequestMethod.POST, timeout: 15000,
-    description: '同步网关 — 离线变更批量同步与冲突检测' },
-  { name: 'user-profile', path: '/api/user/profile', method: http.RequestMethod.POST, timeout: 3000,
-    description: '用户档案 — 创建/更新/删除用户及家庭成员档案' },
-  { name: 'nutrition-analysis', path: '/api/nutrition/analyze', method: http.RequestMethod.POST, timeout: 10000,
-    description: '营养分析 — 批量营养摄入分析与周报生成' },
-  { name: 'ai-chat', path: '/api/ai/chat', method: http.RequestMethod.POST, timeout: 30000,
-    description: 'AI对话 — 云端大模型对话降级（端侧模型不可用时）' }
+  createCloudFunctionConfig('food-lookup', '/api/food/lookup', http.RequestMethod.GET, 5000,
+    '食品查找 — 条码/名称查询，L1本地缓存/L2华为云数据库/L3 OFF API'),
+  createCloudFunctionConfig('alt-recommend', '/api/food/alternatives', http.RequestMethod.POST, 8000,
+    '替代推荐 — 基于AI模型的食品替代方案生成'),
+  createCloudFunctionConfig('search-alternatives', '/api/food/search-alternatives', http.RequestMethod.POST, 8000,
+    '替代品搜索 — 基于GaussDB的在线替代品检索'),
+  createCloudFunctionConfig('iap-verify', '/api/iap/verify', http.RequestMethod.POST, 5000,
+    'IAP验证 — 华为支付购买凭证服务端二次校验'),
+  createCloudFunctionConfig('error-report', '/api/errors/report', http.RequestMethod.POST, 3000,
+    '错误上报 — 客户端异常聚合上报与告警'),
+  createCloudFunctionConfig('sync-gateway', '/api/sync/batch', http.RequestMethod.POST, 15000,
+    '同步网关 — 离线变更批量同步与冲突检测'),
+  createCloudFunctionConfig('user-profile', '/api/user/profile', http.RequestMethod.POST, 3000,
+    '用户档案 — 创建/更新/删除用户及家庭成员档案'),
+  createCloudFunctionConfig('nutrition-analysis', '/api/nutrition/analyze', http.RequestMethod.POST, 10000,
+    '营养分析 — 批量营养摄入分析与周报生成'),
+  createCloudFunctionConfig('ai-chat', '/api/ai/chat', http.RequestMethod.POST, 30000,
+    'AI对话 — 云端大模型对话降级（端侧模型不可用时）')
 ];
 
 export const CLOUD_DATABASES: CloudDatabaseConfig[] = [
-  { name: 'food_db', collection: 'foods', schema: 'food_v2', description: '食品营养数据库（50万+中国SKU）' },
-  { name: 'subscription_db', collection: 'subscriptions', schema: 'sub_v1', description: '订阅状态数据库' },
-  { name: 'user_profile_db', collection: 'user_profiles', schema: 'profile_v2', description: '用户档案数据库' },
-  { name: 'scan_history_db', collection: 'scan_history', schema: 'history_v1', description: '扫描历史数据库' },
-  { name: 'community_db', collection: 'recipes', schema: 'recipe_v1', description: '食谱社区数据库' }
+  createCloudDatabaseConfig('food_db', 'foods', 'food_v2', '食品营养数据库（50万+中国SKU）'),
+  createCloudDatabaseConfig('subscription_db', 'subscriptions', 'sub_v1', '订阅状态数据库'),
+  createCloudDatabaseConfig('user_profile_db', 'user_profiles', 'profile_v2', '用户档案数据库'),
+  createCloudDatabaseConfig('scan_history_db', 'scan_history', 'history_v1', '扫描历史数据库'),
+  createCloudDatabaseConfig('community_db', 'recipes', 'recipe_v1', '食谱社区数据库')
 ];
 
 export const CLOUD_STORAGES: CloudStorageConfig[] = [
-  { name: 'food_images', bucket: 'food-images', path: '/images/', description: '食品图片CDN' },
-  { name: 'model_assets', bucket: 'ai-models', path: '/models/', description: '端侧AI模型文件分发' },
-  { name: 'user_exports', bucket: 'user-exports', path: '/exports/', description: '用户数据导出文件' }
+  createCloudStorageConfig('food_images', 'food-images', '/images/', '食品图片CDN'),
+  createCloudStorageConfig('model_assets', 'ai-models', '/models/', '端侧AI模型文件分发'),
+  createCloudStorageConfig('user_exports', 'user-exports', '/exports/', '用户数据导出文件'),
+  createCloudStorageConfig('privacy_docs', 'familyfood-privacy', '/privacy/', '隐私政策与用户协议OBS托管')
 ];
 
 export class HuaweiCloudBackend {
   private static instance: HuaweiCloudBackend | null = null;
-  private baseUrl: string = '';
+  private baseUrl: string = resolveBaseUrl();
   private apiVersion: string = 'v2';
 
   static getInstance(): HuaweiCloudBackend {
@@ -90,7 +145,10 @@ export class HuaweiCloudBackend {
     }
 
     try {
-      const url = `${this.baseUrl}${config.path}`;
+      const funcId = CLOUD_FUNCTION_IDS[functionName] ?? '';
+      const url = funcId.length > 0
+        ? `https://${funcId}.cn-north-4.myhuaweicloud.com${config.path}`
+        : `${this.baseUrl}${config.path}`;
       const header = new Map<string, string>();
       header.set('Content-Type', 'application/json');
       header.set('X-Api-Version', this.apiVersion);
@@ -108,7 +166,15 @@ export class HuaweiCloudBackend {
 
       const response = await SecureHttpClient.getInstance().request(opts);
       if (response.responseCode === 200) {
-        return JSON.parse(response.result as string) as Object;
+        let bodyStr: string;
+        if (typeof response.result === 'string') {
+          bodyStr = response.result;
+        } else if (response.result instanceof ArrayBuffer) {
+          bodyStr = String.fromCharCode(...new Uint8Array(response.result));
+        } else {
+          bodyStr = String(response.result);
+        }
+        return JSON.parse(bodyStr) as Object;
       }
       hilog.warn(DOMAIN_ZERO, TAG, 'Cloud function %{public}s returned HTTP %{public}d',
         functionName, response.responseCode);

@@ -1,7 +1,7 @@
 import {
   FamilyProfile, HealthSignal, DailyBudget, FoodLabel,
   AiNutritionAdvice, AiRecipeRecommendationResult, AiRecipeRequest,
-  DateUtil, HILOG_DOMAIN, DietRecord
+  DateUtil, HILOG_DOMAIN, DietRecord, NutritionTarget
 } from 'hsp_core';
 import { common } from '@kit.AbilityKit';
 import { HistoryRepository } from '../repository/HistoryRepository';
@@ -9,21 +9,34 @@ import { EngineManager } from '../EngineManager';
 import { ServiceManager } from '../ServiceManager';
 import { NutritionTrendEngine, nutritionTrendEngine, DailyNutritionSummary, NutrientTrendData, MealGroup } from '../engine/NutritionTrendEngine';
 import { OnDeviceAiEngine } from '../engine/OnDeviceAiEngine';
-import { ExerciseNutritionRecommendation } from '../engine/ExerciseNutritionEngine';
+import { ExerciseNutritionRecommendation, ExerciseSession } from '../engine/ExerciseNutritionEngine';
 import { CheckupReport, HealthArchiveUpdate } from '../engine/CheckupReportEngine';
 import { ChildHealthAssessment } from '../engine/ChildHealthAssessmentEngine';
-import { PersonalizedRecommendation } from '../engine/PersonalizedRecommendEngine';
+import { PersonalizedRecommendation, PersonalizedContext } from '../engine/PersonalizedRecommendEngine';
 
 export class HealthFacade {
   private readonly historyRepo: HistoryRepository;
   private readonly engines: EngineManager;
   private readonly services: ServiceManager;
   private onDeviceAiEngine: OnDeviceAiEngine | null = null;
+  private getMemberById: (memberId: string) => FamilyProfile | undefined = () => undefined;
+  private getHealthSignalById: (memberId: string) => HealthSignal = () => new HealthSignal();
+  private getNutritionTargetById: (memberId: string) => NutritionTarget = () => new NutritionTarget();
 
   constructor(historyRepo: HistoryRepository, engines: EngineManager, services: ServiceManager) {
     this.historyRepo = historyRepo;
     this.engines = engines;
     this.services = services;
+  }
+
+  setMemberResolvers(
+    getMember: (memberId: string) => FamilyProfile | undefined,
+    getSignal: (memberId: string) => HealthSignal,
+    getTarget: (memberId: string) => NutritionTarget
+  ): void {
+    this.getMemberById = getMember;
+    this.getHealthSignalById = getSignal;
+    this.getNutritionTargetById = getTarget;
   }
 
   setOnDeviceAiEngine(engine: OnDeviceAiEngine | null): void {
@@ -106,22 +119,33 @@ export class HealthFacade {
   }
 
   async calculateExerciseNutrition(memberId: string): Promise<ExerciseNutritionRecommendation> {
-    return this.engines.calculateExerciseNutrition(memberId);
+    const profile = this.getMemberById(memberId) ?? new FamilyProfile();
+    const signal = this.getHealthSignalById(memberId);
+    const target = this.getNutritionTargetById(memberId);
+    const session = new ExerciseSession();
+    return this.engines.exerciseNutritionEngine.recommend(session, profile, signal, target);
   }
 
   async parseCheckupReport(content: string, memberId: string): Promise<CheckupReport> {
-    return this.engines.parseCheckupReport(content, memberId);
+    return this.engines.checkupReportEngine.parseOcrText(content, memberId);
   }
 
   async generateHealthArchiveUpdate(memberId: string, report: CheckupReport): Promise<HealthArchiveUpdate> {
-    return this.engines.generateHealthArchiveUpdate(memberId, report);
+    const signal = this.getHealthSignalById(memberId);
+    return this.engines.checkupReportEngine.generateHealthArchiveUpdate(report, signal);
   }
 
   async assessChildHealth(memberId: string, foodLabel: FoodLabel): Promise<ChildHealthAssessment> {
-    return this.engines.assessChildHealth(memberId, foodLabel);
+    const profile = this.getMemberById(memberId) ?? new FamilyProfile();
+    const signal = this.getHealthSignalById(memberId);
+    return this.engines.childHealthAssessmentEngine.assess(foodLabel, profile, 0, 0);
   }
 
   async getPersonalizedRecommendation(memberId: string): Promise<PersonalizedRecommendation> {
-    return this.engines.getPersonalizedRecommendation(memberId);
+    const foodLabel = new FoodLabel();
+    const ctx = new PersonalizedContext();
+    ctx.profile = this.getMemberById(memberId) ?? new FamilyProfile();
+    const signal = this.getHealthSignalById(memberId);
+    return this.engines.personalizedRecommendEngine.recommend(foodLabel, ctx);
   }
 }

@@ -1186,11 +1186,15 @@
     },
     {
       "name": "activity_motion_reason",
-      "value": "用于获取步数等运动健康数据"
+      "value": "用于获取活动数据以动态调整营养预算"
     },
     {
       "name": "health_data_reason",
-      "value": "用于读取心率、血氧、睡眠等健康数据以提供个性化饮食建议"
+      "value": "用于读取步数、心率等健康数据以提供个性化食品适配建议"
+    },
+    {
+      "name": "read_health_data_reason",
+      "value": "用于读取步数、心率等健康数据以提供个性化食品适配建议"
     },
     {
       "name": "microphone_reason",

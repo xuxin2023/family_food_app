@@ -12,8 +12,7 @@ import { NutritionSnapshotRepository } from '../repository/NutritionSnapshotRepo
 import { FamilyRepository } from '../repository/FamilyRepository';
 import { HistoryRepository } from '../repository/HistoryRepository';
 
-import { DataIntegrityChecker } from '../utils/DataIntegrityChecker';
-import { JsonHelper } from '../utils/JsonHelper';
+import { DataIntegrityChecker, JsonHelper } from 'hsp_core';
 
 
 const TAG = 'DataPortability';

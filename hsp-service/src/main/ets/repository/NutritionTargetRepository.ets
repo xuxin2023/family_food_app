@@ -39,12 +39,12 @@ export class NutritionTargetRepository {
       while (resultSet.goToNextRow()) {
         const t = new NutritionTarget();
         t.memberId = resultSet.getString(0);
-        t.sodiumMaxMg = resultSet.getDouble(1);
-        t.sugarMaxG = resultSet.getDouble(2);
+        t.sodiumMax_mg = resultSet.getDouble(1);
+        t.sugarMax_g = resultSet.getDouble(2);
         t.caloriesTarget = resultSet.getDouble(3);
-        t.fatMaxG = resultSet.getDouble(4);
-        t.proteinTargetG = resultSet.getDouble(5);
-        t.fiberMinG = resultSet.getDouble(6);
+        t.fatMax_g = resultSet.getDouble(4);
+        t.proteinTarget_g = resultSet.getDouble(5);
+        t.fiberMin_g = resultSet.getDouble(6);
         t.presetName = resultSet.getString(7);
         this.targets.set(t.memberId, t);
       }
@@ -69,12 +69,12 @@ export class NutritionTargetRepository {
       try {
         const valueBucket: relationalStore.ValuesBucket = {
           'member_id': target.memberId,
-          'sodium_max_mg': target.sodiumMaxMg,
-          'sugar_max_g': target.sugarMaxG,
+          'sodium_max_mg': target.sodiumMax_mg,
+          'sugar_max_g': target.sugarMax_g,
           'calories_target': target.caloriesTarget,
-          'fat_max_g': target.fatMaxG,
-          'protein_target_g': target.proteinTargetG,
-          'fiber_min_g': target.fiberMinG,
+          'fat_max_g': target.fatMax_g,
+          'protein_target_g': target.proteinTarget_g,
+          'fiber_min_g': target.fiberMin_g,
           'preset_name': target.presetName,
           'updated_at': Date.now()
         };

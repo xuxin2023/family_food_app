@@ -29,10 +29,10 @@ export type ImageType =
   | 'member_avatar' | 'group_avatar' | 'recipe_cover'
 
 /** 可访问性级别配置 */
-export interface LevelAccessibility {
-  text: string
-  level: string
-  description: string
+export class LevelAccessibility {
+  text: string = ''
+  level: string = ''
+  description: string = ''
 }
 
 export class AccessibilityUtil {
@@ -55,19 +55,25 @@ export class AccessibilityUtil {
 
   /** 食品评级可访问性描述 */
   static getLevelBadge(level: string): LevelAccessibility {
+    const result = new LevelAccessibility()
     if (level === RecommendLevel.SUITABLE) {
-      return { text: '绿色：适合食用，无过敏原风险', level: 'yes', description: '查看适合食用的详细分析' }
+      result.text = '绿色：适合食用，无过敏原风险'; result.level = 'yes'; result.description = '查看适合食用的详细分析'
+      return result
     }
     if (level === RecommendLevel.MODERATE) {
-      return { text: '黄色：可以少量食用，请查看注意事项', level: 'yes', description: '查看少量食用建议和限制说明' }
+      result.text = '黄色：可以少量食用，请查看注意事项'; result.level = 'yes'; result.description = '查看少量食用建议和限制说明'
+      return result
     }
     if (level === RecommendLevel.CAUTION) {
-      return { text: '橙色：建议谨慎选择，含少量风险成分', level: 'yes', description: '查看谨慎选择的详细原因和建议替代品' }
+      result.text = '橙色：建议谨慎选择，含少量风险成分'; result.level = 'yes'; result.description = '查看谨慎选择的详细原因和建议替代品'
+      return result
     }
     if (level === RecommendLevel.AVOID) {
-      return { text: '红色：建议避免食用，含过敏原或不适合成分', level: 'yes', description: '查看告警详情、过敏原信息和建议替代品' }
+      result.text = '红色：建议避免食用，含过敏原或不适合成分'; result.level = 'yes'; result.description = '查看告警详情、过敏原信息和建议替代品'
+      return result
     }
-    return { text: '未知评级', level: 'no', description: '' }
+    result.text = '未知评级'; result.level = 'no'; result.description = ''
+    return result
   }
 
   /** 食品名称可访问性标签 */

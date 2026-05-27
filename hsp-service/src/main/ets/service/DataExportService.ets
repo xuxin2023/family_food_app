@@ -5,7 +5,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
 import { fileIo } from '@kit.CoreFileKit';
 import { HILOG_DOMAIN } from 'hsp_core';
-import { AuthService } from 'hsp-service';
+import { AuthService } from './AuthService';
 
 const TAG = 'DataExportService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -29,20 +29,21 @@ export class DataExportService {
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const exportFile = `${exportDir}/user_data_${timestamp}.json`;
 
-      const userData: Record<string, Object> = {
-        exportTime: new Date().toISOString(),
-        uid: this.authService?.getUid() ?? '',
-        familyMembers: [],
-        scanHistory: [],
-        dietRecords: [],
-        favorites: [],
-        shoppingList: [],
-        nutritionTargets: [],
-        reminderRules: []
-      };
+      const userData = new Map<string, Object>();
+      userData.set('exportTime', new Date().toISOString());
+      userData.set('uid', this.authService?.getUid() ?? '');
+      userData.set('familyMembers', []);
+      userData.set('scanHistory', []);
+      userData.set('dietRecords', []);
+      userData.set('favorites', []);
+      userData.set('shoppingList', []);
+      userData.set('nutritionTargets', []);
+      userData.set('reminderRules', []);
 
       const jsonStr = JSON.stringify(userData, null, 2);
-      fileIo.writeTextSync(exportFile, jsonStr);
+      const fd = fileIo.openSync(exportFile, fileIo.OpenMode.WRITE_ONLY | fileIo.OpenMode.CREATE);
+      fileIo.writeSync(fd.fd, jsonStr);
+      fileIo.closeSync(fd);
 
       hilog.info(DOMAIN_ZERO, TAG, 'Data exported to: %{public}s', exportFile);
       return exportFile;

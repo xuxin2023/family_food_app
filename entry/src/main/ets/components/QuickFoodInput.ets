@@ -19,11 +19,11 @@ export class QuickFoodInputResult {
 }
 
 const MEAL_OPTIONS: string[] = ['breakfast', 'lunch', 'dinner', 'snack'];
-const MEAL_LABELS: Map<string, string> = new Map();
-MEAL_LABELS.set('breakfast', `🌅 ${$r('app.string.meal_breakfast') as string}`);
-MEAL_LABELS.set('lunch', `☀️ ${$r('app.string.meal_lunch') as string}`);
-MEAL_LABELS.set('dinner', `🌙 ${$r('app.string.meal_dinner') as string}`);
-MEAL_LABELS.set('snack', `🍪 ${$r('app.string.meal_snack') as string}`);
+const MEAL_LABELS: Map<string, ResourceStr> = new Map();
+MEAL_LABELS.set('breakfast', $r('app.string.meal_breakfast') as ResourceStr);
+MEAL_LABELS.set('lunch', $r('app.string.meal_lunch') as ResourceStr);
+MEAL_LABELS.set('dinner', $r('app.string.meal_dinner') as ResourceStr);
+MEAL_LABELS.set('snack', $r('app.string.meal_snack') as ResourceStr);
 
 const SERVING_OPTIONS: number[] = [0.5, 1, 1.5, 2];
 
@@ -158,7 +158,7 @@ export struct QuickFoodInput {
         Scroll() {
           Row({ space: SPACING.SM }) {
             ForEach(this.recentFoods.slice(0, 10), (record: DietRecord) => {
-              Text(record.scenario || $r('app.string.unknown_food') as string)
+              Text(record.scenario || $r('app.string.unknown_food') as ResourceStr)
                 .fontSize(FONT_SIZE.TINY)
                 .fontColor(COLORS.TEXT_PRIMARY)
                 .padding({ left: SPACING.MD, right: SPACING.MD, top: SPACING.SM, bottom: SPACING.SM })
@@ -215,7 +215,7 @@ export struct QuickFoodInput {
         .margin({ top: SPACING.MD })
 
         if (this.useGrams) {
-          TextInput({ placeholder: $r('app.string.grams_placeholder') as string, text: $$this.gramsInput })
+          TextInput({ placeholder: $r('app.string.grams_placeholder') as ResourceStr, text: $$this.gramsInput })
             .width('100%')
             .height(this.touchTarget)
             .type(InputType.Number)
@@ -265,16 +265,16 @@ export struct QuickFoodInput {
       TextInput({ placeholder: $r('app.string.food_name_hint'), text: $$this.manualFoodName })
         .width('100%').height(this.touchTarget).borderRadius(RADIUS.SM).backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
         .accessibilityText($r('app.string.input_food_name')).accessibilityDescription($r('app.string.input_food_name_desc'))
-      TextInput({ placeholder: $r('app.string.calories_placeholder') as string, text: $$this.manualCalories })
+      TextInput({ placeholder: $r('app.string.calories_placeholder') as ResourceStr, text: $$this.manualCalories })
         .width('100%').height(this.touchTarget).type(InputType.Number).borderRadius(RADIUS.SM).backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
         .accessibilityText($r('app.string.input_calories')).accessibilityDescription($r('app.string.input_calories_desc'))
-      TextInput({ placeholder: $r('app.string.sodium_placeholder') as string, text: $$this.manualSodium })
+      TextInput({ placeholder: $r('app.string.sodium_placeholder') as ResourceStr, text: $$this.manualSodium })
         .width('100%').height(this.touchTarget).type(InputType.Number).borderRadius(RADIUS.SM).backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
         .accessibilityText($r('app.string.input_sodium')).accessibilityDescription($r('app.string.input_sodium_desc'))
-      TextInput({ placeholder: $r('app.string.sugar_placeholder') as string, text: $$this.manualSugar })
+      TextInput({ placeholder: $r('app.string.sugar_placeholder') as ResourceStr, text: $$this.manualSugar })
         .width('100%').height(this.touchTarget).type(InputType.Number).borderRadius(RADIUS.SM).backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
         .accessibilityText($r('app.string.input_sugar')).accessibilityDescription($r('app.string.input_sugar_desc'))
-      TextInput({ placeholder: $r('app.string.fat_placeholder') as string, text: $$this.manualFat })
+      TextInput({ placeholder: $r('app.string.fat_placeholder') as ResourceStr, text: $$this.manualFat })
         .width('100%').height(this.touchTarget).type(InputType.Number).borderRadius(RADIUS.SM).backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
         .accessibilityText($r('app.string.input_fat')).accessibilityDescription($r('app.string.input_fat_desc'))
     }

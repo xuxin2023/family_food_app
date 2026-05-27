@@ -366,7 +366,7 @@ struct FavoritePage {
           .padding({ left: 16, right: 16, bottom: 6 })
           .onClick(() => {
             const navParams = new Map<string, Object>();
-            safePushUrl('pages/PaywallPage', navParams);
+            safePushUrl('pages/SubscriptionPage', navParams);
           })
           .accessibilityText('升级会员')
           .accessibilityLevel('yes')

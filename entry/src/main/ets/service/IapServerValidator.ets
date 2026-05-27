@@ -3,8 +3,8 @@ import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN, API_TIMEOUT_CONFIG } from 'hsp_core';
-import { AssetKeyManager } from './AssetKeyManager';
-import { SecureHttpClient, SecureRequestOptions } from 'hsp-service';
+import { AssetKeyManager } from 'hsp_core';
+import { SecureHttpClient, SecureRequestOptions } from 'hsp_service';
 import { asset } from '@kit.AssetStoreKit';
 import { util } from '@kit.ArkTS';
 import { BusinessError } from '@kit.BasicServicesKit';
@@ -152,8 +152,8 @@ export class IapServerValidator {
       const data = JSON.stringify(this.pendingVerifications);
       const alias = 'iap_pending_verifications';
       const textEncoder = new util.TextEncoder();
-      const aliasBytes = textEncoder.encodeInto(alias);
-      const secretBytes = textEncoder.encodeInto(data);
+      const aliasBytes = textEncoder.encode(alias);
+      const secretBytes = textEncoder.encode(data);
 
       try {
         const removeQuery: asset.AssetMap = new Map();
@@ -188,13 +188,13 @@ export class IapServerValidator {
       const alias = 'iap_pending_verifications';
       const textEncoder = new util.TextEncoder();
       const query: asset.AssetMap = new Map();
-      query.set(asset.Tag.ALIAS, textEncoder.encodeInto(alias));
+      query.set(asset.Tag.ALIAS, textEncoder.encode(alias));
       query.set(asset.Tag.RETURN_TYPE, asset.ReturnType.ALL);
       const res: Array<asset.AssetMap> = await asset.query(query);
       if (res && res.length > 0) {
         const secretArr = res[0].get(asset.Tag.SECRET) as Uint8Array;
         const textDecoder = util.TextDecoder.create('utf-8', { ignoreBOM: true });
-        const plain = textDecoder.decodeToString(secretArr, { stream: false });
+        const plain = textDecoder.decodeWithStream(secretArr, { stream: false });
         this.pendingVerifications = JSON.parse(plain) as IapVerifyResult[];
         hilog.info(DOMAIN_ZERO, TAG, 'Pending verifications loaded from AssetStore');
         return;

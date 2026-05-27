@@ -56,7 +56,7 @@ export struct ScoreCard {
     .alignItems(VerticalAlign.Center)
     .padding({ left: SPACING.MD, right: SPACING.MD, top: SPACING.SM, bottom: SPACING.SM })
     .accessibilityGroup(true)
-    .accessibilityText(`${this.title}，${$r('app.string.score_grade')}${this.grade}，${Math.round(this.score)}${$r('app.string.score_unit')}，${$r('app.string.score_full_score')}${this.maxScore}`)
+    .accessibilityText(`${this.title}，${this.grade}，${Math.round(this.score)}，${this.maxScore}`)
   }
 
   @Builder
@@ -108,6 +108,6 @@ export struct ScoreCard {
     .alignItems(HorizontalAlign.Center)
     .padding(SPACING.MD)
     .accessibilityGroup(true)
-    .accessibilityText(`${this.title}，${$r('app.string.score_grade')}${this.grade}，${Math.round(this.score)}${$r('app.string.score_unit')}，${$r('app.string.score_full_score')}${this.maxScore}`)
+    .accessibilityText(`${this.title}，${this.grade}，${Math.round(this.score)}，${this.maxScore}`)
   }
 }

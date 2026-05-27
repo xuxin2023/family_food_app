@@ -14,7 +14,7 @@ export struct ScanModeSelector {
       Column() {
         Text($r('app.string.scan_mode_barcode'))
           .fontSize(FONT_SIZE.BODY)
-          .fontWeight(this.scanMode === 'barcode' ? FONT_WEIGHT.BOLD : FONT_WEIGHT.NORMAL)
+          .fontWeight(this.scanMode === 'barcode' ? FONT_WEIGHT.BOLD : FONT_WEIGHT.REGULAR)
           .fontColor(this.scanMode === 'barcode' ? COLORS.PRIMARY : COLORS.TEXT_TERTIARY)
       }
       .layoutWeight(1)
@@ -28,9 +28,9 @@ export struct ScanModeSelector {
       .accessibilityLevel('yes')
 
       Column() {
-        Text($r('app.string.scan_mode_camera'))
+        Text('相机扫码')
           .fontSize(FONT_SIZE.BODY)
-          .fontWeight(this.scanMode === 'camera' ? FONT_WEIGHT.BOLD : FONT_WEIGHT.NORMAL)
+          .fontWeight(this.scanMode === 'camera' ? FONT_WEIGHT.BOLD : FONT_WEIGHT.REGULAR)
           .fontColor(this.scanMode === 'camera' ? COLORS.PRIMARY : COLORS.TEXT_TERTIARY)
       }
       .layoutWeight(1)
@@ -40,7 +40,7 @@ export struct ScanModeSelector {
       .borderRadius({ topRight: RADIUS.MD, bottomRight: RADIUS.MD })
       .onClick(() => { this.onModeChange('camera') })
       .focusable(true)
-      .accessibilityText($r('app.string.scan_mode_camera'))
+      .accessibilityText('相机扫码')
       .accessibilityLevel('yes')
     }
     .width('92%')

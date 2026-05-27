@@ -32,7 +32,7 @@ export class ChatMessage {
   /** 唯一 ID */
   id: string = '';
   /** 消息内容 */
-  content: string = '';
+  content: ResourceStr = '';
   /** 角色 */
   role: ChatRole = ChatRole.USER;
   /** 时间戳 */
@@ -40,7 +40,7 @@ export class ChatMessage {
   /** 发送状态（仅用户消息） */
   status: MessageStatus = MessageStatus.SENT;
 
-  constructor(id: string, content: string, role: ChatRole, timestamp: number) {
+  constructor(id: string, content: ResourceStr, role: ChatRole, timestamp: number) {
     this.id = id;
     this.content = content;
     this.role = role;

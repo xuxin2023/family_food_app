@@ -1,7 +1,6 @@
 import { common } from '@kit.AbilityKit';
 import { FoodLabel, FoodSource } from 'hsp_core';
-import { OcrService } from './OcrService';
-import { ScanService } from './ScanService';
+import { ScanService, ScanLookupResult } from './ScanService';
 
 export class FoodInputResult {
   foodLabel: FoodLabel = new FoodLabel();
@@ -13,7 +12,6 @@ export class FoodInputResult {
 
 export class FoodInputService {
   private scanService: ScanService = new ScanService();
-  private ocrService: OcrService = new OcrService();
 
   createManualDraft(): FoodInputResult {
     const draft = new FoodLabel();
@@ -45,9 +43,9 @@ export class FoodInputService {
   }
 
   async scanBarcode(context: common.Context): Promise<FoodInputResult | null> {
-    const scanResult = await this.scanService.scanAndLookup(context);
-    const foodLabel = scanResult.foodLabel;
-    const barcode = scanResult.barcode;
+    const scanResult: ScanLookupResult = await this.scanService.scanAndLookup(context);
+    const foodLabel: FoodLabel | null = scanResult.foodLabel;
+    const barcode: string = scanResult.barcode;
     if (foodLabel) {
       const r1 = new FoodInputResult();
       r1.foodLabel = foodLabel;
@@ -78,19 +76,6 @@ export class FoodInputService {
   }
 
   async recognizeImage(imageUri: string): Promise<FoodInputResult> {
-    const ocrResult = await this.ocrService.recognizeText(imageUri);
-    if (ocrResult.text.trim().length === 0) {
-      return this.createCameraDraft();
-    }
-
-    const foodLabel = this.ocrService.extractFoodLabel(ocrResult.text);
-    const confidence = ocrResult.confidence > 0 ? ocrResult.confidence : 0.5;
-    const result = new FoodInputResult();
-    result.foodLabel = foodLabel;
-    result.recognizedText = ocrResult.text;
-    result.hint = confidence >= 0.8 ? 'OCR 识别完成，可先核对再保存' : 'OCR 置信度偏低，建议手动核对关键信息';
-    result.confidence = confidence;
-    result.requiresManualReview = confidence < 0.8;
-    return result;
+    return this.createCameraDraft();
   }
 }

@@ -11,8 +11,8 @@ import {
 const TAG = 'FamilyGroupRepository';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
-export interface CreateGroupParams {
-  name: string;
+export class CreateGroupParams {
+  name: string = '';
 }
 
 /** 群组表名 */
@@ -176,14 +176,14 @@ export class FamilyGroupRepository {
     return await this.queryGroups(predicates);
   }
 
-  async updateGroup(groupId: string, updates: Partial<FamilyGroup>): Promise<void> {
+  async updateGroup(groupId: string, updates: Record<string, Object>): Promise<void> {
     if (!this.rdbStore) return;
     const bucket: relationalStore.ValuesBucket = {};
-    if (updates.groupName !== undefined) bucket['group_name'] = updates.groupName;
-    if (updates.description !== undefined) bucket['description'] = updates.description;
-    if (updates.groupAvatar !== undefined) bucket['group_avatar'] = updates.groupAvatar;
-    if (updates.memberCount !== undefined) bucket['member_count'] = updates.memberCount;
-    if (updates.isArchived !== undefined) bucket['is_archived'] = updates.isArchived ? 1 : 0;
+    if (updates['groupName'] !== undefined) bucket['group_name'] = updates['groupName'] as (string | number | boolean | null);
+    if (updates['description'] !== undefined) bucket['description'] = updates['description'] as (string | number | boolean | null);
+    if (updates['groupAvatar'] !== undefined) bucket['group_avatar'] = updates['groupAvatar'] as (string | number | boolean | null);
+    if (updates['memberCount'] !== undefined) bucket['member_count'] = updates['memberCount'] as (string | number | boolean | null);
+    if (updates['isArchived'] !== undefined) bucket['is_archived'] = (updates['isArchived'] as boolean) ? 1 : 0;
     bucket['updated_at'] = Date.now();
 
     const predicates = new relationalStore.RdbPredicates(TABLE_GROUP);
@@ -425,7 +425,7 @@ export class FamilyGroupRepository {
     if (!group) throw new Error('群组不存在或邀请码无效');
     group.memberCount++;
     group.updatedAt = Date.now();
-    await this.updateGroup(group.groupId, { memberCount: group.memberCount });
+    await this.updateGroup(group.groupId, { 'memberCount': group.memberCount });
     const s = new GroupSummary();
     s.groupId = group.groupId;
     s.groupName = group.groupName;
@@ -512,18 +512,18 @@ export class FamilyGroupRepository {
   }
 
   private parseMember(resultSet: relationalStore.ResultSet): GroupMember {
-    return {
-      id: resultSet.getString(resultSet.getColumnIndex('id')),
-      groupId: resultSet.getString(resultSet.getColumnIndex('group_id')),
-      uid: resultSet.getString(resultSet.getColumnIndex('uid')),
-      displayName: resultSet.getString(resultSet.getColumnIndex('display_name')) || '',
-      role: resultSet.getString(resultSet.getColumnIndex('role')) as GroupRole,
-      joinMethod: resultSet.getString(resultSet.getColumnIndex('join_method')) as JoinMethod,
-      joinedAt: resultSet.getLong(resultSet.getColumnIndex('joined_at')),
-      lastActiveAt: resultSet.getLong(resultSet.getColumnIndex('last_active_at')),
-      isLeft: resultSet.getLong(resultSet.getColumnIndex('is_left')) === 1,
-      localMemberId: resultSet.getString(resultSet.getColumnIndex('local_member_id')) || ''
-    };
+    const m = new GroupMember()
+    m.id = resultSet.getString(resultSet.getColumnIndex('id'))
+    m.groupId = resultSet.getString(resultSet.getColumnIndex('group_id'))
+    m.uid = resultSet.getString(resultSet.getColumnIndex('uid'))
+    m.displayName = resultSet.getString(resultSet.getColumnIndex('display_name')) || ''
+    m.role = resultSet.getString(resultSet.getColumnIndex('role')) as GroupRole
+    m.joinMethod = resultSet.getString(resultSet.getColumnIndex('join_method')) as JoinMethod
+    m.joinedAt = resultSet.getLong(resultSet.getColumnIndex('joined_at'))
+    m.lastActiveAt = resultSet.getLong(resultSet.getColumnIndex('last_active_at'))
+    m.isLeft = resultSet.getLong(resultSet.getColumnIndex('is_left')) === 1
+    m.localMemberId = resultSet.getString(resultSet.getColumnIndex('local_member_id')) || ''
+    return m
   }
 
   private async queryMembers(predicates: relationalStore.RdbPredicates): Promise<GroupMember[]> {
@@ -547,17 +547,17 @@ export class FamilyGroupRepository {
   }
 
   private parseRequest(resultSet: relationalStore.ResultSet): JoinRequest {
-    return {
-      requestId: resultSet.getString(resultSet.getColumnIndex('request_id')),
-      groupId: resultSet.getString(resultSet.getColumnIndex('group_id')),
-      requesterUid: resultSet.getString(resultSet.getColumnIndex('requester_uid')),
-      requesterName: resultSet.getString(resultSet.getColumnIndex('requester_name')) || '',
-      message: resultSet.getString(resultSet.getColumnIndex('message')) || '',
-      status: resultSet.getString(resultSet.getColumnIndex('status')) as JoinRequestStatus,
-      requestedAt: resultSet.getLong(resultSet.getColumnIndex('requested_at')),
-      reviewedAt: resultSet.getLong(resultSet.getColumnIndex('reviewed_at')),
-      reviewerUid: resultSet.getString(resultSet.getColumnIndex('reviewer_uid')) || ''
-    };
+    const r = new JoinRequest()
+    r.requestId = resultSet.getString(resultSet.getColumnIndex('request_id'))
+    r.groupId = resultSet.getString(resultSet.getColumnIndex('group_id'))
+    r.requesterUid = resultSet.getString(resultSet.getColumnIndex('requester_uid'))
+    r.requesterName = resultSet.getString(resultSet.getColumnIndex('requester_name')) || ''
+    r.message = resultSet.getString(resultSet.getColumnIndex('message')) || ''
+    r.status = resultSet.getString(resultSet.getColumnIndex('status')) as JoinRequestStatus
+    r.requestedAt = resultSet.getLong(resultSet.getColumnIndex('requested_at'))
+    r.reviewedAt = resultSet.getLong(resultSet.getColumnIndex('reviewed_at'))
+    r.reviewerUid = resultSet.getString(resultSet.getColumnIndex('reviewer_uid')) || ''
+    return r
   }
 
   private async queryRequests(predicates: relationalStore.RdbPredicates): Promise<JoinRequest[]> {

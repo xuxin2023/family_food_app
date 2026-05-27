@@ -1,7 +1,7 @@
 import {
   FoodLabel, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, HILOG_DOMAIN
 } from 'hsp_core';
-import { NutriScoreBadge } from './NutriScoreBadge';
+import { NutriScoreBadge } from 'feature_scan';
 
 enum ScanPhase {
   IDLE = 'idle',
@@ -16,7 +16,7 @@ enum ScanPhase {
 
 @ComponentV2
 struct NutrientMetricChip {
-  @Param label: string = ''
+  @Param label: ResourceStr = ''
   @Param value: string = ''
 
   build() {
@@ -133,7 +133,7 @@ export struct ScanResultCard {
         }
       } else if (this.foodLabel.foodId.length === 0) {
         if (this.frequentItems.length > 0) {
-          Text('🔥 ' + $r('app.string.scan_quick_select_history'))
+          Text() { Span('🔥 '); Span($r('app.string.scan_quick_select_history')) }
             .fontSize(FONT_SIZE.SMALL)
             .fontColor(COLORS.TEXT_SECONDARY)
             .margin({ bottom: SPACING.SM })
@@ -168,7 +168,7 @@ export struct ScanResultCard {
 
         if (this.scanPhase === ScanPhase.TIMEOUT) {
           Column() {
-            Text('⏰ ' + $r('app.string.scan_timeout'))
+            Text() { Span('⏰ '); Span($r('app.string.scan_timeout')) }
               .fontSize(15)
               .fontColor(COLORS.LEVEL_ORANGE)
               .fontWeight(FONT_WEIGHT.BOLD)
@@ -184,7 +184,7 @@ export struct ScanResultCard {
           .fontSize(15)
           .fontColor(COLORS.TEXT_TERTIARY)
           .textAlign(TextAlign.Center)
-        Text($r('app.string.scan_mode_barcode') + ' ' + $r('app.string.scan_today_remaining') + '...')
+        Text() { Span($r('app.string.scan_mode_barcode')); Span(' '); Span($r('app.string.scan_today_remaining')); Span('...') }
           .fontSize(FONT_SIZE.SMALL)
           .fontColor(COLORS.TEXT_TERTIARY)
           .textAlign(TextAlign.Center)
@@ -230,16 +230,16 @@ export struct ScanResultCard {
         }
 
         Row() {
-          NutrientMetricChip({ label: $r('app.string.sodium') as string, value: `${this.foodLabel.nutrition.sodium} mg` })
-          NutrientMetricChip({ label: $r('app.string.sugar') as string, value: `${this.foodLabel.nutrition.sugar} g` })
-          NutrientMetricChip({ label: $r('app.string.calorie') as string, value: `${this.foodLabel.nutrition.calories} kcal` })
+          NutrientMetricChip({ label: $r('app.string.sodium') as ResourceStr, value: `${this.foodLabel.nutrition.sodium} mg` })
+          NutrientMetricChip({ label: $r('app.string.sugar') as ResourceStr, value: `${this.foodLabel.nutrition.sugar} g` })
+          NutrientMetricChip({ label: $r('app.string.calorie') as ResourceStr, value: `${this.foodLabel.nutrition.calories} kcal` })
         }
         .width('100%')
         .justifyContent(FlexAlign.SpaceAround)
         .margin({ bottom: SPACING.SM })
 
         if (this.foodLabel.barcode.length > 0) {
-          Text($r('app.string.scan_barcode_label') + `：${this.foodLabel.barcode}`)
+          Text() { Span($r('app.string.scan_barcode_label')); Span(`：${this.foodLabel.barcode}`) }
             .fontSize(FONT_SIZE.SMALL)
             .fontColor(COLORS.TEXT_SECONDARY)
             .margin({ bottom: 6 })

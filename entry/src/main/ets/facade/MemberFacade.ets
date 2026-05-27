@@ -4,7 +4,7 @@ import {
 } from 'hsp_core';
 import { common } from '@kit.AbilityKit';
 import { FamilyRepository } from '../repository/FamilyRepository';
-import { MemberManager } from 'hsp-service';
+import { MemberManager } from 'hsp_service';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'MemberFacade';

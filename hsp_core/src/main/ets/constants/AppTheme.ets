@@ -424,6 +424,7 @@ export class BUTTON {
 // ===== 字号统一常量 =====
 export class FONT_SIZE {
   static readonly CAPTION: number = 10;
+  static readonly SM: number = 12;
   static readonly TINY: number = 11;
   static readonly BODY_SM: number = 12;
   static readonly SMALL: number = 13;

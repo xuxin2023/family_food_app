@@ -5,12 +5,18 @@
 // 数据流：PixelMap → 预处理(224×224归一化) → Float32Array → MSTensor → predict → Top-K解码
 //
 // 依赖要求：
-//   1. 模型文件预置于 resources/rawfile/ 目录下
+//   1. 模型文件预置于 resources/rawfile/models/ 目录下
 //   2. entry/build-profile.json5 中 buildOptionSet.release.arkOptions
 //      需包含 "SystemCapability.AI.MindSporeLite"
 //   3. module.json5 中 deviceTypes 包含 "phone" 或 "tablet"
 //
 // 深化：添加 isModelReady / loadModel / predict + RuleEngine fallback + 推理耗时日志
+//
+// 降级策略（当模型文件缺失时自动生效）：
+//   1. MindSpore Lite 模型加载失败 → loadModelFromRawfile() 返回 false
+//   2. isModelReady() 返回 false → classifyFood() 返回 null → 上层走云端 AI
+//   3. predict() 始终走 InferenceFallback 规则引擎（基于营养阈值推理）
+//   4. 完整降级链路: NPU → CPU → InferenceFallback → 云端 AI
 
 import { HILOG_DOMAIN, NutritionPer100g } from 'hsp_core';
 import { mindSporeLite } from '@kit.MindSporeLiteKit';
@@ -212,32 +218,18 @@ export class OnDeviceInferenceEngine {
       hilog.info(DOMAIN_ZERO, TAG,
         'loadModel [%{public}s]: %{public}d bytes', modelPath, modelBuffer.byteLength);
 
-      // HarmonyOS 6.1 MindSpore Lite Context — NPU 优先 + CPU 降级
-      const msContext: mindSporeLite.Context = {};
-
-      if (this.backend === InferenceBackend.AUTO) {
-        msContext.target = ['nnrt', 'cpu'];
-        // NNRT/NPU 配置 (HM 6.1 Performance/Priority API)
-        msContext.nnrt = {
-          performanceMode: mindSporeLite.PerformanceMode.HIGH,
-          priority: mindSporeLite.Priority.HIGH,
-          enableFp16: true
-        };
-        // CPU 降级配置
-        msContext.cpu = {
+      const msContext: mindSporeLite.Context = {
+        target: ['nnrt', 'cpu'],
+        nnrt: {
+          performanceMode: mindSporeLite.PerformanceMode.PERFORMANCE_HIGH,
+          priority: mindSporeLite.Priority.PRIORITY_HIGH
+        } as mindSporeLite.NNRTDevice,
+        cpu: {
           threadNum: 2,
           threadAffinityMode: mindSporeLite.ThreadAffinityMode.BIG_CORES_FIRST,
           precisionMode: 'prefer_fp16'
-        };
-      } else {
-        // 纯 CPU 模式
-        msContext.target = ['cpu'];
-        msContext.cpu = {
-          threadNum: 2,
-          threadAffinityMode: mindSporeLite.ThreadAffinityMode.BIG_CORES_FIRST,
-          precisionMode: 'enforce_fp32'
-        };
-      }
+        } as mindSporeLite.CpuDevice
+      } as mindSporeLite.Context;
 
       this.msModel = await mindSporeLite.loadModelFromBuffer(modelBuffer, msContext);
       this.isModelLoaded = true;
@@ -397,22 +389,21 @@ export class OnDeviceInferenceEngine {
         'Model file [%{public}s] read: %{public}d bytes',
         modelFileName, modelBuffer.byteLength);
 
-      msContext = new mindSporeLite.Context();
+      const ctx: mindSporeLite.Context = {
+        target: this.backend === InferenceBackend.AUTO ? ['nnrt', 'cpu'] : ['cpu'],
+        cpu: {
+          threadNum: 2,
+          threadAffinityMode: mindSporeLite.ThreadAffinityMode.BIG_CORES_FIRST,
+          precisionMode: 'enforce_fp32'
+        } as mindSporeLite.CpuDevice
+      } as mindSporeLite.Context;
+      msContext = ctx;
 
       if (this.backend === InferenceBackend.AUTO) {
-        msContext.target = ['nnrt', 'cpu'];
         hilog.info(DOMAIN_ZERO, TAG, 'Attempting NPU+CPU heterogeneous inference');
-      } else {
-        msContext.target = ['cpu'];
       }
 
-      const msCpuConfig = new mindSporeLite.CpuConfig();
-      msCpuConfig.threadNum = 2;
-      msCpuConfig.threadAffinityMode = 1;
-      msCpuConfig.precisionMode = 'enforce_fp32';
-      msContext.cpu = msCpuConfig;
-
-      this.msModel = await mindSporeLite.loadModelFromBuffer(modelBuffer, msContext);
+      this.msModel = await mindSporeLite.loadModelFromBuffer(modelBuffer, ctx);
 
       const modelInputs = this.msModel.getInputs();
       if (modelInputs.length > 0) {
@@ -433,13 +424,14 @@ export class OnDeviceInferenceEngine {
           error.message ?? JSON.stringify(err));
 
         try {
-          const cpuContext = new mindSporeLite.Context();
-          cpuContext.target = ['cpu'];
-          const cpuFallback = new mindSporeLite.CpuConfig();
-          cpuFallback.threadNum = 2;
-          cpuFallback.threadAffinityMode = 1;
-          cpuFallback.precisionMode = 'enforce_fp32';
-          cpuContext.cpu = cpuFallback;
+          const cpuContext: mindSporeLite.Context = {
+            target: ['cpu'],
+            cpu: {
+              threadNum: 2,
+              threadAffinityMode: mindSporeLite.ThreadAffinityMode.BIG_CORES_FIRST,
+              precisionMode: 'enforce_fp32'
+            } as mindSporeLite.CpuDevice
+          } as mindSporeLite.Context;
 
           const resMgrRetry: resourceManager.ResourceManager =
             (this.context?.resourceManager ?? undefined) as resourceManager.ResourceManager;

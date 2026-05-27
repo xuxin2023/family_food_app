@@ -1,12 +1,12 @@
 import {
-  ToastHelper, safeBack, FamilyProfile, DailyBudget, FoodLabel, FoodSource, MealBalance, MealScenario, ChildProtection, PaywallTrigger, MemberTier, COLORS, DateUtil, PositiveAdvice
+  ToastHelper, safeBack, FamilyProfile, DailyBudget, FoodLabel, FoodSource, MealBalance, MealScenario, ChildProtection, PaywallTrigger, MemberTier, COLORS, DateUtil
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { BalanceAdviceCard } from '../components/BalanceAdviceCard';
-import { ChildProtectionCard } from 'feature-report';
+import { ChildProtectionCard, PositiveAdvice } from 'feature_report';
 import { DietRecordInput } from '../repository/HistoryRepository';
-import { PaywallDialog } from 'feature-scan';
+import { PaywallDialog } from 'feature_scan';
 
 // 美食场景选项
 class ScenarioOption {
@@ -147,7 +147,7 @@ struct BalancePage {
               })
               .margin({ right: 8, bottom: 10 })
               .onClick(() => { this.handleScenarioSelection(scenario.value) })
-              .accessibilityText(scenario.label as string)
+              .accessibilityText(scenario.label as Resource)
               .accessibilityLevel('yes')
             }, (scenario: ScenarioOption) => scenario.value)
           }
@@ -347,7 +347,7 @@ struct BalancePage {
 
     await this.appState.saveFoodLabel(food)
     this.balanceResult = this.appState.calculateMealBalance(scenario, this.selectedMemberId)
-    const generated = this.appState.generatePositiveAdvice(scenario, this.selectedMemberId)
+    const generated: PositiveAdvice | null = this.appState.generatePositiveAdvice(scenario, this.selectedMemberId) as PositiveAdvice | null
     this.positiveAdvice = generated ?? new PositiveAdvice()
 
     const member = this.familyMembers.find(item => item.memberId === this.selectedMemberId) || null

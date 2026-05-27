@@ -38,7 +38,13 @@ export interface AllergenMatchResult {
   directAllergens: string[];
   traceAllergens: string[];
   traceDeclarations: TraceDeclaration[];
-  matchedDetails: Array<{ ingredient: string; canonical: string; isTrace: boolean }>;
+  matchedDetails: AllergenMatchDetail[];
+}
+
+export class AllergenMatchDetail {
+  ingredient: string = '';
+  canonical: string = '';
+  isTrace: boolean = false;
 }
 
 export class IngredientSemanticEngine {
@@ -85,7 +91,11 @@ export class IngredientSemanticEngine {
         if (!result.directAllergens.includes(matched)) {
           result.directAllergens.push(matched);
         }
-        result.matchedDetails.push({ ingredient: line, canonical: matched, isTrace: false });
+        const detail = new AllergenMatchDetail();
+        detail.ingredient = line;
+        detail.canonical = matched;
+        detail.isTrace = false;
+        result.matchedDetails.push(detail);
       }
     }
 
@@ -97,7 +107,11 @@ export class IngredientSemanticEngine {
         if (!result.traceAllergens.includes(matched)) {
           result.traceAllergens.push(matched);
         }
-        result.matchedDetails.push({ ingredient: traceText, canonical: matched, isTrace: true });
+        const detail = new AllergenMatchDetail();
+        detail.ingredient = traceText;
+        detail.canonical = matched;
+        detail.isTrace = true;
+        result.matchedDetails.push(detail);
       }
       result.traceDeclarations.push({ allergens: traceAllergens, rawText: traceText });
     }
@@ -137,12 +151,12 @@ export class IngredientSemanticEngine {
     let bestMatch: string | null = null;
     let bestLength = 0;
 
-    for (const [syn, canonical] of IngredientSemanticEngine.synonymIndex) {
+    IngredientSemanticEngine.synonymIndex.forEach((canonical: string, syn: string) => {
       if (lower.includes(syn) && syn.length > bestLength) {
         bestMatch = canonical;
         bestLength = syn.length;
       }
-    }
+    });
 
     return bestMatch;
   }

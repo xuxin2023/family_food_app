@@ -20,5 +20,5 @@ export interface IRuleEngineParams {
 }
 
 export interface IAlternativeRecommender {
-  recommendAlternatives(foodLabel: FoodLabel, members: FamilyProfile[], topN: number): AlternativeFood[];
+  recommendAlternatives(foodLabel: FoodLabel, members: FamilyProfile[], topN: number): Promise<AlternativeFood[]>;
 }

@@ -82,7 +82,7 @@ export class PurchaseResult {
   /** 错误码（成功时为0） */
   errorCode: number = 0;
   /** 错误消息 */
-  errorMessage: string = '';
+  errorMessage: ResourceStr = '';
 }
 
 // ==================== 等级排序工具 ====================
@@ -212,96 +212,40 @@ export function createMemberStatusForTier(tier: MemberTier, expiryDays: number):
 
 // ==================== 付费墙配置 ====================
 
-interface PaywallConfig {
-  featureName: string;
-  title: string;
-  message: string;
-  requiredTier: MemberTier;
-  cta: string;
-  isSoftLimit: boolean;
+class PaywallConfig {
+  featureName: string = '';
+  title: string = '';
+  message: string = '';
+  requiredTier: MemberTier = MemberTier.FREE;
+  cta: string = '';
+  isSoftLimit: boolean = false;
+}
+
+function createPaywallConfig(
+  featureName: string, title: string, message: string,
+  requiredTier: MemberTier, cta: string, isSoftLimit: boolean
+): PaywallConfig {
+  const cfg = new PaywallConfig();
+  cfg.featureName = featureName;
+  cfg.title = title;
+  cfg.message = message;
+  cfg.requiredTier = requiredTier;
+  cfg.cta = cta;
+  cfg.isSoftLimit = isSoftLimit;
+  return cfg;
 }
 
 const PAYWALL_CONFIGS: PaywallConfig[] = [
-  {
-    featureName: 'scan',
-    title: '今日扫码已达上限',
-    message: '免费版每天只能扫码3次。升级后全家人都能不限次使用，每个人都有自己的专属饮食建议。',
-    requiredTier: MemberTier.PERSONAL,
-    cta: '解锁无限扫码',
-    isSoftLimit: true
-  },
-  {
-    featureName: 'add_member',
-    title: '添加更多家庭成员',
-    message: '免费版和个人版仅支持1位家庭成员。升级家庭版后，全家人都能拥有独立档案和个性化建议。',
-    requiredTier: MemberTier.FAMILY,
-    cta: '升级家庭版',
-    isSoftLimit: true
-  },
-  {
-    featureName: 'weekly_report',
-    title: '查看饮食周报',
-    message: '周报功能需要升级后才能使用。了解一周饮食趋势，做更科学的饮食调整。',
-    requiredTier: MemberTier.PERSONAL,
-    cta: '开通个人版',
-    isSoftLimit: true
-  },
-  {
-    featureName: 'family_weekly_report',
-    title: '家庭饮食周报',
-    message: '家庭版支持查看全家人的饮食周报，直观了解每位家庭成员的饮食健康状况。',
-    requiredTier: MemberTier.FAMILY,
-    cta: '升级家庭版',
-    isSoftLimit: true
-  },
-  {
-    featureName: 'transparency_report',
-    title: '深度可信度报告',
-    message: '高级版支持查看每款食品的深度数据可信度分析，了解数据来源和评分依据。',
-    requiredTier: MemberTier.PREMIUM,
-    cta: '升级高级版',
-    isSoftLimit: false
-  },
-  {
-    featureName: 'health_data_sync',
-    title: '健康数据联动',
-    message: '连接华为健康数据，结合运动步数、睡眠质量等动态调整每日饮食预算。',
-    requiredTier: MemberTier.FAMILY,
-    cta: '升级家庭版',
-    isSoftLimit: true
-  },
-  {
-    featureName: 'priority_update',
-    title: '优先数据更新',
-    message: '高级版用户享有食品数据库优先更新权限，第一时间获取最新的食品数据和评分。',
-    requiredTier: MemberTier.PREMIUM,
-    cta: '升级高级版',
-    isSoftLimit: false
-  },
-  {
-    featureName: 'basket_check',
-    title: '购物篮健康检查',
-    message: '购物篮功能可以一次性检查您选购的所有食品，分析整体营养搭配是否均衡。',
-    requiredTier: MemberTier.FAMILY,
-    cta: '升级家庭版',
-    isSoftLimit: true
-  },
-  {
-    featureName: 'upgrade_member',
-    title: '解锁更多推荐',
-    message: '升级会员后可获取更详细的食品适配分析和替代品推荐，帮助全家做出更健康的饮食选择。',
-    requiredTier: MemberTier.PERSONAL,
-    cta: '升级会员',
-    isSoftLimit: true
-  },
-  {
-    featureName: 'meal_balance_advanced',
-    title: '高级餐次平衡分析',
-    message: '高级餐次平衡功能可提供更全面的膳食搭配建议，包括营养互补、时序优化等深度分析。',
-    requiredTier: MemberTier.PERSONAL,
-    cta: '解锁高级分析',
-    isSoftLimit: true
-  }
+  createPaywallConfig('scan', '今日扫码已达上限', '免费版每天只能扫码3次。升级后全家人都能不限次使用，每个人都有自己的专属饮食建议。', MemberTier.PERSONAL, '解锁无限扫码', true),
+  createPaywallConfig('add_member', '添加更多家庭成员', '免费版和个人版仅支持1位家庭成员。升级家庭版后，全家人都能拥有独立档案和个性化建议。', MemberTier.FAMILY, '升级家庭版', true),
+  createPaywallConfig('weekly_report', '查看饮食周报', '周报功能需要升级后才能使用。了解一周饮食趋势，做更科学的饮食调整。', MemberTier.PERSONAL, '开通个人版', true),
+  createPaywallConfig('family_weekly_report', '家庭饮食周报', '家庭版支持查看全家人的饮食周报，直观了解每位家庭成员的饮食健康状况。', MemberTier.FAMILY, '升级家庭版', true),
+  createPaywallConfig('transparency_report', '深度可信度报告', '高级版支持查看每款食品的深度数据可信度分析，了解数据来源和评分依据。', MemberTier.PREMIUM, '升级高级版', false),
+  createPaywallConfig('health_data_sync', '健康数据联动', '连接华为健康数据，结合运动步数、睡眠质量等动态调整每日饮食预算。', MemberTier.FAMILY, '升级家庭版', true),
+  createPaywallConfig('priority_update', '优先数据更新', '高级版用户享有食品数据库优先更新权限，第一时间获取最新的食品数据和评分。', MemberTier.PREMIUM, '升级高级版', false),
+  createPaywallConfig('basket_check', '购物篮健康检查', '购物篮功能可以一次性检查您选购的所有食品，分析整体营养搭配是否均衡。', MemberTier.FAMILY, '升级家庭版', true),
+  createPaywallConfig('upgrade_member', '解锁更多推荐', '升级会员后可获取更详细的食品适配分析和替代品推荐，帮助全家做出更健康的饮食选择。', MemberTier.PERSONAL, '升级会员', true),
+  createPaywallConfig('meal_balance_advanced', '高级餐次平衡分析', '高级餐次平衡功能可提供更全面的膳食搭配建议，包括营养互补、时序优化等深度分析。', MemberTier.PERSONAL, '解锁高级分析', true)
 ];
 
 /**
@@ -321,12 +265,12 @@ export function getPaywallTriggerForFeature(feature: string, currentTier: Member
     return null;
   }
 
-  return {
-    title: config.title,
-    message: config.message,
-    featureName: config.featureName,
-    requiredTier: config.requiredTier,
-    cta: config.cta,
-    isSoftLimit: config.isSoftLimit
-  };
+  const trigger = new PaywallTrigger();
+  trigger.title = config.title;
+  trigger.message = config.message;
+  trigger.featureName = config.featureName;
+  trigger.requiredTier = config.requiredTier;
+  trigger.cta = config.cta;
+  trigger.isSoftLimit = config.isSoftLimit;
+  return trigger;
 }

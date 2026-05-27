@@ -46,7 +46,7 @@ export async function migrateDatabase(
 ): Promise<void> {
   try {
     const prefs = await preferences.getPreferences(context, PREFS_NAME);
-    const oldVersion: number = (await prefs.get(VERSION_KEY, 0)) as number;
+    const oldVersion: number = (await prefs.get(VERSION_KEY, 0) as number);
     const currentVersion = DB_SCHEMA_VERSION;
 
     if (oldVersion >= currentVersion) {

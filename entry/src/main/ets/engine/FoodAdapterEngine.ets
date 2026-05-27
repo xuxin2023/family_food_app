@@ -389,53 +389,53 @@ export class TodayIntakeInput {
 /**
  * 每日预算子输入
  */
-export interface DailyBudgetInput {
-  sodium_mg: number;
-  sugar_g: number;
-  energy_kcal: number;
-  fat_g: number;
-  saturatedFat_g: number;
+export class DailyBudgetInput {
+  sodium_mg: number = 0;
+  sugar_g: number = 0;
+  energy_kcal: number = 0;
+  fat_g: number = 0;
+  saturatedFat_g: number = 0;
 }
 
 /**
  * 家庭成员简档输入（自包含类型，替代已移除的 FoodAdapterTypes.FamilyMemberSimple）
  */
-export interface FamilyMemberSimpleInput {
-  id: string;
-  name: string;
-  role: string;
-  age: number;
-  healthGoal: string;
-  dailyBudget: DailyBudgetInput;
-  allergenRedline: string[];
-  dislikedAdditives: string[];
+export class FamilyMemberSimpleInput {
+  id: string = '';
+  name: string = '';
+  role: string = '';
+  age: number = 0;
+  healthGoal: string = '';
+  dailyBudget: DailyBudgetInput = new DailyBudgetInput();
+  allergenRedline: string[] = [];
+  dislikedAdditives: string[] = [];
 }
 
 /**
  * 食品营养数据输入（自包含类型，替代已移除的 FoodAdapterTypes.FoodNutrition）
  */
-export interface FoodNutritionInput {
-  productName: string;
-  brand: string;
-  sodium_mg: number;
-  sugar_g: number;
-  energy_kj: number;
-  fat_g: number;
-  saturatedFat_g: number;
-  transFat_g: number;
-  carbs_g: number;
-  protein_g: number;
-  allergens: string[];
-  manufacturer: string;
+export class FoodNutritionInput {
+  productName: string = '';
+  brand: string = '';
+  sodium_mg: number = 0;
+  sugar_g: number = 0;
+  energy_kj: number = 0;
+  fat_g: number = 0;
+  saturatedFat_g: number = 0;
+  transFat_g: number = 0;
+  carbs_g: number = 0;
+  protein_g: number = 0;
+  allergens: string[] = [];
+  manufacturer: string = '';
 }
 
 /**
  * 健康信号输入（自包含类型，替代已移除的 FoodAdapterTypes.HealthSignal）
  */
-export interface HealthSignalInput {
-  steps: string;
-  sleep: string;
-  weightTrend: string;
-  manualBpStatus?: string;
-  manualBgStatus?: string;
+export class HealthSignalInput {
+  steps: string = '';
+  sleep: string = '';
+  weightTrend: string = '';
+  manualBpStatus: string = '';
+  manualBgStatus: string = '';
 }

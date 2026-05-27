@@ -186,15 +186,15 @@ export class FamilyGroupRepository {
     return await this.queryGroups(predicates);
   }
 
-  async updateGroup(groupId: string, updates: Partial<FamilyGroup>): Promise<void> {
+  async updateGroup(groupId: string, updates: Record<string, Object>): Promise<void> {
     try {
       if (!this.rdbStore) return;
       const bucket: relationalStore.ValuesBucket = {};
-      if (updates.groupName !== undefined) bucket['group_name'] = updates.groupName;
-      if (updates.description !== undefined) bucket['description'] = updates.description;
-      if (updates.groupAvatar !== undefined) bucket['group_avatar'] = updates.groupAvatar;
-      if (updates.memberCount !== undefined) bucket['member_count'] = updates.memberCount;
-      if (updates.isArchived !== undefined) bucket['is_archived'] = updates.isArchived ? 1 : 0;
+      if (updates['groupName'] !== undefined) bucket['group_name'] = updates['groupName'] as relationalStore.ValueType;
+      if (updates['description'] !== undefined) bucket['description'] = updates['description'] as relationalStore.ValueType;
+      if (updates['groupAvatar'] !== undefined) bucket['group_avatar'] = updates['groupAvatar'] as relationalStore.ValueType;
+      if (updates['memberCount'] !== undefined) bucket['member_count'] = updates['memberCount'] as relationalStore.ValueType;
+      if (updates['isArchived'] !== undefined) bucket['is_archived'] = (updates['isArchived'] as boolean) ? 1 : 0;
       bucket['updated_at'] = Date.now();
 
       const predicates = new relationalStore.RdbPredicates(TABLE_GROUP);
@@ -481,7 +481,7 @@ export class FamilyGroupRepository {
       return s;
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'createGroup failed: %{public}s', JSON.stringify(e));
-      throw e;
+      throw new Error(String(e));
     }
   }
 
@@ -491,7 +491,8 @@ export class FamilyGroupRepository {
       if (!group) throw new Error('群组不存在或邀请码无效');
       group.memberCount++;
       group.updatedAt = Date.now();
-      await this.updateGroup(group.groupId, { memberCount: group.memberCount });
+      const mcUpdate: Record<string, Object> = { 'memberCount': group.memberCount };
+      await this.updateGroup(group.groupId, mcUpdate);
       const s = new GroupSummary();
       s.groupId = group.groupId;
       s.groupName = group.groupName;
@@ -500,7 +501,7 @@ export class FamilyGroupRepository {
       return s;
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'joinGroup failed: %{public}s', JSON.stringify(e));
-      throw e;
+      throw new Error(String(e));
     }
   }
 
@@ -549,20 +550,30 @@ export class FamilyGroupRepository {
 
   // ========== 内部解析方法 ==========
 
+  private safeGetString(rs: relationalStore.ResultSet, col: string): string {
+    try { return String(rs.getString(rs.getColumnIndex(col))); } catch (e) { return ''; }
+  }
+  private safeGetLong(rs: relationalStore.ResultSet, col: string): number {
+    try { return Number(rs.getLong(rs.getColumnIndex(col))); } catch (e) { return 0; }
+  }
+  private safeGetDouble(rs: relationalStore.ResultSet, col: string): number {
+    try { return Number(rs.getDouble(rs.getColumnIndex(col))); } catch (e) { return 0; }
+  }
+
   private parseGroup(resultSet: relationalStore.ResultSet): FamilyGroup {
     const g = new FamilyGroup();
-    g.groupId = resultSet.getString(resultSet.getColumnIndex('group_id'));
-    g.groupName = resultSet.getString(resultSet.getColumnIndex('group_name'));
-    g.groupAvatar = resultSet.getString(resultSet.getColumnIndex('group_avatar')) || '';
-    g.description = resultSet.getString(resultSet.getColumnIndex('description')) || '';
-    g.ownerUid = resultSet.getString(resultSet.getColumnIndex('owner_uid'));
-    g.ownerName = resultSet.getString(resultSet.getColumnIndex('owner_name')) || '';
-    g.inviteCode = resultSet.getString(resultSet.getColumnIndex('invite_code'));
-    g.maxMembers = resultSet.getLong(resultSet.getColumnIndex('max_members'));
-    g.memberCount = resultSet.getLong(resultSet.getColumnIndex('member_count'));
-    g.createdAt = resultSet.getLong(resultSet.getColumnIndex('created_at'));
-    g.updatedAt = resultSet.getLong(resultSet.getColumnIndex('updated_at'));
-    g.isArchived = resultSet.getLong(resultSet.getColumnIndex('is_archived')) === 1;
+    g.groupId = this.safeGetString(resultSet, 'group_id');
+    g.groupName = this.safeGetString(resultSet, 'group_name');
+    g.groupAvatar = this.safeGetString(resultSet, 'group_avatar');
+    g.description = this.safeGetString(resultSet, 'description');
+    g.ownerUid = this.safeGetString(resultSet, 'owner_uid');
+    g.ownerName = this.safeGetString(resultSet, 'owner_name');
+    g.inviteCode = this.safeGetString(resultSet, 'invite_code');
+    g.maxMembers = this.safeGetLong(resultSet, 'max_members');
+    g.memberCount = this.safeGetLong(resultSet, 'member_count');
+    g.createdAt = this.safeGetLong(resultSet, 'created_at');
+    g.updatedAt = this.safeGetLong(resultSet, 'updated_at');
+    g.isArchived = this.safeGetLong(resultSet, 'is_archived') === 1;
     return g;
   }
 
@@ -587,18 +598,18 @@ export class FamilyGroupRepository {
   }
 
   private parseMember(resultSet: relationalStore.ResultSet): GroupMember {
-    return {
-      id: resultSet.getString(resultSet.getColumnIndex('id')),
-      groupId: resultSet.getString(resultSet.getColumnIndex('group_id')),
-      uid: resultSet.getString(resultSet.getColumnIndex('uid')),
-      displayName: resultSet.getString(resultSet.getColumnIndex('display_name')) || '',
-      role: resultSet.getString(resultSet.getColumnIndex('role')) as GroupRole,
-      joinMethod: resultSet.getString(resultSet.getColumnIndex('join_method')) as JoinMethod,
-      joinedAt: resultSet.getLong(resultSet.getColumnIndex('joined_at')),
-      lastActiveAt: resultSet.getLong(resultSet.getColumnIndex('last_active_at')),
-      isLeft: resultSet.getLong(resultSet.getColumnIndex('is_left')) === 1,
-      localMemberId: resultSet.getString(resultSet.getColumnIndex('local_member_id')) || ''
-    };
+    const m = new GroupMember()
+    m.id = this.safeGetString(resultSet, 'id')
+    m.groupId = this.safeGetString(resultSet, 'group_id')
+    m.uid = this.safeGetString(resultSet, 'uid')
+    m.displayName = this.safeGetString(resultSet, 'display_name')
+    m.role = this.safeGetString(resultSet, 'role') as GroupRole
+    m.joinMethod = this.safeGetString(resultSet, 'join_method') as JoinMethod
+    m.joinedAt = this.safeGetLong(resultSet, 'joined_at')
+    m.lastActiveAt = this.safeGetLong(resultSet, 'last_active_at')
+    m.isLeft = this.safeGetLong(resultSet, 'is_left') === 1
+    m.localMemberId = this.safeGetString(resultSet, 'local_member_id')
+    return m
   }
 
   private async queryMembers(predicates: relationalStore.RdbPredicates): Promise<GroupMember[]> {
@@ -622,17 +633,17 @@ export class FamilyGroupRepository {
   }
 
   private parseRequest(resultSet: relationalStore.ResultSet): JoinRequest {
-    return {
-      requestId: resultSet.getString(resultSet.getColumnIndex('request_id')),
-      groupId: resultSet.getString(resultSet.getColumnIndex('group_id')),
-      requesterUid: resultSet.getString(resultSet.getColumnIndex('requester_uid')),
-      requesterName: resultSet.getString(resultSet.getColumnIndex('requester_name')) || '',
-      message: resultSet.getString(resultSet.getColumnIndex('message')) || '',
-      status: resultSet.getString(resultSet.getColumnIndex('status')) as JoinRequestStatus,
-      requestedAt: resultSet.getLong(resultSet.getColumnIndex('requested_at')),
-      reviewedAt: resultSet.getLong(resultSet.getColumnIndex('reviewed_at')),
-      reviewerUid: resultSet.getString(resultSet.getColumnIndex('reviewer_uid')) || ''
-    };
+    const r = new JoinRequest()
+    r.requestId = this.safeGetString(resultSet, 'request_id')
+    r.groupId = this.safeGetString(resultSet, 'group_id')
+    r.requesterUid = this.safeGetString(resultSet, 'requester_uid')
+    r.requesterName = this.safeGetString(resultSet, 'requester_name')
+    r.message = this.safeGetString(resultSet, 'message')
+    r.status = this.safeGetString(resultSet, 'status') as JoinRequestStatus
+    r.requestedAt = this.safeGetLong(resultSet, 'requested_at')
+    r.reviewedAt = this.safeGetLong(resultSet, 'reviewed_at')
+    r.reviewerUid = this.safeGetString(resultSet, 'reviewer_uid')
+    return r
   }
 
   private async queryRequests(predicates: relationalStore.RdbPredicates): Promise<JoinRequest[]> {
@@ -657,15 +668,15 @@ export class FamilyGroupRepository {
 
   private parseFeed(resultSet: relationalStore.ResultSet): GroupFeed {
     const feed = new GroupFeed();
-    feed.feedId = resultSet.getString(resultSet.getColumnIndex('feed_id'));
-    feed.groupId = resultSet.getString(resultSet.getColumnIndex('group_id'));
-    feed.feedType = resultSet.getString(resultSet.getColumnIndex('feed_type')) as FeedType;
-    feed.senderUid = resultSet.getString(resultSet.getColumnIndex('sender_uid'));
-    feed.senderName = resultSet.getString(resultSet.getColumnIndex('sender_name')) || '';
-    feed.content = resultSet.getString(resultSet.getColumnIndex('content')) || '';
-    feed.createdAt = resultSet.getLong(resultSet.getColumnIndex('created_at'));
-    feed.commentCount = resultSet.getLong(resultSet.getColumnIndex('comment_count'));
-    feed.likeCount = resultSet.getLong(resultSet.getColumnIndex('like_count'));
+    feed.feedId = this.safeGetString(resultSet, 'feed_id');
+    feed.groupId = this.safeGetString(resultSet, 'group_id');
+    feed.feedType = this.safeGetString(resultSet, 'feed_type') as FeedType;
+    feed.senderUid = this.safeGetString(resultSet, 'sender_uid');
+    feed.senderName = this.safeGetString(resultSet, 'sender_name');
+    feed.content = this.safeGetString(resultSet, 'content');
+    feed.createdAt = this.safeGetLong(resultSet, 'created_at');
+    feed.commentCount = this.safeGetLong(resultSet, 'comment_count');
+    feed.likeCount = this.safeGetLong(resultSet, 'like_count');
     return feed;
   }
 }

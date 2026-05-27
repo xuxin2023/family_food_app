@@ -8,7 +8,7 @@ import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
 import { ErrorFallback } from '../components/ErrorFallback';
-import { RecipeCard, LikeButton } from 'feature-community';
+import { RecipeCard, LikeButton } from 'feature_community';
 
 
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -25,7 +25,7 @@ struct RecipeCommunityPage {
   @Local isLoadingAi: boolean = false
   @Local showAiRecommend: boolean = false
   @Local aiSummary: string = ''
-  @Local errorMessage: string = ''
+  @Local errorMessage: ResourceStr = ''
   private componentActive: boolean = true
 
   private appState: AppState = AppState.getInstance()
@@ -35,7 +35,7 @@ struct RecipeCommunityPage {
 
   async aboutToAppear() {
     const params = getPageParams();
-    if (params !== null && params.get('aiMode') === 'recommend') {
+    if (params !== null && params !== undefined && params.get('aiMode') === 'recommend') {
       this.showAiRecommend = true
       await Promise.all([
         this.loadAiRecommendations(),
@@ -81,7 +81,7 @@ struct RecipeCommunityPage {
       this.recipeDS.reload(this.recipes)
     } catch (e) {
       hilog.error(DOMAIN_ZERO, 'RecipeCommunityPage', 'load recipes error')
-      this.errorMessage = $r('app.string.recipe_community_load_failed') as string
+      this.errorMessage = $r('app.string.recipe_community_load_failed') as ResourceStr
     }
     this.isLoading = false
   }
@@ -151,7 +151,7 @@ struct RecipeCommunityPage {
             .width('100%')
             .textAlign(TextAlign.Center)
         }
-      } else if (this.errorMessage.length > 0) {
+      } else if (this.errorMessage) {
         ErrorFallback({
           message: this.errorMessage,
           icon: '🍽️',
@@ -174,7 +174,7 @@ struct RecipeCommunityPage {
   }
 
   @Builder
-  categoryChip(label: string, value: string) {
+  categoryChip(label: ResourceStr, value: string) {
     Text(label)
       .fontSize(13)
       .fontColor(this.selectedCategory === value ? COLORS.WHITE : COLORS.TEXT_SECONDARY)
@@ -185,12 +185,12 @@ struct RecipeCommunityPage {
         this.selectedCategory = value
         this.loadRecipes()
       })
-      .accessibilityText(label)
+      .accessibilityText(label as Resource)
       .accessibilityLevel('yes')
   }
 
   @Builder
-  sortTab(label: string, value: string) {
+  sortTab(label: ResourceStr, value: string) {
     Text(label)
       .fontSize(14)
       .fontWeight(this.sortBy === value ? FontWeight.Bold : FontWeight.Regular)
@@ -203,7 +203,7 @@ struct RecipeCommunityPage {
           this.loadRecipes()
         }
       })
-      .accessibilityText(label)
+      .accessibilityText(label as Resource)
       .accessibilityLevel('yes')
   }
 
@@ -340,7 +340,7 @@ struct RecipeCommunityPage {
             .objectFit(ImageFit.Cover)
             .autoResize(true)
             .borderRadius({ topLeft: RADIUS.LG, topRight: RADIUS.LG })
-            .onComplete(() => { ImageCache.put(recipe.coverImageUrl, recipe.coverImageUrl); })
+            .onComplete(() => { ImageCache.set(recipe.coverImageUrl, recipe.coverImageUrl); })
         } else {
           Column() {
             Text(getCategoryEmoji(recipe.category))
@@ -387,7 +387,7 @@ struct RecipeCommunityPage {
           }
           Row({ space: 4 }) {
             Text('⏱️').fontSize(12)
-            Text(`${recipe.totalMinutes}` + $r('app.string.recipe_community_minutes')).fontSize(11).fontColor(COLORS.TEXT_GRAY_9E9E)
+            Text(`${recipe.totalMinutes}分钟`).fontSize(11).fontColor(COLORS.TEXT_GRAY_9E9E)
           }
           Blank()
           Text(getCategoryLabel(recipe.category) || recipe.category)

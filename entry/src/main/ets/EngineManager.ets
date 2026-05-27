@@ -3,8 +3,9 @@
 // AppState 通过此管理器委托所有引擎调用
 
 import {
-  FamilyProfile, AgeGroup, HealthSignal, StepLevel, SleepStatus, FoodLabel, DailyBudget, Recommendation, MealBalance, MealScenario, ChildProtection, CredibilityResult, EnhancedFoodRecommendation, AlternativeFood, IDietRecordProvider, NutritionThreshold
+  FamilyProfile, AgeGroup, HealthSignal, StepLevel, SleepStatus, FoodLabel, DailyBudget, Recommendation, MealBalance, MealScenario, ChildProtection, CredibilityResult, EnhancedFoodRecommendation, AlternativeFood, DietRecord, NutritionThreshold
 } from 'hsp_core';
+import { HistoryRepository } from './repository/HistoryRepository';
 import { BasketCheckResult, BasketCheckEngine } from './engine/BasketCheckEngine';
 import { ElderFriendlyReport, ElderFriendlyEngine } from './engine/ElderFriendlyEngine';
 import { PositiveAdvice, PositiveAdviceEngine } from './engine/PositiveAdviceEngine';
@@ -13,7 +14,7 @@ import { RuleEngine } from './engine/RuleEngine';
 import { MealBalanceEngine } from './engine/MealBalanceEngine';
 import { ChildProtectionEngine, MealTimeParams } from './engine/ChildProtectionEngine';
 import { CredibilityEngine } from './engine/CredibilityEngine';
-import { FoodAdapterEngine, FamilyMemberSimpleInput, FoodNutritionInput, 
+import { FoodAdapterEngine, FamilyMemberSimpleInput, FoodNutritionInput, DailyBudgetInput,
   HealthSignalInput, TodayIntakeInput } from './engine/FoodAdapterEngine';
 import { NutritionTrendEngine, nutritionTrendEngine, DailyNutritionSummary, NutrientTrendData, MealGroup } from './engine/NutritionTrendEngine';
 import { NutriScoreEngine, NutriScoreBreakdown } from './engine/NutriScoreEngine';
@@ -152,45 +153,42 @@ export class EngineManager {
     scanIndex: number
   ): EnhancedFoodRecommendation {
     // 转换为主模型 → FoodAdapterEngine 的独立输入类型
-    const memberInput: FamilyMemberSimpleInput = {
-      id: member.memberId,
-      name: member.nickname,
-      role: member.ageGroup,
-      age: estimateAgeFromGroup(member.ageGroup),
-      healthGoal: member.healthGoals.length > 0 ? member.healthGoals[0] : '无特殊',
-      dailyBudget: {
-        sodium_mg: member.dailyBudget.sodiumBudget,
-        sugar_g: member.dailyBudget.sugarBudget,
-        energy_kcal: member.dailyBudget.calorieBudget,
-        fat_g: member.dailyBudget.fatBudget,
-        saturatedFat_g: 0
-      },
-      allergenRedline: member.allergens,
-      dislikedAdditives: []
-    };
+    const memberInput = new FamilyMemberSimpleInput();
+    memberInput.id = member.memberId;
+    memberInput.name = member.nickname;
+    memberInput.role = member.ageGroup;
+    memberInput.age = estimateAgeFromGroup(member.ageGroup);
+    memberInput.healthGoal = member.healthGoals.length > 0 ? member.healthGoals[0] : '无特殊';
+    const mb = new DailyBudgetInput();
+    mb.sodium_mg = member.dailyBudget.sodiumBudget;
+    mb.sugar_g = member.dailyBudget.sugarBudget;
+    mb.energy_kcal = member.dailyBudget.calorieBudget;
+    mb.fat_g = member.dailyBudget.fatBudget;
+    mb.saturatedFat_g = 0;
+    memberInput.dailyBudget = mb;
+    memberInput.allergenRedline = member.allergens;
+    memberInput.dislikedAdditives = [];
 
-    const foodInput: FoodNutritionInput = {
-      productName: food.foodName,
-      brand: food.manufacturer,
-      sodium_mg: food.nutrition.sodium,
-      sugar_g: food.nutrition.sugar,
-      energy_kj: Math.round(food.nutrition.calories * 4.184),
-      fat_g: food.nutrition.fat,
-      saturatedFat_g: food.nutrition.saturatedFat,
-      transFat_g: 0,
-      carbs_g: food.nutrition.carbohydrate,
-      protein_g: food.nutrition.protein,
-      allergens: food.ingredients,
-      manufacturer: food.manufacturer
-    };
+    const foodInput = new FoodNutritionInput();
+    foodInput.productName = food.foodName;
+    foodInput.brand = food.manufacturer;
+    foodInput.sodium_mg = food.nutrition.sodium;
+    foodInput.sugar_g = food.nutrition.sugar;
+    foodInput.energy_kj = Math.round(food.nutrition.calories * 4.184);
+    foodInput.fat_g = food.nutrition.fat;
+    foodInput.saturatedFat_g = food.nutrition.saturatedFat;
+    foodInput.transFat_g = 0;
+    foodInput.carbs_g = food.nutrition.carbohydrate;
+    foodInput.protein_g = food.nutrition.protein;
+    foodInput.allergens = food.ingredients;
+    foodInput.manufacturer = food.manufacturer;
 
-    const healthInput: HealthSignalInput = {
-      steps: signal.stepLevel,
-      sleep: signal.sleepStatus,
-      weightTrend: signal.weightTrend,
-      manualBpStatus: signal.manualBpStatus,
-      manualBgStatus: signal.manualBsStatus
-    };
+    const healthInput = new HealthSignalInput();
+    healthInput.steps = signal.stepLevel;
+    healthInput.sleep = signal.sleepStatus;
+    healthInput.weightTrend = signal.weightTrend;
+    healthInput.manualBpStatus = signal.manualBpStatus;
+    healthInput.manualBgStatus = signal.manualBsStatus;
 
     return FoodAdapterEngine.calculateDynamicIntake(memberInput, foodInput, healthInput, todayIntake, scanIndex);
   }
@@ -252,10 +250,9 @@ export class EngineManager {
   }
 
   /** 获取替代食品推荐 — 委托 AlternativeFoodRecommender */
-  getAlternativeFoods(foodLabel: FoodLabel, members: FamilyProfile[] = []): EnhancedFoodRecommendation[] {
+  async getAlternativeFoods(foodLabel: FoodLabel, members: FamilyProfile[] = []): Promise<EnhancedFoodRecommendation[]> {
     try {
-      const alts = alternativeFoodRecommender.recommendAlternatives(foodLabel, members, 3);
-      // 转换为兼容返回类型
+      const alts = await alternativeFoodRecommender.recommendAlternatives(foodLabel, members, 3);
       const results: EnhancedFoodRecommendation[] = [];
       for (const alt of alts) {
         const rec = new EnhancedFoodRecommendation();
@@ -269,7 +266,7 @@ export class EngineManager {
   }
 
   /** 获取营养趋势 */
-  async getNutritionTrend(memberId: string, days: number, dietProvider: IDietRecordProvider): Promise<DailyNutritionSummary[]> {
+  async getNutritionTrend(memberId: string, days: number, dietProvider: HistoryRepository): Promise<DailyNutritionSummary[]> {
     // 使用静态方法聚合饮食记录
     const endDate = new Date();
     const startDate = new Date();
@@ -282,7 +279,7 @@ export class EngineManager {
   /** 生成周报 — 委托 WeeklyReportEngine */
   async generateWeeklyReport(
     memberId: string,
-    dietProvider: IDietRecordProvider,
+    dietProvider: HistoryRepository,
     members: FamilyProfile[],
     _getBudgetFn: (memberId: string) => DailyBudget
   ): Promise<string> {

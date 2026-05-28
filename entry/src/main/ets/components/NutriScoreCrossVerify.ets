@@ -2,7 +2,7 @@
 // Nutri-Score 交叉验证展示组件 — 对比本地计算等级与 OFF 官方等级
 
 import { COLORS, FONT_SIZE, FONT_WEIGHT, RADIUS, SPACING } from 'hsp_core';
-import { NutriScoreBreakdown } from '../engine/NutriScoreEngine';
+import { NutriScoreBreakdown } from 'feature_scan';
 
 export class CrossVerifyData {
   localGrade: string = '';

@@ -1,5 +1,7 @@
 // 每100g营养成分
 // V2 状态管理: @ObservedV2 + @Trace 深度嵌套观察
+import { SafeJsonParse } from '../utils/SafeJsonParse';
+
 @ObservedV2
 export class NutritionPer100g {
   @Trace sodium: number = 0;
@@ -121,24 +123,26 @@ export class FoodLabel {
 
   static fromJson(json: Record<string, Object>): FoodLabel {
     const label = new FoodLabel();
-    label.foodId = (json.foodId as string) ?? '';
-    label.foodName = (json.foodName as string) ?? '';
-    label.barcode = (json.barcode as string) ?? '';
-    label.ingredients = (json.ingredients as string[]) ?? [];
+    label.foodId = SafeJsonParse.getStringField(json, 'foodId', '');
+    label.foodName = SafeJsonParse.getStringField(json, 'foodName', '');
+    label.barcode = SafeJsonParse.getStringField(json, 'barcode', '');
+    label.ingredients = SafeJsonParse.getStringField(json, 'ingredients', '') === '' ?
+      [] : (Array.isArray(json.ingredients) ? json.ingredients as string[] : []);
     label.nutrition = (json.nutrition as NutritionPer100g) ?? new NutritionPer100g();
-    label.allergenHints = (json.allergenHints as string[]) ?? [];
-    label.manufacturer = (json.manufacturer as string) ?? '';
-    label.scNumber = (json.scNumber as string) ?? '';
-    label.principal = (json.principal as string) ?? '';
-    label.trustee = (json.trustee as string) ?? '';
-    label.traceCode = (json.traceCode as string) ?? '';
-    label.source = (json.source as FoodSource) ?? FoodSource.USER_UPLOAD;
-    label.identifiedAt = (json.identifiedAt as number) ?? 0;
-    label.nutriScore = (json.nutriScore as number) ?? 0;
-    label.ecoScoreGrade = (json.ecoScoreGrade as string) ?? '';
-    label.ecoScoreScore = (json.ecoscoreScore as number) ?? (json.ecoScoreScore as number) ?? 0;
-    label.novaGroup = (json.novaGroup as number) ?? 0;
-    label.allergens = (json.allergens as string[]) ?? [];
+    label.allergenHints = Array.isArray(json.allergenHints) ? json.allergenHints as string[] : [];
+    label.manufacturer = SafeJsonParse.getStringField(json, 'manufacturer', '');
+    label.scNumber = SafeJsonParse.getStringField(json, 'scNumber', '');
+    label.principal = SafeJsonParse.getStringField(json, 'principal', '');
+    label.trustee = SafeJsonParse.getStringField(json, 'trustee', '');
+    label.traceCode = SafeJsonParse.getStringField(json, 'traceCode', '');
+    label.source = SafeJsonParse.getStringField(json, 'source', FoodSource.USER_UPLOAD) as FoodSource;
+    label.identifiedAt = SafeJsonParse.getNumberField(json, 'identifiedAt', 0);
+    label.nutriScore = SafeJsonParse.getNumberField(json, 'nutriScore', 0);
+    label.ecoScoreGrade = SafeJsonParse.getStringField(json, 'ecoScoreGrade', '');
+    label.ecoScoreScore = SafeJsonParse.getNumberField(json, 'ecoScoreScore',
+      SafeJsonParse.getNumberField(json, 'ecoscoreScore', 0));
+    label.novaGroup = SafeJsonParse.getNumberField(json, 'novaGroup', 0);
+    label.allergens = Array.isArray(json.allergens) ? json.allergens as string[] : [];
     return label;
   }
 }

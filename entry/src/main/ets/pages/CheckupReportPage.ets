@@ -1,8 +1,7 @@
 import { COLORS, safeBack, HealthSignal, FamilyProfile, HILOG_DOMAIN } from 'hsp_core';
-import { CheckupReport, HealthArchiveUpdate } from '../engine/CheckupReportEngine';
+import { CheckupReport, HealthArchiveUpdate, CheckupItem } from 'feature_report';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
-import { CheckupItem } from '../engine/CheckupReportEngine';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'CheckupReportPage';

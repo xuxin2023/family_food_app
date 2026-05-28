@@ -1,0 +1,124 @@
+{
+  "version": "1.0.0",
+  "description": "家庭食品适配助手 CloudDB Schema",
+  "collections": {
+    "FamilyProfile": {
+      "fields": {
+        "memberId": { "type": "string", "primaryKey": true },
+        "nickname": { "type": "string" },
+        "ageGroup": { "type": "string" },
+        "gender": { "type": "string" },
+        "allergens": { "type": "array", "items": "string" },
+        "healthGoals": { "type": "array", "items": "string" },
+        "dailyBudget": { "type": "object" },
+        "memberStatus": { "type": "object" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "indexes": [{ "fields": ["memberId"], "unique": true }]
+    },
+    "HealthSignal": {
+      "fields": {
+        "memberId": { "type": "string" },
+        "stepLevel": { "type": "string" },
+        "sleepStatus": { "type": "string" },
+        "weightTrend": { "type": "string" },
+        "manualBpStatus": { "type": "string" },
+        "manualBsStatus": { "type": "string" },
+        "updatedAt": { "type": "number" }
+      },
+      "indexes": [{ "fields": ["memberId"], "unique": true }]
+    },
+    "DietRecord": {
+      "fields": {
+        "recordId": { "type": "string", "primaryKey": true },
+        "memberId": { "type": "string" },
+        "date": { "type": "string" },
+        "foodName": { "type": "string" },
+        "scenario": { "type": "string" },
+        "amountG": { "type": "number" },
+        "sodiumIntake": { "type": "number" },
+        "sugarIntake": { "type": "number" },
+        "calorieIntake": { "type": "number" },
+        "fatIntake": { "type": "number" },
+        "mealType": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "indexes": [{ "fields": ["memberId", "date"] }]
+    },
+    "ScanHistory": {
+      "fields": {
+        "scanId": { "type": "string", "primaryKey": true },
+        "memberId": { "type": "string" },
+        "barcode": { "type": "string" },
+        "foodName": { "type": "string" },
+        "nutriScore": { "type": "number" },
+        "scannedAt": { "type": "number" }
+      },
+      "indexes": [{ "fields": ["memberId", "scannedAt"] }]
+    },
+    "ChatHistory": {
+      "fields": {
+        "chatId": { "type": "string", "primaryKey": true },
+        "memberId": { "type": "string" },
+        "messages": { "type": "array" },
+        "createdAt": { "type": "number" }
+      },
+      "indexes": [{ "fields": ["memberId"] }]
+    },
+    "ShoppingList": {
+      "fields": {
+        "itemId": { "type": "string", "primaryKey": true },
+        "memberId": { "type": "string" },
+        "foodName": { "type": "string" },
+        "barcode": { "type": "string" },
+        "quantity": { "type": "number" },
+        "checked": { "type": "boolean" },
+        "addedAt": { "type": "number" }
+      },
+      "indexes": [{ "fields": ["memberId"] }]
+    },
+    "NutritionTarget": {
+      "fields": {
+        "memberId": { "type": "string" },
+        "calorieTarget": { "type": "number" },
+        "sodiumTarget": { "type": "number" },
+        "sugarTarget": { "type": "number" },
+        "fatTarget": { "type": "number" },
+        "proteinTarget": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "indexes": [{ "fields": ["memberId"], "unique": true }]
+    },
+    "ReminderRule": {
+      "fields": {
+        "ruleId": { "type": "string", "primaryKey": true },
+        "memberId": { "type": "string" },
+        "type": { "type": "string" },
+        "enabled": { "type": "boolean" },
+        "time": { "type": "string" },
+        "conditions": { "type": "object" },
+        "createdAt": { "type": "number" }
+      },
+      "indexes": [{ "fields": ["memberId"] }]
+    },
+    "FeedbackTicket": {
+      "fields": {
+        "ticketId": { "type": "string", "primaryKey": true },
+        "userId": { "type": "string" },
+        "type": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "contact": { "type": "string" },
+        "appVersion": { "type": "string" },
+        "deviceModel": { "type": "string" },
+        "osVersion": { "type": "string" },
+        "screenshots": { "type": "array", "items": "string" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "indexes": [{ "fields": ["userId", "status"] }, { "fields": ["createdAt"] }]
+    }
+  }
+}

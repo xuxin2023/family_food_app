@@ -1,4 +1,5 @@
 export enum NovaGroup {
+  UNKNOWN = 0,
   GROUP_1 = 1,
   ONE = 1,
   GROUP_2 = 2,

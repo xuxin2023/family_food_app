@@ -3,7 +3,7 @@ import {
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
-import { WeeklyDietData, WeeklyReport, WeeklyReportEngine } from '../engine/WeeklyReportEngine';
+import { WeeklyDietData, WeeklyReport, WeeklyReportEngine } from 'feature_report';
 import { ScanHistoryRecord } from '../repository/HistoryRepository';
 import { PaywallDialog } from 'feature_scan';
 import { EmptyState } from '../components/EmptyState';

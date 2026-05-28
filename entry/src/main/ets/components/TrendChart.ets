@@ -1,7 +1,7 @@
 // TrendChart.ets
 // 营养摄入趋势柱状图组件 - 展示单一营养素在日期范围内的趋势
 
-import { NutrientTrendData, DailyNutrientPoint, TrendDirection } from '../engine/NutritionTrendEngine';
+import { NutrientTrendData, DailyNutrientPoint, TrendDirection } from 'feature_report';
 import { COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT } from 'hsp_core';
 
 @ComponentV2

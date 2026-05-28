@@ -2,15 +2,15 @@
 // Sprint3: 源码已物理迁移至本模块
 
 // ===== 扫描服务 =====
-export { ScanService } from './service/ScanService';
+export { ScanService, ScanLookupResult, ILocalCacheProvider, IRemoteLookupProvider, IDataLineageRecorder } from './service/ScanService';
 export { FoodInputService, FoodInputResult } from './service/FoodInputService';
 
 // ===== 扫描相关引擎 =====
-export { FoodAdapterEngine, TodayIntakeInput } from './engine/FoodAdapterEngine';
-export { NutriScoreEngine } from './engine/NutriScoreEngine';
+export { FoodAdapterEngine, TodayIntakeInput, DailyBudgetInput, FamilyMemberSimpleInput, FoodNutritionInput, HealthSignalInput } from './engine/FoodAdapterEngine';
+export { NutriScoreEngine, NutriScoreBreakdown, NutriScoreInput } from './engine/NutriScoreEngine';
 export { NovaGroupEngine, NovaGroup, NovaGroupOne, NovaGroupTwo, NovaGroupThree, NovaGroupFour, NovaEvaluationResult } from './engine/NovaGroupEngine';
 export { EcoScoreEngine, EcoScoreGrade, EcoScoreResult, EcoScoreFactor } from './engine/EcoScoreEngine';
-export { AlternativeFoodRecommender } from './engine/AlternativeFoodRecommender';
+export { AlternativeFoodRecommender, alternativeFoodRecommender } from './engine/AlternativeFoodRecommender';
 export { IntoleranceEngine, IntoleranceType, IntoleranceSeverity, IntoleranceWarning, IntoleranceCheckResult } from './engine/IntoleranceEngine';
 export { IngredientKnowledgeBase, IngredientRiskLevel, IngredientAssessment } from './engine/IngredientKnowledgeBase';
 export { IngredientSemanticEngine } from './engine/IngredientSemanticEngine';
@@ -23,4 +23,9 @@ export { AllergenHighlightList } from './components/AllergenHighlightList';
 export { IntoleranceWarningCard } from './components/IntoleranceWarningCard';
 export { PermissionGuideDialog } from './components/PermissionGuideDialog';
 export { PaywallDialog } from './components/PaywallDialog';
-export { AlternativeRecommender } from './engine/AlternativeRecommender';
+export { AlternativeRecommender, AlternativeCandidate } from './engine/AlternativeRecommender';
+export { AllergenAutoDetector, SuspectedAllergen, AdverseReactionRecord } from './engine/AllergenAutoDetector';
+export { AdditiveInteractionEngine, AdditiveInteraction, InteractionAssessmentResult } from './engine/AdditiveInteractionEngine';
+export { OnDeviceInferenceEngine, InferenceResult } from './engine/OnDeviceInferenceEngine';
+export { AdditiveSafetyEngine, AdditiveRiskLevel as AdditiveSafetyRiskLevel, AdditiveAssessment, FoodAdditiveReport } from './engine/AdditiveSafetyEngine';
+export { AllergenCrossReactivityEngine, CrossReactivityPair, AllergenCrossReport, CrossReactiveRisk } from './engine/AllergenCrossReactivityEngine';

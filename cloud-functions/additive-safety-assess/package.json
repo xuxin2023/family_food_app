@@ -1,0 +1,7 @@
+{
+  "name": "additive-safety-assess",
+  "version": "1.0.0",
+  "description": "食品添加剂E编号安全评级云函数",
+  "main": "index.ts",
+  "dependencies": {}
+}

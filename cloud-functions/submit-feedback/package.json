@@ -1,0 +1,7 @@
+{
+  "name": "submit-feedback",
+  "version": "1.0.0",
+  "description": "用户反馈提交云函数（SecureHttpClient + 工单系统）",
+  "main": "index.ts",
+  "dependencies": {}
+}

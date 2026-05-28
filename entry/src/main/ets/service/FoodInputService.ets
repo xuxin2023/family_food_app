@@ -1,7 +1,7 @@
 import { common } from '@kit.AbilityKit';
 import { FoodLabel, FoodSource } from 'hsp_core';
 import { OcrService } from './OcrService';
-import { ScanService, ScanLookupResult } from 'hsp_service';
+import { ScanService, ScanLookupResult } from 'feature_scan';
 
 export class FoodInputResult {
   foodLabel: FoodLabel = new FoodLabel();

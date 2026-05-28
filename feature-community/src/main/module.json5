@@ -1,6 +1,6 @@
 {
   "module": {
-    "name": "feature-community",
+    "name": "feature_community",
     "type": "shared",
     "description": "社区功能模块 — 食谱分享、用户互动、社区动态",
     "deviceTypes": [

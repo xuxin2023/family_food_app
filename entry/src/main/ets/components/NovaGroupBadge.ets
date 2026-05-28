@@ -2,7 +2,7 @@
 // Nova 加工度评级徽章组件 — 显示 Nova Group 1~4 等级及颜色标识
 
 import { COLORS, FONT_SIZE, FONT_WEIGHT, RADIUS, SPACING, SCORE_COLORS } from 'hsp_core';
-import { NovaGroup } from '../engine/NovaGroupEngine';
+import { NovaGroup } from 'feature_scan';
 import { ElderModeManager } from '../service/ElderModeManager';
 
 function getNovaColor(group: NovaGroup): string {

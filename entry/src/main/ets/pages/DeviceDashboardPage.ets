@@ -129,6 +129,8 @@ struct DeviceDashboardPage {
             hilog.warn(DOMAIN_ZERO, 'DeviceDashboardPage', 'safeBack failed: %{public}s', JSON.stringify(e));
           }
         })
+        .accessibilityText('返回')
+        .accessibilityLevel('yes')
       Column() {
         Text($r('app.string.device_dash_title'))
           .fontSize(20)
@@ -154,6 +156,8 @@ struct DeviceDashboardPage {
           this.isLoading = false
           promptAction.showToast({ message: $r('app.string.device_dash_data_refreshed') })
         })
+        .accessibilityText('刷新数据')
+        .accessibilityLevel('yes')
     }
     .width('100%')
     .padding({ left: 16, right: 16, top: 16, bottom: 12 })
@@ -186,6 +190,8 @@ struct DeviceDashboardPage {
           .backgroundColor('#FFFFFF30')
           .borderRadius(16)
           .onClick(() => { safePushUrl('pages/SubscriptionPage') })
+          .accessibilityText('升级会员')
+          .accessibilityLevel('yes')
       }
       .padding(12)
       .backgroundColor(COLORS.PRIMARY_DARK)
@@ -236,6 +242,8 @@ struct DeviceDashboardPage {
           .onClick(async () => {
             await this.connectHwHealthInner()
           })
+          .accessibilityText('连接华为健康')
+          .accessibilityLevel('yes')
       }
     }
     .width('92%')
@@ -265,6 +273,8 @@ struct DeviceDashboardPage {
               this.selectedMemberId = member.memberId
               this.loadHealthDataInner()
             })
+            .accessibilityText(member.nickname)
+            .accessibilityLevel('yes')
         }, (member: FamilyProfile) => member.memberId)
       }
     }

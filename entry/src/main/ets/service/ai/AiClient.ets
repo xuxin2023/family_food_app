@@ -5,7 +5,7 @@
 import { http } from '@kit.NetworkKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AGENT_ARTS_ENDPOINT, AGENT_ARTS_MODEL } from './AiConfig';
-import { API_CONFIG, API_TIMEOUT_CONFIG, HILOG_DOMAIN } from 'hsp_core';
+import { API_CONFIG, API_TIMEOUT_CONFIG, HILOG_DOMAIN, SecureKeyStore, AssetKeyManager } from 'hsp_core';
 import { SecureHttpClient, SecureRequestOptions } from 'hsp_service';
 import { GlobalErrorHandler } from '../../utils/GlobalErrorHandler';
 
@@ -71,6 +71,30 @@ export class AiClient {
 
   setApiKey(key: string): void {
     this.apiKey = key;
+    try {
+      SecureKeyStore.save('AI_API_KEY', key);
+    } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'SecureKeyStore save failed, using in-memory only');
+    }
+  }
+
+  private async loadApiKey(): Promise<string> {
+    if (this.apiKey.length > 0) return this.apiKey;
+    try {
+      const stored = await SecureKeyStore.load('AI_API_KEY');
+      if (stored && stored.length > 0) {
+        this.apiKey = stored;
+        return stored;
+      }
+      const assetKey = AssetKeyManager.getInstance().getKey('AGENT_ARTS');
+      if (assetKey && assetKey.length > 0) {
+        this.apiKey = assetKey;
+        return assetKey;
+      }
+    } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'API key load from SecureKeyStore failed');
+    }
+    return '';
   }
 
   getApiKeyMasked(): string {

@@ -43,6 +43,8 @@
     "pages/PersonalizedRecommendPage",
     "pages/TeenModePage",
     "pages/AllergenConfigPage",
-    "pages/AllergenSetupWizard"
+    "pages/AllergenSetupWizard",
+    "pages/DailyIntakePage",
+    "pages/ScanHistoryTimelinePage"
   ]
 }

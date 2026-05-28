@@ -8,6 +8,7 @@ import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferences } from '@kit.ArkData';
 import { http } from '@kit.NetworkKit';
+import { SecureHttpClient, SecureRequestOptions } from './SecureHttpClient';
 
 const TAG = 'PrivacyManager';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -163,13 +164,13 @@ export class PrivacyManager {
       const ossBase = DEFAULT_PRIVACY_OSS_BASE;
       const manifestUrl = ossBase + VERSION_MANIFEST_PATH;
 
-      const httpClient = http.createHttp();
       try {
-        const response = await httpClient.request(manifestUrl, {
-          method: http.RequestMethod.GET,
-          connectTimeout: 5000,
-          readTimeout: 5000
-        });
+        const opts = new SecureRequestOptions();
+        opts.url = manifestUrl;
+        opts.method = http.RequestMethod.GET;
+        opts.connectTimeout = 5000;
+        opts.readTimeout = 5000;
+        const response = await SecureHttpClient.getInstance().request(opts);
 
         if (response.responseCode === 200 && typeof response.result === 'string') {
           const manifest = JSON.parse(response.result) as RemoteVersionManifest;

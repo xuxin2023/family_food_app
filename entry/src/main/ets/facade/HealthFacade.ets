@@ -7,12 +7,12 @@ import { common } from '@kit.AbilityKit';
 import { HistoryRepository } from '../repository/HistoryRepository';
 import { EngineManager } from '../EngineManager';
 import { ServiceManager } from '../ServiceManager';
-import { NutritionTrendEngine, nutritionTrendEngine, DailyNutritionSummary, NutrientTrendData, MealGroup } from '../engine/NutritionTrendEngine';
+import { NutritionTrendEngine, nutritionTrendEngine, DailyNutritionSummary, NutrientTrendData, MealGroup } from 'feature_report';
 import { OnDeviceAiEngine } from '../engine/OnDeviceAiEngine';
-import { ExerciseNutritionRecommendation, ExerciseSession } from '../engine/ExerciseNutritionEngine';
-import { CheckupReport, HealthArchiveUpdate } from '../engine/CheckupReportEngine';
-import { ChildHealthAssessment } from '../engine/ChildHealthAssessmentEngine';
-import { PersonalizedRecommendation, PersonalizedContext } from '../engine/PersonalizedRecommendEngine';
+import { ExerciseNutritionRecommendation, ExerciseSession } from 'feature_report';
+import { CheckupReport, HealthArchiveUpdate } from 'feature_report';
+import { ChildHealthAssessment } from 'feature_report';
+import { PersonalizedRecommendation, PersonalizedContext } from 'feature_report';
 
 export class HealthFacade {
   private readonly historyRepo: HistoryRepository;

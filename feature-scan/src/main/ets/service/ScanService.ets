@@ -1,16 +1,19 @@
-// 扫码服务 - 集成华为Scan Kit
-// API参考：https://developer.huawei.com/consumer/cn/doc/harmonyos-references-V5/scanbarcode-V5
-// 深化：接入数据血缘追踪 (DataLineage)
-
 import { FoodLabel, FoodSource, HILOG_DOMAIN, lookupByBarcode as offlineLookupByBarcode, convertToFoodLabel } from 'hsp_core';
 import { common } from '@kit.AbilityKit';
 import { scanBarcode } from '@kit.ScanKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { connection } from '@kit.NetworkKit';
-import { OpenFoodFactsService, DataLineage } from 'hsp_service';
 
 export interface ILocalCacheProvider {
   findFoodByBarcode(barcode: string): Promise<FoodLabel | null>;
+}
+
+export interface IRemoteLookupProvider {
+  lookupByBarcode(barcode: string): Promise<{ found: boolean; foodLabel: FoodLabel | null; confidence: number } | null>;
+}
+
+export interface IDataLineageRecorder {
+  recordLineage(foodId: string, source: string, confidence: number, transforms: string[]): void;
 }
 
 const TAG = 'ScanService';
@@ -18,16 +21,27 @@ const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 
 export class ScanService {
   private cacheProvider: ILocalCacheProvider | null = null;
+  private remoteProvider: IRemoteLookupProvider | null = null;
+  private lineageRecorder: IDataLineageRecorder | null = null;
 
   setCacheProvider(provider: ILocalCacheProvider): void {
     this.cacheProvider = provider;
   }
 
-  /**
-   * 启动扫码识别（默认模式）
-   * 支持EAN-8、EAN-13、UPC-A、UPC-E、QR Code、Code 128等13种码制式
-   * @returns 条码值字符串
-   */
+  setRemoteProvider(provider: IRemoteLookupProvider): void {
+    this.remoteProvider = provider;
+  }
+
+  setLineageRecorder(recorder: IDataLineageRecorder): void {
+    this.lineageRecorder = recorder;
+  }
+
+  private recordLineage(foodId: string, source: string, confidence: number, transforms: string[]): void {
+    if (this.lineageRecorder) {
+      this.lineageRecorder.recordLineage(foodId, source, confidence, transforms);
+    }
+  }
+
   async scanBarcode(context: common.Context): Promise<string> {
     try {
       const options: scanBarcode.ScanOptions = {
@@ -46,11 +60,6 @@ export class ScanService {
     }
   }
 
-  /**
-   * 启动扫码识别（自定义模式 - 仅食品相关条码）
-   * 限制为EAN-13（最常见食品条码）和QR Code
-   * @returns 条码值字符串
-   */
   async scanFoodBarcode(context: common.Context): Promise<string> {
     try {
       const options: scanBarcode.ScanOptions = {
@@ -69,12 +78,6 @@ export class ScanService {
     }
   }
 
-  /**
-   * 根据条码查找本地商品缓存
-   * 优先从本地SQLite查找，命中则直接返回结构化FoodLabel
-   * @param barcode 条码值
-   * @returns FoodLabel（如有缓存）或null
-   */
   async lookupLocalCache(barcode: string): Promise<FoodLabel | null> {
     try {
       if (!this.cacheProvider) {
@@ -114,7 +117,6 @@ export class ScanService {
 
     hilog.info(DOMAIN_ZERO, TAG, 'Lookup chain start for barcode: %{public}s', barcode);
 
-    // Level 1: SQLite 本地缓存
     const cached = await this.lookupLocalCache(barcode);
     if (cached) {
       hilog.info(DOMAIN_ZERO, TAG, 'Level1 LOCAL_CACHE hit for: %{public}s', barcode);
@@ -123,16 +125,11 @@ export class ScanService {
       result.barcode = barcode;
       result.source = FoodSource.LOCAL_CACHE;
       result.confidence = 95;
-
-      DataLineage.record(DataLineage.createRecord(
-        cached.foodId, 'local_cache', 0.95,
-        ['cache_store'], '', ''
-      ));
+      this.recordLineage(cached.foodId, 'local_cache', 0.95, ['cache_store']);
       return result;
     }
     hilog.info(DOMAIN_ZERO, TAG, 'Level1 LOCAL_CACHE miss, falling to Level2');
 
-    // Level 2: 离线内置数据库
     const offlineEntry = offlineLookupByBarcode(barcode);
     if (offlineEntry) {
       const offlineLabel = convertToFoodLabel(offlineEntry);
@@ -142,19 +139,14 @@ export class ScanService {
       result.barcode = barcode;
       result.source = FoodSource.OFFLINE;
       result.confidence = 90;
-
-      DataLineage.record(DataLineage.createRecord(
-        offlineLabel.foodId, 'offline_db', 0.9,
-        ['field_extraction', 'nutrition_range_validation'], '', ''
-      ));
+      this.recordLineage(offlineLabel.foodId, 'offline_db', 0.9, ['field_extraction', 'nutrition_range_validation']);
       return result;
     }
     hilog.info(DOMAIN_ZERO, TAG, 'Level2 OFFLINE miss, falling to Level3');
 
-    // Level 3: Open Food Facts 远程API
-    if (await this.isNetworkAvailable()) {
+    if (await this.isNetworkAvailable() && this.remoteProvider) {
       try {
-        const remote = await OpenFoodFactsService.getInstance().lookupByBarcode(barcode);
+        const remote = await this.remoteProvider.lookupByBarcode(barcode);
         if (remote && remote.found && remote.foodLabel) {
           hilog.info(DOMAIN_ZERO, TAG, 'Level3 OFF API hit for: %{public}s', barcode);
           const result = new ScanLookupResult();
@@ -162,12 +154,8 @@ export class ScanService {
           result.barcode = barcode;
           result.source = FoodSource.BARCODE_HIT;
           result.confidence = remote.confidence;
-
-          DataLineage.record(DataLineage.createRecord(
-            remote.foodLabel.foodId, 'off_api', remote.confidence / 100,
-            ['field_extraction', 'sodium_mg_conversion', 'allergen_tag_parse', 'ingredient_split'],
-            '', ''
-          ));
+          this.recordLineage(remote.foodLabel.foodId, 'off_api', remote.confidence / 100,
+            ['field_extraction', 'sodium_mg_conversion', 'allergen_tag_parse', 'ingredient_split']);
           return result;
         }
         hilog.info(DOMAIN_ZERO, TAG, 'Level3 OFF API miss for: %{public}s', barcode);
@@ -175,10 +163,9 @@ export class ScanService {
         hilog.error(DOMAIN_ZERO, TAG, 'Level3 OFF API error: %{public}s', JSON.stringify(err));
       }
     } else {
-      hilog.info(DOMAIN_ZERO, TAG, 'Level3 skipped: network unavailable');
+      hilog.info(DOMAIN_ZERO, TAG, 'Level3 skipped: network unavailable or no remote provider');
     }
 
-    // Level 4: 未找到
     hilog.info(DOMAIN_ZERO, TAG, 'All 4 levels exhausted, barcode: %{public}s not found', barcode);
     const result = new ScanLookupResult();
     result.foodLabel = null;

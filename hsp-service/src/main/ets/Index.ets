@@ -41,7 +41,6 @@ export { HuaweiCloudService } from './service/HuaweiCloudService';
 export { UpdateChecker, UpdateInfo } from './service/UpdateChecker';
 export { SyncService, SyncEvent, SyncEventCallback } from './service/sync/SyncService';
 export { DataService } from './service/DataService';
-export { ScanService, ScanLookupResult, ILocalCacheProvider } from './service/ScanService';
 export { ServiceGateway } from './service/ServiceGateway';
 export { CloudBackendService, CloudProductResponse, CloudProductRecord, CloudNutritionInfo, FoodSubmissionRequest, AlternativeQueryRequest, SyncMemberDataRequest } from './service/CloudBackendService';
 export { OnlineAlternativeSearchService, OnlineSearchResult, CloudAlternativeResult } from './service/OnlineAlternativeSearchService';
@@ -61,3 +60,18 @@ export { RepositoryManager } from './manager/RepositoryManager';
 
 // ===== 工具层导出（Sprint3 批次2 已迁移至 hsp_core） =====
 // OfflineFoodDatabase 和 GlobalStateProvider 已迁移至 hsp_core
+
+// ===== 合规服务导出（P0 新增） =====
+export { SystemPrivacyService } from './service/SystemPrivacyService';
+export { UserDataDeletionService, DeletionResult } from './service/UserDataDeletionService';
+export { ScanToShoppingService, ShoppingItemInput, PriceCompareResult } from './service/ScanToShoppingService';
+export { HealthReportExportService, HealthReportRequest, HealthReportResult } from './service/HealthReportExportService';
+export { PermissionProgressiveGuide, PermissionGuideStep } from './service/PermissionProgressiveGuide';
+
+// ===== 功能增强服务 =====
+export { BatchScanService, BatchScanResult } from './service/BatchScanService';
+export { FoodCompareService, FoodCompareResult, NutritionDelta } from './service/FoodCompareService';
+export { NutritionKnowledgeService, KnowledgeEntry } from './service/NutritionKnowledgeService';
+export { MealPlanService, MealPlan, MealPlanItem } from './service/MealPlanService';
+export { ReminderService, ReminderRule, ReminderEvent } from './service/ReminderService';
+export { FeedbackService, FeedbackSubmission, FeedbackResult } from './service/FeedbackService';

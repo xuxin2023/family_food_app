@@ -3,11 +3,11 @@ import {
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
-import { AlternativeRecommender, AlternativeCandidate } from '../engine/AlternativeRecommender';
-import { alternativeFoodRecommender } from '../engine/AlternativeFoodRecommender';
+import { AlternativeRecommender, AlternativeCandidate, alternativeFoodRecommender } from 'feature_scan';
 import { OfflineFoodProvider } from 'hsp_core';
 import { EmptyState } from '../components/EmptyState';
 import { OnlineAlternativeSearchService } from 'hsp_service';
+import { AlternativeComparePanel } from 'feature_report';
 
 @Entry
 @ComponentV2
@@ -111,6 +111,17 @@ struct AlternativeFoodPage {
                   })
                 } else {
                   this.AlternativeListSection()
+                  if (this.candidates.length > 0) {
+                    const altLabel = new FoodLabel();
+                    altLabel.foodName = this.candidates[0].foodName;
+                    altLabel.manufacturer = this.candidates[0].brand;
+                    altLabel.barcode = this.candidates[0].barcode;
+                    altLabel.nutrition = this.candidates[0].nutrition;
+                    AlternativeComparePanel({
+                      originalFood: this.foodLabel,
+                      alternativeFood: altLabel
+                    })
+                  }
                   this.LegacyAlternativeSection()
                 }
               }

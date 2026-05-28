@@ -2,7 +2,7 @@
 // 营养成分迷你趋势图组件 - 展示营养素的历史趋势变化（真实数据驱动）
 
 import { SPACING, FONT_SIZE, RADIUS, COLORS } from 'hsp_core';
-import { NutrientTrendData } from '../engine/NutritionTrendEngine';
+import { NutrientTrendData } from 'feature_report';
 
 @ComponentV2
 export struct NutritionSparkline {

@@ -1,6 +1,7 @@
 import {
-  ToastHelper, safeBack, FamilyProfile, HealthGoal, COLORS, FONT_SIZE, RADIUS, SPACING, MealPlanDay, MealPlanItem, MealPlanTemplate, createDefaultMealPlan, createLowSodiumMealPlan, createLowSugarMealPlan
+  ToastHelper, safeBack, FamilyProfile, HealthGoal, COLORS, FONT_SIZE, RADIUS, SPACING, MealPlanDay, MealPlanItem, MealPlanTemplate, createDefaultMealPlan, createLowSodiumMealPlan, createLowSugarMealPlan, DailyBudget
 } from 'hsp_core';
+import { MealPlanService, MealPlan, MealPlanItem as SmartMealPlanItem } from 'hsp_service';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 
@@ -13,8 +14,11 @@ struct MealPlanPage {
   @Local selectedDayIndex: number = 0
   @Local familyMembers: FamilyProfile[] = []
   @Local showDayDetail: boolean = false
+  @Local smartPlan: MealPlan | null = null
+  @Local showSmartPlanView: boolean = false
 
   private appState: AppState = AppState.getInstance()
+  private mealPlanService: MealPlanService = new MealPlanService()
 
   aboutToAppear(): void {
     this.familyMembers = this.appState.getAllMembersSync()
@@ -40,6 +44,18 @@ struct MealPlanPage {
     } else {
       this.currentPlan = createDefaultMealPlan();
     }
+  }
+
+  private generateSmartPlan(): void {
+    if (this.familyMembers.length === 0) return;
+    const member = this.familyMembers[0];
+    const budget = new DailyBudget();
+    budget.calorieBudget = 2000;
+    budget.sodiumBudget = 2300;
+    budget.sugarBudget = 50;
+    const today = new Date().toISOString().slice(0, 10);
+    this.smartPlan = this.mealPlanService.generatePlan(member.memberId, today, [], budget, member);
+    this.showSmartPlanView = true;
   }
 
   build() {
@@ -100,7 +116,43 @@ struct MealPlanPage {
           .backgroundColor(COLORS.PRIMARY)
           .borderRadius(24)
           .fontColor(COLORS.WHITE)
-          .margin({ top: 16, bottom: 24 })
+          .margin({ top: 16, bottom: 8 })
+          .onClick(() => {
+            this.generateSmartPlan()
+          })
+          .accessibilityText('智能膳食推荐')
+          .accessibilityLevel('yes')
+
+        if (this.showSmartPlanView && this.smartPlan !== null) {
+          Column() {
+            Text('智能推荐方案')
+              .fontSize(16)
+              .fontWeight(FontWeight.Bold)
+              .fontColor(COLORS.TEXT_PRIMARY)
+              .margin({ bottom: 8 })
+            ForEach(this.smartPlan.suggestions, (s: string, i: number) => {
+              Text('• ' + s).fontSize(13).fontColor(COLORS.TEXT_SECONDARY).margin({ bottom: 4 })
+            }, (s: string, i: number) => s + i)
+            Text(`预算利用率: ${(this.smartPlan.budgetUtilization * 100).toFixed(0)}%`)
+              .fontSize(12)
+              .fontColor(COLORS.PRIMARY)
+              .margin({ top: 8 })
+          }
+          .width('92%')
+          .padding(16)
+          .backgroundColor(COLORS.WHITE)
+          .borderRadius(RADIUS.LG)
+          .alignItems(HorizontalAlign.Start)
+          .margin({ bottom: 14 })
+        }
+
+        Button($r('app.string.add_to_diet_record'))
+          .width('90%')
+          .height(48)
+          .backgroundColor(COLORS.TEXT_GRAY_9E9E)
+          .borderRadius(24)
+          .fontColor(COLORS.WHITE)
+          .margin({ top: 8, bottom: 24 })
           .onClick(() => {
             ToastHelper.show(this.getUIContext(), $r('app.string.meal_plan_added_toast'))
           })

@@ -11,17 +11,19 @@ import { FamilyRepository } from './repository/FamilyRepository';
 import { FoodRepository } from './repository/FoodRepository';
 import { HistoryRepository, ScanHistoryRecord, DietRecordInput } from './repository/HistoryRepository';
 import { RuleRepository } from './repository/RuleRepository';
-import { SyncService, SyncEvent, ScanService, ILocalCacheProvider, migrateDatabase, PermissionManager, NetworkMonitorService, PrivacyManager, MemberManager, BasketManager, ReportCacheManager, FamilyGroupRepository, RecipeRepository } from 'hsp_service';
+import { SyncService, SyncEvent, migrateDatabase, PermissionManager, NetworkMonitorService, PrivacyManager, MemberManager, BasketManager, ReportCacheManager, FamilyGroupRepository, RecipeRepository } from 'hsp_service';
+import { ScanService, ILocalCacheProvider, IRemoteLookupProvider, IDataLineageRecorder } from 'feature_scan';
+import { OpenFoodFactsService, DataLineage } from 'hsp_service';
 import { FavoriteItem, FavoriteRepository } from './repository/FavoriteRepository';
 import { CreateRecipeParams } from 'hsp_core';
 import { FoodInputService, FoodInputResult } from './service/FoodInputService';
 import { DistributedSyncHelper } from './service/sync/DistributedSyncHelper';
 import { OnDeviceAiEngine } from './engine/OnDeviceAiEngine';
-import { ExerciseNutritionRecommendation } from './engine/ExerciseNutritionEngine';
-import { CheckupReport, HealthArchiveUpdate } from './engine/CheckupReportEngine';
-import { ChildHealthAssessment } from './engine/ChildHealthAssessmentEngine';
-import { PersonalizedRecommendation } from './engine/PersonalizedRecommendEngine';
-import { DailyNutritionSummary, MealGroup } from './engine/NutritionTrendEngine';
+import { ExerciseNutritionRecommendation } from 'feature_report';
+import { CheckupReport, HealthArchiveUpdate } from 'feature_report';
+import { ChildHealthAssessment } from 'feature_report';
+import { PersonalizedRecommendation } from 'feature_report';
+import { DailyNutritionSummary, MealGroup } from 'feature_report';
 import { EngineManager } from './EngineManager';
 import { ServiceManager } from './ServiceManager';
 import { FoodFacade } from './facade/FoodFacade';
@@ -65,12 +67,33 @@ export class AppState {
     const cacheProvider = new ILocalCacheProvider();
     cacheProvider.findFoodByBarcode = (barcode: string) => self.findFoodByBarcode(barcode);
     this.scanService.setCacheProvider(cacheProvider);
+
+    const remoteProvider = new IRemoteLookupProvider();
+    remoteProvider.lookupByBarcode = async (barcode: string) => {
+      const result = await OpenFoodFactsService.getInstance().lookupByBarcode(barcode);
+      if (result && result.found && result.foodLabel) {
+        return { found: true, foodLabel: result.foodLabel, confidence: result.confidence };
+      }
+      return null;
+    };
+    this.scanService.setRemoteProvider(remoteProvider);
+
+    const lineageRecorder = new IDataLineageRecorder();
+    lineageRecorder.recordLineage = (foodId: string, source: string, confidence: number, transforms: string[]) => {
+      DataLineage.record(DataLineage.createRecord(foodId, source, confidence, transforms, '', ''));
+    };
+    this.scanService.setLineageRecorder(lineageRecorder);
   }
 
   private initPhase: 'none' | 'initializing' | 'ready' = 'none';
   private readyResolver: (() => void) | null = null;
-  private readyPromise: Promise<void> = new Promise<void>((resolve) => {
+  private readyRejecter: ((reason: Object) => void) | null = null;
+  private readyPromise: Promise<void> = new Promise<void>((resolve, reject) => {
     this.readyResolver = resolve;
+    this.readyRejecter = reject;
+    setTimeout(() => {
+      reject(new Error('AppState init timeout after 15s'));
+    }, 15000);
   });
   private syncEventHandler: ((event: SyncEvent) => void) | null = null;
 
@@ -98,6 +121,10 @@ export class AppState {
     const instance = AppState.getInstance();
     if (instance.initPhase === 'ready') return;
     return instance.readyPromise;
+  }
+
+  isInitFailed(): boolean {
+    return this.initPhase === 'none' && this.readyResolver === null;
   }
 
   // ===== 初始化 =====
@@ -194,7 +221,7 @@ export class AppState {
   getDailyBudgetSync(memberId: string): DailyBudget {
     return this.memberFacade.getDailyBudgetSync(memberId);
   }
-  async getDailyBudget(memberId: string): Promise<DailyBudget> {
+  getDailyBudget(memberId: string): DailyBudget {
     return this.memberFacade.getDailyBudgetSync(memberId);
   }
   deductIntake(memberId: string, sodium: number, sugar: number, calories: number, fat: number): void {
@@ -232,8 +259,8 @@ export class AppState {
   getOnDeviceAiEngine(): OnDeviceAiEngine | null {
     return this.health.getOnDeviceAiEngine();
   }
-  async calculateExerciseNutrition(memberId: string, exType: string, minutes: number,
-    intensity: string): Promise<ExerciseNutritionRecommendation> {
+  async calculateExerciseNutrition(memberId: string, _exType: string, _minutes: number,
+    _intensity: string): Promise<ExerciseNutritionRecommendation> {
     return this.health.calculateExerciseNutrition(memberId);
   }
   async parseCheckupReport(content: string, memberId: string): Promise<CheckupReport> {
@@ -422,7 +449,6 @@ export class AppState {
     this.memberFacade.refreshMemberCache();
     this.memberFacade.refreshBudgetCache();
     this.engines.cleanExpiredEngineCache();
-    AppStorage.setOrCreate<number>('scanVersion', (AppStorage.get<number>('scanVersion') ?? 0) + 1);
     const cacheData = new CacheInvalidationData();
     cacheData.source = 'sync';
     DomainEventBus.emit(DomainEvents.CACHE_INVALIDATED, cacheData);

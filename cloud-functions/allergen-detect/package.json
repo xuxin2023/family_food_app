@@ -1,0 +1,7 @@
+{
+  "name": "allergen-detect",
+  "version": "1.0.0",
+  "description": "过敏原智能检测云函数（含交叉反应性分析）",
+  "main": "index.ts",
+  "dependencies": {}
+}

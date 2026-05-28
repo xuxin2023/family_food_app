@@ -2,7 +2,7 @@
 // 膳食餐次分组 LazyForEach 数据源 - 供膳食日记页懒加载渲染
 
 import { BasicDataSource } from 'hsp_core';
-import { MealGroup } from '../engine/NutritionTrendEngine';
+import { MealGroup } from 'feature_report';
 
 export class MealGroupDataSource extends BasicDataSource<MealGroup> {
   setData(items: MealGroup[]): void {

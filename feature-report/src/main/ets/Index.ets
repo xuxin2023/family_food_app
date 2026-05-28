@@ -3,28 +3,28 @@
 // 重复 Engine/Component 已删除，从 feature-scan 重新导出
 
 // ===== 从 feature-scan 重新导出的共享引擎 =====
-export { NutriScoreEngine } from 'feature_scan';
+export { NutriScoreEngine, NutriScoreBreakdown, NutriScoreInput } from 'feature_scan';
 export { NovaGroupEngine, NovaGroup, NovaEvaluationResult } from 'feature_scan';
 export { EcoScoreEngine, EcoScoreGrade, EcoScoreResult, EcoScoreFactor } from 'feature_scan';
-export { AlternativeFoodRecommender } from 'feature_scan';
-export { AlternativeRecommender } from 'feature_scan';
+export { AlternativeFoodRecommender, alternativeFoodRecommender } from 'feature_scan';
+export { AlternativeRecommender, AlternativeCandidate } from 'feature_scan';
 export { NutriScoreBadge } from 'feature_scan';
 
 // ===== 报告引擎（本模块独有） =====
-export { WeeklyReportEngine } from './engine/WeeklyReportEngine';
-export { NutritionTrendEngine, DailyNutritionSummary, NutrientTrendData, MealGroup } from './engine/NutritionTrendEngine';
+export { WeeklyReportEngine, WeeklyReport, WeeklyDietData, NutrientComparison, NutrientStatus, PurchaseAdvice } from './engine/WeeklyReportEngine';
+export { NutritionTrendEngine, nutritionTrendEngine, DailyNutritionSummary, NutrientTrendData, DailyNutrientPoint, TrendDirection, MealGroup } from './engine/NutritionTrendEngine';
 export { HealthTrendPredictor, TrendPrediction } from './engine/HealthTrendPredictor';
 export { CredibilityEngine } from './engine/CredibilityEngine';
-export { ChildProtectionEngine } from './engine/ChildProtectionEngine';
+export { ChildProtectionEngine, MealTimeParams } from './engine/ChildProtectionEngine';
 export { PregnancySafetyEngine } from './engine/PregnancySafetyEngine';
 export { ElderFriendlyEngine, ElderFriendlyReport } from './engine/ElderFriendlyEngine';
 export { PositiveAdviceEngine, PositiveAdvice } from './engine/PositiveAdviceEngine';
-export { ExerciseNutritionEngine, ExerciseNutritionRecommendation } from './engine/ExerciseNutritionEngine';
-export { CheckupReportEngine, CheckupReport, HealthArchiveUpdate } from './engine/CheckupReportEngine';
-export { ChildHealthAssessmentEngine, ChildHealthAssessment } from './engine/ChildHealthAssessmentEngine';
-export { PersonalizedRecommendEngine, PersonalizedRecommendation } from './engine/PersonalizedRecommendEngine';
+export { ExerciseNutritionEngine, ExerciseNutritionRecommendation, ExerciseSession, NutrientSupplement } from './engine/ExerciseNutritionEngine';
+export { CheckupReportEngine, CheckupReport, CheckupItem, HealthArchiveUpdate } from './engine/CheckupReportEngine';
+export { ChildHealthAssessmentEngine, ChildHealthAssessment, SnackImpactAssessment, AdditiveSafetyResult, AdditiveSafetyLevel } from './engine/ChildHealthAssessmentEngine';
+export { PersonalizedRecommendEngine, PersonalizedRecommendation, RecommendationContext, PersonalizedContext, PersonalizedFactor } from './engine/PersonalizedRecommendEngine';
 export { FoodCompareEngine } from './engine/FoodCompareEngine';
-export { ShanghaiGradeEngine } from './engine/ShanghaiGradeEngine';
+export { ShanghaiGradeEngine, ShanghaiGradeResult } from './engine/ShanghaiGradeEngine';
 export { RuleEngine } from './engine/RuleEngine';
 
 // ===== 报告组件 =====
@@ -42,3 +42,5 @@ export { CredibilityCard } from './components/CredibilityCard';
 export { RiskAssessmentPanel } from './components/RiskAssessmentPanel';
 export { TrendPredictionBar } from './components/TrendPredictionBar';
 export { ShareCard, ShareCardGenerator, MemberShareInfo, ShareImageParams } from './components/ShareCard';
+export { ComprehensiveRatingPanel } from './components/ComprehensiveRatingPanel';
+export { AlternativeComparePanel, AlternativeCompareItem, computeNutritionDelta } from './components/AlternativeComparePanel';

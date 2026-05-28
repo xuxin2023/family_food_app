@@ -8,6 +8,8 @@ import { FoodLabel, NutritionPer100g, FoodSource, JsonObject, API_TIMEOUT_CONFIG
 import { http } from '@kit.NetworkKit';
 import { image } from '@kit.ImageKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { SecureHttpClient, SecureRequestOptions } from './SecureHttpClient';
+import { ImageCacheUtil } from 'hsp_core';
 
 const TAG = 'OpenFoodFactsService';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -378,55 +380,44 @@ export class OpenFoodFactsService {
   /**
    * 获取产品图片
    */
-  getProductImage(imageUrl: string): Promise<image.PixelMap | null> {
+  async getProductImage(imageUrl: string): Promise<image.PixelMap | null> {
     if (imageUrl.length === 0) {
-      return new Promise<image.PixelMap | null>((resolve) => {
-        resolve(null)
-      })
+      return null;
     }
 
-    return new Promise<image.PixelMap | null>((resolve) => {
-      try {
-        const httpRequest = http.createHttp()
-        httpRequest.request(imageUrl, {
-          method: http.RequestMethod.GET,
-          header: {
-            'User-Agent': USER_AGENT
-          },
-          connectTimeout: REQUEST_TIMEOUT,
-          readTimeout: REQUEST_TIMEOUT
-        }, async (err, data) => {
-          httpRequest.destroy()
-          if (err) {
-            hilog.warn(DOMAIN_ZERO, TAG, 'Image fetch error: %{public}s', JSON.stringify(err))
-            resolve(null)
-            return
-          }
-          if (data.responseCode !== 200) {
-            hilog.warn(DOMAIN_ZERO, TAG, 'Image fetch failed with status: %{public}d', data.responseCode)
-            resolve(null)
-            return
-          }
-          const result = data.result
-          if (result instanceof ArrayBuffer) {
-            try {
-              const imageSource = image.createImageSource(result as ArrayBuffer)
-              const pixelMap = await imageSource.createPixelMap()
-              imageSource.release()
-              resolve(pixelMap)
-            } catch (imgError) {
-              hilog.error(DOMAIN_ZERO, TAG, 'Image processing failed: %{public}s', JSON.stringify(imgError))
-              resolve(null)
-            }
-          } else {
-            resolve(null)
-          }
-        })
-      } catch (error) {
-        hilog.error(DOMAIN_ZERO, TAG, 'Image request failed: %{public}s', JSON.stringify(error))
-        resolve(null)
+    try {
+      const cacheUtil = ImageCacheUtil.getInstance();
+      const cached = cacheUtil.get(imageUrl);
+      if (cached !== undefined && cached !== null) {
+        return cached;
       }
-    })
+    } catch (_) {}
+
+    try {
+      const options: SecureRequestOptions = {
+        url: imageUrl,
+        method: 'GET',
+        headers: { 'User-Agent': USER_AGENT },
+        connectTimeout: REQUEST_TIMEOUT,
+        readTimeout: REQUEST_TIMEOUT
+      };
+      const response = await SecureHttpClient.request(options);
+      if (response.responseCode !== 200 || !(response.result instanceof ArrayBuffer)) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'Image fetch failed with status: %{public}d', response.responseCode);
+        return null;
+      }
+      const imageSource = image.createImageSource(response.result as ArrayBuffer);
+      const pixelMap = await imageSource.createPixelMap();
+      imageSource.release();
+      try {
+        const cacheUtil = ImageCacheUtil.getInstance();
+        cacheUtil.set(imageUrl, pixelMap);
+      } catch (_) {}
+      return pixelMap;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'Image request failed: %{public}s', JSON.stringify(error));
+      return null;
+    }
   }
 
   /**
@@ -518,42 +509,32 @@ export class OpenFoodFactsService {
   /**
    * 执行 HTTP GET 请求
    */
-  private makeRequest(url: string): Promise<JsonObject | null> {
-    return new Promise<JsonObject | null>((resolve: (value: JsonObject | null) => void) => {
-      try {
-        const httpRequest = http.createHttp()
-        httpRequest.request(url, {
-          method: http.RequestMethod.GET,
-          header: {
-            'User-Agent': USER_AGENT,
-            'Content-Type': 'application/json'
-          },
-          connectTimeout: REQUEST_TIMEOUT,
-          readTimeout: REQUEST_TIMEOUT
-        }, (err, data) => {
-          httpRequest.destroy()
-          if (err) {
-            hilog.warn(DOMAIN_ZERO, TAG, 'Request error: %{public}s', JSON.stringify(err))
-            resolve(null)
-            return
-          }
-          if (data.responseCode !== 200) {
-            hilog.warn(DOMAIN_ZERO, TAG, 'HTTP %{public}d for %{public}s', data.responseCode, url)
-            resolve(null)
-            return
-          }
-          const result = data.result
-          if (typeof result === 'object' && result !== null) {
-            resolve(result as Record<string, Object>)
-          } else {
-            resolve(null)
-          }
-        })
-      } catch (error) {
-        hilog.error(DOMAIN_ZERO, TAG, 'Request failed: %{public}s', JSON.stringify(error))
-        resolve(null)
+  private async makeRequest(url: string): Promise<JsonObject | null> {
+    try {
+      const opts = new SecureRequestOptions();
+      opts.url = url;
+      opts.method = http.RequestMethod.GET;
+      const header = new Map<string, string>();
+      header.set('User-Agent', USER_AGENT);
+      header.set('Content-Type', 'application/json');
+      opts.header = header;
+      opts.connectTimeout = REQUEST_TIMEOUT;
+      opts.readTimeout = REQUEST_TIMEOUT;
+
+      const response = await SecureHttpClient.getInstance().request(opts);
+      if (response.responseCode === 200) {
+        const result = response.result;
+        if (typeof result === 'object' && result !== null) {
+          return result as Record<string, Object>;
+        }
+      } else {
+        hilog.warn(DOMAIN_ZERO, TAG, 'HTTP %{public}d for %{public}s', response.responseCode, url);
       }
-    })
+      return null;
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'Request failed: %{public}s', JSON.stringify(error));
+      return null;
+    }
   }
 
   /**

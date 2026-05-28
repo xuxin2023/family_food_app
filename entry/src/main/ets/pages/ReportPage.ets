@@ -10,7 +10,10 @@ import { BackButton } from '../components/BackButton';
 import { common } from '@kit.AbilityKit';
 import { AppState } from '../AppState';
 import { NutriScoreBadge, AllergenHighlightList, PaywallDialog, AdditiveTrafficLightList, AdditiveClassifier } from 'feature_scan';
-import { NovaGroupBadge, EcoScoreBadge, EcoScore, RiskAssessmentPanel, ShareCardGenerator, MemberShareInfo, ShareImageParams } from 'feature_report';
+import { NovaGroupBadge, EcoScoreBadge, EcoScore, RiskAssessmentPanel, ShareCardGenerator, MemberShareInfo, ShareImageParams, ComprehensiveRatingPanel } from 'feature_report';
+import { NutriScore } from 'hsp_core';
+import { AdditiveInteractionEngine, InteractionAssessmentResult } from 'feature_scan';
+import { AdditiveInteractionCard } from '../components/AdditiveInteractionCard';
 
 // ===== 页面级别类型 =====
 
@@ -41,6 +44,7 @@ struct ReportPage {
   @Local paywallTrigger: PaywallTrigger | null = null
   @Local showAlternativesLocked: boolean = false
   @Local currentBreakpoint: string = 'md'
+  @Local interactionResult: InteractionAssessmentResult | null = null
 
   private appState: AppState = AppState.getInstance()
   private credibilityResult: CredibilityResult = new CredibilityResult()
@@ -265,6 +269,16 @@ struct ReportPage {
         if (this.selectedRec !== null) {
           RiskAssessmentPanel({ riskResult: null })
         }
+
+        // 三评级联动面板（NutriScore + Nova + EcoScore 综合评级）
+        ComprehensiveRatingPanel({
+          nutriScore: this.scoreToNutriScore(this.nutriScore),
+          novaGroup: this.foodLabel.novaGroup ?? 0,
+          ecoScoreGrade: (this.foodLabel.ecoScoreGrade ?? 'unknown') as string
+        })
+
+        // 添加剂交互毒性卡片
+        AdditiveInteractionCard({ result: this.interactionResult })
 
         // 右侧：适配结论 + 最大可吃量 + 成员胶囊
         Column() {
@@ -1144,6 +1158,14 @@ struct ReportPage {
    */
   private getMemberLevelColor(rec: Recommendation): string {
     return getLevelColorValue(rec.levelColor)
+  }
+
+  private scoreToNutriScore(score: number): NutriScore {
+    if (score >= 80) return NutriScore.A;
+    if (score >= 60) return NutriScore.B;
+    if (score >= 40) return NutriScore.C;
+    if (score >= 20) return NutriScore.D;
+    return NutriScore.E;
   }
 
   pageTransition() {

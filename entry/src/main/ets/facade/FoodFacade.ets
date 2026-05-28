@@ -7,8 +7,8 @@ import { FoodRepository } from '../repository/FoodRepository';
 import { HistoryRepository, ScanHistoryRecord, DietRecordInput } from '../repository/HistoryRepository';
 import { FavoriteRepository, FavoriteItem } from '../repository/FavoriteRepository';
 import { EngineManager } from '../EngineManager';
-import { TodayIntakeInput } from '../engine/FoodAdapterEngine';
-import { PositiveAdvice } from '../engine/PositiveAdviceEngine';
+import { TodayIntakeInput } from 'feature_scan';
+import { PositiveAdvice } from 'feature_report';
 
 export class FoodFacade {
   private readonly foodRepo: FoodRepository;

@@ -4,7 +4,7 @@ import {
 import { PersonalizedRecommendation } from 'feature_report';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
-import { PersonalizedContext, PersonalizedFactor } from '../engine/PersonalizedRecommendEngine';
+import { PersonalizedContext, PersonalizedFactor } from 'feature_report';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'PersonalizedRecommendPage';

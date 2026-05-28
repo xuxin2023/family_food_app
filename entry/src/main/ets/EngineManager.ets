@@ -7,24 +7,24 @@ import {
 } from 'hsp_core';
 import { HistoryRepository } from './repository/HistoryRepository';
 import { BasketCheckResult, BasketCheckEngine } from './engine/BasketCheckEngine';
-import { ElderFriendlyReport, ElderFriendlyEngine } from './engine/ElderFriendlyEngine';
-import { PositiveAdvice, PositiveAdviceEngine } from './engine/PositiveAdviceEngine';
 import { RecommendationEngine } from './engine/RecommendationEngine';
-import { RuleEngine } from './engine/RuleEngine';
 import { MealBalanceEngine } from './engine/MealBalanceEngine';
-import { ChildProtectionEngine, MealTimeParams } from './engine/ChildProtectionEngine';
-import { CredibilityEngine } from './engine/CredibilityEngine';
 import { FoodAdapterEngine, FamilyMemberSimpleInput, FoodNutritionInput, DailyBudgetInput,
-  HealthSignalInput, TodayIntakeInput } from './engine/FoodAdapterEngine';
-import { NutritionTrendEngine, nutritionTrendEngine, DailyNutritionSummary, NutrientTrendData, MealGroup } from './engine/NutritionTrendEngine';
-import { NutriScoreEngine, NutriScoreBreakdown } from './engine/NutriScoreEngine';
-import { ShanghaiGradeEngine, ShanghaiGradeResult } from './engine/ShanghaiGradeEngine';
-import { AlternativeFoodRecommender, alternativeFoodRecommender } from './engine/AlternativeFoodRecommender';
-import { WeeklyReportEngine, WeeklyReport, WeeklyDietData } from './engine/WeeklyReportEngine';
-import { ExerciseNutritionEngine, ExerciseSession } from './engine/ExerciseNutritionEngine';
-import { CheckupReportEngine, CheckupReport } from './engine/CheckupReportEngine';
-import { ChildHealthAssessmentEngine, ChildHealthAssessment, SnackImpactAssessment } from './engine/ChildHealthAssessmentEngine';
-import { PersonalizedRecommendEngine, PersonalizedRecommendation, RecommendationContext } from './engine/PersonalizedRecommendEngine';
+  HealthSignalInput, TodayIntakeInput } from 'feature_scan';
+import { NutriScoreEngine, NutriScoreBreakdown } from 'feature_scan';
+import { AlternativeFoodRecommender, alternativeFoodRecommender } from 'feature_scan';
+import { ElderFriendlyReport, ElderFriendlyEngine } from 'feature_report';
+import { PositiveAdvice, PositiveAdviceEngine } from 'feature_report';
+import { RuleEngine } from 'feature_report';
+import { ChildProtectionEngine, MealTimeParams } from 'feature_report';
+import { CredibilityEngine } from 'feature_report';
+import { NutritionTrendEngine, nutritionTrendEngine, DailyNutritionSummary, NutrientTrendData, MealGroup } from 'feature_report';
+import { ShanghaiGradeEngine, ShanghaiGradeResult } from 'feature_report';
+import { WeeklyReportEngine, WeeklyReport, WeeklyDietData } from 'feature_report';
+import { ExerciseNutritionEngine, ExerciseSession } from 'feature_report';
+import { CheckupReportEngine, CheckupReport } from 'feature_report';
+import { ChildHealthAssessmentEngine, ChildHealthAssessment, SnackImpactAssessment } from 'feature_report';
+import { PersonalizedRecommendEngine, PersonalizedRecommendation, RecommendationContext } from 'feature_report';
 
 /** 根据 AgeGroup 估算年龄（用于 FoodAdapterEngine 输入） */
 function estimateAgeFromGroup(ageGroup: AgeGroup): number {
@@ -156,7 +156,7 @@ export class EngineManager {
     const memberInput = new FamilyMemberSimpleInput();
     memberInput.id = member.memberId;
     memberInput.name = member.nickname;
-    memberInput.role = member.ageGroup;
+    memberInput.role = member.ageGroup as string;
     memberInput.age = estimateAgeFromGroup(member.ageGroup);
     memberInput.healthGoal = member.healthGoals.length > 0 ? member.healthGoals[0] : '无特殊';
     const mb = new DailyBudgetInput();

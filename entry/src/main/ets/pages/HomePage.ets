@@ -1,5 +1,6 @@
-import { FamilyProfile, AgeGroup, COLORS, BUTTON, RADIUS, SPACING, FONT_SIZE, safePushUrl, DateUtil, HILOG_DOMAIN } from 'hsp_core';
+import { FamilyProfile, AgeGroup, COLORS, BUTTON, RADIUS, SPACING, FONT_SIZE, safePushUrl, DateUtil, HILOG_DOMAIN, LazyDataSource } from 'hsp_core';
 import { AppState } from '../AppState';
+import { AllergenAlertCard } from '../components/AllergenAlertCard';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'HomePage';
@@ -13,6 +14,7 @@ struct HomePage {
   @Local isLoading: boolean = true
   @Local currentBreakpoint: string = 'md'
 
+  private memberSource: LazyDataSource<FamilyProfile> = new LazyDataSource<FamilyProfile>()
   private appState: AppState = AppState.getInstance()
 
   async aboutToAppear() {
@@ -30,6 +32,7 @@ struct HomePage {
   private async loadMembers() {
     this.isLoading = true
     this.members = await this.appState.getAllMembers()
+    this.memberSource.reloadData(this.members)
     if (this.members.length > 0 && this.selectedMemberId.length === 0) {
       this.selectedMemberId = this.members[0].memberId
     }
@@ -70,6 +73,10 @@ struct HomePage {
               Column() {
                 this.ScanEntryCard()
 
+                this.QuickActions()
+
+                AllergenAlertCard({ suspectedAllergens: [], memberName: '' })
+
                 if (this.members.length > 0) {
                   Text($r('app.string.family_members'))
                     .fontSize(18)
@@ -78,7 +85,7 @@ struct HomePage {
                     .width('92%')
                     .margin({ top: 24, bottom: 12 })
 
-                  ForEach(this.members, (member: FamilyProfile) => {
+                  LazyForEach(this.memberSource, (member: FamilyProfile) => {
                     this.MemberCard(member)
                   }, (member: FamilyProfile) => member.memberId)
                 } else {
@@ -159,6 +166,66 @@ struct HomePage {
   }
 
   @Builder
+  QuickActions() {
+    Row() {
+      Column() {
+        Text('📊').fontSize(24)
+        Text('每日摄入').fontSize(11).fontColor(COLORS.TEXT_SECONDARY).margin({ top: 4 })
+      }
+      .layoutWeight(1)
+      .padding({ top: 12, bottom: 12 })
+      .backgroundColor(COLORS.WHITE)
+      .borderRadius(RADIUS.MD)
+      .alignItems(HorizontalAlign.Center)
+      .onClick(() => { safePushUrl('pages/DailyIntakePage') })
+      .accessibilityText('每日摄入追踪')
+      .accessibilityLevel('yes')
+
+      Column() {
+        Text('🕐').fontSize(24)
+        Text('扫描历史').fontSize(11).fontColor(COLORS.TEXT_SECONDARY).margin({ top: 4 })
+      }
+      .layoutWeight(1)
+      .padding({ top: 12, bottom: 12 })
+      .backgroundColor(COLORS.WHITE)
+      .borderRadius(RADIUS.MD)
+      .alignItems(HorizontalAlign.Center)
+      .onClick(() => { safePushUrl('pages/ScanHistoryTimelinePage') })
+      .accessibilityText('扫描历史时间线')
+      .accessibilityLevel('yes')
+
+      Column() {
+        Text('⚖️').fontSize(24)
+        Text('食品对比').fontSize(11).fontColor(COLORS.TEXT_SECONDARY).margin({ top: 4 })
+      }
+      .layoutWeight(1)
+      .padding({ top: 12, bottom: 12 })
+      .backgroundColor(COLORS.WHITE)
+      .borderRadius(RADIUS.MD)
+      .alignItems(HorizontalAlign.Center)
+      .onClick(() => { safePushUrl('pages/FoodComparePage') })
+      .accessibilityText('食品对比')
+      .accessibilityLevel('yes')
+
+      Column() {
+        Text('📋').fontSize(24)
+        Text('膳食计划').fontSize(11).fontColor(COLORS.TEXT_SECONDARY).margin({ top: 4 })
+      }
+      .layoutWeight(1)
+      .padding({ top: 12, bottom: 12 })
+      .backgroundColor(COLORS.WHITE)
+      .borderRadius(RADIUS.MD)
+      .alignItems(HorizontalAlign.Center)
+      .onClick(() => { safePushUrl('pages/MealPlanPage') })
+      .accessibilityText('膳食计划')
+      .accessibilityLevel('yes')
+    }
+    .width('92%')
+    .margin({ top: 12 })
+    .justifyContent(FlexAlign.SpaceEvenly)
+  }
+
+  @Builder
   MemberCard(member: FamilyProfile) {
     Row() {
       Column() {
@@ -166,7 +233,7 @@ struct HomePage {
           .fontSize(16)
           .fontWeight(FontWeight.Medium)
           .fontColor(COLORS.TEXT_PRIMARY)
-        Text(member.ageGroup)
+        Text(`${member.ageGroup}`)
           .fontSize(12)
           .fontColor(COLORS.TEXT_SECONDARY)
           .margin({ top: 4 })

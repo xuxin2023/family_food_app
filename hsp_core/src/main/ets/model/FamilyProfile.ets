@@ -1,6 +1,8 @@
 // 家庭成员画像数据模型
 // V2 状态管理: @ObservedV2 + @Trace 深度嵌套观察
 
+import { EnumSafeParse } from '../utils/EnumSafeParse';
+
 // 年龄段枚举
 export enum AgeGroup {
   INFANT = '婴儿',
@@ -127,8 +129,10 @@ export class FamilyProfile {
     const profile = new FamilyProfile();
     profile.memberId = json.memberId;
     profile.nickname = json.nickname;
-    profile.ageGroup = json.ageGroup as AgeGroup;
-    profile.healthGoals = json.healthGoals as HealthGoal[];
+    profile.ageGroup = EnumSafeParse.parse<AgeGroup>(AgeGroup, json.ageGroup, AgeGroup.ADULT);
+    profile.healthGoals = Array.isArray(json.healthGoals) ?
+      json.healthGoals.filter((g: string) => Object.values(HealthGoal).includes(g)) as HealthGoal[] :
+      [HealthGoal.NONE];
     profile.allergens = json.allergens;
     profile.dailyBudget = DailyBudgetConfig.fromJson(json.dailyBudget);
     profile.mealTimes = json.mealTimes;

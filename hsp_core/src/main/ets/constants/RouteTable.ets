@@ -36,7 +36,7 @@ export class RouteTable {
       m.set('nutrition-trend', 'pages/NutritionTrendPage');
       m.set('share', 'pages/SharePage');
       m.set('feedback', 'pages/FeedbackPage');
-      m.set('home', 'pages/HomePage');
+      m.set('homeSimple', 'pages/HomePage');
       m.set('memberEdit', 'pages/MemberEditPage');
       m.set('recipeDetail', 'pages/RecipeDetailPage');
       m.set('privacyDialog', 'pages/PrivacyDialogPage');

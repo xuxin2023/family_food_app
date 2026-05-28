@@ -10,6 +10,9 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HealthService } from './service/HealthService';
 import { AuthService, CloudAuthService, FamilyGroupRepository, RecipeRepository } from 'hsp_service';
 import { SyncService, SyncEventCallback, SyncEvent } from 'hsp_service';
+import {
+  FoodCompareService, BatchScanService, NutritionKnowledgeService, MealPlanService, ReminderService, FeedbackService
+} from 'hsp_service';
 import { FamilyGroupService, RecipeCommunityService } from 'feature_community';
 import { FamilyGroupRepository as CommunityGroupRepo } from 'feature_community';
 import { RecipeRepository as CommunityRecipeRepo } from 'feature_community';
@@ -86,6 +89,38 @@ export class ServiceManager {
   private _aiWeeklyReport: AiWeeklyReportService | null = null;
   get aiWeeklyReport(): AiWeeklyReportService {
     return this.getService<AiWeeklyReportService>('aiWeeklyReport') ?? (this._aiWeeklyReport ?? (this._aiWeeklyReport = new AiWeeklyReportService()));
+  }
+
+  // ========== 功能增强服务 ==========
+  private _foodCompare: FoodCompareService | null = null;
+  get foodCompareService(): FoodCompareService {
+    return this.getService<FoodCompareService>('foodCompareService') ?? (this._foodCompare ?? (this._foodCompare = new FoodCompareService()));
+  }
+
+  private _batchScan: BatchScanService | null = null;
+  get batchScanService(): BatchScanService {
+    return this.getService<BatchScanService>('batchScanService') ?? (this._batchScan ?? (this._batchScan = new BatchScanService()));
+  }
+
+  private _nutritionKnowledge: NutritionKnowledgeService | null = null;
+  get nutritionKnowledgeService(): NutritionKnowledgeService {
+    return this.getService<NutritionKnowledgeService>('nutritionKnowledgeService') ??
+      (this._nutritionKnowledge ?? (this._nutritionKnowledge = NutritionKnowledgeService.getInstance()));
+  }
+
+  private _mealPlan: MealPlanService | null = null;
+  get mealPlanService(): MealPlanService {
+    return this.getService<MealPlanService>('mealPlanService') ?? (this._mealPlan ?? (this._mealPlan = new MealPlanService()));
+  }
+
+  private _reminder: ReminderService | null = null;
+  get reminderService(): ReminderService {
+    return this.getService<ReminderService>('reminderService') ?? (this._reminder ?? (this._reminder = ReminderService.getInstance()));
+  }
+
+  private _feedback: FeedbackService | null = null;
+  get feedbackService(): FeedbackService {
+    return this.getService<FeedbackService>('feedbackService') ?? (this._feedback ?? (this._feedback = FeedbackService.getInstance()));
   }
 
   // ========== 健康设备开关 ==========

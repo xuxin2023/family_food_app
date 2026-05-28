@@ -1,6 +1,6 @@
 {
   "module": {
-    "name": "feature-scan",
+    "name": "feature_scan",
     "type": "shared",
     "description": "扫描功能模块 — 条码扫描、OCR识别、食品录入",
     "deviceTypes": [

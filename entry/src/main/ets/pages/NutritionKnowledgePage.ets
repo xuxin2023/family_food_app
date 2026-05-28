@@ -1,6 +1,7 @@
 import {
   ToastHelper, safeBack, KnowledgeArticle, getAllKnowledgeArticles, getArticleCategories, getArticlesByCategory, COLORS, FONT_SIZE, RADIUS, SPACING
 } from 'hsp_core';
+import { NutritionKnowledgeService, KnowledgeEntry } from 'hsp_service';
 import { BackButton } from '../components/BackButton';
 import { EmptyState } from '../components/EmptyState';
 
@@ -12,6 +13,11 @@ struct NutritionKnowledgePage {
   @Local selectedCategory: string = ''
   @Local filteredArticles: KnowledgeArticle[] = []
   @Local expandedArticleId: string = ''
+  @Local searchKeyword: string = ''
+  @Local searchResults: KnowledgeEntry[] = []
+  @Local showSearchResults: boolean = false
+
+  private knowledgeService: NutritionKnowledgeService = NutritionKnowledgeService.getInstance()
 
   aboutToAppear(): void {
     this.allArticles = getAllKnowledgeArticles()
@@ -20,6 +26,32 @@ struct NutritionKnowledgePage {
       this.selectedCategory = this.categories[0]
       this.filteredArticles = getArticlesByCategory(this.selectedCategory)
     }
+    this.syncToKnowledgeService()
+  }
+
+  private syncToKnowledgeService(): void {
+    for (const article of this.allArticles) {
+      const entry: KnowledgeEntry = {
+        id: article.id,
+        title: article.title,
+        category: article.category ?? '通用',
+        summary: article.summary,
+        details: article.content,
+        relatedNutrients: article.tags ?? [],
+        references: []
+      };
+      this.knowledgeService.addEntry(entry);
+    }
+  }
+
+  private performSearch(keyword: string): void {
+    if (keyword.length === 0) {
+      this.showSearchResults = false;
+      this.searchResults = [];
+      return;
+    }
+    this.searchResults = this.knowledgeService.searchByKeyword(keyword);
+    this.showSearchResults = true;
   }
 
   build() {
@@ -37,6 +69,46 @@ struct NutritionKnowledgePage {
         }
         .width('100%')
         .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+
+        TextInput({ placeholder: '搜索营养知识...', text: this.searchKeyword })
+          .width('92%')
+          .height(40)
+          .fontSize(14)
+          .borderRadius(20)
+          .backgroundColor(COLORS.WHITE)
+          .padding({ left: 16, right: 16 })
+          .onChange((value: string) => {
+            this.searchKeyword = value;
+            this.performSearch(value);
+          })
+          .accessibilityText('搜索营养知识')
+          .accessibilityLevel('yes')
+
+        if (this.showSearchResults && this.searchResults.length > 0) {
+          Column() {
+            Text(`找到 ${this.searchResults.length} 条相关结果`)
+              .fontSize(12)
+              .fontColor(COLORS.TEXT_TERTIARY)
+              .margin({ bottom: 8 })
+            ForEach(this.searchResults, (entry: KnowledgeEntry, index: number) => {
+              Column() {
+                Text(entry.title).fontSize(14).fontWeight(FontWeight.Medium).fontColor(COLORS.TEXT_PRIMARY)
+                Text(entry.summary).fontSize(12).fontColor(COLORS.TEXT_SECONDARY).margin({ top: 2 }).maxLines(2)
+                  .textOverflow({ overflow: TextOverflow.Ellipsis })
+              }
+              .width('100%')
+              .padding(12)
+              .backgroundColor(COLORS.WHITE)
+              .borderRadius(RADIUS.MD)
+              .alignItems(HorizontalAlign.Start)
+              .margin({ bottom: 8 })
+              .accessibilityText(entry.title)
+              .accessibilityLevel('yes')
+            }, (entry: KnowledgeEntry, index: number) => entry.id)
+          }
+          .width('92%')
+          .margin({ bottom: 14 })
+        }
 
         this.CategoryTabs()
 

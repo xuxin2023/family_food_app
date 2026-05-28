@@ -12,7 +12,7 @@ import { DataPortability, ImportResult } from '../utils/DataPortability';
 import { fileIo } from '@kit.CoreFileKit';
 import { picker } from '@kit.CoreFileKit';
 import { util } from '@kit.ArkTS';
-import { UpdateChecker, UpdateInfo, AuthService } from 'hsp_service';
+import { UpdateChecker, UpdateInfo, AuthService, UserDataDeletionService } from 'hsp_service';
 
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 const TAG = 'SettingsPage';
@@ -796,6 +796,11 @@ struct SettingsPage {
       }
       const success = await authService.deleteAccount()
       if (success) {
+        const deletionService = UserDataDeletionService.getInstance()
+        const ctx = AppStorage.get<common.Context>('appContext')
+        if (ctx) {
+          await deletionService.deleteAllUserData('current_user', ctx)
+        }
         await this.executeClearData()
         ToastHelper.show(this.getUIContext(), $r('app.string.settings_account_deleted'))
       } else {

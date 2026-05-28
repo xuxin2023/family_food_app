@@ -4,6 +4,7 @@ import {
 } from 'hsp_core';
 import { common } from '@kit.AbilityKit';
 import { FamilyRepository } from '../repository/FamilyRepository';
+import { NutritionTargetRepository } from 'hsp_service';
 import { MemberManager } from 'hsp_service';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
@@ -14,16 +15,19 @@ export class MemberFacade {
   private readonly familyRepo: FamilyRepository;
   private readonly member: MemberManager;
   private readonly cache: CacheManager;
+  private readonly nutriTargetRepo: NutritionTargetRepository;
 
   private _membersCache: FamilyProfile[] = [];
   get membersCache(): FamilyProfile[] { return this._membersCache; }
 
   private _dailyBudgetsCache: Map<string, DailyBudget> = new Map();
 
-  constructor(familyRepo: FamilyRepository, member: MemberManager, cache: CacheManager) {
+  constructor(familyRepo: FamilyRepository, member: MemberManager, cache: CacheManager,
+    nutriTargetRepo?: NutritionTargetRepository) {
     this.familyRepo = familyRepo;
     this.member = member;
     this.cache = cache;
+    this.nutriTargetRepo = nutriTargetRepo ?? new NutritionTargetRepository();
   }
 
   async loadCache(): Promise<void> {
@@ -92,9 +96,17 @@ export class MemberFacade {
     this._dailyBudgetsCache.set(memberId, budget);
   }
 
+  private _nutriTargetCache: Map<string, NutritionTarget> = new Map();
+
   getNutritionTargetSync(memberId: string): NutritionTarget {
+    const cached = this._nutriTargetCache.get(memberId);
+    if (cached) return cached;
     const t = new NutritionTarget();
     t.caloriesTarget = 2000;
+    this._nutriTargetCache.set(memberId, t);
+    this.nutriTargetRepo.getForMember(memberId).then(target => {
+      if (target) this._nutriTargetCache.set(memberId, target);
+    }).catch(() => {});
     return t;
   }
 
@@ -106,13 +118,13 @@ export class MemberFacade {
     return this.getNutritionTargetSync(memberId);
   }
 
-  refreshMemberCache(): void {
+  async refreshMemberCache(): Promise<void> {
     this.cache.clearHealthSignalsCache();
-    this.familyRepo.getAllMembers().then(members => {
-      this._membersCache = members;
-    }).catch((_e: Error) => {
+    try {
+      this._membersCache = await this.familyRepo.getAllMembers();
+    } catch (_e: Error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'refreshMemberCache failed: %{public}s', JSON.stringify(_e));
-    });
+    }
   }
 
   refreshBudgetCache(): void {

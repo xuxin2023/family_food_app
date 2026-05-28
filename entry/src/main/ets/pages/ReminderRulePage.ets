@@ -1,6 +1,7 @@
 import {
-  ToastHelper, safeBack, COLORS, HILOG_DOMAIN, DB_NAME, ReminderRule, PRESET_REMINDER_RULES, getReminderTypeLabel, getReminderTypeIcon
+  ToastHelper, safeBack, COLORS, HILOG_DOMAIN, DB_NAME, ReminderRule, PRESET_REMINDER_RULES, getReminderTypeLabel, getReminderTypeIcon, FamilyProfile
 } from 'hsp_core';
+import { ReminderService, ReminderRule as ServiceReminderRule, ReminderEvent } from 'hsp_service';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 
@@ -26,8 +27,10 @@ struct ReminderRulePage {
   @Local editMessage: string = ''
   @Local editPriority: string = 'normal'
   @Local editEnabled: boolean = true
+  @Local lastTriggeredEvents: ReminderEvent[] = []
 
   private repo: ReminderRuleRepository = new ReminderRuleRepository()
+  private reminderService: ReminderService = ReminderService.getInstance()
 
   async aboutToAppear() {
     this.isLoading = true
@@ -337,8 +340,36 @@ struct ReminderRulePage {
     rule.message = preset.message;
     rule.priority = preset.priority;
     await this.repo.addRule(rule);
+    this.registerToReminderService(rule);
     await this.refreshList();
     ToastHelper.show(this.getUIContext(), $r('app.string.reminder_enabled'));
+  }
+
+  private registerToReminderService(rule: ReminderRule): void {
+    const serviceRule: ServiceReminderRule = {
+      ruleId: rule.id,
+      memberId: 'current',
+      type: rule.type as 'scan_reminder' | 'budget_alert' | 'report_reminder' | 'meal_reminder' | 'custom',
+      enabled: rule.enabled,
+      time: rule.time,
+      conditions: {
+        daysOfWeek: rule.repeatDays.length > 0 ? rule.repeatDays : [1, 2, 3, 4, 5, 6, 0],
+        minIntervalMinutes: 60,
+        message: rule.message
+      }
+    };
+    this.reminderService.addRule(serviceRule);
+  }
+
+  private checkReminders(): void {
+    const members = this.appState.getAllMembersSync();
+    if (members.length > 0) {
+      this.lastTriggeredEvents = this.reminderService.checkAndFire(members[0].memberId, members[0]);
+      if (this.lastTriggeredEvents.length > 0) {
+        const msg = this.lastTriggeredEvents.map(e => e.message).join('\n');
+        ToastHelper.show(this.getUIContext(), msg);
+      }
+    }
   }
 
   private openAddDialog(): void {

@@ -1,0 +1,7 @@
+{
+  "name": "allergen-cross-check",
+  "version": "1.0.0",
+  "description": "过敏原交叉反应性检测云函数",
+  "main": "index.ts",
+  "dependencies": {}
+}

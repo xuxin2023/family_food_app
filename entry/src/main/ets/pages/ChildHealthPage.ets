@@ -2,7 +2,7 @@ import { COLORS, safeBack, FoodLabel, FamilyProfile, AgeGroup, HILOG_DOMAIN } fr
 import { ChildHealthAssessment } from 'feature_report';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
-import { SnackImpactAssessment, AdditiveSafetyResult, AdditiveSafetyLevel } from '../engine/ChildHealthAssessmentEngine';
+import { SnackImpactAssessment, AdditiveSafetyResult, AdditiveSafetyLevel } from 'feature_report';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'ChildHealthPage';

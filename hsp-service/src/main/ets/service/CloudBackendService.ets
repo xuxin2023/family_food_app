@@ -13,6 +13,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit'
 import { http } from '@kit.NetworkKit'
 import { HILOG_DOMAIN, API_CONFIG } from 'hsp_core'
 import { ServiceGateway } from './ServiceGateway'
+import { SecureHttpClient, SecureRequestOptions } from './SecureHttpClient'
 
 const TAG = 'CloudBackendService'
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT
@@ -261,20 +262,21 @@ export class CloudBackendService {
 
   private async httpPost(path: string, body: Record<string, Object>): Promise<Record<string, Object>> {
     const url = `${API_CONFIG.HUAWEI_CLOUD_BASE_URL}${path}`
-    const httpClient = http.createHttp()
 
     try {
-      const response = await httpClient.request(url, {
-        method: http.RequestMethod.POST,
-        header: {
-          'Content-Type': 'application/json',
-          'X-App-Version': '4.0.0',
-          'X-Platform': 'HarmonyOS'
-        },
-        extraData: JSON.stringify(body),
-        connectTimeout: REQUEST_TIMEOUT_MS,
-        readTimeout: REQUEST_TIMEOUT_MS
-      })
+      const opts = new SecureRequestOptions();
+      opts.url = url;
+      opts.method = http.RequestMethod.POST;
+      const header = new Map<string, string>();
+      header.set('Content-Type', 'application/json');
+      header.set('X-App-Version', '4.0.0');
+      header.set('X-Platform', 'HarmonyOS');
+      opts.header = header;
+      opts.extraData = JSON.stringify(body);
+      opts.connectTimeout = REQUEST_TIMEOUT_MS;
+      opts.readTimeout = REQUEST_TIMEOUT_MS;
+
+      const response = await SecureHttpClient.getInstance().request(opts);
 
       if (response.responseCode < 200 || response.responseCode >= 300) {
         throw new Error(`HTTP ${response.responseCode}`)

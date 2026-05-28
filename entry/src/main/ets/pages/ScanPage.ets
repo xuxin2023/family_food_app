@@ -22,7 +22,8 @@
 import {
   ToastHelper, safePushUrl, getPageParams, FoodLabel, FamilyProfile, HealthSignal, Throttler, PaywallTrigger, TIER_DAILY_SCAN_LIMIT, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON, SCAN_CONFIG, HILOG_DOMAIN, EnhancedFoodRecommendation, AccessibilityUtil, TodayIntakeInput
 } from 'hsp_core';
-import { FoodInputResult } from 'feature_scan';
+import { FoodInputResult, IRemoteLookupProvider } from 'feature_scan';
+import { BatchScanService, BatchScanResult } from 'hsp_service';
 import { common } from '@kit.AbilityKit';
 import { curves } from '@kit.ArkUI';
 import { vibrator } from '@kit.SensorServiceKit';
@@ -35,6 +36,9 @@ import { BackButton } from '../components/BackButton';
 import { ScanResultCard } from '../components/ScanResultCard';
 import { ScanEditPanel } from '../components/ScanEditPanel';
 import { ScanModeSelector } from '../components/ScanModeSelector';
+import { AddToShoppingListButton } from '../components/AddToShoppingListButton';
+import { FoodDeepAnalysisSheet } from '../components/FoodDeepAnalysisSheet';
+import { BatchScanSheet } from '../components/BatchScanSheet';
 
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
 const TAG = 'ScanPage';
@@ -115,9 +119,12 @@ class ScanViewModel {
 @ComponentV2
 struct ScanPage {
   @Local vm: ScanViewModel = new ScanViewModel()
+  @Local showDeepAnalysis: boolean = false
+  @Local showBatchScan: boolean = false
   private memberId: string = ''
   private appState: AppState = AppState.getInstance()
   private foodInputService = this.appState.foodInput
+  private batchScanService: BatchScanService = new BatchScanService()
   private autoScanTimer: number = -1
   private retryTimer: number = -1
   private scoreTimer: number = -1
@@ -400,6 +407,23 @@ struct ScanPage {
             onModeChange: (mode: string) => { this.vm.scanMode = mode }
           })
 
+          Row() {
+            Button('批量扫码')
+              .height(32)
+              .fontSize(13)
+              .backgroundColor(COLORS.BG_CARD)
+              .fontColor(COLORS.PRIMARY)
+              .borderRadius(16)
+              .padding({ left: 16, right: 16 })
+              .onClick(() => { this.showBatchScan = true; })
+              .accessibilityText('批量扫码')
+              .accessibilityLevel('yes')
+          }
+          .width('100%')
+          .justifyContent(FlexAlign.End)
+          .padding({ right: SPACING.LG })
+          .margin({ bottom: SPACING.SM })
+
           // ---- 离线提示 ----
           if (this.vm.isOffline) {
             Row() {
@@ -579,6 +603,18 @@ struct ScanPage {
                 .onClick(() => { this.viewReport() })
                 .animation({ duration: 300, curve: curves.springMotion() })
 
+              AddToShoppingListButton({ foodLabel: this.vm.foodLabel })
+
+              Button('深度分析')
+                .layoutWeight(1)
+                .height(BUTTON.HEIGHT_SECONDARY)
+                .backgroundColor(COLORS.BG_CARD)
+                .fontColor(COLORS.PRIMARY)
+                .borderRadius(BUTTON.RADIUS_SECONDARY)
+                .accessibilityText('深度分析')
+                .accessibilityLevel('yes')
+                .onClick(() => { this.showDeepAnalysis = true; })
+
               Row() {
                 Button(this.vm.showEditPanel ? $r('app.string.edit_panel_collapse') : $r('app.string.edit_panel_toggle'))
                   .layoutWeight(1)
@@ -664,6 +700,11 @@ struct ScanPage {
     }
     .width('100%')
     .height('100%')
+    .bindSheet(this.showDeepAnalysis, FoodDeepAnalysisSheet({
+      foodLabel: this.vm.foodLabel,
+      profile: this.appState.getAllMembersSync().length > 0 ? this.appState.getAllMembersSync()[0] : new FamilyProfile()
+    }), { height: '70%', showClose: true, dragBar: true, onDisappear: () => { this.showDeepAnalysis = false } })
+    .bindSheet(this.showBatchScan, BatchScanSheet(), { height: '80%', showClose: true, dragBar: true, onDisappear: () => { this.showBatchScan = false } })
   }
 
   /**
@@ -878,6 +919,19 @@ struct ScanPage {
     const remaining = this.appState.member.getRemainingScans()
     this.vm.remainingScans = remaining
     this.vm.scanLimitReached = remaining <= 0 && TIER_DAILY_SCAN_LIMIT[this.appState.member.memberStatus.tier] !== -1
+  }
+
+  private async scanBatch(barcodes: string[]): Promise<void> {
+    this.batchScanService.setRemoteProvider(this.appState.scanService as IRemoteLookupProvider);
+    const results = await this.batchScanService.scanBatch(barcodes);
+    const summary = this.batchScanService.getSummary();
+    hilog.info(DOMAIN_ZERO, TAG, 'Batch scan: %{public}d/%{public}d hit, avg %{public}dms',
+      summary.hit, summary.total, summary.avgTimeMs);
+    if (results.length > 0 && results[0].foodLabel !== null) {
+      this.vm.foodLabel = results[0].foodLabel;
+      this.vm.scanPhase = ScanPhase.SCORING;
+      this.calculateScoreForCurrentLabel();
+    }
   }
 
   // ==================== 识别入口 ====================

@@ -10,10 +10,11 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
 // 导入图表组件
 import { DonutChart, DonutSegment } from '../components/DonutChart';
+import { NutritionTargetGauge } from '../components/NutritionTargetGauge';
 import { NutrientRadarPanel, NutrientScores } from 'feature_report';
 import { ReportExporter } from '../utils/ReportExporter';
 import { common } from '@kit.AbilityKit';
-import { HealthTrendPredictor, TrendPrediction } from '../engine/HealthTrendPredictor';
+import { HealthTrendPredictor, TrendPrediction } from 'feature_report';
 import { TrendPredictionBar } from 'feature_report';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 
@@ -458,6 +459,21 @@ struct DashboardPage {
                     scores: this.buildNutrientScores(),
                     showLabels: true,
                     chartSize: 200
+                  })
+                  .padding({ left: SPACING.LG, right: SPACING.LG })
+                  .margin({ bottom: SPACING.MD })
+
+                  NutritionTargetGauge({
+                    calories: this.vm.overviewAvgCalorie,
+                    caloriesTarget: this.vm.nutritionTarget.caloriesTarget,
+                    sodium: 0,
+                    sodiumTarget: this.vm.nutritionTarget.sodiumMax_mg,
+                    sugar: 0,
+                    sugarTarget: this.vm.nutritionTarget.sugarMax_g,
+                    fat: 0,
+                    fatTarget: this.vm.nutritionTarget.fatMax_g,
+                    protein: 0,
+                    proteinTarget: this.vm.nutritionTarget.proteinTarget_g
                   })
                   .padding({ left: SPACING.LG, right: SPACING.LG })
                   .margin({ bottom: SPACING.MD })

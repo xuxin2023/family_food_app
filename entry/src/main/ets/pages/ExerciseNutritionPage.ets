@@ -2,7 +2,7 @@ import { COLORS, safeBack, FamilyProfile, HealthSignal, NutritionTarget, createD
 import { ExerciseNutritionRecommendation } from 'feature_report';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
-import { NutrientSupplement } from '../engine/ExerciseNutritionEngine';
+import { NutrientSupplement } from 'feature_report';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'ExerciseNutritionPage';

@@ -3,12 +3,14 @@
 // 匿名模式：无需登录即可提交
 
 import { ToastHelper, safeBack, COLORS, HILOG_DOMAIN } from 'hsp_core';
+import { FeedbackService, FeedbackSubmission, FeedbackResult } from 'hsp_service';
 import { BackButton } from '../components/BackButton';
 import { HuaweiCloudService } from 'hsp_service';
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferences } from '@kit.ArkData';
 import { picker } from '@kit.CoreFileKit';
+import { deviceInfo } from '@kit.BasicServicesKit';
 
 const TAG = 'FeedbackPage';
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
@@ -272,16 +274,26 @@ struct FeedbackPage {
     feedbackData.timestamp = Date.now();
 
     try {
-      const payload = new Map<string, Object>();
-      // Map<string, Object> requires Object-typed values for cloud function API
-      payload.set('type', feedbackData.type as Object);
-      payload.set('content', feedbackData.content as Object);
-      payload.set('contact', feedbackData.contact as Object);
-      payload.set('screenshots', feedbackData.screenshots as Object);
-      payload.set('timestamp', feedbackData.timestamp as Object);
+      const ctx = AppStorage.get<common.Context>('appContext');
+      const typeMap: Record<string, 'bug' | 'feature' | 'complaint' | 'praise' | 'other'> = {
+        'Bug报告': 'bug', '功能建议': 'feature', '使用问题': 'complaint', '其他': 'other'
+      };
+      const mappedType = typeMap[feedbackData.type] ?? 'other';
 
-      const cloudService = HuaweiCloudService.getInstance();
-      const result = await cloudService.callFunction('submitFeedback', payload);
+      const submission: FeedbackSubmission = {
+        userId: 'anonymous',
+        type: mappedType,
+        title: feedbackData.type,
+        content: feedbackData.content,
+        contact: feedbackData.contact,
+        appVersion: '1.0.0',
+        deviceModel: deviceInfo.model ?? 'unknown',
+        osVersion: deviceInfo.osFullName ?? 'unknown',
+        screenshots: feedbackData.screenshots
+      };
+
+      const feedbackService = FeedbackService.getInstance();
+      const result = await feedbackService.submitFeedback(submission, ctx!);
 
       if (result.success) {
         ToastHelper.show(this.getUIContext(), $r('app.string.feedback_thanks'));

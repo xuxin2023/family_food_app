@@ -2,7 +2,7 @@
 // V5新增：首次启动隐私政策与用户协议确认弹窗
 
 import {
-  DataSource, MemberTier, TIME_INTERVAL_CONFIG, CRASH_LOG_CONFIG, HILOG_DOMAIN, DB_NAME, NavigationManager, LocaleManager
+  DataSource, MemberTier, TIME_INTERVAL_CONFIG, CRASH_LOG_CONFIG, HILOG_DOMAIN, DB_NAME, NavigationManager, LocaleManager, RoutePath
 } from 'hsp_core';
 import { UIAbility, Want, AbilityConstant, errorManager } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -10,7 +10,7 @@ import { window } from '@kit.ArkUI';
 import { fileIo } from '@kit.CoreFileKit';
 import { util } from '@kit.ArkTS';
 import { AppState } from '../AppState';
-import { AnalyticsService, PermissionManager, NetworkMonitorService, PrivacyManager, SecureHttpClient, UpdateChecker, UpdateInfo } from 'hsp_service';
+import { AnalyticsService, PermissionManager, NetworkMonitorService, PrivacyManager, SecureHttpClient, UpdateChecker, UpdateInfo, PermissionProgressiveGuide, SystemPrivacyService } from 'hsp_service';
 import { preferences, relationalStore } from '@kit.ArkData';
 import { warmUpOfflineDatabase } from 'hsp_core';
 import { GlobalErrorHandler } from '../utils/GlobalErrorHandler';
@@ -139,6 +139,10 @@ export default class EntryAbility extends UIAbility {
         return false;
       }
       const agreed: boolean = await PrivacyManager.checkPrivacyAgreed(this.context);
+      if (agreed) {
+        const privacyService = SystemPrivacyService.getInstance();
+        await privacyService.showPrivacyDialog(this.context);
+      }
       return agreed;
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Privacy compliance check failed: %{public}s', JSON.stringify(e));
@@ -259,6 +263,13 @@ export default class EntryAbility extends UIAbility {
       wantParam['continueMemberId'] = this.appState.member.memberId;
       wantParam['continueTimestamp'] = Date.now().toString();
 
+      const syncPayload = JSON.stringify({
+        currentMemberId: this.appState.member.memberId,
+        memberCount: this.appState.getAllMembersSync().length,
+        timestamp: Date.now()
+      });
+      wantParam['syncPayload'] = syncPayload;
+
       hilog.info(DOMAIN_ZERO, TAG, 'onContinue: path=%{public}s', currentPath);
       return AbilityConstant.OnContinueResult.AGREE;
     } catch (e) {
@@ -277,6 +288,7 @@ export default class EntryAbility extends UIAbility {
       const continuePath = want.parameters?.['continuePath'] as string || '';
       const continueParamStr = want.parameters?.['continueParam'] as string || '';
       const continueMemberId = want.parameters?.['continueMemberId'] as string || '';
+      const syncPayloadStr = want.parameters?.['syncPayload'] as string || '';
 
       if (continuePath.length > 0) {
         AppStorage.setOrCreate('continueDestinationPath', continuePath);
@@ -290,6 +302,15 @@ export default class EntryAbility extends UIAbility {
         }
         if (continueMemberId.length > 0) {
           AppStorage.setOrCreate('currentMemberId', continueMemberId);
+        }
+        if (syncPayloadStr.length > 0) {
+          try {
+            const syncPayload = JSON.parse(syncPayloadStr) as Record<string, Object>;
+            AppStorage.setOrCreate('distributedSyncPayload', syncPayload);
+            hilog.info(DOMAIN_ZERO, TAG, 'Distributed sync payload restored');
+          } catch (_e) {
+            hilog.warn(DOMAIN_ZERO, TAG, 'Failed to parse sync payload');
+          }
         }
         hilog.info(DOMAIN_ZERO, TAG, 'Distributed continue restored: path=%{public}s', continuePath);
       }

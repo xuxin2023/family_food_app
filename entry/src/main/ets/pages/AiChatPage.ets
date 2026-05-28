@@ -9,6 +9,7 @@ import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
 import { AiChatService } from '../service/AiChatService';
+import { OnDeviceInferenceEngine, InferenceResult } from 'feature_scan';
 
 import { ChatHistoryPrefsService } from '../service/ChatHistoryPrefsService';
 
@@ -38,6 +39,7 @@ struct AiChatPage {
   @Local selectedMemberId: string = '';
   @Local selectedMemberName: ResourceStr = $r('app.string.ai_chat_all_members');
   @Local dynamicQuickQuestions: string[] = [];
+  @Local isOfflineMode: boolean = false;
 
   private appState: AppState = AppState.getInstance();
   private aiChatService: AiChatService = new AiChatService();
@@ -360,28 +362,53 @@ struct AiChatPage {
     this.pendingTimers.push(tid1)
 
     try {
-      // 调用 AI 服务
-      const aiMsg = await this.aiChatService.sendMessage(text)
+      if (this.isOfflineMode) {
+        const engine = OnDeviceInferenceEngine.getInstance();
+        const ingredients = text.split(/[，,、\s]+/).filter((s: string) => s.length > 0);
+        const result = await engine.predictIngredientRisk(ingredients);
+        const offlineMsg = new ChatMessage(
+          generateMessageId(),
+          `端侧推理结果：风险评分 ${result.score}/100，评级 ${result.label}，置信度 ${(result.confidence * 100).toFixed(0)}%\n\n[离线模式] 建议仅供参考，联网后可获得更精准分析`,
+          ChatRole.ASSISTANT,
+          Date.now()
+        );
+        userMsg.status = MessageStatus.SENT;
+        this.messages.push(offlineMsg);
+        this.saveCurrentMessages();
+      } else {
+        const aiMsg = await this.aiChatService.sendMessage(text)
 
-      if (!this.componentActive) return;
+        if (!this.componentActive) return;
 
-      // 替换为已发送状态
-      userMsg.status = MessageStatus.SENT
+        userMsg.status = MessageStatus.SENT
 
-      // 添加 AI 回复
-      this.messages.push(aiMsg)
-      this.saveCurrentMessages()
+        this.messages.push(aiMsg)
+        this.saveCurrentMessages()
+      }
     } catch (error) {
       userMsg.status = MessageStatus.FAILED
       hilog.error(DOMAIN_ZERO, TAG, 'sendMessage failed: %{public}s', JSON.stringify(error))
 
-      const errorMsg = new ChatMessage(
-        generateMessageId(),
-        $r('app.string.ai_chat_error_reply') as ResourceStr,
-        ChatRole.ASSISTANT,
-        Date.now()
-      )
-      this.messages.push(errorMsg)
+      try {
+        const engine = OnDeviceInferenceEngine.getInstance();
+        const fallbackIngredients = text.split(/[，,、\s]+/).filter((s: string) => s.length > 0);
+        const fallbackResult = await engine.predictIngredientRisk(fallbackIngredients);
+        const fallbackMsg = new ChatMessage(
+          generateMessageId(),
+          `端侧推理结果：风险评分 ${fallbackResult.score}/100，评级 ${fallbackResult.label}\n\n[降级为离线推理] 云端不可用，已切换端侧推理`,
+          ChatRole.ASSISTANT,
+          Date.now()
+        );
+        this.messages.push(fallbackMsg);
+      } catch (_) {
+        const errorMsg = new ChatMessage(
+          generateMessageId(),
+          $r('app.string.ai_chat_error_reply') as ResourceStr,
+          ChatRole.ASSISTANT,
+          Date.now()
+        )
+        this.messages.push(errorMsg)
+      }
       this.saveCurrentMessages()
     }
 

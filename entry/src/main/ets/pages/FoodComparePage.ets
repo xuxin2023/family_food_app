@@ -2,6 +2,7 @@
 // 食品对比页 — 两个食品的并排营养对比视图
 
 import { FoodLabel, NutritionPer100g, COLORS, RADIUS, HILOG_DOMAIN, ToastHelper, NutritionSnapshot } from 'hsp_core';
+import { FoodCompareService, FoodCompareResult, NutritionDelta } from 'hsp_service';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { NovaGroupBadge } from '../components/NovaGroupBadge';
@@ -31,8 +32,10 @@ struct FoodComparePage {
   @Local showHistoryPicker: boolean = false
   @Local pickingSide: 1 | 2 = 1
   @Local savedSnapshots: NutritionSnapshot[] = []
+  @Local compareResult: FoodCompareResult | null = null
 
   private appState: AppState = AppState.getInstance()
+  private compareService: FoodCompareService = new FoodCompareService()
   private mContext: UIContext | undefined = undefined
   private componentActive: boolean = true
 
@@ -391,6 +394,11 @@ struct FoodComparePage {
   }
 
   private buildConclusion(): string {
+    if (this.food1 !== null && this.food2 !== null) {
+      const result = this.compareService.compare(this.food1, this.food2);
+      this.compareResult = result;
+      return result.verdict;
+    }
     const diffs = this.buildNutrientDiffs();
     const better1 = diffs.filter(d => d.betterSide === 1);
     const better2 = diffs.filter(d => d.betterSide === 2);

@@ -9,7 +9,7 @@ import { FamilyProfile, AgeGroup, HealthSignal, DailyBudget, FoodLabel } from 'h
 
 
 import { FoodAdapterEngine, FamilyMemberSimpleInput, FoodNutritionInput,
-  HealthSignalInput, TodayIntakeInput, DailyBudgetInput } from '../engine/FoodAdapterEngine';
+  HealthSignalInput, TodayIntakeInput, DailyBudgetInput } from 'feature_scan';
 
 /** toFoodAdapterInputs 的返回值类型 */
 export class FoodAdapterInputs {

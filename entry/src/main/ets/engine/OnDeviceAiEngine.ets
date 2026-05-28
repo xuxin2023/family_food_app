@@ -13,7 +13,7 @@
 import { hilog } from '@kit.PerformanceAnalysisKit'
 import { HILOG_DOMAIN } from 'hsp_core'
 import { common } from '@kit.AbilityKit'
-import { OnDeviceInferenceEngine, InferenceModelType, InferenceBackend } from './OnDeviceInferenceEngine'
+import { OnDeviceInferenceEngine } from 'feature_scan'
 
 const TAG = 'OnDeviceAiEngine'
 const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT
@@ -190,9 +190,7 @@ export class OnDeviceAiEngine {
 
       // 1. 尝试初始化 OnDeviceInferenceEngine (MindSpore Lite)
       const inferenceReady = await this.inferenceEngine.init(
-        context ?? getContext(this),
-        InferenceModelType.FOOD_CLASSIFIER,
-        InferenceBackend.AUTO
+        context ?? getContext(this)
       )
 
       if (inferenceReady) {

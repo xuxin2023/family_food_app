@@ -17,8 +17,24 @@ Thumbs.db
 # Build outputs and caches
 entry/build/
 hsp_core/build/
+hsp-service/build/
+feature-scan/build/
+feature-report/build/
+feature-community/build/
 build_error.log
 build_error_clean.txt
+
+# oh_modules (generated, not source)
+**/oh_modules/
+**/oh-package-lock.json5
+
+# Analysis temp files
+cur_errors.txt
+error_analysis.txt
+error_files.txt
+error_msgs.txt
+errors_only.txt
+full_build_log.txt
 
 # Build error reports and debug files
 *.py

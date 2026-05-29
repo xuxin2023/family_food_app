@@ -3,10 +3,10 @@
 // 参考: https://docs.score-environnemental.com/
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN, NutritionThreshold } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, NutritionThreshold } from 'hsp_core';
 
 const TAG = 'EcoScoreEngine';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export enum EcoScoreGrade {
   A = 'A',
@@ -22,6 +22,8 @@ export class EcoScoreResult {
   score: number = 0;
   confidence: number = 0;
   factors: EcoScoreFactor[] = [];
+  certifications: string[] = [];
+  carbonLabels: string[] = [];
 }
 
 export class EcoScoreFactor {
@@ -29,6 +31,16 @@ export class EcoScoreFactor {
   impact: number = 0;
   description: string = '';
 }
+
+class CertKeywordSet {
+  organic: string[] = ['bio', 'organic', '有机', '有机认证', '有机食品', 'organic certified', 'usda organic', 'ecocert', '中国有机', '绿色食品', '绿色认证', 'oca', 'demeter', 'naturland'];
+  fairTrade: string[] = ['fair-trade', 'fairtrade', '公平贸易', '公平贸易认证', 'fsc', 'rainforest alliance', '雨林联盟'];
+  carbon: string[] = ['carbon neutral', '碳中和', '零碳', 'carbon trust', 'carbon footprint', '碳足迹', '低碳认证', 'low carbon', 'climate neutral', '气候中性'];
+  sustainable: string[] = ['sustainable', '可持续', 'sustainability', 'regenerative', '再生农业', 'b corp', '共益企业', 'leaping bunny', '跃兔认证', 'cruelty free', '无残忍', '非转基因', 'non-gmo', '无转基因'];
+  local: string[] = ['local', '本地', 'locally sourced', '地产地销', 'from our farm', '农场直供'];
+}
+
+const CERT_KEYWORDS = new CertKeywordSet();
 
 export class EcoScoreEngine {
   private static instance: EcoScoreEngine;
@@ -95,7 +107,10 @@ export class EcoScoreEngine {
     let confidence = 0.3;
 
     const labelStr = (labels ?? '').toLowerCase();
-    if (labelStr.includes('bio') || labelStr.includes('organic') || labelStr.includes('有机')) {
+
+    // 有机认证关键词匹配
+    const organicMatch = CERT_KEYWORDS.organic.some(k => labelStr.includes(k));
+    if (organicMatch || labelStr.includes('bio') || labelStr.includes('organic') || labelStr.includes('有机')) {
       estimatedScore += 15;
       confidence += 0.1;
       const f = new EcoScoreFactor();
@@ -103,26 +118,69 @@ export class EcoScoreEngine {
       f.impact = 15;
       f.description = '有机生产减少环境影响';
       factors.push(f);
+      result.certifications.push('有机认证');
     }
 
-    if (labelStr.includes('fair-trade') || labelStr.includes('fairtrade') || labelStr.includes('公平贸易')) {
+    // 公平贸易关键词匹配
+    const fairTradeMatch = CERT_KEYWORDS.fairTrade.some(k => labelStr.includes(k));
+    if (fairTradeMatch || labelStr.includes('fair-trade') || labelStr.includes('fairtrade') || labelStr.includes('公平贸易')) {
       estimatedScore += 10;
       const f = new EcoScoreFactor();
       f.name = '公平贸易';
       f.impact = 10;
       f.description = '公平贸易认证';
       factors.push(f);
+      result.certifications.push('公平贸易');
     }
 
+    // 碳足迹/碳中和标签识别
+    const carbonMatch = CERT_KEYWORDS.carbon.some(k => labelStr.includes(k));
+    if (carbonMatch) {
+      estimatedScore += 12;
+      confidence += 0.08;
+      const f = new EcoScoreFactor();
+      f.name = '碳足迹认证';
+      f.impact = 12;
+      f.description = '碳中和或低碳认证，减少温室气体排放';
+      factors.push(f);
+      result.carbonLabels.push('碳足迹认证');
+    }
+
+    // 可持续/再生农业/非转基因等
+    const sustainableMatch = CERT_KEYWORDS.sustainable.some(k => labelStr.includes(k));
+    if (sustainableMatch) {
+      estimatedScore += 8;
+      confidence += 0.05;
+      const f = new EcoScoreFactor();
+      f.name = '可持续认证';
+      f.impact = 8;
+      f.description = '可持续/再生农业/非转基因等认证';
+      factors.push(f);
+      result.certifications.push('可持续认证');
+    }
+
+    // 本地生产标签
+    const localMatch = CERT_KEYWORDS.local.some(k => labelStr.includes(k));
     const originStr = (origins ?? '').toLowerCase();
     const mfgStr = (manufacturingPlaces ?? '').toLowerCase();
-    if (originStr.includes('中国') && mfgStr.includes('中国')) {
+    if (localMatch || (originStr.includes('中国') && mfgStr.includes('中国'))) {
       estimatedScore += 10;
       confidence += 0.05;
       const f = new EcoScoreFactor();
       f.name = '本土生产';
       f.impact = 10;
       f.description = '本地生产减少运输碳排放';
+      factors.push(f);
+    }
+
+    // 分类标签环境影响修正
+    const catStr = (categories ?? '').toLowerCase();
+    if (catStr.includes('plant-based') || catStr.includes('植物基') || catStr.includes('素食')) {
+      estimatedScore += 5;
+      const f = new EcoScoreFactor();
+      f.name = '植物基加分';
+      f.impact = 5;
+      f.description = '植物基食品碳足迹更低';
       factors.push(f);
     }
 

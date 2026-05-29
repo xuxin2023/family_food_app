@@ -7,7 +7,7 @@
 //
 // Tab 结构: 首页 | 饮食 | AI | 社区 | 我的
 
-import { safePushUrl, COLORS, HILOG_DOMAIN, NavigationManager } from 'hsp_core';
+import { safePushUrl, COLORS, HILOG_DOMAIN_DEFAULT, NavigationManager } from 'hsp_core';
 import { AppState } from '../AppState';
 import { HdsTabs, HdsTabsController } from '@kit.UIDesignKit';
 import { hdsMaterial } from '@kit.UIDesignKit';
@@ -41,7 +41,7 @@ import { ChildHealthPage } from './ChildHealthPage';
 import { TeenModePage } from './TeenModePage';
 import { AllergenSetupWizard } from './AllergenSetupWizard';
 
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const TAG = 'MainTabsPage';
 
 @Entry
@@ -532,10 +532,4 @@ struct MainTabsPage {
     })
   }
 
-  pageTransition() {
-    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
-      .slide(SlideEffect.Right)
-    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
-      .slide(SlideEffect.Left)
-  }
 }

@@ -3,7 +3,7 @@
 // 整合各维度营养数据的可视化概览：均衡概览、趋势折线、构成分析、收支预算
 // V6.1: 引入 NumericTextTransition 数字翻牌动效，提升健康评分变化时的视觉反馈
 import {
-  safeBack, getPageParams, FamilyProfile, NutritionSnapshot, DailyBudget, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, DateUtil, HILOG_DOMAIN, HealthConfig, NutritionTarget, ToastHelper, DailyNutritionSummary, NutrientTrendData, TrendDirection, DailyNutrientPoint
+  safeBack, getPageParams, FamilyProfile, NutritionSnapshot, DailyBudget, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, DateUtil, HILOG_DOMAIN_DEFAULT, HealthConfig, NutritionTarget, ToastHelper, DailyNutritionSummary, NutrientTrendData, TrendDirection, DailyNutrientPoint
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -18,7 +18,40 @@ import { HealthTrendPredictor, TrendPrediction } from 'feature_report';
 import { TrendPredictionBar } from 'feature_report';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
+
+class SummaryDataSource implements IDataSource {
+  private data: DailyNutritionSummary[] = [];
+  private listeners: DataChangeListener[] = [];
+
+  totalCount(): number {
+    return this.data.length;
+  }
+
+  getData(index: number): DailyNutritionSummary {
+    return this.data[index];
+  }
+
+  updateData(data: DailyNutritionSummary[]): void {
+    this.data = data;
+    for (const listener of this.listeners) {
+      listener.onDataReloaded();
+    }
+  }
+
+  registerDataChangeListener(listener: DataChangeListener): void {
+    if (!this.listeners.includes(listener)) {
+      this.listeners.push(listener);
+    }
+  }
+
+  unregisterDataChangeListener(listener: DataChangeListener): void {
+    const idx = this.listeners.indexOf(listener);
+    if (idx >= 0) {
+      this.listeners.splice(idx, 1);
+    }
+  }
+}
 
 // 时间范围选项（$r 在组件内动态设置以避免文件顶层使用 $r()）
 class PeriodOption {
@@ -82,6 +115,7 @@ struct DashboardPage {
   private chartDelayTimer: number = -1
   private appState: AppState = AppState.getInstance()
   private trendPredictor: HealthTrendPredictor = new HealthTrendPredictor()
+  private summaryDataSource: SummaryDataSource = new SummaryDataSource()
 
   async aboutToAppear() {
     this.componentActive = true
@@ -135,6 +169,7 @@ struct DashboardPage {
     const startDateStr = DateUtil.formatDate(startDate)
     const summaries: DailyNutritionSummary[] = await this.appState.getDailySummaries(this.vm.selectedMemberId, days)
     this.vm.summaries = summaries
+    this.summaryDataSource.updateData(summaries)
 
     // 构建趋势数据
     const result: NutrientTrendData[] = []
@@ -919,7 +954,7 @@ struct DashboardPage {
       .padding({ left: SPACING.MD, right: SPACING.MD, bottom: SPACING.SM })
 
       // 数据行
-      ForEach(this.vm.summaries, (summary: DailyNutritionSummary) => {
+      LazyForEach(this.summaryDataSource, (summary: DailyNutritionSummary) => {
         Row() {
           Text(summary.date.length >= 10 ? summary.date.substring(5, 10) : summary.date)
             .fontSize(FONT_SIZE.SMALL)
@@ -1073,7 +1108,7 @@ struct DashboardPage {
 
     for (const member of this.vm.familyMembers) {
       const budget = this.appState.getDailyBudgetSync(member.memberId)
-      const target = this.appState.getNutritionTargetSync(member.memberId)
+      const target = this.appState.getNutritionTargetFromCache(member.memberId)
 
       const sodiumUsed = Math.max(0, budget.sodiumBudget - budget.sodiumRemaining)
       const sugarUsed = Math.max(0, budget.sugarBudget - budget.sugarRemaining)

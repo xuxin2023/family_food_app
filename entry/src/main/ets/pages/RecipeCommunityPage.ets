@@ -2,7 +2,7 @@
 // 食谱社区页面 — 浏览热门/最新食谱、分类筛选
 
 import {
-  safeBack, safePushUrl, getPageParams, Recipe, RecipeCategory, DietTag, RecipeQueryParams, safeParseRecipeCategory, COLORS, RADIUS, BUTTON, BasicDataSource, PAGE_SIZE_CONFIG, HILOG_DOMAIN, AiRecipeRecommendation, AiRecipeRecommendationResult, AiRecipeRequest, getCategoryLabel, getCategoryEmoji, getDietTagLabel, ImageCache
+  safeBack, safePushUrl, getPageParams, Recipe, RecipeCategory, DietTag, RecipeQueryParams, safeParseRecipeCategory, COLORS, RADIUS, BUTTON, BasicDataSource, PAGE_SIZE_CONFIG, HILOG_DOMAIN_DEFAULT, AiRecipeRecommendation, AiRecipeRecommendationResult, AiRecipeRequest, getCategoryLabel, getCategoryEmoji, getDietTagLabel, ImageCache
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -11,7 +11,7 @@ import { ErrorFallback } from '../components/ErrorFallback';
 import { RecipeCard, LikeButton } from 'feature_community';
 
 
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 const PAGE_SIZE = PAGE_SIZE_CONFIG.RECIPE_COMMUNITY_PAGE_SIZE;
 
@@ -35,7 +35,7 @@ struct RecipeCommunityPage {
 
   async aboutToAppear() {
     const params = getPageParams();
-    if (params !== null && params !== undefined && params.get('aiMode') === 'recommend') {
+    if (params !== null && params !== undefined && params!.get('aiMode') === 'recommend') {
       this.showAiRecommend = true
       await Promise.all([
         this.loadAiRecommendations(),

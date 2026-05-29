@@ -1,0 +1,7 @@
+{
+  "name": "food-submission",
+  "version": "1.0.0",
+  "description": "用户提交食品数据云函数 — 含审核工作流",
+  "main": "index.ts",
+  "dependencies": {}
+}

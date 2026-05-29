@@ -1,8 +1,13 @@
-import { FoodLabel, HILOG_DOMAIN } from 'hsp_core';
+// AdditiveSafetyEngine.ets
+// 添加剂安全评估引擎 — 支持 EU E编号 + 中国 CNS编号 (GB 2760-2024)
+// V6.1: 增加中国标准数据库支持，CNS/E双向映射
+
+import { FoodLabel, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { common } from '@kit.AbilityKit';
 
 const TAG = 'AdditiveSafetyEngine';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export enum AdditiveRiskLevel {
   SAFE = 'safe',
@@ -18,6 +23,10 @@ export interface AdditiveAssessment {
   category: string;
   description: string;
   euStatus: string;
+  cnsCode?: string;
+  cnMaxUsage?: string;
+  safetyLevel?: string;
+  gbRef?: string;
 }
 
 export interface FoodAdditiveReport {
@@ -28,6 +37,23 @@ export interface FoodAdditiveReport {
   cautionCount: number;
   safeCount: number;
   summary: string;
+  standardUsed: string;
+}
+
+interface CnAdditiveEntry {
+  cnsCode: string;
+  name: string;
+  nameEn: string;
+  eNumber: string;
+  function: string;
+  maxUsage: string;
+  safetyLevel: string;
+  gbRef: string;
+}
+
+interface EToCnsMapping {
+  eToCns: Record<string, string>;
+  cnsToE: Record<string, string>;
 }
 
 const ADDITIVE_DB: Record<string, { name: string; risk: AdditiveRiskLevel; category: string; desc: string; eu: string }> = {
@@ -73,22 +99,124 @@ const ADDITIVE_DB: Record<string, { name: string; risk: AdditiveRiskLevel; categ
   'E967': { name: '木糖醇', risk: AdditiveRiskLevel.SAFE, category: '甜味剂', desc: '天然糖醇', eu: '允许' },
 };
 
+const SAFETY_LEVEL_MAP: Record<string, AdditiveRiskLevel> = {
+  'safe': AdditiveRiskLevel.SAFE,
+  'caution': AdditiveRiskLevel.CAUTION,
+  'avoid': AdditiveRiskLevel.AVOID
+};
+
 export class AdditiveSafetyEngine {
+  private static instance: AdditiveSafetyEngine;
+  private cnDatabase: CnAdditiveEntry[] = [];
+  private eToCnsMap: Record<string, string> = {};
+  private cnsToEMap: Record<string, string> = {};
+  private cnDbLoaded: boolean = false;
+
+  private constructor() {}
+
+  static getInstance(): AdditiveSafetyEngine {
+    if (!AdditiveSafetyEngine.instance) {
+      AdditiveSafetyEngine.instance = new AdditiveSafetyEngine();
+    }
+    return AdditiveSafetyEngine.instance;
+  }
+
+  async loadCnDatabase(context: common.Context): Promise<void> {
+    if (this.cnDbLoaded) return;
+
+    try {
+      const resMgr = context.resourceManager;
+      const cnRaw = resMgr.getRawFileContentSync('cn_additive_database.json');
+      const cnText = String.fromCharCode(...cnRaw);
+      this.cnDatabase = JSON.parse(cnText) as CnAdditiveEntry[];
+
+      const mapRaw = resMgr.getRawFileContentSync('e_to_cns_mapping.json');
+      const mapText = String.fromCharCode(...mapRaw);
+      const mapping = JSON.parse(mapText) as EToCnsMapping;
+      this.eToCnsMap = mapping.eToCns ?? {};
+      this.cnsToEMap = mapping.cnsToE ?? {};
+
+      this.cnDbLoaded = true;
+      hilog.info(DOMAIN_ZERO, TAG, 'CN additive database loaded: %{public}d entries, %{public}d mappings',
+        this.cnDatabase.length, Object.keys(this.eToCnsMap).length);
+    } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Failed to load CN database: %{public}s', JSON.stringify(error));
+    }
+  }
+
   assessFood(foodLabel: FoodLabel): FoodAdditiveReport {
     const assessments: AdditiveAssessment[] = [];
     const ingredients = foodLabel.ingredients;
 
     const ePattern = /\b(E\d{3}[a-z]?)\b/gi;
+    const cnsPattern = /\b(\d{2}\.\d{3})\b/g;
     let match: RegExpExecArray | null;
     const foundENumbers: Set<string> = new Set();
+    const foundCnsCodes: Set<string> = new Set();
 
     const ingredientText = typeof ingredients === 'string' ? ingredients : ingredients.join(', ');
-    const execPattern = new RegExp(ePattern.source, ePattern.flags);
-    while ((match = execPattern.exec(ingredientText)) !== null) {
+
+    const execE = new RegExp(ePattern.source, ePattern.flags);
+    while ((match = execE.exec(ingredientText)) !== null) {
       foundENumbers.add(match[1].toUpperCase());
     }
 
+    const execCns = new RegExp(cnsPattern.source, cnsPattern.flags);
+    while ((match = execCns.exec(ingredientText)) !== null) {
+      foundCnsCodes.add(match[1]);
+    }
+
+    // 评估 CNS 编码（中国标准）
+    for (const cns of foundCnsCodes) {
+      const cnEntry = this.cnDatabase.find(e => e.cnsCode === cns);
+      if (cnEntry) {
+        assessments.push({
+          eNumber: this.cnsToEMap[cns] ?? cnEntry.eNumber,
+          name: cnEntry.name,
+          riskLevel: SAFETY_LEVEL_MAP[cnEntry.safetyLevel] ?? AdditiveRiskLevel.UNKNOWN,
+          category: cnEntry.function,
+          description: `${cnEntry.name}(${cnEntry.nameEn})，最大使用量：${cnEntry.maxUsage}`,
+          euStatus: 'GB 2760-2024',
+          cnsCode: cnEntry.cnsCode,
+          cnMaxUsage: cnEntry.maxUsage,
+          safetyLevel: cnEntry.safetyLevel,
+          gbRef: cnEntry.gbRef
+        });
+      } else {
+        assessments.push({
+          eNumber: this.cnsToEMap[cns] ?? '',
+          name: '未知添加剂',
+          riskLevel: AdditiveRiskLevel.UNKNOWN,
+          category: '未知',
+          description: '该CNS编号尚未收录',
+          euStatus: '未知',
+          cnsCode: cns
+        });
+      }
+    }
+
+    // 评估 E 编号（优先使用中国标准映射，否则用 EU 标准）
     for (const eNum of foundENumbers) {
+      const cnsFromMap = this.eToCnsMap[eNum];
+      if (cnsFromMap && this.cnDbLoaded) {
+        const cnEntry = this.cnDatabase.find(e => e.cnsCode === cnsFromMap);
+        if (cnEntry) {
+          assessments.push({
+            eNumber: eNum,
+            name: cnEntry.name,
+            riskLevel: SAFETY_LEVEL_MAP[cnEntry.safetyLevel] ?? AdditiveRiskLevel.UNKNOWN,
+            category: cnEntry.function,
+            description: `${cnEntry.name}(CNS:${cnEntry.cnsCode})，最大使用量：${cnEntry.maxUsage}`,
+            euStatus: 'GB 2760-2024',
+            cnsCode: cnEntry.cnsCode,
+            cnMaxUsage: cnEntry.maxUsage,
+            safetyLevel: cnEntry.safetyLevel,
+            gbRef: cnEntry.gbRef
+          });
+          continue;
+        }
+      }
+
       const info = ADDITIVE_DB[eNum];
       if (info) {
         assessments.push({
@@ -97,7 +225,8 @@ export class AdditiveSafetyEngine {
           riskLevel: info.risk,
           category: info.category,
           description: info.desc,
-          euStatus: info.eu
+          euStatus: info.eu,
+          cnsCode: cnsFromMap ?? undefined
         });
       } else {
         assessments.push({
@@ -120,8 +249,11 @@ export class AdditiveSafetyEngine {
     else if (cautionCount > 0) { overallRisk = AdditiveRiskLevel.CAUTION; }
 
     let summary = '';
+    const hasCn = assessments.some(a => a.cnsCode && a.cnsCode.length > 0);
+    const standardUsed = hasCn && this.cnDbLoaded ? 'GB 2760-2024 + EU' : 'EU';
+
     if (assessments.length === 0) {
-      summary = '未检测到E编号添加剂';
+      summary = '未检测到添加剂编码';
     } else if (overallRisk === AdditiveRiskLevel.AVOID) {
       summary = `检测到${avoidCount}种应避免添加剂，建议谨慎食用`;
     } else if (overallRisk === AdditiveRiskLevel.CAUTION) {
@@ -130,20 +262,47 @@ export class AdditiveSafetyEngine {
       summary = `检测到${safeCount}种安全添加剂`;
     }
 
-    return { foodName: foodLabel.foodName, assessments, overallRisk, avoidCount, cautionCount, safeCount, summary };
+    return { foodName: foodLabel.foodName, assessments, overallRisk, avoidCount, cautionCount, safeCount, summary, standardUsed };
   }
 
   getAdditiveInfo(eNumber: string): AdditiveAssessment | null {
     const info = ADDITIVE_DB[eNumber.toUpperCase()];
     if (!info) return null;
+    const cnsCode = this.eToCnsMap[eNumber.toUpperCase()] ?? undefined;
     return {
       eNumber: eNumber.toUpperCase(),
       name: info.name,
       riskLevel: info.risk,
       category: info.category,
       description: info.desc,
-      euStatus: info.eu
+      euStatus: info.eu,
+      cnsCode
     };
+  }
+
+  getCnsAdditiveInfo(cnsCode: string): AdditiveAssessment | null {
+    const cnEntry = this.cnDatabase.find(e => e.cnsCode === cnsCode);
+    if (!cnEntry) return null;
+    return {
+      eNumber: this.cnsToEMap[cnsCode] ?? cnEntry.eNumber,
+      name: cnEntry.name,
+      riskLevel: SAFETY_LEVEL_MAP[cnEntry.safetyLevel] ?? AdditiveRiskLevel.UNKNOWN,
+      category: cnEntry.function,
+      description: `最大使用量：${cnEntry.maxUsage}`,
+      euStatus: 'GB 2760-2024',
+      cnsCode: cnEntry.cnsCode,
+      cnMaxUsage: cnEntry.maxUsage,
+      safetyLevel: cnEntry.safetyLevel,
+      gbRef: cnEntry.gbRef
+    };
+  }
+
+  mapEToCns(eNumber: string): string | null {
+    return this.eToCnsMap[eNumber.toUpperCase()] ?? null;
+  }
+
+  mapCnsToE(cnsCode: string): string | null {
+    return this.cnsToEMap[cnsCode] ?? null;
   }
 
   searchByRiskLevel(level: AdditiveRiskLevel): AdditiveAssessment[] {
@@ -152,7 +311,8 @@ export class AdditiveSafetyEngine {
       if (info.risk === level) {
         results.push({
           eNumber: eNum, name: info.name, riskLevel: info.risk,
-          category: info.category, description: info.desc, euStatus: info.eu
+          category: info.category, description: info.desc, euStatus: info.eu,
+          cnsCode: this.eToCnsMap[eNum] ?? undefined
         });
       }
     }

@@ -1,5 +1,5 @@
 import {
-  ToastHelper, safeBack, safePushUrl, getPageParams, Recommendation, FamilyProfile, GroupSummary, FeedType, BUTTON, COLORS, HILOG_DOMAIN
+  ToastHelper, safeBack, safePushUrl, getPageParams, Recommendation, FamilyProfile, GroupSummary, FeedType, BUTTON, COLORS, HILOG_DOMAIN_DEFAULT
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { ShareCard } from 'feature_report';
@@ -8,7 +8,7 @@ import { AppState } from '../AppState';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'SharePage';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @Entry
 @ComponentV2

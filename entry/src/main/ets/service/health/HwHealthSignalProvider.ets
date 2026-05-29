@@ -13,13 +13,13 @@ import { healthStore } from '@kit.HealthServiceKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import {
-  HealthSignal, StepLevel, SleepStatus, WeightTrend, BpStatus, BsStatus, DataSource, HeartRateZone, SpO2Level, StressLevel, HILOG_DOMAIN
+  HealthSignal, StepLevel, SleepStatus, WeightTrend, BpStatus, BsStatus, DataSource, HeartRateZone, SpO2Level, StressLevel, HILOG_DOMAIN_DEFAULT
 } from 'hsp_core';
 import { HealthSignalProvider } from './HealthSignalProvider';
 
 
 const TAG = 'HwHealthSignalProvider';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 /**
  * 当前时间戳（秒）

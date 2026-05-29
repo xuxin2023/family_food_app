@@ -1,14 +1,14 @@
 // 食品标签数据仓库 - 商品缓存与食品数据
 
 import {
-  FoodLabel, FoodSource, NutritionPer100g, HILOG_DOMAIN, TABLE_FOOD_LABEL, COL_FOOD_ID, COL_FOOD_NAME, COL_BARCODE, COL_INGREDIENTS, COL_NUTRITION, COL_ALLERGEN_HINTS, COL_MANUFACTURER, COL_SC_NUMBER, COL_PRINCIPAL, COL_TRUSTEE, COL_TRACE_CODE, COL_SOURCE, COL_IDENTIFIED_AT
+  FoodLabel, FoodSource, NutritionPer100g, HILOG_DOMAIN_DEFAULT, TABLE_FOOD_LABEL, COL_FOOD_ID, COL_FOOD_NAME, COL_BARCODE, COL_INGREDIENTS, COL_NUTRITION, COL_ALLERGEN_HINTS, COL_MANUFACTURER, COL_SC_NUMBER, COL_PRINCIPAL, COL_TRUSTEE, COL_TRACE_CODE, COL_SOURCE, COL_IDENTIFIED_AT
 } from 'hsp_core';
 import { relationalStore } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 
 const TAG = 'FoodRepository';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class FoodRepository {
   private rdbStore: relationalStore.RdbStore | null = null;

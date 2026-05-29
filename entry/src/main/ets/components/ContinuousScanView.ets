@@ -10,11 +10,11 @@
 
 import { camera } from '@kit.CameraKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN, COLORS, SPACING, RADIUS } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, COLORS, SPACING, RADIUS } from 'hsp_core';
 import { BusinessError } from '@kit.BasicServicesKit';
 
 const TAG = 'ContinuousScanView';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const DEBOUNCE_MS = 2000;
 
 @ComponentV2

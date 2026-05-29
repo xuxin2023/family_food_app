@@ -1,10 +1,10 @@
-import { HILOG_DOMAIN } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { SecureHttpClient, SecureRequestOptions } from './SecureHttpClient';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
 
 const TAG = 'FeedbackService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export interface FeedbackSubmission {
   userId: string;

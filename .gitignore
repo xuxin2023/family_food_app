@@ -56,3 +56,13 @@ temp_*
 # MindSpore Lite 模型文件（大文件，使用 Git LFS 或 OBS 管理）
 *.ms
 rawfile/models/*.ms
+
+# Additional temp/build artifacts
+index.html
+inspect_dump.txt
+*.pdf
+build_log.txt
+log.txt
+found_errors.txt
+git_test.txt
+plan_content.txt

@@ -1,10 +1,10 @@
 // repository/NutritionSnapshotRepository.ets
 import { relationalStore } from '@kit.ArkData';
-import { NutritionSnapshot, HILOG_DOMAIN } from 'hsp_core';
+import { NutritionSnapshot, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'NutritionSnapshotRepository';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const TABLE_NAME = 'nutrition_snapshot';
 
 export class NutritionSnapshotRepository {

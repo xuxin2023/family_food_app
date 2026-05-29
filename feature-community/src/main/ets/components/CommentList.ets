@@ -21,7 +21,7 @@ export struct CommentList {
     }
     .width('100%')
     .divider({ strokeWidth: 0.5, color: COLORS.DIVIDER })
-    .accessibilityRole(AccessibilityRoleType.LIST)
+    .accessibilityRole(AccessibilityRoleType.List)
     .accessibilityText(`${this.comments.length}条评论`)
     .accessibilityLevel('yes')
   }

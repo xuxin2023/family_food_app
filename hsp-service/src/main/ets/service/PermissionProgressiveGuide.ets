@@ -1,11 +1,11 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN, PermissionDescriptions } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, PermissionDescriptions } from 'hsp_core';
 import { PermissionManager } from './PermissionManager';
 import { common } from '@kit.AbilityKit';
 import { abilityAccessCtrl } from '@kit.AbilityKit';
 
 const TAG = 'PermissionProgressiveGuide';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export interface PermissionGuideStep {
   permission: string;

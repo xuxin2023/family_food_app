@@ -5,10 +5,10 @@
 import { http } from '@kit.NetworkKit';
 import { SecureHttpClient, SecureRequestOptions } from './SecureHttpClient';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 
 const TAG = 'SecureHttpHelper';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class RawResponse {
   raw: string = '';
@@ -58,8 +58,9 @@ export class SecureHttpHelper {
             hilog.warn(DOMAIN_ZERO, TAG, 'JSON.parse fallback to raw: %{public}s', JSON.stringify(e));
             const rawObj: RawResponse = new RawResponse();
             rawObj.raw = raw;
-            // RawResponse is not a Record; wrap in a Record for type compatibility
-            result.data = { 'raw': rawObj.raw } as Record<string, Object>;
+            const wrapRecord = new Map<string, Object>();
+            wrapRecord.set('raw', rawObj.raw);
+            result.data = wrapRecord as unknown as Record<string, Object>;
           }
         }
       } else {

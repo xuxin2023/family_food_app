@@ -5,10 +5,10 @@
 import { AssetKeyManager } from './AssetKeyManager';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { cryptoFramework } from '@kit.CryptoArchitectureKit';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
 
 const TAG = 'SecureKeyStore';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 const KEY_PREFIX = 'sk_';
 

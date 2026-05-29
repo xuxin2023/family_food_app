@@ -1,10 +1,10 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HealthSignal, StepLevel, SleepStatus, WeightTrend, BpStatus, BsStatus, DataSource, HILOG_DOMAIN } from 'hsp_core';
+import { HealthSignal, StepLevel, SleepStatus, WeightTrend, BpStatus, BsStatus, DataSource, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { HealthSignalProvider } from './HealthSignalProvider';
 
 
 const TAG = 'ManualHealthSignalProvider';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class ManualHealthSignalProvider extends HealthSignalProvider {
   async checkAuthorization(): Promise<boolean> {

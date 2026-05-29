@@ -2,11 +2,11 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
 import { preferences } from '@kit.ArkData';
 import { cryptoFramework } from '@kit.CryptoArchitectureKit';
-import { HILOG_DOMAIN } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { SecureDataStore } from 'hsp_core';
 
 const TAG = 'AuthService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 const SECURE_KEY_UID = 'auth_uid';
 const SECURE_KEY_CREATED_AT = 'auth_created_at';

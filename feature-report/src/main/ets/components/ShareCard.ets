@@ -3,7 +3,7 @@
 // V3增强：离线Canvas绘制1080x1080px分享图 + 保存到相册
 
 import {
-  Recommendation, getLevelColorValue, FamilyProfile, FoodRecommendation, RecommendationLevel, COLORS, HILOG_DOMAIN
+  Recommendation, getLevelColorValue, FamilyProfile, FoodRecommendation, RecommendationLevel, COLORS, HILOG_DOMAIN_DEFAULT
 } from 'hsp_core';
 import { image } from '@kit.ImageKit';
 import { common } from '@kit.AbilityKit';
@@ -12,7 +12,7 @@ import { fileIo } from '@kit.CoreFileKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'ShareCardGenerator';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 // ===== 分享图片参数类型 =====
 
@@ -471,7 +471,7 @@ export struct ShareCard {
         .margin({ left: 8 })
 
       if (rec.maxAmount > 0) {
-        Text(`${$r('app.string.share_card_max')}${rec.maxAmount}g`)
+        Text() { Span($r('app.string.share_card_max')); Span(`${rec.maxAmount}g`) }
           .fontSize(13)
           .fontColor(COLORS.TEXT_GRAY_2121)
           .margin({ left: 10 })

@@ -1,7 +1,7 @@
 import {
   FoodLabel, Recommendation, EnhancedFoodRecommendation, DailyBudget,
   NutritionTarget, NutritionSnapshot, ChildProtection, DateUtil, CacheManager,
-  HILOG_DOMAIN, DietRecord, FamilyProfile, HealthSignal, MealScenario, MealBalance
+  HILOG_DOMAIN_DEFAULT, DietRecord, FamilyProfile, HealthSignal, MealScenario, MealBalance
 } from 'hsp_core';
 import { FoodRepository } from '../repository/FoodRepository';
 import { HistoryRepository, ScanHistoryRecord, DietRecordInput } from '../repository/HistoryRepository';
@@ -83,7 +83,7 @@ export class FoodFacade {
   }
 
   async getAllFavorites(): Promise<FavoriteItem[]> {
-    return this.favoriteRepo.getAllFavorites();
+    return this.favoriteRepo.getAll();
   }
 
   async removeFavorite(foodId: string): Promise<void> {

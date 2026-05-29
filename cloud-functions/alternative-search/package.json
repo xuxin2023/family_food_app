@@ -1,0 +1,7 @@
+{
+  "name": "alternative-search",
+  "version": "1.0.0",
+  "description": "替代品搜索云函数 — 对接 GaussDB 向量检索",
+  "main": "index.ts",
+  "dependencies": {}
+}

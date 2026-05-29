@@ -1,6 +1,6 @@
 import {
   FamilyProfile, HealthSignal, DailyBudget, NutritionTarget,
-  DateUtil, CacheManager, HILOG_DOMAIN
+  DateUtil, CacheManager, HILOG_DOMAIN_DEFAULT
 } from 'hsp_core';
 import { common } from '@kit.AbilityKit';
 import { FamilyRepository } from '../repository/FamilyRepository';
@@ -9,8 +9,9 @@ import { MemberManager } from 'hsp_service';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'MemberFacade';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
+@ObservedV2
 export class MemberFacade {
   private readonly familyRepo: FamilyRepository;
   private readonly member: MemberManager;
@@ -97,25 +98,36 @@ export class MemberFacade {
   }
 
   private _nutriTargetCache: Map<string, NutritionTarget> = new Map();
+  @Trace nutriTargetLoading: boolean = false;
 
-  getNutritionTargetSync(memberId: string): NutritionTarget {
+  async getNutritionTarget(memberId: string): Promise<NutritionTarget | null> {
     const cached = this._nutriTargetCache.get(memberId);
     if (cached) return cached;
-    const t = new NutritionTarget();
-    t.caloriesTarget = 2000;
-    this._nutriTargetCache.set(memberId, t);
-    this.nutriTargetRepo.getForMember(memberId).then(target => {
-      if (target) this._nutriTargetCache.set(memberId, target);
-    }).catch(() => {});
-    return t;
+    this.nutriTargetLoading = true;
+    try {
+      const target = await this.nutriTargetRepo.getForMember(memberId);
+      if (target) {
+        this._nutriTargetCache.set(memberId, target);
+        return target;
+      }
+      const defaultTarget = new NutritionTarget();
+      defaultTarget.caloriesTarget = 2000;
+      this._nutriTargetCache.set(memberId, defaultTarget);
+      return defaultTarget;
+    } catch (_e: Object) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'getNutritionTarget failed: %{public}s', JSON.stringify(_e));
+      return null;
+    } finally {
+      this.nutriTargetLoading = false;
+    }
   }
 
   async getNutritionTargetOrDefault(memberId: string): Promise<NutritionTarget> {
-    return this.getNutritionTargetSync(memberId);
+    return (await this.getNutritionTarget(memberId)) ?? new NutritionTarget();
   }
 
-  async getNutritionTarget(memberId: string): Promise<NutritionTarget | null> {
-    return this.getNutritionTargetSync(memberId);
+  getNutritionTargetFromCache(memberId: string): NutritionTarget {
+    return this._nutriTargetCache.get(memberId) ?? new NutritionTarget();
   }
 
   async refreshMemberCache(): Promise<void> {

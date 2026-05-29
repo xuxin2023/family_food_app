@@ -11,12 +11,12 @@
 
 import { hilog } from '@kit.PerformanceAnalysisKit'
 import { http } from '@kit.NetworkKit'
-import { HILOG_DOMAIN, API_CONFIG } from 'hsp_core'
+import { HILOG_DOMAIN_DEFAULT, API_CONFIG } from 'hsp_core'
 import { ServiceGateway } from './ServiceGateway'
 import { SecureHttpClient, SecureRequestOptions } from './SecureHttpClient'
 
 const TAG = 'CloudBackendService'
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT
 
 const REQUEST_TIMEOUT_MS = 10000
 

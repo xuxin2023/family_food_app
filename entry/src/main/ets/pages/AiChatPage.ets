@@ -2,12 +2,13 @@
 // AI 营养师对话页面 — 支持多轮对话、成员绑定、快捷提问
 
 import {
-  safeBack, FamilyProfile, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, HILOG_DOMAIN, ChatRole, ChatMessage, MessageStatus, QUICK_QUESTIONS, generateDynamicQuickQuestions, generateMessageId
+  safeBack, FamilyProfile, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, HILOG_DOMAIN_DEFAULT, ChatRole, ChatMessage, MessageStatus, QUICK_QUESTIONS, generateDynamicQuickQuestions, generateMessageId, PerformanceMonitor
 } from 'hsp_core';
 import { promptAction } from '@kit.ArkUI';
 import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { AiChatService } from '../service/AiChatService';
 import { OnDeviceInferenceEngine, InferenceResult } from 'feature_scan';
 
@@ -26,7 +27,7 @@ function makeActionMenuButton(text: string, color: string): ActionMenuButton {
 }
 
 const TAG = 'AiChatPage';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @Entry
 @ComponentV2
@@ -39,7 +40,8 @@ struct AiChatPage {
   @Local selectedMemberId: string = '';
   @Local selectedMemberName: ResourceStr = $r('app.string.ai_chat_all_members');
   @Local dynamicQuickQuestions: string[] = [];
-  @Local isOfflineMode: boolean = false;
+  @Local isOfflineMode: boolean = false
+  @Local hasPageError: boolean = false;
 
   private appState: AppState = AppState.getInstance();
   private aiChatService: AiChatService = new AiChatService();
@@ -50,6 +52,7 @@ struct AiChatPage {
   private chatHistoryService: ChatHistoryPrefsService = ChatHistoryPrefsService.getInstance();
 
   async aboutToAppear() {
+    PerformanceMonitor.getInstance().pageEnter('AiChatPage');
     this.componentActive = true;
     this.isLoading = true;
     try {
@@ -98,6 +101,7 @@ struct AiChatPage {
   }
 
   aboutToDisappear(): void {
+    PerformanceMonitor.getInstance().pageLeave('AiChatPage');
     this.componentActive = false
     // 持久化保存当前成员的对话
     if (this.selectedMemberId.length > 0 && this.messages.length > 0) {
@@ -110,7 +114,13 @@ struct AiChatPage {
   }
 
   build() {
-    Column() {
+    ErrorBoundary({
+      fallbackMessage: 'AI 对话页面加载失败',
+      onRetry: () => { this.aboutToAppear() },
+      hasError: this.hasPageError,
+      boundaryName: 'AiChatPage'
+    }) {
+      Column() {
       // ===== 顶部导航栏 =====
       Row() {
         // 返回按钮
@@ -218,6 +228,7 @@ struct AiChatPage {
     .width('100%')
     .height('100%')
     .backgroundColor(COLORS.BG_PAGE)
+    }
   }
 
   // ========== 快捷提问面板 ==========
@@ -337,6 +348,8 @@ struct AiChatPage {
     const text = this.inputText.trim()
     if (text.length === 0 || this.isLoading) return
 
+    PerformanceMonitor.getInstance().startSpan('ai_response:chat');
+
     // 隐藏快捷提问
     this.showQuickQuestions = false
 
@@ -413,6 +426,7 @@ struct AiChatPage {
     }
 
     this.isLoading = false
+    PerformanceMonitor.getInstance().endSpan('ai_response:chat');
 
     // 滚动到底部
     const tid2 = setTimeout(() => {

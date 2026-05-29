@@ -3,10 +3,10 @@
 // 支持：离线库 / OFF API / 用户输入 / OCR 多源追踪
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 
 const TAG = 'DataLineage';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class LineageRecord {
   foodId: string = '';

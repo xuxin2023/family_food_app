@@ -1,0 +1,73 @@
+{
+  "version": "1.0.0",
+  "updated": "2026-05-28",
+  "source": "Monash University FODMAP App, 中文食品扩展",
+  "categories": {
+    "highFodmap": {
+      "description": "高FODMAP食品 — IBS患者应避免或限制",
+      "foods": [
+        {"name": "小麦", "nameEn": "Wheat", "fodmapType": "fructan", "serving": "常规量", "alternative": "大米、燕麦(无麸质)"},
+        {"name": "黑麦", "nameEn": "Rye", "fodmapType": "fructan", "serving": "常规量", "alternative": "大米"},
+        {"name": "大蒜", "nameEn": "Garlic", "fodmapType": "fructan", "serving": "任何量", "alternative": "蒜油(无果聚糖)"},
+        {"name": "洋葱", "nameEn": "Onion", "fodmapType": "fructan", "serving": "任何量", "alternative": "葱绿部分"},
+        {"name": "苹果", "nameEn": "Apple", "fodmapType": "fructose+sorbitol", "serving": "常规量", "alternative": "草莓、猕猴桃"},
+        {"name": "梨", "nameEn": "Pear", "fodmapType": "fructose+sorbitol", "serving": "常规量", "alternative": "香蕉(未熟)、橙子"},
+        {"name": "桃子", "nameEn": "Peach", "fodmapType": "sorbitol", "serving": "常规量", "alternative": "草莓、蓝莓"},
+        {"name": "西瓜", "nameEn": "Watermelon", "fodmapType": "fructose+mannitol", "serving": "常规量", "alternative": "哈密瓜(适量)"},
+        {"name": "芒果", "nameEn": "Mango", "fodmapType": "fructose", "serving": ">1/2个", "alternative": "菠萝"},
+        {"name": "牛奶", "nameEn": "Cow's Milk", "fodmapType": "lactose", "serving": "常规量", "alternative": "无乳糖牛奶、燕麦奶"},
+        {"name": "酸奶", "nameEn": "Yogurt", "fodmapType": "lactose", "serving": "常规量", "alternative": "无乳糖酸奶"},
+        {"name": "冰淇淋", "nameEn": "Ice Cream", "fodmapType": "lactose", "serving": "常规量", "alternative": "椰子冰淇淋"},
+        {"name": "芝士(软质)", "nameEn": "Soft Cheese", "fodmapType": "lactose", "serving": "常规量", "alternative": "硬质芝士(低乳糖)"},
+        {"name": "豆类(鹰嘴豆/红豆/黑豆)", "nameEn": "Legumes", "fodmapType": "GOS", "serving": ">1/4杯", "alternative": "罐装扁豆(少量)"},
+        {"name": "开心果", "nameEn": "Pistachios", "fodmapType": "GOS", "serving": "常规量", "alternative": "核桃、花生"},
+        {"name": "腰果", "nameEn": "Cashews", "fodmapType": "GOS", "serving": ">15颗", "alternative": "花生、核桃"},
+        {"name": "蜂蜜", "nameEn": "Honey", "fodmapType": "fructose", "serving": ">1汤匙", "alternative": "纯枫糖浆"},
+        {"name": "高果糖玉米糖浆", "nameEn": "HFCS", "fodmapType": "fructose", "serving": "任何量", "alternative": "葡萄糖浆"},
+        {"name": "菊粉", "nameEn": "Inulin", "fodmapType": "fructan", "serving": "任何量", "alternative": "无替代"},
+        {"name": "花椰菜", "nameEn": "Cauliflower", "fodmapType": "fructan+GOS", "serving": "常规量", "alternative": "西兰花(适量)"},
+        {"name": "蘑菇", "nameEn": "Mushrooms", "fodmapType": "mannitol+GOS", "serving": "常规量", "alternative": "竹笋"},
+        {"name": "芦笋", "nameEn": "Asparagus", "fodmapType": "fructan+mannitol", "serving": "常规量", "alternative": "四季豆"},
+        {"name": "甜菜根", "nameEn": "Beetroot", "fodmapType": "fructose+mannitol", "serving": "常规量", "alternative": "胡萝卜"}
+      ]
+    },
+    "lowFodmap": {
+      "description": "低FODMAP食品 — IBS患者安全食用",
+      "foods": [
+        {"name": "大米", "nameEn": "Rice", "fodmapType": "none", "serving": "不限量"},
+        {"name": "燕麦(无麸质)", "nameEn": "Gluten-free Oats", "fodmapType": "none", "serving": "适量"},
+        {"name": "藜麦", "nameEn": "Quinoa", "fodmapType": "none", "serving": "不限量"},
+        {"name": "香蕉(未熟)", "nameEn": "Unripe Banana", "fodmapType": "none", "serving": "1个"},
+        {"name": "蓝莓", "nameEn": "Blueberries", "fodmapType": "none", "serving": "适量"},
+        {"name": "草莓", "nameEn": "Strawberries", "fodmapType": "none", "serving": "适量"},
+        {"name": "猕猴桃", "nameEn": "Kiwi", "fodmapType": "none", "serving": "2个"},
+        {"name": "橙子", "nameEn": "Orange", "fodmapType": "none", "serving": "1个"},
+        {"name": "菠萝", "nameEn": "Pineapple", "fodmapType": "none", "serving": "适量"},
+        {"name": "无乳糖牛奶", "nameEn": "Lactose-free Milk", "fodmapType": "none", "serving": "适量"},
+        {"name": "硬质芝士", "nameEn": "Hard Cheese", "fodmapType": "none", "serving": "适量"},
+        {"name": "肉类", "nameEn": "Meat", "fodmapType": "none", "serving": "不限量"},
+        {"name": "鱼类", "nameEn": "Fish", "fodmapType": "none", "serving": "不限量"},
+        {"name": "鸡蛋", "nameEn": "Egg", "fodmapType": "none", "serving": "不限量"},
+        {"name": "豆腐", "nameEn": "Tofu", "fodmapType": "none", "serving": "适量"},
+        {"name": "菠菜", "nameEn": "Spinach", "fodmapType": "none", "serving": "适量"},
+        {"name": "胡萝卜", "nameEn": "Carrot", "fodmapType": "none", "serving": "适量"},
+        {"name": "番茄", "nameEn": "Tomato", "fodmapType": "none", "serving": "适量"},
+        {"name": "黄瓜", "nameEn": "Cucumber", "fodmapType": "none", "serving": "适量"},
+        {"name": "西葫芦", "nameEn": "Zucchini", "fodmapType": "none", "serving": "适量"},
+        {"name": "纯枫糖浆", "nameEn": "Pure Maple Syrup", "fodmapType": "none", "serving": "适量"},
+        {"name": "蔗糖", "nameEn": "Table Sugar", "fodmapType": "none", "serving": "适量"}
+      ]
+    }
+  },
+  "histamineHigh": {
+    "description": "高组胺食品 — 组胺不耐受患者应避免",
+    "foods": [
+      {"name": "发酵食品", "examples": ["泡菜", "酱油", "醋", "味噌", "酸面团"]},
+      {"name": "陈年芝士", "examples": ["帕尔马干酪", "切达芝士", "蓝纹芝士", "高达芝士"]},
+      {"name": "酒精饮料", "examples": ["红酒", "啤酒", "香槟", "白葡萄酒"]},
+      {"name": "腌制/熏制肉类", "examples": ["腊肉", "火腿", "香肠", "萨拉米", "培根"]},
+      {"name": "鱼类(陈放)", "examples": ["金枪鱼罐头", "沙丁鱼罐头", "凤尾鱼", "鲭鱼"]},
+      {"name": "其他高组胺", "examples": ["番茄酱", "酵母提取物", "菠菜", "茄子", "蘑菇", "红豆", "巧克力"]}
+    ]
+  }
+}

@@ -2,11 +2,11 @@
 // 合规服务 — 未成年人模式 + 数据导出 + 隐私计算
 // 满足华为应用商店 2025+ 合规要求
 
-import { HILOG_DOMAIN, AgeGroup } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, AgeGroup } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'ComplianceService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class MinorRestrictions {
   disableCommunity: boolean = true;

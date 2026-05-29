@@ -5,14 +5,14 @@
 // 京东联盟API文档参考：jd.union.open.goods.detail.query
 // 淘宝开放平台API文档参考：taobao.item.get
 
-import { FoodLabel, NutritionPer100g, FoodSource, API_TIMEOUT_CONFIG, HILOG_DOMAIN } from 'hsp_core';
+import { FoodLabel, NutritionPer100g, FoodSource, API_TIMEOUT_CONFIG, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { http } from '@kit.NetworkKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { OcrService } from './OcrService';
 import { SecureHttpHelper } from 'hsp_service';
 
 const TAG = 'OnlineShoppingParser';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 // ==================== 常量配置 ====================
 
@@ -344,7 +344,7 @@ export class OnlineShoppingParser {
     try {
       parsed = JSON.parse(result) as Record<string, Object>;
     } catch (e) {
-      hilog.warn(HILOG_DOMAIN, TAG, 'parseJdGoodsDetail JSON.parse failed: %{public}s', JSON.stringify(e));
+      hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'parseJdGoodsDetail JSON.parse failed: %{public}s', JSON.stringify(e));
       const emptyDetail = new GoodsDetail();
       emptyDetail.productName = '京东商品';
       emptyDetail.price = 0;
@@ -373,7 +373,7 @@ export class OnlineShoppingParser {
     try {
       queryResult = JSON.parse(queryResultStr) as Array<Record<string, Object>>;
     } catch (e) {
-      hilog.warn(HILOG_DOMAIN, TAG, 'parseJdQueryResult JSON.parse failed: %{public}s', JSON.stringify(e));
+      hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'parseJdQueryResult JSON.parse failed: %{public}s', JSON.stringify(e));
       const emptyDetail = new GoodsDetail();
       emptyDetail.productName = '京东商品';
       emptyDetail.price = 0;
@@ -456,7 +456,7 @@ export class OnlineShoppingParser {
     try {
       parsed = JSON.parse(result) as Record<string, Object>;
     } catch (e) {
-      hilog.warn(HILOG_DOMAIN, TAG, 'parseTaobaoGoodsDetail JSON.parse failed: %{public}s', JSON.stringify(e));
+      hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'parseTaobaoGoodsDetail JSON.parse failed: %{public}s', JSON.stringify(e));
       const emptyDetail = new GoodsDetail();
       emptyDetail.productName = '淘宝商品';
       emptyDetail.price = 0;

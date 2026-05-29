@@ -1,25 +1,32 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 
 const TAG = 'IngredientSemanticEngine';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
-interface AllergenSynonym {
-  canonical: string;
-  synonyms: string[];
+class AllergenSynonym {
+  canonical: string = '';
+  synonyms: string[] = [];
+}
+
+function mkSynonym(c: string, s: string[]): AllergenSynonym {
+  const item = new AllergenSynonym();
+  item.canonical = c;
+  item.synonyms = s;
+  return item;
 }
 
 const ALLERGEN_SYNONYMS: AllergenSynonym[] = [
-  { canonical: '牛奶', synonyms: ['牛奶', '乳', '乳制品', '奶粉', '脱脂奶粉', '全脂奶粉', '乳清蛋白', '酪蛋白', '奶油', '黄油', '芝士', '奶酪', '炼乳'] },
-  { canonical: '鸡蛋', synonyms: ['鸡蛋', '蛋', '蛋黄', '蛋白', '卵蛋白', '卵磷脂'] },
-  { canonical: '花生', synonyms: ['花生', '花生酱', '花生油', '落花生'] },
-  { canonical: '坚果', synonyms: ['坚果', '杏仁', '核桃', '腰果', '榛子', '开心果', '夏威夷果', '巴旦木', '胡桃', '碧根果'] },
-  { canonical: '大豆', synonyms: ['大豆', '黄豆', '豆制品', '大豆蛋白', '豆粕', '酱油', '豆瓣酱', '豆腐'] },
-  { canonical: '小麦', synonyms: ['小麦', '面粉', '麦麸', '面筋', '小麦粉', '全麦粉', '麦芽'] },
-  { canonical: '鱼', synonyms: ['鱼', '鱼肉', '鱼粉', '鱼油', '三文鱼', '金枪鱼', '鳕鱼'] },
-  { canonical: '甲壳类', synonyms: ['虾', '蟹', '龙虾', '对虾', '基围虾', '甲壳类'] },
-  { canonical: '芝麻', synonyms: ['芝麻', '芝麻酱', '芝麻油', '麻酱'] },
-  { canonical: '亚硫酸盐', synonyms: ['亚硫酸盐', '二氧化硫', '焦亚硫酸钠', '亚硫酸钠'] }
+  mkSynonym('牛奶', ['牛奶', '乳', '乳制品', '奶粉', '脱脂奶粉', '全脂奶粉', '乳清蛋白', '酪蛋白', '奶油', '黄油', '芝士', '奶酪', '炼乳']),
+  mkSynonym('鸡蛋', ['鸡蛋', '蛋', '蛋黄', '蛋白', '卵蛋白', '卵磷脂']),
+  mkSynonym('花生', ['花生', '花生酱', '花生油', '落花生']),
+  mkSynonym('坚果', ['坚果', '杏仁', '核桃', '腰果', '榛子', '开心果', '夏威夷果', '巴旦木', '胡桃', '碧根果']),
+  mkSynonym('大豆', ['大豆', '黄豆', '豆制品', '大豆蛋白', '豆粕', '酱油', '豆瓣酱', '豆腐']),
+  mkSynonym('小麦', ['小麦', '面粉', '麦麸', '面筋', '小麦粉', '全麦粉', '麦芽']),
+  mkSynonym('鱼', ['鱼', '鱼肉', '鱼粉', '鱼油', '三文鱼', '金枪鱼', '鳕鱼']),
+  mkSynonym('甲壳类', ['虾', '蟹', '龙虾', '对虾', '基围虾', '甲壳类']),
+  mkSynonym('芝麻', ['芝麻', '芝麻酱', '芝麻油', '麻酱']),
+  mkSynonym('亚硫酸盐', ['亚硫酸盐', '二氧化硫', '焦亚硫酸钠', '亚硫酸钠'])
 ];
 
 const TRACE_KEYWORDS_ZH: string[] = [
@@ -29,16 +36,16 @@ const TRACE_KEYWORDS_ZH: string[] = [
   '微量', '痕迹量', '痕量'
 ];
 
-interface TraceDeclaration {
-  allergens: string[];
-  rawText: string;
+export class TraceDeclaration {
+  allergens: string[] = [];
+  rawText: string = '';
 }
 
-export interface AllergenMatchResult {
-  directAllergens: string[];
-  traceAllergens: string[];
-  traceDeclarations: TraceDeclaration[];
-  matchedDetails: AllergenMatchDetail[];
+export class AllergenMatchResult {
+  directAllergens: string[] = [];
+  traceAllergens: string[] = [];
+  traceDeclarations: TraceDeclaration[] = [];
+  matchedDetails: AllergenMatchDetail[] = [];
 }
 
 export class AllergenMatchDetail {
@@ -64,12 +71,7 @@ export class IngredientSemanticEngine {
   static analyzeIngredients(ingredientsText: string, userAllergens: string[]): AllergenMatchResult {
     IngredientSemanticEngine.initialize();
 
-    const result: AllergenMatchResult = {
-      directAllergens: [],
-      traceAllergens: [],
-      traceDeclarations: [],
-      matchedDetails: []
-    };
+    const result = new AllergenMatchResult();
 
     if (!ingredientsText || ingredientsText.length === 0) return result;
 
@@ -113,7 +115,10 @@ export class IngredientSemanticEngine {
         detail.isTrace = true;
         result.matchedDetails.push(detail);
       }
-      result.traceDeclarations.push({ allergens: traceAllergens, rawText: traceText });
+      const td = new TraceDeclaration();
+      td.allergens = traceAllergens;
+      td.rawText = traceText;
+      result.traceDeclarations.push(td);
     }
 
     const userSet = new Set(userAllergens.map(a => a.toLowerCase()));

@@ -3,7 +3,7 @@
 // 统一封装华为云 AGConnect Serverless 服务栈
 // 降级策略：云服务不可用时降级为本地规则引擎
 
-import { HILOG_DOMAIN, API_TIMEOUT_CONFIG, API_CONFIG, AssetKeyManager, KeyAlias, JsonHelper, SafeJsonParse } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, API_TIMEOUT_CONFIG, API_CONFIG, AssetKeyManager, KeyAlias, JsonHelper, SafeJsonParse } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { SecureHttpClient, SecureRequestOptions } from './SecureHttpClient';
 import { http } from '@kit.NetworkKit';
@@ -11,7 +11,7 @@ import { HuaweiCloudBackend } from './HuaweiCloudBackend';
 import { CloudAuthService } from './CloudAuthService';
 
 const TAG = 'HuaweiCloudService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class CloudFunctionResult {
   success: boolean = false;

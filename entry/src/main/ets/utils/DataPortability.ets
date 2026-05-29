@@ -2,7 +2,7 @@ import { common } from '@kit.AbilityKit';
 import { relationalStore } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import {
-  HILOG_DOMAIN, DATA_VERSION, FoodLabel, NutritionPer100g, FoodSource, TABLE_FAMILY_PROFILE, TABLE_DIET_RECORD, TABLE_FAVORITE, TABLE_NUTRITION_TARGET, TABLE_NUTRITION_SNAPSHOT, TABLE_SHOPPING_LIST, TABLE_REMINDER_RULES, DB_NAME
+  HILOG_DOMAIN_DEFAULT, DATA_VERSION, FoodLabel, NutritionPer100g, FoodSource, TABLE_FAMILY_PROFILE, TABLE_DIET_RECORD, TABLE_FAVORITE, TABLE_NUTRITION_TARGET, TABLE_NUTRITION_SNAPSHOT, TABLE_SHOPPING_LIST, TABLE_REMINDER_RULES, DB_NAME
 } from 'hsp_core';
 import { ShoppingListRepository } from '../repository/ShoppingListRepository';
 import { ReminderRuleRepository } from '../repository/ReminderRuleRepository';
@@ -16,7 +16,7 @@ import { DataIntegrityChecker, JsonHelper } from 'hsp_core';
 
 
 const TAG = 'DataPortability';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 class ExportObj {
   version: string = '';

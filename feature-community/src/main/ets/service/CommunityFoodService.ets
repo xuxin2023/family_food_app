@@ -1,9 +1,9 @@
-import { FoodLabel, FoodSource, NutritionPer100g, API_TIMEOUT_CONFIG, API_CONFIG, HILOG_DOMAIN } from 'hsp_core';
+import { FoodLabel, FoodSource, NutritionPer100g, API_TIMEOUT_CONFIG, API_CONFIG, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AuthService, SecureHttpHelper } from 'hsp_service';
 
 const TAG = 'CommunityFoodService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class CommunityFoodRecord {
   barcode: string = '';
@@ -68,7 +68,8 @@ export class CommunityFoodService {
     if (cached) return cached;
 
     try {
-      const uid: string = this.authService?.getUid() ?? '';
+      const auth = this.authService;
+      const uid: string = (auth !== null && auth !== undefined) ? auth.getUid() : '';
       const url = `${API_CONFIG.HUAWEI_CLOUD_BASE_URL}/food/lookup?barcode=${encodeURIComponent(barcode)}&uid=${encodeURIComponent(uid)}`;
 
       const getHeader = new Map<string, string>();
@@ -90,7 +91,8 @@ export class CommunityFoodService {
   }
 
   async contributeFood(foodLabel: FoodLabel): Promise<ContributeResult> {
-    const uid: string = this.authService?.getUid() ?? '';
+    const auth2 = this.authService;
+    const uid: string = (auth2 !== null && auth2 !== undefined) ? auth2.getUid() : '';
     if (uid.length === 0) {
       const notLoggedIn = new ContributeResult();
       notLoggedIn.success = false;

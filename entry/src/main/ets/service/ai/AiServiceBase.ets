@@ -3,13 +3,12 @@
 // 各 AI 服务继承此类，只需实现 buildPrompt() 和 parseResponse() 即可
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { AssetKeyManager, KeyAlias } from 'hsp_core';
+import { AssetKeyManager, KeyAlias, RateLimiter, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { AiClient, AiRequestOptions } from './AiClient';
 import { AI_RETRY_CONFIG } from './AiConfig';
-import { HILOG_DOMAIN } from 'hsp_core';
 
 const TAG = 'AiServiceBase';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 /**
  * AI 服务基类
@@ -100,7 +99,16 @@ export abstract class AiServiceBase {
 
   /** 检查是否应使用 AI（条件满足返回 true） */
   protected shouldUseAi(): boolean {
-    return this.isEnabled && this.apiKey.length > 0 && this.tokensUsed < this.MAX_TOKENS;
+    if (!this.isEnabled || this.apiKey.length === 0 || this.tokensUsed >= this.MAX_TOKENS) {
+      return false;
+    }
+    const limiter = RateLimiter.getInstance();
+    const check = limiter.checkLimit('ai_chat', 0);
+    if (!check.allowed) {
+      hilog.warn(DOMAIN_ZERO, this.getTag(), 'AI rate limited, RPM quota exhausted');
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -111,6 +119,16 @@ export abstract class AiServiceBase {
   protected async callAi(userPrompt: string): Promise<string | null> {
     if (!this.shouldUseAi()) {
       return null;
+    }
+
+    const limiter = RateLimiter.getInstance();
+    const estimatedTokens = Math.ceil(userPrompt.length / 4) + this.getDefaultMaxTokens();
+    const tpmCheck = limiter.checkLimit('ai_chat', estimatedTokens);
+    if (!tpmCheck.allowed) {
+      hilog.warn(DOMAIN_ZERO, this.getTag(),
+        'AI TPM rate limited, retryAfter=%{public}dms', tpmCheck.retryAfterMs);
+      const waited = await limiter.waitForQuota('ai_chat', estimatedTokens, 5000);
+      if (!waited) return null;
     }
 
     // 懒加载 AiClient

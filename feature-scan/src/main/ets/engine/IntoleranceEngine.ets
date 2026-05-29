@@ -1,12 +1,13 @@
 // IntoleranceEngine.ets
-// 不耐受检测引擎 — 独立于过敏原检测，处理乳糖/麸质/果糖/组胺等不耐受类型
-// 过敏 = 免疫系统反应; 不耐受 = 消化系统反应（语义不同）
+// 不耐受检测引擎 — 乳糖/麸质/果糖/组胺/FODMAP 等不耐受类型
+// V6.1: 增加 FODMAP 系统化检测（基于 fodmap_database.json 关键词匹配）
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
+import { common } from '@kit.AbilityKit';
 
 const TAG = 'IntoleranceEngine';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export enum IntoleranceType {
   LACTOSE = 'lactose',
@@ -15,7 +16,8 @@ export enum IntoleranceType {
   HISTAMINE = 'histamine',
   SALICYLATE = 'salicylate',
   SULFITE = 'sulfite',
-  CAFFEINE = 'caffeine'
+  CAFFEINE = 'caffeine',
+  FODMAP = 'fodmap'
 }
 
 export enum IntoleranceSeverity {
@@ -28,6 +30,8 @@ export class IntoleranceWarning {
   ingredient: string = '';
   severity: IntoleranceSeverity = IntoleranceSeverity.CAUTION;
   reason: string = '';
+  fodmapDetail?: string;
+  alternative?: string;
 }
 
 export class IntoleranceCheckResult {
@@ -36,7 +40,62 @@ export class IntoleranceCheckResult {
   summary: string = '';
 }
 
+interface FodmapFoodEntry {
+  name: string;
+  nameEn: string;
+  fodmapType: string;
+  serving: string;
+  alternative?: string;
+}
+
+interface FodmapDatabase {
+  categories: {
+    highFodmap: { foods: FodmapFoodEntry[] };
+    lowFodmap: { foods: FodmapFoodEntry[] };
+  };
+  histamineHigh: { foods: { name: string; examples: string[] }[] };
+}
+
 export class IntoleranceEngine {
+  private static instance: IntoleranceEngine;
+  private fodmapDb: FodmapDatabase | null = null;
+  private fodmapDbLoaded: boolean = false;
+  private highFodmapKeywords: string[] = [];
+  private histamineKeywords: string[] = [];
+
+  private constructor() {}
+
+  static getInstance(): IntoleranceEngine {
+    if (!IntoleranceEngine.instance) {
+      IntoleranceEngine.instance = new IntoleranceEngine();
+    }
+    return IntoleranceEngine.instance;
+  }
+
+  async loadFodmapDatabase(context: common.Context): Promise<void> {
+    if (this.fodmapDbLoaded) return;
+
+    try {
+      const resMgr = context.resourceManager;
+      const raw = resMgr.getRawFileContentSync('fodmap_database.json');
+      const text = String.fromCharCode(...raw);
+      this.fodmapDb = JSON.parse(text) as FodmapDatabase;
+
+      this.highFodmapKeywords = this.fodmapDb.categories.highFodmap.foods.map(f => f.name);
+      const histamineFoods = this.fodmapDb.histamineHigh.foods;
+      for (const group of histamineFoods) {
+        this.histamineKeywords.push(group.name);
+        this.histamineKeywords.push(...group.examples);
+      }
+
+      this.fodmapDbLoaded = true;
+      hilog.info(DOMAIN_ZERO, TAG, 'FODMAP database loaded: %{public}d high-FODMAP, %{public}d histamine keywords',
+        this.highFodmapKeywords.length, this.histamineKeywords.length);
+    } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Failed to load FODMAP database: %{public}s', JSON.stringify(error));
+    }
+  }
+
   private static readonly KEYWORD_MAP: Map<IntoleranceType, string[]> = new Map([
     [IntoleranceType.LACTOSE, [
       '乳糖', '牛奶', '奶粉', '乳清蛋白', '乳清粉', '奶油', '芝士',
@@ -76,7 +135,8 @@ export class IntoleranceEngine {
     [IntoleranceType.HISTAMINE, '组胺不耐受：DAO酶活性低，组胺蓄积可能致头痛、皮疹'],
     [IntoleranceType.SALICYLATE, '水杨酸不耐受：对水杨酸盐敏感，可能诱发哮喘、皮疹'],
     [IntoleranceType.SULFITE, '亚硫酸盐不耐受：可能诱发哮喘、呼吸困难'],
-    [IntoleranceType.CAFFEINE, '咖啡因不耐受：代谢缓慢，少量即可致心悸、失眠']
+    [IntoleranceType.CAFFEINE, '咖啡因不耐受：代谢缓慢，少量即可致心悸、失眠'],
+    [IntoleranceType.FODMAP, 'FODMAP不耐受：含高FODMAP成分，IBS患者易腹胀、腹痛']
   ]);
 
   private static readonly SEVERITY_MAP: Map<IntoleranceType, string> = new Map([
@@ -86,7 +146,8 @@ export class IntoleranceEngine {
     [IntoleranceType.HISTAMINE, 'AVOID'],
     [IntoleranceType.SALICYLATE, 'CAUTION'],
     [IntoleranceType.SULFITE, 'AVOID'],
-    [IntoleranceType.CAFFEINE, 'CAUTION']
+    [IntoleranceType.CAFFEINE, 'CAUTION'],
+    [IntoleranceType.FODMAP, 'CAUTION']
   ]);
 
   private static readonly TYPE_LABEL_MAP: Map<string, string> = new Map([
@@ -96,7 +157,8 @@ export class IntoleranceEngine {
     ['histamine', '组胺'],
     ['salicylate', '水杨酸'],
     ['sulfite', '亚硫酸盐'],
-    ['caffeine', '咖啡因']
+    ['caffeine', '咖啡因'],
+    ['fodmap', 'FODMAP']
   ]);
 
   check(intolerances: IntoleranceType[], ingredients: string[]): IntoleranceCheckResult {
@@ -108,6 +170,12 @@ export class IntoleranceEngine {
     const warnings: IntoleranceWarning[] = [];
 
     for (const t of intolerances) {
+      if (t === IntoleranceType.FODMAP) {
+        const fodmapWarnings = this.checkFodmap(ingredients);
+        warnings.push(...fodmapWarnings);
+        continue;
+      }
+
       const keywords = IntoleranceEngine.KEYWORD_MAP.get(t) ?? [];
       const matched = ingredients.filter(i => keywords.some(k => i.includes(k)));
       if (matched.length > 0) {
@@ -136,6 +204,57 @@ export class IntoleranceEngine {
     return result;
   }
 
+  private checkFodmap(ingredients: string[]): IntoleranceWarning[] {
+    const warnings: IntoleranceWarning[] = [];
+
+    if (!this.fodmapDbLoaded || !this.fodmapDb) {
+      const fallbackKeywords = ['小麦', '大蒜', '洋葱', '苹果', '梨', '牛奶', '酸奶', '蜂蜜', '豆类', '蘑菇'];
+      const matched = ingredients.filter(i => fallbackKeywords.some(k => i.includes(k)));
+      for (const m of matched) {
+        const w = new IntoleranceWarning();
+        w.type = IntoleranceType.FODMAP; w.ingredient = m;
+        w.severity = IntoleranceSeverity.CAUTION;
+        w.reason = IntoleranceEngine.REASON_MAP.get(IntoleranceType.FODMAP) ?? '';
+        warnings.push(w);
+      }
+      return warnings;
+    }
+
+    const highFoods = this.fodmapDb.categories.highFodmap.foods;
+    for (const ingredient of ingredients) {
+      for (const food of highFoods) {
+        if (ingredient.includes(food.name)) {
+          const w = new IntoleranceWarning();
+          w.type = IntoleranceType.FODMAP;
+          w.ingredient = ingredient;
+          w.severity = IntoleranceSeverity.CAUTION;
+          w.reason = IntoleranceEngine.REASON_MAP.get(IntoleranceType.FODMAP) ?? '';
+          w.fodmapDetail = `FODMAP类型：${food.fodmapType}，安全量：${food.serving}`;
+          w.alternative = food.alternative ?? '';
+          warnings.push(w);
+          break;
+        }
+      }
+    }
+
+    return warnings;
+  }
+
+  isHighFodmap(ingredient: string): boolean {
+    if (this.fodmapDbLoaded) {
+      return this.highFodmapKeywords.some(k => ingredient.includes(k));
+    }
+    const fallbackKeywords = ['小麦', '大蒜', '洋葱', '苹果', '梨', '牛奶', '酸奶', '蜂蜜', '豆类', '蘑菇'];
+    return fallbackKeywords.some(k => ingredient.includes(k));
+  }
+
+  getFodmapAlternative(ingredient: string): string {
+    if (!this.fodmapDbLoaded || !this.fodmapDb) return '';
+    const highFoods = this.fodmapDb.categories.highFodmap.foods;
+    const found = highFoods.find(f => ingredient.includes(f.name));
+    return found?.alternative ?? '';
+  }
+
   getTypeLabel(type: IntoleranceType): string {
     return IntoleranceEngine.TYPE_LABEL_MAP.get(type) ?? type;
   }
@@ -148,7 +267,8 @@ export class IntoleranceEngine {
       IntoleranceType.HISTAMINE,
       IntoleranceType.SALICYLATE,
       IntoleranceType.SULFITE,
-      IntoleranceType.CAFFEINE
+      IntoleranceType.CAFFEINE,
+      IntoleranceType.FODMAP
     ];
   }
 }

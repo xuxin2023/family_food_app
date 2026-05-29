@@ -7,12 +7,13 @@ import {
 } from 'hsp_core';
 import { promptAction, curves } from '@kit.ArkUI';
 import { BackButton } from '../components/BackButton';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { common } from '@kit.AbilityKit';
 import { AppState } from '../AppState';
 import { NutriScoreBadge, AllergenHighlightList, PaywallDialog, AdditiveTrafficLightList, AdditiveClassifier } from 'feature_scan';
 import { NovaGroupBadge, EcoScoreBadge, EcoScore, RiskAssessmentPanel, ShareCardGenerator, MemberShareInfo, ShareImageParams, ComprehensiveRatingPanel } from 'feature_report';
 import { NutriScore } from 'hsp_core';
-import { AdditiveInteractionEngine, InteractionAssessmentResult } from 'feature_scan';
+import { AdditiveInteractionEngine, InteractionAssessmentResult, NovaGroup } from 'feature_scan';
 import { AdditiveInteractionCard } from '../components/AdditiveInteractionCard';
 
 // ===== 页面级别类型 =====
@@ -45,6 +46,7 @@ struct ReportPage {
   @Local showAlternativesLocked: boolean = false
   @Local currentBreakpoint: string = 'md'
   @Local interactionResult: InteractionAssessmentResult | null = null
+  @Local hasPageError: boolean = false
 
   private appState: AppState = AppState.getInstance()
   private credibilityResult: CredibilityResult = new CredibilityResult()
@@ -116,7 +118,13 @@ struct ReportPage {
   // ==================== 构建 UI ====================
 
   build() {
-    Stack() {
+    ErrorBoundary({
+      fallbackMessage: '报告页面加载失败',
+      onRetry: () => { this.aboutToAppear() },
+      hasError: this.hasPageError,
+      boundaryName: 'ReportPage'
+    }) {
+      Stack() {
       // 骨架屏 - 使用条件渲染容器
       if (this.showSkeleton) {
         Stack() {
@@ -176,6 +184,7 @@ struct ReportPage {
     }
     .width('100%')
     .height('100%')
+    }
   }
 
 // ==================== ① 顶部导航栏 ====================
@@ -247,7 +256,7 @@ struct ReportPage {
 
         // Nova 加工分级 + EcoScore 生态评级
         Column({ space: 4 }) {
-          NovaGroupBadge({ group: this.foodLabel.novaGroup ?? 0 })
+          NovaGroupBadge({ group: (this.foodLabel.novaGroup ?? 0) as NovaGroup })
           EcoScoreBadge({ grade: (this.foodLabel.ecoScoreGrade ?? 'unknown') as EcoScore })
         }.margin({ left: 8 })
 
@@ -1036,9 +1045,9 @@ struct ReportPage {
     .width('100%')
     .height('100%')
     .backgroundColor(COLORS.BG_PAGE)
-  }
-
-  // ==================== 业务逻辑方法 ====================
+    .accessibilityGroup(true)
+    .accessibilityDescription('食品适配报告页面，查看家庭成员适配结果')
+  }  // ==================== 业务逻辑方法 ====================
 
   /**
    * 从路由参数解析数据

@@ -1,0 +1,103 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  HVIGOR_VERSION: '4.0.2'
+  NODE_VERSION: '18'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Building release version: $VERSION"
+
+      - name: Install OHPM dependencies
+        run: |
+          if command -v ohpm &> /dev/null; then
+            ohpm install --all
+          else
+            echo "OHPM not available in CI"
+            npm install --ignore-scripts || true
+          fi
+
+      - name: Build release HAP
+        run: |
+          if command -v hvigorw &> /dev/null; then
+            hvigorw assembleHap --mode release --no-daemon
+          else
+            echo "Hvigor not available in CI - requires HarmonyOS SDK"
+          fi
+
+      - name: Sign HAP (placeholder)
+        run: |
+          echo "=== HAP Signing ==="
+          echo "In production, this step would:"
+          echo "1. Download signing cert from secrets"
+          echo "2. Sign the HAP with hap-signing-tool"
+          echo "3. Verify signature"
+          echo "Signing skipped in CI - requires cert keystore"
+
+      - name: Generate version info
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          COMMIT_SHA=${{ github.sha }}
+          cat > release-info.json << EOF
+          {
+            "version": "${VERSION}",
+            "buildDate": "${BUILD_DATE}",
+            "commitSha": "${COMMIT_SHA}",
+            "platform": "HarmonyOS",
+            "minApiVersion": 12
+          }
+          EOF
+          echo "Release info generated:"
+          cat release-info.json
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ steps.version.outputs.version }}
+          path: |
+            entry/build/default/outputs/default/entry-default-signed.hap
+            release-info.json
+          retention-days: 30
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ steps.version.outputs.version }}
+          draft: true
+          files: |
+            entry/build/default/outputs/default/entry-default-signed.hap
+            release-info.json
+
+      - name: Upload to Huawei AppGallery (placeholder)
+        run: |
+          echo "=== Huawei AppGallery Upload ==="
+          echo "In production, this step would:"
+          echo "1. Use appgallery-connect CLI or API"
+          echo "2. Upload signed HAP to AppGallery Connect"
+          echo "3. Submit for review"
+          echo "APPGALLERY_CLIENT_ID=${{ secrets.APPGALLERY_CLIENT_ID }}"
+          echo "Upload skipped - requires AppGallery Connect credentials"

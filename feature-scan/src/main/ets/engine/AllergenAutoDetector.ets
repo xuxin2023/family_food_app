@@ -1,8 +1,8 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN, FoodLabel } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, FoodLabel } from 'hsp_core';
 
 const TAG = 'AllergenAutoDetector';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export interface SuspectedAllergen {
   ingredient: string;

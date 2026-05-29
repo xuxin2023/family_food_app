@@ -4,13 +4,13 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { RecipeRepository } from '../repository/RecipeRepository';
 import {
-  Recipe, RecipeComment, RecipeIngredient, RecipeStep, RecipeNutrition, RecipeDifficulty, RecipeCategory, DietTag, RecipeQueryParams, CreateRecipeParams, HILOG_DOMAIN
+  Recipe, RecipeComment, RecipeIngredient, RecipeStep, RecipeNutrition, RecipeDifficulty, RecipeCategory, DietTag, RecipeQueryParams, CreateRecipeParams, HILOG_DOMAIN_DEFAULT
 } from 'hsp_core';
 import { AuthService } from 'hsp_service';
 
 
 const TAG = 'RecipeCommunityService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export { CreateRecipeParams } from 'hsp_core';
 

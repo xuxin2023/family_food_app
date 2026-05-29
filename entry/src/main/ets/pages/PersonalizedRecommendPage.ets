@@ -1,5 +1,5 @@
 import {
-  COLORS, safeBack, FoodLabel, FamilyProfile, HealthSignal, NutritionTarget, createDefaultNutritionTarget, DailyBudget, HILOG_DOMAIN
+  COLORS, safeBack, FoodLabel, FamilyProfile, HealthSignal, NutritionTarget, createDefaultNutritionTarget, DailyBudget, HILOG_DOMAIN_DEFAULT
 } from 'hsp_core';
 import { PersonalizedRecommendation } from 'feature_report';
 import { BackButton } from '../components/BackButton';
@@ -8,7 +8,7 @@ import { PersonalizedContext, PersonalizedFactor } from 'feature_report';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'PersonalizedRecommendPage';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @Entry
 @ComponentV2

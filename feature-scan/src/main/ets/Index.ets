@@ -2,7 +2,7 @@
 // Sprint3: 源码已物理迁移至本模块
 
 // ===== 扫描服务 =====
-export { ScanService, ScanLookupResult, ILocalCacheProvider, IRemoteLookupProvider, IDataLineageRecorder } from './service/ScanService';
+export { ScanService, ScanLookupResult, ILocalCacheProvider, IRemoteLookupProvider, IDataLineageRecorder, RemoteLookupResult } from './service/ScanService';
 export { FoodInputService, FoodInputResult } from './service/FoodInputService';
 
 // ===== 扫描相关引擎 =====
@@ -13,7 +13,7 @@ export { EcoScoreEngine, EcoScoreGrade, EcoScoreResult, EcoScoreFactor } from '.
 export { AlternativeFoodRecommender, alternativeFoodRecommender } from './engine/AlternativeFoodRecommender';
 export { IntoleranceEngine, IntoleranceType, IntoleranceSeverity, IntoleranceWarning, IntoleranceCheckResult } from './engine/IntoleranceEngine';
 export { IngredientKnowledgeBase, IngredientRiskLevel, IngredientAssessment } from './engine/IngredientKnowledgeBase';
-export { IngredientSemanticEngine } from './engine/IngredientSemanticEngine';
+export { IngredientSemanticEngine, AllergenMatchResult, AllergenMatchDetail, TraceDeclaration } from './engine/IngredientSemanticEngine';
 export { CrossRiskAssessor } from './engine/CrossRiskAssessor';
 
 // ===== 扫描相关组件 =====

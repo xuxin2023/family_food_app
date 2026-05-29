@@ -3,10 +3,10 @@
 // 所有从网络响应或数据库读取的JSON解析应通过此工具
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
 
 const TAG = 'SafeJsonParse';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class SafeJsonParse {
   static parseRecord(raw: string | Object | ArrayBuffer, defaultValue: Record<string, Object> = {}): Record<string, Object> {

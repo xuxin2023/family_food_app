@@ -5599,6 +5599,50 @@
     {
       "name": "alt_food_selected",
       "value": "Selected: "
+    },
+    {
+      "name": "allergen_config_title",
+      "value": "Allergen Configuration"
+    },
+    {
+      "name": "allergen_common_title",
+      "value": "Common Allergens"
+    },
+    {
+      "name": "allergen_custom_title",
+      "value": "Custom Allergens"
+    },
+    {
+      "name": "allergen_input_placeholder",
+      "value": "Enter allergen name"
+    },
+    {
+      "name": "allergen_add_button",
+      "value": "Add"
+    },
+    {
+      "name": "allergen_save_button",
+      "value": "Save"
+    },
+    {
+      "name": "allergen_added_custom_title",
+      "value": "Added Custom Allergens"
+    },
+    {
+      "name": "suspected_allergen_title",
+      "value": "Suspected Allergen Detection"
+    },
+    {
+      "name": "suspected_allergen_suggestion",
+      "value": "Consider adding these ingredients to allergen config for auto-alerts"
+    },
+    {
+      "name": "peep_overlay_text",
+      "value": "Others detected viewing\nSensitive info protected"
+    },
+    {
+      "name": "peep_content_area",
+      "value": "Content Area"
     }
   ]
 }

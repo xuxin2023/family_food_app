@@ -1,5 +1,5 @@
 import {
-  ToastHelper, safeBack, safePushUrl, safeReplaceUrl, FamilyProfile, DateUtil, COLORS, RADIUS, ThemeColors, ThemeMode, getPrivacyPolicyHtml, getUserAgreementHtml, HILOG_DOMAIN, ROUTE_NUTRITION_TARGET_PAGE, ROUTE_NUTRITION_KNOWLEDGE_PAGE, ROUTE_MEAL_PLAN_PAGE, ROUTE_SHOPPING_LIST_PAGE, ROUTE_REMINDER_RULE_PAGE, ROUTE_FEEDBACK_PAGE, LocaleManager, SUPPORTED_LOCALES, LOCALE_DISPLAY_NAMES, DATA_VERSION, DB_NAME, HealthSignal, StepLevel, SleepStatus, BpStatus, BsStatus, DataSource, LEGAL_CONFIG
+  ToastHelper, safeBack, safePushUrl, safeReplaceUrl, FamilyProfile, DateUtil, COLORS, RADIUS, ThemeColors, ThemeMode, getPrivacyPolicyHtml, getUserAgreementHtml, HILOG_DOMAIN_DEFAULT, ROUTE_NUTRITION_TARGET_PAGE, ROUTE_NUTRITION_KNOWLEDGE_PAGE, ROUTE_MEAL_PLAN_PAGE, ROUTE_SHOPPING_LIST_PAGE, ROUTE_REMINDER_RULE_PAGE, ROUTE_FEEDBACK_PAGE, LocaleManager, SUPPORTED_LOCALES, LOCALE_DISPLAY_NAMES, DATA_VERSION, DB_NAME, HealthSignal, StepLevel, SleepStatus, BpStatus, BsStatus, DataSource, LEGAL_CONFIG
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
@@ -9,12 +9,13 @@ import { common, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 import { DataPortability, ImportResult } from '../utils/DataPortability';
+import { DataBackupService, BackupResult, RestoreResult } from '../service/DataBackupService';
 import { fileIo } from '@kit.CoreFileKit';
 import { picker } from '@kit.CoreFileKit';
 import { util } from '@kit.ArkTS';
 import { UpdateChecker, UpdateInfo, AuthService, UserDataDeletionService } from 'hsp_service';
 
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const TAG = 'SettingsPage';
 
 @ObservedV2
@@ -371,6 +372,14 @@ struct SettingsPage {
                 this.importData()
               })
 
+              this.buildSettingsItem('数据备份', '加密导出所有本地数据到文件', () => {
+                this.backupData()
+              })
+
+              this.buildSettingsItem('数据恢复', '从加密备份文件恢复数据', () => {
+                this.restoreData()
+              })
+
               this.buildSettingsItem($r('app.string.settings_clear_data'), $r('app.string.settings_clear_data_desc'), () => {
                 this.confirmClearData()
               })
@@ -714,6 +723,56 @@ struct SettingsPage {
     }
   }
 
+  private async backupData(): Promise<void> {
+    try {
+      const ctx = AppStorage.get<common.Context>('appContext');
+      if (!ctx) {
+        ToastHelper.show(this.getUIContext(), '备份失败：无法获取上下文');
+        return;
+      }
+      const backupService = DataBackupService.getInstance();
+      await backupService.init(ctx);
+      const result: BackupResult = await backupService.exportBackup(ctx);
+      if (result.success) {
+        ToastHelper.show(this.getUIContext(), `备份成功：${result.recordCount}条记录已加密保存`);
+      } else {
+        ToastHelper.show(this.getUIContext(), `备份失败：${result.error}`);
+      }
+    } catch (error) {
+      hilog.warn(DOMAIN_ZERO, 'SettingsPage', 'Backup failed: ' + JSON.stringify(error));
+      ToastHelper.show(this.getUIContext(), '备份失败，请重试');
+    }
+  }
+
+  private async restoreData(): Promise<void> {
+    try {
+      const ctx = AppStorage.get<common.Context>('appContext');
+      if (!ctx) {
+        ToastHelper.show(this.getUIContext(), '恢复失败：无法获取上下文');
+        return;
+      }
+      const documentSelectOptions = new picker.DocumentSelectOptions();
+      const documentViewPicker = new picker.DocumentViewPicker();
+      const uris = await documentViewPicker.select(documentSelectOptions);
+      if (!uris || uris.length === 0) {
+        return;
+      }
+      const uri = uris[0];
+      const backupService = DataBackupService.getInstance();
+      await backupService.init(ctx);
+      const result: RestoreResult = await backupService.importBackup(uri, ctx);
+      if (result.success) {
+        ToastHelper.show(this.getUIContext(), '数据恢复成功');
+        this.appState.cache.clearAll();
+      } else {
+        ToastHelper.show(this.getUIContext(), `恢复失败：${result.error}`);
+      }
+    } catch (error) {
+      hilog.warn(DOMAIN_ZERO, 'SettingsPage', 'Restore failed: ' + JSON.stringify(error));
+      ToastHelper.show(this.getUIContext(), '恢复失败，请重试');
+    }
+  }
+
   private async checkForUpdate(): Promise<void> {
     if (this.vm.isCheckingUpdate) {
       return;
@@ -900,10 +959,4 @@ struct SettingsPage {
     }
   }
 
-  pageTransition() {
-    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
-      .slide(SlideEffect.Right)
-    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
-      .slide(SlideEffect.Left)
-  }
 }

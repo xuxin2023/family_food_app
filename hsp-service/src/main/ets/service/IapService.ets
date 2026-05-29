@@ -4,23 +4,13 @@
 // 沙箱测试配置说明：
 // ======================== 沙箱测试账号配置 ========================
 
-import { ToastHelper, StringRes, HILOG_DOMAIN, MemberTier, PurchaseResult } from 'hsp_core';
+import { ToastHelper, StringRes, HILOG_DOMAIN_DEFAULT, MemberTier, PurchaseResult, ProductInfo } from 'hsp_core';
 import { iap } from '@kit.IAPKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { util } from '@kit.ArkTS';
-
-class ProductInfo {
-  productId: string = '';
-  tier: MemberTier = MemberTier.FREE;
-  price: string = '';
-  originalPrice: string = '';
-  title: string = '';
-  description: string = '';
-}
-
 
 // ==================== 沙箱测试报告类型 ====================
 
@@ -48,7 +38,7 @@ export class SandboxTestReport {
 }
 
 const TAG = 'IapService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 // ==================== 商品ID ====================
 
@@ -158,7 +148,7 @@ function base64UrlDecode(input: string): string {
     const decoded: Uint8Array = helper.decodeSync(base64);
     const textDecoder: util.TextDecoder = util.TextDecoder.create('utf-8');
     return textDecoder.decodeWithStream(decoded, { stream: false });
-  } catch (e) {
+  } catch (e: Object) {
     hilog.warn(DOMAIN_ZERO, TAG, 'Base64 decode failed: %{public}s', JSON.stringify(e));
     return '';
   }
@@ -175,7 +165,7 @@ function decodeJwsPayload(jws: string): string {
       return '';
     }
     return base64UrlDecode(parts[1]);
-  } catch (e) {
+  } catch (e: Object) {
     hilog.warn(DOMAIN_ZERO, TAG, 'JWS decode failed: %{public}s', JSON.stringify(e));
     return '';
   }
@@ -187,7 +177,7 @@ function decodeJwsPayload(jws: string): string {
 function safeJsonParse<T>(jsonStr: string): T | null {
   try {
     return JSON.parse(jsonStr) as T;
-  } catch (e) {
+  } catch (e: Object) {
     hilog.debug(DOMAIN_ZERO, TAG, 'safeJsonParse failed: %{public}s', JSON.stringify(e));
     return null;
   }
@@ -301,7 +291,7 @@ export class IapService {
       await iap.queryEnvironmentStatus(this.context);
       hilog.info(DOMAIN_ZERO, TAG, 'Environment check passed');
       return true;
-    } catch (err) {
+    } catch (err: Object) {
       const error = err as BusinessError;
       hilog.warn(DOMAIN_ZERO, TAG, 'Environment check failed: code=%{public}d', error.code);
       return false;
@@ -330,7 +320,7 @@ export class IapService {
       // 通过 checkEnvironment 返回的错误码间接判断
       // 沙箱错误码常见：-1(未知), -2(网络), -3(沙箱特有), 1001, 1002
       return IS_SANDBOX_ENABLED;
-    } catch (err) {
+    } catch (err: Object) {
       hilog.warn(DOMAIN_ZERO, TAG, 'isSandboxEnvironment failed: %{public}s', JSON.stringify(err));
       return false;
     }
@@ -352,14 +342,14 @@ export class IapService {
       promise.then((result: iap.CreatePurchaseResult) => {
         try {
           clearTimeout(timer);
-        } catch (e) {
+        } catch (e: Object) {
           hilog.warn(DOMAIN_ZERO, TAG, 'clearTimeout failed: %{public}s', JSON.stringify(e));
         }
         resolve(result);
       }).catch((err: Error) => {
         try {
           clearTimeout(timer);
-        } catch (e) {
+        } catch (e: Object) {
           hilog.warn(DOMAIN_ZERO, TAG, 'clearTimeout failed: %{public}s', JSON.stringify(e));
         }
         reject(err);
@@ -540,7 +530,7 @@ export class IapService {
           }
         }
       }
-    } catch (err) {
+    } catch (err: Object) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Query NONRENEWABLE products failed');
     }
 
@@ -561,7 +551,7 @@ export class IapService {
           }
         }
       }
-    } catch (err) {
+    } catch (err: Object) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Query CONSUMABLE products failed');
     }
 
@@ -671,7 +661,7 @@ export class IapService {
       }
 
       return this.successResult(productId);
-    } catch (err) {
+    } catch (err: Object) {
       const error = err as BusinessError;
       hilog.error(DOMAIN_ZERO, TAG, 'Purchase failed: code=%{public}d, msg=%{public}s',
         error.code, error.message);
@@ -743,7 +733,7 @@ export class IapService {
       }
 
       hilog.info(DOMAIN_ZERO, TAG, 'Restore purchases completed');
-    } catch (err) {
+    } catch (err: Object) {
       const error = err as BusinessError;
       hilog.warn(DOMAIN_ZERO, TAG, 'Restore purchases failed: code=%{public}d', error.code);
     }
@@ -827,7 +817,7 @@ export class IapService {
         await iap.finishPurchase(uiContext, finishParam);
         hilog.info(DOMAIN_ZERO, TAG, 'Consumed: %{public}s', productId);
       }
-    } catch (err) {
+    } catch (err: Object) {
       const error = err as BusinessError;
       hilog.warn(DOMAIN_ZERO, TAG, 'consumePurchase failed: code=%{public}d', error.code);
     }
@@ -849,7 +839,7 @@ export class IapService {
     try {
       const prefs = await preferences.getPreferences(this.context, PREF_IAP);
       return prefs.getSync(KEY_PRODUCT_ID, '') as string;
-    } catch (err) {
+    } catch (err: Object) {
       hilog.warn(DOMAIN_ZERO, TAG, 'getActiveProductId failed: %{public}s', JSON.stringify(err));
       return '';
     }
@@ -865,7 +855,7 @@ export class IapService {
     try {
       const prefs = await preferences.getPreferences(this.context, PREF_IAP);
       return prefs.getSync(KEY_TIER, '') as string;
-    } catch (err) {
+    } catch (err: Object) {
       hilog.warn(DOMAIN_ZERO, TAG, 'getSavedPurchaseTier failed: %{public}s', JSON.stringify(err));
       return '';
     }
@@ -889,7 +879,7 @@ export class IapService {
       const uiContext = this.context as common.UIAbilityContext;
       await this.processUnfinishedPurchases(uiContext, iap.ProductType.CONSUMABLE);
       await this.processUnfinishedPurchases(uiContext, iap.ProductType.NONRENEWABLE);
-    } catch (err) {
+    } catch (err: Object) {
       hilog.warn(DOMAIN_ZERO, TAG, 'handlePendingDelivery failed');
     }
   }
@@ -956,11 +946,11 @@ export class IapService {
       try {
         await iap.finishPurchase(uiContext, finishParam);
         hilog.info(DOMAIN_ZERO, TAG, 'Pending delivery processed: %{public}s', productId);
-      } catch (err) {
+      } catch (err: Object) {
         hilog.warn(DOMAIN_ZERO, TAG, 'finishPurchase failed for pending order');
       }
     }
-    } catch (e) {
+    } catch (e: Object) {
       hilog.error(DOMAIN_ZERO, TAG, 'processUnfinishedPurchases failed: %{public}s', JSON.stringify(e));
     }
   }
@@ -1014,7 +1004,7 @@ export class IapService {
 
       await prefs.flush();
       hilog.info(DOMAIN_ZERO, TAG, 'Purchase record saved: %{public}s', productId);
-    } catch (err) {
+    } catch (err: Object) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Save purchase record failed: %{public}s', JSON.stringify(err));
     }
   }
@@ -1162,7 +1152,7 @@ export class IapService {
     try {
       await iap.queryEnvironmentStatus(this.context);
       recordStep('环境检查', true, Date.now() - envStart, 0, '', 'IAP环境可用');
-    } catch (err) {
+    } catch (err: Object) {
       const error = err as BusinessError;
       recordStep('环境检查', false, Date.now() - envStart, error.code, error.message,
         'IAP环境不可用，请确认华为账号已登录');
@@ -1174,7 +1164,7 @@ export class IapService {
       const products = await this.queryProducts();
       recordStep('商品查询', true, Date.now() - queryStart, 0, '',
         `查询到 ${products.length} 个商品`);
-    } catch (err) {
+    } catch (err: Object) {
       const error = err as BusinessError;
       recordStep('商品查询', false, Date.now() - queryStart, error.code, error.message,
         '商品查询失败');
@@ -1191,7 +1181,7 @@ export class IapService {
         recordStep('个人月度购买', false, Date.now() - purchase1Start, result.errorCode,
           result.errorMessage, '购买失败');
       }
-    } catch (err) {
+    } catch (err: Object) {
       const error = err as BusinessError;
       recordStep('个人月度购买', false, Date.now() - purchase1Start, error.code, error.message,
         '购买异常');
@@ -1203,7 +1193,7 @@ export class IapService {
       await this.consumePurchase(PRODUCT_IDS.PERSONAL_MONTHLY);
       recordStep('确认发货(个人)', true, Date.now() - consume1Start, 0, '',
         '消耗型商品发货成功');
-    } catch (err) {
+    } catch (err: Object) {
       const error = err as BusinessError;
       recordStep('确认发货(个人)', false, Date.now() - consume1Start, error.code, error.message,
         '发货失败');
@@ -1215,7 +1205,7 @@ export class IapService {
       await this.restorePurchases();
       recordStep('恢复购买', true, Date.now() - restoreStart, 0, '',
         '购买记录恢复成功');
-    } catch (err) {
+    } catch (err: Object) {
       const error = err as BusinessError;
       recordStep('恢复购买', false, Date.now() - restoreStart, error.code, error.message,
         '恢复失败');
@@ -1232,7 +1222,7 @@ export class IapService {
         recordStep('家庭年度购买', false, Date.now() - purchase2Start, result.errorCode,
           result.errorMessage, '购买失败');
       }
-    } catch (err) {
+    } catch (err: Object) {
       const error = err as BusinessError;
       recordStep('家庭年度购买', false, Date.now() - purchase2Start, error.code, error.message,
         '购买异常');
@@ -1244,7 +1234,7 @@ export class IapService {
       await this.consumePurchase(PRODUCT_IDS.FAMILY_YEARLY);
       recordStep('确认发货(家庭)', true, Date.now() - consume2Start, 0, '',
         '消耗型商品发货成功');
-    } catch (err) {
+    } catch (err: Object) {
       const error = err as BusinessError;
       recordStep('确认发货(家庭)', false, Date.now() - consume2Start, error.code, error.message,
         '发货失败');
@@ -1257,7 +1247,7 @@ export class IapService {
       const isValid = history.length >= 2;
       recordStep('购买历史验证', isValid, Date.now() - historyStart, 0, '',
         isValid ? `历史记录 ${history.length} 条，完整性正常` : `历史记录 ${history.length} 条，可能不完整`);
-    } catch (err) {
+    } catch (err: Object) {
       const error = err as BusinessError;
       recordStep('购买历史验证', false, Date.now() - historyStart, error.code, error.message,
         '查询历史记录失败');
@@ -1284,9 +1274,9 @@ export class IapService {
     try {
       const dataStore = await preferences.getPreferences(this.context, PREF_IAP);
       const historyJson = dataStore.getSync(KEY_PURCHASE_HISTORY, '[]') as string;
-      const history: PurchaseRecord[] = JSON.parse(historyJson);
+      const history: PurchaseRecord[] = JSON.parse(historyJson) as PurchaseRecord[];
       return history;
-    } catch (err) {
+    } catch (err: Object) {
       hilog.warn(DOMAIN_ZERO, TAG, 'getPurchaseHistory failed: %{public}s', JSON.stringify(err));
       return [];
     }

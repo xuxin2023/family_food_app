@@ -1,9 +1,9 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN, FamilyProfile, FoodLabel, HealthSignal, DailyBudget } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, FamilyProfile, FoodLabel, HealthSignal, DailyBudget } from 'hsp_core';
 import { AppState } from '../AppState';
 
 const TAG = 'DistributedSyncEnhancer';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export interface DistributedSyncPayload {
   currentMemberId: string;

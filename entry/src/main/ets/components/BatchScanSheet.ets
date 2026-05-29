@@ -1,9 +1,9 @@
-import { FoodLabel, COLORS, RADIUS, HILOG_DOMAIN } from 'hsp_core';
+import { FoodLabel, COLORS, RADIUS, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { BatchScanService, BatchScanResult } from 'hsp_service';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'BatchScanSheet';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @ComponentV2
 export struct BatchScanSheet {

@@ -5,17 +5,18 @@
 // 同步(Group+RecipeCommunity+Sync) → SyncFacade
 
 import {
-  FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig, createDefaultMembers, FoodLabel, FoodLabelJson, DailyBudget, Recommendation, MealBalance, MealScenario, ChildProtection, CredibilityResult, NutritionTarget, NutritionSnapshot, GroupSummary, GroupFeed, FeedType, Recipe, RecipeQueryParams, RecipeComment, EnhancedFoodRecommendation, FamilyComparisonItem, DateUtil, CacheManager, DB_NAME, HILOG_DOMAIN, HealthSignal, StepLevel, SleepStatus, WeightTrend, DataSource, BpStatus, BsStatus, HeartRateZone, SpO2Level, StressLevel, MemberTier, MemberStatus, PaywallTrigger, createDefaultMemberStatus, createMemberStatusForTier, getPaywallTriggerForFeature, hasTierAccess, getTierDisplayName, TIER_DAILY_SCAN_LIMIT, TIER_MEMBER_LIMIT, TIER_WEEKLY_REPORT_LIMIT, AiRecipeRecommendationResult, AiRecipeRequest, AiNutritionAdvice, DietRecord, DomainEventBus, DomainEvents, CacheInvalidationData
+  FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig, createDefaultMembers, FoodLabel, FoodLabelJson, DailyBudget, Recommendation, MealBalance, MealScenario, ChildProtection, CredibilityResult, NutritionTarget, NutritionSnapshot, GroupSummary, GroupFeed, FeedType, Recipe, RecipeQueryParams, RecipeComment, EnhancedFoodRecommendation, FamilyComparisonItem, DateUtil, CacheManager, DB_NAME, HILOG_DOMAIN_DEFAULT, HealthSignal, StepLevel, SleepStatus, WeightTrend, DataSource, BpStatus, BsStatus, HeartRateZone, SpO2Level, StressLevel, MemberTier, MemberStatus, PaywallTrigger, createDefaultMemberStatus, createMemberStatusForTier, getPaywallTriggerForFeature, hasTierAccess, getTierDisplayName, TIER_DAILY_SCAN_LIMIT, TIER_MEMBER_LIMIT, TIER_WEEKLY_REPORT_LIMIT, AiRecipeRecommendationResult, AiRecipeRequest, AiNutritionAdvice, DietRecord, DomainEventBus, DomainEvents, CacheInvalidationData
 } from 'hsp_core';
 import { FamilyRepository } from './repository/FamilyRepository';
 import { FoodRepository } from './repository/FoodRepository';
 import { HistoryRepository, ScanHistoryRecord, DietRecordInput } from './repository/HistoryRepository';
 import { RuleRepository } from './repository/RuleRepository';
-import { SyncService, SyncEvent, migrateDatabase, PermissionManager, NetworkMonitorService, PrivacyManager, MemberManager, BasketManager, ReportCacheManager, FamilyGroupRepository, RecipeRepository } from 'hsp_service';
-import { ScanService, ILocalCacheProvider, IRemoteLookupProvider, IDataLineageRecorder } from 'feature_scan';
+import { SyncService, SyncEvent, migrateDatabase, PermissionManager, NetworkMonitorService, PrivacyManager, MemberManager, BasketManager, ReportCacheManager } from 'hsp_service';
+import { ScanService, ILocalCacheProvider, IRemoteLookupProvider, IDataLineageRecorder, RemoteLookupResult } from 'feature_scan';
 import { OpenFoodFactsService, DataLineage } from 'hsp_service';
 import { FavoriteItem, FavoriteRepository } from './repository/FavoriteRepository';
 import { CreateRecipeParams } from 'hsp_core';
+import { FamilyGroupRepository, RecipeRepository } from 'feature_community';
 import { FoodInputService, FoodInputResult } from './service/FoodInputService';
 import { DistributedSyncHelper } from './service/sync/DistributedSyncHelper';
 import { OnDeviceAiEngine } from './engine/OnDeviceAiEngine';
@@ -30,12 +31,13 @@ import { FoodFacade } from './facade/FoodFacade';
 import { MemberFacade } from './facade/MemberFacade';
 import { HealthFacade } from './facade/HealthFacade';
 import { SyncFacade } from './facade/SyncFacade';
+import { OfflineModeManager } from './service/OfflineModeManager';
 import { common } from '@kit.AbilityKit';
 import { relationalStore, preferences } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'AppState';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 let appStateInstance: AppState | null = null;
 
@@ -58,6 +60,7 @@ export class AppState {
   readonly member: MemberManager = new MemberManager();
   readonly basket: BasketManager = new BasketManager();
   readonly reportCache: ReportCacheManager = new ReportCacheManager();
+  readonly offline: OfflineModeManager = OfflineModeManager.getInstance();
 
   hasShownGuide: boolean = false;
   readonly cache: CacheManager = new CacheManager();
@@ -72,7 +75,11 @@ export class AppState {
     remoteProvider.lookupByBarcode = async (barcode: string) => {
       const result = await OpenFoodFactsService.getInstance().lookupByBarcode(barcode);
       if (result && result.found && result.foodLabel) {
-        return { found: true, foodLabel: result.foodLabel, confidence: result.confidence };
+        const r = new RemoteLookupResult();
+        r.found = true;
+        r.foodLabel = result.foodLabel;
+        r.confidence = result.confidence;
+        return r;
       }
       return null;
     };
@@ -88,10 +95,11 @@ export class AppState {
   private initPhase: 'none' | 'initializing' | 'ready' = 'none';
   private readyResolver: (() => void) | null = null;
   private readyRejecter: ((reason: Object) => void) | null = null;
+  private initTimeoutId: number = -1;
   private readyPromise: Promise<void> = new Promise<void>((resolve, reject) => {
     this.readyResolver = resolve;
     this.readyRejecter = reject;
-    setTimeout(() => {
+    this.initTimeoutId = setTimeout(() => {
       reject(new Error('AppState init timeout after 15s'));
     }, 15000);
   });
@@ -169,10 +177,12 @@ export class AppState {
 
     await this.memberFacade.loadCache();
 
+    await this.offline.init(context);
+
     this.health.setMemberResolvers(
       (memberId: string) => this.memberFacade.membersCache.find(m => m.memberId === memberId),
       (memberId: string) => this.memberFacade.getHealthSignal(memberId),
-      (memberId: string) => this.memberFacade.getNutritionTargetSync(memberId)
+      (memberId: string) => this.memberFacade.getNutritionTargetFromCache(memberId)
     );
 
     this.syncEventHandler = (event: SyncEvent) => {
@@ -185,6 +195,10 @@ export class AppState {
     };
     this.services.onSyncEvent(this.syncEventHandler);
 
+    if (this.initTimeoutId !== -1) {
+      clearTimeout(this.initTimeoutId);
+      this.initTimeoutId = -1;
+    }
     if (this.readyResolver) {
       this.readyResolver();
       this.readyResolver = null;
@@ -227,14 +241,14 @@ export class AppState {
   deductIntake(memberId: string, sodium: number, sugar: number, calories: number, fat: number): void {
     this.memberFacade.deductIntake(memberId, sodium, sugar, calories, fat);
   }
-  getNutritionTargetSync(memberId: string): NutritionTarget {
-    return this.memberFacade.getNutritionTargetSync(memberId);
+  async getNutritionTarget(memberId: string): Promise<NutritionTarget | null> {
+    return this.memberFacade.getNutritionTarget(memberId);
+  }
+  getNutritionTargetFromCache(memberId: string): NutritionTarget {
+    return this.memberFacade.getNutritionTargetFromCache(memberId);
   }
   async getNutritionTargetOrDefault(memberId: string): Promise<NutritionTarget> {
     return this.memberFacade.getNutritionTargetOrDefault(memberId);
-  }
-  async getNutritionTarget(memberId: string): Promise<NutritionTarget | null> {
-    return this.memberFacade.getNutritionTarget(memberId);
   }
   async saveNutritionTarget(target: NutritionTarget): Promise<void> {
     await this.food.saveNutritionTarget(target);
@@ -484,14 +498,9 @@ export class AppState {
     this.basket.clearContext();
     this.cache.clearAll();
     this.engines.cleanExpiredEngineCache();
-    this.familyRepo.close().catch(() => {});
-    this.foodRepo.close().catch(() => {});
-    this.historyRepo.close().catch(() => {});
-    this.ruleRepo.close().catch(() => {});
-    this.groupRepo.close().catch(() => {});
-    this.recipeRepo.close().catch(() => {});
-    this.favoriteRepo.close().catch(() => {});
+    this.ruleRepo.clearCache();
     DistributedSyncHelper.getInstance().destroy();
+    this.offline.destroy();
     this.initPhase = 'none';
     appStateInstance = null;
     hilog.info(DOMAIN_ZERO, TAG, 'AppState destroyed');

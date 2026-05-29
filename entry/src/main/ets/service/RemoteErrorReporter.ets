@@ -5,12 +5,12 @@
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { http } from '@kit.NetworkKit';
-import { API_CONFIG, API_TIMEOUT_CONFIG, HILOG_DOMAIN } from 'hsp_core';
+import { API_CONFIG, API_TIMEOUT_CONFIG, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { SecureHttpClient, SecureRequestOptions } from 'hsp_service';
 import { GlobalErrorHandler } from '../utils/GlobalErrorHandler';
 
 const TAG = 'RemoteErrorReporter';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 const DEDUP_WINDOW_MS: number = 60000;
 const MAX_STACK_LENGTH: number = 500;

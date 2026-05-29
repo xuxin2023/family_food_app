@@ -1,14 +1,15 @@
 // AiChatService.ets
 // AI 对话服务 — 基于 AiServiceBase 实现多轮对话，支持上下文记忆
 
-import { ChatRole, ChatMessage, generateMessageId, HILOG_DOMAIN, NutritionTarget } from 'hsp_core';
+import { ChatRole, ChatMessage, generateMessageId, HILOG_DOMAIN_DEFAULT, NutritionTarget } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AiServiceBase } from './ai/AiServiceBase';
 import { AI_SERVICE_DEFAULTS, SYSTEM_PROMPTS } from './ai/AiConfig';
+import { OnDeviceLlmService } from './ai/OnDeviceLlmService';
 import { AppState } from '../AppState';
 
 const TAG = 'AiChatService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 /** 对话历史保留的最大轮数（防止 Token 超限） */
 const MAX_HISTORY_ROUNDS = 10;
@@ -36,6 +37,10 @@ export class AiChatService extends AiServiceBase {
   private conversationHistory: ChatMessage[] = [];
   /** 当前绑定的家庭成员 ID */
   private currentMemberId: string = '';
+  /** 端侧 LLM 服务实例 */
+  private onDeviceLlm: OnDeviceLlmService = OnDeviceLlmService.getInstance();
+  /** 端侧 LLM 是否已初始化 */
+  private onDeviceLlmInitialized: boolean = false;
 
   protected getTag(): string {
     return TAG;
@@ -110,23 +115,42 @@ export class AiChatService extends AiServiceBase {
    * 带上下文的 AI 调用
    */
   private async callAiWithHistory(userMessage: string): Promise<string> {
-    if (!this.shouldUseAi()) {
+    if (!this.shouldUseAi() && !this.onDeviceLlm.isOnDeviceLlmAvailable()) {
       hilog.warn(DOMAIN_ZERO, TAG, 'AI not available, using fallback');
       return this.buildFallbackResponse();
     }
 
     try {
-      // 构建历史消息列表
       const historyItems = this.buildHistoryItems();
-
-      // 构建包含成员上下文的 user prompt
       const enhancedPrompt = await this.buildEnhancedPrompt(userMessage);
-
-      // 将历史与当前 prompt 拼接
       const contextPrefix = historyItems.length > 0
         ? historyItems.map(h => `${h.role === 'user' ? '用户' : 'AI'}：${h.content}`).join('\n') + '\n\n'
         : '';
 
+      // 优先尝试端侧 LLM
+      if (!this.onDeviceLlmInitialized) {
+        try {
+          await this.onDeviceLlm.initialize();
+          this.onDeviceLlmInitialized = true;
+        } catch (e) {
+          hilog.warn(DOMAIN_ZERO, TAG, 'On-device LLM init failed: %{public}s', JSON.stringify(e));
+        }
+        this.onDeviceLlmInitialized = true;
+      }
+
+      if (this.onDeviceLlm.isOnDeviceLlmAvailable()) {
+        const llmResult = await this.onDeviceLlm.chat(enhancedPrompt, contextPrefix, {
+          systemPrompt: this.getSystemPrompt(),
+          temperature: this.getDefaultTemperature(),
+          maxTokens: this.getDefaultMaxTokens()
+        });
+        if (llmResult.text.length > 0) {
+          hilog.info(DOMAIN_ZERO, TAG, 'Using %{public}s LLM response', llmResult.source);
+          return llmResult.text;
+        }
+      }
+
+      // 降级到云端
       const result = await this.callAi(contextPrefix + enhancedPrompt);
       if (result !== null && result.length > 0) {
         return result;
@@ -179,7 +203,7 @@ export class AiChatService extends AiServiceBase {
       }
 
       const budget = appState.getDailyBudgetSync(this.currentMemberId);
-      const target = appState.getNutritionTargetSync(this.currentMemberId);
+      const target = appState.getNutritionTargetFromCache(this.currentMemberId);
       const signal = appState.getHealthSignal(this.currentMemberId);
 
       const contextParts: string[] = [];
@@ -225,7 +249,7 @@ export class AiChatService extends AiServiceBase {
 
       return `${contextParts.join('；')}\n\n用户问题：${userMessage}`;
     } catch (e) {
-      hilog.warn(HILOG_DOMAIN.DEFAULT, TAG, 'buildContextPrompt failed: %{public}s', JSON.stringify(e));
+      hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'buildContextPrompt failed: %{public}s', JSON.stringify(e));
       return userMessage;
     }
   }

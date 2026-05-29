@@ -1,10 +1,10 @@
-import { safeBack, COLORS, HILOG_DOMAIN } from 'hsp_core';
+import { safeBack, COLORS, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'AllergenSetupWizard';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 const COMMON_ALLERGENS: string[] = [
   '牛奶', '鸡蛋', '花生', '坚果', '大豆', '小麦', '鱼', '甲壳类',

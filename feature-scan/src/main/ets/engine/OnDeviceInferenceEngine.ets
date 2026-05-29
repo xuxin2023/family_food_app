@@ -1,9 +1,9 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN, FoodLabel } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, FoodLabel } from 'hsp_core';
 import { common } from '@kit.AbilityKit';
 
 const TAG = 'OnDeviceInferenceEngine';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export interface InferenceResult {
   score: number;

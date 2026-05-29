@@ -5,12 +5,12 @@
 import { http } from '@kit.NetworkKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AGENT_ARTS_ENDPOINT, AGENT_ARTS_MODEL } from './AiConfig';
-import { API_CONFIG, API_TIMEOUT_CONFIG, HILOG_DOMAIN, SecureKeyStore, AssetKeyManager } from 'hsp_core';
+import { API_CONFIG, API_TIMEOUT_CONFIG, HILOG_DOMAIN_DEFAULT, SecureKeyStore, AssetKeyManager } from 'hsp_core';
 import { SecureHttpClient, SecureRequestOptions } from 'hsp_service';
 import { GlobalErrorHandler } from '../../utils/GlobalErrorHandler';
 
 const TAG = 'AiClient';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 /**
  * AI 调用请求参数

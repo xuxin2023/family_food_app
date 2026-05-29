@@ -98,4 +98,31 @@ export class AccessibilityUtil {
     if (type === 'recipe_cover') return context ? `${context}的食谱封面` : '食谱封面图片'
     return '图片'
   }
+
+  /** 列表项可访问性标签 */
+  static getListItemLabel(index: number, total: number, itemDesc: string): string {
+    return `第${index + 1}项，共${total}项：${itemDesc}`
+  }
+
+  /** 进度可访问性描述 */
+  static getProgressLabel(current: number, total: number, label: string): string {
+    const percent = total > 0 ? Math.round(current / total * 100) : 0
+    return `${label}，进度${percent}%，${current}/${total}`
+  }
+
+  /** 切换开关可访问性描述 */
+  static getToggleLabel(name: string, isOn: boolean): string {
+    return `${name}，当前${isOn ? '已开启' : '已关闭'}`
+  }
+
+  /** 页面根容器描述 */
+  static getPageDescription(pageName: string): string {
+    const pageMap: Record<string, string> = {
+      'ScanPage': '食品扫描页面，扫描条码或拍照识别食品',
+      'ReportPage': '食品适配报告页面，查看家庭成员适配结果',
+      'HomePage': '家庭食品助手首页，查看成员概览',
+      'SettingsPage': '设置页面，管理应用配置和数据'
+    }
+    return pageMap[pageName] ?? pageName
+  }
 }

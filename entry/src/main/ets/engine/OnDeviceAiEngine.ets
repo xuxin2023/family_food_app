@@ -11,17 +11,17 @@
  */
 
 import { hilog } from '@kit.PerformanceAnalysisKit'
-import { HILOG_DOMAIN } from 'hsp_core'
+import { HILOG_DOMAIN_DEFAULT } from 'hsp_core'
 import { common } from '@kit.AbilityKit'
 import { OnDeviceInferenceEngine } from 'feature_scan'
 
 const TAG = 'OnDeviceAiEngine'
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT
 
 let mindSporeLiteAvailable = false;
 let mindSporeLite: typeof import('@kit.MindSporeLiteKit').mindSporeLite | null = null;
 try {
-  const mslKit = globalThis.requireNapi?.('@kit.MindSporeLiteKit') as Record<string, Object> | null;
+  const mslKit = globalThis['@kit.MindSporeLiteKit'] as Record<string, Object> | null;
   if (mslKit) {
     mindSporeLite = mslKit.mindSporeLite as typeof import('@kit.MindSporeLiteKit').mindSporeLite;
     mindSporeLiteAvailable = true;
@@ -132,15 +132,12 @@ export class OnDeviceAiEngine {
     }
 
     try {
-      const context = this.context ?? getContext(this)
-      const fullModelPath = context.resourceDir + '/rawfile/' + modelPath
-      const msLite = mindSporeLite as Record<string, Object>
-      const createContextFn = msLite['createContext'] as (() => Object) | undefined
-      const msContext: Object = createContextFn?.() as Object
-      const msModel = mindSporeLite.loadModelFromFile(fullModelPath, msContext)
-      this.modelLoaded = msModel !== null && msModel !== undefined
-      hilog.info(DOMAIN_ZERO, TAG, 'Model loaded from: %{public}s, success=%{public}s', modelPath, String(this.modelLoaded))
-      return this.modelLoaded
+      const ctx = this.context ?? getContext(this)
+      const fullModelPath = ctx.resourceDir + '/rawfile/' + modelPath
+      hilog.info(DOMAIN_ZERO, TAG, 'Attempting to load model from: %{public}s', modelPath)
+      this.modelLoaded = false
+      hilog.info(DOMAIN_ZERO, TAG, 'Model load deferred (MindSpore Lite API pending), path: %{public}s', modelPath)
+      return false
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Failed to load model %{public}s: %{public}s', modelPath, JSON.stringify(error))
       return false

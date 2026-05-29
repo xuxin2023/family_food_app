@@ -13,7 +13,7 @@ import { MealScenario, RiskTag } from '../model/MealBalance';
 import { NovaGroup } from '../model/NovaGroupDef';
 import { ExerciseType } from '../model/ExerciseTypeDef';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
 
 class EnumValidator {
   private cache: Map<string, Set<string>> = new Map();
@@ -151,7 +151,7 @@ export function safeParseDietTagArray(rawArr: string[]): DietTag[] {
     if (validSet.has(raw)) {
       result.push(raw as DietTag);
     } else {
-      hilog.warn(HILOG_DOMAIN.DEFAULT, 'EnumSafeParse', 'Invalid DietTag "%{public}s", skipping', raw);
+      hilog.warn(HILOG_DOMAIN_DEFAULT, 'EnumSafeParse', 'Invalid DietTag "%{public}s", skipping', raw);
     }
   }
   return result;

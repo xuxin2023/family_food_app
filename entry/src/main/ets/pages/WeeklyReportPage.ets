@@ -1,5 +1,5 @@
 import {
-  safeBack, FamilyProfile, MealScenario, DateUtil, PaywallTrigger, MemberTier, COLORS, NUTRIENT_LIMITS_V2, ToastHelper, ShoppingItem, DB_NAME, HILOG_DOMAIN
+  safeBack, FamilyProfile, MealScenario, DateUtil, PaywallTrigger, MemberTier, COLORS, NUTRIENT_LIMITS_V2, ToastHelper, ShoppingItem, DB_NAME, HILOG_DOMAIN_DEFAULT
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
@@ -14,7 +14,7 @@ import { relationalStore } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'WeeklyReportPage';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 class WeekRange {
   startDate: string = '';

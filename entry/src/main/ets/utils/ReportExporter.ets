@@ -5,11 +5,11 @@ import { fileIo as fs } from '@kit.CoreFileKit';
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { WeeklyReport, NutrientComparison, NutrientStatus } from 'feature_report';
-import { FamilyProfile, HILOG_DOMAIN, DietRecord } from 'hsp_core';
+import { FamilyProfile, HILOG_DOMAIN_DEFAULT, DietRecord } from 'hsp_core';
 
 
 const TAG = 'ReportExporter';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class ReportExporter {
   static exportWeeklyReportAsText(report: WeeklyReport, profile: FamilyProfile): string {

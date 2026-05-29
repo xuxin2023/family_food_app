@@ -3,7 +3,7 @@
 // V3: 集成 FoodRepository + RuleEngine 实现真实降级查询
 
 import {
-  FoodLabel, NutritionPer100g, FoodSource, Recommendation, RecommendLevel, LevelColor, FamilyProfile, DailyBudget, HealthSignal, AlternativeFood, JsonHelper, MapUtil, StringRes, HILOG_DOMAIN, IRuleCalculator, IRuleEngineParams, IAlternativeRecommender
+  FoodLabel, NutritionPer100g, FoodSource, Recommendation, RecommendLevel, LevelColor, FamilyProfile, DailyBudget, HealthSignal, AlternativeFood, JsonHelper, MapUtil, StringRes, HILOG_DOMAIN_DEFAULT, IRuleCalculator, IRuleEngineParams, IAlternativeRecommender
 } from 'hsp_core';
 import { common } from '@kit.AbilityKit';
 import { FoodRepository } from '../repository/FoodRepository';
@@ -13,7 +13,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { SecureHttpHelper } from './SecureHttpHelper';
 
 const TAG = 'DataService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 /**
  * 完整报告结果
@@ -100,7 +100,7 @@ export class DataService {
       if (this.foodRepo) {
         try {
           await this.foodRepo.saveFoodLabel(label);
-        } catch (_e) {
+        } catch (_e: Object) {
           hilog.warn(DOMAIN_ZERO, TAG, 'Save to local cache failed');
         }
       }
@@ -134,7 +134,7 @@ export class DataService {
     if (!this.foodRepo || !barcode) return null;
     try {
       return await this.foodRepo.findByBarcode(barcode);
-    } catch (error) {
+    } catch (error: Object) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Local cache lookup failed: %{public}s', JSON.stringify(error));
       return null;
     }
@@ -167,7 +167,7 @@ export class DataService {
         }
       }
       return null;
-    } catch (error) {
+    } catch (error: Object) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Remote API lookup failed: %{public}s', JSON.stringify(error));
       return null;
     }
@@ -218,7 +218,7 @@ export class DataService {
       }
 
       return label;
-    } catch (error) {
+    } catch (error: Object) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Parse API response failed: %{public}s', JSON.stringify(error));
       return null;
     }
@@ -288,7 +288,7 @@ export class DataService {
           const params = new RuleEngineParams(member, signal, label, budget);
           const rec = this.ruleEngine.calculate(params);
           recommendations.push(rec);
-        } catch (error) {
+        } catch (error: Object) {
           // RuleEngine 计算失败时提供安全兜底
           hilog.warn(DOMAIN_ZERO, TAG, 'RuleEngine calculate failed for member %{public}s: %{public}s',
             member.memberId, JSON.stringify(error));
@@ -314,7 +314,7 @@ export class DataService {
       }).catch(() => {
         alternatives = [];
       });
-    } catch (error) {
+    } catch (error: Object) {
       hilog.warn(DOMAIN_ZERO, TAG, 'generateFullReport failed: %{public}s', JSON.stringify(error));
       alternatives = [];
     }

@@ -1,11 +1,11 @@
 // 成员管理页 - 家庭成员列表
 
-import { safeBack, safePushUrl, FamilyProfile, BUTTON, COLORS, HILOG_DOMAIN } from 'hsp_core';
+import { safeBack, safePushUrl, FamilyProfile, BUTTON, COLORS, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { AppState } from '../AppState';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'MemberPage';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @Entry
 @ComponentV2

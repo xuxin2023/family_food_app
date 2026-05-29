@@ -1,10 +1,10 @@
-import { HILOG_DOMAIN, DB_NAME } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, DB_NAME } from 'hsp_core';
 import { formBindingData } from '@kit.FormKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferences, relationalStore } from '@kit.ArkData';
 
 const TAG = 'FoodWidgetManager';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 // 小卡片数据类
 class SmallWidgetData {

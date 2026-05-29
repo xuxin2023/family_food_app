@@ -2,7 +2,7 @@
 // 用户反馈页面 - 支持 Bug报告/功能建议/使用问题/其他
 // 匿名模式：无需登录即可提交
 
-import { ToastHelper, safeBack, COLORS, HILOG_DOMAIN } from 'hsp_core';
+import { ToastHelper, safeBack, COLORS, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { FeedbackService, FeedbackSubmission, FeedbackResult } from 'hsp_service';
 import { BackButton } from '../components/BackButton';
 import { HuaweiCloudService } from 'hsp_service';
@@ -13,7 +13,7 @@ import { picker } from '@kit.CoreFileKit';
 import { deviceInfo } from '@kit.BasicServicesKit';
 
 const TAG = 'FeedbackPage';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 const FEEDBACK_TYPES: ResourceStr[] = [$r('app.string.feedback_type_bug'), $r('app.string.feedback_type_feature'), $r('app.string.feedback_type_usage'), $r('app.string.feedback_type_other')];
 const MAX_CONTENT_LENGTH: number = 500;

@@ -2,7 +2,7 @@
 // 隐私政策与用户协议确认页面 - 首次启动时展示
 // 用户同意后方可进入主页面
 
-import { safeReplaceUrl, getPrivacyPolicyHtml, getUserAgreementHtml, COLORS, HILOG_DOMAIN } from 'hsp_core';
+import { safeReplaceUrl, getPrivacyPolicyHtml, getUserAgreementHtml, COLORS, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
@@ -10,7 +10,7 @@ import { AppState } from '../AppState';
 import { PrivacyManager, PrivacyDocumentUrls } from 'hsp_service';
 
 const TAG = 'PrivacyDialogPage';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @Entry
 @ComponentV2

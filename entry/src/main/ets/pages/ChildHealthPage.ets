@@ -1,4 +1,4 @@
-import { COLORS, safeBack, FoodLabel, FamilyProfile, AgeGroup, HILOG_DOMAIN } from 'hsp_core';
+import { COLORS, safeBack, FoodLabel, FamilyProfile, AgeGroup, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { ChildHealthAssessment } from 'feature_report';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
@@ -6,7 +6,7 @@ import { SnackImpactAssessment, AdditiveSafetyResult, AdditiveSafetyLevel } from
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'ChildHealthPage';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @Entry
 @ComponentV2

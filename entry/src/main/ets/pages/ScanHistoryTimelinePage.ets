@@ -1,10 +1,10 @@
-import { ToastHelper, safeBack, FoodLabel, COLORS, RADIUS, HILOG_DOMAIN } from 'hsp_core';
+import { ToastHelper, safeBack, FoodLabel, COLORS, RADIUS, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'ScanHistoryTimelinePage';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 interface TimelineEntry {
   date: string;

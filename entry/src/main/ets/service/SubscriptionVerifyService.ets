@@ -1,7 +1,7 @@
 // SubscriptionVerifyService.ets
 // 订阅云端校验服务 - 基于 MemberTier
 
-import { TIME_INTERVAL_CONFIG, API_TIMEOUT_CONFIG, API_CONFIG, HILOG_DOMAIN, MemberTier, safeParseMemberTier } from 'hsp_core';
+import { TIME_INTERVAL_CONFIG, API_TIMEOUT_CONFIG, API_CONFIG, HILOG_DOMAIN_DEFAULT, MemberTier, safeParseMemberTier } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { http } from '@kit.NetworkKit';
 import { common } from '@kit.AbilityKit';
@@ -10,7 +10,7 @@ import { AuthService, SecureHttpClient, SecureRequestOptions } from 'hsp_service
 import { GlobalErrorHandler } from '../utils/GlobalErrorHandler';
 
 const TAG = 'SubscriptionVerifyService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class SubscriptionVerifyResult {
   valid: boolean = false;

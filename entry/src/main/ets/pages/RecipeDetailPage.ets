@@ -2,7 +2,7 @@
 // 食谱详情页面 — 详情、评论、点赞
 
 import {
-  ToastHelper, getPageParams, Recipe, RecipeComment, DietTag, RecipeIngredient, RecipeStep, COLORS, RADIUS, BasicDataSource, HILOG_DOMAIN, getCategoryLabel, getCategoryEmoji, getDifficultyLabel, getDietTagLabel, formatTime
+  ToastHelper, getPageParams, Recipe, RecipeComment, DietTag, RecipeIngredient, RecipeStep, COLORS, RADIUS, BasicDataSource, HILOG_DOMAIN_DEFAULT, getCategoryLabel, getCategoryEmoji, getDifficultyLabel, getDietTagLabel, formatTime
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -11,7 +11,7 @@ import { LikeButton } from 'feature_community';
 
 
 const TAG = 'RecipeDetailPage';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @Entry
 @ComponentV2

@@ -5,11 +5,11 @@
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HuaweiCloudService } from './HuaweiCloudService';
-import { HILOG_DOMAIN, DATA_VERSION } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, DATA_VERSION } from 'hsp_core';
 import { preferences } from '@kit.ArkData';
 
 const TAG = 'UpdateChecker';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class UpdateInfo {
   latestVersion: string = '';

@@ -174,7 +174,6 @@ struct BasketCheckPage {
         .width('100%')
         .height('100%')
         .backgroundColor('#FAFAFA')
-        .scrollable(ScrollDirection.Vertical)
       }
 
       if (this.paywallTrigger !== null) {
@@ -189,10 +188,4 @@ struct BasketCheckPage {
     .height('100%')
   }
 
-  pageTransition() {
-    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
-      .slide(SlideEffect.Right)
-    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
-      .slide(SlideEffect.Left)
-  }
 }

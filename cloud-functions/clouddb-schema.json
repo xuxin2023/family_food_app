@@ -81,14 +81,57 @@
     "NutritionTarget": {
       "fields": {
         "memberId": { "type": "string" },
-        "calorieTarget": { "type": "number" },
-        "sodiumTarget": { "type": "number" },
-        "sugarTarget": { "type": "number" },
-        "fatTarget": { "type": "number" },
-        "proteinTarget": { "type": "number" },
+        "sodium_max_mg": { "type": "number" },
+        "sugar_max_g": { "type": "number" },
+        "calories_target": { "type": "number" },
+        "fat_max_g": { "type": "number" },
+        "protein_target_g": { "type": "number" },
+        "fiber_min_g": { "type": "number" },
+        "preset_name": { "type": "string" },
         "updatedAt": { "type": "number" }
       },
       "indexes": [{ "fields": ["memberId"], "unique": true }]
+    },
+    "DailyBudget": {
+      "fields": {
+        "memberId": { "type": "string" },
+        "date": { "type": "string" },
+        "sodium_budget": { "type": "number" },
+        "sugar_budget": { "type": "number" },
+        "calorie_budget": { "type": "number" },
+        "fat_budget": { "type": "number" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "indexes": [{ "fields": ["memberId", "date"], "unique": true }]
+    },
+    "NutritionSnapshot": {
+      "fields": {
+        "snapshotId": { "type": "string", "primaryKey": true },
+        "memberId": { "type": "string" },
+        "date": { "type": "string" },
+        "sodiumIntake": { "type": "number" },
+        "sugarIntake": { "type": "number" },
+        "calorieIntake": { "type": "number" },
+        "fatIntake": { "type": "number" },
+        "proteinIntake": { "type": "number" },
+        "createdAt": { "type": "number" }
+      },
+      "indexes": [{ "fields": ["memberId", "date"] }]
+    },
+    "Favorite": {
+      "fields": {
+        "foodId": { "type": "string", "primaryKey": true },
+        "memberId": { "type": "string" },
+        "foodName": { "type": "string" },
+        "barcode": { "type": "string" },
+        "brand": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "nutriGrade": { "type": "string" },
+        "source": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "indexes": [{ "fields": ["memberId"] }]
     },
     "ReminderRule": {
       "fields": {

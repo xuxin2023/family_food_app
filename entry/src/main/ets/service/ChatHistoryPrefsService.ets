@@ -1,10 +1,10 @@
 import { preferences } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { getGlobalState } from 'hsp_core';
 
 const TAG = 'ChatHistoryPrefs';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const PREFS_NAME = 'ai_chat_history';
 
 export class ChatHistoryPrefsService {

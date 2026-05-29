@@ -1,5 +1,5 @@
 import {
-  ToastHelper, safeBack, COLORS, HILOG_DOMAIN, DB_NAME, ReminderRule, PRESET_REMINDER_RULES, getReminderTypeLabel, getReminderTypeIcon, FamilyProfile
+  ToastHelper, safeBack, COLORS, HILOG_DOMAIN_DEFAULT, DB_NAME, ReminderRule, PRESET_REMINDER_RULES, getReminderTypeLabel, getReminderTypeIcon, FamilyProfile
 } from 'hsp_core';
 import { ReminderService, ReminderRule as ServiceReminderRule, ReminderEvent } from 'hsp_service';
 import { BackButton } from '../components/BackButton';
@@ -11,7 +11,7 @@ import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'ReminderRulePage';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @Entry
 @ComponentV2

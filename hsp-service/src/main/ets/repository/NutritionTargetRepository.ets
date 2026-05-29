@@ -1,10 +1,10 @@
 // repository/NutritionTargetRepository.ets
 import { relationalStore } from '@kit.ArkData';
-import { NutritionTarget, createDefaultNutritionTarget, HILOG_DOMAIN } from 'hsp_core';
+import { NutritionTarget, createDefaultNutritionTarget, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'NutritionTargetRepository';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const TABLE_NAME = 'nutrition_target';
 
 export class NutritionTargetRepository {

@@ -1,6 +1,6 @@
 import {
   GroupSummary, GroupFeed, FeedType, Recipe, RecipeQueryParams,
-  RecipeComment, CreateRecipeParams, HILOG_DOMAIN
+  RecipeComment, CreateRecipeParams, HILOG_DOMAIN_DEFAULT
 } from 'hsp_core';
 import { ServiceManager } from '../ServiceManager';
 import { SyncService, SyncEvent } from 'hsp_service';
@@ -8,7 +8,7 @@ import { FamilyGroupService, CreateGroupParams } from 'feature_community';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'SyncFacade';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class SyncFacade {
   private readonly services: ServiceManager;

@@ -1,10 +1,10 @@
 // repository/FavoriteRepository.ets
 import { relationalStore } from '@kit.ArkData';
-import { NutritionTarget, HILOG_DOMAIN } from 'hsp_core';
+import { NutritionTarget, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'FavoriteRepository';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const TABLE_FAVORITES = 'favorites';
 const TABLE_NUTRITION_TARGET = 'nutrition_target';
 
@@ -181,8 +181,6 @@ export class FavoriteRepository {
     }
     return true;
   }
-
-  async getAllFavorites(): Promise<FavoriteItem[]> { return [...this.items]; }
 
   async getFavoriteCount(): Promise<number> { return this.items.length; }
 

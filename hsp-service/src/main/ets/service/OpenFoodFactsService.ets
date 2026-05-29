@@ -4,7 +4,7 @@
 // API 文档: https://openfoodfacts.github.io/openfoodfacts-server/api/
 // Base URL: https://world.openfoodfacts.org/api/v2/
 
-import { FoodLabel, NutritionPer100g, FoodSource, JsonObject, API_TIMEOUT_CONFIG, HILOG_DOMAIN } from 'hsp_core';
+import { FoodLabel, NutritionPer100g, FoodSource, JsonObject, API_TIMEOUT_CONFIG, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { http } from '@kit.NetworkKit';
 import { image } from '@kit.ImageKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -12,7 +12,7 @@ import { SecureHttpClient, SecureRequestOptions } from './SecureHttpClient';
 import { ImageCacheUtil } from 'hsp_core';
 
 const TAG = 'OpenFoodFactsService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 // ===== 公开的营养数据接口（替代已移除的 FoodAdapterTypes.FoodNutrition） =====
 
@@ -297,7 +297,7 @@ export class OpenFoodFactsService {
         });
       }
       return results;
-    } catch (e) {
+    } catch (e: Object) {
       hilog.warn(DOMAIN_ZERO, TAG, 'searchByName parse failed: %{public}s', JSON.stringify(e));
       return [];
     }
@@ -328,7 +328,7 @@ export class OpenFoodFactsService {
       }
 
       return this.parseOffProduct(barcode, productRaw)
-    } catch (error) {
+    } catch (error: Object) {
       hilog.error(DOMAIN_ZERO, TAG, 'Failed to parse product response: %{public}s', JSON.stringify(error))
       return null
     }
@@ -371,7 +371,7 @@ export class OpenFoodFactsService {
         pageSize: respPageSize,
         products: products
       }
-    } catch (error) {
+    } catch (error: Object) {
       hilog.error(DOMAIN_ZERO, TAG, 'Failed to parse search response: %{public}s', JSON.stringify(error))
       return null
     }
@@ -389,9 +389,9 @@ export class OpenFoodFactsService {
       const cacheUtil = ImageCacheUtil.getInstance();
       const cached = cacheUtil.get(imageUrl);
       if (cached !== undefined && cached !== null) {
-        return cached;
+      return cached;
       }
-    } catch (_) {}
+    } catch (_: Object) {}
 
     try {
       const options: SecureRequestOptions = {
@@ -412,9 +412,9 @@ export class OpenFoodFactsService {
       try {
         const cacheUtil = ImageCacheUtil.getInstance();
         cacheUtil.set(imageUrl, pixelMap);
-      } catch (_) {}
+      } catch (_: Object) {}
       return pixelMap;
-    } catch (error) {
+    } catch (error: Object) {
       hilog.error(DOMAIN_ZERO, TAG, 'Image request failed: %{public}s', JSON.stringify(error));
       return null;
     }
@@ -531,7 +531,7 @@ export class OpenFoodFactsService {
         hilog.warn(DOMAIN_ZERO, TAG, 'HTTP %{public}d for %{public}s', response.responseCode, url);
       }
       return null;
-    } catch (error) {
+    } catch (error: Object) {
       hilog.error(DOMAIN_ZERO, TAG, 'Request failed: %{public}s', JSON.stringify(error));
       return null;
     }

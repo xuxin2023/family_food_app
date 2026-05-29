@@ -1,12 +1,12 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { SecureHttpHelper, SecureJsonResponse } from 'hsp_service';
 import { common } from '@kit.AbilityKit';
 import { fileIo } from '@kit.CoreFileKit';
 import { http } from '@kit.NetworkKit';
 
 const TAG = 'CommunityImageService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 const COMPRESSION_QUALITY = 80;
 
@@ -69,7 +69,7 @@ export class CommunityImageService {
         result.thumbnailUrl = result.url;
         hilog.info(DOMAIN_ZERO, TAG, 'Cloud upload failed, saved locally: %{public}s', result.url);
       }
-    } catch (error) {
+    } catch (error: Object) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Image upload failed: %{public}s', JSON.stringify(error));
       throw new Error(JSON.stringify(error));
     }
@@ -83,7 +83,7 @@ export class CommunityImageService {
       try {
         const result = await this.uploadImage(path, category);
         results.push(result);
-      } catch (_) {
+      } catch (_: Object) {
         continue;
       }
     }
@@ -95,7 +95,7 @@ export class CommunityImageService {
     const filesDir = this.context.filesDir + '/community_images';
     try {
       await fileIo.access(filesDir);
-    } catch (_) {
+    } catch (_: Object) {
       await fileIo.mkdir(filesDir);
     }
     const destPath = filesDir + '/' + fileName;

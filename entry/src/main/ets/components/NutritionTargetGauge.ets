@@ -10,16 +10,16 @@ interface GaugeItem {
 
 @ComponentV2
 export struct NutritionTargetGauge {
-  @Prop calories: number = 0
-  @Prop caloriesTarget: number = 2000
-  @Prop sodium: number = 0
-  @Prop sodiumTarget: number = 2000
-  @Prop sugar: number = 0
-  @Prop sugarTarget: number = 50
-  @Prop fat: number = 0
-  @Prop fatTarget: number = 65
-  @Prop protein: number = 0
-  @Prop proteinTarget: number = 60
+  @Param calories: number = 0
+  @Param caloriesTarget: number = 2000
+  @Param sodium: number = 0
+  @Param sodiumTarget: number = 2000
+  @Param sugar: number = 0
+  @Param sugarTarget: number = 50
+  @Param fat: number = 0
+  @Param fatTarget: number = 65
+  @Param protein: number = 0
+  @Param proteinTarget: number = 60
 
   build() {
     Column() {

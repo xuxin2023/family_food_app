@@ -2,7 +2,7 @@
 // 我的收藏页面 - 展示用户收藏的食品列表
 
 import {
-  ToastHelper, safeBack, safePushUrl, COLORS, FONT_SIZE, FONT_WEIGHT, SPACING, RADIUS, BUTTON, HILOG_DOMAIN, FEATURE_LIMITS, ImageCache
+  ToastHelper, safeBack, safePushUrl, COLORS, FONT_SIZE, FONT_WEIGHT, SPACING, RADIUS, BUTTON, HILOG_DOMAIN_DEFAULT, FEATURE_LIMITS, ImageCache
 } from 'hsp_core';
 import { AppState } from '../AppState';
 import { FavoriteItem } from '../repository/FavoriteRepository';
@@ -12,7 +12,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FavoriteDataSource } from '../utils/FavoriteDataSource';
 
 const TAG = 'FavoritePage';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const FREE_FAVORITE_LIMIT: number = FEATURE_LIMITS.FREE_FAVORITE_MAX;
 
 const NUTRI_GRADE_MAP: Map<string, string> = new Map();

@@ -4,10 +4,10 @@
 
 import { promptAction } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
 
 const TAG = 'ToastHelper';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class ToastHelper {
   static show(context: UIContext | undefined, message: ResourceStr, duration: number = 2000): void {

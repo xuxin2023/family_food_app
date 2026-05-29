@@ -1,9 +1,16 @@
-import { FoodLabel, HILOG_DOMAIN } from 'hsp_core';
-import { IRemoteLookupProvider, ILocalCacheProvider } from 'feature_scan';
+import { FoodLabel, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'BatchScanService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
+
+export interface ILocalCacheProvider {
+  findFoodByBarcode(barcode: string): Promise<FoodLabel | null>;
+}
+
+export interface IRemoteLookupProvider {
+  lookupByBarcode(barcode: string): Promise<{ found: boolean; foodLabel: FoodLabel | null; confidence: number } | null>;
+}
 
 export interface BatchScanResult {
   barcode: string;

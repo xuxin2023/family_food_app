@@ -1,9 +1,9 @@
-import { FamilyProfile, HILOG_DOMAIN } from 'hsp_core';
+import { FamilyProfile, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { backgroundTaskManager } from '@kit.BackgroundTasksKit';
 
 const TAG = 'ReminderService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export interface ReminderRule {
   ruleId: string;

@@ -1,11 +1,11 @@
-import { TIME_INTERVAL_CONFIG, API_TIMEOUT_CONFIG, HILOG_DOMAIN, JsonHelper } from 'hsp_core';
+import { TIME_INTERVAL_CONFIG, API_TIMEOUT_CONFIG, HILOG_DOMAIN_DEFAULT, JsonHelper } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
 import { preferences } from '@kit.ArkData';
 import { SecureHttpHelper } from 'hsp_service';
 
 const TAG = 'InspectionDataService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 const SAMR_API_BASE = 'https://spcjsac.gsxt.gov.cn';
 

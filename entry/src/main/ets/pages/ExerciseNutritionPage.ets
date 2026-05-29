@@ -1,4 +1,4 @@
-import { COLORS, safeBack, FamilyProfile, HealthSignal, NutritionTarget, createDefaultNutritionTarget, HILOG_DOMAIN } from 'hsp_core';
+import { COLORS, safeBack, FamilyProfile, HealthSignal, NutritionTarget, createDefaultNutritionTarget, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { ExerciseNutritionRecommendation } from 'feature_report';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
@@ -6,7 +6,7 @@ import { NutrientSupplement } from 'feature_report';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'ExerciseNutritionPage';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @Entry
 @ComponentV2

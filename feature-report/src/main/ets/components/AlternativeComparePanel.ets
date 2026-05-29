@@ -1,8 +1,8 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN, FoodLabel, NutritionPer100g } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, FoodLabel, NutritionPer100g } from 'hsp_core';
 
 const TAG = 'AlternativeComparePanel';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export interface AlternativeCompareItem {
   original: FoodLabel;

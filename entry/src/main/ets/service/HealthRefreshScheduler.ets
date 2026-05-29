@@ -1,10 +1,10 @@
 import { workScheduler } from '@kit.BackgroundTasksKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { common } from '@kit.AbilityKit';
 
 const TAG = 'HealthRefreshScheduler';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 const WORK_ID_HEALTH_REFRESH = 1001;
 const HEALTH_REFRESH_INTERVAL_MIN = 30;

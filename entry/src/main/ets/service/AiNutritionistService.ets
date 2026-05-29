@@ -7,7 +7,7 @@
 // 4. 网络不可用时自动降级，不影响核心功能
 
 import {
-  FamilyProfile, DailyBudget, HealthSignal, BpStatus, BsStatus, SleepStatus, NutritionTarget, AI_CACHE_CONFIG, AssetKeyManager, KeyAlias, HILOG_DOMAIN, JsonHelper, DateUtil, MapUtil, AiNutritionAdvice, MealAnalysis, NutrientAnalysis, DietPatternAnalysis, AiNutritionCacheEntry, getHealthGoalDescription, NutrientStatusLevel, NutrientTrend, MealRating, DailyNutritionSummary, MealGroup, DietRecord
+  FamilyProfile, DailyBudget, HealthSignal, BpStatus, BsStatus, SleepStatus, NutritionTarget, AI_CACHE_CONFIG, AssetKeyManager, KeyAlias, HILOG_DOMAIN_DEFAULT, JsonHelper, DateUtil, MapUtil, AiNutritionAdvice, MealAnalysis, NutrientAnalysis, DietPatternAnalysis, AiNutritionCacheEntry, getHealthGoalDescription, NutrientStatusLevel, NutrientTrend, MealRating, DailyNutritionSummary, MealGroup, DietRecord
 } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
@@ -17,7 +17,7 @@ import { AI_SERVICE_DEFAULTS } from './ai/AiConfig';
 import { AppState } from '../AppState';
 
 const TAG = 'AiNutritionistService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const CACHE_TTL_MS = AI_CACHE_CONFIG.NUTRITIONIST_CACHE_TTL_MS; // 缓存10分钟
 
 export class AiNutritionistService extends AiServiceBase {
@@ -60,7 +60,7 @@ export class AiNutritionistService extends AiServiceBase {
       }
 
       const budget = appState.getDailyBudgetSync(memberId);
-      const target = appState.getNutritionTargetSync(memberId);
+      const target = appState.getNutritionTargetFromCache(memberId);
 
       const sodiumUsed = Math.max(0, budget.sodiumBudget - budget.sodiumRemaining);
       const sugarUsed = Math.max(0, budget.sugarBudget - budget.sugarRemaining);

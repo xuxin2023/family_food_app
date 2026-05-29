@@ -1,11 +1,12 @@
 {
+  "_comment": "部署前请将 ${AGC_PROJECT_ID} 替换为实际的 AGC 项目ID，可在华为AGC控制台 > 项目设置中获取",
   "projectId": "${AGC_PROJECT_ID}",
   "region": "cn-north-4",
   "functions": [
     {
       "name": "additive-interaction",
       "handler": "index.handler",
-      "runtime": "Node.js16.17",
+      "runtime": "Node.js18.17",
       "memory": 256,
       "timeout": 10,
       "triggers": [{ "type": "http", "path": "/api/additive-interaction" }]
@@ -13,7 +14,7 @@
     {
       "name": "allergen-detect",
       "handler": "index.handler",
-      "runtime": "Node.js16.17",
+      "runtime": "Node.js18.17",
       "memory": 256,
       "timeout": 10,
       "triggers": [{ "type": "http", "path": "/api/allergen-detect" }]
@@ -21,7 +22,7 @@
     {
       "name": "health-report-generator",
       "handler": "index.handler",
-      "runtime": "Node.js16.17",
+      "runtime": "Node.js18.17",
       "memory": 512,
       "timeout": 30,
       "triggers": [{ "type": "http", "path": "/api/health-report" }]
@@ -29,7 +30,7 @@
     {
       "name": "user-data-deletion",
       "handler": "index.handler",
-      "runtime": "Node.js16.17",
+      "runtime": "Node.js18.17",
       "memory": 256,
       "timeout": 15,
       "triggers": [{ "type": "http", "path": "/api/user-data-deletion" }]

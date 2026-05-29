@@ -1,9 +1,9 @@
-import { Recommendation, RecommendLevel, FamilyProfile, HILOG_DOMAIN } from 'hsp_core';
+import { Recommendation, RecommendLevel, FamilyProfile, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
 
 const TAG = 'ShareImageService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class ShareCardParams {
   foodName: string = '';

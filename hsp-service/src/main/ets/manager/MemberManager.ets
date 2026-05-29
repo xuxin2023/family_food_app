@@ -3,7 +3,7 @@
 // 从 AppState 拆分，减少 God Class 负担
 
 import {
-  DateUtil, HILOG_DOMAIN, MemberTier, MemberStatus, PaywallTrigger, createDefaultMemberStatus, createMemberStatusForTier, getPaywallTriggerForFeature, hasTierAccess, getTierDisplayName, TIER_DAILY_SCAN_LIMIT, TIER_MEMBER_LIMIT
+  DateUtil, HILOG_DOMAIN_DEFAULT, MemberTier, MemberStatus, PaywallTrigger, createDefaultMemberStatus, createMemberStatusForTier, getPaywallTriggerForFeature, hasTierAccess, getTierDisplayName, TIER_DAILY_SCAN_LIMIT, TIER_MEMBER_LIMIT
 } from 'hsp_core';
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
@@ -11,7 +11,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 
 
 const TAG = 'MemberManager';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class MemberManager {
   /** 会员状态 */

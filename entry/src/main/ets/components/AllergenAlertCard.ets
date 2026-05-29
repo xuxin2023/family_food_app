@@ -12,14 +12,14 @@ export struct AllergenAlertCard {
         Row({ space: 8 }) {
           Text('⚠️')
             .fontSize(18)
-          Text('疑似过敏原检测')
+          Text($r('app.string.suspected_allergen_title'))
             .fontSize(16)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#E53935')
+            .fontColor($r('app.color.danger'))
             .layoutWeight(1)
           Text(`${this.suspectedAllergens.length}项`)
             .fontSize(12)
-            .fontColor('#999999')
+            .fontColor($r('app.color.text_hint'))
         }
         .width('100%')
 
@@ -27,32 +27,32 @@ export struct AllergenAlertCard {
           Row({ space: 8 }) {
             Text('•')
               .fontSize(14)
-              .fontColor('#E53935')
+              .fontColor($r('app.color.danger'))
             Text(item.ingredient)
               .fontSize(14)
               .fontColor(COLORS.TEXT_PRIMARY)
               .layoutWeight(1)
             Text(`置信度 ${(item.confidence * 100).toFixed(0)}%`)
               .fontSize(12)
-              .fontColor(item.confidence > 0.7 ? '#E53935' : '#FF9800')
+              .fontColor(item.confidence > 0.7 ? $r('app.color.danger') : $r('app.color.warning_amber'))
             Text(`${item.evidenceCount}次记录`)
               .fontSize(11)
-              .fontColor('#999999')
+              .fontColor($r('app.color.text_hint'))
           }
           .width('100%')
           .padding({ left: 16, right: 8, top: 4, bottom: 4 })
         }, (item: SuspectedAllergen) => item.ingredient)
 
-        Text('建议在过敏原配置中添加以上成分，系统将自动预警')
+        Text($r('app.string.suspected_allergen_suggestion'))
           .fontSize(12)
-          .fontColor('#999999')
+          .fontColor($r('app.color.text_hint'))
           .margin({ top: 4 })
       }
       .width('100%')
       .padding(16)
-      .backgroundColor('#FFF3F0')
+      .backgroundColor($r('app.color.bg_danger_light'))
       .borderRadius(RADIUS.MD)
-      .border({ width: 1, color: '#FFCDD2' })
+      .border({ width: 1, color: $r('app.color.border_danger_light') })
     }
   }
 }

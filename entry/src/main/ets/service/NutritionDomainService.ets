@@ -2,12 +2,12 @@
 // 营养领域服务 - 编排营养趋势分析、AI 营养师建议、膳食分组等能力
 // 从 AppState 拆分，减轻上帝类职责
 
-import { FamilyProfile, DailyBudget, HealthSignal, AiNutritionAdvice, DateUtil, HILOG_DOMAIN, INutritionTrendCalculator, DailyNutritionSummary, NutrientTrendData, MealGroup, DietRecord } from 'hsp_core';
+import { FamilyProfile, DailyBudget, HealthSignal, AiNutritionAdvice, DateUtil, HILOG_DOMAIN_DEFAULT, INutritionTrendCalculator, DailyNutritionSummary, NutrientTrendData, MealGroup, DietRecord } from 'hsp_core';
 import { HistoryRepository } from '../repository/HistoryRepository';
 import { AiNutritionistService } from './AiNutritionistService';
 
 const TAG = 'NutritionDomainService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class NutritionDomainService {
   private historyRepo: HistoryRepository;

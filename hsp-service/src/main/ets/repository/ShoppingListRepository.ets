@@ -1,10 +1,10 @@
 // repository/ShoppingListRepository.ets
 import { relationalStore } from '@kit.ArkData';
-import { ShoppingItem, HILOG_DOMAIN } from 'hsp_core';
+import { ShoppingItem, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'ShoppingListRepository';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const TABLE_NAME = 'shopping_list';
 
 export class ShoppingListRepository {
@@ -18,7 +18,7 @@ export class ShoppingListRepository {
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         category TEXT DEFAULT '',
-        quantity REAL DEFAULT 1,
+        quantity TEXT DEFAULT '1',
         is_purchased INTEGER DEFAULT 0,
         added_by TEXT DEFAULT '',
         added_at INTEGER NOT NULL,

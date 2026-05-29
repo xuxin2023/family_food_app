@@ -1,4 +1,4 @@
-import { FoodLabel, Recommendation, AlternativeFood, HILOG_DOMAIN } from 'hsp_core';
+import { FoodLabel, Recommendation, AlternativeFood, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 // ReportCacheManager.ets
 // 报告参数缓存管理 - 跨页面传递 ReportPage 参数（避免 router params 传递大对象）
 // 从 AppState 拆分

@@ -3,12 +3,12 @@
 // 实际部署请使用华为云 AGC (AppGallery Connect) 控制台
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN, API_CONFIG } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, API_CONFIG } from 'hsp_core';
 import { http } from '@kit.NetworkKit';
 import { SecureHttpClient, SecureRequestOptions } from './SecureHttpClient';
 
 const TAG = 'HuaweiCloudBackend';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 const DEV_BASE_URL = 'https://familyfood-dev.cn-north-4.myhuaweicloud.com';
 const PROD_BASE_URL = 'https://familyfood-api.cn-north-4.myhuaweicloud.com';

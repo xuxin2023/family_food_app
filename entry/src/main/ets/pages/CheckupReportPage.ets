@@ -1,11 +1,11 @@
-import { COLORS, safeBack, HealthSignal, FamilyProfile, HILOG_DOMAIN } from 'hsp_core';
+import { COLORS, safeBack, HealthSignal, FamilyProfile, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { CheckupReport, HealthArchiveUpdate, CheckupItem } from 'feature_report';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'CheckupReportPage';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @Entry
 @ComponentV2

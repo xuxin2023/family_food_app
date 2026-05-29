@@ -1,4 +1,4 @@
-import { safeBack, FamilyProfile, DateUtil, COLORS, BasicDataSource, HILOG_DOMAIN } from 'hsp_core';
+import { safeBack, FamilyProfile, DateUtil, COLORS, BasicDataSource, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { ScanHistoryRecord } from '../repository/HistoryRepository';
@@ -7,7 +7,7 @@ import { LoadingSkeleton } from '../components/SkeletonScreen';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'HistoryPage';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @ObservedV2
 class HistoryPageViewModel {

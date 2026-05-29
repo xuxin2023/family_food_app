@@ -1,13 +1,13 @@
 // OCR服务 - 集成华为Core Vision Kit
 // API参考：https://developer.huawei.com/consumer/cn/doc/harmonyos-references-V5/textrecognition-V5
 
-import { FoodLabel, FoodSource, NutritionPer100g, StringRes, HILOG_DOMAIN } from 'hsp_core';
+import { FoodLabel, FoodSource, NutritionPer100g, StringRes, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { textRecognition } from '@kit.CoreVisionKit';
 import { image } from '@kit.ImageKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'OcrService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 // OCR边界框
 export class OcrBounds {

@@ -1,5 +1,5 @@
 import {
-  FoodLabel, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, HILOG_DOMAIN
+  FoodLabel, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, HILOG_DOMAIN_DEFAULT
 } from 'hsp_core';
 import { NutriScoreBadge } from 'feature_scan';
 

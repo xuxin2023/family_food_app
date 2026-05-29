@@ -1,12 +1,12 @@
 // 健康数据服务 - 只负责健康信号提供者的适配与切换
 
-import { HealthSignal, HILOG_DOMAIN } from 'hsp_core';
+import { HealthSignal, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { ManualHealthSignalProvider } from './health/ManualHealthSignalProvider';
 import { HealthSignalProvider } from './health/HealthSignalProvider';
 
 const TAG = 'HealthService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class HealthService {
   private provider: HealthSignalProvider;

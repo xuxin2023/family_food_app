@@ -20,7 +20,7 @@
 //     └─ 离线模式 → 纯本地规则引擎
 
 import {
-  ToastHelper, safePushUrl, getPageParams, FoodLabel, FamilyProfile, HealthSignal, Throttler, PaywallTrigger, TIER_DAILY_SCAN_LIMIT, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON, SCAN_CONFIG, HILOG_DOMAIN, EnhancedFoodRecommendation, AccessibilityUtil, TodayIntakeInput
+  ToastHelper, safePushUrl, getPageParams, FoodLabel, FamilyProfile, HealthSignal, Throttler, PaywallTrigger, TIER_DAILY_SCAN_LIMIT, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON, SCAN_CONFIG, HILOG_DOMAIN_DEFAULT, EnhancedFoodRecommendation, AccessibilityUtil, TodayIntakeInput, DeviceAdapter, Breakpoint, PerformanceMonitor
 } from 'hsp_core';
 import { FoodInputResult, IRemoteLookupProvider } from 'feature_scan';
 import { BatchScanService, BatchScanResult } from 'hsp_service';
@@ -33,6 +33,7 @@ import { BusinessError } from '@kit.BasicServicesKit';
 import { AppState } from '../AppState';
 import { PermissionGuideDialog, NutriScoreBadge, PaywallDialog } from 'feature_scan';
 import { BackButton } from '../components/BackButton';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { ScanResultCard } from '../components/ScanResultCard';
 import { ScanEditPanel } from '../components/ScanEditPanel';
 import { ScanModeSelector } from '../components/ScanModeSelector';
@@ -40,7 +41,7 @@ import { AddToShoppingListButton } from '../components/AddToShoppingListButton';
 import { FoodDeepAnalysisSheet } from '../components/FoodDeepAnalysisSheet';
 import { BatchScanSheet } from '../components/BatchScanSheet';
 
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const TAG = 'ScanPage';
 
 // ==================== 加载阶段枚举 ====================
@@ -121,6 +122,7 @@ struct ScanPage {
   @Local vm: ScanViewModel = new ScanViewModel()
   @Local showDeepAnalysis: boolean = false
   @Local showBatchScan: boolean = false
+  @Local hasPageError: boolean = false
   private memberId: string = ''
   private appState: AppState = AppState.getInstance()
   private foodInputService = this.appState.foodInput
@@ -134,6 +136,7 @@ struct ScanPage {
   // ==================== 生命周期 ====================
 
   async aboutToAppear() {
+    PerformanceMonitor.getInstance().pageEnter('ScanPage');
     try {
       const params = getPageParams();
       if (params !== undefined) {
@@ -180,6 +183,7 @@ struct ScanPage {
   }
 
   aboutToDisappear(): void {
+    PerformanceMonitor.getInstance().pageLeave('ScanPage');
     this.componentActive = false
     if (this.autoScanTimer !== -1) {
       try {
@@ -383,7 +387,13 @@ struct ScanPage {
   // ==================== UI ====================
 
   build() {
-    Stack() {
+    ErrorBoundary({
+      fallbackMessage: '扫描页面加载失败',
+      onRetry: () => { this.aboutToAppear() },
+      hasError: this.hasPageError,
+      boundaryName: 'ScanPage'
+    }) {
+      Stack() {
       GridRow({
         columns: { sm: 4, md: 8, lg: 12 },
         breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] } as BreakPoints
@@ -654,6 +664,8 @@ struct ScanPage {
         .width('100%')
         .height('100%')
         .backgroundColor(COLORS.BG_PAGE)
+        .accessibilityGroup(true)
+        .accessibilityDescription('食品扫描页面，扫描条码或拍照识别食品')
       }
       .width('100%')
       .height('100%')
@@ -705,6 +717,7 @@ struct ScanPage {
       profile: this.appState.getAllMembersSync().length > 0 ? this.appState.getAllMembersSync()[0] : new FamilyProfile()
     }), { height: '70%', showClose: true, dragBar: true, onDisappear: () => { this.showDeepAnalysis = false } })
     .bindSheet(this.showBatchScan, BatchScanSheet(), { height: '80%', showClose: true, dragBar: true, onDisappear: () => { this.showBatchScan = false } })
+    }
   }
 
   /**
@@ -941,6 +954,7 @@ struct ScanPage {
   }
 
   private async startRecognition() {
+    PerformanceMonitor.getInstance().startSpan('scan_result:recognition');
     // 清除自动超时定时器（以免超时提示在手动操作后出现）
     if (this.autoScanTimer >= 0) {
       try {
@@ -968,7 +982,7 @@ struct ScanPage {
       const hasCameraPermission = await this.appState.permission.requestCameraPermission();
       if (!hasCameraPermission) {
         this.vm.permissionDenied = true
-        this.showPermissionGuideDialog($r('app.string.scan_camera') as ResourceStr, $r('app.string.scan_camera_permission_reason') as ResourceStr)
+        this.vm.showPermissionGuide = true
         this.vm.scanPhase = ScanPhase.ERROR
         return
       }
@@ -1034,10 +1048,10 @@ struct ScanPage {
     this.vm.foodLabel.nutrition.fat = this.parseNumber(this.vm.editPanel.fat)
     this.vm.foodLabel.nutrition.carbohydrate = this.parseNumber(this.vm.editPanel.carbohydrate)
     this.vm.foodLabel.nutrition.protein = this.parseNumber(this.vm.editPanel.protein)
-    this.vm.foodLabel.ingredients = this.vm.editPanel.ingredients
+    this.vm.foodLabel.ingredients = (this.vm.editPanel.ingredients
       .split(/\\r?\\n|,|，|、/)
-      .map(item => item.trim())
-      .filter(item => item.length > 0)
+      .map((item: string) => item.trim())
+      .filter((item: string) => item.length > 0)) as string[]
     this.vm.foodLabel.manufacturer = this.vm.editPanel.manufacturer.trim()
     this.vm.foodLabel.scNumber = this.vm.editPanel.scNumber.trim()
     this.vm.foodLabel.principal = this.vm.editPanel.principal.trim()
@@ -1045,7 +1059,8 @@ struct ScanPage {
   }
 
   private applyFoodInputResult(result: FoodInputResult) {
-    this.vm.foodLabel = result.foodLabel
+    PerformanceMonitor.getInstance().endSpan('scan_result:recognition');
+    this.vm.foodLabel = result.foodLabel as FoodLabel
     this.vm.recognizedText = result.recognizedText
     this.vm.recognitionHint = result.hint
     this.vm.ocrConfidence = result.confidence
@@ -1107,10 +1122,6 @@ struct ScanPage {
     } catch (_e) {
       hilog.warn(DOMAIN_ZERO, 'ScanPage', 'viewReport pushUrl failed');
     }
-  }
-
-  private showPermissionGuideDialog(_permissionName: ResourceStr, _reason: ResourceStr): void {
-    this.vm.showPermissionGuide = true
   }
 
   pageTransition() {

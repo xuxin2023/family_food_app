@@ -1,14 +1,14 @@
 // QuickFoodInput.ets
 // 饮食记录快捷录入组件 - 底部弹窗形式
 
-import { NutritionPer100g, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, DietRecord, OfflineFoodEntry, HILOG_DOMAIN } from 'hsp_core';
+import { NutritionPer100g, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, DietRecord, OfflineFoodEntry, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { getOfflineFoodDatabase } from 'hsp_core';
 import { AppState } from '../AppState';
 import { ElderModeManager } from '../service/ElderModeManager';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG_QFI = 'QuickFoodInput';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class QuickFoodInputResult {
   foodName: string = '';

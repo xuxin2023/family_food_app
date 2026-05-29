@@ -1,10 +1,10 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { accessibility } from '@kit.AccessibilityKit';
 import { common } from '@kit.AbilityKit';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
 
 const TAG = 'AccessibilityManager';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class A11yNode {
   id: string = '';

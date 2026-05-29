@@ -5,15 +5,15 @@
 import { Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { getGlobalState } from 'hsp_core';
-import { HILOG_DOMAIN } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 
 const TAG = 'PermissionGuideDialog';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @ComponentV2
 export struct PermissionGuideDialog {
-  @Param permissionName: string = '';
-  @Param reason: string = '';
+  @Param permissionName: ResourceStr = '';
+  @Param reason: ResourceStr = '';
   @Event onClose: () => void = () => {};
 
   build() {

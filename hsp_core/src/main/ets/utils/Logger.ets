@@ -2,9 +2,9 @@
 // 支持 release 包中自动 strip（配合 build-profile.json5 的 removeLog）
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
 
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const PREFIX = 'FamilyFood';
 
 export class Logger {

@@ -1,13 +1,13 @@
 // AiWeeklyReportService.ets
 // AI 周报服务 - 为每周饮食报告生成个性化总结和建议
 
-import { FamilyProfile, HILOG_DOMAIN, JsonHelper, WeeklyReport, WeeklyDietData } from 'hsp_core';
+import { FamilyProfile, HILOG_DOMAIN_DEFAULT, JsonHelper, WeeklyReport, WeeklyDietData } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AiServiceBase } from './ai/AiServiceBase';
 import { AI_SERVICE_DEFAULTS, SYSTEM_PROMPTS } from './ai/AiConfig';
 
 const TAG = 'AiWeeklyReportService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class AiWeeklyReportResult {
   summary: string = '';

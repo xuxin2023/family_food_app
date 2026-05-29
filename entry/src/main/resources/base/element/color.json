@@ -41,6 +41,14 @@
     { "name": "shadow", "value": "#1A000000" },
     { "name": "shadow_dark", "value": "#33000000" },
     { "name": "border", "value": "#E0E0E0" },
-    { "name": "border_dark", "value": "#383838" }
+    { "name": "border_dark", "value": "#383838" },
+    { "name": "text_hint", "value": "#999999" },
+    { "name": "tag_inactive", "value": "#F0F0F0" },
+    { "name": "danger", "value": "#E53935" },
+    { "name": "bg_danger_light", "value": "#FFF3F0" },
+    { "name": "border_danger_light", "value": "#FFCDD2" },
+    { "name": "btn_inactive", "value": "#CCCCCC" },
+    { "name": "success_green", "value": "#4CAF50" },
+    { "name": "warning_amber", "value": "#FF9800" }
   ]
 }

@@ -1,4 +1,4 @@
-import { FoodLabel, FoodSource, HILOG_DOMAIN, lookupByBarcode as offlineLookupByBarcode, convertToFoodLabel } from 'hsp_core';
+import { FoodLabel, FoodSource, HILOG_DOMAIN_DEFAULT, lookupByBarcode as offlineLookupByBarcode, convertToFoodLabel } from 'hsp_core';
 import { common } from '@kit.AbilityKit';
 import { scanBarcode } from '@kit.ScanKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -8,8 +8,14 @@ export interface ILocalCacheProvider {
   findFoodByBarcode(barcode: string): Promise<FoodLabel | null>;
 }
 
+export class RemoteLookupResult {
+  found: boolean = false;
+  foodLabel: FoodLabel | null = null;
+  confidence: number = 0;
+}
+
 export interface IRemoteLookupProvider {
-  lookupByBarcode(barcode: string): Promise<{ found: boolean; foodLabel: FoodLabel | null; confidence: number } | null>;
+  lookupByBarcode(barcode: string): Promise<RemoteLookupResult | null>;
 }
 
 export interface IDataLineageRecorder {
@@ -17,7 +23,7 @@ export interface IDataLineageRecorder {
 }
 
 const TAG = 'ScanService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class ScanService {
   private cacheProvider: ILocalCacheProvider | null = null;
@@ -54,7 +60,7 @@ export class ScanService {
         return result.originalValue;
       }
       return '';
-    } catch (error) {
+    } catch (error: Object) {
       hilog.error(DOMAIN_ZERO, TAG, 'Scan failed: %{public}s', JSON.stringify(error));
       return '';
     }
@@ -72,7 +78,7 @@ export class ScanService {
         return result.originalValue;
       }
       return '';
-    } catch (error) {
+    } catch (error: Object) {
       hilog.error(DOMAIN_ZERO, TAG, 'Food barcode scan failed: %{public}s', JSON.stringify(error));
       return '';
     }
@@ -90,7 +96,7 @@ export class ScanService {
       }
       hilog.info(DOMAIN_ZERO, TAG, 'Cache miss for barcode: %{public}s', barcode);
       return null;
-    } catch (error) {
+    } catch (error: Object) {
       hilog.error(DOMAIN_ZERO, TAG, 'Lookup failed: %{public}s', JSON.stringify(error));
       return null;
     }
@@ -101,7 +107,7 @@ export class ScanService {
       const netHandle = await connection.getDefaultNet();
       const caps = await connection.getNetCapabilities(netHandle);
       return caps !== undefined && caps.bearerTypes.length > 0;
-    } catch (err) {
+    } catch (err: Object) {
       hilog.warn(DOMAIN_ZERO, TAG, 'isNetworkAvailable check failed: %{public}s', JSON.stringify(err));
       return false;
     }
@@ -159,7 +165,7 @@ export class ScanService {
           return result;
         }
         hilog.info(DOMAIN_ZERO, TAG, 'Level3 OFF API miss for: %{public}s', barcode);
-      } catch (err) {
+      } catch (err: Object) {
         hilog.error(DOMAIN_ZERO, TAG, 'Level3 OFF API error: %{public}s', JSON.stringify(err));
       }
     } else {

@@ -1,8 +1,8 @@
-import { FamilyProfile, FoodLabel, HILOG_DOMAIN } from 'hsp_core';
+import { FamilyProfile, FoodLabel, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'AllergenCrossReactivityEngine';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export interface CrossReactivityPair {
   primaryAllergen: string;

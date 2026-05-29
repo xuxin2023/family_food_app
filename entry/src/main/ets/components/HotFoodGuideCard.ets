@@ -1,10 +1,10 @@
 import {
-  safePushUrl, HotFoodItem, HOT_FOODS, DAILY_TIPS, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, HILOG_DOMAIN
+  safePushUrl, HotFoodItem, HOT_FOODS, DAILY_TIPS, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, HILOG_DOMAIN_DEFAULT
 } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'HotFoodGuideCard';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @ComponentV2
 export struct HotFoodGuideCard {

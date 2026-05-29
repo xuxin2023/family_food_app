@@ -5,10 +5,10 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
 import { preferences } from '@kit.ArkData';
-import { HILOG_DOMAIN, SecureDataStore } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, SecureDataStore } from 'hsp_core';
 
 const TAG = 'CloudAuthService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class AuthUser {
   uid: string = '';
@@ -218,7 +218,7 @@ export class CloudAuthService {
     if (!this.isTokenExpired()) return true;
     hilog.info(DOMAIN_ZERO, TAG, 'Token expired or near-expiry, re-authenticating');
     if (this.currentUser.isAnonymous) {
-      return !!(await this.signInAnonymously());
+      return (await this.signInAnonymously()) !== null;
     }
     return false;
   }

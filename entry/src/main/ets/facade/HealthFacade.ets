@@ -1,7 +1,7 @@
 import {
   FamilyProfile, HealthSignal, DailyBudget, FoodLabel,
   AiNutritionAdvice, AiRecipeRecommendationResult, AiRecipeRequest,
-  DateUtil, HILOG_DOMAIN, DietRecord, NutritionTarget
+  DateUtil, HILOG_DOMAIN_DEFAULT, DietRecord, NutritionTarget
 } from 'hsp_core';
 import { common } from '@kit.AbilityKit';
 import { HistoryRepository } from '../repository/HistoryRepository';

@@ -2,7 +2,7 @@
 // 代理提醒服务 - 基于 @kit.BackgroundTasksKit 实现定时提醒
 // V2: 支持自定义 ReminderRule 替代硬编码提醒
 
-import { HILOG_DOMAIN, DB_NAME, ReminderRule, PRESET_REMINDER_RULES } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, DB_NAME, ReminderRule, PRESET_REMINDER_RULES } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
 import { preferences, relationalStore } from '@kit.ArkData';
@@ -12,7 +12,7 @@ import { ReminderRuleRepository } from '../repository/ReminderRuleRepository';
 import { notificationManager } from '@kit.NotificationKit';
 
 const TAG = 'PushNotificationService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class NotificationConfig {
   dietReminderEnabled: boolean = true;
@@ -240,7 +240,7 @@ export class PushNotificationService {
       const isEnabled = await notificationManager.isNotificationEnabled();
       return isEnabled;
     } catch (e) {
-      hilog.warn(HILOG_DOMAIN, TAG, 'getHasReminderPermission failed: %{public}s', JSON.stringify(e));
+      hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'getHasReminderPermission failed: %{public}s', JSON.stringify(e));
       return false;
     }
   }
@@ -258,7 +258,7 @@ export class PushNotificationService {
       this.config.weeklyReportHour = prefs.getSync('weekly_hour', 20) as number;
       this.config.budgetAlertEnabled = prefs.getSync('budget_alert', true) as boolean;
     } catch (e) {
-      hilog.warn(HILOG_DOMAIN, TAG, 'loadConfig failed, use defaults: %{public}s', JSON.stringify(e));
+      hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'loadConfig failed, use defaults: %{public}s', JSON.stringify(e));
     }
   }
 

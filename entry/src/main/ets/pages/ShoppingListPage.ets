@@ -1,4 +1,4 @@
-import { ToastHelper, safeBack, ShoppingItem, SHOPPING_CATEGORIES, COLORS, HILOG_DOMAIN, DB_NAME, BasicDataSource } from 'hsp_core';
+import { ToastHelper, safeBack, ShoppingItem, SHOPPING_CATEGORIES, COLORS, HILOG_DOMAIN_DEFAULT, DB_NAME, BasicDataSource } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { ShoppingListRepository } from '../repository/ShoppingListRepository';
@@ -7,7 +7,7 @@ import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'ShoppingListPage';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 class ShoppingListDataSource extends BasicDataSource<ShoppingItem> {
   filter(purchased: boolean): ShoppingItem[] {

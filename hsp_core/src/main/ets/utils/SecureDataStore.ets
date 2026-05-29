@@ -8,10 +8,10 @@ import { util } from '@kit.ArkTS';
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
 
 const TAG = 'SecureDataStore';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 const SECURE_PREF_NAME = 'secure_encrypted_store';
 const KEY_ALIAS = 'family_food_aes256_key';
@@ -83,20 +83,24 @@ export class SecureDataStore {
     await this.ensureKey();
     const symKeyGenerator = cryptoFramework.createSymKeyGenerator('AES256');
     const keyData = new Uint8Array(this.keyMaterial!.outData!);
-    const symKey = await symKeyGenerator.convertKey({ data: new Uint8Array(keyData.buffer as ArrayBuffer) });
+    const symKey = await symKeyGenerator.convertKey({ data: keyData.buffer as ArrayBuffer });
 
     const cipher = cryptoFramework.createCipher('AES256|GCM|NONE');
-    const ivBytes = new Uint8Array(IV_LENGTH);
+    const random = cryptoFramework.createRandom();
+    const randomBlob = await random.generateRandom(IV_LENGTH);
+    const ivBytes = new Uint8Array(randomBlob.data);
+    const aadArr: Uint8Array = new Uint8Array(0);
+    const tagArr: Uint8Array = new Uint8Array(TAG_LENGTH);
     const params: cryptoFramework.GcmParamsSpec = {
-      iv: { data: new Uint8Array(ivBytes.buffer as ArrayBuffer) },
-      aad: { data: new Uint8Array(0) },
-      authTag: { data: new Uint8Array(TAG_LENGTH) },
+      iv: { data: ivBytes.buffer as ArrayBuffer },
+      aad: { data: aadArr.buffer as ArrayBuffer },
+      authTag: { data: tagArr.buffer as ArrayBuffer },
       algName: 'GcmParamsSpec'
     };
 
     await cipher.init(cryptoFramework.CryptoMode.ENCRYPT_MODE, symKey, params);
     const input: cryptoFramework.DataBlob = {
-      data: new Uint8Array(this.stringToArrayBuffer(plainText))
+      data: this.stringToArrayBuffer(plainText)
     };
     const result = await cipher.doFinal(input);
     // 返回 IV + 密文 + AuthTag 的拼接
@@ -108,7 +112,7 @@ export class SecureDataStore {
     await this.ensureKey();
     const symKeyGenerator = cryptoFramework.createSymKeyGenerator('AES256');
     const keyData = new Uint8Array(this.keyMaterial!.outData!);
-    const symKey = await symKeyGenerator.convertKey({ data: new Uint8Array(keyData.buffer as ArrayBuffer) });
+    const symKey = await symKeyGenerator.convertKey({ data: keyData.buffer as ArrayBuffer });
 
     if (encryptedData.byteLength < IV_LENGTH + TAG_LENGTH) {
       throw new Error('Invalid encrypted data length');
@@ -119,16 +123,17 @@ export class SecureDataStore {
     const tag = new Uint8Array(fullData.slice(encryptedData.byteLength - TAG_LENGTH));
     const cipherData = new Uint8Array(fullData.slice(IV_LENGTH, encryptedData.byteLength - TAG_LENGTH));
 
+    const aadArr2: Uint8Array = new Uint8Array(0);
     const decipher = cryptoFramework.createCipher('AES256|GCM|NONE');
     const params: cryptoFramework.GcmParamsSpec = {
-      iv: { data: new Uint8Array(iv.buffer as ArrayBuffer) },
-      aad: { data: new Uint8Array(0) },
-      authTag: { data: new Uint8Array(tag.buffer as ArrayBuffer) },
+      iv: { data: iv.buffer as ArrayBuffer },
+      aad: { data: aadArr2.buffer as ArrayBuffer },
+      authTag: { data: tag.buffer as ArrayBuffer },
       algName: 'GcmParamsSpec'
     };
 
     await decipher.init(cryptoFramework.CryptoMode.DECRYPT_MODE, symKey, params);
-    const input: cryptoFramework.DataBlob = { data: new Uint8Array(cipherData.buffer as ArrayBuffer) };
+    const input: cryptoFramework.DataBlob = { data: cipherData.buffer as ArrayBuffer };
     const result = await decipher.doFinal(input);
     return this.arrayBufferToString(result.data);
   }

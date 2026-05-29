@@ -5603,6 +5603,50 @@
     {
       "name": "alt_food_selected",
       "value": "已选择: "
+    },
+    {
+      "name": "allergen_config_title",
+      "value": "过敏原配置"
+    },
+    {
+      "name": "allergen_common_title",
+      "value": "常见过敏原"
+    },
+    {
+      "name": "allergen_custom_title",
+      "value": "自定义过敏原"
+    },
+    {
+      "name": "allergen_input_placeholder",
+      "value": "输入过敏原名称"
+    },
+    {
+      "name": "allergen_add_button",
+      "value": "添加"
+    },
+    {
+      "name": "allergen_save_button",
+      "value": "保存"
+    },
+    {
+      "name": "allergen_added_custom_title",
+      "value": "已添加的自定义过敏原"
+    },
+    {
+      "name": "suspected_allergen_title",
+      "value": "疑似过敏原检测"
+    },
+    {
+      "name": "suspected_allergen_suggestion",
+      "value": "建议在过敏原配置中添加以上成分，系统将自动预警"
+    },
+    {
+      "name": "peep_overlay_text",
+      "value": "检测到他人注视\n敏感信息已保护"
+    },
+    {
+      "name": "peep_content_area",
+      "value": "内容区域"
     }
   ]
 }

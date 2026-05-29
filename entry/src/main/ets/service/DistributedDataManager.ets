@@ -7,10 +7,10 @@ import { distributedKVStore } from '@kit.DistributedDataKit';
 import { distributedDeviceManager } from '@kit.DistributedHardwareKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
-import { HILOG_DOMAIN } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 
 const TAG = 'DistributedDataManager';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 const STORE_ID = 'family_food_distributed';
 const SYNC_DELAY_MS = 500;

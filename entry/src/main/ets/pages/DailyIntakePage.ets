@@ -1,6 +1,6 @@
 import {
   ToastHelper, safeBack, DietRecord, NutritionTarget, FamilyProfile, MealScenario,
-  COLORS, FONT_SIZE, RADIUS, SPACING, HILOG_DOMAIN
+  COLORS, FONT_SIZE, RADIUS, SPACING, HILOG_DOMAIN_DEFAULT
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { NutritionTargetGauge } from '../components/NutritionTargetGauge';
@@ -8,7 +8,7 @@ import { AppState } from '../AppState';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'DailyIntakePage';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 interface NutrientBucket {
   label: string;

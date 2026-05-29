@@ -2,7 +2,7 @@
 // 使用关系型数据库本地持久化，支持批量写入和定时上报
 
 import {
-  TIME_INTERVAL_CONFIG, DB_NAME, HILOG_DOMAIN, JsonHelper, AnalyticsEvent, EventType, ANALYTICS_TABLE_NAME, ANALYTICS_COLUMNS
+  TIME_INTERVAL_CONFIG, DB_NAME, HILOG_DOMAIN_DEFAULT, JsonHelper, AnalyticsEvent, EventType, ANALYTICS_TABLE_NAME, ANALYTICS_COLUMNS
 } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
@@ -11,7 +11,7 @@ import { relationalStore } from '@kit.ArkData';
 import { PrivacyManager } from './PrivacyManager';
 
 const TAG = 'AnalyticsService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 /** 内存队列最大容量，达到此数量触发自动 flush */
 const FLUSH_BATCH_SIZE = TIME_INTERVAL_CONFIG.ANALYTICS_BATCH_SIZE;

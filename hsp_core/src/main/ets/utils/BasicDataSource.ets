@@ -58,6 +58,12 @@ export class BasicDataSource<T> implements IDataSource {
     });
   }
 
+  protected notifyDataMove(from: number, to: number): void {
+    this.listeners.forEach((listener: DataChangeListener) => {
+      listener.onDataMove(from, to);
+    });
+  }
+
   // 批量更新数据
   reload(data: T[]): void {
     this.dataArray = [...data];
@@ -91,7 +97,7 @@ export class BasicDataSource<T> implements IDataSource {
     if (to < 0 || to >= this.dataArray.length) return;
     const item: T = this.dataArray.splice(from, 1)[0];
     this.dataArray.splice(to, 0, item);
-    this.notifyDataReload();
+    this.notifyDataMove(from, to);
   }
 
   // 更新指定位置

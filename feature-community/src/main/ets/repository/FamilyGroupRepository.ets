@@ -4,14 +4,14 @@
 import { relationalStore } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import {
-  FamilyGroup, GroupMember, JoinRequest, GroupFeed, GroupSummary, GroupRole, JoinMethod, JoinRequestStatus, FeedType, HILOG_DOMAIN
+  FamilyGroup, GroupMember, JoinRequest, GroupFeed, GroupSummary, GroupRole, JoinMethod, JoinRequestStatus, FeedType, HILOG_DOMAIN_DEFAULT
 } from 'hsp_core';
 
 
 const TAG = 'FamilyGroupRepository';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
-export class CreateGroupParams {
+export class RepoCreateGroupParams {
   name: string = '';
 }
 
@@ -399,7 +399,7 @@ export class FamilyGroupRepository {
     return results;
   }
 
-  async createGroup(params: CreateGroupParams): Promise<GroupSummary> {
+  async createGroup(params: RepoCreateGroupParams): Promise<GroupSummary> {
     const id = 'g_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
     const code = 'INV_' + Math.random().toString(36).substring(2, 10).toUpperCase();
     const group = new FamilyGroup();

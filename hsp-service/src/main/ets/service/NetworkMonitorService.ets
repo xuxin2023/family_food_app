@@ -2,13 +2,13 @@
 // 网络状态监听服务 - 使用 @kit.NetworkKit connection 实现
 // 支持初始化时与运行时通知两种方式获取网络状态
 
-import { HILOG_DOMAIN, AppStorageSync } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, AppStorageSync } from 'hsp_core';
 import { connection } from '@kit.NetworkKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'NetworkMonitorService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 /**
  * 网络类型枚举

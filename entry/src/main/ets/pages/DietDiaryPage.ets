@@ -2,7 +2,7 @@
 // 膳食日记页面 - 按餐次查看每日摄入，查看趋势图表入口
 
 import {
-  ToastHelper, FamilyProfile, DailyBudget, DateUtil, safeBack, safePushUrl, getPageParams, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, AiNutritionAdvice, NutrientStatusLevel, FoodLabel, HealthSignal, HILOG_DOMAIN, StringRes, MealScenario, safeParseMealScenario, DietRecord, MealGroup
+  ToastHelper, FamilyProfile, DailyBudget, DateUtil, safeBack, safePushUrl, getPageParams, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, AiNutritionAdvice, NutrientStatusLevel, FoodLabel, HealthSignal, HILOG_DOMAIN_DEFAULT, StringRes, MealScenario, safeParseMealScenario, DietRecord, MealGroup
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -13,7 +13,7 @@ import { ErrorFallback } from '../components/ErrorFallback';
 import { QuickFoodInput, QuickFoodInputResult } from '../components/QuickFoodInput';
 import { MealGroupDataSource } from '../utils/MealGroupDataSource';
 
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const TAG = 'DietDiaryPage';
 
 // 场景emoji映射

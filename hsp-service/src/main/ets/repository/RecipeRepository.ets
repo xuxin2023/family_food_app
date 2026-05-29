@@ -4,12 +4,27 @@
 import { relationalStore } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import {
-  Recipe, RecipeComment, RecipeLike, RecipeBookmark, RecipeIngredient, RecipeStep, RecipeNutrition, RecipeDifficulty, RecipeCategory, DietTag, RecipeQueryParams, CreateRecipeParams, HILOG_DOMAIN
+  Recipe, RecipeComment, RecipeLike, RecipeBookmark, RecipeIngredient, RecipeStep, RecipeNutrition, RecipeDifficulty, RecipeCategory, DietTag, RecipeQueryParams, CreateRecipeParams, HILOG_DOMAIN_DEFAULT
 } from 'hsp_core';
 
 
 const TAG = 'RecipeRepository';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
+
+class RecipeUpdate {
+  likeCount: number = -1;
+  bookmarkCount: number = -1;
+  commentCount: number = -1;
+  title: string = '';
+  description: string = '';
+  coverImageUrl: string = '';
+  ingredients: string[] = [];
+  steps: string[] = [];
+  nutrition: Object | null = null;
+  dietTags: string[] = [];
+  isApproved: boolean = false;
+  isDraft: boolean = false;
+}
 
 const TABLE_RECIPE = 'recipe';
 const TABLE_COMMENT = 'recipe_comment';
@@ -227,7 +242,7 @@ export class RecipeRepository {
     return await this.queryRecipes(predicates, offset, limit);
   }
 
-  async updateRecipe(recipeId: string, updates: Record<string, Object>): Promise<void> {
+  async updateRecipe(recipeId: string, updates: RecipeUpdate): Promise<void> {
     if (!this.rdbStore) {
       return;
     }
@@ -376,7 +391,7 @@ export class RecipeRepository {
         // 减少点赞数
         const recipe = await this.getRecipe(recipeId);
         if (recipe) {
-          const updateLike: Record<string, Object> = {}; updateLike['likeCount'] = Math.max(0, recipe.likeCount - 1);
+          const updateLike = new RecipeUpdate(); updateLike.likeCount = Math.max(0, recipe.likeCount - 1);
           await this.updateRecipe(recipeId, updateLike);
         }
         return false;
@@ -397,7 +412,7 @@ export class RecipeRepository {
       // 增加点赞数
       const recipe = await this.getRecipe(recipeId);
       if (recipe) {
-        const updateLike: Record<string, Object> = {}; updateLike['likeCount'] = recipe.likeCount + 1;
+        const updateLike2 = new RecipeUpdate(); updateLike2.likeCount = recipe.likeCount + 1;
         await this.updateRecipe(recipeId, updateLike);
       }
       return true;
@@ -468,7 +483,7 @@ export class RecipeRepository {
         await this.rdbStore.delete(delPredicates);
         const recipe = await this.getRecipe(recipeId);
         if (recipe) {
-          const updateBm: Record<string, Object> = {}; updateBm['bookmarkCount'] = Math.max(0, recipe.bookmarkCount - 1);
+          const updateBm = new RecipeUpdate(); updateBm.bookmarkCount = Math.max(0, recipe.bookmarkCount - 1);
           await this.updateRecipe(recipeId, updateBm);
         }
         return false;
@@ -488,8 +503,8 @@ export class RecipeRepository {
       await this.rdbStore.insert(TABLE_BOOKMARK, bmBucket);
       const recipe = await this.getRecipe(recipeId);
       if (recipe) {
-        const updateBm: Record<string, Object> = {}; updateBm['bookmarkCount'] = recipe.bookmarkCount + 1;
-        await this.updateRecipe(recipeId, updateBm);
+        const updateBm2 = new RecipeUpdate(); updateBm2.bookmarkCount = recipe.bookmarkCount + 1;
+        await this.updateRecipe(recipeId, updateBm2);
       }
       return true;
     } catch (error) {

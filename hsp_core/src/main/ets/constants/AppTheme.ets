@@ -264,10 +264,38 @@ const DARK_INSTANCE: DarkThemeColors = new DarkThemeColors();
 
 export class ThemeColors {
   private static currentTheme: ThemeMode = ThemeMode.LIGHT;
+  private static manualOverride: ThemeMode | null = null;
 
   static setTheme(mode: ThemeMode): void {
+    ThemeColors.manualOverride = mode;
     ThemeColors.currentTheme = mode;
     AppStorage.setOrCreate<ThemeMode>('currentThemeMode', mode);
+  }
+
+  static clearManualOverride(): void {
+    ThemeColors.manualOverride = null;
+  }
+
+  static getManualOverride(): ThemeMode | null {
+    return ThemeColors.manualOverride;
+  }
+
+  static onSystemThemeChange(systemMode: 'light' | 'dark'): void {
+    if (ThemeColors.manualOverride !== null) {
+      return;
+    }
+    const newMode: ThemeMode = systemMode === 'dark' ? ThemeMode.DARK : ThemeMode.LIGHT;
+    ThemeColors.currentTheme = newMode;
+    AppStorage.setOrCreate<ThemeMode>('currentThemeMode', newMode);
+  }
+
+  static initFromSystem(isDark: boolean): void {
+    if (ThemeColors.manualOverride !== null) {
+      ThemeColors.currentTheme = ThemeColors.manualOverride;
+    } else {
+      ThemeColors.currentTheme = isDark ? ThemeMode.DARK : ThemeMode.LIGHT;
+    }
+    AppStorage.setOrCreate<ThemeMode>('currentThemeMode', ThemeColors.currentTheme);
   }
 
   static getTheme(): ThemeMode {

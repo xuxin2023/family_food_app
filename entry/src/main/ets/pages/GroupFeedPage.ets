@@ -1,5 +1,5 @@
 import {
-  ToastHelper, safeBack, getPageParams, GroupFeed, FeedType, COLORS, RADIUS, BasicDataSource, PAGE_SIZE_CONFIG, HILOG_DOMAIN
+  ToastHelper, safeBack, getPageParams, GroupFeed, FeedType, COLORS, RADIUS, BasicDataSource, PAGE_SIZE_CONFIG, HILOG_DOMAIN_DEFAULT
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -7,7 +7,7 @@ import { pasteboard } from '@kit.BasicServicesKit';
 import { AppState } from '../AppState';
 
 const PAGE_SIZE = PAGE_SIZE_CONFIG.GROUP_FEED_PAGE_SIZE;
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @Entry
 @ComponentV2

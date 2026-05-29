@@ -1,14 +1,14 @@
 // 里程碑服务 - 用户行为成就系统
 // 基于 AnalyticsService 的事件统计，自动检测和展示用户里程碑
 
-import { ToastHelper, EventType, HILOG_DOMAIN, JsonHelper } from 'hsp_core';
+import { ToastHelper, EventType, HILOG_DOMAIN_DEFAULT, JsonHelper } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
 import { preferences } from '@kit.ArkData';
 import { AnalyticsService } from 'hsp_service';
 
 const TAG = 'MilestoneService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class Milestone {
   name: string = '';

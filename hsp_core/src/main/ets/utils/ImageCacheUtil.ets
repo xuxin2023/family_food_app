@@ -11,10 +11,10 @@
 
 import { image } from '@kit.ImageKit'
 import { hilog } from '@kit.PerformanceAnalysisKit'
-import { HILOG_DOMAIN } from '../constants/AppConfig'
+import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig'
 
 const TAG = 'ImageCacheUtil'
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT
 
 /** 缓存配置 */
 interface CacheConfig {

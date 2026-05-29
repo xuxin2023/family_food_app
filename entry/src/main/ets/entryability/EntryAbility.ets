@@ -2,7 +2,7 @@
 // V5新增：首次启动隐私政策与用户协议确认弹窗
 
 import {
-  DataSource, MemberTier, TIME_INTERVAL_CONFIG, CRASH_LOG_CONFIG, HILOG_DOMAIN, DB_NAME, NavigationManager, LocaleManager, RoutePath
+  DataSource, MemberTier, TIME_INTERVAL_CONFIG, CRASH_LOG_CONFIG, HILOG_DOMAIN_DEFAULT, DB_NAME, NavigationManager, LocaleManager, RoutePath, ThemeColors, ThemeMode, PerformanceMonitor
 } from 'hsp_core';
 import { UIAbility, Want, AbilityConstant, errorManager } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -17,7 +17,7 @@ import { GlobalErrorHandler } from '../utils/GlobalErrorHandler';
 import { DeepLinkHandler } from '../utils/DeepLinkHandler';
 
 const TAG = 'EntryAbility';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export default class EntryAbility extends UIAbility {
   private appState: AppState = AppState.getInstance();
@@ -47,6 +47,9 @@ export default class EntryAbility extends UIAbility {
     // ===== 全局网络监听初始化 =====
     NetworkMonitorService.getInstance().register();
 
+    // ===== 性能监控初始化 =====
+    PerformanceMonitor.getInstance().init();
+
     // 初始化权限管理器（仅缓存上下文，不请求任何权限）
     PermissionManager.getInstance().init(this.context);
 
@@ -56,6 +59,9 @@ export default class EntryAbility extends UIAbility {
 
     // 初始化多语言管理器
     LocaleManager.getInstance().init();
+
+    // 初始化主题（读取系统主题 + 应用手动覆盖）
+    this.initTheme();
 
     // AppStorage-V2 关键状态初始化
     AppStorage.setOrCreate('networkIsOnline', false);
@@ -68,6 +74,9 @@ export default class EntryAbility extends UIAbility {
 
     // 将context存入AppStorage供隐私弹窗使用
     AppStorage.setOrCreate('appContext', this.context);
+
+    // 首次启动隐私弹窗检查标记（华为应用商店合规：数据采集前必须获用户明示同意）
+    this.checkFirstLaunchPrivacy();
 
     // 异步初始化：不阻塞 void onCreate，但通过 AppStorage 门控
     const initPromise = this.initAsync();
@@ -519,6 +528,32 @@ export default class EntryAbility extends UIAbility {
   // ==================== 崩溃监控 ====================
 
   /**
+   * 首次启动隐私弹窗检查
+   * 华为应用商店合规要求：首次启动必须展示隐私政策弹窗，用户明示同意后方可采集数据
+   */
+  private checkFirstLaunchPrivacy(): void {
+    try {
+      preferences.getPreferences(this.context, 'app_state').then((prefs: preferences.Preferences) => {
+        prefs.get('privacy_agreed_version', '').then((version: string) => {
+          const isFirstLaunch = (version as string).length === 0;
+          AppStorage.setOrCreate('isFirstLaunchNeedPrivacy', isFirstLaunch);
+          if (isFirstLaunch) {
+            hilog.info(DOMAIN_ZERO, TAG, 'First launch detected, privacy dialog required');
+          }
+        });
+      }).catch((e: Error) => {
+        hilog.warn(DOMAIN_ZERO, TAG, 'checkFirstLaunchPrivacy failed: %{public}s', e.message);
+        AppStorage.setOrCreate('isFirstLaunchNeedPrivacy', true);
+      });
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'checkFirstLaunchPrivacy exception: %{public}s', JSON.stringify(e));
+      AppStorage.setOrCreate('isFirstLaunchNeedPrivacy', true);
+    }
+  }
+
+  // ==================== 崩溃监控 ====================
+
+  /**
    * 初始化崩溃监控
    * 注册全局错误处理器，将崩溃信息写入应用沙箱目录
    */
@@ -618,6 +653,32 @@ export default class EntryAbility extends UIAbility {
       }
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Cleanup crash logs failed: %{public}s', JSON.stringify(e));
+    }
+  }
+
+  onConfigurationUpdated(newConfig: Record<string, Object>): void {
+    try {
+      const colorMode = newConfig['colorMode'] as number;
+      if (colorMode !== undefined) {
+        const isDark: boolean = colorMode === 1; // 0=light, 1=dark
+        ThemeColors.onSystemThemeChange(isDark ? 'dark' : 'light');
+        hilog.info(DOMAIN_ZERO, TAG, 'System theme changed: %{public}s', isDark ? 'dark' : 'light');
+      }
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'onConfigurationUpdated failed: %{public}s', JSON.stringify(e));
+    }
+  }
+
+  private initTheme(): void {
+    try {
+      const config = this.context.config;
+      const colorMode: number = config?.colorMode ?? 0;
+      const isDark: boolean = colorMode === 1;
+      ThemeColors.initFromSystem(isDark);
+      hilog.info(DOMAIN_ZERO, TAG, 'Theme initialized: %{public}s', isDark ? 'dark' : 'light');
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'initTheme failed: %{public}s', JSON.stringify(e));
+      ThemeColors.initFromSystem(false);
     }
   }
 }

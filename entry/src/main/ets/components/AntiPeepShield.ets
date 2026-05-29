@@ -6,10 +6,10 @@
 import { deviceSecurity } from '@kit.DeviceSecurityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
-import { HILOG_DOMAIN } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 
 const TAG = 'AntiPeepShield';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 /**
  * 窥视状态枚举
@@ -36,7 +36,7 @@ export class AntiPeepConfig {
   /** 蒙层透明度 */
   overlayOpacity: number = 0.6;
   /** 蒙层提示文字 */
-  overlayText: string = '检测到他人注视\n敏感信息已保护';
+  overlayText: string = $r('app.string.peep_overlay_text') as string;
 }
 
 @ComponentV2
@@ -93,7 +93,7 @@ export struct AntiPeepShield {
 
   @Builder
   defaultContent() {
-    Text('内容区域')
+    Text($r('app.string.peep_content_area'))
   }
 
   // ========== 防窥检测逻辑 ==========

@@ -1,13 +1,22 @@
 // NutritionTrendPage.ets
 // 营养摄入趋势图表页面 - 7天/30天营养素趋势、每日汇总、预算对比
 
-import { safeBack, getPageParams, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, HILOG_DOMAIN, DateUtil, NutrientTrendData, DailyNutritionSummary, TrendDirection, DailyNutrientPoint, MealGroup } from 'hsp_core';
+import { safeBack, getPageParams, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, HILOG_DOMAIN_DEFAULT, DateUtil, NutrientTrendData, DailyNutritionSummary, TrendDirection, DailyNutrientPoint, MealGroup } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { TrendChart } from '../components/TrendChart';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+function resStrToKey(s: ResourceStr): string {
+  if (typeof s === 'string') return s;
+  try {
+    return getContext().resourceManager.getStringSync(s.id);
+  } catch (_e) {
+    return String(s.id);
+  }
+}
+
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const TAG = 'NutritionTrendPage';
 
 class PeriodOption {
@@ -211,7 +220,7 @@ struct NutritionTrendPage {
             ForEach(this.trends, (trend: NutrientTrendData) => {
               TrendChart({ data: trend })
                 .padding({ left: SPACING.LG, right: SPACING.LG })
-            }, (trend: NutrientTrendData) => trend.nutrientName as string)
+            }, (trend: NutrientTrendData) => resStrToKey(trend.nutrientName))
 
             // 每日数值列表
             if (this.summaries.length > 0) {
@@ -238,7 +247,7 @@ struct NutritionTrendPage {
   @Builder
   buildOverviewCard() {
     Column() {
-      Text(this.periodLabel + ' 概览')
+      Text() { Span(this.periodLabel); Span(' 概览') }
         .fontSize(FONT_SIZE.BODY)
         .fontWeight(FONT_WEIGHT.BOLD)
         .fontColor(COLORS.TEXT_PRIMARY)

@@ -1,15 +1,15 @@
-import { FoodLabel, FamilyProfile, COLORS, RADIUS, HILOG_DOMAIN } from 'hsp_core';
+import { FoodLabel, FamilyProfile, COLORS, RADIUS, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { AdditiveSafetyEngine, AdditiveSafetyRiskLevel, FoodAdditiveReport } from 'feature_scan';
 import { AllergenCrossReactivityEngine, AllergenCrossReport, CrossReactiveRisk } from 'feature_scan';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'FoodDeepAnalysisSheet';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @ComponentV2
 export struct FoodDeepAnalysisSheet {
-  @Prop foodLabel: FoodLabel = new FoodLabel()
-  @Prop profile: FamilyProfile = new FamilyProfile()
+  @Param foodLabel: FoodLabel = new FoodLabel()
+  @Param profile: FamilyProfile = new FamilyProfile()
   @Local additiveReport: FoodAdditiveReport | null = null
   @Local allergenReport: AllergenCrossReport | null = null
   @Local activeTab: number = 0

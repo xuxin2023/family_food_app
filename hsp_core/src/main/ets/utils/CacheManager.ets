@@ -5,7 +5,7 @@
 import { FamilyProfile } from '../model/FamilyProfile';
 import { HealthSignal } from '../model/HealthSignal';
 import { DailyBudget } from '../model/DailyBudget';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
 
 export class CacheManager {
   /** 家庭成员缓存 */

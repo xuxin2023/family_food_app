@@ -1,18 +1,28 @@
 // FoodComparePage.ets
 // 食品对比页 — 两个食品的并排营养对比视图
 
-import { FoodLabel, NutritionPer100g, COLORS, RADIUS, HILOG_DOMAIN, ToastHelper, NutritionSnapshot } from 'hsp_core';
+import { FoodLabel, NutritionPer100g, COLORS, RADIUS, HILOG_DOMAIN_DEFAULT, ToastHelper, NutritionSnapshot } from 'hsp_core';
 import { FoodCompareService, FoodCompareResult, NutritionDelta } from 'hsp_service';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { NovaGroupBadge } from '../components/NovaGroupBadge';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { common } from '@kit.AbilityKit';
+
+function resStrToString(s: ResourceStr): string {
+  if (typeof s === 'string') return s;
+  try {
+    return getContext().resourceManager.getStringSync(s.id);
+  } catch (_e) {
+    return '';
+  }
+}
 
 const TAG = 'FoodComparePage';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 class NutrientDiff {
-  name: string = '';
+  name: ResourceStr = '';
   unit: string = '';
   value1: number = 0;
   value2: number = 0;
@@ -389,7 +399,7 @@ struct FoodComparePage {
       }
     }
     const d = new NutrientDiff();
-    d.name = name as string; d.unit = unit; d.value1 = v1; d.value2 = v2; d.diff = diff; d.betterSide = betterSide;
+    d.name = name; d.unit = unit; d.value1 = v1; d.value2 = v2; d.diff = diff; d.betterSide = betterSide;
     return d;
   }
 
@@ -406,9 +416,9 @@ struct FoodComparePage {
     const name2 = this.food2?.foodName ?? '食品B';
 
     if (better1.length > better2.length) {
-      return `综合来看，${name1} 在 ${better1.map(d => d.name).join('、')} 方面优于${name2} 在 ${better2.map(d => d.name).join('、') || '无明显优势'} 方面`;
+      return `综合来看，${name1} 在 ${better1.map(d => resStrToString(d.name)).join('、')} 方面优于${name2} 在 ${better2.map(d => resStrToString(d.name)).join('、') || '无明显优势'} 方面`;
     } else if (better2.length > better1.length) {
-      return `综合来看，${name2} 在 ${better2.map(d => d.name).join('、')} 方面优于${name1} 在 ${better1.map(d => d.name).join('、') || '无明显优势'} 方面`;
+      return `综合来看，${name2} 在 ${better2.map(d => resStrToString(d.name)).join('、')} 方面优于${name1} 在 ${better1.map(d => resStrToString(d.name)).join('、') || '无明显优势'} 方面`;
     }
     return '两种食品营养表现相当';
   }

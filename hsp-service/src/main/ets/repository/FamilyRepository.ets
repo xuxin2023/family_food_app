@@ -1,14 +1,14 @@
 // 家庭成员数据仓库 - RdbStore (SQLite)
 
 import {
-  FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig, MealTimes, HILOG_DOMAIN, TABLE_FAMILY_PROFILE, COL_MEMBER_ID, COL_NICKNAME, COL_AGE_GROUP, COL_HEALTH_GOALS, COL_ALLERGENS, COL_SODIUM_BUDGET, COL_SUGAR_BUDGET, COL_CALORIE_BUDGET, COL_FAT_BUDGET, COL_MEAL_TIMES, COL_BEDTIME, COL_CREATED_AT, COL_UPDATED_AT
+  FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig, MealTimes, HILOG_DOMAIN_DEFAULT, TABLE_FAMILY_PROFILE, COL_MEMBER_ID, COL_NICKNAME, COL_AGE_GROUP, COL_HEALTH_GOALS, COL_ALLERGENS, COL_SODIUM_BUDGET, COL_SUGAR_BUDGET, COL_CALORIE_BUDGET, COL_FAT_BUDGET, COL_MEAL_TIMES, COL_BEDTIME, COL_CREATED_AT, COL_UPDATED_AT
 } from 'hsp_core';
 import { relationalStore } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 
 const TAG = 'FamilyRepository';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class FamilyRepository {
   private rdbStore: relationalStore.RdbStore | null = null;

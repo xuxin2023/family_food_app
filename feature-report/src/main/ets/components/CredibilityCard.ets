@@ -1,13 +1,13 @@
 // 信息透明度卡组件 - V4升级：5维雷达图 + A-E数据等级 + 公开查询入口
 // V5: 实现剪贴板复制功能
 
-import { CredibilityResult, DataGrade, RadarDimension, PublicQueryEntry, COLORS, HILOG_DOMAIN, ToastHelper } from 'hsp_core';
+import { CredibilityResult, DataGrade, RadarDimension, PublicQueryEntry, COLORS, HILOG_DOMAIN_DEFAULT, ToastHelper } from 'hsp_core';
 import { pasteboard } from '@kit.BasicServicesKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'CredibilityCard';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @ComponentV2
 export struct CredibilityCard {

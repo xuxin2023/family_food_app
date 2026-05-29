@@ -1,10 +1,10 @@
-import { safeBack, COLORS, HILOG_DOMAIN } from 'hsp_core';
+import { safeBack, COLORS, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'AllergenConfigPage';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 const PRESET_ALLERGENS: string[] = [
   '牛奶', '鸡蛋', '花生', '坚果', '大豆', '小麦', '鱼', '甲壳类', '芝麻', '芹菜',
@@ -37,7 +37,7 @@ struct AllergenConfigPage {
           .onClick(() => { safeBack() })
           .accessibilityText('返回')
           .accessibilityLevel('yes')
-        Text('过敏原配置')
+        Text($r('app.string.allergen_config_title'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .margin({ left: 16 })
@@ -50,7 +50,7 @@ struct AllergenConfigPage {
       } else {
         Scroll() {
           Column() {
-            Text('常见过敏原')
+            Text($r('app.string.allergen_common_title'))
               .fontSize(16)
               .fontWeight(FontWeight.Bold)
               .margin({ bottom: 12 })
@@ -61,7 +61,7 @@ struct AllergenConfigPage {
                   .fontSize(14)
                   .padding({ left: 12, right: 12, top: 8, bottom: 8 })
                   .borderRadius(20)
-                  .backgroundColor(this.customAllergens.includes(allergen) ? COLORS.PRIMARY : '#F0F0F0')
+                  .backgroundColor(this.customAllergens.includes(allergen) ? COLORS.PRIMARY : $r('app.color.tag_inactive'))
                   .fontColor(this.customAllergens.includes(allergen) ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
                   .margin({ right: 8, bottom: 8 })
                   .onClick(() => { this.toggleAllergen(allergen) })
@@ -72,34 +72,34 @@ struct AllergenConfigPage {
             .width('100%')
             .margin({ bottom: 24 })
 
-            Text('自定义过敏原')
+            Text($r('app.string.allergen_custom_title'))
               .fontSize(16)
               .fontWeight(FontWeight.Bold)
               .margin({ bottom: 12 })
 
             Row() {
-              TextInput({ placeholder: '输入过敏原名称' })
+              TextInput({ placeholder: $r('app.string.allergen_input_placeholder') })
                 .width('60%')
                 .height(40)
                 .onChange((value: string) => { this.newAllergen = value })
                 .accessibilityText('自定义过敏原')
                 .accessibilityLevel('yes')
 
-              Button('添加')
+              Button($r('app.string.allergen_add_button'))
                 .height(40)
                 .backgroundColor(COLORS.PRIMARY)
                 .fontColor(COLORS.WHITE)
                 .borderRadius(20)
                 .margin({ left: 8 })
                 .onClick(() => { this.addCustomAllergen() })
-                .accessibilityText('添加过敏原')
+                .accessibilityText($r('app.string.allergen_add_button'))
                 .accessibilityLevel('yes')
             }
             .width('100%')
             .margin({ bottom: 16 })
 
             if (this.customAllergens.filter((a: string) => !PRESET_ALLERGENS.includes(a)).length > 0) {
-              Text('已添加的自定义过敏原')
+              Text($r('app.string.allergen_added_custom_title'))
                 .fontSize(14)
                 .fontColor(COLORS.TEXT_GRAY_7575)
                 .margin({ bottom: 8 })
@@ -129,7 +129,7 @@ struct AllergenConfigPage {
         .layoutWeight(1)
       }
 
-      Button('保存')
+      Button($r('app.string.allergen_save_button'))
         .width('90%')
         .height(44)
         .backgroundColor(COLORS.PRIMARY)
@@ -137,7 +137,7 @@ struct AllergenConfigPage {
         .borderRadius(22)
         .margin({ top: 16, bottom: 16 })
         .onClick(() => { this.saveAllergens() })
-        .accessibilityText('保存过敏原配置')
+        .accessibilityText($r('app.string.allergen_save_button'))
         .accessibilityLevel('yes')
     }
     .width('100%')

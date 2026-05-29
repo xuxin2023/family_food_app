@@ -5,7 +5,7 @@
 // 鸿蒙6.1 ArkTS 约束：
 // - 不使用 undefined 类型，统一使用 null
 
-import { FamilyProfile, FoodLabel, HILOG_DOMAIN, DietRecord } from 'hsp_core';
+import { FamilyProfile, FoodLabel, HILOG_DOMAIN_DEFAULT, DietRecord } from 'hsp_core';
 import { FamilyRepository } from '../repository/FamilyRepository';
 import { FoodRepository } from '../repository/FoodRepository';
 import { HistoryRepository, ScanHistoryRecord } from '../repository/HistoryRepository';
@@ -18,7 +18,7 @@ import { relationalStore } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'RepositoryManager';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class RepositoryManager {
   readonly family: FamilyRepository = new FamilyRepository();

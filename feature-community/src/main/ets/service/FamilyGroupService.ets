@@ -2,7 +2,7 @@
 // 家庭群组服务 - 创建、加入、成员管理、群组动态
 
 import {
-  FamilyProfile, GROUP_CONFIG, HILOG_DOMAIN, FamilyGroup, GroupMember, JoinRequest, GroupFeed, GroupSummary, GroupRole, JoinMethod, JoinRequestStatus, FeedType, FoodScanFeedContent
+  FamilyProfile, GROUP_CONFIG, HILOG_DOMAIN_DEFAULT, FamilyGroup, GroupMember, JoinRequest, GroupFeed, GroupSummary, GroupRole, JoinMethod, JoinRequestStatus, FeedType, FoodScanFeedContent
 } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FamilyGroupRepository } from '../repository/FamilyGroupRepository';
@@ -10,7 +10,7 @@ import { FamilyGroupRepository } from '../repository/FamilyGroupRepository';
 import { AuthService } from 'hsp_service';
 
 const TAG = 'FamilyGroupService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 /** 邀请码字符集 */
 const INVITE_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';

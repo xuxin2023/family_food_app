@@ -69,7 +69,7 @@ export { HealthReportExportService, HealthReportRequest, HealthReportResult } fr
 export { PermissionProgressiveGuide, PermissionGuideStep } from './service/PermissionProgressiveGuide';
 
 // ===== 功能增强服务 =====
-export { BatchScanService, BatchScanResult } from './service/BatchScanService';
+export { BatchScanService, BatchScanResult, ILocalCacheProvider, IRemoteLookupProvider } from './service/BatchScanService';
 export { FoodCompareService, FoodCompareResult, NutritionDelta } from './service/FoodCompareService';
 export { NutritionKnowledgeService, KnowledgeEntry } from './service/NutritionKnowledgeService';
 export { MealPlanService, MealPlan, MealPlanItem } from './service/MealPlanService';

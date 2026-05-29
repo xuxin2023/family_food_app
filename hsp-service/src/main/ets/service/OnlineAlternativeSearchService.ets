@@ -1,10 +1,10 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN, FoodLabel, NutritionPer100g, FoodSource, AlternativeFood, RecommendationLevel, API_CONFIG } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, FoodLabel, NutritionPer100g, FoodSource, AlternativeFood, RecommendationLevel, API_CONFIG } from 'hsp_core';
 import { OpenFoodFactsService } from './OpenFoodFactsService';
 import { HuaweiCloudBackend } from './HuaweiCloudBackend';
 
 const TAG = 'OnlineAlternativeSearch';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class CloudAlternativeResult {
   barcode: string = '';
@@ -22,6 +22,14 @@ export class OnlineSearchResult {
   foodLabel: FoodLabel = new FoodLabel();
   similarityScore: number = 0;
   source: string = 'online';
+}
+
+class SearchAltPayload {
+  barcode: string = '';
+  categories: string = '';
+  nutritionGrade: string = '';
+  novaGroup: number = 0;
+  maxResults: number = 10;
 }
 
 export class OnlineAlternativeSearchService {
@@ -73,7 +81,7 @@ export class OnlineAlternativeSearchService {
       candidates.sort((a: OnlineSearchResult, b: OnlineSearchResult) => b.similarityScore - a.similarityScore);
       hilog.info(DOMAIN_ZERO, TAG, 'Found %{public}d online alternatives (OFF fallback)', candidates.length);
       return candidates.slice(0, maxResults);
-    } catch (error) {
+    } catch (error: Object) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Online search failed: %{public}s', JSON.stringify(error));
       return [];
     }
@@ -85,13 +93,12 @@ export class OnlineAlternativeSearchService {
     maxResults: number = 10
   ): Promise<OnlineSearchResult[]> {
     try {
-      const payload: Record<string, Object> = {
-        barcode: currentFood.barcode || '',
-        categories: category || '',
-        nutritionGrade: currentFood.nutriScore !== undefined ? String(currentFood.nutriScore) : '',
-        novaGroup: currentFood.novaGroup ?? 0,
-        maxResults: maxResults
-      };
+      const payload = new SearchAltPayload();
+      payload.barcode = currentFood.barcode || '';
+      payload.categories = category || '';
+      payload.nutritionGrade = currentFood.nutriScore !== undefined ? String(currentFood.nutriScore) : '';
+      payload.novaGroup = currentFood.novaGroup ?? 0;
+      payload.maxResults = maxResults;
 
       const response = await HuaweiCloudBackend.getInstance().callFunction('search-alternatives', payload);
       if (!response) {
@@ -124,7 +131,7 @@ export class OnlineAlternativeSearchService {
       candidates.sort((a: OnlineSearchResult, b: OnlineSearchResult) => b.similarityScore - a.similarityScore);
       hilog.info(DOMAIN_ZERO, TAG, 'Found %{public}d cloud alternatives', candidates.length);
       return candidates.slice(0, maxResults);
-    } catch (error) {
+    } catch (error: Object) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Cloud search failed: %{public}s', JSON.stringify(error));
       return [];
     }

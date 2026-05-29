@@ -123,6 +123,30 @@ export struct SkeletonChart {
 export struct LoadingSkeleton {
   @Param variant: string = 'list'
   @Param rowCount: number = 5
+  private cachedListArray: void[] = new Array(5)
+  private cachedCardArray: void[] = new Array(3)
+  private cachedChatArray: void[] = new Array(2)
+  private cachedDefaultArray: void[] = new Array(5)
+  private cachedFallbackArray: number[] = [1, 2, 3]
+
+  aboutToAppear(): void {
+    this.updateCaches()
+  }
+
+  private updateCaches(): void {
+    const listCount = this.rowCount
+    if (listCount > this.cachedListArray.length) {
+      this.cachedListArray = new Array(listCount)
+    }
+    const cardCount = this.rowCount > 3 ? 3 : this.rowCount
+    if (cardCount > this.cachedCardArray.length) {
+      this.cachedCardArray = new Array(cardCount)
+    }
+    const defaultCount = this.rowCount > 5 ? 5 : this.rowCount
+    if (defaultCount > this.cachedDefaultArray.length) {
+      this.cachedDefaultArray = new Array(defaultCount)
+    }
+  }
 
   build() {
     Column() {
@@ -130,14 +154,14 @@ export struct LoadingSkeleton {
         // 列表样式：标题 + N 行列表项
         SkeletonBlock({  blockWidth: '40%', blockHeight: 22, blockRadius: RADIUS.SM  })
           .margin({ top: SPACING.MD, bottom: SPACING.LG })
-        ForEach(new Array(this.rowCount), () => {
+        ForEach(this.cachedListArray, () => {
           SkeletonListItem()
         }, (_: void, i: number) => `skel_${i}`)
       } else if (this.variant === 'card') {
         // 卡片样式：顶部标题 + 成员卡片 + 图表
         SkeletonBlock({  blockWidth: '60%', blockHeight: 24, blockRadius: RADIUS.SM  })
           .margin({ top: SPACING.LG, bottom: SPACING.LG })
-        ForEach(new Array(this.rowCount > 3 ? 3 : this.rowCount), () => {
+        ForEach(this.cachedCardArray, () => {
           SkeletonMemberCard()
         }, (_: void, i: number) => `skel_${i}`)
       } else if (this.variant === 'dashboard') {
@@ -200,7 +224,7 @@ export struct LoadingSkeleton {
         .padding({ bottom: SPACING.MD })
 
         // 重复消息气泡
-        ForEach(new Array(2), () => {
+        ForEach(this.cachedChatArray, () => {
           Row() {
             SkeletonCircle({ circleSize: 36 })
             Column() {
@@ -216,7 +240,7 @@ export struct LoadingSkeleton {
         // 默认：简单通用列表
         SkeletonBlock({  blockWidth: '40%', blockHeight: 22  })
           .margin({ top: SPACING.MD, bottom: SPACING.LG })
-        ForEach(new Array(this.rowCount > 5 ? 5 : this.rowCount), () => {
+        ForEach(this.cachedDefaultArray, () => {
           SkeletonBlock({  blockWidth: '100%', blockHeight: 60, blockRadius: RADIUS.MD  })
             .margin({ bottom: SPACING.SM })
         }, (_: void, i: number) => `skel_${i}`)
@@ -231,12 +255,14 @@ export struct LoadingSkeleton {
 /** 兼容旧版：保持原有的完整骨架屏布局引用 */
 @ComponentV2
 export struct SkeletonScreen {
+  private cachedFallbackArray: number[] = [1, 2, 3]
+
   build() {
     Column() {
       SkeletonBlock({  blockWidth: '60%', blockHeight: 24, blockRadius: RADIUS.SM  })
         .margin({ top: SPACING.LG, bottom: SPACING.LG })
 
-      ForEach([1, 2, 3], () => {
+      ForEach(this.cachedFallbackArray, () => {
         SkeletonMemberCard()
       }, (_: void, i: number) => `skel_${i}`)
 

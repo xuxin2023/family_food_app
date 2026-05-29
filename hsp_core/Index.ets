@@ -9,7 +9,7 @@
 
 // ===== 常量 =====
 export {
-  HILOG_DOMAIN, ApiConfig, API_CONFIG,
+  HILOG_DOMAIN_DEFAULT, ApiConfig, API_CONFIG,
   FeatureFlags, FEATURE_FLAGS,
   ScanConfig, SCAN_CONFIG,
   PageSizeConfig, PAGE_SIZE_CONFIG,
@@ -108,7 +108,7 @@ export {
 } from './src/main/ets/model/NutritionSnapshot';
 
 export {
-  MemberTier, MemberStatus, PaywallTrigger,
+  MemberTier, MemberStatus, PaywallTrigger, ProductInfo,
   createDefaultMemberStatus, createMemberStatusForTier,
   getPaywallTriggerForFeature, hasTierAccess, getTierDisplayName,
   TIER_DAILY_SCAN_LIMIT, TIER_MEMBER_LIMIT, TIER_WEEKLY_REPORT_LIMIT,
@@ -123,7 +123,7 @@ export {
 // ===== 工具类 =====
 export { DateUtil } from './src/main/ets/utils/DateUtil';
 export { CacheManager } from './src/main/ets/utils/CacheManager';
-export { safeParse, safeParseRiskTag, safeParseMealScenario, safeParseHealthGoal, safeParseRecipeCategory, safeParseDietTag, safeParseNovaGroup } from './src/main/ets/utils/EnumSafeParse';
+export { safeParse, safeParseRiskTag, safeParseMealScenario, safeParseHealthGoal, safeParseRecipeCategory, safeParseDietTag, safeParseNovaGroup, safeParseMemberTier } from './src/main/ets/utils/EnumSafeParse';
 export { Logger } from './src/main/ets/utils/Logger';
 export { Debouncer, Throttler } from './src/main/ets/utils/DebounceThrottle';
 export { SafeJsonParse } from './src/main/ets/utils/SafeJsonParse';
@@ -136,9 +136,11 @@ export { ImageCacheUtil } from './src/main/ets/utils/ImageCacheUtil';
 export { BasicDataSource } from './src/main/ets/utils/BasicDataSource';
 export { LazyDataSource } from './src/main/ets/utils/LazyDataSource';
 export { SecureDataStore } from './src/main/ets/utils/SecureDataStore';
+export { RateLimiter, RateLimitConfig, RateLimitResult } from './src/main/ets/utils/RateLimiter';
 export { SecureKeyStore } from './src/main/ets/utils/SecureKeyStore';
 export { AccessibilityUtil } from './src/main/ets/utils/AccessibilityUtil';
 export { AccessibilityManager } from './src/main/ets/utils/AccessibilityManager';
+export { PerformanceMonitor, PerfMetric, PerfPercentiles, PerfAlert } from './src/main/ets/utils/PerformanceMonitor';
 export { LocaleManager } from './src/main/ets/utils/LocaleManager';
 export { SUPPORTED_LOCALES, LOCALE_DISPLAY_NAMES } from './src/main/ets/utils/LocaleManager';
 export { NavigationManager } from './src/main/ets/utils/NavigationManager';
@@ -146,6 +148,7 @@ export { PAGE_ENTER_DURATION, PAGE_EXIT_DURATION, LIST_ENTER_DURATION, DETAIL_EN
 export { safePushUrl, safeBack, clearToHome, getPageParams, getParamString, getParamNumber, getParamObject, safeReplaceUrl } from './src/main/ets/utils/RouterUtil';
 export { AppStorageSync, AppStorageKeys } from './src/main/ets/utils/AppStorageSync';
 export { ToastHelper } from './src/main/ets/utils/ToastHelper';
+export { DeviceAdapter, DeviceType, Breakpoint } from './src/main/ets/utils/DeviceAdapter';
 export { ErrorHandler } from './src/main/ets/utils/ErrorHandler';
 export { DataIntegrityChecker } from './src/main/ets/utils/DataIntegrityChecker';
 export { ObservableMap } from './src/main/ets/utils/ObservableMap';
@@ -179,6 +182,7 @@ export { RouteTable } from './src/main/ets/constants/RouteTable';
 // ===== 补全模型导出（第二批） =====
 export { JsonObject } from './src/main/ets/model/JsonTypes';
 export { NovaGroup } from './src/main/ets/model/NovaGroupDef';
+export { NutriScore } from './src/main/ets/model/NutriScoreDef';
 export { ExerciseType } from './src/main/ets/model/ExerciseTypeDef';
 
 export {

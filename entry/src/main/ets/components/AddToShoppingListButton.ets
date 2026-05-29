@@ -19,7 +19,7 @@ export struct AddToShoppingListButton {
       Button('加入购物清单')
         .fontSize(14)
         .fontColor(COLORS.WHITE)
-        .backgroundColor(this.isAdding ? '#CCCCCC' : COLORS.PRIMARY)
+        .backgroundColor(this.isAdding ? $r('app.color.btn_inactive') : COLORS.PRIMARY)
         .borderRadius(RADIUS.MD)
         .height(BUTTON.HEIGHT_SM)
         .enabled(!this.isAdding)

@@ -56,7 +56,7 @@ export struct PrivacyConsentDialog {
 
         Text($r('app.string.privacy_desc'))
           .fontSize(13)
-          .fontColor('#999999')
+          .fontColor($r('app.color.text_hint'))
           .textAlign(TextAlign.Center)
           .margin({ bottom: 16 })
 
@@ -81,7 +81,7 @@ export struct PrivacyConsentDialog {
           )
         }
         .width('100%')
-        .backgroundColor('#F5F5F5')
+        .backgroundColor($r('app.color.bg_light'))
         .borderRadius(10)
         .padding({ top: 4, bottom: 4 })
         .margin({ bottom: 20 })
@@ -89,14 +89,14 @@ export struct PrivacyConsentDialog {
         // 数据使用说明
         Row() {
           Text('✅ ').fontSize(13)
-          Text($r('app.string.data_local_only')).fontSize(12).fontColor('#666666')
+          Text($r('app.string.data_local_only')).fontSize(12).fontColor($r('app.color.text_secondary'))
         }
         .width('100%')
         .margin({ bottom: 4 })
 
         Row() {
           Text('✅ ').fontSize(13)
-          Text($r('app.string.revoke_in_settings')).fontSize(12).fontColor('#666666')
+          Text($r('app.string.revoke_in_settings')).fontSize(12).fontColor($r('app.color.text_secondary'))
         }
         .width('100%')
         .margin({ bottom: 20 })

@@ -1,12 +1,12 @@
 import {
-  ToastHelper, FamilyProfile, NutritionTarget, NutritionPreset, NUTRITION_PRESETS, applyPresetToTarget, createDefaultNutritionTarget, COLORS, safeBack, HILOG_DOMAIN
+  ToastHelper, FamilyProfile, NutritionTarget, NutritionPreset, NUTRITION_PRESETS, applyPresetToTarget, createDefaultNutritionTarget, COLORS, safeBack, HILOG_DOMAIN_DEFAULT
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const NUTRI_TAG = 'NutritionTargetPage';
-const NUTRI_DOMAIN = HILOG_DOMAIN.DEFAULT;
+const NUTRI_DOMAIN = HILOG_DOMAIN_DEFAULT;
 
 @Entry
 @ComponentV2

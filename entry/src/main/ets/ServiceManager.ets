@@ -3,19 +3,19 @@
 // AppState 通过此管理器委托所有服务调用
 
 import {
-  FEATURE_FLAGS, HILOG_DOMAIN, FamilyProfile, HealthSignal, DailyBudget, NutritionTarget, AiNutritionAdvice, AiRecipeRecommendationResult, AiRecipeRequest, DietRecord
+  FEATURE_FLAGS, HILOG_DOMAIN_DEFAULT, FamilyProfile, HealthSignal, DailyBudget, NutritionTarget, AiNutritionAdvice, AiRecipeRecommendationResult, AiRecipeRequest, DietRecord
 } from 'hsp_core';
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HealthService } from './service/HealthService';
-import { AuthService, CloudAuthService, FamilyGroupRepository, RecipeRepository } from 'hsp_service';
+import { AuthService, CloudAuthService } from 'hsp_service';
 import { SyncService, SyncEventCallback, SyncEvent } from 'hsp_service';
 import {
   FoodCompareService, BatchScanService, NutritionKnowledgeService, MealPlanService, ReminderService, FeedbackService
 } from 'hsp_service';
 import { FamilyGroupService, RecipeCommunityService } from 'feature_community';
-import { FamilyGroupRepository as CommunityGroupRepo } from 'feature_community';
-import { RecipeRepository as CommunityRecipeRepo } from 'feature_community';
+import { FamilyGroupRepository } from 'feature_community';
+import { RecipeRepository } from 'feature_community';
 import { HwHealthSignalProvider } from './service/health/HwHealthSignalProvider';
 import { ManualHealthSignalProvider } from './service/health/ManualHealthSignalProvider';
 import { AiNutritionistService } from './service/AiNutritionistService';
@@ -26,39 +26,39 @@ import { AiWeeklyReportService } from './service/AiWeeklyReportService';
 import { AiServiceBase } from './service/ai/AiServiceBase';
 
 const TAG = 'ServiceManager';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class ServiceManager {
   // ========== 依赖注入注册表 ==========
   private serviceRegistry: Map<string, Object> = new Map();
 
-  registerService<T>(key: string, service: T): void {
-    this.serviceRegistry.set(key, service as Object);
+  registerService(key: string, service: Object): void {
+    this.serviceRegistry.set(key, service);
   }
 
-  getService<T>(key: string): T | undefined {
-    return this.serviceRegistry.get(key) as T;
+  getService(key: string): Object | undefined {
+    return this.serviceRegistry.get(key);
   }
 
   // ========== 基础服务 ==========
   private _healthService: HealthService | null = null;
   get healthService(): HealthService {
-    return this.getService<HealthService>('healthService') ?? (this._healthService ?? (this._healthService = new HealthService()));
+    return (this.getService('healthService') as HealthService) ?? (this._healthService ?? (this._healthService = new HealthService()));
   }
 
   private _authService: AuthService | null = null;
   get authService(): AuthService {
-    return this.getService<AuthService>('authService') ?? (this._authService ?? (this._authService = new AuthService()));
+    return (this.getService('authService') as AuthService) ?? (this._authService ?? (this._authService = new AuthService()));
   }
 
   private _cloudAuthService: CloudAuthService | null = null;
   get cloudAuthService(): CloudAuthService {
-    return this.getService<CloudAuthService>('cloudAuthService') ?? (this._cloudAuthService ?? (this._cloudAuthService = new CloudAuthService()));
+    return (this.getService('cloudAuthService') as CloudAuthService) ?? (this._cloudAuthService ?? (this._cloudAuthService = new CloudAuthService()));
   }
 
   private _syncService: SyncService | null = null;
   get syncService(): SyncService {
-    return this.getService<SyncService>('syncService') ?? (this._syncService ?? (this._syncService = SyncService.getInstance()));
+    return (this.getService('syncService') as SyncService) ?? (this._syncService ?? (this._syncService = SyncService.getInstance()));
   }
 
   // ========== 社交服务（延迟初始化） ==========
@@ -68,59 +68,59 @@ export class ServiceManager {
   // ========== AI 服务 ==========
   private _aiNutritionist: AiNutritionistService | null = null;
   get aiNutritionist(): AiNutritionistService {
-    return this.getService<AiNutritionistService>('aiNutritionist') ?? (this._aiNutritionist ?? (this._aiNutritionist = new AiNutritionistService()));
+    return (this.getService('aiNutritionist') as AiNutritionistService) ?? (this._aiNutritionist ?? (this._aiNutritionist = new AiNutritionistService()));
   }
 
   private _aiRecipeRecommender: AiRecipeRecommenderService | null = null;
   get aiRecipeRecommender(): AiRecipeRecommenderService {
-    return this.getService<AiRecipeRecommenderService>('aiRecipeRecommender') ?? (this._aiRecipeRecommender ?? (this._aiRecipeRecommender = new AiRecipeRecommenderService()));
+    return (this.getService('aiRecipeRecommender') as AiRecipeRecommenderService) ?? (this._aiRecipeRecommender ?? (this._aiRecipeRecommender = new AiRecipeRecommenderService()));
   }
 
   private _aiChat: AiChatService | null = null;
   get aiChat(): AiChatService {
-    return this.getService<AiChatService>('aiChat') ?? (this._aiChat ?? (this._aiChat = new AiChatService()));
+    return (this.getService('aiChat') as AiChatService) ?? (this._aiChat ?? (this._aiChat = new AiChatService()));
   }
 
   private _aiPolish: AiPolishService | null = null;
   get aiPolish(): AiPolishService {
-    return this.getService<AiPolishService>('aiPolish') ?? (this._aiPolish ?? (this._aiPolish = new AiPolishService()));
+    return (this.getService('aiPolish') as AiPolishService) ?? (this._aiPolish ?? (this._aiPolish = new AiPolishService()));
   }
 
   private _aiWeeklyReport: AiWeeklyReportService | null = null;
   get aiWeeklyReport(): AiWeeklyReportService {
-    return this.getService<AiWeeklyReportService>('aiWeeklyReport') ?? (this._aiWeeklyReport ?? (this._aiWeeklyReport = new AiWeeklyReportService()));
+    return (this.getService('aiWeeklyReport') as AiWeeklyReportService) ?? (this._aiWeeklyReport ?? (this._aiWeeklyReport = new AiWeeklyReportService()));
   }
 
   // ========== 功能增强服务 ==========
   private _foodCompare: FoodCompareService | null = null;
   get foodCompareService(): FoodCompareService {
-    return this.getService<FoodCompareService>('foodCompareService') ?? (this._foodCompare ?? (this._foodCompare = new FoodCompareService()));
+    return (this.getService('foodCompareService') as FoodCompareService) ?? (this._foodCompare ?? (this._foodCompare = new FoodCompareService()));
   }
 
   private _batchScan: BatchScanService | null = null;
   get batchScanService(): BatchScanService {
-    return this.getService<BatchScanService>('batchScanService') ?? (this._batchScan ?? (this._batchScan = new BatchScanService()));
+    return (this.getService('batchScanService') as BatchScanService) ?? (this._batchScan ?? (this._batchScan = new BatchScanService()));
   }
 
   private _nutritionKnowledge: NutritionKnowledgeService | null = null;
   get nutritionKnowledgeService(): NutritionKnowledgeService {
-    return this.getService<NutritionKnowledgeService>('nutritionKnowledgeService') ??
+    return (this.getService('nutritionKnowledgeService') as NutritionKnowledgeService) ??
       (this._nutritionKnowledge ?? (this._nutritionKnowledge = NutritionKnowledgeService.getInstance()));
   }
 
   private _mealPlan: MealPlanService | null = null;
   get mealPlanService(): MealPlanService {
-    return this.getService<MealPlanService>('mealPlanService') ?? (this._mealPlan ?? (this._mealPlan = new MealPlanService()));
+    return (this.getService('mealPlanService') as MealPlanService) ?? (this._mealPlan ?? (this._mealPlan = new MealPlanService()));
   }
 
   private _reminder: ReminderService | null = null;
   get reminderService(): ReminderService {
-    return this.getService<ReminderService>('reminderService') ?? (this._reminder ?? (this._reminder = ReminderService.getInstance()));
+    return (this.getService('reminderService') as ReminderService) ?? (this._reminder ?? (this._reminder = ReminderService.getInstance()));
   }
 
   private _feedback: FeedbackService | null = null;
   get feedbackService(): FeedbackService {
-    return this.getService<FeedbackService>('feedbackService') ?? (this._feedback ?? (this._feedback = FeedbackService.getInstance()));
+    return (this.getService('feedbackService') as FeedbackService) ?? (this._feedback ?? (this._feedback = FeedbackService.getInstance()));
   }
 
   // ========== 健康设备开关 ==========
@@ -143,8 +143,8 @@ export class ServiceManager {
    * 初始化社交服务
    */
   initSocial(groupRepo: FamilyGroupRepository, recipeRepo: RecipeRepository): void {
-    this.groupService = new FamilyGroupService(groupRepo as CommunityGroupRepo, this.authService);
-    this.recipeCommunityService = new RecipeCommunityService(recipeRepo as CommunityRecipeRepo, this.authService);
+    this.groupService = new FamilyGroupService(groupRepo, this.authService);
+    this.recipeCommunityService = new RecipeCommunityService(recipeRepo, this.authService);
     hilog.info(DOMAIN_ZERO, TAG, 'Social services initialized');
   }
 

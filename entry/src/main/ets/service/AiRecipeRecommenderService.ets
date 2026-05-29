@@ -8,16 +8,16 @@
 // 4. 网络不可用时自动降级，不影响核心浏览功能
 
 import {
-  safeParseRecipeCategory, FamilyProfile, HealthGoal, DailyBudget, HealthSignal, BpStatus, BsStatus, AI_CACHE_CONFIG, HILOG_DOMAIN, Recipe, RecipeCategory, DietTag, RecipeQueryParams, RecipeDifficulty, RecipeIngredient, RecipeNutrition, RecipeSortBy, AiRecipeRecommendation, AiRecipeRecommendationResult, AiRecipeRequest, AiRecommendationCacheEntry, getHealthGoalDescription
+  safeParseRecipeCategory, FamilyProfile, HealthGoal, DailyBudget, HealthSignal, BpStatus, BsStatus, AI_CACHE_CONFIG, HILOG_DOMAIN_DEFAULT, Recipe, RecipeCategory, DietTag, RecipeQueryParams, RecipeDifficulty, RecipeIngredient, RecipeNutrition, RecipeSortBy, AiRecipeRecommendation, AiRecipeRecommendationResult, AiRecipeRequest, AiRecommendationCacheEntry, getHealthGoalDescription
 } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
-import { RecipeRepository } from 'hsp_service';
+import { RecipeRepository } from 'feature_community';
 import { AiServiceBase } from './ai/AiServiceBase';
 import { AI_SERVICE_DEFAULTS } from './ai/AiConfig';
 
 const TAG = 'AiRecipeRecommenderService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const CACHE_TTL_MS = AI_CACHE_CONFIG.RECIPE_RECOMMENDER_CACHE_TTL_MS;
 
 /** 内部评分食谱结构 */

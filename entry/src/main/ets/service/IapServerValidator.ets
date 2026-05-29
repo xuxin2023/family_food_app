@@ -2,7 +2,7 @@ import { http } from '@kit.NetworkKit';
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN, API_TIMEOUT_CONFIG } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, API_TIMEOUT_CONFIG } from 'hsp_core';
 import { AssetKeyManager } from 'hsp_core';
 import { SecureHttpClient, SecureRequestOptions } from 'hsp_service';
 import { asset } from '@kit.AssetStoreKit';
@@ -10,7 +10,7 @@ import { util } from '@kit.ArkTS';
 import { BusinessError } from '@kit.BasicServicesKit';
 
 const TAG = 'IapServerValidator';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class IapVerifyResult {
   purchaseToken: string = '';

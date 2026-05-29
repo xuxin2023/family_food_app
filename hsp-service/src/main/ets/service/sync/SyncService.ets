@@ -7,12 +7,12 @@ import { common } from '@kit.AbilityKit';
 import { SyncChangeType, SyncStatus, SyncChangeRecord, SyncResult, SyncableEntity } from './Syncable';
 import { CloudStorageProvider, SyncBatchRequest, SyncBatchItem, SyncBatchResponse } from './CloudStorageProvider';
 import { NetworkMonitorService, NetworkState, NetType, NetworkStateChangeCallback } from '../NetworkMonitorService';
-import { CloudSyncConfig, SyncStrategy, ConflictResolution, createDefaultSyncConfig, API_CONFIG, HILOG_DOMAIN } from 'hsp_core';
-
+import { CloudSyncConfig, SyncStrategy, ConflictResolution, createDefaultSyncConfig, API_CONFIG, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
+import { CloudAuthService } from '../CloudAuthService';
 
 
 const TAG = 'SyncService';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 /** Preferences key */
 const PREF_SYNC_CONFIG = 'cloud_sync_config';
@@ -54,6 +54,23 @@ export class SyncService {
 
   /** 用户token（从云端认证获取） */
   private authToken: string = '';
+
+  /** CloudAuthService 实例引用 */
+  private cloudAuth: CloudAuthService = CloudAuthService.getInstance();
+
+  /** token刷新回调 */
+  private tokenRefreshCb: (() => void) | null = null;
+
+  /** 设置认证token */
+  setAuthToken(token: string): void {
+    this.authToken = token;
+    hilog.info(DOMAIN_ZERO, TAG, 'authToken updated');
+  }
+
+  /** 获取当前认证token */
+  getAuthToken(): string {
+    return this.authToken;
+  }
   /** 设备唯一标识 */
   private deviceId: string = '';
   /** 上一次同步时间戳 */
@@ -83,6 +100,22 @@ export class SyncService {
     this.context = context;
 
     try {
+      // 从 CloudAuthService 获取 auth token 并注入
+      const token = this.cloudAuth.getCloudToken();
+      if (token.length > 0) {
+        this.authToken = token;
+        hilog.info(DOMAIN_ZERO, TAG, 'authToken injected from CloudAuthService');
+      }
+
+      // 注册 token 刷新回调：token 过期后自动更新
+      this.tokenRefreshCb = () => {
+        const newToken = this.cloudAuth.getCloudToken();
+        if (newToken.length > 0) {
+          this.authToken = newToken;
+          hilog.info(DOMAIN_ZERO, TAG, 'authToken refreshed via CloudAuthService callback');
+        }
+      };
+
       // 恢复配置
       await this.restoreConfig();
 
@@ -104,6 +137,15 @@ export class SyncService {
         });
 
         if (state.isConnected && state.isValidated && this.config.enabled) {
+          // 同步前先检查并刷新 token
+          this.cloudAuth.ensureValidToken().then((valid: boolean) => {
+            if (valid) {
+              const refreshedToken = this.cloudAuth.getCloudToken();
+              if (refreshedToken.length > 0) {
+                this.authToken = refreshedToken;
+              }
+            }
+          });
           this.triggerSync();
         }
       };
@@ -116,7 +158,7 @@ export class SyncService {
       if (this.config.enabled) {
         this.startAutoSync();
       }
-    } catch (error) {
+    } catch (error: Object) {
       hilog.error(DOMAIN_ZERO, TAG, 'SyncService init failed: %{public}s',
         JSON.stringify(error));
       // 不标记 isInitialized，允许下次重试
@@ -268,7 +310,7 @@ export class SyncService {
       });
 
       return result;
-    } catch (error) {
+    } catch (error: Object) {
       hilog.error(DOMAIN_ZERO, TAG, 'Sync error: %{public}s', JSON.stringify(error));
       this.notifyEvent({
         type: 'sync_failed',
@@ -332,6 +374,7 @@ export class SyncService {
       this.networkMonitor.offStateChange(this.networkStateChangeCb);
       this.networkStateChangeCb = null;
     }
+    this.tokenRefreshCb = null;
     this.networkMonitor.unregister();
     this.eventListeners = [];
     this.isInitialized = false;
@@ -478,7 +521,7 @@ export class SyncService {
         r.syncStatus !== SyncStatus.SYNCED
       );
 
-    } catch (error) {
+    } catch (error: Object) {
       for (const item of pendingItems) {
         item.syncStatus = SyncStatus.FAILED;
         item.retryCount++;
@@ -556,7 +599,7 @@ export class SyncService {
         await prefs.flush();
       }
       return deviceId;
-    } catch (error) {
+    } catch (error: Object) {
       hilog.warn(DOMAIN_ZERO, TAG, 'getOrCreateDeviceId failed: %{public}s', JSON.stringify(error));
       return `device_${Date.now()}`;
     }
@@ -585,7 +628,7 @@ export class SyncService {
           this.config.pendingCount = parsed.pendingCount;
         }
       }
-    } catch (error) {
+    } catch (error: Object) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Restore config failed: %{public}s',
         JSON.stringify(error));
     }
@@ -597,7 +640,7 @@ export class SyncService {
       const prefs = await preferences.getPreferences(this.context, PREF_SYNC_CONFIG);
       prefs.putSync('config', JSON.stringify(this.config));
       await prefs.flush();
-    } catch (error) {
+    } catch (error: Object) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Persist config failed: %{public}s',
         JSON.stringify(error));
     }
@@ -611,7 +654,7 @@ export class SyncService {
       if (saved.length > 0) {
         this.syncQueue = JSON.parse(saved) as SyncChangeRecord[];
       }
-    } catch (error) {
+    } catch (error: Object) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Restore queue failed: %{public}s',
         JSON.stringify(error));
     }
@@ -623,7 +666,7 @@ export class SyncService {
       const prefs = await preferences.getPreferences(this.context, PREF_SYNC_QUEUE);
       prefs.putSync('queue', JSON.stringify(this.syncQueue.slice(0, 500))); // 最多存500条
       await prefs.flush();
-    } catch (error) {
+    } catch (error: Object) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Persist queue failed: %{public}s',
         JSON.stringify(error));
     }
@@ -633,7 +676,7 @@ export class SyncService {
     for (const cb of this.eventListeners) {
       try {
         cb(event);
-      } catch (err) {
+      } catch (err: Object) {
         hilog.error(DOMAIN_ZERO, TAG, 'Event listener error: %{public}s',
           JSON.stringify(err));
       }

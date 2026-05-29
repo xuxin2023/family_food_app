@@ -4,7 +4,7 @@
 // 以及与饮食建议的联动效果
 
 import {
-  ToastHelper, safeBack, safePushUrl, FamilyProfile, COLORS, RADIUS, getPaywallTriggerForFeature, HILOG_DOMAIN, HealthConfig, HealthSignal, StepLevel, SleepStatus, DataSource, HeartRateZone, SpO2Level, StressLevel
+  ToastHelper, safeBack, safePushUrl, FamilyProfile, COLORS, RADIUS, getPaywallTriggerForFeature, HILOG_DOMAIN_DEFAULT, HealthConfig, HealthSignal, StepLevel, SleepStatus, DataSource, HeartRateZone, SpO2Level, StressLevel
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -14,7 +14,7 @@ import { common } from '@kit.AbilityKit';
 import { promptAction } from '@kit.ArkUI';
 import { PermissionGuideDialog } from 'feature_scan';
 
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const TAG = 'DeviceDashboardPage';
 
 class DetailItem {
@@ -32,10 +32,10 @@ function makeDetail(label: ResourceStr, value: ResourceStr): DetailItem {
 class MetricCardData {
   icon: string = '';
   label: ResourceStr = '';
-  value: string = '';
+  value: ResourceStr = '';
   unit: ResourceStr = '';
   status: string = '';
-  detail: string = '';
+  detail: ResourceStr = '';
 }
 
 @Entry
@@ -293,7 +293,7 @@ struct DeviceDashboardPage {
               .fontSize(22)
               .margin({ bottom: 4 })
             Text(card.value)
-              .fontSize(card.value.length > 5 ? 14 : 20)
+              .fontSize((typeof card.value === 'string' && card.value.length > 5) ? 14 : 20)
               .fontWeight(FontWeight.Bold)
               .fontColor(this.getStatusColorInner(card.status))
             Text(card.unit)
@@ -493,7 +493,7 @@ struct DeviceDashboardPage {
     if (minutes <= 0) {
       return '--'
     }
-    return Math.floor(minutes / 60) + '时' + (minutes % 60) + '分'
+    return `${Math.floor(minutes / 60)}时${minutes % 60}分`
   }
 
   private getStepDietImpact(): ResourceStr {
@@ -583,10 +583,4 @@ struct DeviceDashboardPage {
     return texts
   }
 
-  pageTransition() {
-    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
-      .slide(SlideEffect.Right)
-    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
-      .slide(SlideEffect.Left)
-  }
 }

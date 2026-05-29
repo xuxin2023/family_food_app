@@ -10,6 +10,11 @@ export class PermissionDescriptions {
   static readonly READ_HEALTH_DATA: string = '用于读取华为健康数据（步数、睡眠等）';
   static readonly LOCATION: string = '用于获取本地食品推荐';
   static readonly NOTIFICATION: string = '用于发送用餐提醒和健康预警通知';
+  static readonly READ_IMAGEVIDEO: string = '用于读取相册图片以进行配料表OCR识别';
+  static readonly WRITE_IMAGEVIDEO: string = '用于保存扫描结果截图和分享图片到相册';
+  static readonly VIBRATE: string = '用于扫码成功时振动反馈';
+  static readonly PUBLISH_AGENT_REMINDER: string = '用于后台定时提醒用餐记录';
+  static readonly DISTRIBUTED_DATASYNC: string = '用于跨设备同步家庭成员数据';
 
   static getDescription(permission: string): string {
     switch (permission) {
@@ -27,6 +32,16 @@ export class PermissionDescriptions {
         return PermissionDescriptions.LOCATION;
       case 'NOTIFICATION':
         return PermissionDescriptions.NOTIFICATION;
+      case 'READ_IMAGEVIDEO':
+        return PermissionDescriptions.READ_IMAGEVIDEO;
+      case 'WRITE_IMAGEVIDEO':
+        return PermissionDescriptions.WRITE_IMAGEVIDEO;
+      case 'VIBRATE':
+        return PermissionDescriptions.VIBRATE;
+      case 'PUBLISH_AGENT_REMINDER':
+        return PermissionDescriptions.PUBLISH_AGENT_REMINDER;
+      case 'DISTRIBUTED_DATASYNC':
+        return PermissionDescriptions.DISTRIBUTED_DATASYNC;
       default:
         return '用于提供应用核心功能';
     }
@@ -41,6 +56,11 @@ export class PermissionDescriptions {
     map.set('READ_HEALTH_DATA', PermissionDescriptions.READ_HEALTH_DATA);
     map.set('LOCATION', PermissionDescriptions.LOCATION);
     map.set('NOTIFICATION', PermissionDescriptions.NOTIFICATION);
+    map.set('READ_IMAGEVIDEO', PermissionDescriptions.READ_IMAGEVIDEO);
+    map.set('WRITE_IMAGEVIDEO', PermissionDescriptions.WRITE_IMAGEVIDEO);
+    map.set('VIBRATE', PermissionDescriptions.VIBRATE);
+    map.set('PUBLISH_AGENT_REMINDER', PermissionDescriptions.PUBLISH_AGENT_REMINDER);
+    map.set('DISTRIBUTED_DATASYNC', PermissionDescriptions.DISTRIBUTED_DATASYNC);
     return map;
   }
 }

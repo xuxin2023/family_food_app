@@ -2,7 +2,7 @@
 // Open Food Facts 食品搜索页 — 支持按名称搜索全球食品数据库
 
 import {
-  FoodLabel, safeBack, safePushUrl, ROUTE_REPORT_PAGE, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, HILOG_DOMAIN, Debouncer, ImageCache, FoodSearchDataSource
+  FoodLabel, safeBack, safePushUrl, ROUTE_REPORT_PAGE, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, HILOG_DOMAIN_DEFAULT, Debouncer, ImageCache, FoodSearchDataSource
 } from 'hsp_core';
 import { OpenFoodFactsService, OnlineLookupResult } from 'hsp_service';
 import { AppState } from '../AppState';
@@ -12,7 +12,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 
 const TAG = 'OffSearchPage';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const PAGE_SIZE: number = 20;
 const SEARCH_DEBOUNCE_MS: number = 500;
 const SEARCH_MIN_LENGTH: number = 2;
@@ -479,10 +479,4 @@ struct OffSearchPage {
     .accessibilityLevel('yes')
   }
 
-  pageTransition() {
-    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
-      .slide(SlideEffect.Right)
-    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
-      .slide(SlideEffect.Left)
-  }
 }

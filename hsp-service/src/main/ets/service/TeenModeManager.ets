@@ -1,10 +1,10 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
-import { HILOG_DOMAIN } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 
 const TAG = 'TeenModeManager';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const PREF_NAME = 'teen_mode_prefs';
 
 export class TeenModeManager {
@@ -110,6 +110,48 @@ export class TeenModeManager {
   isUsageTimeExceeded(): boolean {
     if (!this.isTeenModeEnabled) return false;
     return this.getUsageMinutes() >= this.getMaxDailyUsageMinutes();
+  }
+
+  isNightTimeRestricted(): boolean {
+    if (!this.isTeenModeEnabled) return false;
+    const hour = new Date().getHours();
+    return hour >= 22 || hour < 6;
+  }
+
+  canUseAtCurrentTime(): { allowed: boolean; reason: string } {
+    if (!this.isTeenModeEnabled) {
+      return { allowed: true, reason: '' };
+    }
+    if (this.isNightTimeRestricted()) {
+      return { allowed: false, reason: '青少年模式：22:00-06:00期间禁止使用' };
+    }
+    if (this.isUsageTimeExceeded()) {
+      return { allowed: false, reason: `青少年模式：今日使用已满${this.getMaxDailyUsageMinutes()}分钟` };
+    }
+    return { allowed: true, reason: '' };
+  }
+
+  private dailyUsageMinutes: number = 0;
+  private dailyUsageDate: string = '';
+
+  addUsageMinutes(minutes: number): void {
+    const today = new Date().toISOString().slice(0, 10);
+    if (this.dailyUsageDate !== today) {
+      this.dailyUsageDate = today;
+      this.dailyUsageMinutes = 0;
+    }
+    this.dailyUsageMinutes += minutes;
+  }
+
+  getDailyUsageMinutes(): number {
+    const today = new Date().toISOString().slice(0, 10);
+    if (this.dailyUsageDate !== today) return 0;
+    return this.dailyUsageMinutes;
+  }
+
+  isDailyUsageExceeded(): boolean {
+    if (!this.isTeenModeEnabled) return false;
+    return this.getDailyUsageMinutes() >= this.getMaxDailyUsageMinutes();
   }
 
   private verifyPin(pinCode: string): boolean {

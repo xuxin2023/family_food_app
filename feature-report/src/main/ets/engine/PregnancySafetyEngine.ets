@@ -1,11 +1,11 @@
 // PregnancySafetyEngine.ets
 // 孕期/哺乳期安全检测引擎 — 针对特殊人群的成分安全检测
 
-import { HILOG_DOMAIN, PregnancyStatus } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, PregnancyStatus } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'PregnancySafetyEngine';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class PregnancyIngredientRule {
   name: string = '';

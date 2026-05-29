@@ -3,13 +3,13 @@
 
 import { common, errorManager } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { ToastHelper } from 'hsp_core';
 import { AnalyticsService } from 'hsp_service';
 import { remoteErrorReporter } from '../service/RemoteErrorReporter';
 
 const TAG = 'GlobalErrorHandler';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export enum ErrorModule {
   NETWORK = 'network',
@@ -52,6 +52,8 @@ export class GlobalErrorHandler {
     }
   }
 
+  private _promiseRejectObserverId: number = -1;
+
   registerGlobalHandler(): void {
     if (this._observerId !== -1) return;
     try {
@@ -60,11 +62,13 @@ export class GlobalErrorHandler {
           hilog.error(DOMAIN_ZERO, TAG, 'UnhandledException: %{public}s', errorMsg);
           this.reportToAnalytics(new Error(errorMsg), 'global');
           remoteErrorReporter.report('unhandled', errorMsg);
+          this.notifyErrorBoundary(errorMsg);
         },
         onException: (errorObj: Error) => {
           hilog.error(DOMAIN_ZERO, TAG, 'UncaughtException: %{public}s', errorObj.message);
           this.reportToAnalytics(errorObj, 'global');
           remoteErrorReporter.report('uncaught', errorObj);
+          this.notifyErrorBoundary(errorObj.message);
         }
       };
       this._observerId = errorManager.on('error', observer);
@@ -72,16 +76,61 @@ export class GlobalErrorHandler {
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Register global handler failed: %{public}s', JSON.stringify(e));
     }
+
+    this.registerPromiseRejectionHandler();
+  }
+
+  registerPromiseRejectionHandler(): void {
+    if (this._promiseRejectObserverId !== -1) return;
+    try {
+      const observer: errorManager.ErrorObserver = {
+        onUnhandledException: (errorMsg: string) => {
+          hilog.error(DOMAIN_ZERO, TAG, 'UnhandledPromiseRejection: %{public}s', errorMsg);
+          const err = new Error(errorMsg);
+          this.reportToAnalytics(err, 'promise');
+          remoteErrorReporter.report('promise_rejection', err);
+          this.notifyErrorBoundary(errorMsg);
+        },
+        onException: (errorObj: Error) => {
+          hilog.error(DOMAIN_ZERO, TAG, 'UnhandledPromiseRejection: %{public}s', errorObj.message);
+          this.reportToAnalytics(errorObj, 'promise');
+          remoteErrorReporter.report('promise_rejection', errorObj);
+          this.notifyErrorBoundary(errorObj.message);
+        }
+      };
+      this._promiseRejectObserverId = errorManager.on('error', observer);
+      hilog.info(DOMAIN_ZERO, TAG, 'Promise rejection handler registered, id=%{public}d', this._promiseRejectObserverId);
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Register promise rejection handler failed: %{public}s', JSON.stringify(e));
+    }
   }
 
   unregisterGlobalHandler(): void {
-    if (this._observerId === -1) return;
+    if (this._observerId !== -1) {
+      try {
+        errorManager.off('error', this._observerId);
+        this._observerId = -1;
+      } catch (e) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'Unregister global handler failed: %{public}s', JSON.stringify(e));
+      }
+    }
+    if (this._promiseRejectObserverId !== -1) {
+      try {
+        errorManager.off('error', this._promiseRejectObserverId);
+        this._promiseRejectObserverId = -1;
+      } catch (e) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'Unregister promise handler failed: %{public}s', JSON.stringify(e));
+      }
+    }
+    hilog.info(DOMAIN_ZERO, TAG, 'Global error handler unregistered');
+  }
+
+  private notifyErrorBoundary(errorMsg: string): void {
     try {
-      errorManager.off('error', this._observerId);
-      this._observerId = -1;
-      hilog.info(DOMAIN_ZERO, TAG, 'Global error handler unregistered');
-    } catch (e) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'Unregister global handler failed: %{public}s', JSON.stringify(e));
+      AppStorage.setOrCreate('globalErrorMessage', errorMsg);
+      AppStorage.setOrCreate('globalErrorTimestamp', Date.now());
+    } catch (_e) {
+      // AppStorage不可用时静默
     }
   }
 

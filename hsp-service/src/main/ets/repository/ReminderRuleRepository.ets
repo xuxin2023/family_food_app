@@ -1,10 +1,10 @@
 // repository/ReminderRuleRepository.ets
 import { relationalStore } from '@kit.ArkData';
-import { ReminderRule, HILOG_DOMAIN } from 'hsp_core';
+import { ReminderRule, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'ReminderRuleRepository';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const TABLE_NAME = 'reminder_rules';
 
 export class ReminderRuleRepository {
@@ -22,7 +22,7 @@ export class ReminderRuleRepository {
         rule_time TEXT DEFAULT '',
         repeat_days TEXT DEFAULT '',
         rule_message TEXT DEFAULT '',
-        priority INTEGER DEFAULT 0,
+        priority TEXT DEFAULT 'normal',
         member_id TEXT DEFAULT '',
         created_at INTEGER NOT NULL
       )`);
@@ -53,7 +53,7 @@ export class ReminderRuleRepository {
         }
         rule.repeatDays = repeatDays;
         rule.message = resultSet.getString(6);
-        rule.priority = String(resultSet.getLong(7));
+        rule.priority = resultSet.getString(7);
         rule.memberId = resultSet.getString(8);
         this.rules.push(rule);
       }
@@ -164,7 +164,7 @@ export class ReminderRuleRepository {
       }
       rule.repeatDays = days;
       rule.message = (row['rule_message'] as string) ?? '';
-      rule.priority = String(row['priority'] ?? 'normal');
+      rule.priority = (row['priority'] as string) ?? 'normal';
       rule.memberId = (row['member_id'] as string) ?? '';
       this.rules.push(rule);
       count++;

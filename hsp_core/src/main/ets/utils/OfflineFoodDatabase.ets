@@ -1,6 +1,6 @@
 import { FoodLabel, NutritionPer100g, FoodSource } from '../model/FoodLabel';
 import { DataIntegrityChecker } from './DataIntegrityChecker';
-import { HILOG_DOMAIN } from '../constants/AppConfig';
+import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
 import { IOfflineFoodProvider, OfflineFoodEntry } from '../model/IOfflineFoodProvider';
 import { resourceManager } from '@kit.LocalizationKit';
 import { common } from '@kit.AbilityKit';
@@ -8,7 +8,7 @@ import { util } from '@kit.ArkTS';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'OfflineFoodDB';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 // ============ JSON 数据接口 ============
 class JsonNutrition {

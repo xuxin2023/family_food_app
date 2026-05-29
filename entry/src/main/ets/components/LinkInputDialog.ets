@@ -1,12 +1,12 @@
 // LinkInputDialog.ets
 // 链接输入弹窗组件 - 粘贴电商商品链接进行解析
 
-import { ToastHelper, COLORS, BUTTON, safePushUrl, HILOG_DOMAIN } from 'hsp_core';
+import { ToastHelper, COLORS, BUTTON, safePushUrl, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { OnlineShoppingParser } from '../service/OnlineShoppingParser';
 import { AppState } from '../AppState';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @ComponentV2
 export struct LinkInputDialog {

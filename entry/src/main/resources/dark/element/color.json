@@ -1,13 +1,26 @@
 {
   "color": [
     { "name": "start_window_background", "value": "#121212" },
-    { "name": "primary", "value": "#C77D9E" },
+    { "name": "start_window_background_dark", "value": "#121212" },
+    { "name": "primary", "value": "#E8A0BF" },
+    { "name": "primary_light", "value": "#A86785" },
+    { "name": "primary_dark", "value": "#C77D9E" },
+    { "name": "level_green", "value": "#43A047" },
+    { "name": "level_yellow", "value": "#FB8C00" },
+    { "name": "level_orange", "value": "#F4511E" },
+    { "name": "level_red", "value": "#E53935" },
     { "name": "text_primary", "value": "#E0E0E0" },
+    { "name": "text_primary_dark", "value": "#E0E0E0" },
     { "name": "text_secondary", "value": "#A0A0A0" },
+    { "name": "text_secondary_dark", "value": "#A0A0A0" },
     { "name": "background", "value": "#121212" },
+    { "name": "background_dark", "value": "#121212" },
     { "name": "card_background", "value": "#1E1E1E" },
+    { "name": "card_background_dark", "value": "#1E1E1E" },
     { "name": "divider", "value": "#2E2E2E" },
+    { "name": "divider_dark", "value": "#2E2E2E" },
     { "name": "bg_light", "value": "#2C2C2C" },
+    { "name": "bg_light_dark", "value": "#2C2C2C" },
     { "name": "success", "value": "#4A9E6A" },
     { "name": "warning", "value": "#B89040" },
     { "name": "error", "value": "#B85A5A" },
@@ -20,9 +33,14 @@
     { "name": "bg_warm_yellow", "value": "#282418" },
     { "name": "bg_light_green", "value": "#1A2820" },
     { "name": "bg_card_highlight", "value": "#3A2030" },
+    { "name": "bg_card_highlight_dark", "value": "#3A2030" },
     { "name": "bg_gradient_start", "value": "#2A1820" },
+    { "name": "bg_gradient_start_dark", "value": "#2A1820" },
     { "name": "bg_gradient_end", "value": "#2A2018" },
+    { "name": "bg_gradient_end_dark", "value": "#2A2018" },
     { "name": "shadow", "value": "#33000000" },
-    { "name": "border", "value": "#383838" }
+    { "name": "shadow_dark", "value": "#33000000" },
+    { "name": "border", "value": "#383838" },
+    { "name": "border_dark", "value": "#383838" }
   ]
 }

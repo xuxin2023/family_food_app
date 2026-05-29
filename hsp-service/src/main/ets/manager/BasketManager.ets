@@ -2,13 +2,13 @@
 // 购物篮管理 - 负责购物篮的增删改查和 Preferences 持久化
 // 从 AppState 拆分
 
-import { FoodLabel, FoodLabelJson, HILOG_DOMAIN } from 'hsp_core';
+import { FoodLabel, FoodLabelJson, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'BasketManager';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 const BASKET_PREFS_FILE = 'basket_cache';
 const BASKET_ITEMS_KEY = 'items';

@@ -3,7 +3,7 @@
 // 隐私政策更新后需重新同意，不同意则退出应用
 // V2: 华为云OBS在线托管隐私政策/用户协议，支持远程版本检测
 
-import { HILOG_DOMAIN, safeBack, clearToHome, safePushUrl, API_CONFIG } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, safeBack, clearToHome, safePushUrl, API_CONFIG } from 'hsp_core';
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferences } from '@kit.ArkData';
@@ -11,7 +11,7 @@ import { http } from '@kit.NetworkKit';
 import { SecureHttpClient, SecureRequestOptions } from './SecureHttpClient';
 
 const TAG = 'PrivacyManager';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 const DEFAULT_PRIVACY_OSS_BASE = 'https://familyfood-privacy.obs.cn-north-4.myhuaweicloud.com';
 const PRIVACY_POLICY_PATH = '/privacy-policy-v{version}.html';

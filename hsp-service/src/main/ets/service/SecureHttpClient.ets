@@ -15,15 +15,31 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { cryptoFramework } from '@kit.CryptoArchitectureKit';
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
-import { HILOG_DOMAIN } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, RateLimiter } from 'hsp_core';
 
 const TAG = 'SecureHttpClient';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 const PREF_NAME = 'ssl_pin_store';
 const TOFU_KEY_PREFIX = 'tofu_pin_';
 
 // ==================== 证书钉定配置 ====================
+
+/**
+ * 部署流程说明：
+ * 1. 开发阶段：CERT_PIN_ENFORCE=false，使用 TOFU 模式自动学习指纹
+ * 2. 预提取阶段：运行 CertPinExtractor.extractPinFromHost('域名') 获取 SHA-256 指纹
+ * 3. 替换 PIN_RULES 中的占位符为真实指纹
+ * 4. 生产部署：设置 CERT_PIN_ENFORCE=true，启用严格钉定模式
+ *
+ * 环境变量 CERT_PIN_ENFORCE:
+ *   - 'true' / '1'  → 严格钉定模式（占位符指纹将导致连接失败）
+ *   - 其他 / 未设置  → TOFU 模式（首次连接学习指纹，后续校验）
+ */
+const CERT_PIN_ENFORCE: boolean = (() => {
+  const envVal = AppStorage.get<string>('CERT_PIN_ENFORCE') ?? '';
+  return envVal === 'true' || envVal === '1';
+})();
 
 /** 预置可信域名（生产部署前必须替换为真实 SHA-256/Base64 指纹） */
 class PinRule {
@@ -41,6 +57,7 @@ function makePinRule(hostname: string, pinHashes: string[], includeSubdomains: b
 }
 
 const PIN_RULES: PinRule[] = [
+  // 部署时替换 FILL_* 占位符：运行 CertPinExtractor.extractPinFromHost() 获取真实指纹
   makePinRule('familyfood-api.cn-north-4.myhuaweicloud.com', [
     'sha256/FILL_FROM_CERT_EXTRACT_OR_TOFU',
     'sha256/FILL_BACKUP_CERT_FROM_CA_BUNDLE'
@@ -51,23 +68,26 @@ const PIN_RULES: PinRule[] = [
   ])
 ];
 
-// Build-time safety: detect placeholder pins
 const HAS_PLACEHOLDER_PINS = PIN_RULES.some(rule =>
   rule.pinHashes.some(hash => hash.includes('FILL_FROM_CERT') || hash.includes('FILL_BACKUP'))
 );
-if (HAS_PLACEHOLDER_PINS) {
+if (HAS_PLACEHOLDER_PINS && CERT_PIN_ENFORCE) {
   hilog.error(DOMAIN_ZERO, TAG,
-    'SECURITY: Certificate pin hashes contain placeholders! ' +
-    'Run CertPinExtractor.extractPinFromHost() to obtain real SHA-256/Base64 fingerprints. ' +
-    'Current mode: TOFU (Trust-On-First-Use) only.'
+    'SECURITY BLOCK: CERT_PIN_ENFORCE=true but pin hashes contain placeholders! ' +
+    'Refusing to proceed. Run CertPinExtractor.extractPinFromHost() to obtain real SHA-256 fingerprints.'
   );
-  // 生产环境下证书钉定占位符必须替换，否则安全审查不通过
-  // 开发阶段可注释此行，发布前必须替换真实指纹
-  // TODO(DEPLOY_BLOCK): 替换 PIN_RULES 中的占位符为真实 SHA-256 指纹后删除此断言
-  hilog.warn(DOMAIN_ZERO, TAG, 'DEPLOY_BLOCK: Placeholder cert pins detected. Replace before release.');
+} else if (HAS_PLACEHOLDER_PINS) {
+  hilog.warn(DOMAIN_ZERO, TAG,
+    'DEPLOY_BLOCK: Placeholder cert pins detected (TOFU mode). ' +
+    'Run CertPinExtractor.extractPinFromHost() to obtain real SHA-256/Base64 fingerprints before release.'
+  );
 }
 
 export class CertPinExtractor {
+  /**
+   * 从目标主机提取证书 SHA-256 指纹
+   * 首次连接时自动提取，适合部署前预提取或运行时 TOFU 学习
+   */
   static async extractPinFromHost(hostname: string, port: number = 443): Promise<string> {
     const url = `https://${hostname}:${port}/`;
     try {
@@ -84,7 +104,7 @@ export class CertPinExtractor {
       }
       const certHash = resp.header?.['x-ssl-cert-sha256'] as string ?? '';
       if (certHash.length > 0) {
-        hilog.debug(DOMAIN_ZERO, TAG, 'Extracted cert pin for %{private}s', hostname);
+        hilog.debug(DOMAIN_ZERO, TAG, 'Extracted cert pin for %{private}s: %{private}s', hostname, certHash);
         return `sha256/${certHash}`;
       }
       hilog.warn(DOMAIN_ZERO, TAG, `No cert hash header from ${hostname}, use TOFU or manual extraction`);
@@ -93,6 +113,55 @@ export class CertPinExtractor {
       hilog.error(DOMAIN_ZERO, TAG, `Failed to extract pin from ${hostname}: ${e}`);
       return '';
     }
+  }
+
+  /**
+   * TOFU 学习：首次连接时提取指纹并持久化到 preferences
+   * @returns 提取到的指纹，空字符串表示失败
+   */
+  static async learnOnFirstUse(
+    hostname: string,
+    context: common.Context,
+    port: number = 443
+  ): Promise<string> {
+    const pin = await CertPinExtractor.extractPinFromHost(hostname, port);
+    if (pin.length > 0) {
+      try {
+        const prefs = await preferences.getPreferences(context, PREF_NAME);
+        const existingRaw = await prefs.get(TOFU_KEY_PREFIX + hostname, '') as string;
+        const existing: string[] = existingRaw.length > 0 ? JSON.parse(existingRaw) as string[] : [];
+        if (!existing.includes(pin)) {
+          existing.push(pin);
+          await prefs.put(TOFU_KEY_PREFIX + hostname, JSON.stringify(existing));
+          await prefs.flush();
+          hilog.info(DOMAIN_ZERO, TAG, 'TOFU learned pin for %{public}s', hostname);
+        }
+      } catch (e) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'TOFU persist failed: %{public}s', JSON.stringify(e));
+      }
+    }
+    return pin;
+  }
+
+  /**
+   * 批量预提取：为 PIN_RULES 中所有占位符域名提取真实指纹
+   * 部署脚本调用此方法获取指纹，替换占位符后重新构建
+   */
+  static async preExtractAllPins(): Promise<Map<string, string>> {
+    const results = new Map<string, string>();
+    for (const rule of PIN_RULES) {
+      const hasPlaceholder = rule.pinHashes.some(h => h.includes('FILL_FROM_CERT') || h.includes('FILL_BACKUP'));
+      if (hasPlaceholder) {
+        const pin = await CertPinExtractor.extractPinFromHost(rule.hostname);
+        if (pin.length > 0) {
+          results.set(rule.hostname, pin);
+          hilog.info(DOMAIN_ZERO, TAG, 'Pre-extracted: %{public}s → %{private}s', rule.hostname, pin);
+        } else {
+          hilog.warn(DOMAIN_ZERO, TAG, 'Pre-extract failed for %{public}s', rule.hostname);
+        }
+      }
+    }
+    return results;
   }
 }
 
@@ -146,8 +215,8 @@ export class SecureHttpClient {
    * @param context UIAbility Context
    * @param enforce true=生产严格模式（需已配置真实 PIN 指纹）
    */
-  async init(context: common.Context, enforce: boolean = false): Promise<void> {
-    this.enforceMode = enforce;
+  async init(context: common.Context, enforce?: boolean): Promise<void> {
+    this.enforceMode = enforce ?? CERT_PIN_ENFORCE;
     this.pinPrefs = await preferences.getPreferences(context, PREF_NAME);
     await this.loadTofuPins();
     const verifiedCount: number = this.getVerifiedDomainCount();
@@ -171,6 +240,24 @@ export class SecureHttpClient {
    * - 严格模式下验证响应头中的证书信息
    */
   async request(options: SecureRequestOptions): Promise<http.HttpResponse> {
+    const hostname: string | null = this.extractHostname(options.url);
+    const endpoint = this.mapHostToEndpoint(hostname);
+    if (endpoint.length > 0) {
+      const limiter = RateLimiter.getInstance();
+      const rateCheck = limiter.checkLimit(endpoint);
+      if (!rateCheck.allowed) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'Rate limited for %{public}s, retry after %{public}dms',
+          endpoint, rateCheck.retryAfterMs);
+        const errorResp: http.HttpResponse = {
+          responseCode: 429,
+          result: '',
+          header: {},
+          cookies: ''
+        } as http.HttpResponse;
+        return errorResp;
+      }
+    }
+
     const client: http.HttpRequest = http.createHttp();
     try {
       const method: http.RequestMethod = options.method ?? http.RequestMethod.GET;
@@ -322,5 +409,13 @@ export class SecureHttpClient {
       hilog.warn(DOMAIN_ZERO, TAG, 'extractHostname failed: %{public}s', JSON.stringify(e));
     }
     return null;
+  }
+
+  private mapHostToEndpoint(hostname: string | null): string {
+    if (!hostname) return '';
+    if (hostname.includes('openfoodfacts')) return 'openfoodfacts';
+    if (hostname.includes('myhuaweicloud') || hostname.includes('agentarts')) return 'agentarts';
+    if (hostname.includes('cloudsync') || hostname.includes('sync')) return 'cloud_sync';
+    return '';
   }
 }

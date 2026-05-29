@@ -5,14 +5,14 @@
 // 用法：AppState.init() 中 rdbStore 就绪后调用
 //   await DatabaseMigrationService.migrate(context, rdbStore)
 
-import { DB_SCHEMA_VERSION, HILOG_DOMAIN } from 'hsp_core';
+import { DB_SCHEMA_VERSION, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { relationalStore } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { preferences } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'DBMigration';
-const DOMAIN_ZERO = HILOG_DOMAIN.DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const PREFS_NAME = 'db_migration_prefs';
 const VERSION_KEY = 'schema_version';
 
@@ -68,7 +68,7 @@ export async function migrateDatabase(
     await prefs.put(VERSION_KEY, currentVersion);
     await prefs.flush();
     hilog.info(DOMAIN_ZERO, TAG, `Migration complete: ${currentVersion}`);
-  } catch (error) {
+  } catch (error: Object) {
     hilog.error(DOMAIN_ZERO, TAG, `Migration failed: ${JSON.stringify(error)}`);
     // 迁移失败不阻止 App 启动 — 旧版 schema 仍可工作
   }

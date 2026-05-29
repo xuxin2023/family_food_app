@@ -86,42 +86,65 @@ export default class EntryAbility extends UIAbility {
   }
 
   private async initAsync(): Promise<void> {
+    const INIT_TIMEOUT_MS = 10000;
     try {
-      // 隐私合规检查 — 必须在数据初始化之前
       const privacyAgreed = await this.checkPrivacyCompliance();
 
       if (privacyAgreed) {
-        const rdbStore = await relationalStore.getRdbStore(this.context,
-          { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 });
-        await this.appState.init(this.context, rdbStore);
+        const coreInitPromise = (async () => {
+          const rdbStore = await relationalStore.getRdbStore(this.context,
+            { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 });
+          await this.appState.init(this.context, rdbStore);
+        })();
+
+        const timeoutPromise = new Promise<void>((_, reject) => {
+          setTimeout(() => reject(new Error(`initAsync timeout after ${INIT_TIMEOUT_MS}ms`)), INIT_TIMEOUT_MS);
+        });
+
+        await Promise.race([coreInitPromise, timeoutPromise]);
+
         const initEndMs = Date.now();
         hilog.info(DOMAIN_ZERO, TAG, 'AppState init done, cost %{public}d ms', initEndMs - this.onCreateStartMs);
 
-        // SSL 证书钉定初始化 (HM 6.1 TOFU 模式)
         SecureHttpClient.getInstance().init(this.context, false).then(() => {
           hilog.info(DOMAIN_ZERO, TAG, 'SSL Pinning initialized (TOFU mode)');
         }).catch((err: Error) => {
           hilog.warn(DOMAIN_ZERO, TAG, 'SSL Pinning init failed: %{public}s', err.message);
         });
 
-        // 预构建离线数据库索引（从JSON加载，失败则用硬编码回退）
         await warmUpOfflineDatabase(this.context);
-
-        // 恢复订阅状态
         await this.restoreSubscriptionState();
       } else {
         hilog.warn(DOMAIN_ZERO, TAG, 'Privacy not agreed, skip data init');
       }
     } catch (err) {
       hilog.error(DOMAIN_ZERO, TAG, 'initAsync failed: %{public}s', JSON.stringify(err));
-      // AppState 未就绪时，标记失败状态，页面据此展示兜底 UI
       AppStorage.setOrCreate('appStateInitFailed', true);
+      AppStorage.setOrCreate('isDegradedMode', true);
     } finally {
       AppStorage.setOrCreate('appStateReady', true);
-      this.deferredInitTimer = setTimeout(() => {
-        this.initDeferredServices();
-      }, 0);
+      if (!AppStorage.get<boolean>('appStateInitFailed')) {
+        this.deferredInitTimer = setTimeout(() => {
+          this.initDeferredServices();
+        }, 0);
+      } else {
+        hilog.warn(DOMAIN_ZERO, TAG, 'AppState init failed, deferring services until retry');
+        this.deferredInitTimer = setTimeout(() => {
+          this.retryDeferredServices();
+        }, 3000);
+      }
     }
+  }
+
+  private retryDeferredServices(): void {
+    if (AppStorage.get<boolean>('appStateInitFailed')) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'AppState still not ready, retry in 5s');
+      this.deferredInitTimer = setTimeout(() => {
+        this.retryDeferredServices();
+      }, 5000);
+      return;
+    }
+    this.initDeferredServices();
   }
 
   private initDeferredServices(): void {

@@ -207,7 +207,7 @@ export const GROUP_CONFIG = new GroupConfig();
 export const HILOG_DOMAIN_DEFAULT: number = 0;
 
 /** 数据库 schema 版本号 —— 每次表结构变更时 +1，触发迁移脚本执行 */
-export const DB_SCHEMA_VERSION: number = 5;
+export const DB_SCHEMA_VERSION: number = 6;
 
 /**
  * 默认营养阈值（用于 DashboardPage 等各处的评分与分析）

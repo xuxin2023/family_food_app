@@ -315,7 +315,11 @@ export class AlternativeFoodRecommender implements IAlternativeRecommender {
     }
 
     return this.scoreAlternativesForMembers(allCandidates, members)
-      .sort((a: AlternativeFood, b: AlternativeFood) => b.healthScore - a.healthScore)
+      .sort((a: AlternativeFood, b: AlternativeFood) => {
+        const scoreA = this.calculateCompositeScore(a);
+        const scoreB = this.calculateCompositeScore(b);
+        return scoreB - scoreA;
+      })
       .slice(0, topN);
   }
 
@@ -621,6 +625,24 @@ export class AlternativeFoodRecommender implements IAlternativeRecommender {
     if (score >= 50) return RecommendationLevel.YELLOW;
     if (score >= 30) return RecommendationLevel.ORANGE;
     return RecommendationLevel.RED;
+  }
+
+  private calculateCompositeScore(alt: AlternativeFood): number {
+    let score = alt.healthScore * 0.5;
+
+    if (alt.level === RecommendationLevel.GREEN) score += 25;
+    else if (alt.level === RecommendationLevel.YELLOW) score += 15;
+    else if (alt.level === RecommendationLevel.ORANGE) score += 5;
+
+    if (alt.sodium_mg < 200) score += 10;
+    else if (alt.sodium_mg < 400) score += 5;
+
+    if (alt.sugar_g < 5) score += 10;
+    else if (alt.sugar_g < 15) score += 5;
+
+    if (alt.energyKcal < 200) score += 5;
+
+    return score;
   }
 }
 

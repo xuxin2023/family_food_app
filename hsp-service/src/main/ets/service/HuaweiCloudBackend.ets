@@ -6,12 +6,10 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN_DEFAULT, API_CONFIG } from 'hsp_core';
 import { http } from '@kit.NetworkKit';
 import { SecureHttpClient, SecureRequestOptions } from './SecureHttpClient';
+import { ConfigManager } from './ConfigManager';
 
 const TAG = 'HuaweiCloudBackend';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
-
-const DEV_BASE_URL = 'https://familyfood-dev.cn-north-4.myhuaweicloud.com';
-const PROD_BASE_URL = 'https://familyfood-api.cn-north-4.myhuaweicloud.com';
 
 const CLOUD_FUNCTION_IDS: Record<string, string> = {
   'food-lookup': 'foodlookup',
@@ -30,7 +28,7 @@ function resolveBaseUrl(): string {
   if (configured.length > 0) {
     return configured;
   }
-  return DEV_BASE_URL;
+  return ConfigManager.getInstance().getCloudFunctionBase();
 }
 
 export class CloudFunctionConfig {

@@ -25,10 +25,33 @@ export class RecipeCommunityService {
 
   // ========== 食谱发布与管理 ==========
 
+  private static readonly SENSITIVE_WORDS: string[] = [
+    '广告', '代购', '加微信', '转账', '赌博', '色情', '暴力'
+  ];
+
+  validateRecipe(params: CreateRecipeParams): { valid: boolean; missingFields: string[]; sensitiveHit: boolean } {
+    const missingFields: string[] = [];
+    if (!params.title || params.title.trim().length === 0) missingFields.push('标题');
+    if (!params.ingredients || params.ingredients.length === 0) missingFields.push('食材');
+    if (!params.steps || params.steps.length === 0) missingFields.push('步骤');
+
+    const allText = `${params.title ?? ''} ${params.description ?? ''}`;
+    const sensitiveHit = RecipeCommunityService.SENSITIVE_WORDS.some(w => allText.includes(w));
+
+    return { valid: missingFields.length === 0 && !sensitiveHit, missingFields, sensitiveHit };
+  }
+
   /**
    * 创建食谱
    */
   async createRecipe(params: CreateRecipeParams): Promise<Recipe> {
+    const validation = this.validateRecipe(params);
+    if (!validation.valid) {
+      if (validation.sensitiveHit) {
+        throw new Error('内容包含不当信息，请修改后重新发布');
+      }
+      throw new Error(`请补充缺失字段：${validation.missingFields.join('、')}`);
+    }
     const uid = this.authService.getUid();
     const user = this.authService.getCurrentUser();
 

@@ -69,6 +69,7 @@ export { HealthReportExportService, HealthReportRequest, HealthReportResult } fr
 export { PermissionProgressiveGuide, PermissionGuideStep } from './service/PermissionProgressiveGuide';
 
 // ===== 功能增强服务 =====
+export { ConfigManager } from './service/ConfigManager';
 export { BatchScanService, BatchScanResult, ILocalCacheProvider, IRemoteLookupProvider } from './service/BatchScanService';
 export { FoodCompareService, FoodCompareResult, NutritionDelta } from './service/FoodCompareService';
 export { NutritionKnowledgeService, KnowledgeEntry } from './service/NutritionKnowledgeService';

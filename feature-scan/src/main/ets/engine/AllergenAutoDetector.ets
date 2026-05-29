@@ -20,16 +20,117 @@ export interface AdverseReactionRecord {
   timestamp: number;
 }
 
+export interface AllergenCheckResult {
+  hasAlert: boolean;
+  matchedAllergens: string[];
+  details: { allergen: string; ingredient: string; position: number }[];
+}
+
 @ComponentV2
 export class AllergenAutoDetector {
   private static instance: AllergenAutoDetector | null = null;
   private detectionCache: Map<string, SuspectedAllergen[]> = new Map();
+  private allergenKeywordSet: Set<string> = new Set();
+  private allergenKeywordLowerSet: Set<string> = new Set();
+
+  private static readonly COMMON_ALLERGEN_KEYWORDS: string[] = [
+    '花生', '花生酱', '花生油', '花生粉', '花生仁',
+    '牛奶', '乳糖', '奶粉', '乳清蛋白', '乳清粉', '奶油', '芝士', '奶酪',
+    '脱脂乳', '酪蛋白', '炼乳', '乳固体', '淡奶油', '黄油', '酥油',
+    '鸡蛋', '蛋清', '蛋黄', '蛋粉', '全蛋粉', '卵白蛋白',
+    '小麦', '面粉', '小麦粉', '面筋', '麦麸', '全麦粉', '小麦蛋白',
+    '大麦', '黑麦', '燕麦', '麦芽', '麦芽糊精',
+    '大豆', '大豆蛋白', '大豆油', '大豆卵磷脂', '豆粕', '酱油',
+    '鱼', '鱼肉', '鱼粉', '鱼油', '鱼露',
+    '甲壳类', '虾', '蟹', '龙虾', '对虾', '基围虾',
+    '贝类', '牡蛎', '扇贝', '蛤蜊', '贻贝', '鲍鱼',
+    '树坚果', '杏仁', '核桃', '榛子', '腰果', '开心果', '夏威夷果', '碧根果',
+    '芝麻', '芝麻酱', '芝麻油', '麻酱',
+    '芥末', '芥子', '芥菜',
+    '亚硫酸盐', '二氧化硫', '焦亚硫酸钠',
+    '芹菜', '羽扇豆', '软体动物'
+  ];
 
   static getInstance(): AllergenAutoDetector {
     if (!AllergenAutoDetector.instance) {
       AllergenAutoDetector.instance = new AllergenAutoDetector();
     }
     return AllergenAutoDetector.instance;
+  }
+
+  private constructor() {
+    for (const kw of AllergenAutoDetector.COMMON_ALLERGEN_KEYWORDS) {
+      this.allergenKeywordSet.add(kw);
+      this.allergenKeywordLowerSet.add(kw.toLowerCase());
+    }
+  }
+
+  checkAllergens(userAllergens: string[], ingredients: string[]): AllergenCheckResult {
+    const result: AllergenCheckResult = {
+      hasAlert: false,
+      matchedAllergens: [],
+      details: []
+    };
+
+    if (userAllergens.length === 0 || ingredients.length === 0) {
+      return result;
+    }
+
+    const userAllergenLowerSet = new Set(userAllergens.map(a => a.trim().toLowerCase()));
+
+    for (let i = 0; i < ingredients.length; i++) {
+      const ingredient = ingredients[i];
+      const normalized = ingredient.trim().toLowerCase();
+
+      for (const userAllergen of userAllergens) {
+        const normalizedAllergen = userAllergen.trim().toLowerCase();
+        if (normalized.includes(normalizedAllergen) || normalizedAllergen.includes(normalized)) {
+          result.hasAlert = true;
+          if (!result.matchedAllergens.includes(userAllergen)) {
+            result.matchedAllergens.push(userAllergen);
+          }
+          result.details.push({
+            allergen: userAllergen,
+            ingredient: ingredient,
+            position: i
+          });
+        }
+      }
+
+      this.allergenKeywordLowerSet.forEach(kw => {
+        if (normalized.includes(kw) && userAllergenLowerSet.has(kw)) {
+          result.hasAlert = true;
+          if (!result.matchedAllergens.includes(kw)) {
+            result.matchedAllergens.push(kw);
+          }
+          const alreadyAdded = result.details.some(d => d.ingredient === ingredient && d.allergen === kw);
+          if (!alreadyAdded) {
+            result.details.push({
+              allergen: kw,
+              ingredient: ingredient,
+              position: i
+            });
+          }
+        }
+      });
+    }
+
+    if (result.hasAlert) {
+      hilog.warn(DOMAIN_ZERO, TAG,
+        'ALLERGEN ALERT: %{public}d allergens matched in %{public}d ingredients',
+        result.matchedAllergens.length, ingredients.length);
+    }
+
+    return result;
+  }
+
+  containsAnyAllergen(ingredient: string): boolean {
+    const normalized = ingredient.trim().toLowerCase();
+    let found = false;
+    this.allergenKeywordLowerSet.forEach(kw => {
+      if (normalized.includes(kw)) found = true;
+    });
+    return found;
   }
 
   async detectFromHistory(memberId: string, history: AdverseReactionRecord[]): Promise<SuspectedAllergen[]> {

@@ -2,7 +2,7 @@
 // Sprint3: 源码已物理迁移至本模块
 
 // ===== 扫描服务 =====
-export { ScanService, ScanLookupResult, ILocalCacheProvider, IRemoteLookupProvider, IDataLineageRecorder, RemoteLookupResult } from './service/ScanService';
+export { ScanService, ScanLookupResult, ILocalCacheProvider, IRemoteLookupProvider, IDataLineageRecorder, RemoteLookupResult, QrScanResult, OfflineScanEntry } from './service/ScanService';
 export { FoodInputService, FoodInputResult } from './service/FoodInputService';
 
 // ===== 扫描相关引擎 =====
@@ -24,8 +24,9 @@ export { IntoleranceWarningCard } from './components/IntoleranceWarningCard';
 export { PermissionGuideDialog } from './components/PermissionGuideDialog';
 export { PaywallDialog } from './components/PaywallDialog';
 export { AlternativeRecommender, AlternativeCandidate } from './engine/AlternativeRecommender';
-export { AllergenAutoDetector, SuspectedAllergen, AdverseReactionRecord } from './engine/AllergenAutoDetector';
+export { AllergenAutoDetector, SuspectedAllergen, AdverseReactionRecord, AllergenCheckResult } from './engine/AllergenAutoDetector';
 export { AdditiveInteractionEngine, AdditiveInteraction, InteractionAssessmentResult } from './engine/AdditiveInteractionEngine';
 export { OnDeviceInferenceEngine, InferenceResult } from './engine/OnDeviceInferenceEngine';
 export { AdditiveSafetyEngine, AdditiveRiskLevel as AdditiveSafetyRiskLevel, AdditiveAssessment, FoodAdditiveReport } from './engine/AdditiveSafetyEngine';
 export { AllergenCrossReactivityEngine, CrossReactivityPair, AllergenCrossReport, CrossReactiveRisk } from './engine/AllergenCrossReactivityEngine';
+export { IngredientDeepAnalyzer, IngredientAnalysis } from './engine/IngredientDeepAnalyzer';

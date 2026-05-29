@@ -68,13 +68,13 @@ export class HealthFacade {
   }
 
   async getAiNutritionAdvice(
-    member: FamilyProfile, _foodLabel: FoodLabel,
-    _signal: HealthSignal, memberId: string, days: number, includeMealPlan: boolean,
+    member: FamilyProfile, foodLabel: FoodLabel,
+    signal: HealthSignal, memberId: string, days: number, includeMealPlan: boolean,
     getHealthSignal: (mid: string) => HealthSignal,
     getDailyBudgetSync: (mid: string) => DailyBudget
   ): Promise<AiNutritionAdvice> {
     const dietRecords = await this.historyRepo.getDietRecordsByDateRange(memberId, DateUtil.getToday(), DateUtil.getToday());
-    return this.services.aiNutritionist.getAdvice(member, getHealthSignal(memberId),
+    return this.services.aiNutritionist.getAdvice(member, signal,
       getDailyBudgetSync(memberId), dietRecords, days, includeMealPlan);
   }
 

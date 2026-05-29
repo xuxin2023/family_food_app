@@ -19,15 +19,30 @@ const TAG = 'OnDeviceAiEngine'
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT
 
 let mindSporeLiteAvailable = false;
-let mindSporeLite: typeof import('@kit.MindSporeLiteKit').mindSporeLite | null = null;
+let mindSporeLiteModule: typeof import('@kit.MindSporeLiteKit').mindSporeLite | null = null;
 try {
-  const mslKit = globalThis['@kit.MindSporeLiteKit'] as Record<string, Object> | null;
-  if (mslKit) {
-    mindSporeLite = mslKit.mindSporeLite as typeof import('@kit.MindSporeLiteKit').mindSporeLite;
+  const msl = globalThis['@kit.MindSporeLiteKit'] as Record<string, Object> | null;
+  if (msl) {
+    mindSporeLiteModule = msl.mindSporeLite as typeof import('@kit.MindSporeLiteKit').mindSporeLite;
     mindSporeLiteAvailable = true;
+    hilog.info(DOMAIN_ZERO, TAG, 'MindSporeLiteKit detected via globalThis');
   }
 } catch {
   mindSporeLiteAvailable = false;
+  hilog.info(DOMAIN_ZERO, TAG, 'MindSporeLiteKit not available, using rule engine fallback');
+}
+
+function getMindSporeLite(): typeof import('@kit.MindSporeLiteKit').mindSporeLite | null {
+  if (mindSporeLiteAvailable && mindSporeLiteModule) return mindSporeLiteModule;
+  try {
+    const msl = globalThis['@kit.MindSporeLiteKit'] as Record<string, Object> | null;
+    if (msl) {
+      mindSporeLiteModule = msl.mindSporeLite as typeof import('@kit.MindSporeLiteKit').mindSporeLite;
+      mindSporeLiteAvailable = true;
+      return mindSporeLiteModule;
+    }
+  } catch {}
+  return null;
 }
 
 class InferenceConfig {

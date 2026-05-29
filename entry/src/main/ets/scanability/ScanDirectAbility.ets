@@ -1,27 +1,46 @@
-// ScanDirectAbility.ets
-// HarmonyOS 6.1 扫码直达 Ability 存根
-// 当用户从控制中心触发扫码直达时，系统拉起的入口Ability
-
 import { UIAbility, Want, AbilityConstant } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, RoutePath } from 'hsp_core';
+import { window } from '@kit.ArkUI';
 
 const TAG = 'ScanDirectAbility';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export default class ScanDirectAbility extends UIAbility {
+  private scanMode: string = 'barcode';
+
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
     hilog.info(DOMAIN_ZERO, TAG, 'ScanDirectAbility onCreate');
-    // 处理扫码直达的 want 参数
-    // 转发到主 Ability 或直接启动扫码页
+
+    if (want.parameters) {
+      const scanType = want.parameters['scanType'] as string;
+      if (scanType === 'qrcode' || scanType === 'ocr' || scanType === 'barcode') {
+        this.scanMode = scanType;
+      }
+    }
+
+    hilog.info(DOMAIN_ZERO, TAG, 'Scan mode: %{public}s', this.scanMode);
   }
 
   onDestroy(): void {
     hilog.info(DOMAIN_ZERO, TAG, 'ScanDirectAbility onDestroy');
   }
 
-  onWindowStageCreate(): void {
+  onWindowStageCreate(windowStage: window.WindowStage): void {
     hilog.info(DOMAIN_ZERO, TAG, 'ScanDirectAbility onWindowStageCreate');
+
+    windowStage.loadContent(RoutePath.SCAN_PAGE, (err, data) => {
+      if (err.code) {
+        hilog.error(DOMAIN_ZERO, TAG, 'Failed to load ScanPage: %{public}s', err.message);
+        windowStage.loadContent(RoutePath.HOME_PAGE, (fallbackErr) => {
+          if (fallbackErr.code) {
+            hilog.error(DOMAIN_ZERO, TAG, 'Failed to load HomePage fallback: %{public}s', fallbackErr.message);
+          }
+        });
+        return;
+      }
+      hilog.info(DOMAIN_ZERO, TAG, 'ScanPage loaded successfully with mode: %{public}s', this.scanMode);
+    });
   }
 
   onForeground(): void {
@@ -30,5 +49,15 @@ export default class ScanDirectAbility extends UIAbility {
 
   onBackground(): void {
     hilog.info(DOMAIN_ZERO, TAG, 'ScanDirectAbility onBackground');
+  }
+
+  onNewWant(want: Want, launchParam: AbilityConstant.LaunchParam): void {
+    if (want.parameters) {
+      const scanType = want.parameters['scanType'] as string;
+      if (scanType === 'qrcode' || scanType === 'ocr' || scanType === 'barcode') {
+        this.scanMode = scanType;
+        hilog.info(DOMAIN_ZERO, TAG, 'Scan mode updated: %{public}s', this.scanMode);
+      }
+    }
   }
 }

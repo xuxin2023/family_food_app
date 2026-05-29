@@ -63,7 +63,15 @@ export class IntoleranceEngine {
   private highFodmapKeywords: string[] = [];
   private histamineKeywords: string[] = [];
 
-  private constructor() {}
+  private highHistamineSet: Set<string> = new Set();
+  private highSalicylateSet: Set<string> = new Set();
+  private histamineKeywordsFromDb: string[] = [];
+  private salicylateKeywordsFromDb: string[] = [];
+
+  private constructor() {
+    this.highHistamineSet = new Set(IntoleranceEngine.KEYWORD_MAP.get(IntoleranceType.HISTAMINE) ?? []);
+    this.highSalicylateSet = new Set(IntoleranceEngine.KEYWORD_MAP.get(IntoleranceType.SALICYLATE) ?? []);
+  }
 
   static getInstance(): IntoleranceEngine {
     if (!IntoleranceEngine.instance) {
@@ -87,6 +95,12 @@ export class IntoleranceEngine {
         this.histamineKeywords.push(group.name);
         this.histamineKeywords.push(...group.examples);
       }
+
+      for (const kw of this.histamineKeywords) {
+        this.highHistamineSet.add(kw);
+      }
+
+      this.histamineKeywordsFromDb = [...this.histamineKeywords];
 
       this.fodmapDbLoaded = true;
       hilog.info(DOMAIN_ZERO, TAG, 'FODMAP database loaded: %{public}d high-FODMAP, %{public}d histamine keywords',
@@ -112,11 +126,28 @@ export class IntoleranceEngine {
     [IntoleranceType.HISTAMINE, [
       '发酵食品', '陈年芝士', '红酒', '白酒', '腌制鱼', '香肠',
       '腊肉', '火腿', '泡菜', '酱油', '醋', '番茄酱', '金枪鱼罐头',
-      '沙丁鱼罐头', '酵母提取物'
+      '沙丁鱼罐头', '酵母提取物',
+      '帕尔马芝士', '切达芝士', '蓝纹芝士', '高达芝士', '布里芝士',
+      '萨拉米', '培根', '腊肠', '凤尾鱼', '鱼露', '味噌',
+      '酸奶油', '酸奶', '开菲尔', '康普茶',
+      '番茄', '茄子', '菠菜', '蘑菇', '牛油果',
+      '柑橘类', '草莓', '木瓜', '菠萝',
+      '巧克力', '可可', '咖啡', '红茶', '绿茶',
+      '豆制品', '豆腐', '纳豆', '豆瓣酱',
+      '啤酒', '葡萄酒', '气泡酒', '香槟',
+      '组胺', '组氨酸', '二胺氧化酶'
     ]],
     [IntoleranceType.SALICYLATE, [
       '阿司匹林', '薄荷', '薄荷醇', '柑橘皮', '咖喱粉', '肉桂',
-      '丁香', '茴香', '姜黄', '胡椒粉', '辣椒粉'
+      '丁香', '茴香', '姜黄', '胡椒粉', '辣椒粉',
+      '八角', '花椒', '孜然', '芥末', '酱油', '醋',
+      '番茄', '番茄酱', '草莓', '蓝莓', '黑莓', '覆盆子',
+      '杏仁', '花生', '核桃', '榛子', '开心果',
+      '橄榄', '橄榄油', '椰子', '菠萝', '柠檬皮', '橙皮',
+      '茶', '红茶', '绿茶', '咖啡', '可可', '巧克力',
+      '葡萄酒', '啤酒', '蜂蜜', '干杏', '葡萄干', '梅干',
+      '花椰菜', '菠菜', '蘑菇', '青椒', '黄瓜皮',
+      '甘草', '水杨酸', '水杨酸盐', '水杨酸甲酯'
     ]],
     [IntoleranceType.SULFITE, [
       '亚硫酸盐', '二氧化硫', '焦亚硫酸钠', '亚硫酸钠', '偏重亚硫酸钾',
@@ -175,6 +206,16 @@ export class IntoleranceEngine {
         warnings.push(...fodmapWarnings);
         continue;
       }
+      if (t === IntoleranceType.HISTAMINE) {
+        const histamineWarnings = this.detectHistamine(ingredients);
+        warnings.push(...histamineWarnings);
+        continue;
+      }
+      if (t === IntoleranceType.SALICYLATE) {
+        const salicylateWarnings = this.detectSalicylate(ingredients);
+        warnings.push(...salicylateWarnings);
+        continue;
+      }
 
       const keywords = IntoleranceEngine.KEYWORD_MAP.get(t) ?? [];
       const matched = ingredients.filter(i => keywords.some(k => i.includes(k)));
@@ -202,6 +243,78 @@ export class IntoleranceEngine {
     const result = new IntoleranceCheckResult();
     result.hasWarnings = hasWarnings; result.warnings = warnings; result.summary = summary;
     return result;
+  }
+
+  detectHistamine(ingredients: string[]): IntoleranceWarning[] {
+    const warnings: IntoleranceWarning[] = [];
+    const reason = IntoleranceEngine.REASON_MAP.get(IntoleranceType.HISTAMINE) ?? '';
+
+    for (const ingredient of ingredients) {
+      const normalized = ingredient.trim().toLowerCase();
+      let matched = false;
+      this.highHistamineSet.forEach(kw => {
+        if (normalized.includes(kw.toLowerCase())) {
+          matched = true;
+        }
+      });
+      if (matched) {
+        const w = new IntoleranceWarning();
+        w.type = IntoleranceType.HISTAMINE;
+        w.ingredient = ingredient;
+        w.severity = IntoleranceSeverity.AVOID;
+        w.reason = reason;
+        warnings.push(w);
+      }
+    }
+
+    hilog.info(DOMAIN_ZERO, TAG, 'Histamine detection: %{public}d warnings from %{public}d ingredients',
+      warnings.length, ingredients.length);
+    return warnings;
+  }
+
+  detectSalicylate(ingredients: string[]): IntoleranceWarning[] {
+    const warnings: IntoleranceWarning[] = [];
+    const reason = IntoleranceEngine.REASON_MAP.get(IntoleranceType.SALICYLATE) ?? '';
+
+    for (const ingredient of ingredients) {
+      const normalized = ingredient.trim().toLowerCase();
+      let matched = false;
+      this.highSalicylateSet.forEach(kw => {
+        if (normalized.includes(kw.toLowerCase())) {
+          matched = true;
+        }
+      });
+      if (matched) {
+        const w = new IntoleranceWarning();
+        w.type = IntoleranceType.SALICYLATE;
+        w.ingredient = ingredient;
+        w.severity = IntoleranceSeverity.CAUTION;
+        w.reason = reason;
+        warnings.push(w);
+      }
+    }
+
+    hilog.info(DOMAIN_ZERO, TAG, 'Salicylate detection: %{public}d warnings from %{public}d ingredients',
+      warnings.length, ingredients.length);
+    return warnings;
+  }
+
+  isHighHistamine(ingredient: string): boolean {
+    const normalized = ingredient.trim().toLowerCase();
+    let found = false;
+    this.highHistamineSet.forEach(kw => {
+      if (normalized.includes(kw.toLowerCase())) found = true;
+    });
+    return found;
+  }
+
+  isHighSalicylate(ingredient: string): boolean {
+    const normalized = ingredient.trim().toLowerCase();
+    let found = false;
+    this.highSalicylateSet.forEach(kw => {
+      if (normalized.includes(kw.toLowerCase())) found = true;
+    });
+    return found;
   }
 
   private checkFodmap(ingredients: string[]): IntoleranceWarning[] {

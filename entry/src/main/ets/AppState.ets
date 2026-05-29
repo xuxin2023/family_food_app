@@ -344,13 +344,13 @@ export class AppState {
   ): Promise<void> {
     await this.food.saveDietRecord(memberId, scenario, mealType, foodId, amount, sodium, sugar, calories, fat);
   }
-  calculateMealBalance(scenario: MealScenario, _memberId: string): MealBalance {
+  calculateMealBalance(scenario: MealScenario, memberId?: string): MealBalance {
     return this.food.calculateMealBalance(scenario);
   }
-  generatePositiveAdvice(_scenario: MealScenario, _memberId: string): Object | null {
+  generatePositiveAdvice(scenario?: MealScenario, memberId?: string): Object | null {
     return this.food.generatePositiveAdvice();
   }
-  calculateChildProtection(_memberId: string, foodLabel: FoodLabel): ChildProtection {
+  calculateChildProtection(memberId: string, foodLabel: FoodLabel): ChildProtection {
     return this.food.calculateChildProtection(foodLabel);
   }
 

@@ -1,7 +1,8 @@
 import {
   FoodLabel, Recommendation, EnhancedFoodRecommendation, DailyBudget,
   NutritionTarget, NutritionSnapshot, ChildProtection, DateUtil, CacheManager,
-  HILOG_DOMAIN_DEFAULT, DietRecord, FamilyProfile, HealthSignal, MealScenario, MealBalance
+  HILOG_DOMAIN_DEFAULT, DietRecord, FamilyProfile, HealthSignal, MealScenario, MealBalance,
+  serialScheduler
 } from 'hsp_core';
 import { FoodRepository } from '../repository/FoodRepository';
 import { HistoryRepository, ScanHistoryRecord, DietRecordInput } from '../repository/HistoryRepository';
@@ -95,20 +96,22 @@ export class FoodFacade {
     foodId: string, amount: number, sodium: number, sugar: number,
     calories: number, fat: number
   ): Promise<void> {
-    const record: DietRecordInput = {
-      memberId: memberId,
-      date: DateUtil.getToday(),
-      scenario: 'meal_balance',
-      mealType: mealType,
-      foodId: foodId,
-      amountG: amount,
-      sodiumIntake: sodium,
-      sugarIntake: sugar,
-      calorieIntake: calories,
-      fatIntake: fat,
-      recordedAt: Date.now()
-    };
-    await this.historyRepo.saveDietRecord(record);
+    await serialScheduler.enqueue(`diet_${memberId}`, async () => {
+      const record: DietRecordInput = {
+        memberId: memberId,
+        date: DateUtil.getToday(),
+        scenario: 'meal_balance',
+        mealType: mealType,
+        foodId: foodId,
+        amountG: amount,
+        sodiumIntake: sodium,
+        sugarIntake: sugar,
+        calorieIntake: calories,
+        fatIntake: fat,
+        recordedAt: Date.now()
+      };
+      await this.historyRepo.saveDietRecord(record);
+    });
   }
 
   async getNutritionSnapshots(memberId: string, limit: number): Promise<NutritionSnapshot[]> {

@@ -3,7 +3,7 @@
 // AppState 通过此管理器委托所有引擎调用
 
 import {
-  FamilyProfile, AgeGroup, HealthSignal, StepLevel, SleepStatus, FoodLabel, DailyBudget, Recommendation, MealBalance, MealScenario, ChildProtection, CredibilityResult, EnhancedFoodRecommendation, AlternativeFood, DietRecord, NutritionThreshold
+  FamilyProfile, AgeGroup, HealthSignal, StepLevel, SleepStatus, FoodLabel, DailyBudget, Recommendation, MealBalance, MealScenario, ChildProtection, CredibilityResult, EnhancedFoodRecommendation, AlternativeFood, DietRecord, NutritionThreshold, NullGuard, RecommendLevel
 } from 'hsp_core';
 import { HistoryRepository } from './repository/HistoryRepository';
 import { BasketCheckResult, BasketCheckEngine } from 'hsp_service';
@@ -267,13 +267,79 @@ export class EngineManager {
 
   /** 获取营养趋势 */
   async getNutritionTrend(memberId: string, days: number, dietProvider: HistoryRepository): Promise<DailyNutritionSummary[]> {
-    // 使用静态方法聚合饮食记录
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
     const fmt = (d: Date): string => `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
     const records = await dietProvider.getDietRecordsByDateRange(memberId, fmt(startDate), fmt(endDate));
     return nutritionTrendEngine.aggregateDaily(records);
+  }
+
+  // ======== 安全方法（内置空值保护） ========
+
+  calculateRecommendationSafe(
+    profile: FamilyProfile,
+    signal: HealthSignal,
+    foodLabel: FoodLabel,
+    budget: DailyBudget
+  ): Recommendation {
+    try {
+      const result = this.recommendationEngine.calculateForMember(profile, signal, foodLabel, budget);
+      if (result === null || result === undefined) {
+        return Recommendation.getDefault(profile.memberId, foodLabel.foodId);
+      }
+      return result;
+    } catch (_e) {
+      return Recommendation.getDefault(profile.memberId, foodLabel.foodId);
+    }
+  }
+
+  calculateMealBalanceSafe(scenario: MealScenario, profile: FamilyProfile, signal: HealthSignal | null): MealBalance {
+    try {
+      const safeSignal = signal ?? new HealthSignal();
+      const result = this.mealBalanceEngine.calculate(scenario, profile, safeSignal);
+      return result ?? MealBalance.getDefault();
+    } catch (_e) {
+      return MealBalance.getDefault();
+    }
+  }
+
+  calculateChildProtectionSafe(profile: FamilyProfile, foodLabel: FoodLabel): ChildProtection {
+    try {
+      const now = new Date();
+      const mealTimes = new MealTimeParams();
+      const result = this.childProtectionEngine.calculate(profile, foodLabel, now, mealTimes, '21:00');
+      return result ?? ChildProtection.getDefault();
+    } catch (_e) {
+      return ChildProtection.getDefault();
+    }
+  }
+
+  calculateCredibilitySafe(foodLabel: FoodLabel): CredibilityResult {
+    try {
+      const result = this.credibilityEngine.calculate(foodLabel);
+      return result ?? CredibilityResult.getDefault();
+    } catch (_e) {
+      return CredibilityResult.getDefault();
+    }
+  }
+
+  getNutriScoreSafe(foodLabel: FoodLabel): string {
+    try {
+      const result = NutriScoreEngine.calculateFromNutrition(foodLabel.nutrition);
+      return NullGuard.safeString(result?.grade, 'unknown');
+    } catch (_e) {
+      return 'unknown';
+    }
+  }
+
+  getShanghaiGradeSafe(foodLabel: FoodLabel): string {
+    try {
+      const result = ShanghaiGradeEngine.evaluate(foodLabel.nutrition);
+      return NullGuard.safeString(result?.grade, 'unknown');
+    } catch (_e) {
+      return 'unknown';
+    }
   }
 
   /** 生成周报 — 委托 WeeklyReportEngine */

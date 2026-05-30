@@ -252,6 +252,8 @@ export { NutritionThreshold } from './src/main/ets/constants/NutritionThreshold'
 // ===== 补全工具导出（第二批） =====
 export { DomainEventBus, DomainEvents, CacheInvalidationData } from './src/main/ets/utils/DomainEventBus';
 export { resourceToStr } from './src/main/ets/utils/ResourceUtil';
+export { NullGuard } from './src/main/ets/utils/NullGuard';
+export { SerialScheduler, serialScheduler } from './src/main/ets/utils/SerialScheduler';
 
 // ===== 服务层导出（批次2迁移） =====
 export {

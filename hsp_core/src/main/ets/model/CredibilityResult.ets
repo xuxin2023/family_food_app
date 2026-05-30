@@ -94,4 +94,12 @@ export class CredibilityResult {
     json.publicQueryEntries = this.publicQueryEntries;
     return json;
   }
+
+  static getDefault(): CredibilityResult {
+    const cr = new CredibilityResult();
+    cr.score = 0;
+    cr.tips = ['可信度数据不足'];
+    cr.overallGrade = DataGrade.D;
+    return cr;
+  }
 }

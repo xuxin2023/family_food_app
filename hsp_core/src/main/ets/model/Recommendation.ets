@@ -124,4 +124,19 @@ export class Recommendation {
     rec.generatedAt = (json.generatedAt as number) ?? 0;
     return rec;
   }
+
+  static getDefault(memberId: string, foodId: string): Recommendation {
+    const rec = new Recommendation();
+    rec.memberId = memberId;
+    rec.foodId = foodId;
+    rec.level = RecommendLevel.SUITABLE;
+    rec.levelColor = LevelColor.GREEN;
+    rec.maxAmount = 0;
+    rec.maxServings = 0;
+    rec.reasons = [];
+    rec.reminders = ['数据不足，建议人工确认'];
+    rec.disclaimer = '';
+    rec.generatedAt = Date.now();
+    return rec;
+  }
 }

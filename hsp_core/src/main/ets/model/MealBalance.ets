@@ -68,4 +68,15 @@ export class MealBalance {
     json.memberSpecificAdvice = this.memberSpecificAdvice;
     return json;
   }
+
+  static getDefault(): MealBalance {
+    const mb = new MealBalance();
+    mb.scenario = MealScenario.OTHER;
+    mb.riskTags = [];
+    mb.nextMealAdvice = '';
+    mb.avoidStacking = [];
+    mb.hydrationReminder = false;
+    mb.memberSpecificAdvice = '';
+    return mb;
+  }
 }

@@ -133,3 +133,14 @@ export { DistributedSyncHelper } from './service/sync/DistributedSyncHelper';
 
 // ===== T-068 entry瘦身迁移: Engine =====
 export { BasketCheckEngine, BasketCheckResult } from './engine/BasketCheckEngine';
+
+// ===== T-075 AI服务迁移: 接口+实现+工厂 =====
+export { IAiStateProvider } from './service/IAiStateProvider';
+export { AiNutritionistServiceImpl } from './service/ai/AiNutritionistServiceImpl';
+export { AiChatServiceImpl } from './service/ai/AiChatServiceImpl';
+export { createAiNutritionistService, createAiChatService } from './service/ai/AiServiceFactory';
+
+// ===== T-076 同步服务迁移: 类型+实现 =====
+export { DistributedSyncPayload, ConflictAction } from './service/sync/SyncTypes';
+export { DistributedSyncEnhancerImpl } from './service/sync/DistributedSyncEnhancerImpl';
+export { DeferredInitQueue } from './service/sync/DeferredInitQueue';

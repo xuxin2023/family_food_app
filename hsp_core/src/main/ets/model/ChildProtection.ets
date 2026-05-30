@@ -32,4 +32,13 @@ export class ChildProtection {
     json.counteractReminder = this.counteractReminder;
     return json;
   }
+
+  static getDefault(): ChildProtection {
+    const cp = new ChildProtection();
+    cp.mealProtection = '';
+    cp.bedtimeProtection = '';
+    cp.tasteProtection = '儿童保护数据不足，建议谨慎';
+    cp.counteractReminder = false;
+    return cp;
+  }
 }

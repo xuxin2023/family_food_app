@@ -306,7 +306,7 @@ struct ReminderRulePage {
       .fontColor(this.editType === type ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
       .margin({ right: 6, top: 4 })
       .onClick(() => { this.editType = type })
-      .accessibilityText(label as Resource)
+      .accessibilityText(label )
       .accessibilityLevel('yes')
   }
 
@@ -320,7 +320,7 @@ struct ReminderRulePage {
       .fontColor(this.editPriority === priority ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
       .margin({ right: 6, top: 4 })
       .onClick(() => { this.editPriority = priority })
-      .accessibilityText(label as Resource)
+      .accessibilityText(label )
       .accessibilityLevel('yes')
   }
 

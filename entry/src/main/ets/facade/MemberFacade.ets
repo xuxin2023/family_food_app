@@ -11,6 +11,15 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 const TAG = 'MemberFacade';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
+/**
+ * 家庭成员业务门面
+ *
+ * 统一封装成员CRUD、健康信号管理、每日营养预算、
+ * 营养目标存取等操作，维护成员缓存和预算缓存，
+ * 对UI层提供简洁的API入口。
+ *
+ * @since 1.0.0
+ */
 @ObservedV2
 export class MemberFacade {
   private readonly familyRepo: FamilyRepository;
@@ -31,11 +40,21 @@ export class MemberFacade {
     this.nutriTargetRepo = nutriTargetRepo ?? new NutritionTargetRepository();
   }
 
+  /**
+   * 加载成员缓存
+   *
+   * @returns Promise<void>
+   */
   async loadCache(): Promise<void> {
     this._membersCache = await this.familyRepo.getAllMembers();
     this.member.syncMemberCount(this._membersCache.length);
   }
 
+  /**
+   * 获取所有家庭成员（异步，首次自动加载缓存）
+   *
+   * @returns 家庭成员画像列表
+   */
   async getAllMembers(): Promise<FamilyProfile[]> {
     if (this._membersCache.length === 0) {
       this._membersCache = await this.familyRepo.getAllMembers();
@@ -43,22 +62,45 @@ export class MemberFacade {
     return this._membersCache;
   }
 
+  /**
+   * 获取所有家庭成员（同步，从缓存读取）
+   *
+   * @returns 家庭成员画像列表
+   */
   getAllMembersSync(): FamilyProfile[] {
     return this._membersCache;
   }
 
+  /**
+   * 保存成员并刷新缓存
+   *
+   * @param profile - 家庭成员画像
+   * @returns Promise<void>
+   */
   async saveMember(profile: FamilyProfile): Promise<void> {
     await this.familyRepo.saveMember(profile);
     this._membersCache = await this.familyRepo.getAllMembers();
     this.member.syncMemberCount(this._membersCache.length);
   }
 
+  /**
+   * 删除成员并刷新缓存
+   *
+   * @param memberId - 成员ID
+   * @returns Promise<void>
+   */
   async deleteMember(memberId: string): Promise<void> {
     await this.familyRepo.deleteMember(memberId);
     this._membersCache = await this.familyRepo.getAllMembers();
     this.member.syncMemberCount(this._membersCache.length);
   }
 
+  /**
+   * 获取成员健康信号（优先从缓存读取）
+   *
+   * @param memberId - 成员ID
+   * @returns 健康信号
+   */
   getHealthSignal(memberId: string): HealthSignal {
     const cached = this.cache.getHealthSignalFromCache(memberId);
     if (cached) return cached;
@@ -91,6 +133,15 @@ export class MemberFacade {
     return this.getDailyBudgetSync(memberId);
   }
 
+  /**
+   * 扣减今日摄入量
+   *
+   * @param memberId - 成员ID
+   * @param sodium - 钠摄入量(mg)
+   * @param sugar - 糖摄入量(g)
+   * @param calories - 热量摄入量(kcal)
+   * @param fat - 脂肪摄入量(g)
+   */
   deductIntake(memberId: string, sodium: number, sugar: number, calories: number, fat: number): void {
     const budget = this.getDailyBudgetSync(memberId);
     budget.deductIntake(sodium, sugar, calories, fat);
@@ -100,6 +151,12 @@ export class MemberFacade {
   private _nutriTargetCache: Map<string, NutritionTarget> = new Map();
   @Trace nutriTargetLoading: boolean = false;
 
+  /**
+   * 获取成员营养目标（优先从缓存读取）
+   *
+   * @param memberId - 成员ID
+   * @returns 营养目标，获取失败返回null
+   */
   async getNutritionTarget(memberId: string): Promise<NutritionTarget | null> {
     const cached = this._nutriTargetCache.get(memberId);
     if (cached) return cached;

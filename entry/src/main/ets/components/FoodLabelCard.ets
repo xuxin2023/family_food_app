@@ -47,7 +47,8 @@ export struct FoodLabelCard {
     .backgroundColor(COLORS.WHITE)
     .borderRadius(12)
     .alignItems(HorizontalAlign.Start)
-    .accessibilityText(`食品标签：${this.foodLabel.foodName}`)
+    .accessibilityRole('listItem')
+    .accessibilityText(`食品：${this.foodLabel.foodName}，钠${this.foodLabel.nutrition.sodium}mg，糖${this.foodLabel.nutrition.sugar}g，热量${this.foodLabel.nutrition.calories}kcal`)
     .accessibilityLevel('yes')
   }
 

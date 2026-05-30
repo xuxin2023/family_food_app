@@ -8,8 +8,39 @@ import { COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT } from 'hsp_core';
 export struct TrendChart {
   @Param data: NutrientTrendData | null = null
   @Param chartHeight: number = 160
+  @Param showSkeleton: boolean = false
 
   build() {
+    if (this.showSkeleton) {
+      Column() {
+        Row() {
+          Column().width(80).height(14).backgroundColor('#E0E0E0').borderRadius(4)
+          Blank()
+          Column().width(60).height(14).backgroundColor('#E0E0E0').borderRadius(4)
+        }
+        .width('100%')
+        .margin({ bottom: 8 })
+        Row() {
+          ForEach([1, 2, 3, 4, 5, 6, 7], (_: number, i: number) => {
+            Column()
+              .width(20)
+              .height(20 + Math.random() * 80)
+              .borderRadius(4)
+              .backgroundColor('#E0E0E0')
+              .margin({ left: 2, right: 2 })
+          }, (_: number, i: number) => `skel_${i}`)
+        }
+        .width('100%')
+        .height(this.chartHeight)
+        .alignItems(VerticalAlign.Bottom)
+      }
+      .width('100%')
+      .padding(12)
+      .backgroundColor(COLORS.WHITE)
+      .borderRadius(RADIUS.MD)
+      .margin({ bottom: SPACING.MD })
+      return
+    }
     if (this.data === null) {
       Column() {
         Text($r('app.string.no_trend_data'))
@@ -76,7 +107,6 @@ export struct TrendChart {
           .alignItems(VerticalAlign.Bottom)
           .padding({ left: SPACING.SM, right: SPACING.SM })
         }
-        .scrollable(ScrollDirection.Horizontal)
         .width('100%')
         .height(this.chartHeight)
 
@@ -104,7 +134,9 @@ export struct TrendChart {
       .borderRadius(RADIUS.MD)
       .margin({ bottom: SPACING.MD })
       .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
-      .accessibilityLevel('no')
+      .accessibilityLevel('yes')
+      .accessibilityRole('image')
+      .accessibilityText(`${this.data.nutrientName}趋势图，当前${this.data.currentValue.toFixed(1)}${this.data.unit}，目标${this.data.targetValue.toFixed(0)}${this.data.unit}，${this.getTrendText()}`)
     }
   }
 

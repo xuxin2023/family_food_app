@@ -136,32 +136,31 @@ export class RecipeRepository {
       return;
     }
     try {
-      const bucket: relationalStore.ValuesBucket = {
-        recipe_id: recipe.recipeId,
-        title: recipe.title,
-        description: recipe.description,
-        cover_image_url: recipe.coverImageUrl,
-        author_uid: recipe.authorUid,
-        author_name: recipe.authorName,
-        author_avatar: recipe.authorAvatar,
-        category: recipe.category,
-        difficulty: recipe.difficulty,
-        total_minutes: recipe.totalMinutes,
-        servings: recipe.servings,
-        ingredients: JSON.stringify(recipe.ingredients),
-        steps: JSON.stringify(recipe.steps),
-        nutrition: recipe.nutrition ? JSON.stringify(recipe.nutrition) : null,
-        diet_tags: JSON.stringify(recipe.dietTags),
-        related_food_id: recipe.relatedFoodId,
-        from_group_id: recipe.fromGroupId,
-        created_at: recipe.createdAt,
-        updated_at: recipe.updatedAt,
-        like_count: recipe.likeCount,
-        comment_count: recipe.commentCount,
-        bookmark_count: recipe.bookmarkCount,
-        is_approved: recipe.isApproved ? 1 : 0,
-        is_draft: recipe.isDraft ? 1 : 0
-      };
+      const bucket = new relationalStore.ValuesBucket();
+      bucket.put('recipe_id', recipe.recipeId);
+      bucket.put('title', recipe.title);
+      bucket.put('description', recipe.description);
+      bucket.put('cover_image_url', recipe.coverImageUrl);
+      bucket.put('author_uid', recipe.authorUid);
+      bucket.put('author_name', recipe.authorName);
+      bucket.put('author_avatar', recipe.authorAvatar);
+      bucket.put('category', recipe.category);
+      bucket.put('difficulty', recipe.difficulty);
+      bucket.put('total_minutes', recipe.totalMinutes);
+      bucket.put('servings', recipe.servings);
+      bucket.put('ingredients', JSON.stringify(recipe.ingredients));
+      bucket.put('steps', JSON.stringify(recipe.steps));
+      bucket.put('nutrition', recipe.nutrition ? JSON.stringify(recipe.nutrition) : null);
+      bucket.put('diet_tags', JSON.stringify(recipe.dietTags));
+      bucket.put('related_food_id', recipe.relatedFoodId);
+      bucket.put('from_group_id', recipe.fromGroupId);
+      bucket.put('created_at', recipe.createdAt);
+      bucket.put('updated_at', recipe.updatedAt);
+      bucket.put('like_count', recipe.likeCount);
+      bucket.put('comment_count', recipe.commentCount);
+      bucket.put('bookmark_count', recipe.bookmarkCount);
+      bucket.put('is_approved', recipe.isApproved ? 1 : 0);
+      bucket.put('is_draft', recipe.isDraft ? 1 : 0);
       await this.rdbStore.insert(TABLE_RECIPE, bucket,
         relationalStore.ConflictResolution.ON_CONFLICT_REPLACE);
     } catch (error) {
@@ -247,44 +246,44 @@ export class RecipeRepository {
       return;
     }
     try {
-      const bucket: relationalStore.ValuesBucket = {};
+      const bucket = new relationalStore.ValuesBucket();
       if (updates.title !== undefined) {
-        (bucket as Record<string, string | number | null>).title = updates.title as string;
+        bucket.put('title', updates.title);
       }
       if (updates.description !== undefined) {
-        (bucket as Record<string, string>).description = updates.description as string;
+        bucket.put('description', updates.description);
       }
       if (updates.coverImageUrl !== undefined) {
-        (bucket as Record<string, string>).cover_image_url = updates.coverImageUrl as string;
+        bucket.put('cover_image_url', updates.coverImageUrl);
       }
       if (updates.ingredients !== undefined) {
-        (bucket as Record<string, string>).ingredients = JSON.stringify(updates.ingredients);
+        bucket.put('ingredients', JSON.stringify(updates.ingredients));
       }
       if (updates.steps !== undefined) {
-        (bucket as Record<string, string>).steps = JSON.stringify(updates.steps);
+        bucket.put('steps', JSON.stringify(updates.steps));
       }
       if (updates.nutrition !== undefined) {
-        (bucket as Record<string, string | null>).nutrition = JSON.stringify(updates.nutrition);
+        bucket.put('nutrition', JSON.stringify(updates.nutrition));
       }
       if (updates.dietTags !== undefined) {
-        (bucket as Record<string, string>).diet_tags = JSON.stringify(updates.dietTags);
+        bucket.put('diet_tags', JSON.stringify(updates.dietTags));
       }
       if (updates.likeCount !== undefined) {
-        (bucket as Record<string, number>).like_count = updates.likeCount as number;
+        bucket.put('like_count', updates.likeCount);
       }
       if (updates.commentCount !== undefined) {
-        (bucket as Record<string, number>).comment_count = updates.commentCount as number;
+        bucket.put('comment_count', updates.commentCount);
       }
       if (updates.bookmarkCount !== undefined) {
-        (bucket as Record<string, number>).bookmark_count = updates.bookmarkCount as number;
+        bucket.put('bookmark_count', updates.bookmarkCount);
       }
       if (updates.isApproved !== undefined) {
-        (bucket as Record<string, number>).is_approved = updates.isApproved ? 1 : 0;
+        bucket.put('is_approved', updates.isApproved ? 1 : 0);
       }
       if (updates.isDraft !== undefined) {
-        (bucket as Record<string, number>).is_draft = updates.isDraft ? 1 : 0;
+        bucket.put('is_draft', updates.isDraft ? 1 : 0);
       }
-      (bucket as Record<string, number>).updated_at = Date.now();
+      bucket.put('updated_at', Date.now());
 
       const predicates = new relationalStore.RdbPredicates(TABLE_RECIPE);
       predicates.equalTo('recipe_id', recipeId);
@@ -314,18 +313,17 @@ export class RecipeRepository {
       return;
     }
     try {
-      const bucket: relationalStore.ValuesBucket = {
-        comment_id: comment.commentId,
-        recipe_id: comment.recipeId,
-        author_uid: comment.authorUid,
-        author_name: comment.authorName,
-        author_avatar: comment.authorAvatar,
-        content: comment.content,
-        parent_id: comment.parentId,
-        created_at: comment.createdAt,
-        like_count: comment.likeCount,
-        is_edited: comment.isEdited ? 1 : 0
-      };
+      const bucket = new relationalStore.ValuesBucket();
+      bucket.put('comment_id', comment.commentId);
+      bucket.put('recipe_id', comment.recipeId);
+      bucket.put('author_uid', comment.authorUid);
+      bucket.put('author_name', comment.authorName);
+      bucket.put('author_avatar', comment.authorAvatar);
+      bucket.put('content', comment.content);
+      bucket.put('parent_id', comment.parentId);
+      bucket.put('created_at', comment.createdAt);
+      bucket.put('like_count', comment.likeCount);
+      bucket.put('is_edited', comment.isEdited ? 1 : 0);
       await this.rdbStore.insert(TABLE_COMMENT, bucket);
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'saveComment failed: %{public}s', JSON.stringify(error));
@@ -402,12 +400,11 @@ export class RecipeRepository {
       }
 
       // 未点赞，添加
-      const likeBucket: relationalStore.ValuesBucket = {
-        id: `like_${recipeId}_${uid}_${Date.now()}`,
-        recipe_id: recipeId,
-        uid: uid,
-        created_at: Date.now()
-      };
+      const likeBucket = new relationalStore.ValuesBucket();
+      likeBucket.put('id', `like_${recipeId}_${uid}_${Date.now()}`);
+      likeBucket.put('recipe_id', recipeId);
+      likeBucket.put('uid', uid);
+      likeBucket.put('created_at', Date.now());
       await this.rdbStore.insert(TABLE_LIKE, likeBucket);
       // 增加点赞数
       const recipe = await this.getRecipe(recipeId);
@@ -493,13 +490,12 @@ export class RecipeRepository {
         resultSet = null;
       }
 
-      const bmBucket: relationalStore.ValuesBucket = {
-        id: `bm_${recipeId}_${uid}_${Date.now()}`,
-        recipe_id: recipeId,
-        uid: uid,
-        created_at: Date.now(),
-        note: note
-      };
+      const bmBucket = new relationalStore.ValuesBucket();
+      bmBucket.put('id', `bm_${recipeId}_${uid}_${Date.now()}`);
+      bmBucket.put('recipe_id', recipeId);
+      bmBucket.put('uid', uid);
+      bmBucket.put('created_at', Date.now());
+      bmBucket.put('note', note);
       await this.rdbStore.insert(TABLE_BOOKMARK, bmBucket);
       const recipe = await this.getRecipe(recipeId);
       if (recipe) {

@@ -67,7 +67,7 @@ struct MemberEditPage {
           Row() {
             Text($r('app.string.back_arrow')).fontSize(24).fontColor(COLORS.PRIMARY)
               .onClick(() => { safeBack() })
-              .accessibilityText('返回')
+              .accessibilityText($r('app.string.back_arrow'))
               .accessibilityLevel('yes')
             Text($r('app.string.member_manage'))
               .margin({ left: 16 })
@@ -84,7 +84,7 @@ struct MemberEditPage {
               .borderRadius(12)
               .backgroundColor(COLORS.WHITE)
               .onChange((value: string) => { this.nickname = value })
-              .accessibilityText('昵称输入')
+              .accessibilityText($r('app.string.member_edit_nickname_input_accessibility'))
               .accessibilityLevel('yes')
           }
           .width('100%')
@@ -104,7 +104,7 @@ struct MemberEditPage {
                 .fontColor(this.selectedAgeGroup === index ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
                 .margin({ right: 8, bottom: 8 })
                 .onClick(() => { this.selectedAgeGroup = index })
-                .accessibilityText(group as Resource)
+                .accessibilityText(group )
                 .accessibilityLevel('yes')
             }, (group: string, index: number) => `${index}`)
           }
@@ -128,7 +128,7 @@ struct MemberEditPage {
                 .onClick(() => {
                   this.selectedGoals[index] = !this.selectedGoals[index]
                 })
-                .accessibilityText(goal as Resource)
+                .accessibilityText(goal )
                 .accessibilityLevel('yes')
             }, (goal: string, index: number) => `${index}`)
           }
@@ -152,7 +152,7 @@ struct MemberEditPage {
                 .onClick(() => {
                   this.selectedAllergens[index] = !this.selectedAllergens[index]
                 })
-                .accessibilityText(label as Resource)
+                .accessibilityText(label )
                 .accessibilityLevel('yes')
             }, (label: ResourceStr, index: number) => `${index}`)
           }
@@ -164,7 +164,7 @@ struct MemberEditPage {
             .backgroundColor(COLORS.WHITE)
             .margin({ top: 8 })
             .onChange((value: string) => { this.allergenInput = value })
-            .accessibilityText('自定义过敏原输入')
+            .accessibilityText($r('app.string.member_edit_allergen_custom_accessibility'))
             .accessibilityLevel('yes')
         }
         .width('100%')
@@ -187,7 +187,7 @@ struct MemberEditPage {
                 .fontColor(this.stepLevelIndex === index ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
                 .margin({ right: 6 })
                 .onClick(() => { this.stepLevelIndex = index })
-                .accessibilityText(level as Resource)
+                .accessibilityText(level )
                 .accessibilityLevel('yes')
             }, (level: ResourceStr, index: number) => `${index}`)
           }
@@ -205,7 +205,7 @@ struct MemberEditPage {
                 .fontColor(this.sleepStatusIndex === index ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
                 .margin({ right: 6 })
                 .onClick(() => { this.sleepStatusIndex = index })
-                .accessibilityText(status as Resource)
+                .accessibilityText(status )
                 .accessibilityLevel('yes')
             }, (status: ResourceStr, index: number) => `${index}`)
           }
@@ -223,7 +223,7 @@ struct MemberEditPage {
                 .fontColor(this.bpStatusIndex === index ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
                 .margin({ right: 6 })
                 .onClick(() => { this.bpStatusIndex = index })
-                .accessibilityText(status as Resource)
+                .accessibilityText(status )
                 .accessibilityLevel('yes')
             }, (status: ResourceStr, index: number) => `${index}`)
           }
@@ -241,7 +241,7 @@ struct MemberEditPage {
                 .fontColor(this.bsStatusIndex === index ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
                 .margin({ right: 6 })
                 .onClick(() => { this.bsStatusIndex = index })
-                .accessibilityText(status as Resource)
+                .accessibilityText(status )
                 .accessibilityLevel('yes')
             }, (status: ResourceStr, index: number) => `${index}`)
           }
@@ -263,7 +263,7 @@ struct MemberEditPage {
           .onClick(() => {
             this.saveMember()
           })
-          .accessibilityText('保存成员')
+          .accessibilityText($r('app.string.member_edit_save_accessibility'))
           .accessibilityLevel('yes')
       }
       .width('100%')
@@ -271,7 +271,6 @@ struct MemberEditPage {
       }
       .width('100%')
       .height('100%')
-      .scrollable(ScrollDirection.Vertical)
 
       // 付费墙弹窗
       if (this.paywallTrigger !== null) {
@@ -328,7 +327,7 @@ struct MemberEditPage {
         const tierName = getTierDisplayName(MemberTier.FAMILY)
         const allMembers = await this.appState.getAllMembers()
         const memberCount = allMembers.length
-        trigger.message = `当前已添加 ${memberCount} 位家庭成员。升级${tierName}后，可添加无限数量的家庭成员，所有成员均可享受个性化饮食建议。`
+        trigger.message = $r('app.string.member_edit_paywall_msg', memberCount, tierName) as string
         this.paywallTrigger = trigger
         this.showPaywallDialog = true
         return

@@ -6,8 +6,8 @@ export default function ocrServiceTest() {
     const service = new OcrService();
 
     it('should return cached config from getConfig', () => {
-      const config1 = (service as unknown as Record<string, Object>)['getConfig']
-        ? (service as unknown as { getConfig: () => Object }).getConfig()
+      const config1 = (service as Record<string, Object>)['getConfig']
+        ? (service as { getConfig: () => Object }).getConfig()
         : null;
       expect(config1).notBeNull();
     });

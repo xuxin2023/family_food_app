@@ -98,7 +98,6 @@ struct HistoryPage {
             }, (member: FamilyProfile) => member.memberId)
           }
         }
-        .scrollable(ScrollDirection.Horizontal)
         .width('100%')
         .padding({ left: 16, right: 16 })
         .margin({ bottom: 14 })

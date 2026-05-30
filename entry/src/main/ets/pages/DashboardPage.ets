@@ -68,7 +68,8 @@ function makePeriodOption(labelKey: string, days: number): PeriodOption {
 
 const PERIOD_OPTIONS: PeriodOption[] = [
   makePeriodOption('period_7_days', 7),
-  makePeriodOption('period_30_days', 30)
+  makePeriodOption('period_30_days', 30),
+  makePeriodOption('period_90_days', 90)
 ];
 
 class MemberTab {
@@ -395,7 +396,7 @@ struct DashboardPage {
               .borderRadius(RADIUS.FULL)
               .backgroundColor(this.vm.selectedPeriodIndex === idx ? COLORS.PRIMARY : COLORS.BG_LIGHT_GRAY_F5)
               .onClick(() => { this.switchPeriod(idx) })
-              .accessibilityText($r('app.string.' + opt.labelKey) as Resource)
+              .accessibilityText(opt.label)
               .accessibilityLevel('yes')
           }, (opt: PeriodOption, idx: number) => `period_${idx}`)
         }
@@ -620,7 +621,6 @@ struct DashboardPage {
       }
       .padding({ left: SPACING.LG, right: SPACING.LG })
     }
-    .scrollable(ScrollDirection.Horizontal)
     .width('100%')
     .height(84)
     .scrollBar(BarState.Off)

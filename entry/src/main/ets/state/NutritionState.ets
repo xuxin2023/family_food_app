@@ -38,20 +38,19 @@ export class NutritionState {
   calculateProgressPercent(target: NutritionTarget): Map<string, number> {
     const progress = new Map<string, number>();
     if (target.caloriesTarget > 0) progress.set('calories', Math.min(this.todayIntakeCalories / target.caloriesTarget * 100, 999));
-    if (target.proteinTarget > 0) progress.set('protein', Math.min(this.todayIntakeProtein / target.proteinTarget * 100, 999));
-    if (target.fatTarget > 0) progress.set('fat', Math.min(this.todayIntakeFat / target.fatTarget * 100, 999));
-    if (target.carbsTarget > 0) progress.set('carbs', Math.min(this.todayIntakeCarbs / target.carbsTarget * 100, 999));
-    if (target.saltTarget > 0) progress.set('salt', Math.min(this.todayIntakeSodium / target.saltTarget * 100, 999));
-    if (target.fiberTarget > 0) progress.set('fiber', Math.min(this.todayIntakeFiber / target.fiberTarget * 100, 999));
+    if (target.proteinTarget_g > 0) progress.set('protein', Math.min(this.todayIntakeProtein / target.proteinTarget_g * 100, 999));
+    if (target.fatMax_g > 0) progress.set('fat', Math.min(this.todayIntakeFat / target.fatMax_g * 100, 999));
+    if (target.sodiumMax_mg > 0) progress.set('salt', Math.min(this.todayIntakeSodium / target.sodiumMax_mg * 100, 999));
+    if (target.fiberTarget_g > 0) progress.set('fiber', Math.min(this.todayIntakeFiber / target.fiberTarget_g * 100, 999));
     return progress;
   }
 
   isOverTarget(target: NutritionTarget): string[] {
     const exceeded: string[] = [];
     if (target.caloriesTarget > 0 && this.todayIntakeCalories > target.caloriesTarget) exceeded.push('热量');
-    if (target.saltTarget > 0 && this.todayIntakeSodium > target.saltTarget) exceeded.push('盐');
-    if (target.sugarTarget > 0 && this.todayIntakeSugar > target.sugarTarget) exceeded.push('糖');
-    if (target.fatTarget > 0 && this.todayIntakeFat > target.fatTarget) exceeded.push('脂肪');
+    if (target.sodiumMax_mg > 0 && this.todayIntakeSodium > target.sodiumMax_mg) exceeded.push('盐');
+    if (target.sugarMax_g > 0 && this.todayIntakeSugar > target.sugarMax_g) exceeded.push('糖');
+    if (target.fatMax_g > 0 && this.todayIntakeFat > target.fatMax_g) exceeded.push('脂肪');
     return exceeded;
   }
 }

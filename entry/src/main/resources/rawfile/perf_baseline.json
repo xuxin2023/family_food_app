@@ -1,0 +1,6 @@
+{
+  "coldStart": { "baseline": 2000, "tolerance": 500 },
+  "engineCalc": { "baseline": 100, "tolerance": 50 },
+  "pageTransition": { "baseline": 58, "tolerance": 2 },
+  "memoryGrowth": { "baseline": 5, "tolerance": 2 }
+}

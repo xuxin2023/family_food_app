@@ -102,6 +102,12 @@ export class AlternativeRecommender {
       const pct = Math.round((1 - entry.nutrition.calories / current.calories) * 100);
       improvements.push('热量减少' + pct + '%');
     }
+    if ((entry.nutrition.fiber ?? 0) > 5 && (entry.nutrition.fiber ?? 0) > (current.fiber ?? 0) * 1.5) {
+      improvements.push('膳食纤维更丰富');
+    }
+    if (entry.nutrition.protein > 10 && entry.nutrition.protein > current.protein * 1.3) {
+      improvements.push('蛋白质更高');
+    }
     candidate.improvements = improvements;
 
     return candidate;

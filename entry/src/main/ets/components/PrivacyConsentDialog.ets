@@ -1,11 +1,11 @@
-// PrivacyConsentDialog.ets
+﻿// PrivacyConsentDialog.ets
 // HarmonyOS 6.1 隐私合规 - 首次启动隐私政策与用户协议确认弹窗
 // 符合华为应用市场审核指南 7.5 条要求
 
 import { common } from '@kit.AbilityKit';
 import { bundleManager } from '@kit.AbilityKit';
 import { preferences } from '@kit.ArkData';
-import { ElderModeManager } from '../service/ElderModeManager';
+import { ElderModeManager } from 'hsp_service';
 
 const PREF_KEY_PRIVACY_AGREED = 'privacy_agreed_v2';
 

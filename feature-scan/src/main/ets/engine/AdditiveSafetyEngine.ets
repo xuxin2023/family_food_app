@@ -27,6 +27,11 @@ export interface AdditiveAssessment {
   cnMaxUsage?: string;
   safetyLevel?: string;
   gbRef?: string;
+  adi?: string;
+  childRestriction?: string;
+  pregnancyRestriction?: string;
+  allergyPotential?: boolean;
+  intoleranceRisk?: string;
 }
 
 export interface FoodAdditiveReport {
@@ -43,12 +48,23 @@ export interface FoodAdditiveReport {
 interface CnAdditiveEntry {
   cnsCode: string;
   name: string;
+  nameZh?: string;
   nameEn: string;
+  aliases?: string[];
   eNumber: string;
   function: string;
+  category?: string;
   maxUsage: string;
+  maxUseLevel?: number;
   safetyLevel: string;
+  adi?: string;
+  gb2760Categories?: string[];
+  childRestriction?: string;
+  pregnancyRestriction?: string;
+  allergyPotential?: boolean;
+  intoleranceRisk?: string;
   gbRef: string;
+  source?: string;
 }
 
 interface EToCnsMapping {
@@ -102,9 +118,20 @@ const ADDITIVE_DB: Record<string, { name: string; risk: AdditiveRiskLevel; categ
 const SAFETY_LEVEL_MAP: Record<string, AdditiveRiskLevel> = {
   'safe': AdditiveRiskLevel.SAFE,
   'caution': AdditiveRiskLevel.CAUTION,
-  'avoid': AdditiveRiskLevel.AVOID
+  'avoid': AdditiveRiskLevel.AVOID,
+  'forbidden': AdditiveRiskLevel.AVOID
 };
 
+/**
+ * 添加剂安全评估引擎
+ *
+ * 支持EU E编号 + 中国CNS编号(GB 2760-2024)双标准评估，
+ * 内置E编号安全数据库及中国标准映射表，可扩展加载
+ * cn_additive_database.json和e_to_cns_mapping.json。
+ * 风险等级: SAFE(安全) / CAUTION(谨慎) / AVOID(避免) / UNKNOWN(未知)
+ *
+ * @since 1.0.0
+ */
 export class AdditiveSafetyEngine {
   private static instance: AdditiveSafetyEngine;
   private cnDatabase: CnAdditiveEntry[] = [];
@@ -114,6 +141,11 @@ export class AdditiveSafetyEngine {
 
   private constructor() {}
 
+  /**
+   * 获取AdditiveSafetyEngine单例
+   *
+   * @returns AdditiveSafetyEngine实例
+   */
   static getInstance(): AdditiveSafetyEngine {
     if (!AdditiveSafetyEngine.instance) {
       AdditiveSafetyEngine.instance = new AdditiveSafetyEngine();
@@ -121,6 +153,15 @@ export class AdditiveSafetyEngine {
     return AdditiveSafetyEngine.instance;
   }
 
+  /**
+   * 加载中国添加剂标准数据库(GB 2760-2024)
+   *
+   * 从rawfile加载cn_additive_database.json和e_to_cns_mapping.json，
+   * 建立CNS↔E编号双向映射。仅需调用一次，重复调用无副作用。
+   *
+   * @param context - 应用上下文，用于访问resourceManager
+   * @returns Promise<void>
+   */
   async loadCnDatabase(context: common.Context): Promise<void> {
     if (this.cnDbLoaded) return;
 
@@ -144,6 +185,22 @@ export class AdditiveSafetyEngine {
     }
   }
 
+  /**
+   * 评估食品中添加剂安全性
+   *
+   * 从配料表中提取E编号和CNS编号，优先使用中国标准(GB 2760-2024)评估，
+   * 其次使用EU标准。返回各添加剂评估结果及整体风险等级。
+   *
+   * @param foodLabel - 食品标签数据
+   * @returns 添加剂评估报告，包含各添加剂详情及整体风险等级
+   *
+   * @example
+   * ```typescript
+   * const engine = AdditiveSafetyEngine.getInstance();
+   * const report = engine.assessFood(foodLabel);
+   * console.log(report.overallRisk); // AdditiveRiskLevel.AVOID | CAUTION | SAFE
+   * ```
+   */
   assessFood(foodLabel: FoodLabel): FoodAdditiveReport {
     const assessments: AdditiveAssessment[] = [];
     const ingredients = foodLabel.ingredients;
@@ -180,7 +237,12 @@ export class AdditiveSafetyEngine {
           cnsCode: cnEntry.cnsCode,
           cnMaxUsage: cnEntry.maxUsage,
           safetyLevel: cnEntry.safetyLevel,
-          gbRef: cnEntry.gbRef
+          gbRef: cnEntry.gbRef,
+          adi: cnEntry.adi,
+          childRestriction: cnEntry.childRestriction,
+          pregnancyRestriction: cnEntry.pregnancyRestriction,
+          allergyPotential: cnEntry.allergyPotential,
+          intoleranceRisk: cnEntry.intoleranceRisk
         });
       } else {
         assessments.push({
@@ -211,7 +273,12 @@ export class AdditiveSafetyEngine {
             cnsCode: cnEntry.cnsCode,
             cnMaxUsage: cnEntry.maxUsage,
             safetyLevel: cnEntry.safetyLevel,
-            gbRef: cnEntry.gbRef
+            gbRef: cnEntry.gbRef,
+            adi: cnEntry.adi,
+            childRestriction: cnEntry.childRestriction,
+            pregnancyRestriction: cnEntry.pregnancyRestriction,
+            allergyPotential: cnEntry.allergyPotential,
+            intoleranceRisk: cnEntry.intoleranceRisk
           });
           continue;
         }
@@ -265,6 +332,12 @@ export class AdditiveSafetyEngine {
     return { foodName: foodLabel.foodName, assessments, overallRisk, avoidCount, cautionCount, safeCount, summary, standardUsed };
   }
 
+  /**
+   * 根据E编号查询添加剂信息
+   *
+   * @param eNumber - E编号，如'E250'
+   * @returns 添加剂评估信息，未找到返回null
+   */
   getAdditiveInfo(eNumber: string): AdditiveAssessment | null {
     const info = ADDITIVE_DB[eNumber.toUpperCase()];
     if (!info) return null;
@@ -280,6 +353,12 @@ export class AdditiveSafetyEngine {
     };
   }
 
+  /**
+   * 根据CNS编号查询中国标准添加剂信息
+   *
+   * @param cnsCode - CNS编号，如'17.003'
+   * @returns 添加剂评估信息，未找到返回null
+   */
   getCnsAdditiveInfo(cnsCode: string): AdditiveAssessment | null {
     const cnEntry = this.cnDatabase.find(e => e.cnsCode === cnsCode);
     if (!cnEntry) return null;
@@ -293,18 +372,41 @@ export class AdditiveSafetyEngine {
       cnsCode: cnEntry.cnsCode,
       cnMaxUsage: cnEntry.maxUsage,
       safetyLevel: cnEntry.safetyLevel,
-      gbRef: cnEntry.gbRef
+      gbRef: cnEntry.gbRef,
+      adi: cnEntry.adi,
+      childRestriction: cnEntry.childRestriction,
+      pregnancyRestriction: cnEntry.pregnancyRestriction,
+      allergyPotential: cnEntry.allergyPotential,
+      intoleranceRisk: cnEntry.intoleranceRisk
     };
   }
 
+  /**
+   * E编号映射为CNS编号
+   *
+   * @param eNumber - E编号
+   * @returns 对应CNS编号，无映射返回null
+   */
   mapEToCns(eNumber: string): string | null {
     return this.eToCnsMap[eNumber.toUpperCase()] ?? null;
   }
 
+  /**
+   * CNS编号映射为E编号
+   *
+   * @param cnsCode - CNS编号
+   * @returns 对应E编号，无映射返回null
+   */
   mapCnsToE(cnsCode: string): string | null {
     return this.cnsToEMap[cnsCode] ?? null;
   }
 
+  /**
+   * 按风险等级搜索添加剂
+   *
+   * @param level - 风险等级
+   * @returns 符合该风险等级的添加剂列表
+   */
   searchByRiskLevel(level: AdditiveRiskLevel): AdditiveAssessment[] {
     const results: AdditiveAssessment[] = [];
     for (const [eNum, info] of Object.entries(ADDITIVE_DB)) {

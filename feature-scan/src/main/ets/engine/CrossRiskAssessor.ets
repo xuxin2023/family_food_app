@@ -49,6 +49,19 @@ export class DailyIntakeSnapshot {
   fat: number = 0;
 }
 
+/**
+ * 多维度风险交叉评估引擎
+ *
+ * 结合家庭成员画像、营养数据、过敏原、孕期安全进行综合风险评估，
+ * 评估维度包括：
+ * - 营养风险：针对控压/控糖/减脂/控脂目标检测超标
+ * - 过敏原风险：配料表与成员过敏原交叉匹配
+ * - 孕期风险：检测孕期/哺乳期避免或谨慎成分
+ * - 儿童风险：检测高钠/高糖/咖啡因等不适宜成分
+ * - 累计超标风险：今日已摄入+本次是否超标预警
+ *
+ * @since 1.0.0
+ */
 export class CrossRiskAssessor {
   private static readonly HIGH_SODIUM_MG: number = 500;
   private static readonly CHILD_HIGH_SUGAR_G: number = 15;
@@ -62,6 +75,22 @@ export class CrossRiskAssessor {
     '咖啡因', '咖啡', '红茶', '绿茶', '可乐', '能量饮料', '可可', '巧克力'
   ];
 
+  /**
+   * 执行多维度风险交叉评估
+   *
+   * @param foodLabel - 食品标签数据
+   * @param members - 家庭成员画像列表
+   * @param targets - 各成员营养目标列表
+   * @param dailyIntake - 今日已摄入快照
+   * @returns 综合风险评估结果，包含各风险因子及整体风险等级
+   *
+   * @example
+   * ```typescript
+   * const assessor = new CrossRiskAssessor();
+   * const result = assessor.assess(foodLabel, members, targets, dailyIntake);
+   * console.log(result.overallRiskLevel); // 'low' | 'medium' | 'high' | 'critical'
+   * ```
+   */
   assess(
     foodLabel: FoodLabel,
     members: FamilyProfile[],
@@ -336,6 +365,12 @@ export class CrossRiskAssessor {
     return `发现${parts.join('、')}，请关注受影响成员`;
   }
 
+  /**
+   * 获取风险等级对应颜色
+   *
+   * @param level - 风险等级('critical'|'high'|'medium'|'low')
+   * @returns 颜色HEX值
+   */
   static getRiskColor(level: string): string {
     switch (level) {
       case 'critical': return '#F44336';
@@ -346,6 +381,12 @@ export class CrossRiskAssessor {
     }
   }
 
+  /**
+   * 获取风险等级中文标签
+   *
+   * @param level - 风险等级('critical'|'high'|'medium'|'low')
+   * @returns 中文标签
+   */
   static getRiskLabel(level: string): string {
     switch (level) {
       case 'critical': return '严重';

@@ -5647,6 +5647,234 @@
     {
       "name": "peep_content_area",
       "value": "内容区域"
+    },
+    {
+      "name": "home_no_members_hint",
+      "value": "暂无成员，请先添加"
+    },
+    {
+      "name": "home_page_accessibility_desc",
+      "value": "家庭食品助手首页，查看成员概览"
+    },
+    {
+      "name": "home_scan_entry_title",
+      "value": "扫码识食"
+    },
+    {
+      "name": "home_scan_entry_subtitle",
+      "value": "扫条码/拍包装，秒出健康分析"
+    },
+    {
+      "name": "home_daily_intake",
+      "value": "每日摄入"
+    },
+    {
+      "name": "home_daily_intake_accessibility",
+      "value": "每日摄入追踪"
+    },
+    {
+      "name": "home_scan_history",
+      "value": "扫描历史"
+    },
+    {
+      "name": "home_scan_history_accessibility",
+      "value": "扫描历史时间线"
+    },
+    {
+      "name": "home_meal_plan",
+      "value": "膳食计划"
+    },
+    {
+      "name": "scan_page_load_failed",
+      "value": "扫描页面加载失败"
+    },
+    {
+      "name": "scan_batch_scan",
+      "value": "批量扫码"
+    },
+    {
+      "name": "scan_batch_count",
+      "value": "已扫描%d件商品"
+    },
+    {
+      "name": "scan_deep_analysis",
+      "value": "深度分析"
+    },
+    {
+      "name": "scan_page_accessibility_desc",
+      "value": "食品扫描页面，扫描条码或拍照识别食品"
+    },
+    {
+      "name": "report_page_load_failed",
+      "value": "报告页面加载失败"
+    },
+    {
+      "name": "report_save_image",
+      "value": "保存图片"
+    },
+    {
+      "name": "settings_data_backup",
+      "value": "数据备份"
+    },
+    {
+      "name": "settings_data_backup_desc",
+      "value": "加密导出所有本地数据到文件"
+    },
+    {
+      "name": "settings_data_restore",
+      "value": "数据恢复"
+    },
+    {
+      "name": "settings_data_restore_desc",
+      "value": "从加密备份文件恢复数据"
+    },
+    {
+      "name": "settings_backup_failed_no_ctx",
+      "value": "备份失败：无法获取上下文"
+    },
+    {
+      "name": "settings_backup_success",
+      "value": "备份成功：%d条记录已加密保存"
+    },
+    {
+      "name": "settings_backup_failed_with_error",
+      "value": "备份失败：%s"
+    },
+    {
+      "name": "settings_backup_failed_retry",
+      "value": "备份失败，请重试"
+    },
+    {
+      "name": "settings_restore_failed_no_ctx",
+      "value": "恢复失败：无法获取上下文"
+    },
+    {
+      "name": "settings_restore_success",
+      "value": "数据恢复成功"
+    },
+    {
+      "name": "settings_restore_failed_with_error",
+      "value": "恢复失败：%s"
+    },
+    {
+      "name": "settings_restore_failed_retry",
+      "value": "恢复失败，请重试"
+    },
+    {
+      "name": "settings_dark_mode_toggle_accessibility",
+      "value": "暗黑模式开关"
+    },
+    {
+      "name": "settings_view_online_version",
+      "value": "查看在线版本"
+    },
+    {
+      "name": "settings_view_privacy_online_accessibility",
+      "value": "在线查看隐私政策"
+    },
+    {
+      "name": "settings_view_agreement_online_accessibility",
+      "value": "在线查看用户协议"
+    },
+    {
+      "name": "ai_chat_page_load_failed",
+      "value": "AI 对话页面加载失败"
+    },
+    {
+      "name": "ai_chat_input_accessibility",
+      "value": "输入消息"
+    },
+    {
+      "name": "ai_chat_send_accessibility",
+      "value": "发送消息"
+    },
+    {
+      "name": "settings_save_today_status_accessibility",
+      "value": "保存今日状态"
+    },
+    {
+      "name": "settings_cancel_accessibility",
+      "value": "取消"
+    },
+    {
+      "name": "settings_collapse_accessibility",
+      "value": "收起"
+    },
+    {
+      "name": "settings_view_online_version_text",
+      "value": "查看在线版本"
+    },
+    {
+      "name": "settings_view_privacy_online",
+      "value": "在线查看隐私政策"
+    },
+    {
+      "name": "settings_view_agreement_online",
+      "value": "在线查看用户协议"
+    },
+    {
+      "name": "settings_confirm_delete_accessibility",
+      "value": "确认删除"
+    },
+    {
+      "name": "report_per_100g_unit",
+      "value": " / 100g"
+    },
+    {
+      "name": "member_edit_nickname_input_accessibility",
+      "value": "昵称输入"
+    },
+    {
+      "name": "member_edit_allergen_custom_accessibility",
+      "value": "自定义过敏原输入"
+    },
+    {
+      "name": "member_edit_save_accessibility",
+      "value": "保存成员"
+    },
+    {
+      "name": "member_edit_paywall_msg",
+      "value": "当前已添加 %d 位家庭成员。升级%s后，可添加无限数量的家庭成员，所有成员均可享受个性化饮食建议。"
+    },
+    {
+      "name": "ai_chat_offline_result",
+      "value": "端侧推理结果：风险评分 %d/100，评级 %s，置信度 %d%%"
+    },
+    {
+      "name": "ai_chat_offline_suffix",
+      "value": "[离线模式] 建议仅供参考，联网后可获得更精准分析"
+    },
+    {
+      "name": "ai_chat_fallback_result",
+      "value": "端侧推理结果：风险评分 %d/100，评级 %s"
+    },
+    {
+      "name": "ai_chat_fallback_suffix",
+      "value": "[降级为离线推理] 云端不可用，已切换端侧推理"
+    },
+    {
+      "name": "report_producer_label",
+      "value": "生产者: "
+    },
+    {
+      "name": "report_sc_number_label",
+      "value": "生产许可证: "
+    },
+    {
+      "name": "scan_offline_data_hint",
+      "value": "📡 离线数据"
+    },
+    {
+      "name": "report_principal_label",
+      "value": "委托方: "
+    },
+    {
+      "name": "report_page_accessibility_desc",
+      "value": "食品适配报告页面，查看家庭成员适配结果"
+    },
+    {
+      "name": "report_max_intake_format",
+      "value": "最多%dg"
     }
   ]
 }

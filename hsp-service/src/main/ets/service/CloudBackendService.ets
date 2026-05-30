@@ -289,8 +289,10 @@ export class CloudBackendService {
       } catch {
         return errorResult
       }
-    } finally {
-      httpClient.destroy()
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'httpPost failed: %{public}s', (e as Error).message)
+      const errorResult: Record<string, Object> = { 'code': 500, 'message': (e as Error).message, 'data': '' as Object }
+      return errorResult
     }
   }
 }

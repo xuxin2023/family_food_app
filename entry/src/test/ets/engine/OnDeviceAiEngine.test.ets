@@ -13,7 +13,7 @@ export default function onDeviceAiEngineTest() {
     });
 
     it('should parse valid ingredient result as IngredientAnalysis class instance', () => {
-      const parseMethod = (engine as unknown as { parseIngredientResult: (s: string) => IngredientAnalysis }).parseIngredientResult;
+      const parseMethod = (engine as { parseIngredientResult: (s: string) => IngredientAnalysis }).parseIngredientResult;
       if (parseMethod) {
         const input = JSON.stringify({
           harmfulAdditives: [{ name: 'test', code: 'E100', risk: '低' }],

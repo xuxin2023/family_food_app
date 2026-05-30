@@ -234,7 +234,6 @@ struct DietDiaryPage {
         }
         .padding({ left: SPACING.LG, right: SPACING.LG })
       }
-      .scrollable(ScrollDirection.Horizontal)
       .width('100%')
       .height(48)
       .margin({ bottom: SPACING.SM })

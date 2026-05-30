@@ -17,9 +17,9 @@ import { OpenFoodFactsService, DataLineage } from 'hsp_service';
 import { FavoriteItem, FavoriteRepository } from './repository/FavoriteRepository';
 import { CreateRecipeParams } from 'hsp_core';
 import { FamilyGroupRepository, RecipeRepository } from 'feature_community';
-import { FoodInputService, FoodInputResult } from './service/FoodInputService';
-import { DistributedSyncHelper } from './service/sync/DistributedSyncHelper';
-import { OnDeviceAiEngine } from './engine/OnDeviceAiEngine';
+import { FoodInputService, FoodInputResult } from 'hsp_service';
+import { DistributedSyncHelper } from 'hsp_service';
+import { OnDeviceAiEngine } from 'feature_scan';
 import { ExerciseNutritionRecommendation } from 'feature_report';
 import { CheckupReport, HealthArchiveUpdate } from 'feature_report';
 import { ChildHealthAssessment } from 'feature_report';
@@ -31,7 +31,7 @@ import { FoodFacade } from './facade/FoodFacade';
 import { MemberFacade } from './facade/MemberFacade';
 import { HealthFacade } from './facade/HealthFacade';
 import { SyncFacade } from './facade/SyncFacade';
-import { OfflineModeManager } from './service/OfflineModeManager';
+import { OfflineModeManager } from 'hsp_service';
 import { common } from '@kit.AbilityKit';
 import { relationalStore, preferences } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -148,11 +148,10 @@ export class AppState {
 
     let store = rdbStore;
     if (!store) {
-      const rdbConfig: relationalStore.StoreConfig = {
-        name: DB_NAME,
-        securityLevel: relationalStore.SecurityLevel.S3,
-        encrypt: true
-      };
+      const rdbConfig = new relationalStore.StoreConfig();
+      rdbConfig.name = DB_NAME;
+      rdbConfig.securityLevel = relationalStore.SecurityLevel.S3;
+      rdbConfig.encrypt = true;
       store = await relationalStore.getRdbStore(context, rdbConfig);
     }
     await migrateDatabase(context, store);

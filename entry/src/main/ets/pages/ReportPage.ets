@@ -119,7 +119,7 @@ struct ReportPage {
 
   build() {
     ErrorBoundary({
-      fallbackMessage: '报告页面加载失败',
+      fallbackMessage: $r('app.string.report_page_load_failed'),
       onRetry: () => { this.aboutToAppear() },
       hasError: this.hasPageError,
       boundaryName: 'ReportPage'
@@ -229,7 +229,7 @@ struct ReportPage {
       .justifyContent(FlexAlign.Center)
       .alignItems(VerticalAlign.Center)
       .onClick(() => { this.handleSaveImage() })
-      .accessibilityText('保存图片')
+      .accessibilityText($r('app.string.report_save_image'))
       .accessibilityLevel('yes')
       .margin({ right: 4 })
     }
@@ -253,6 +253,9 @@ struct ReportPage {
           levelText: this.selectedRec.level as string,
           levelBgColor: getLevelColorValue(this.selectedRec.levelColor)
         })
+        .accessibilityRole('meter')
+        .accessibilityValue({ min: 0, max: 100, now: this.nutriScore })
+        .accessibilityText(`营养评分${this.nutriScore}分`)
 
         // Nova 加工分级 + EcoScore 生态评级
         Column({ space: 4 }) {
@@ -263,6 +266,8 @@ struct ReportPage {
         // 过敏原高亮列表
         if (this.foodLabel.allergens.length > 0) {
           AllergenHighlightList({ allergenHints: this.foodLabel.allergens, ingredients: this.foodLabel.ingredients })
+            .accessibilityRole('list')
+            .accessibilityText(`过敏原列表：${this.foodLabel.allergens.join('、')}`)
         }
 
         // 添加剂红绿灯可视化（对标 Yuka/Olive）
@@ -301,7 +306,7 @@ struct ReportPage {
                 .fontSize(FONT_SIZE.XL)
                 .fontWeight(FONT_WEIGHT.BOLD)
                 .fontColor(COLORS.TEXT_PRIMARY)
-              Text(' / 100g')
+              Text($r('app.string.report_per_100g_unit'))
                 .fontSize(FONT_SIZE.TINY)
                 .fontColor(COLORS.TEXT_TERTIARY)
                 .margin({ left: 2 })
@@ -415,13 +420,12 @@ struct ReportPage {
             .onClick(() => {
               this.selectedMemberIndex = index
             })
-            .accessibilityText('切换成员')
+            .accessibilityText($r('app.string.ai_chat_switch_member'))
             .accessibilityLevel('yes')
           })
         }
         .padding({ left: 2, right: 2 })
       }
-      .scrollable(ScrollDirection.Horizontal)
       .width('100%')
       .height(34)
       .scrollBar(BarState.Off)
@@ -471,7 +475,6 @@ struct ReportPage {
       }
       .padding({ left: 16, right: 16 })
     }
-    .scrollable(ScrollDirection.Horizontal)
     .width('100%')
     .height(68)
     .scrollBar(BarState.Off)
@@ -614,7 +617,7 @@ struct ReportPage {
 
         // 最大量
         if (rec.maxAmount > 0) {
-          Text(`最多${rec.maxAmount}g`)
+          Text($r('app.string.report_max_amount', rec.maxAmount))
             .fontSize(FONT_SIZE.LG)
             .fontWeight(FONT_WEIGHT.BOLD)
             .fontColor(COLORS.TEXT_PRIMARY)
@@ -666,7 +669,7 @@ struct ReportPage {
       // 食品对比入口
       if (this.foodLabel.barcode.length > 0) {
         Row() {
-          Text('对比食品')
+          Text($r('app.string.food_compare_title'))
             .fontSize(16)
             .fontWeight(FontWeight.Medium)
             .fontColor(COLORS.PRIMARY)
@@ -755,7 +758,7 @@ struct ReportPage {
               this.paywallTrigger = this.appState.member.getPaywallTrigger('upgrade_member')
               this.showPaywallDialog = true
             })
-            .accessibilityText('解锁')
+            .accessibilityText($r('app.string.unlock'))
             .accessibilityLevel('yes')
         }
         .width('92%')
@@ -772,10 +775,11 @@ struct ReportPage {
           }
           .padding({ left: 20, right: 20 })
         }
-        .scrollable(ScrollDirection.Horizontal)
         .width('100%')
         .scrollBar(BarState.Off)
         .height(140)
+        .accessibilityRole('list')
+        .accessibilityText(`替代品推荐列表，共${this.alternatives.length}项`)
       }
     }
     .width('100%')
@@ -946,7 +950,7 @@ struct ReportPage {
 
         if (this.foodLabel.manufacturer.length > 0) {
           Row() {
-            Text('生产者: ')
+            Text($r('app.string.report_producer_label'))
               .fontSize(FONT_SIZE.BODY)
               .fontColor(COLORS.TEXT_TERTIARY)
             Text(this.foodLabel.manufacturer)
@@ -960,7 +964,7 @@ struct ReportPage {
 
         if (this.foodLabel.scNumber.length > 0) {
           Row() {
-            Text('生产许可证: ')
+            Text($r('app.string.report_sc_number_label'))
               .fontSize(FONT_SIZE.BODY)
               .fontColor(COLORS.TEXT_TERTIARY)
             Text(this.foodLabel.scNumber)
@@ -974,7 +978,7 @@ struct ReportPage {
 
         if (this.foodLabel.principal.length > 0) {
           Row() {
-            Text('委托方: ')
+            Text($r('app.string.report_principal_label'))
               .fontSize(FONT_SIZE.BODY)
               .fontColor(COLORS.TEXT_TERTIARY)
             Text(this.foodLabel.principal)
@@ -1046,7 +1050,7 @@ struct ReportPage {
     .height('100%')
     .backgroundColor(COLORS.BG_PAGE)
     .accessibilityGroup(true)
-    .accessibilityDescription('食品适配报告页面，查看家庭成员适配结果')
+    .accessibilityDescription($r('app.string.report_page_accessibility_desc'))
   }  // ==================== 业务逻辑方法 ====================
 
   /**
@@ -1112,7 +1116,7 @@ struct ReportPage {
         info.name = member?.nickname || ''
         info.levelText = rec.level
         info.levelColor = getLevelColorValue(rec.levelColor)
-        info.maxIntake = rec.maxAmount > 0 ? `最多${rec.maxAmount}g` : ''
+        info.maxIntake = rec.maxAmount > 0 ? $r('app.string.report_max_intake_format', rec.maxAmount) as string : ''
         return info
       })
 

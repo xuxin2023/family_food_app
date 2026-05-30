@@ -150,6 +150,7 @@ export { AppStorageSync, AppStorageKeys } from './src/main/ets/utils/AppStorageS
 export { ToastHelper } from './src/main/ets/utils/ToastHelper';
 export { DeviceAdapter, DeviceType, Breakpoint } from './src/main/ets/utils/DeviceAdapter';
 export { ErrorHandler } from './src/main/ets/utils/ErrorHandler';
+export { BusinessError } from './src/main/ets/utils/BusinessError';
 export { DataIntegrityChecker } from './src/main/ets/utils/DataIntegrityChecker';
 export { ObservableMap } from './src/main/ets/utils/ObservableMap';
 export { getCategoryLabel, getCategoryEmoji, formatTime, getDifficultyLabel, getDietTagLabel } from './src/main/ets/utils/RecipeUtil';
@@ -250,6 +251,7 @@ export { NutritionThreshold } from './src/main/ets/constants/NutritionThreshold'
 
 // ===== 补全工具导出（第二批） =====
 export { DomainEventBus, DomainEvents, CacheInvalidationData } from './src/main/ets/utils/DomainEventBus';
+export { resourceToStr } from './src/main/ets/utils/ResourceUtil';
 
 // ===== 服务层导出（批次2迁移） =====
 export {
@@ -260,3 +262,14 @@ export {
 export {
   GlobalAppState, getGlobalState, AppStorageV2Compat
 } from './src/main/ets/utils/GlobalStateProvider';
+
+// ===== 补全模型导出（第三批 — 跨模块共享类型） =====
+export { FoodInputResult } from './src/main/ets/model/FoodInputResult';
+export { PositiveAdvice } from './src/main/ets/model/PositiveAdvice';
+export { DataLineage, LineageRecord } from './src/main/ets/model/DataLineageTypes';
+export {
+  CheckupItem, CheckupReport, HealthArchiveUpdate,
+  NutrientSupplement, ExerciseNutritionRecommendation,
+  PersonalizedFactor, PersonalizedRecommendation,
+  ChildHealthAssessment
+} from './src/main/ets/model/HealthReportTypes';

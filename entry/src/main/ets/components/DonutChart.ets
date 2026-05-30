@@ -18,6 +18,8 @@ export struct DonutChart {
   @Param centerText: string = ''
   @Param centerSubText: ResourceStr = ''
   @Param showLegend: boolean = true
+  @Param onSegmentClick?: (index: number) => void
+  @Local selectedSegmentIndex: number = -1
 
   build() {
     if (this.segments.length === 0) {
@@ -65,7 +67,7 @@ export struct DonutChart {
         // 图例
         if (this.showLegend && this.segments.length > 0) {
           Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Center }) {
-            ForEach(this.segments, (seg: DonutSegment) => {
+            ForEach(this.segments, (seg: DonutSegment, index: number) => {
               Row({ space: 4 }) {
                         Row()
                   .width(10)
@@ -74,11 +76,18 @@ export struct DonutChart {
                   .backgroundColor(seg.color)
                 Text(seg.label + ' ' + this.getPercent(seg.value))
                   .fontSize(FONT_SIZE.SMALL)
-                  .fontColor(COLORS.TEXT_GRAY_6161)
+                  .fontColor(this.selectedSegmentIndex === index ? COLORS.TEXT_PRIMARY : COLORS.TEXT_GRAY_6161)
+                  .fontWeight(this.selectedSegmentIndex === index ? FontWeight.Bold : FontWeight.Regular)
                   .maxLines(1)
               }
               .padding({ right: SPACING.MD, bottom: SPACING.XS })
               .alignItems(VerticalAlign.Center)
+              .onClick(() => {
+                this.selectedSegmentIndex = this.selectedSegmentIndex === index ? -1 : index;
+                if (this.onSegmentClick) {
+                  this.onSegmentClick(index);
+                }
+              })
             }, (seg: DonutSegment, index: number) => `donut_${index}`)
           }
           .width('100%')
@@ -87,8 +96,18 @@ export struct DonutChart {
       }
       .width(this.chartSize)
       .alignItems(HorizontalAlign.Center)
-      .accessibilityLevel('no')
+      .accessibilityLevel('yes')
+      .accessibilityRole('image')
+      .accessibilityText(this.buildDonutA11yText())
     }
+  }
+
+  private buildDonutA11yText(): string {
+    const parts: string[] = ['营养构成图'];
+    for (const seg of this.segments) {
+      parts.push(`${seg.label} ${this.getPercent(seg.value)}`);
+    }
+    return parts.join('，');
   }
 
   @Builder

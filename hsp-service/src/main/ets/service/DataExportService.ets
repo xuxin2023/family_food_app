@@ -32,13 +32,13 @@ export class DataExportService {
       const userData = new Map<string, Object>();
       userData.set('exportTime', new Date().toISOString());
       userData.set('uid', this.authService?.getUid() ?? '');
-      userData.set('familyMembers', []);
-      userData.set('scanHistory', []);
-      userData.set('dietRecords', []);
-      userData.set('favorites', []);
-      userData.set('shoppingList', []);
-      userData.set('nutritionTargets', []);
-      userData.set('reminderRules', []);
+      userData.set('familyMembers', new Array<string>());
+      userData.set('scanHistory', new Array<string>());
+      userData.set('dietRecords', new Array<string>());
+      userData.set('favorites', new Array<string>());
+      userData.set('shoppingList', new Array<string>());
+      userData.set('nutritionTargets', new Array<string>());
+      userData.set('reminderRules', new Array<string>());
 
       const jsonStr = JSON.stringify(userData, null, 2);
       const fd = fileIo.openSync(exportFile, fileIo.OpenMode.WRITE_ONLY | fileIo.OpenMode.CREATE);

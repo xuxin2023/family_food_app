@@ -16,7 +16,7 @@ export class RawResponse {
 
 export class SecureJsonResponse {
   responseCode: number = -1;
-  data: Record<string, Object> | null = null;
+  data: Map<string, Object> | null = null;
   error: string = '';
 }
 
@@ -53,14 +53,22 @@ export class SecureHttpHelper {
         const raw = response.result;
         if (typeof raw === 'string' && raw.length > 0) {
           try {
-            result.data = JSON.parse(raw) as Record<string, Object>;
+            const parsed = JSON.parse(raw);
+            const parsedMap = new Map<string, Object>();
+            if (typeof parsed === 'object' && parsed !== null) {
+              const keys = Object.keys(parsed);
+              for (const key of keys) {
+                parsedMap.set(key, parsed[key]);
+              }
+            }
+            result.data = parsedMap;
           } catch (e) {
             hilog.warn(DOMAIN_ZERO, TAG, 'JSON.parse fallback to raw: %{public}s', JSON.stringify(e));
             const rawObj: RawResponse = new RawResponse();
             rawObj.raw = raw;
             const wrapRecord = new Map<string, Object>();
             wrapRecord.set('raw', rawObj.raw);
-            result.data = wrapRecord as unknown as Record<string, Object>;
+            result.data = wrapRecord;
           }
         }
       } else {

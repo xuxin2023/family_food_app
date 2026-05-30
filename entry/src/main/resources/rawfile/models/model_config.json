@@ -1,0 +1,30 @@
+{
+  "models": [
+    {
+      "id": "ingredient_ocr",
+      "name": "配料OCR识别模型",
+      "version": "1.0.0",
+      "file": "ingredient_ocr.ms",
+      "inputShape": [1, 3, 224, 224],
+      "outputShape": [1, 100],
+      "quantization": "int8",
+      "sizeKB": 2048,
+      "minApiVersion": 12,
+      "fallbackToCloud": true
+    },
+    {
+      "id": "ingredient_semantic",
+      "name": "配料语义解析模型",
+      "version": "1.0.0",
+      "file": "ingredient_semantic.ms",
+      "inputShape": [1, 128],
+      "outputShape": [1, 64],
+      "quantization": "fp16",
+      "sizeKB": 4096,
+      "minApiVersion": 12,
+      "fallbackToCloud": true
+    }
+  ],
+  "defaultDevice": "npu",
+  "fallbackChain": ["npu", "cpu", "cloud", "rule_engine"]
+}

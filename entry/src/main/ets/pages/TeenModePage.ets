@@ -97,7 +97,6 @@ struct TeenModePage {
         .width('100%')
       }
       .layoutWeight(1)
-      .scrollable(ScrollDirection.Vertical)
     }
     .width('100%')
     .height('100%')

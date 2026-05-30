@@ -44,3 +44,14 @@ export { TrendPredictionBar } from './components/TrendPredictionBar';
 export { ShareCard, ShareCardGenerator, MemberShareInfo, ShareImageParams } from './components/ShareCard';
 export { ComprehensiveRatingPanel } from './components/ComprehensiveRatingPanel';
 export { AlternativeComparePanel, AlternativeCompareItem, computeNutritionDelta } from './components/AlternativeComparePanel';
+
+// ===== T-068 entry瘦身迁移: 报告引擎 =====
+export { MealBalanceEngine } from './engine/MealBalanceEngine';
+export { RecommendationEngine } from './engine/RecommendationEngine';
+
+// ===== T-068 entry瘦身迁移: 报告服务 =====
+export { AiWeeklyReportService } from './service/AiWeeklyReportService';
+export { InspectionDataService } from './service/InspectionDataService';
+export { MilestoneService } from './service/MilestoneService';
+export { HealthRefreshScheduler } from './service/HealthRefreshScheduler';
+export { HealthService } from './service/HealthService';

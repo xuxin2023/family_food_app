@@ -30,3 +30,10 @@ export { OnDeviceInferenceEngine, InferenceResult } from './engine/OnDeviceInfer
 export { AdditiveSafetyEngine, AdditiveRiskLevel as AdditiveSafetyRiskLevel, AdditiveAssessment, FoodAdditiveReport } from './engine/AdditiveSafetyEngine';
 export { AllergenCrossReactivityEngine, CrossReactivityPair, AllergenCrossReport, CrossReactiveRisk } from './engine/AllergenCrossReactivityEngine';
 export { IngredientDeepAnalyzer, IngredientAnalysis } from './engine/IngredientDeepAnalyzer';
+
+// ===== T-068 entry瘦身迁移: 端侧AI引擎 =====
+export { OnDeviceAiEngine, IngredientAnalysis as AiIngredientAnalysis, PersonalizedAdviceOutput } from './engine/OnDeviceAiEngine';
+
+// ===== T-068 entry瘦身迁移: 扫描服务 =====
+export { OcrService } from './service/OcrService';
+export { OnlineShoppingParser, ParsedShoppingItem } from './service/OnlineShoppingParser';

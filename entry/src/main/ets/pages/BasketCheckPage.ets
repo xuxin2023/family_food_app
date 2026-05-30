@@ -1,7 +1,7 @@
 // 购物篮检查页 - 连续扫描后检查一篮子食品
 
 import { safeBack, safePushUrl, FoodLabel, PaywallTrigger, BUTTON, COLORS } from 'hsp_core';
-import { BasketCheckResult, BasketCheckEngine } from '../engine/BasketCheckEngine';
+import { BasketCheckResult, BasketCheckEngine } from 'hsp_service';
 import { AppState } from '../AppState';
 import { PaywallDialog } from 'feature_scan';
 

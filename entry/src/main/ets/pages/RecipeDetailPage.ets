@@ -125,16 +125,15 @@ struct RecipeDetailPage {
 
   @Builder
   coverSection() {
-    if (this.recipe !== null) {
     Column() {
-      Text(getCategoryEmoji(this.recipe.category))
+      Text(getCategoryEmoji(this.recipe!.category))
         .fontSize(72)
-      Text(this.recipe.title)
+      Text(this.recipe!.title)
         .fontSize(24)
         .fontWeight(FontWeight.Bold)
         .fontColor(COLORS.WHITE)
         .margin({ top: 16 })
-      Text(getCategoryLabel(this.recipe.category) + ' · ' + getDifficultyLabel(this.recipe.difficulty))
+      Text(getCategoryLabel(this.recipe!.category) + ' · ' + getDifficultyLabel(this.recipe!.difficulty))
         .fontSize(14)
         .fontColor(COLORS.WHITE)
         .opacity(0.8)
@@ -145,59 +144,58 @@ struct RecipeDetailPage {
     .backgroundColor(COLORS.PRIMARY)
     .justifyContent(FlexAlign.Center)
     .alignItems(HorizontalAlign.Center)
-    }
   }
 
   @Builder
   infoSection() {
-    if (this.recipe !== null) {
-    Row({ space: 0 }) {
-      this.infoItem('⏱️', `${this.recipe.totalMinutes}分钟`)
-      this.infoItem('🍽️', `${this.recipe.servings}人份`)
-      this.infoItem('📝', `${this.recipe.steps.length}步`)
-    }
-    .width('100%')
-    .padding(16)
-    .backgroundColor(COLORS.WHITE)
-    .margin({ bottom: 8 })
-
-    // 互动按钮组
-    Row({ space: 16 }) {
-      LikeButton({
-        isLiked: this.hasLiked,
-        likeCount: this.recipe.likeCount,
-        onToggle: () => {
-          this.appState.toggleRecipeLike(this.recipeId).then((newState: boolean) => {
-            if (this.recipe) {
-              if (newState !== this.hasLiked) {
-                this.recipe.likeCount += newState ? 1 : -1
-              }
-            }
-            this.hasLiked = newState
-          })
-        }
-      })
-
-      Row({ space: 6 }) {
-        Text(this.hasBookmarked ? '🔖' : '🏷️').fontSize(20)
-        Text($r('app.string.favorite')).fontSize(14).fontColor(COLORS.TEXT_SECONDARY)
+    Column() {
+      Row({ space: 0 }) {
+        this.infoItem('⏱️', `${this.recipe!.totalMinutes}分钟`)
+        this.infoItem('🍽️', `${this.recipe!.servings}人份`)
+        this.infoItem('📝', `${this.recipe!.steps.length}步`)
       }
-      .onClick(() => {
-        this.appState.toggleRecipeBookmark(this.recipeId, '').then((result: boolean) => {
-          this.hasBookmarked = result
-          ToastHelper.show(this.getUIContext(), result ? $r('app.string.recipe_detail_favorited') : $r('app.string.recipe_detail_unfavorited'))
+      .width('100%')
+      .padding(16)
+      .backgroundColor(COLORS.WHITE)
+      .margin({ bottom: 8 })
+
+      Row({ space: 16 }) {
+        LikeButton({
+          isLiked: this.hasLiked,
+          likeCount: this.recipe!.likeCount,
+          onToggle: () => {
+            this.appState.toggleRecipeLike(this.recipeId).then((newState: boolean) => {
+              if (this.recipe) {
+                if (newState !== this.hasLiked) {
+                  this.recipe.likeCount += newState ? 1 : -1
+                }
+              }
+              this.hasLiked = newState
+            })
+          }
         })
-      })
-      .accessibilityText('收藏')
-      .accessibilityLevel('yes')
-      .padding({ left: 12, right: 12, top: 6, bottom: 6 })
-      .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
-      .borderRadius(20)
+
+        Row({ space: 6 }) {
+          Text(this.hasBookmarked ? '🔖' : '🏷️').fontSize(20)
+          Text($r('app.string.favorite')).fontSize(14).fontColor(COLORS.TEXT_SECONDARY)
+        }
+        .onClick(() => {
+          this.appState.toggleRecipeBookmark(this.recipeId, '').then((result: boolean) => {
+            this.hasBookmarked = result
+            ToastHelper.show(this.getUIContext(), result ? $r('app.string.recipe_detail_favorited') : $r('app.string.recipe_detail_unfavorited'))
+          })
+        })
+        .accessibilityText('收藏')
+        .accessibilityLevel('yes')
+        .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+        .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
+        .borderRadius(20)
+      }
+      .width('100%')
+      .padding(16)
+      .backgroundColor(COLORS.WHITE)
     }
     .width('100%')
-    .padding(16)
-    .backgroundColor(COLORS.WHITE)
-    }
   }
 
   @Builder
@@ -228,19 +226,17 @@ struct RecipeDetailPage {
     .layoutWeight(1)
     .alignItems(HorizontalAlign.Center)
     .onClick(() => { this.selectedSection = value })
-    .accessibilityText(label as Resource)
+    .accessibilityText(label )
     .accessibilityLevel('yes')
   }
 
   @Builder
   detailSection() {
-    if (this.recipe !== null) {
     Column() {
-      // 描述
-      if (this.recipe.description.length > 0) {
+      if (this.recipe!.description.length > 0) {
         Column() {
           Text($r('app.string.intro_label')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 8 })
-          Text(this.recipe.description).fontSize(14).fontColor(COLORS.TEXT_SECONDARY).lineHeight(22)
+          Text(this.recipe!.description).fontSize(14).fontColor(COLORS.TEXT_SECONDARY).lineHeight(22)
         }
         .width('100%')
         .padding(16)
@@ -249,11 +245,10 @@ struct RecipeDetailPage {
         .margin({ bottom: 12 })
       }
 
-      // 食材 + 营养信息: lg 下并排，sm/md 下竖排
       if (this.currentBreakpoint === 'lg') {
         Row({ space: 12 }) {
           this.ingredientsColumn()
-          if (this.recipe.nutrition) {
+          if (this.recipe!.nutrition) {
             this.nutritionColumn()
           }
         }
@@ -261,15 +256,14 @@ struct RecipeDetailPage {
         .alignItems(VerticalAlign.Top)
       } else {
         this.ingredientsColumn()
-        if (this.recipe.nutrition) {
+        if (this.recipe!.nutrition) {
           this.nutritionColumn()
         }
       }
 
-      // 步骤
       Column() {
         Text($r('app.string.cook_steps')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
-        ForEach(this.recipe.steps, (step: RecipeStep) => {
+        ForEach(this.recipe!.steps, (step: RecipeStep) => {
           Row() {
             Stack() {
               Circle()
@@ -300,12 +294,11 @@ struct RecipeDetailPage {
       .borderRadius(RADIUS.LG)
       .margin({ bottom: 12 })
 
-      // 适配标签
-      if (this.recipe.dietTags.length > 0) {
+      if (this.recipe!.dietTags.length > 0) {
         Column() {
           Text($r('app.string.suitable_persons')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 8 })
           Row({ space: 8 }) {
-            ForEach(this.recipe.dietTags, (tag: DietTag) => {
+            ForEach(this.recipe!.dietTags, (tag: DietTag) => {
               Text(getDietTagLabel(tag))
                 .fontSize(12)
                 .fontColor(COLORS.ACCENT_GREEN_4CAF)
@@ -322,9 +315,8 @@ struct RecipeDetailPage {
         .margin({ bottom: 12 })
       }
 
-      // 作者
       Row() {
-        Text(`👩‍🍳 发布者：${this.recipe.authorName}`)
+        Text(`👩‍🍳 发布者：${this.recipe!.authorName}`)
           .fontSize(13)
           .fontColor(COLORS.TEXT_GRAY_9E9E)
       }
@@ -333,15 +325,13 @@ struct RecipeDetailPage {
     }
     .width('100%')
     .padding(16)
-    }
   }
 
   @Builder
   ingredientsColumn() {
-    if (this.recipe !== null) {
     Column() {
       Text($r('app.string.ingredient_list')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
-      ForEach(this.recipe.ingredients, (ing: RecipeIngredient) => {
+      ForEach(this.recipe!.ingredients, (ing: RecipeIngredient) => {
         Row() {
           Text('•').fontSize(14).fontColor(COLORS.PRIMARY).margin({ right: 8 })
           Text(ing.name).fontSize(14).fontWeight(FontWeight.Medium)
@@ -363,27 +353,24 @@ struct RecipeDetailPage {
     .backgroundColor(COLORS.WHITE)
     .borderRadius(RADIUS.LG)
     .margin({ bottom: 12 })
-    }
   }
 
   @Builder
   nutritionColumn() {
-    if (this.recipe !== null && this.recipe.nutrition !== null) {
     Column() {
       Text($r('app.string.nutrition_per_serving')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
-      this.nutritionRow($r('app.string.recipe_detail_calories'), this.recipe.nutrition.calories.toString() + ' kcal')
-      this.nutritionRow($r('app.string.recipe_detail_protein'), this.recipe.nutrition.protein.toString())
-      this.nutritionRow($r('app.string.recipe_detail_fat'), this.recipe.nutrition.fat.toString())
-      this.nutritionRow($r('app.string.recipe_detail_carbohydrate'), this.recipe.nutrition.carbohydrate.toString())
-      this.nutritionRow($r('app.string.recipe_detail_sodium'), this.recipe.nutrition.sodium.toString())
-      this.nutritionRow($r('app.string.recipe_detail_sugar'), this.recipe.nutrition.sugar.toString())
+      this.nutritionRow($r('app.string.recipe_detail_calories'), this.recipe!.nutrition!.calories.toString() + ' kcal')
+      this.nutritionRow($r('app.string.recipe_detail_protein'), this.recipe!.nutrition!.protein.toString())
+      this.nutritionRow($r('app.string.recipe_detail_fat'), this.recipe!.nutrition!.fat.toString())
+      this.nutritionRow($r('app.string.recipe_detail_carbohydrate'), this.recipe!.nutrition!.carbohydrate.toString())
+      this.nutritionRow($r('app.string.recipe_detail_sodium'), this.recipe!.nutrition!.sodium.toString())
+      this.nutritionRow($r('app.string.recipe_detail_sugar'), this.recipe!.nutrition!.sugar.toString())
     }
     .layoutWeight(1)
     .padding(16)
     .backgroundColor(COLORS.WHITE)
     .borderRadius(RADIUS.LG)
     .margin({ bottom: 12 })
-    }
   }
 
   @Builder
@@ -495,10 +482,4 @@ struct RecipeDetailPage {
     .width('100%')
   }
 
-  pageTransition() {
-    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
-      .slide(SlideEffect.Right)
-    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
-      .slide(SlideEffect.Left)
-  }
 }

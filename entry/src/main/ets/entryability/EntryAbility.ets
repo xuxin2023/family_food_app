@@ -13,8 +13,10 @@ import { AppState } from '../AppState';
 import { AnalyticsService, PermissionManager, NetworkMonitorService, PrivacyManager, SecureHttpClient, UpdateChecker, UpdateInfo, PermissionProgressiveGuide, SystemPrivacyService } from 'hsp_service';
 import { preferences, relationalStore } from '@kit.ArkData';
 import { warmUpOfflineDatabase } from 'hsp_core';
-import { GlobalErrorHandler } from '../utils/GlobalErrorHandler';
+import { GlobalErrorHandler } from 'hsp_service';
 import { DeepLinkHandler } from '../utils/DeepLinkHandler';
+import { PushService } from 'hsp_service';
+import { PushMessageHandler, PushMessagePayload } from 'hsp_service';
 
 const TAG = 'EntryAbility';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -157,6 +159,13 @@ export default class EntryAbility extends UIAbility {
 
     // 隐私合规检查
     this.checkPrivacyCompliance();
+
+    // Push Kit 初始化
+    PushService.getInstance().init().then(() => {
+      hilog.info(DOMAIN_ZERO, TAG, 'PushService init success (deferred)');
+    }).catch((err: Error) => {
+      hilog.warn(DOMAIN_ZERO, TAG, 'PushService init failed: %{public}s', err.message);
+    });
 
     this.updateCheckTimer = setTimeout(() => {
       this.silentCheckUpdate();

@@ -2,8 +2,7 @@
 
 import { HealthSignal, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { ManualHealthSignalProvider } from './health/ManualHealthSignalProvider';
-import { HealthSignalProvider } from './health/HealthSignalProvider';
+import { ManualHealthSignalProvider, HealthSignalProvider } from 'hsp_service';
 
 const TAG = 'HealthService';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;

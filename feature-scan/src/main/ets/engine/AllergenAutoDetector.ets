@@ -26,7 +26,19 @@ export interface AllergenCheckResult {
   details: { allergen: string; ingredient: string; position: number }[];
 }
 
-@ComponentV2
+/**
+ * 过敏原自动检测器
+ *
+ * 基于配料表和用户过敏史进行过敏原检测，支持：
+ * - 实时配料表过敏原匹配（checkAllergens）
+ * - 基于不良反应历史的相关性分析（detectFromHistory）
+ * - 交叉反应性分析（analyzeCrossReactivity）
+ *
+ * 内置中国常见过敏原关键词库（花生、牛奶、鸡蛋、小麦、大豆、鱼、
+ * 甲壳类、贝类、树坚果、芝麻、芥末、亚硫酸盐等）。
+ *
+ * @since 1.0.0
+ */
 export class AllergenAutoDetector {
   private static instance: AllergenAutoDetector | null = null;
   private detectionCache: Map<string, SuspectedAllergen[]> = new Map();
@@ -51,6 +63,11 @@ export class AllergenAutoDetector {
     '芹菜', '羽扇豆', '软体动物'
   ];
 
+  /**
+   * 获取AllergenAutoDetector单例
+   *
+   * @returns AllergenAutoDetector实例
+   */
   static getInstance(): AllergenAutoDetector {
     if (!AllergenAutoDetector.instance) {
       AllergenAutoDetector.instance = new AllergenAutoDetector();
@@ -65,6 +82,20 @@ export class AllergenAutoDetector {
     }
   }
 
+  /**
+   * 检测配料表中是否存在用户过敏原
+   *
+   * @param userAllergens - 用户过敏原列表
+   * @param ingredients - 食品配料列表
+   * @returns 检测结果，包含是否告警、匹配的过敏原及详情
+   *
+   * @example
+   * ```typescript
+   * const detector = AllergenAutoDetector.getInstance();
+   * const result = detector.checkAllergens(['花生', '牛奶'], ['花生酱', '面粉', '乳清蛋白']);
+   * console.log(result.hasAlert); // true
+   * ```
+   */
   checkAllergens(userAllergens: string[], ingredients: string[]): AllergenCheckResult {
     const result: AllergenCheckResult = {
       hasAlert: false,
@@ -124,6 +155,12 @@ export class AllergenAutoDetector {
     return result;
   }
 
+  /**
+   * 判断单个配料是否包含已知过敏原关键词
+   *
+   * @param ingredient - 配料名称
+   * @returns 是否包含过敏原关键词
+   */
   containsAnyAllergen(ingredient: string): boolean {
     const normalized = ingredient.trim().toLowerCase();
     let found = false;
@@ -133,6 +170,16 @@ export class AllergenAutoDetector {
     return found;
   }
 
+  /**
+   * 基于不良反应历史自动推测疑似过敏原
+   *
+   * 通过统计配料出现频率与不良反应的关联度，
+   * 计算相关性分数，返回置信度最高的前10项疑似过敏原。
+   *
+   * @param memberId - 家庭成员ID
+   * @param history - 不良反应记录列表
+   * @returns 疑似过敏原列表，按置信度降序排列
+   */
   async detectFromHistory(memberId: string, history: AdverseReactionRecord[]): Promise<SuspectedAllergen[]> {
     const cacheKey = `${memberId}_${history.length}`;
     const cached = this.detectionCache.get(cacheKey);
@@ -186,19 +233,35 @@ export class AllergenAutoDetector {
     return result;
   }
 
+  /**
+   * 分析交叉反应性风险
+   *
+   * 基于已知过敏原的交叉反应映射表，检测食品配料中
+   * 可能引发交叉反应的成分（如花生→大豆、牛奶→山羊奶）。
+   *
+   * @param knownAllergens - 已知过敏原列表
+   * @param foodIngredients - 食品配料列表
+   * @returns 交叉反应风险警告列表
+   */
   analyzeCrossReactivity(
     knownAllergens: string[],
     foodIngredients: string[]
   ): { ingredient: string; relatedAllergen: string; riskLevel: number }[] {
     const crossReactivityMap: Record<string, string[]> = {
-      '花生': ['大豆', '其他豆类', '树坚果'],
-      '牛奶': ['山羊奶', '绵羊奶', '乳清'],
-      '鸡蛋': ['禽类蛋白质'],
+      '花生': ['大豆', '豌豆', '扁豆', '树坚果'],
+      '牛奶': ['山羊奶', '绵羊奶', '乳清', '牛肉'],
+      '鸡蛋': ['鸭蛋', '鹅蛋', '禽类蛋白质'],
       '小麦': ['大麦', '黑麦', '燕麦'],
-      '鱼': ['贝类', '甲壳类'],
-      '大豆': ['花生', '其他豆类'],
-      '树坚果': ['花生', '椰子'],
-      '贝类': ['甲壳类', '鱼'],
+      '鱼': ['虾', '蟹', '贝类', '甲壳类'],
+      '虾': ['蟹', '龙虾', '鱿鱼', '甲壳类'],
+      '大豆': ['花生', '豌豆'],
+      '树坚果': ['花生', '椰子', '芝麻'],
+      '贝类': ['甲壳类', '鱼', '虾', '蟹'],
+      '甲壳类': ['贝类', '鱼', '虾', '蟹'],
+      '芝麻': ['树坚果', '花生'],
+      '芒果': ['腰果', '开心果'],
+      '芥末': ['芹菜', '萝卜'],
+      '芹菜': ['芥末', '胡萝卜', '茴香'],
     };
 
     const warnings: { ingredient: string; relatedAllergen: string; riskLevel: number }[] = [];

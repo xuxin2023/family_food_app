@@ -2,7 +2,7 @@
 // 链接输入弹窗组件 - 粘贴电商商品链接进行解析
 
 import { ToastHelper, COLORS, BUTTON, safePushUrl, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
-import { OnlineShoppingParser } from '../service/OnlineShoppingParser';
+import { OnlineShoppingParser } from 'feature_scan';
 import { AppState } from '../AppState';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 

@@ -1,9 +1,9 @@
-// EmptyState.ets
+﻿// EmptyState.ets
 // 可复用的空状态组件 - 统一管理各页面的"暂无数据"展示
 // 支持：自定义图标、主标题、副标题、操作按钮、顶部间距
 
 import { COLORS, FONT_SIZE, SPACING, RADIUS } from 'hsp_core';
-import { ElderModeManager } from '../service/ElderModeManager';
+import { ElderModeManager } from 'hsp_service';
 
 export class EmptyStateAction {
   text: string = '';

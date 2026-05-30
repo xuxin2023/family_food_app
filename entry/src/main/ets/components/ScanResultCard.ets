@@ -161,7 +161,6 @@ export struct ScanResultCard {
               }, (item: FoodLabel) => item.foodId)
             }
           }
-          .scrollable(ScrollDirection.Horizontal)
           .scrollBar(BarState.Off)
           .margin({ bottom: SPACING.MD })
         }

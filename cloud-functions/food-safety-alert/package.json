@@ -1,0 +1,7 @@
+{
+  "name": "food-safety-alert",
+  "version": "1.0.0",
+  "description": "触发食品安全预警推送(由管理后台或定时任务调用)",
+  "main": "index.ts",
+  "dependencies": {}
+}

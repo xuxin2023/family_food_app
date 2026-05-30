@@ -1,20 +1,11 @@
 // NutritionTrendPage.ets
 // 营养摄入趋势图表页面 - 7天/30天营养素趋势、每日汇总、预算对比
 
-import { safeBack, getPageParams, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, HILOG_DOMAIN_DEFAULT, DateUtil, NutrientTrendData, DailyNutritionSummary, TrendDirection, DailyNutrientPoint, MealGroup } from 'hsp_core';
+import { safeBack, getPageParams, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, HILOG_DOMAIN_DEFAULT, DateUtil, NutrientTrendData, DailyNutritionSummary, TrendDirection, DailyNutrientPoint, MealGroup, resourceToStr } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { TrendChart } from '../components/TrendChart';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-
-function resStrToKey(s: ResourceStr): string {
-  if (typeof s === 'string') return s;
-  try {
-    return getContext().resourceManager.getStringSync(s.id);
-  } catch (_e) {
-    return String(s.id);
-  }
-}
 
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const TAG = 'NutritionTrendPage';
@@ -33,7 +24,8 @@ function makePeriodOption(label: ResourceStr, days: number): PeriodOption {
 
 const PERIOD_OPTIONS: PeriodOption[] = [
   makePeriodOption($r('app.string.nutrition_trend_7_days'), 7),
-  makePeriodOption($r('app.string.nutrition_trend_30_days'), 30)
+  makePeriodOption($r('app.string.nutrition_trend_30_days'), 30),
+  makePeriodOption('90天', 90)
 ];
 
 @Entry
@@ -218,9 +210,9 @@ struct NutritionTrendPage {
               .margin({ left: SPACING.LG, bottom: SPACING.MD })
 
             ForEach(this.trends, (trend: NutrientTrendData) => {
-              TrendChart({ data: trend })
+              TrendChart({ data: trend, showSkeleton: this.isLoading })
                 .padding({ left: SPACING.LG, right: SPACING.LG })
-            }, (trend: NutrientTrendData) => resStrToKey(trend.nutrientName))
+            }, (trend: NutrientTrendData) => resourceToStr(trend.nutrientName))
 
             // 每日数值列表
             if (this.summaries.length > 0) {

@@ -6,7 +6,8 @@
   "author": "",
   "license": "",
   "dependencies": {
-    "hsp_core": "file:../hsp_core"
+    "hsp_core": "file:../hsp_core",
+    "hsp_service": "file:../hsp-service"
   },
   "devDependencies": {}
 }

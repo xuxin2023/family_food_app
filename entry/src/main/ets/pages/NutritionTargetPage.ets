@@ -170,7 +170,6 @@ struct NutritionTargetPage {
             }, (member: FamilyProfile) => member.memberId)
           }
         }
-        .scrollable(ScrollDirection.Horizontal)
         .scrollBar(BarState.Off)
       }
     }
@@ -212,7 +211,6 @@ struct NutritionTargetPage {
           }, (preset: NutritionPreset, index?: number) => `${preset.name}_${index}`)
         }
       }
-      .scrollable(ScrollDirection.Horizontal)
       .scrollBar(BarState.Off)
     }
     .width('92%')

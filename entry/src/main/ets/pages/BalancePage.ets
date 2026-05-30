@@ -147,7 +147,7 @@ struct BalancePage {
               })
               .margin({ right: 8, bottom: 10 })
               .onClick(() => { this.handleScenarioSelection(scenario.value) })
-              .accessibilityText(scenario.label as Resource)
+              .accessibilityText(scenario.label )
               .accessibilityLevel('yes')
             }, (scenario: ScenarioOption) => scenario.value)
           }

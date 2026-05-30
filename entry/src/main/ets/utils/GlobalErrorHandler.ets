@@ -6,7 +6,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { ToastHelper } from 'hsp_core';
 import { AnalyticsService } from 'hsp_service';
-import { remoteErrorReporter } from '../service/RemoteErrorReporter';
+import { remoteErrorReporter } from 'hsp_service';
 
 const TAG = 'GlobalErrorHandler';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;

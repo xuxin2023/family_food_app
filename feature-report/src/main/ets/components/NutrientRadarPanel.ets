@@ -21,6 +21,7 @@ export struct NutrientRadarPanel {
   @Param scores: NutrientScores = new NutrientScores()
   @Param showLabels: boolean = true
   @Param chartSize: number = 200
+  @Param onDimensionClick?: (dimensionKey: string) => void
 
   private readonly labels: string[] = ['蛋白质', '膳食纤维', '维生素', '矿物质', '健康脂肪']
 
@@ -144,7 +145,7 @@ export struct NutrientRadarPanel {
       }
 
       if (this.showLabels) {
-        ForEach(this.buildScoreData(), (item: ScoreDataItem) => {
+        ForEach(this.buildScoreData(), (item: ScoreDataItem, i: number) => {
           Row({ space: 6 }) {
             Circle()
               .width(8)
@@ -155,11 +156,18 @@ export struct NutrientRadarPanel {
               .fontColor('#333333')
           }
           .justifyContent(FlexAlign.Center)
+          .onClick(() => {
+            const keys: string[] = ['protein', 'fiber', 'vitamins', 'minerals', 'healthyFats'];
+            if (this.onDimensionClick && i < keys.length) {
+              this.onDimensionClick(keys[i]);
+            }
+          })
         }, (item: ScoreDataItem, i: number) => `score_${i}`)
       }
     }
     .width('100%')
     .alignItems(HorizontalAlign.Center)
+    .accessibilityRole('image')
     .accessibilityText(this.getAccessibilitySummary())
     .accessibilityLevel('yes')
   }

@@ -82,6 +82,8 @@ export struct RecommendationCard {
     .backgroundColor(COLORS.WHITE)
     .borderRadius(12)
     .alignItems(HorizontalAlign.Start)
-    .accessibilityText(`适配建议：${this.memberName}，${this.recommendation?.reasons?.join('，') ?? ''}`)
+    .accessibilityRole('listItem')
+    .accessibilityText(`适配建议：${this.memberName}，${this.recommendation.level}，${this.recommendation?.reasons?.join('，') ?? ''}`)
+    .accessibilityLevel('yes')
   }
 }

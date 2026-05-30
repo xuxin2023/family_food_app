@@ -13,36 +13,20 @@
 import { hilog } from '@kit.PerformanceAnalysisKit'
 import { HILOG_DOMAIN_DEFAULT } from 'hsp_core'
 import { common } from '@kit.AbilityKit'
-import { OnDeviceInferenceEngine } from 'feature_scan'
+import { OnDeviceInferenceEngine } from './OnDeviceInferenceEngine'
+import { mindSporeLite, ModelContext } from '@kit.AIFoundation'
+import { AiClient } from 'hsp_service'
 
 const TAG = 'OnDeviceAiEngine'
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT
 
 let mindSporeLiteAvailable = false;
-let mindSporeLiteModule: typeof import('@kit.MindSporeLiteKit').mindSporeLite | null = null;
 try {
-  const msl = globalThis['@kit.MindSporeLiteKit'] as Record<string, Object> | null;
-  if (msl) {
-    mindSporeLiteModule = msl.mindSporeLite as typeof import('@kit.MindSporeLiteKit').mindSporeLite;
-    mindSporeLiteAvailable = true;
-    hilog.info(DOMAIN_ZERO, TAG, 'MindSporeLiteKit detected via globalThis');
-  }
+  mindSporeLiteAvailable = true;
+  hilog.info(DOMAIN_ZERO, TAG, 'AIFoundation kit available');
 } catch {
   mindSporeLiteAvailable = false;
-  hilog.info(DOMAIN_ZERO, TAG, 'MindSporeLiteKit not available, using rule engine fallback');
-}
-
-function getMindSporeLite(): typeof import('@kit.MindSporeLiteKit').mindSporeLite | null {
-  if (mindSporeLiteAvailable && mindSporeLiteModule) return mindSporeLiteModule;
-  try {
-    const msl = globalThis['@kit.MindSporeLiteKit'] as Record<string, Object> | null;
-    if (msl) {
-      mindSporeLiteModule = msl.mindSporeLite as typeof import('@kit.MindSporeLiteKit').mindSporeLite;
-      mindSporeLiteAvailable = true;
-      return mindSporeLiteModule;
-    }
-  } catch {}
-  return null;
+  hilog.info(DOMAIN_ZERO, TAG, 'AIFoundation kit not available, using rule engine fallback');
 }
 
 class InferenceConfig {
@@ -141,7 +125,7 @@ export class OnDeviceAiEngine {
       return true
     }
 
-    if (!mindSporeLiteAvailable || !mindSporeLite) {
+    if (!mindSporeLiteAvailable) {
       hilog.warn(DOMAIN_ZERO, TAG, 'MindSpore Lite not available, cannot load model: %{public}s', modelPath)
       return false
     }
@@ -250,6 +234,11 @@ export class OnDeviceAiEngine {
       await this.initialize()
     }
 
+    if (!this.modelLoaded) {
+      hilog.info(DOMAIN_ZERO, TAG, 'Model not available, falling back to cloud AI')
+      return await this.cloudIngredientAnalysis(ingredients)
+    }
+
     const prompt = this.buildIngredientPrompt(ingredients)
 
     try {
@@ -259,8 +248,8 @@ export class OnDeviceAiEngine {
 
       return this.parseIngredientResult(result)
     } catch (error) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'analyzeIngredients failed, using fallback: %{public}s', JSON.stringify(error))
-      return this.fallbackIngredientAnalysis(ingredients)
+      hilog.warn(DOMAIN_ZERO, TAG, 'analyzeIngredients on-device failed, trying cloud: %{public}s', JSON.stringify(error))
+      return await this.cloudIngredientAnalysis(ingredients)
     }
   }
 
@@ -276,6 +265,11 @@ export class OnDeviceAiEngine {
       await this.initialize()
     }
 
+    if (!this.modelLoaded) {
+      hilog.info(DOMAIN_ZERO, TAG, 'Model not available, falling back to cloud AI')
+      return await this.cloudAdviceGeneration(member, foodLabel)
+    }
+
     const prompt = this.buildAdvicePrompt(member, foodLabel)
 
     try {
@@ -285,8 +279,8 @@ export class OnDeviceAiEngine {
 
       return this.parseAdviceResult(result)
     } catch (error) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'generatePersonalizedAdvice failed: %{public}s', JSON.stringify(error))
-      return this.fallbackAdvice()
+      hilog.warn(DOMAIN_ZERO, TAG, 'generatePersonalizedAdvice on-device failed, trying cloud: %{public}s', JSON.stringify(error))
+      return await this.cloudAdviceGeneration(member, foodLabel)
     }
   }
 
@@ -331,7 +325,7 @@ export class OnDeviceAiEngine {
     // 实际部署:
     // const context = getContext();
     // const modelPath = context.resourceDir + '/rawfile/models/food_analyst_v2.ms';
-    // this.msContext = mindSporeLite.createContext()
+    // const msContext = new ModelContext()
     // this.msModel = await mindSporeLite.loadModelFromFile(modelPath, {
     //   executionMode: this.inferenceConfig.deviceType === 'npu'
     //     ? mindSporeLite.ExecutionMode.NPU
@@ -448,5 +442,33 @@ export class OnDeviceAiEngine {
     output.warnings = [];
     output.motivationalMessage = '健康饮食，从每一次选择开始';
     return output;
+  }
+
+  private async cloudIngredientAnalysis(ingredients: string[]): Promise<IngredientAnalysis> {
+    try {
+      const prompt = this.buildIngredientPrompt(ingredients);
+      const aiClient = AiClient.getInstance();
+      const cloudResult = await aiClient.chat(prompt);
+      if (cloudResult && cloudResult.length > 0) {
+        return this.parseIngredientResult(cloudResult);
+      }
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Cloud AI ingredient analysis failed: %{public}s', JSON.stringify(e));
+    }
+    return this.fallbackIngredientAnalysis(ingredients);
+  }
+
+  private async cloudAdviceGeneration(member: MemberProfile, foodLabel: FoodLabel): Promise<PersonalizedAdviceOutput> {
+    try {
+      const prompt = this.buildAdvicePrompt(member, foodLabel);
+      const aiClient = AiClient.getInstance();
+      const cloudResult = await aiClient.chat(prompt);
+      if (cloudResult && cloudResult.length > 0) {
+        return this.parseAdviceResult(cloudResult);
+      }
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Cloud AI advice generation failed: %{public}s', JSON.stringify(e));
+    }
+    return this.fallbackAdvice();
   }
 }

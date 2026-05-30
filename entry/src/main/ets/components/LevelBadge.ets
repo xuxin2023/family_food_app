@@ -1,5 +1,5 @@
-import { RecommendLevel, LevelColor, getLevelColorValue, COLORS } from 'hsp_core';
-import { ElderModeManager } from '../service/ElderModeManager';
+﻿import { RecommendLevel, LevelColor, getLevelColorValue, COLORS } from 'hsp_core';
+import { ElderModeManager } from 'hsp_service';
 
 @ComponentV2
 export struct LevelBadge {

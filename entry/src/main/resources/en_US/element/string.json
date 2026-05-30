@@ -5643,6 +5643,238 @@
     {
       "name": "peep_content_area",
       "value": "Content Area"
+    },
+    {
+      "name": "distributed_reason",
+      "value": "Used to sync food scan records across devices"
+    },
+    {
+      "name": "home_no_members_hint",
+      "value": "No members yet, please add first"
+    },
+    {
+      "name": "home_page_accessibility_desc",
+      "value": "Food assistant home, view member overview"
+    },
+    {
+      "name": "home_scan_entry_title",
+      "value": "Scan Food"
+    },
+    {
+      "name": "home_scan_entry_subtitle",
+      "value": "Scan barcode/photo, instant health analysis"
+    },
+    {
+      "name": "home_daily_intake",
+      "value": "Daily Intake"
+    },
+    {
+      "name": "home_daily_intake_accessibility",
+      "value": "Daily intake tracking"
+    },
+    {
+      "name": "home_scan_history",
+      "value": "Scan History"
+    },
+    {
+      "name": "home_scan_history_accessibility",
+      "value": "Scan history timeline"
+    },
+    {
+      "name": "home_meal_plan",
+      "value": "Meal Plan"
+    },
+    {
+      "name": "scan_page_load_failed",
+      "value": "Scan page load failed"
+    },
+    {
+      "name": "scan_batch_scan",
+      "value": "Batch Scan"
+    },
+    {
+      "name": "scan_batch_count",
+      "value": "%d items scanned"
+    },
+    {
+      "name": "scan_deep_analysis",
+      "value": "Deep Analysis"
+    },
+    {
+      "name": "scan_page_accessibility_desc",
+      "value": "Food scan page, scan barcode or photo to identify food"
+    },
+    {
+      "name": "report_page_load_failed",
+      "value": "Report page load failed"
+    },
+    {
+      "name": "report_save_image",
+      "value": "Save Image"
+    },
+    {
+      "name": "settings_data_backup",
+      "value": "Data Backup"
+    },
+    {
+      "name": "settings_data_backup_desc",
+      "value": "Encrypt and export all local data to file"
+    },
+    {
+      "name": "settings_data_restore",
+      "value": "Data Restore"
+    },
+    {
+      "name": "settings_data_restore_desc",
+      "value": "Restore data from encrypted backup file"
+    },
+    {
+      "name": "settings_backup_failed_no_ctx",
+      "value": "Backup failed: cannot get context"
+    },
+    {
+      "name": "settings_backup_success",
+      "value": "Backup successful: %d records encrypted and saved"
+    },
+    {
+      "name": "settings_backup_failed_with_error",
+      "value": "Backup failed: %s"
+    },
+    {
+      "name": "settings_backup_failed_retry",
+      "value": "Backup failed, please retry"
+    },
+    {
+      "name": "settings_restore_failed_no_ctx",
+      "value": "Restore failed: cannot get context"
+    },
+    {
+      "name": "settings_restore_success",
+      "value": "Data restored successfully"
+    },
+    {
+      "name": "settings_restore_failed_with_error",
+      "value": "Restore failed: %s"
+    },
+    {
+      "name": "settings_restore_failed_retry",
+      "value": "Restore failed, please retry"
+    },
+    {
+      "name": "settings_dark_mode_toggle_accessibility",
+      "value": "Dark mode toggle"
+    },
+    {
+      "name": "settings_view_online_version",
+      "value": "View online version"
+    },
+    {
+      "name": "settings_view_privacy_online_accessibility",
+      "value": "View privacy policy online"
+    },
+    {
+      "name": "settings_view_agreement_online_accessibility",
+      "value": "View user agreement online"
+    },
+    {
+      "name": "ai_chat_page_load_failed",
+      "value": "AI chat page load failed"
+    },
+    {
+      "name": "ai_chat_input_accessibility",
+      "value": "Input message"
+    },
+    {
+      "name": "ai_chat_send_accessibility",
+      "value": "Send message"
+    },
+    {
+      "name": "settings_save_today_status_accessibility",
+      "value": "Save today status"
+    },
+    {
+      "name": "settings_cancel_accessibility",
+      "value": "Cancel"
+    },
+    {
+      "name": "settings_collapse_accessibility",
+      "value": "Collapse"
+    },
+    {
+      "name": "settings_view_online_version_text",
+      "value": "View online version"
+    },
+    {
+      "name": "settings_view_privacy_online",
+      "value": "View privacy policy online"
+    },
+    {
+      "name": "settings_view_agreement_online",
+      "value": "View user agreement online"
+    },
+    {
+      "name": "settings_confirm_delete_accessibility",
+      "value": "Confirm delete"
+    },
+    {
+      "name": "report_per_100g_unit",
+      "value": " / 100g"
+    },
+    {
+      "name": "member_edit_nickname_input_accessibility",
+      "value": "Nickname input"
+    },
+    {
+      "name": "member_edit_allergen_custom_accessibility",
+      "value": "Custom allergen input"
+    },
+    {
+      "name": "member_edit_save_accessibility",
+      "value": "Save member"
+    },
+    {
+      "name": "member_edit_paywall_msg",
+      "value": "You have added %d family members. Upgrade to %s to add unlimited family members, all members can enjoy personalized dietary advice."
+    },
+    {
+      "name": "ai_chat_offline_result",
+      "value": "On-device inference: risk score %d/100, rating %s, confidence %d%%"
+    },
+    {
+      "name": "ai_chat_offline_suffix",
+      "value": "[Offline mode] Suggestions are for reference only; connect to network for more accurate analysis"
+    },
+    {
+      "name": "ai_chat_fallback_result",
+      "value": "On-device inference: risk score %d/100, rating %s"
+    },
+    {
+      "name": "ai_chat_fallback_suffix",
+      "value": "[Fallback to on-device inference] Cloud unavailable, switched to on-device inference"
+    },
+    {
+      "name": "report_producer_label",
+      "value": "Producer: "
+    },
+    {
+      "name": "report_sc_number_label",
+      "value": "Production license: "
+    },
+    {
+      "name": "scan_offline_data_hint",
+      "value": "📡 Offline data"
+    },
+    {
+      "name": "report_principal_label",
+      "value": "Principal: "
+    },
+    {
+      "name": "report_page_accessibility_desc",
+      "value": "Food adaptation report page, view family member adaptation results"
+    },
+    {
+      "name": "report_max_intake_format",
+      "value": "Max %dg"
     }
   ]
 }

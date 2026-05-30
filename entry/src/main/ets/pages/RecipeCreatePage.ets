@@ -420,7 +420,7 @@ struct RecipeCreatePage {
               }
               this.selectedDietTags = [...this.selectedDietTags]
             })
-            .accessibilityText(option.label as Resource)
+            .accessibilityText(option.label )
             .accessibilityLevel('yes')
         }, (option: OptionItem, i: number) => `tag_${i}`)
       }

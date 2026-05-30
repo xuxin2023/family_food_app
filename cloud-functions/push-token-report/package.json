@@ -1,0 +1,7 @@
+{
+  "name": "push-token-report",
+  "version": "1.0.0",
+  "description": "接收客户端上报的Push Token，存入CloudDB",
+  "main": "index.ts",
+  "dependencies": {}
+}

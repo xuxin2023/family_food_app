@@ -261,6 +261,9 @@ struct WeeklyReportPage {
     .borderRadius(16)
     .alignItems(HorizontalAlign.Start)
     .margin({ bottom: 12 })
+    .accessibilityRole('listItem')
+    .accessibilityText(`${report.memberName}周报：${report.summary}`)
+    .accessibilityLevel('yes')
   }
 
   private async addPurchaseToShoppingList(report: WeeklyReport): Promise<void> {

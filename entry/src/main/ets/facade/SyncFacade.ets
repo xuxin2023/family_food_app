@@ -10,6 +10,15 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 const TAG = 'SyncFacade';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
+/**
+ * 同步与社区业务门面
+ *
+ * 统一封装家庭群组管理、动态发布、扫码分享、
+ * 食谱社区（创建/查询/评论/点赞/收藏）等操作，
+ * 对UI层提供简洁的API入口。
+ *
+ * @since 1.0.0
+ */
 export class SyncFacade {
   private readonly services: ServiceManager;
 
@@ -21,11 +30,23 @@ export class SyncFacade {
     this.services.onSyncEvent(callback);
   }
 
+  /**
+   * 获取我的家庭群组列表
+   *
+   * @returns 群组摘要列表，服务未初始化返回空数组
+   */
   async getMyGroups(): Promise<GroupSummary[]> {
     if (!this.services.groupService) return [];
     return this.services.groupService.getMyGroups();
   }
 
+  /**
+   * 创建家庭群组
+   *
+   * @param name - 群组名称
+   * @returns 群组摘要
+   * @throws Error 群组服务未初始化时抛出
+   */
   async createFamilyGroup(name: string): Promise<GroupSummary> {
     if (!this.services.groupService) {
       throw new Error('Group service not initialized');
@@ -58,6 +79,17 @@ export class SyncFacade {
     return this.services.groupService.joinGroupByCode(code, 'Family Member');
   }
 
+  /**
+   * 分享扫码结果到群组
+   *
+   * @param groupId - 群组ID
+   * @param foodName - 食品名称
+   * @param foodId - 食品ID
+   * @param nutriScore - NutriScore评分
+   * @param summary - 摘要文本
+   * @param memberResults - 成员评估结果文本
+   * @returns Promise<void>
+   */
   async shareFoodScanToGroup(
     groupId: string, foodName: string, foodId: string,
     nutriScore: number, summary: string, memberResults: string

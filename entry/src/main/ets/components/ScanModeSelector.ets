@@ -1,7 +1,7 @@
-import {
+﻿import {
   COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT
 } from 'hsp_core';
-import { ElderModeManager } from '../service/ElderModeManager';
+import { ElderModeManager } from 'hsp_service';
 
 @ComponentV2
 export struct ScanModeSelector {

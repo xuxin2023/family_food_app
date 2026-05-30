@@ -6,9 +6,9 @@ import {
   FamilyProfile, AgeGroup, HealthSignal, StepLevel, SleepStatus, FoodLabel, DailyBudget, Recommendation, MealBalance, MealScenario, ChildProtection, CredibilityResult, EnhancedFoodRecommendation, AlternativeFood, DietRecord, NutritionThreshold
 } from 'hsp_core';
 import { HistoryRepository } from './repository/HistoryRepository';
-import { BasketCheckResult, BasketCheckEngine } from './engine/BasketCheckEngine';
-import { RecommendationEngine } from './engine/RecommendationEngine';
-import { MealBalanceEngine } from './engine/MealBalanceEngine';
+import { BasketCheckResult, BasketCheckEngine } from 'hsp_service';
+import { RecommendationEngine } from 'feature_report';
+import { MealBalanceEngine } from 'feature_report';
 import { FoodAdapterEngine, FamilyMemberSimpleInput, FoodNutritionInput, DailyBudgetInput,
   HealthSignalInput, TodayIntakeInput } from 'feature_scan';
 import { NutriScoreEngine, NutriScoreBreakdown } from 'feature_scan';

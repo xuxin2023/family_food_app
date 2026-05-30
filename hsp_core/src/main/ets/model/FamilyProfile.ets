@@ -75,37 +75,85 @@ export class DailyBudgetConfigJson {
   fatBudget: number = 0;
 }
 
-// 家庭成员画像
+/**
+ * 家庭成员画像
+ *
+ * 描述一个家庭成员的完整健康画像，包括：
+ * - 基本信息：ID、昵称、年龄段
+ * - 健康目标：控压/控糖/控脂/减脂/儿童
+ * - 过敏原：已知过敏原列表
+ * - 每日预算：钠/糖/热量/脂肪摄入上限
+ * - 作息：正餐时间、就寝时间
+ * - 孕期状态：无/孕期(早中晚)/哺乳期
+ *
+ * @since 1.0.0
+ */
 @ObservedV2
 export class FamilyProfile {
+  /** 成员唯一标识 */
   @Trace memberId: string = '';
+  /** 成员昵称 */
   @Trace nickname: string = '';
+  /** 年龄段：婴儿/幼儿/儿童/青少年/成人/中老年/老年 */
   @Trace ageGroup: AgeGroup = AgeGroup.ADULT;
+  /** 健康目标列表 */
   @Trace healthGoals: HealthGoal[] = [HealthGoal.NONE];
+  /** 已知过敏原列表 */
   @Trace allergens: string[] = [];
+  /** 每日营养预算配置 */
   @Trace dailyBudget: DailyBudgetConfig = new DailyBudgetConfig();
+  /** 正餐时间配置 */
   @Trace mealTimes: MealTimes = new MealTimes();
+  /** 就寝时间，默认'22:00' */
   @Trace bedtime: string = '22:00';
+  /** 创建时间戳(ms) */
   @Trace createdAt: number = 0;
+  /** 更新时间戳(ms) */
   @Trace updatedAt: number = 0;
+  /** 孕期/哺乳期状态 */
   @Trace pregnancyStatus: PregnancyStatus = PregnancyStatus.NONE;
 
+  /**
+   * 判断是否为儿童成员
+   *
+   * @returns 年龄段为儿童或健康目标含儿童时返回true
+   */
   isChild(): boolean {
     return this.ageGroup === AgeGroup.CHILD || this.healthGoals.includes(HealthGoal.CHILD);
   }
 
+  /**
+   * 判断是否有控压目标
+   *
+   * @returns 健康目标含控压时返回true
+   */
   isControlBp(): boolean {
     return this.healthGoals.includes(HealthGoal.CONTROL_BP);
   }
 
+  /**
+   * 判断是否有控糖目标
+   *
+   * @returns 健康目标含控糖时返回true
+   */
   isControlSugar(): boolean {
     return this.healthGoals.includes(HealthGoal.CONTROL_SUGAR);
   }
 
+  /**
+   * 判断是否有减脂目标
+   *
+   * @returns 健康目标含减脂时返回true
+   */
   isLoseFat(): boolean {
     return this.healthGoals.includes(HealthGoal.LOSE_FAT);
   }
 
+  /**
+   * 判断是否有控脂目标
+   *
+   * @returns 健康目标含控脂时返回true
+   */
   isControlFat(): boolean {
     return this.healthGoals.includes(HealthGoal.CONTROL_FAT);
   }
@@ -143,12 +191,23 @@ export class FamilyProfile {
   }
 }
 
-// 每日营养预算配置
+/**
+ * 每日营养预算配置
+ *
+ * 定义每日各营养素的摄入上限（预算），
+ * 用于饮食推荐和超标预警计算。
+ *
+ * @since 1.0.0
+ */
 @ObservedV2
 export class DailyBudgetConfig {
+  /** 钠预算(mg/天)，默认2000mg */
   @Trace sodiumBudget: number = 2000;
+  /** 糖预算(g/天)，默认50g */
   @Trace sugarBudget: number = 50;
+  /** 热量预算(kcal/天)，默认2000kcal */
   @Trace calorieBudget: number = 2000;
+  /** 脂肪预算(g/天)，默认65g */
   @Trace fatBudget: number = 65;
 
   toJson(): DailyBudgetConfigJson {

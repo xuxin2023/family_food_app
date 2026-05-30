@@ -48,7 +48,6 @@ export struct HotFoodGuideCard {
             }, (item: HotFoodItem) => item.foodName)
           }
         }
-        .scrollable(ScrollDirection.Horizontal)
         .scrollBar(BarState.Off)
       }
       .width('100%')

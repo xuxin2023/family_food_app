@@ -51,6 +51,7 @@ export { CloudStorageProvider, AuthResult, DeviceRegisterResult } from './servic
 
 // ===== Utils 导出（Sprint3 批次3-Step1 已迁移） =====
 export { DataLineage, LineageRecord } from './utils/DataLineage';
+export { GlobalErrorHandler, ErrorModule } from './utils/GlobalErrorHandler';
 
 // ===== Manager 层导出（Sprint3 批次1 已迁移） =====
 export { MemberManager } from './manager/MemberManager';
@@ -76,3 +77,59 @@ export { NutritionKnowledgeService, KnowledgeEntry } from './service/NutritionKn
 export { MealPlanService, MealPlan, MealPlanItem } from './service/MealPlanService';
 export { ReminderService, ReminderRule, ReminderEvent } from './service/ReminderService';
 export { FeedbackService, FeedbackSubmission, FeedbackResult } from './service/FeedbackService';
+
+// ===== T-068 entry瘦身迁移: AI服务层 =====
+export { AiClient } from './service/ai/AiClient';
+export { AiConfig, AI_SERVICE_DEFAULTS, SYSTEM_PROMPTS } from './service/ai/AiConfig';
+export { AiServiceBase } from './service/ai/AiServiceBase';
+export { OnDeviceLlmService } from './service/ai/OnDeviceLlmService';
+export { AiPolishService } from './service/AiPolishService';
+export { AiRecipeRecommenderService } from './service/AiRecipeRecommenderService';
+export { AiVisionService } from './service/AiVisionService';
+export { ChatHistoryPrefsService } from './service/ChatHistoryPrefsService';
+
+// ===== T-068 entry瘦身迁移: 通用业务服务 =====
+export { CloudDbSchema } from './service/CloudDbSchema';
+export { ComplianceService } from './service/ComplianceService';
+export { CrashMonitorManager } from './service/CrashMonitorManager';
+export { DataBackupService, BackupResult, RestoreResult } from './service/DataBackupService';
+export { DistributedDataManager } from './service/DistributedDataManager';
+export { DistributedFoodSync } from './service/DistributedFoodSync';
+export { ElderModeManager } from './service/ElderModeManager';
+export { FamilyDomainService } from './service/FamilyDomainService';
+export { FoodDomainService } from './service/FoodDomainService';
+export { FoodWidgetManager } from './service/FoodWidgetManager';
+export { FoodInputService, FoodInputResult } from './service/FoodInputService';
+export { IapServerValidator } from './service/IapServerValidator';
+export { IntentRegistrationService } from './service/IntentRegistrationService';
+export { ModelConverter } from './service/ModelConverter';
+export { NutritionDomainService } from './service/NutritionDomainService';
+export { OfflineAiCache } from './service/OfflineAiCache';
+export { OfflineModeManager } from './service/OfflineModeManager';
+
+export { PrivacySettingsService } from './service/PrivacySettingsService';
+export { PushMessageHandler, PushMessagePayload } from './service/PushMessageHandler';
+export { PushNotificationService } from './service/PushNotificationService';
+export { PushService } from './service/PushService';
+export { RemoteErrorReporter, remoteErrorReporter } from './service/RemoteErrorReporter';
+export { ShareImageService } from './service/ShareImageService';
+export { ShareKitService } from './service/ShareKitService';
+export { SharePosterGenerator, PosterData, PosterNutritionItem } from './service/SharePosterGenerator';
+export { ShareService } from './service/ShareService';
+export { SubscriptionVerifyService } from './service/SubscriptionVerifyService';
+
+// ===== T-068 entry瘦身迁移: health子目录 =====
+export { HealthSignalProvider } from './service/health/HealthSignalProvider';
+export { HwHealthSignalProvider } from './service/health/HwHealthSignalProvider';
+export { ManualHealthSignalProvider } from './service/health/ManualHealthSignalProvider';
+
+// ===== T-068 entry瘦身迁移: share子目录 =====
+export { CopyTextProvider } from './service/share/CopyTextProvider';
+export { ShareProvider } from './service/share/ShareProvider';
+
+// ===== T-068 entry瘦身迁移: sync子目录 =====
+
+export { DistributedSyncHelper } from './service/sync/DistributedSyncHelper';
+
+// ===== T-068 entry瘦身迁移: Engine =====
+export { BasketCheckEngine, BasketCheckResult } from './engine/BasketCheckEngine';

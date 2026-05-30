@@ -172,6 +172,26 @@ export default function nutriscore_engine_test() {
       expect(color.length).assertEqual(7);
     });
 
+    it('grade_color_A_should_be_green', 0, () => {
+      expect(NutriScoreEngine.getGradeColor(90)).assertEqual('#4CAF50');
+    });
+
+    it('grade_color_B_should_be_light_green', 0, () => {
+      expect(NutriScoreEngine.getGradeColor(70)).assertEqual('#66BB6A');
+    });
+
+    it('grade_color_C_should_be_orange', 0, () => {
+      expect(NutriScoreEngine.getGradeColor(50)).assertEqual('#FFA726');
+    });
+
+    it('grade_color_D_should_be_deep_orange', 0, () => {
+      expect(NutriScoreEngine.getGradeColor(30)).assertEqual('#FF7043');
+    });
+
+    it('grade_color_E_should_be_red', 0, () => {
+      expect(NutriScoreEngine.getGradeColor(10)).assertEqual('#F44336');
+    });
+
     // ==================== 真实场景测试 ====================
 
     it('should_score_plain_water_as_perfect', 0, () => {

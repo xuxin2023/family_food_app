@@ -7,7 +7,7 @@ import {
 } from 'hsp_core';
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HealthService } from './service/HealthService';
+import { HealthService } from 'feature_report';
 import { AuthService, CloudAuthService } from 'hsp_service';
 import { SyncService, SyncEventCallback, SyncEvent } from 'hsp_service';
 import {
@@ -16,14 +16,14 @@ import {
 import { FamilyGroupService, RecipeCommunityService } from 'feature_community';
 import { FamilyGroupRepository } from 'feature_community';
 import { RecipeRepository } from 'feature_community';
-import { HwHealthSignalProvider } from './service/health/HwHealthSignalProvider';
-import { ManualHealthSignalProvider } from './service/health/ManualHealthSignalProvider';
+import { HwHealthSignalProvider } from 'hsp_service';
+import { ManualHealthSignalProvider } from 'hsp_service';
 import { AiNutritionistService } from './service/AiNutritionistService';
-import { AiRecipeRecommenderService } from './service/AiRecipeRecommenderService';
+import { AiRecipeRecommenderService } from 'hsp_service';
 import { AiChatService } from './service/AiChatService';
-import { AiPolishService } from './service/AiPolishService';
-import { AiWeeklyReportService } from './service/AiWeeklyReportService';
-import { AiServiceBase } from './service/ai/AiServiceBase';
+import { AiPolishService } from 'hsp_service';
+import { AiWeeklyReportService } from 'feature_report';
+import { AiServiceBase } from 'hsp_service';
 
 const TAG = 'ServiceManager';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -110,7 +110,11 @@ export class ServiceManager {
 
   private _mealPlan: MealPlanService | null = null;
   get mealPlanService(): MealPlanService {
-    return (this.getService('mealPlanService') as MealPlanService) ?? (this._mealPlan ?? (this._mealPlan = new MealPlanService()));
+    const cached = this.getService('mealPlanService');
+    if (cached instanceof MealPlanService) {
+      return cached;
+    }
+    return this._mealPlan ?? (this._mealPlan = new MealPlanService());
   }
 
   private _reminder: ReminderService | null = null;
@@ -256,9 +260,24 @@ export class ServiceManager {
   }
 
   destroy(): void {
-    // syncEvent 监听器由 AppState.destroy() 统一清理，此处不再重复调用
     this.groupService = null;
     this.recipeCommunityService = null;
+    this._healthService = null;
+    this._authService = null;
+    this._cloudAuthService = null;
+    this._syncService = null;
+    this._batchScan = null;
+    this._feedback = null;
+    this._reminder = null;
+    this._mealPlan = null;
+    this._nutritionKnowledge = null;
+    this._foodCompare = null;
+    this._aiNutritionist = null;
+    this._aiRecipeRecommender = null;
+    this._aiChat = null;
+    this._aiPolish = null;
+    this._aiWeeklyReport = null;
+    this.serviceRegistry.clear();
     hilog.info(DOMAIN_ZERO, TAG, 'ServiceManager destroyed');
   }
 }

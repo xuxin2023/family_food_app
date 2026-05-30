@@ -9,7 +9,7 @@ import { common, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 import { DataPortability, ImportResult } from '../utils/DataPortability';
-import { DataBackupService, BackupResult, RestoreResult } from '../service/DataBackupService';
+import { DataBackupService, BackupResult, RestoreResult } from 'hsp_service';
 import { fileIo } from '@kit.CoreFileKit';
 import { picker } from '@kit.CoreFileKit';
 import { util } from '@kit.ArkTS';
@@ -82,7 +82,7 @@ struct SettingsPage {
         Row() {
           BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
             .onClick(() => { safeBack() })
-            .accessibilityText('返回')
+            .accessibilityText($r('app.string.back_arrow'))
             .accessibilityLevel('yes')
           Text($r('app.string.settings'))
             .fontSize(20)
@@ -125,7 +125,7 @@ struct SettingsPage {
               .borderRadius(25)
               .margin({ top: 8, bottom: 24 })
               .onClick(() => { this.saveManualStatus() })
-              .accessibilityText('保存今日状态')
+              .accessibilityText($r('app.string.settings_save_today_status_accessibility'))
               .accessibilityLevel('yes')
 
             // ---- 隐私与合规区域 ----
@@ -192,7 +192,9 @@ struct SettingsPage {
                     const newMode: ThemeMode = checked ? ThemeMode.DARK : ThemeMode.LIGHT;
                     ThemeColors.setTheme(newMode);
                   })
-                  .accessibilityText('暗黑模式开关')
+                  .accessibilityRole('switch')
+                  .accessibilityValue({ checked: this.vm.currentThemeMode === 'dark' })
+                  .accessibilityText($r('app.string.settings_dark_mode_toggle_accessibility'))
                   .accessibilityLevel('yes')
               }
               .width('100%')
@@ -233,8 +235,9 @@ struct SettingsPage {
                     .fontColor(COLORS.TEXT_GRAY_6161)
                     .margin({ top: 12 })
                     .onClick(() => { this.vm.showLocalePicker = false })
-                    .accessibilityText('取消')
+                    .accessibilityText($r('app.string.settings_cancel_accessibility'))
                     .accessibilityLevel('yes')
+                  }
                 }
                 .width('100%')
                 .padding(16)
@@ -253,7 +256,7 @@ struct SettingsPage {
                       .onClick(() => {
                         this.vm.showPrivacyDetail = false
                       })
-                      .accessibilityText('收起')
+                      .accessibilityText($r('app.string.settings_collapse_accessibility'))
                       .accessibilityLevel('yes')
                     Blank()
                   }
@@ -264,7 +267,7 @@ struct SettingsPage {
                     .width('100%')
                     .height(300)
 
-                  Text('查看在线版本')
+                  Text($r('app.string.settings_view_online_version_text'))
                     .fontSize(12)
                     .fontColor(COLORS.PRIMARY)
                     .margin({ top: 6 })
@@ -273,7 +276,7 @@ struct SettingsPage {
                       const ctx = AppStorage.get<common.Context>('appContext');
                       if (ctx) { (ctx as common.UIAbilityContext).startAbility(want); }
                     })
-                    .accessibilityText('在线查看隐私政策')
+                    .accessibilityText($r('app.string.settings_view_privacy_online'))
                     .accessibilityLevel('yes')
                 }
                 .width('100%')
@@ -303,7 +306,7 @@ struct SettingsPage {
                       .onClick(() => {
                         this.vm.showAgreementDetail = false
                       })
-                      .accessibilityText('收起')
+                      .accessibilityText($r('app.string.settings_collapse_accessibility'))
                       .accessibilityLevel('yes')
                     Blank()
                   }
@@ -314,7 +317,7 @@ struct SettingsPage {
                     .width('100%')
                     .height(300)
 
-                  Text('查看在线版本')
+                  Text($r('app.string.settings_view_online_version_text'))
                     .fontSize(12)
                     .fontColor(COLORS.PRIMARY)
                     .margin({ top: 6 })
@@ -323,7 +326,7 @@ struct SettingsPage {
                       const ctx = AppStorage.get<common.Context>('appContext');
                       if (ctx) { (ctx as common.UIAbilityContext).startAbility(want); }
                     })
-                    .accessibilityText('在线查看用户协议')
+                    .accessibilityText($r('app.string.settings_view_agreement_online'))
                     .accessibilityLevel('yes')
                 }
                 .width('100%')
@@ -372,11 +375,11 @@ struct SettingsPage {
                 this.importData()
               })
 
-              this.buildSettingsItem('数据备份', '加密导出所有本地数据到文件', () => {
+              this.buildSettingsItem($r('app.string.settings_data_backup'), $r('app.string.settings_data_backup_desc'), () => {
                 this.backupData()
               })
 
-              this.buildSettingsItem('数据恢复', '从加密备份文件恢复数据', () => {
+              this.buildSettingsItem($r('app.string.settings_data_restore'), $r('app.string.settings_data_restore_desc'), () => {
                 this.restoreData()
               })
 
@@ -411,7 +414,7 @@ struct SettingsPage {
                       .fontColor(COLORS.TEXT_PRIMARY)
                       .layoutWeight(1)
                       .onClick(() => { this.vm.showDeleteConfirm = false })
-                      .accessibilityText('取消')
+                      .accessibilityText($r('app.string.settings_cancel_accessibility'))
                       .accessibilityLevel('yes')
                     Button($r('app.string.settings_confirm_delete'))
                       .fontSize(14)
@@ -420,7 +423,7 @@ struct SettingsPage {
                       .layoutWeight(1)
                       .margin({ left: 12 })
                       .onClick(() => { this.executeDeleteAccount() })
-                      .accessibilityText('确认删除')
+                      .accessibilityText($r('app.string.settings_confirm_delete_accessibility'))
                       .accessibilityLevel('yes')
                   }
                   .width('100%')
@@ -439,7 +442,7 @@ struct SettingsPage {
                       .fontSize(13)
                       .fontColor(COLORS.PRIMARY)
                       .onClick(() => { this.vm.showCollectionDetail = false })
-                      .accessibilityText('收起')
+                      .accessibilityText($r('app.string.settings_collapse_accessibility'))
                       .accessibilityLevel('yes')
                     Blank()
                   }
@@ -576,7 +579,7 @@ struct SettingsPage {
       .fontColor(active ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
       .margin({ right: 8 })
       .onClick(onTap)
-      .accessibilityText(label as Resource)
+      .accessibilityText(label )
       .accessibilityLevel('yes')
   }
 
@@ -639,6 +642,7 @@ struct SettingsPage {
     .width('100%')
     .padding({ top: 12, bottom: 12 })
     .borderRadius(8)
+    .accessibilityRole('listItem')
     .accessibilityText(`${title}，${subtitle}`)
     .accessibilityLevel('yes')
     .onClick(onTap)
@@ -727,20 +731,20 @@ struct SettingsPage {
     try {
       const ctx = AppStorage.get<common.Context>('appContext');
       if (!ctx) {
-        ToastHelper.show(this.getUIContext(), '备份失败：无法获取上下文');
+        ToastHelper.show(this.getUIContext(), $r('app.string.settings_backup_failed_no_ctx'));
         return;
       }
       const backupService = DataBackupService.getInstance();
       await backupService.init(ctx);
       const result: BackupResult = await backupService.exportBackup(ctx);
       if (result.success) {
-        ToastHelper.show(this.getUIContext(), `备份成功：${result.recordCount}条记录已加密保存`);
+        ToastHelper.show(this.getUIContext(), $r('app.string.settings_backup_success', result.recordCount));
       } else {
-        ToastHelper.show(this.getUIContext(), `备份失败：${result.error}`);
+        ToastHelper.show(this.getUIContext(), $r('app.string.settings_backup_failed_with_error', result.error));
       }
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, 'SettingsPage', 'Backup failed: ' + JSON.stringify(error));
-      ToastHelper.show(this.getUIContext(), '备份失败，请重试');
+      ToastHelper.show(this.getUIContext(), $r('app.string.settings_backup_failed_retry'));
     }
   }
 
@@ -748,7 +752,7 @@ struct SettingsPage {
     try {
       const ctx = AppStorage.get<common.Context>('appContext');
       if (!ctx) {
-        ToastHelper.show(this.getUIContext(), '恢复失败：无法获取上下文');
+        ToastHelper.show(this.getUIContext(), $r('app.string.settings_restore_failed_no_ctx'));
         return;
       }
       const documentSelectOptions = new picker.DocumentSelectOptions();
@@ -762,14 +766,14 @@ struct SettingsPage {
       await backupService.init(ctx);
       const result: RestoreResult = await backupService.importBackup(uri, ctx);
       if (result.success) {
-        ToastHelper.show(this.getUIContext(), '数据恢复成功');
+        ToastHelper.show(this.getUIContext(), $r('app.string.settings_restore_success'));
         this.appState.cache.clearAll();
       } else {
-        ToastHelper.show(this.getUIContext(), `恢复失败：${result.error}`);
+        ToastHelper.show(this.getUIContext(), $r('app.string.settings_restore_failed_with_error', result.error));
       }
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, 'SettingsPage', 'Restore failed: ' + JSON.stringify(error));
-      ToastHelper.show(this.getUIContext(), '恢复失败，请重试');
+      ToastHelper.show(this.getUIContext(), $r('app.string.settings_restore_failed_retry'));
     }
   }
 

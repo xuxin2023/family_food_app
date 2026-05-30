@@ -97,17 +97,33 @@ function getGrade(score: number): ScoreGrade {
   return SCORE_GRADES[SCORE_GRADES.length - 1];
 }
 
+/**
+ * NutriScore营养评级引擎
+ *
+ * 实现中国居民膳食营养素参考摄入量（DRIs 2023）评分模型，
+ * 参考Nutri-Score算法思路，调整权重适应中国标准。
+ * 评分范围0-100，等级A(≥80)~E(<20)。
+ *
+ * @since 1.0.0
+ */
 export class NutriScoreEngine {
   /**
    * 计算综合营养评分（0-100）
-   * 
+   *
    * 算法思路：
    * - 扣分项：高能量、高糖、高钠、高饱和脂肪
    * - 加分项：高蛋白质、高膳食纤维
    * - 基础分100，扣分上限80，加分上限20
-   * 
-   * @param input 营养数据
-   * @returns 评分分解详情
+   *
+   * @param input - 每100g营养成分数据
+   * @returns 评分分解详情，包含总分、等级(A~E)及各项扣分/加分明细
+   *
+   * @example
+   * ```typescript
+   * const input = new NutriScoreInput(200, 5, 120, 3, 1.5, 10, 6);
+   * const result = NutriScoreEngine.calculateScore(input);
+   * console.log(result.grade); // 'A' | 'B' | 'C' | 'D' | 'E'
+   * ```
    */
   static calculateScore(input: NutriScoreInput): NutriScoreBreakdown {
     // ---- 扣分计算 ----
@@ -148,6 +164,9 @@ export class NutriScoreEngine {
 
   /**
    * 从FoodLabel的NutritionPer100g计算评分
+   *
+   * @param nutrition - 每100g营养成分（来自FoodLabel）
+   * @returns 评分分解详情
    */
   static calculateFromNutrition(nutrition: NutritionPer100g): NutriScoreBreakdown {
     const input = new NutriScoreInput(
@@ -164,6 +183,9 @@ export class NutriScoreEngine {
 
   /**
    * 获取评分等级文字
+   *
+   * @param score - 营养评分(0-100)
+   * @returns 等级中文标签，如'优秀'、'良好'、'一般'、'较差'、'避免'
    */
   static getGradeLabel(score: number): string {
     return getGrade(score).label;
@@ -171,6 +193,9 @@ export class NutriScoreEngine {
 
   /**
    * 获取评分等级颜色
+   *
+   * @param score - 营养评分(0-100)
+   * @returns 等级对应颜色HEX值，如'#4CAF50'(A)~'#F44336'(E)
    */
   static getGradeColor(score: number): string {
     return getGrade(score).color;

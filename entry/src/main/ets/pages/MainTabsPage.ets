@@ -219,7 +219,6 @@ struct MainTabsPage {
       }
     })
     .animationDuration(0)
-    .scrollable(false)
     .barMode(BarMode.Fixed)
     .onChange((index: number) => {
       this.currentIndex = index;
@@ -525,7 +524,7 @@ struct MainTabsPage {
     .backgroundColor(COLORS.BG_CARD)
     .borderRadius(12)
     .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
-    .accessibilityText(title as Resource)
+    .accessibilityText(typeof title === 'string' ? title : '')
     .accessibilityLevel('yes')
     .onClick(() => {
       safePushUrl(targetUrl, extraParams)

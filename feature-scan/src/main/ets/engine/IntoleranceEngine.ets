@@ -3,7 +3,7 @@
 // V6.1: 增加 FODMAP 系统化检测（基于 fodmap_database.json 关键词匹配）
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, HealthSignal, BpStatus, BsStatus } from 'hsp_core';
 import { common } from '@kit.AbilityKit';
 
 const TAG = 'IntoleranceEngine';
@@ -383,5 +383,31 @@ export class IntoleranceEngine {
       IntoleranceType.CAFFEINE,
       IntoleranceType.FODMAP
     ];
+  }
+
+  static inferFromHealthSignal(signal: HealthSignal): IntoleranceType[] {
+    const types: IntoleranceType[] = [];
+    if (signal.hadHighSugarToday) {
+      types.push(IntoleranceType.FRUCTOSE);
+      types.push(IntoleranceType.FODMAP);
+    }
+    if (signal.hadHighSodiumToday) {
+      types.push(IntoleranceType.HISTAMINE);
+      types.push(IntoleranceType.SULFITE);
+    }
+    if (signal.isHighBp()) {
+      types.push(IntoleranceType.SALICYLATE);
+      types.push(IntoleranceType.HISTAMINE);
+    }
+    if (signal.isHighBs()) {
+      types.push(IntoleranceType.LACTOSE);
+      types.push(IntoleranceType.FRUCTOSE);
+    }
+    if (signal.isPoorSleep()) {
+      types.push(IntoleranceType.HISTAMINE);
+      types.push(IntoleranceType.CAFFEINE);
+    }
+    const unique = new Set(types);
+    return Array.from(unique);
   }
 }

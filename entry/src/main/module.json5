@@ -12,6 +12,9 @@
     "deliveryWithInstall": true,
     "installationFree": false,
     "pages": "$profile:main_pages",
+    "privacyPolicyUrl": "https://foodscan.familyfood.app/privacy",
+    "userAgreementUrl": "https://foodscan.familyfood.app/agreement",
+    "debug": false,
     "abilities": [
       {
         "name": "EntryAbility",
@@ -169,6 +172,72 @@
         }
       }
     ],
+    "dataSecurity": {
+      "personalDataCollection": [
+        {
+          "dataType": "家庭成员信息（昵称、年龄、性别）",
+          "purpose": "个性化营养推荐",
+          "storage": "本地数据库，不出境"
+        },
+        {
+          "dataType": "健康状态（步数、睡眠、血压等）",
+          "purpose": "健康适配计算",
+          "storage": "本地数据库加密存储，不出境"
+        },
+        {
+          "dataType": "过敏原与饮食偏好",
+          "purpose": "过敏预警与食品推荐",
+          "storage": "本地数据库，不出境"
+        },
+        {
+          "dataType": "食品扫描记录与营养数据",
+          "purpose": "历史记录与统计分析",
+          "storage": "本地数据库，不出境"
+        },
+        {
+          "dataType": "相机/相册图片",
+          "purpose": "食品标签OCR识别",
+          "storage": "仅在内存中临时处理，不持久存储"
+        },
+        {
+          "dataType": "设备唯一标识(UID)",
+          "purpose": "匿名身份识别",
+          "storage": "本地偏好存储，不出境"
+        }
+      ],
+      "dataStorage": {
+        "localEncryption": true,
+        "cloudSyncOptional": true,
+        "cloudRegion": "cn-north-4",
+        "dataRetention": "用户主动删除前持续保留，卸载应用后本地数据清除"
+      },
+      "dataSharing": {
+        "thirdPartySharing": false,
+        "crossBorderTransfer": false,
+        "sdkList": [
+          {
+            "name": "华为 Scan Kit",
+            "purpose": "条码/二维码扫描",
+            "dataHandling": "数据不离开设备"
+          },
+          {
+            "name": "华为 Health Kit",
+            "purpose": "读取健康数据",
+            "dataHandling": "数据不离开设备"
+          },
+          {
+            "name": "华为云 Serverless",
+            "purpose": "云函数/云数据库/云存储",
+            "dataHandling": "服务器位于中国大陆(cn-north-4)"
+          },
+          {
+            "name": "Open Food Facts API",
+            "purpose": "条码查询开放数据库",
+            "dataHandling": "仅发送条码编号，服务器位于欧洲"
+          }
+        ]
+      }
+    },
     "extensionAbilities": [
       {
         "name": "EntryFormAbility",

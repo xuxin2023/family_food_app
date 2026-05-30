@@ -40,15 +40,33 @@ export function applyPresetToTarget(target: NutritionTarget, preset: NutritionPr
   return target;
 }
 
+/**
+ * 营养目标
+ *
+ * 定义家庭成员每日各营养素的摄入目标和上限，
+ * 用于饮食推荐、超标预警和膳食平衡计算。
+ * 所有数值单位：钠(mg)、糖/脂肪/蛋白质/膳食纤维、热量(kcal)。
+ *
+ * @since 1.0.0
+ */
 export class NutritionTarget {
+  /** 成员ID */
   memberId: string = '';
+  /** 钠摄入上限(mg/天)，默认2000mg */
   sodiumMax_mg: number = 2000;
+  /** 糖摄入上限(g/天)，默认50g */
   sugarMax_g: number = 50;
+  /** 热量目标(kcal/天)，默认2000kcal */
   caloriesTarget: number = 2000;
+  /** 脂肪摄入上限(g/天)，默认65g */
   fatMax_g: number = 65;
+  /** 蛋白质目标(g/天)，默认60g */
   proteinTarget_g: number = 60;
+  /** 膳食纤维目标(g/天)，默认25g */
   fiberTarget_g: number = 25;
+  /** 膳食纤维下限(g/天)，默认10g */
   fiberMin_g: number = 10;
+  /** 预设方案名称 */
   presetName: string = '';
 }
 

@@ -487,7 +487,8 @@ export class SyncService {
             } else if (this.config.conflictResolution === ConflictResolution.LOCAL_FIRST) {
               // 本地优先：若本地更新时间 >= 远程，保留本地；否则采用远程
               const localUpdated: number = localItem.updatedAt ?? 0;
-              const remoteUpdated: number = (conflict.remoteData as Object as Record<string, Object>)?.['updatedAt'] as number ?? 0;
+              const remoteDataObj = conflict.remoteData;
+              const remoteUpdated: number = (remoteDataObj !== null && remoteDataObj !== undefined && typeof remoteDataObj === 'object' && 'updatedAt' in remoteDataObj) ? (remoteDataObj as Record<string, number>)['updatedAt'] : 0;
               if (localUpdated >= remoteUpdated) {
                 localItem.syncStatus = SyncStatus.PENDING;
               } else {

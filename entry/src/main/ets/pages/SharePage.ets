@@ -3,9 +3,14 @@ import {
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { ShareCard } from 'feature_report';
-import { ShareService } from '../service/ShareService';
+import { ShareService } from 'hsp_service';
+import { ShareKitService } from 'hsp_service';
+import { SharePosterGenerator, PosterData, PosterNutritionItem } from 'hsp_service';
 import { AppState } from '../AppState';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { common } from '@kit.AbilityKit';
+import { photoAccessHelper } from '@kit.MediaLibraryKit';
+import { fileIo } from '@kit.FileIo';
 
 const TAG = 'SharePage';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -24,6 +29,9 @@ struct SharePage {
   @Local showGroupPicker: boolean = false
   @Local showRecipePublish: boolean = false
   @Local currentBreakpoint: string = 'md'
+  @Local posterUri: string = ''
+  @Local isGeneratingPoster: boolean = false
+  @Local shareLink: string = ''
 
   private appState: AppState = AppState.getInstance()
   private shareService: ShareService = new ShareService()
@@ -60,6 +68,7 @@ struct SharePage {
       this.copyHint = this.shareService.getCopyHint()
       this.refreshShareText()
       this.myGroups = myGroups
+      this.shareLink = this.buildShareLink()
       this.isLoading = false
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'aboutToAppear failed: %{public}s', JSON.stringify(e));
@@ -228,6 +237,110 @@ struct SharePage {
               .alignItems(HorizontalAlign.Start)
               .margin({ bottom: 16 })
 
+              // 系统分享按钮
+              Column() {
+                Text('分享到')
+                  .fontSize(16)
+                  .fontWeight(FontWeight.Bold)
+                  .margin({ bottom: 12 })
+
+                Row({ space: 16 }) {
+                  this.ShareChannelButton('微信', '#07C160', () => { this.systemShareText() })
+                  this.ShareChannelButton('微博', '#E6162D', () => { this.systemShareText() })
+                  this.ShareChannelButton('QQ', '#12B7F5', () => { this.systemShareText() })
+                  this.ShareChannelButton('系统分享', COLORS.PRIMARY, () => { this.systemShareText() })
+                }
+                .width('100%')
+                .justifyContent(FlexAlign.SpaceEvenly)
+              }
+              .width('90%')
+              .padding(16)
+              .backgroundColor(COLORS.WHITE)
+              .borderRadius(16)
+              .alignItems(HorizontalAlign.Start)
+              .margin({ bottom: 16 })
+
+              // 海报预览与保存
+              Column() {
+                Text('分享海报')
+                  .fontSize(16)
+                  .fontWeight(FontWeight.Bold)
+                  .margin({ bottom: 12 })
+
+                if (this.posterUri.length > 0) {
+                  Image(this.posterUri)
+                    .width('100%')
+                    .height(300)
+                    .objectFit(ImageFit.Contain)
+                    .borderRadius(8)
+                    .margin({ bottom: 12 })
+                } else {
+                  Column() {
+                    Text('点击生成分享海报')
+                      .fontSize(13)
+                      .fontColor(COLORS.TEXT_GRAY_9E9E)
+                  }
+                  .width('100%')
+                  .height(180)
+                  .justifyContent(FlexAlign.Center)
+                  .backgroundColor(COLORS.BG_PAGE_LIGHT)
+                  .borderRadius(8)
+                  .margin({ bottom: 12 })
+                }
+
+                Row() {
+                  Button('生成海报')
+                    .layoutWeight(1)
+                    .height(BUTTON.HEIGHT_SECONDARY)
+                    .backgroundColor(COLORS.PRIMARY)
+                    .fontColor(COLORS.WHITE)
+                    .borderRadius(BUTTON.RADIUS_SECONDARY)
+                    .enabled(!this.isGeneratingPoster)
+                    .onClick(() => { this.generatePoster() })
+                    .accessibilityText('生成海报')
+                    .accessibilityLevel('yes')
+
+                  Button('保存到相册')
+                    .layoutWeight(1)
+                    .height(BUTTON.HEIGHT_SECONDARY)
+                    .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
+                    .fontColor(COLORS.TEXT_GRAY_6161)
+                    .borderRadius(BUTTON.RADIUS_SECONDARY)
+                    .margin({ left: 10 })
+                    .enabled(this.posterUri.length > 0)
+                    .onClick(() => { this.savePosterToAlbum() })
+                    .accessibilityText('保存到相册')
+                    .accessibilityLevel('yes')
+                }
+                .width('100%')
+
+                if (this.shareLink.length > 0) {
+                  Row() {
+                    Text(this.shareLink)
+                      .fontSize(11)
+                      .fontColor(COLORS.TEXT_GRAY_9E9E)
+                      .maxLines(1)
+                      .textOverflow({ overflow: TextOverflow.Ellipsis })
+                      .layoutWeight(1)
+                    Text('复制链接')
+                      .fontSize(12)
+                      .fontColor(COLORS.PRIMARY)
+                      .margin({ left: 8 })
+                      .onClick(() => { this.copyShareLink() })
+                      .accessibilityText('复制链接')
+                      .accessibilityLevel('yes')
+                  }
+                  .width('100%')
+                  .margin({ top: 8 })
+                }
+              }
+              .width('90%')
+              .padding(16)
+              .backgroundColor(COLORS.WHITE)
+              .borderRadius(16)
+              .alignItems(HorizontalAlign.Start)
+              .margin({ bottom: 16 })
+
               // 发布食谱
               Column() {
                 Row({ space: 10 }) {
@@ -281,6 +394,146 @@ struct SharePage {
     this.shareText = this.shareService.generateShareText(
       this.shareService.buildShareParams(this.foodName, this.recommendations, this.familyMembers)
     )
+  }
+
+  private buildShareLink(): string {
+    if (this.foodName.length === 0) return '';
+    const encoded = encodeURIComponent(this.foodName);
+    return `https://foodscan.familyfood.app/share?food=${encoded}`;
+  }
+
+  private async systemShareText(): Promise<void> {
+    try {
+      const context = AppStorage.get<common.UIAbilityContext>('appContext');
+      if (!context) {
+        ToastHelper.show(this.getUIContext(), '分享失败：无法获取上下文');
+        return;
+      }
+      const shareContent = this.shareText.length > 0
+        ? this.shareText
+        : this.buildShareLink();
+      await ShareKitService.shareText(context, shareContent, '分享食品报告');
+    } catch (e) {
+      ToastHelper.show(this.getUIContext(), `分享失败：${(e as Error).message}`);
+    }
+  }
+
+  private async systemShareImage(): Promise<void> {
+    if (this.posterUri.length === 0) {
+      await this.generatePoster();
+    }
+    if (this.posterUri.length === 0) return;
+    try {
+      const context = AppStorage.get<common.UIAbilityContext>('appContext');
+      if (!context) return;
+      await ShareKitService.shareImage(context, this.posterUri, '分享食品海报');
+    } catch (e) {
+      ToastHelper.show(this.getUIContext(), `图片分享失败：${(e as Error).message}`);
+    }
+  }
+
+  private async generatePoster(): Promise<void> {
+    if (this.isGeneratingPoster) return;
+    this.isGeneratingPoster = true;
+    try {
+      const context = AppStorage.get<common.UIAbilityContext>('appContext');
+      if (!context) {
+        ToastHelper.show(this.getUIContext(), '生成失败');
+        return;
+      }
+      const posterData = new PosterData();
+      posterData.foodName = this.foodName;
+      posterData.brand = '';
+      posterData.nutritionScore = this.recommendations.length > 0 ? 65 : 50;
+      posterData.novaGroup = 2;
+      posterData.shareLink = this.shareLink;
+
+      const items: PosterNutritionItem[] = [];
+      for (const rec of this.recommendations) {
+        const member = this.familyMembers.find(m => m.memberId === rec.memberId);
+        const item = new PosterNutritionItem();
+        item.name = member?.nickname || '成员';
+        item.value = rec.level;
+        item.unit = rec.maxAmount > 0 ? `≤${rec.maxAmount}g` : '';
+        items.push(item);
+      }
+      posterData.nutritionItems = items;
+
+      const generator = new SharePosterGenerator(context);
+      this.posterUri = await generator.generatePoster(posterData);
+      ToastHelper.show(this.getUIContext(), '海报已生成');
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'generatePoster failed: %{public}s', JSON.stringify(e));
+      ToastHelper.show(this.getUIContext(), '海报生成失败');
+    } finally {
+      this.isGeneratingPoster = false;
+    }
+  }
+
+  private async savePosterToAlbum(): Promise<void> {
+    if (this.posterUri.length === 0) return;
+    try {
+      const context = AppStorage.get<common.UIAbilityContext>('appContext');
+      if (!context) {
+        ToastHelper.show(this.getUIContext(), '保存失败');
+        return;
+      }
+      const helper = photoAccessHelper.getPhotoAccessHelper(context);
+      const uri = await helper.createAsset(photoAccessHelper.PhotoType.IMAGE, 'png');
+      const srcFile = fileIo.openSync(this.posterUri, fileIo.OpenMode.READ_ONLY);
+      const dstFile = fileIo.openSync(uri, fileIo.OpenMode.WRITE_ONLY);
+      const bufferSize = 4096;
+      const buf = new ArrayBuffer(bufferSize);
+      let readLen = fileIo.readSync(srcFile.fd, buf);
+      while (readLen > 0) {
+        fileIo.writeSync(dstFile.fd, buf, { length: readLen });
+        readLen = fileIo.readSync(srcFile.fd, buf);
+      }
+      fileIo.closeSync(srcFile.fd);
+      fileIo.closeSync(dstFile.fd);
+      ToastHelper.show(this.getUIContext(), '已保存到相册');
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'savePosterToAlbum failed: %{public}s', JSON.stringify(e));
+      ToastHelper.show(this.getUIContext(), '保存到相册失败');
+    }
+  }
+
+  private copyShareLink(): void {
+    if (this.shareLink.length === 0) return;
+    try {
+      const pasteboard = requireModule('@kit.BasicServicesKit').pasteboard;
+      const pasteData = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, this.shareLink);
+      const systemPasteboard = pasteboard.getSystemPasteboard();
+      systemPasteboard.setData(pasteData);
+      ToastHelper.show(this.getUIContext(), '链接已复制');
+    } catch (e) {
+      ToastHelper.show(this.getUIContext(), '复制失败');
+    }
+  }
+
+  @Builder
+  ShareChannelButton(label: string, color: string, action: () => void) {
+    Column() {
+      Stack() {
+        Circle()
+          .width(48)
+          .height(48)
+          .fill(color)
+        Text(label.substring(0, 1))
+          .fontSize(20)
+          .fontColor(COLORS.WHITE)
+          .fontWeight(FontWeight.Bold)
+      }
+      .width(48)
+      .height(48)
+      Text(label)
+        .fontSize(11)
+        .fontColor(COLORS.TEXT_GRAY_7575)
+        .margin({ top: 4 })
+    }
+    .onClick(action)
+    .accessibilityText(label)
+    .accessibilityLevel('yes')
   }
 
   private async shareToGroup(groupId: string) {

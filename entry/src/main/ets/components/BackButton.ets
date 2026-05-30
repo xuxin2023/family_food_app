@@ -1,5 +1,5 @@
 import { safeBack, COLORS, FONT_SIZE } from 'hsp_core';
-import { ElderModeManager } from '../service/ElderModeManager';
+import { ElderModeManager } from 'hsp_service';
 
 @ComponentV2
 export struct BackButton {

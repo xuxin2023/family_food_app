@@ -1,8 +1,8 @@
-// FoodTagFilter.ets
+﻿// FoodTagFilter.ets
 // 食品标签筛选组件 — 横向可滚动 Chip 样式标签，支持多选
 
 import { COLORS, FONT_SIZE, FONT_WEIGHT, RADIUS, SPACING, SCORE_COLORS } from 'hsp_core';
-import { ElderModeManager } from '../service/ElderModeManager';
+import { ElderModeManager } from 'hsp_service';
 
 export class FilterTag {
   key: string = '';
@@ -105,7 +105,6 @@ export struct FoodTagFilter {
       }
       .padding({ left: SPACING.LG, right: SPACING.LG })
     }
-    .scrollable(ScrollDirection.Horizontal)
     .scrollBar(BarState.Off)
     .width('100%')
     .height(this.touchTarget)

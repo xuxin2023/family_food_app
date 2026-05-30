@@ -94,7 +94,7 @@ struct HomePage {
                   }, (member: FamilyProfile) => member.memberId)
                 } else {
                   Column() {
-                    Text('暂无成员，请先添加')
+                    Text($r('app.string.home_no_members_hint'))
                       .fontSize(14)
                       .fontColor(COLORS.TEXT_SECONDARY)
                       .textAlign(TextAlign.Center)
@@ -140,17 +140,17 @@ struct HomePage {
     .height('100%')
     .backgroundColor(COLORS.BG_PAGE)
     .accessibilityGroup(true)
-    .accessibilityDescription('家庭食品助手首页，查看成员概览')
+    .accessibilityDescription($r('app.string.home_page_accessibility_desc'))
   }
   @Builder
   ScanEntryCard() {
     Row() {
       Column() {
-        Text('扫码识食')
+        Text($r('app.string.home_scan_entry_title'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .fontColor(COLORS.WHITE)
-        Text('扫条码/拍包装，秒出健康分析')
+        Text($r('app.string.home_scan_entry_subtitle'))
           .fontSize(13)
           .fontColor('#B3FFFFFF')
           .margin({ top: 6 })
@@ -167,63 +167,68 @@ struct HomePage {
     .borderRadius(RADIUS.LG)
     .margin({ top: 8 })
     .onClick(() => { safePushUrl('pages/ScanPage') })
-    .accessibilityText('扫码识食')
+    .accessibilityRole('button')
+    .accessibilityText('扫描食品条码')
   }
 
   @Builder
   QuickActions() {
     Row() {
-      Column() {
-        Text('📊').fontSize(24)
-        Text('每日摄入').fontSize(11).fontColor(COLORS.TEXT_SECONDARY).margin({ top: 4 })
-      }
-      .layoutWeight(1)
-      .padding({ top: 12, bottom: 12 })
-      .backgroundColor(COLORS.WHITE)
-      .borderRadius(RADIUS.MD)
-      .alignItems(HorizontalAlign.Center)
-      .onClick(() => { safePushUrl('pages/DailyIntakePage') })
-      .accessibilityText('每日摄入追踪')
-      .accessibilityLevel('yes')
+       Column() {
+         Text('📊').fontSize(24)
+         Text($r('app.string.home_daily_intake')).fontSize(11).fontColor(COLORS.TEXT_SECONDARY).margin({ top: 4 })
+       }
+       .layoutWeight(1)
+       .padding({ top: 12, bottom: 12 })
+       .backgroundColor(COLORS.WHITE)
+       .borderRadius(RADIUS.MD)
+       .alignItems(HorizontalAlign.Center)
+       .onClick(() => { safePushUrl('pages/DailyIntakePage') })
+       .accessibilityRole('button')
+       .accessibilityText($r('app.string.home_daily_intake_accessibility'))
+       .accessibilityLevel('yes')
 
-      Column() {
-        Text('🕐').fontSize(24)
-        Text('扫描历史').fontSize(11).fontColor(COLORS.TEXT_SECONDARY).margin({ top: 4 })
-      }
-      .layoutWeight(1)
-      .padding({ top: 12, bottom: 12 })
-      .backgroundColor(COLORS.WHITE)
-      .borderRadius(RADIUS.MD)
-      .alignItems(HorizontalAlign.Center)
-      .onClick(() => { safePushUrl('pages/ScanHistoryTimelinePage') })
-      .accessibilityText('扫描历史时间线')
-      .accessibilityLevel('yes')
+       Column() {
+         Text('🕐').fontSize(24)
+         Text($r('app.string.home_scan_history')).fontSize(11).fontColor(COLORS.TEXT_SECONDARY).margin({ top: 4 })
+       }
+       .layoutWeight(1)
+       .padding({ top: 12, bottom: 12 })
+       .backgroundColor(COLORS.WHITE)
+       .borderRadius(RADIUS.MD)
+       .alignItems(HorizontalAlign.Center)
+       .onClick(() => { safePushUrl('pages/ScanHistoryTimelinePage') })
+       .accessibilityRole('button')
+       .accessibilityText($r('app.string.home_scan_history_accessibility'))
+       .accessibilityLevel('yes')
 
-      Column() {
-        Text('⚖️').fontSize(24)
-        Text('食品对比').fontSize(11).fontColor(COLORS.TEXT_SECONDARY).margin({ top: 4 })
-      }
-      .layoutWeight(1)
-      .padding({ top: 12, bottom: 12 })
-      .backgroundColor(COLORS.WHITE)
-      .borderRadius(RADIUS.MD)
-      .alignItems(HorizontalAlign.Center)
-      .onClick(() => { safePushUrl('pages/FoodComparePage') })
-      .accessibilityText('食品对比')
-      .accessibilityLevel('yes')
+       Column() {
+         Text('⚖️').fontSize(24)
+         Text($r('app.string.food_compare_title')).fontSize(11).fontColor(COLORS.TEXT_SECONDARY).margin({ top: 4 })
+       }
+       .layoutWeight(1)
+       .padding({ top: 12, bottom: 12 })
+       .backgroundColor(COLORS.WHITE)
+       .borderRadius(RADIUS.MD)
+       .alignItems(HorizontalAlign.Center)
+       .onClick(() => { safePushUrl('pages/FoodComparePage') })
+       .accessibilityRole('button')
+       .accessibilityText($r('app.string.food_compare_title'))
+       .accessibilityLevel('yes')
 
-      Column() {
-        Text('📋').fontSize(24)
-        Text('膳食计划').fontSize(11).fontColor(COLORS.TEXT_SECONDARY).margin({ top: 4 })
-      }
-      .layoutWeight(1)
-      .padding({ top: 12, bottom: 12 })
-      .backgroundColor(COLORS.WHITE)
-      .borderRadius(RADIUS.MD)
-      .alignItems(HorizontalAlign.Center)
-      .onClick(() => { safePushUrl('pages/MealPlanPage') })
-      .accessibilityText('膳食计划')
-      .accessibilityLevel('yes')
+       Column() {
+         Text('📋').fontSize(24)
+         Text($r('app.string.home_meal_plan')).fontSize(11).fontColor(COLORS.TEXT_SECONDARY).margin({ top: 4 })
+       }
+       .layoutWeight(1)
+       .padding({ top: 12, bottom: 12 })
+       .backgroundColor(COLORS.WHITE)
+       .borderRadius(RADIUS.MD)
+       .alignItems(HorizontalAlign.Center)
+       .onClick(() => { safePushUrl('pages/MealPlanPage') })
+       .accessibilityRole('button')
+       .accessibilityText($r('app.string.home_meal_plan'))
+       .accessibilityLevel('yes')
     }
     .width('92%')
     .margin({ top: 12 })
@@ -259,21 +264,22 @@ struct HomePage {
       this.selectedMemberId = member.memberId
       safePushUrl('pages/DashboardPage')
     })
-    .accessibilityText(member.nickname)
+    .accessibilityRole('tab')
+    .accessibilityText(`${member.nickname}，${member.ageGroup}`)
     .accessibilityLevel('yes')
   }
 
   @Builder
   BottomNavBar() {
     Row() {
-      Button('扫码识食')
+      Button($r('app.string.home_scan_entry_title'))
         .layoutWeight(1)
         .height(BUTTON.HEIGHT_LG)
         .backgroundColor(COLORS.PRIMARY)
         .fontColor(COLORS.WHITE)
         .borderRadius(RADIUS.MD)
         .onClick(() => { safePushUrl('pages/ScanPage') })
-        .accessibilityText('扫码')
+        .accessibilityText($r('app.string.tab_scan'))
         .accessibilityLevel('yes')
     }
     .width('100%')

@@ -189,8 +189,8 @@ export class PrivacyManager {
             return manifest;
           }
         }
-      } finally {
-        httpClient.destroy();
+      } catch (fetchErr) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'SecureHttpClient request failed: %{public}s', JSON.stringify(fetchErr));
       }
 
       hilog.info(DOMAIN_ZERO, TAG, 'Remote manifest fetch failed or invalid');

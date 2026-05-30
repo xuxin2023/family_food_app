@@ -90,8 +90,7 @@ export class ChildHealthAssessmentEngine {
     // 1. 零食影响评估
     result.snackImpact = this.assessSnackImpact(food, profile, todaySnackCalories, todaySugarGrams);
 
-    // 2. 添加剂安全评估
-    result.additiveResults = this.assessAdditives(food);
+    result.additiveResults = this.assessAdditivesForAge(food, profile.ageGroup);
 
     // 3. 生长发育营养检查
     result.growthNutritionCheck = this.checkGrowthNutrition(food, profile);
@@ -140,24 +139,42 @@ export class ChildHealthAssessmentEngine {
   }
 
   private assessAdditives(food: FoodLabel): AdditiveSafetyResult[] {
+    return this.assessAdditivesForAge(food, AgeGroup.CHILD);
+  }
+
+  private assessAdditivesForAge(food: FoodLabel, ageGroup: AgeGroup): AdditiveSafetyResult[] {
     const results: AdditiveSafetyResult[] = [];
+
+    const avoidForAge: Record<string, string> = { ...AVOID_ADDITIVES };
+    const cautionForAge: Record<string, string> = { ...CAUTION_ADDITIVES };
+
+    if (ageGroup === AgeGroup.INFANT || ageGroup === AgeGroup.TODDLER) {
+      avoidForAge['山梨酸钾'] = '婴幼儿禁用此防腐剂';
+      avoidForAge['味精'] = '婴幼儿不宜摄入味精';
+      avoidForAge['甜蜜素'] = '婴幼儿禁用人工甜味剂';
+      avoidForAge['安赛蜜'] = '婴幼儿禁用人工甜味剂';
+      cautionForAge['黄原胶'] = '增稠剂，婴幼儿需谨慎';
+    } else if (ageGroup === AgeGroup.CHILD) {
+      cautionForAge['山梨酸钾'] = '防腐剂，儿童需控制摄入量';
+      cautionForAge['甜蜜素'] = '甜味剂，不建议儿童长期摄入';
+    }
 
     for (const ingredient of food.ingredients) {
       const trimmed = ingredient.trim();
 
-      if (AVOID_ADDITIVES[trimmed]) {
+      if (avoidForAge[trimmed]) {
         const r = new AdditiveSafetyResult();
         r.name = trimmed;
         r.additiveName = trimmed;
         r.safetyLevel = AdditiveSafetyLevel.AVOID_FOR_CHILD;
-        r.description = AVOID_ADDITIVES[trimmed];
+        r.description = avoidForAge[trimmed];
         results.push(r);
-      } else if (CAUTION_ADDITIVES[trimmed]) {
+      } else if (cautionForAge[trimmed]) {
         const r = new AdditiveSafetyResult();
         r.name = trimmed;
         r.additiveName = trimmed;
         r.safetyLevel = AdditiveSafetyLevel.CAUTION;
-        r.description = CAUTION_ADDITIVES[trimmed];
+        r.description = cautionForAge[trimmed];
         results.push(r);
       } else if (SAFE_ADDITIVES[trimmed]) {
         const r = new AdditiveSafetyResult();

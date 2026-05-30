@@ -12,7 +12,7 @@ import { ErrorBoundary } from '../components/ErrorBoundary';
 import { AiChatService } from '../service/AiChatService';
 import { OnDeviceInferenceEngine, InferenceResult } from 'feature_scan';
 
-import { ChatHistoryPrefsService } from '../service/ChatHistoryPrefsService';
+import { ChatHistoryPrefsService } from 'hsp_service';
 
 class ActionMenuButton {
   text: string = '';
@@ -115,7 +115,7 @@ struct AiChatPage {
 
   build() {
     ErrorBoundary({
-      fallbackMessage: 'AI 对话页面加载失败',
+      fallbackMessage: $r('app.string.ai_chat_page_load_failed'),
       onRetry: () => { this.aboutToAppear() },
       hasError: this.hasPageError,
       boundaryName: 'AiChatPage'
@@ -126,7 +126,7 @@ struct AiChatPage {
         // 返回按钮
         BackButton({ fontSize: 28, fontColor: COLORS.TEXT_PRIMARY })
           .onClick(() => safeBack())
-          .accessibilityText('返回')
+          .accessibilityText($r('app.string.back_arrow'))
           .accessibilityLevel('yes')
 
         // 标题 + 当前成员
@@ -151,7 +151,7 @@ struct AiChatPage {
             .fontSize(FONT_SIZE.BODY)
             .fontColor(COLORS.ACCENT_BLUE)
             .onClick(() => this.showMemberPicker())
-            .accessibilityText('切换成员')
+            .accessibilityText($r('app.string.ai_chat_switch_member'))
             .accessibilityLevel('yes')
         }
       }
@@ -194,7 +194,7 @@ struct AiChatPage {
           .onSubmit(() => {
             this.sendMessage()
           })
-          .accessibilityText('输入消息')
+          .accessibilityText($r('app.string.ai_chat_input_accessibility'))
           .accessibilityLevel('yes')
 
         Button() {
@@ -217,7 +217,7 @@ struct AiChatPage {
         .margin({ left: SPACING.SM })
         .enabled(this.inputText.length > 0 && !this.isLoading)
         .onClick(() => this.sendMessage())
-        .accessibilityText('发送消息')
+        .accessibilityText($r('app.string.ai_chat_send_accessibility'))
         .accessibilityLevel('yes')
       }
       .width('100%')
@@ -381,7 +381,7 @@ struct AiChatPage {
         const result = await engine.predictIngredientRisk(ingredients);
         const offlineMsg = new ChatMessage(
           generateMessageId(),
-          `端侧推理结果：风险评分 ${result.score}/100，评级 ${result.label}，置信度 ${(result.confidence * 100).toFixed(0)}%\n\n[离线模式] 建议仅供参考，联网后可获得更精准分析`,
+          `${$r('app.string.ai_chat_offline_result') as string}: ${result.score}/100, ${result.label}, ${(result.confidence * 100).toFixed(0)}%\n\n${$r('app.string.ai_chat_offline_suffix') as string}`,
           ChatRole.ASSISTANT,
           Date.now()
         );
@@ -408,7 +408,7 @@ struct AiChatPage {
         const fallbackResult = await engine.predictIngredientRisk(fallbackIngredients);
         const fallbackMsg = new ChatMessage(
           generateMessageId(),
-          `端侧推理结果：风险评分 ${fallbackResult.score}/100，评级 ${fallbackResult.label}\n\n[降级为离线推理] 云端不可用，已切换端侧推理`,
+          `${$r('app.string.ai_chat_fallback_result') as string}: ${fallbackResult.score}/100, ${fallbackResult.label}\n\n${$r('app.string.ai_chat_fallback_suffix') as string}`,
           ChatRole.ASSISTANT,
           Date.now()
         );

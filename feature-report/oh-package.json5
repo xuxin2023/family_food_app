@@ -7,7 +7,8 @@
   "license": "",
   "dependencies": {
     "hsp_core": "file:../hsp_core",
-    "feature_scan": "file:../feature-scan"
+    "feature_scan": "file:../feature-scan",
+    "hsp_service": "file:../hsp-service"
   },
   "devDependencies": {}
 }

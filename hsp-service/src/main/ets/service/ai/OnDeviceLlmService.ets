@@ -8,6 +8,7 @@ import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { AiServiceBase } from './AiServiceBase';
 import { AiClient, AiRequestOptions, AiCallResponse } from './AiClient';
 import { AI_RETRY_CONFIG, SYSTEM_PROMPTS } from './AiConfig';
+import { mindSporeLite, ModelContext } from '@kit.AIFoundation';
 
 const TAG = 'OnDeviceLlmService';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -18,10 +19,7 @@ const ONDEVICE_LLM_MAX_OUTPUT_TOKENS = 512;
 
 let mindSporeLiteAvailable = false;
 try {
-  const mslKit = globalThis['@kit.MindSporeLiteKit'] as Record<string, Object> | null;
-  if (mslKit) {
-    mindSporeLiteAvailable = true;
-  }
+  mindSporeLiteAvailable = true;
 } catch {
   mindSporeLiteAvailable = false;
 }
@@ -94,10 +92,9 @@ export class OnDeviceLlmService {
       hilog.info(DOMAIN_ZERO, TAG, 'Attempting on-device LLM load: %{public}s', ONDEVICE_LLM_MODEL_PATH);
 
       // MindSpore Lite 模型加载（实际部署时启用）
-      // const msl = globalThis['@kit.MindSporeLiteKit'].mindSporeLite;
-      // const msContext = msl.createContext();
-      // const msModel = await msl.loadModelFromFile(modelFullPath, {
-      //   executionMode: msl.ExecutionMode.NPU,
+      // const msContext = new ModelContext();
+      // const msModel = await mindSporeLite.loadModelFromFile(modelFullPath, {
+      //   executionMode: mindSporeLite.ExecutionMode.NPU,
       //   threadNum: 4,
       //   enableFp16: true
       // });
@@ -158,7 +155,6 @@ export class OnDeviceLlmService {
     }
 
     // 实际部署：MindSpore Lite 推理
-    // const msl = globalThis['@kit.MindSporeLiteKit'].mindSporeLite;
     // const inputs = this.llmModel!.getInputs();
     // inputs[0].setData(this.tokenize(fullPrompt));
     // const outputs = await this.llmModel!.predict(inputs);

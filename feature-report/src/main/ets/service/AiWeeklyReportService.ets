@@ -3,8 +3,7 @@
 
 import { FamilyProfile, HILOG_DOMAIN_DEFAULT, JsonHelper, WeeklyReport, WeeklyDietData } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { AiServiceBase } from './ai/AiServiceBase';
-import { AI_SERVICE_DEFAULTS, SYSTEM_PROMPTS } from './ai/AiConfig';
+import { AiServiceBase, AI_SERVICE_DEFAULTS, SYSTEM_PROMPTS } from 'hsp_service';
 
 const TAG = 'AiWeeklyReportService';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;

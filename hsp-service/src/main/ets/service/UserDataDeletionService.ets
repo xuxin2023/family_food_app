@@ -82,11 +82,8 @@ export class UserDataDeletionService {
   private async deleteCloudData(userId: string): Promise<boolean> {
     try {
       const backend = HuaweiCloudBackend.getInstance();
-      await backend.request({
-        path: `/api/users/${userId}/data`,
-        method: 'DELETE'
-      });
-      return true;
+      const result = await backend.callFunction('user-data-deletion', { userId, scope: 'full' });
+      return result !== null;
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'deleteCloudData failed: %{public}s', JSON.stringify(e));
       return false;
@@ -96,11 +93,8 @@ export class UserDataDeletionService {
   async exportUserData(userId: string): Promise<string | null> {
     try {
       const backend = HuaweiCloudBackend.getInstance();
-      const result = await backend.request({
-        path: `/api/users/${userId}/export`,
-        method: 'GET'
-      });
-      return JSON.stringify(result);
+      const result = await backend.callFunction('user-profile', { userId, action: 'export' });
+      return result !== null ? JSON.stringify(result) : null;
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'exportUserData failed: %{public}s', JSON.stringify(e));
       return null;

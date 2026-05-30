@@ -122,7 +122,7 @@ export class FavoriteRepository {
     }
   }
 
-  async delete(_id: string): Promise<void> {
+  async deleteById(_id: string): Promise<void> {
     this.items = this.items.filter(i => i.id !== _id);
   }
 

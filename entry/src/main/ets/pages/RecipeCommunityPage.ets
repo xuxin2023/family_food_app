@@ -121,7 +121,6 @@ struct RecipeCommunityPage {
         }
         .padding({ left: 16, right: 16, bottom: 8 })
       }
-      .scrollable(ScrollDirection.Horizontal)
       .width('100%')
       .height(44)
 
@@ -185,7 +184,7 @@ struct RecipeCommunityPage {
         this.selectedCategory = value
         this.loadRecipes()
       })
-      .accessibilityText(label as Resource)
+      .accessibilityText(typeof label === 'string' ? label : '')
       .accessibilityLevel('yes')
   }
 
@@ -203,7 +202,7 @@ struct RecipeCommunityPage {
           this.loadRecipes()
         }
       })
-      .accessibilityText(label as Resource)
+      .accessibilityText(typeof label === 'string' ? label : '')
       .accessibilityLevel('yes')
   }
 

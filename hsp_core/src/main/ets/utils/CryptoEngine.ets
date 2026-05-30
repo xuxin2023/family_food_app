@@ -30,7 +30,7 @@ export class CryptoEngine {
       hilog.info(DOMAIN_ZERO, TAG, 'CryptoEngine initialized');
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'CryptoEngine init failed: %{public}s', JSON.stringify(error));
-      throw error;
+      throw new Error(String(error));
     }
   }
 
@@ -52,7 +52,7 @@ export class CryptoEngine {
       return util.Base64Helper.encodeToStringSync(combined);
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Encrypt failed: %{public}s', JSON.stringify(error));
-      throw error;
+      throw new Error(String(error));
     }
   }
 
@@ -73,7 +73,7 @@ export class CryptoEngine {
       return new util.TextDecoder().decodeToString(output.data);
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Decrypt failed: %{public}s', JSON.stringify(error));
-      throw error;
+      throw new Error(String(error));
     }
   }
 

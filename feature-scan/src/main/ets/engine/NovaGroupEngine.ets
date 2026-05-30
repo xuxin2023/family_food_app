@@ -30,6 +30,17 @@ export class NovaEvaluationResult {
   matchedMarkers: string[] = [];
 }
 
+/**
+ * Nova加工度评级引擎
+ *
+ * 基于配料表判断食品加工等级，实现Nova分类框架：
+ * - Group 1: 未加工或微加工食品
+ * - Group 2: 加工烹饪配料
+ * - Group 3: 加工食品
+ * - Group 4: 超加工食品（Ultra-processed）
+ *
+ * @since 1.0.0
+ */
 export class NovaGroupEngine {
   private static readonly LABEL_MAP: Map<number, string> = new Map([
     [1, '未加工/微加工'],
@@ -84,6 +95,20 @@ export class NovaGroupEngine {
     '小苏打', '泡打粉', '酵母', '豆豉', '腐乳'
   ];
 
+  /**
+   * 评估食品加工等级
+   *
+   * @param ingredients - 配料列表
+   * @param foodCategory - 食品类别（可选，预留扩展）
+   * @returns Nova评级结果，包含加工等级、标签、颜色及匹配的超加工标记
+   *
+   * @example
+   * ```typescript
+   * const engine = new NovaGroupEngine();
+   * const result = engine.evaluate(['小麦粉', '氢化植物油', '山梨酸钾']);
+   * console.log(result.group); // NovaGroup.GROUP_4
+   * ```
+   */
   evaluate(ingredients: string[], foodCategory: string = ''): NovaEvaluationResult {
     if (ingredients.length === 0) {
       return this.buildResult(NovaGroup.GROUP_1, []);
@@ -120,14 +145,32 @@ export class NovaGroupEngine {
     return this.buildResult(NovaGroup.GROUP_1, []);
   }
 
+  /**
+   * 获取加工等级中文标签
+   *
+   * @param group - Nova加工等级
+   * @returns 中文标签，如'未加工/微加工'、'超加工食品'
+   */
   getLabel(group: NovaGroup): string {
     return NovaGroupEngine.LABEL_MAP.get(group) ?? '未知';
   }
 
+  /**
+   * 获取加工等级对应颜色
+   *
+   * @param group - Nova加工等级
+   * @returns 颜色HEX值
+   */
   getColor(group: NovaGroup): string {
     return NovaGroupEngine.COLOR_MAP.get(group) ?? '#9E9E9E';
   }
 
+  /**
+   * 获取加工等级详细描述
+   *
+   * @param group - Nova加工等级
+   * @returns 等级详细说明
+   */
   getDescription(group: NovaGroup): string {
     return NovaGroupEngine.DESC_MAP.get(group) ?? '';
   }

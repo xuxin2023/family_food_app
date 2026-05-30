@@ -34,6 +34,22 @@
       "memory": 256,
       "timeout": 15,
       "triggers": [{ "type": "http", "path": "/api/user-data-deletion" }]
+    },
+    {
+      "name": "push-token-report",
+      "handler": "index.handler",
+      "runtime": "Node.js18.17",
+      "memory": 256,
+      "timeout": 10,
+      "triggers": [{ "type": "http", "path": "/api/push-token-report" }]
+    },
+    {
+      "name": "food-safety-alert",
+      "handler": "index.handler",
+      "runtime": "Node.js18.17",
+      "memory": 256,
+      "timeout": 15,
+      "triggers": [{ "type": "http", "path": "/api/food-safety-alert" }]
     }
   ]
 }

@@ -1,19 +1,40 @@
-// 每100g营养成分
+/**
+ * 每100g营养成分
+ *
+ * 描述食品每100g所含各营养素的量，所有数值单位：
+ * - sodium: mg/100g
+ * - sugar/fat/saturatedFat/carbohydrate/protein/calcium/iron/fiber: g/100g
+ * - calories: kcal/100g
+ * - fruitVegNutPercent: %(0-100)
+ *
+ * @since 1.0.0
+ */
 // V2 状态管理: @ObservedV2 + @Trace 深度嵌套观察
 import { SafeJsonParse } from '../utils/SafeJsonParse';
 
 @ObservedV2
 export class NutritionPer100g {
+  /** 钠含量(mg/100g) */
   @Trace sodium: number = 0;
+  /** 糖含量(g/100g) */
   @Trace sugar: number = 0;
+  /** 热量(kcal/100g) */
   @Trace calories: number = 0;
+  /** 脂肪(g/100g) */
   @Trace fat: number = 0;
+  /** 饱和脂肪(g/100g) */
   @Trace saturatedFat: number = 0;
+  /** 碳水化合物(g/100g) */
   @Trace carbohydrate: number = 0;
+  /** 蛋白质(g/100g) */
   @Trace protein: number = 0;
+  /** 钙(g/100g) */
   @Trace calcium: number = 0;
+  /** 铁(g/100g) */
   @Trace iron: number = 0;
+  /** 膳食纤维(g/100g) */
   @Trace fiber: number = 0;
+  /** 果蔬坚果占比(%) */
   @Trace fruitVegNutPercent: number = 0;
 }
 
@@ -45,26 +66,56 @@ export class FoodLabelJson {
   identifiedAt: number = 0;
 }
 
-// 食品标签
+/**
+ * 食品标签
+ *
+ * 描述一个食品的完整标签信息，包括：
+ * - 基本信息：食品ID、名称、条形码
+ * - 配料表：成分列表、过敏原提示
+ * - 营养成分：每100g营养数据
+ * - 生产信息：制造商、SC编号、委托方、受托方、追溯码
+ * - 评级：NutriScore评分、EcoScore等级/分数、Nova加工等级
+ * - 数据来源：用户上传/扫码/OCR/云端等
+ *
+ * @since 1.0.0
+ */
 @ObservedV2
 export class FoodLabel {
+  /** 食品唯一标识 */
   @Trace foodId: string = '';
+  /** 食品名称 */
   @Trace foodName: string = '';
+  /** 商品条形码 */
   @Trace barcode: string = '';
+  /** 配料列表 */
   @Trace ingredients: string[] = [];
+  /** 每100g营养成分 */
   @Trace nutrition: NutritionPer100g = new NutritionPer100g();
+  /** 过敏原提示（标签标注） */
   @Trace allergenHints: string[] = [];
+  /** 制造商/生产商 */
   @Trace manufacturer: string = '';
+  /** SC生产许可证编号 */
   @Trace scNumber: string = '';
+  /** 委托方（OEM） */
   @Trace principal: string = '';
+  /** 受托方 */
   @Trace trustee: string = '';
+  /** 追溯码 */
   @Trace traceCode: string = '';
+  /** 数据来源 */
   @Trace source: FoodSource = FoodSource.USER_UPLOAD;
+  /** 识别时间戳(ms) */
   @Trace identifiedAt: number = 0;
+  /** NutriScore评分(0-100) */
   @Trace nutriScore: number = 0;
+  /** EcoScore等级(A~E) */
   @Trace ecoScoreGrade: string = '';
+  /** EcoScore分数(0-100) */
   @Trace ecoScoreScore: number = 0;
+  /** Nova加工等级(1-4) */
   @Trace novaGroup: number = 0;
+  /** 检测到的过敏原列表 */
   @Trace allergens: string[] = [];
 
   isOem(): boolean {

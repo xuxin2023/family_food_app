@@ -18,12 +18,33 @@ const KEY_ALIAS = 'family_food_aes256_key';
 const IV_LENGTH = 12; // GCM IV 推荐 12 字节
 const TAG_LENGTH = 16; // GCM Tag 16 字节
 
+/**
+ * 安全数据存储
+ *
+ * 基于HarmonyOS 6.1 HUKS + CryptoFramework的敏感数据加密存储，
+ * 加密方式：AES-256-GCM（认证加密），密钥由HUKS安全生成和管理，
+ * 存储格式：IV(12字节) + 密文 + AuthTag(16字节)，持久化使用Preferences。
+ *
+ * 适用场景：健康档案、过敏原信息、成员隐私数据等敏感信息的加密存储。
+ *
+ * 安全特性：
+ * - 密钥由HUKS在DE(设备加密)级别生成，不可导出明文
+ * - AES-256-GCM提供机密性+完整性+认证性保证
+ * - 每次加密使用随机IV，防止密文分析
+ *
+ * @since 1.0.0
+ */
 export class SecureDataStore {
   private static instance: SecureDataStore;
   private keyMaterial: huks.HuksReturnResult | null = null;
   private keyExists: boolean = false;
   private context: common.Context | null = null;
 
+  /**
+   * 获取SecureDataStore单例
+   *
+   * @returns SecureDataStore实例
+   */
   static getInstance(): SecureDataStore {
     if (!SecureDataStore.instance) {
       SecureDataStore.instance = new SecureDataStore();
@@ -31,6 +52,12 @@ export class SecureDataStore {
     return SecureDataStore.instance;
   }
 
+  /**
+   * 初始化安全存储（生成或加载HUKS密钥）
+   *
+   * @param context - 应用上下文
+   * @returns Promise<void>
+   */
   async init(context: common.Context): Promise<void> {
     this.context = context;
     await this.ensureKey();
@@ -38,7 +65,13 @@ export class SecureDataStore {
 
   // ========== 公开接口 ==========
 
-  /** 加密并持久化存储字符串 */
+  /**
+   * 加密并持久化存储字符串
+   *
+   * @param key - 存储键名
+   * @param plainText - 明文内容
+   * @returns 加密存储是否成功
+   */
   async encryptAndStore(key: string, plainText: string): Promise<boolean> {
     try {
       const encrypted = await this.encrypt(plainText);
@@ -53,7 +86,12 @@ export class SecureDataStore {
     }
   }
 
-  /** 读取并解密持久化数据 */
+  /**
+   * 读取并解密持久化数据
+   *
+   * @param key - 存储键名
+   * @returns 解密后的明文，键不存在或解密失败返回null
+   */
   async loadAndDecrypt(key: string): Promise<string | null> {
     try {
       const prefs = await preferences.getPreferences(this.context!, SECURE_PREF_NAME);
@@ -67,7 +105,12 @@ export class SecureDataStore {
     }
   }
 
-  /** 删除指定键的加密数据 */
+  /**
+   * 删除指定键的加密数据
+   *
+   * @param key - 存储键名
+   * @returns Promise<void>
+   */
   async deleteKey(key: string): Promise<void> {
     try {
       const prefs = await preferences.getPreferences(this.context!, SECURE_PREF_NAME);
@@ -78,7 +121,14 @@ export class SecureDataStore {
     }
   }
 
-  /** 加密数据（不持久化，返回 ArrayBuffer） */
+  /**
+   * 加密数据（不持久化，返回ArrayBuffer）
+   *
+   * 输出格式：IV(12字节) + AES-GCM密文 + AuthTag(16字节)
+   *
+   * @param plainText - 明文内容
+   * @returns 加密后的ArrayBuffer
+   */
   async encrypt(plainText: string): Promise<ArrayBuffer> {
     await this.ensureKey();
     const symKeyGenerator = cryptoFramework.createSymKeyGenerator('AES256');
@@ -91,12 +141,11 @@ export class SecureDataStore {
     const ivBytes = new Uint8Array(randomBlob.data);
     const aadArr: Uint8Array = new Uint8Array(0);
     const tagArr: Uint8Array = new Uint8Array(TAG_LENGTH);
-    const params: cryptoFramework.GcmParamsSpec = {
-      iv: { data: ivBytes.buffer as ArrayBuffer },
-      aad: { data: aadArr.buffer as ArrayBuffer },
-      authTag: { data: tagArr.buffer as ArrayBuffer },
-      algName: 'GcmParamsSpec'
-    };
+    const params = new cryptoFramework.GcmParamsSpec();
+    params.iv = { data: ivBytes.buffer as ArrayBuffer };
+    params.aad = { data: aadArr.buffer as ArrayBuffer };
+    params.authTag = { data: tagArr.buffer as ArrayBuffer };
+    params.algName = 'GcmParamsSpec';
 
     await cipher.init(cryptoFramework.CryptoMode.ENCRYPT_MODE, symKey, params);
     const input: cryptoFramework.DataBlob = {
@@ -107,7 +156,15 @@ export class SecureDataStore {
     return this.concatBuffers(ivBytes.buffer as ArrayBuffer, result.data);
   }
 
-  /** 解密数据 */
+  /**
+   * 解密数据
+   *
+   * 输入格式须为encrypt()输出的IV+密文+AuthTag格式。
+   *
+   * @param encryptedData - 加密数据ArrayBuffer
+   * @returns 解密后的明文字符串
+   * @throws Error 数据长度不足时抛出
+   */
   async decrypt(encryptedData: ArrayBuffer): Promise<string> {
     await this.ensureKey();
     const symKeyGenerator = cryptoFramework.createSymKeyGenerator('AES256');
@@ -125,12 +182,11 @@ export class SecureDataStore {
 
     const aadArr2: Uint8Array = new Uint8Array(0);
     const decipher = cryptoFramework.createCipher('AES256|GCM|NONE');
-    const params: cryptoFramework.GcmParamsSpec = {
-      iv: { data: iv.buffer as ArrayBuffer },
-      aad: { data: aadArr2.buffer as ArrayBuffer },
-      authTag: { data: tag.buffer as ArrayBuffer },
-      algName: 'GcmParamsSpec'
-    };
+    const params = new cryptoFramework.GcmParamsSpec();
+    params.iv = { data: iv.buffer as ArrayBuffer };
+    params.aad = { data: aadArr2.buffer as ArrayBuffer };
+    params.authTag = { data: tag.buffer as ArrayBuffer };
+    params.algName = 'GcmParamsSpec';
 
     await decipher.init(cryptoFramework.CryptoMode.DECRYPT_MODE, symKey, params);
     const input: cryptoFramework.DataBlob = { data: cipherData.buffer as ArrayBuffer };

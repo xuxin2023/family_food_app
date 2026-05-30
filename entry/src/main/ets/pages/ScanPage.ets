@@ -388,7 +388,7 @@ struct ScanPage {
 
   build() {
     ErrorBoundary({
-      fallbackMessage: '扫描页面加载失败',
+      fallbackMessage: $r('app.string.scan_page_load_failed'),
       onRetry: () => { this.aboutToAppear() },
       hasError: this.hasPageError,
       boundaryName: 'ScanPage'
@@ -418,7 +418,7 @@ struct ScanPage {
           })
 
           Row() {
-            Button('批量扫码')
+            Button($r('app.string.scan_batch_scan'))
               .height(32)
               .fontSize(13)
               .backgroundColor(COLORS.BG_CARD)
@@ -426,7 +426,7 @@ struct ScanPage {
               .borderRadius(16)
               .padding({ left: 16, right: 16 })
               .onClick(() => { this.showBatchScan = true; })
-              .accessibilityText('批量扫码')
+              .accessibilityText($r('app.string.scan_batch_scan'))
               .accessibilityLevel('yes')
           }
           .width('100%')
@@ -520,11 +520,14 @@ struct ScanPage {
               this.calculateScoreForCurrentLabel()
             }
           })
+          .accessibilityRole('list')
+          .accessibilityText(this.vm.foodLabel.foodId.length > 0 ?
+            `${this.vm.foodLabel.foodName}，营养评分${this.vm.nutriScore}分` : '扫描结果列表')
 
           // ---- 连续扫描批量结果 ----
           if (this.vm.continuousMode && this.vm.batchResults.length > 0) {
             Column() {
-              Text(`已扫描${this.vm.batchResults.length}件商品`)
+              Text($r('app.string.scan_batch_count', this.vm.batchResults.length))
                 .fontSize(FONT_SIZE.BODY_SM)
                 .fontColor(COLORS.TEXT_SECONDARY)
                 .margin({ bottom: SPACING.SM })
@@ -550,7 +553,6 @@ struct ScanPage {
                   }, (item: FoodLabel) => item.foodId)
                 }
               }
-              .scrollable(ScrollDirection.Horizontal)
               .scrollBar(BarState.Off)
             }
             .width('92%')
@@ -559,7 +561,7 @@ struct ScanPage {
             .borderRadius(RADIUS.LG)
             .margin({ bottom: SPACING.MD })
             .alignItems(HorizontalAlign.Start)
-            .accessibilityText(`已扫描${this.vm.batchResults.length}件商品`)
+            .accessibilityText($r('app.string.scan_batch_count', this.vm.batchResults.length))
             .accessibilityLevel('yes')
           }
 
@@ -588,7 +590,8 @@ struct ScanPage {
             }
           })
                 .animation({ duration: 200, curve: curves.springMotion() })
-                .accessibilityText($r('app.string.scan_identify'))
+                .accessibilityRole('button')
+                .accessibilityText('扫描食品条码')
                 .accessibilityDescription($r('app.string.scan_start_desc'))
 
               Button($r('app.string.scan_mode_manual'))
@@ -615,13 +618,13 @@ struct ScanPage {
 
               AddToShoppingListButton({ foodLabel: this.vm.foodLabel })
 
-              Button('深度分析')
+              Button($r('app.string.scan_deep_analysis'))
                 .layoutWeight(1)
                 .height(BUTTON.HEIGHT_SECONDARY)
                 .backgroundColor(COLORS.BG_CARD)
                 .fontColor(COLORS.PRIMARY)
                 .borderRadius(BUTTON.RADIUS_SECONDARY)
-                .accessibilityText('深度分析')
+                .accessibilityText($r('app.string.scan_deep_analysis'))
                 .accessibilityLevel('yes')
                 .onClick(() => { this.showDeepAnalysis = true; })
 
@@ -665,7 +668,7 @@ struct ScanPage {
         .height('100%')
         .backgroundColor(COLORS.BG_PAGE)
         .accessibilityGroup(true)
-        .accessibilityDescription('食品扫描页面，扫描条码或拍照识别食品')
+        .accessibilityDescription($r('app.string.scan_page_accessibility_desc'))
       }
       .width('100%')
       .height('100%')
@@ -766,7 +769,6 @@ struct ScanPage {
           }, (item: FoodLabel) => item.foodId)
         }
       }
-      .scrollable(ScrollDirection.Horizontal)
       .scrollBar(BarState.Off)
       .margin({ bottom: SPACING.MD })
     }
@@ -893,7 +895,7 @@ struct ScanPage {
           lookupResult.source, lookupResult.confidence)
         this.vm.foodLabel = lookupResult.foodLabel
         if (this.vm.isOffline && lookupResult.source !== 'barcode_scan') {
-          this.vm.recognitionHint = '📡 离线数据'
+          this.vm.recognitionHint = $r('app.string.scan_offline_data_hint')
         }
         this.vm.scanPhase = ScanPhase.SCORING
         this.calculateScoreForCurrentLabel()
@@ -909,7 +911,7 @@ struct ScanPage {
         const localFood = await this.appState.foodRepo.findByBarcode(barcode)
         if (localFood !== null) {
           this.vm.foodLabel = localFood
-          this.vm.recognitionHint = '📡 离线数据'
+          this.vm.recognitionHint = $r('app.string.scan_offline_data_hint')
           this.vm.scanPhase = ScanPhase.SCORING
           this.calculateScoreForCurrentLabel()
           return
@@ -1048,10 +1050,11 @@ struct ScanPage {
     this.vm.foodLabel.nutrition.fat = this.parseNumber(this.vm.editPanel.fat)
     this.vm.foodLabel.nutrition.carbohydrate = this.parseNumber(this.vm.editPanel.carbohydrate)
     this.vm.foodLabel.nutrition.protein = this.parseNumber(this.vm.editPanel.protein)
-    this.vm.foodLabel.ingredients = (this.vm.editPanel.ingredients
+    const parsedIngredients: string[] = this.vm.editPanel.ingredients
       .split(/\\r?\\n|,|，|、/)
       .map((item: string) => item.trim())
-      .filter((item: string) => item.length > 0)) as string[]
+      .filter((item: string) => item.length > 0);
+    this.vm.foodLabel.ingredients = parsedIngredients
     this.vm.foodLabel.manufacturer = this.vm.editPanel.manufacturer.trim()
     this.vm.foodLabel.scNumber = this.vm.editPanel.scNumber.trim()
     this.vm.foodLabel.principal = this.vm.editPanel.principal.trim()
@@ -1060,7 +1063,9 @@ struct ScanPage {
 
   private applyFoodInputResult(result: FoodInputResult) {
     PerformanceMonitor.getInstance().endSpan('scan_result:recognition');
-    this.vm.foodLabel = result.foodLabel as FoodLabel
+    if (result.foodLabel instanceof FoodLabel) {
+      this.vm.foodLabel = result.foodLabel
+    }
     this.vm.recognizedText = result.recognizedText
     this.vm.recognitionHint = result.hint
     this.vm.ocrConfidence = result.confidence
@@ -1124,10 +1129,4 @@ struct ScanPage {
     }
   }
 
-  pageTransition() {
-    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
-      .slide(SlideEffect.Right)
-    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
-      .slide(SlideEffect.Left)
-  }
 }

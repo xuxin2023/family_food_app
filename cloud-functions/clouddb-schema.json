@@ -162,6 +162,68 @@
         "updatedAt": { "type": "string" }
       },
       "indexes": [{ "fields": ["userId", "status"] }, { "fields": ["createdAt"] }]
+    },
+    "PushToken": {
+      "fields": {
+        "tokenRecordId": { "type": "string", "primaryKey": true },
+        "bundleName": { "type": "string" },
+        "pushToken": { "type": "string" },
+        "platform": { "type": "string" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "indexes": [{ "fields": ["bundleName", "userId"], "unique": true }, { "fields": ["pushToken"] }]
+    },
+    "PushSubscription": {
+      "fields": {
+        "userId": { "type": "string", "primaryKey": true },
+        "pushToken": { "type": "string" },
+        "foodSafetyAlert": { "type": "boolean" },
+        "additiveRisk": { "type": "boolean" },
+        "nutritionTip": { "type": "boolean" },
+        "productUpdate": { "type": "boolean" },
+        "quietHoursStart": { "type": "string" },
+        "quietHoursEnd": { "type": "string" },
+        "updatedAt": { "type": "number" }
+      },
+      "indexes": [{ "fields": ["userId"], "unique": true }]
+    },
+    "FoodSafetyAlert": {
+      "fields": {
+        "alertId": { "type": "string", "primaryKey": true },
+        "alertType": { "type": "string" },
+        "productName": { "type": "string" },
+        "brand": { "type": "string" },
+        "barcode": { "type": "string" },
+        "reason": { "type": "string" },
+        "actionRequired": { "type": "string" },
+        "sourceUrl": { "type": "string" },
+        "region": { "type": "string" },
+        "issuedAt": { "type": "number" },
+        "notifiedCount": { "type": "number" },
+        "createdAt": { "type": "number" }
+      },
+      "indexes": [{ "fields": ["alertType", "issuedAt"] }, { "fields": ["barcode"] }]
+    },
+    "FoodSubmission": {
+      "fields": {
+        "submissionId": { "type": "string", "primaryKey": true },
+        "foodName": { "type": "string" },
+        "barcode": { "type": "string" },
+        "brand": { "type": "string" },
+        "ingredients": { "type": "string" },
+        "nutritionPer100g": { "type": "object" },
+        "allergenHints": { "type": "array", "items": "string" },
+        "submittedBy": { "type": "string" },
+        "imageUrls": { "type": "array", "items": "string" },
+        "status": { "type": "string" },
+        "reviewer": { "type": "string" },
+        "reviewComment": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "indexes": [{ "fields": ["submittedBy"] }, { "fields": ["barcode"] }, { "fields": ["status"] }]
     }
   }
 }

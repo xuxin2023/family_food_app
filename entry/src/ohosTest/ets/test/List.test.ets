@@ -13,6 +13,18 @@ import foodAdapterEngineTest from './engine/FoodAdapterEngineTest';
 import recommendationEngineTest from './engine/RecommendationEngineTest';
 import elderFriendlyEngineTest from './engine/ElderFriendlyEngineTest';
 import weeklyReportEngineTest from './engine/WeeklyReportEngineTest';
+import novaGroupEngineTest from './engine/NovaGroupEngineTest';
+import allergenAutoDetectorTest from './engine/AllergenAutoDetectorTest';
+import additiveSafetyEngineTest from './engine/AdditiveSafetyEngineTest';
+import intoleranceEngineTest from './engine/IntoleranceEngineTest';
+
+// 门面单元测试
+import foodFacadeTest from './facade/FoodFacadeTest';
+import memberFacadeTest from './facade/MemberFacadeTest';
+
+// 工具单元测试
+import lruCacheTest from './util/LruCacheTest';
+import mathUtilTest from './util/MathUtilTest';
 
 // 模型单元测试
 import familyProfileTest from './model/FamilyProfileTest';
@@ -41,6 +53,18 @@ export default function tests() {
   recommendationEngineTest();
   elderFriendlyEngineTest();
   weeklyReportEngineTest();
+  novaGroupEngineTest();
+  allergenAutoDetectorTest();
+  additiveSafetyEngineTest();
+  intoleranceEngineTest();
+
+  // 门面测试
+  foodFacadeTest();
+  memberFacadeTest();
+
+  // 工具测试
+  lruCacheTest();
+  mathUtilTest();
 
   // 模型测试
   familyProfileTest();

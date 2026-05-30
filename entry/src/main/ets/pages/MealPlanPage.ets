@@ -32,18 +32,20 @@ struct MealPlanPage {
     for (let i = 0; i < this.familyMembers.length; i++) {
       const goals = this.familyMembers[i].healthGoals;
       for (let j = 0; j < goals.length; j++) {
-        if (goals[j] === HealthGoal.CONTROL_BP) needLowSodium = true;
-        if (goals[j] === HealthGoal.CONTROL_SUGAR) needLowSugar = true;
+        if (goals[j] === HealthGoal.CONTROL_BP) { needLowSodium = true; }
+        if (goals[j] === HealthGoal.CONTROL_SUGAR) { needLowSugar = true; }
       }
     }
 
+    let plan: MealPlanTemplate = new MealPlanTemplate();
     if (needLowSodium) {
-      this.currentPlan = createLowSodiumMealPlan();
+      plan = createLowSodiumMealPlan();
     } else if (needLowSugar) {
-      this.currentPlan = createLowSugarMealPlan();
+      plan = createLowSugarMealPlan();
     } else {
-      this.currentPlan = createDefaultMealPlan();
+      plan = createDefaultMealPlan();
     }
+    this.currentPlan = plan;
   }
 
   private generateSmartPlan(): void {
@@ -264,10 +266,4 @@ struct MealPlanPage {
     return total;
   }
 
-  pageTransition() {
-    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
-      .slide(SlideEffect.Right)
-    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
-      .slide(SlideEffect.Left)
-  }
 }

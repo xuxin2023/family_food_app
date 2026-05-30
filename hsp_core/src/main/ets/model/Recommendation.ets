@@ -47,20 +47,42 @@ export class RecommendationJson {
   generatedAt: number = 0;
 }
 
-// 适配结论
+/**
+ * 适配结论
+ *
+ * 描述对某成员食用某食品的适配建议，包括：
+ * - 建议等级：适合/少量可以/今天谨慎/建议避免
+ * - 建议量：最大食用量(g)和最大份数
+ * - 原因与提醒：适配原因列表和提醒列表
+ * - 免责声明
+ *
+ * @since 1.0.0
+ */
 @ObservedV2
 export class Recommendation {
+  /** 成员ID */
   @Trace memberId: string = '';
+  /** 食品ID */
   @Trace foodId: string = '';
+  /** 建议等级 */
   @Trace level: RecommendLevel = RecommendLevel.SUITABLE;
+  /** 等级颜色 */
   @Trace levelColor: LevelColor = LevelColor.GREEN;
-  @Trace maxAmount: number = 0;         // 建议最大食用量 g
-  @Trace maxServings: number = 0;       // 建议最大份数
-  @Trace reasons: string[] = [];        // 原因列表
-  @Trace reminders: string[] = [];      // 提醒列表
+  /** 建议最大食用量(g) */
+  @Trace maxAmount: number = 0;
+  /** 建议最大份数 */
+  @Trace maxServings: number = 0;
+  /** 适配原因列表 */
+  @Trace reasons: string[] = [];
+  /** 提醒列表 */
+  @Trace reminders: string[] = [];
+  /** 免责声明 */
   @Trace disclaimer: string = '';
+  /** 生成时间戳(ms) */
   @Trace generatedAt: number = 0;
+  /** NutriScore评分 */
   @Trace nutriScore: number = 0;
+  /** 摘要文本 */
   @Trace summary: string = '';
 
   // 是否为建议避免

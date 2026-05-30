@@ -1,4 +1,4 @@
-// ImmersiveTabBar.ets
+﻿// ImmersiveTabBar.ets
 // HarmonyOS 6.1 UI Design Kit - 悬浮页签与沉浸光感
 // 使用 HdsTabs 悬浮样式 + 沉浸式材质背景实现底部导航栏悬浮透视效果
 // 支持迷你栏交互：最小化标签页栏并随之移动，轻点退出最小化状态
@@ -6,7 +6,7 @@
 /**
  * 沉浸式Tab配置
  */
-import { ElderModeManager } from '../service/ElderModeManager';
+import { ElderModeManager } from 'hsp_service';
 
 export class ImmersiveTabConfig {
   text: ResourceStr = '';

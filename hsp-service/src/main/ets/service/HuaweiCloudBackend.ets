@@ -20,7 +20,16 @@ const CLOUD_FUNCTION_IDS: Record<string, string> = {
   'sync-gateway': 'syncgateway',
   'user-profile': 'userprofile',
   'nutrition-analysis': 'nutritionanalysis',
-  'ai-chat': 'aichat'
+  'ai-chat': 'aichat',
+  'additive-interaction': 'additiveinteraction',
+  'additive-safety-assess': 'additivesafetyassess',
+  'allergen-detect': 'allergendetect',
+  'allergen-cross-check': 'allergencrosscheck',
+  'alternative-search': 'alternativesearch',
+  'health-report-generator': 'healthreportgen',
+  'food-submission': 'foodsubmission',
+  'submit-feedback': 'submitfeedback',
+  'user-data-deletion': 'userdatadeletion'
 };
 
 function resolveBaseUrl(): string {
@@ -100,7 +109,25 @@ export const CLOUD_FUNCTIONS: CloudFunctionConfig[] = [
   createCloudFunctionConfig('nutrition-analysis', '/api/nutrition/analyze', http.RequestMethod.POST, 10000,
     '营养分析 — 批量营养摄入分析与周报生成'),
   createCloudFunctionConfig('ai-chat', '/api/ai/chat', http.RequestMethod.POST, 30000,
-    'AI对话 — 云端大模型对话降级（端侧模型不可用时）')
+    'AI对话 — 云端大模型对话降级（端侧模型不可用时）'),
+  createCloudFunctionConfig('additive-interaction', '/api/additive/interaction', http.RequestMethod.POST, 5000,
+    '添加剂交互检测 — 检测多添加剂协同风险'),
+  createCloudFunctionConfig('additive-safety-assess', '/api/additive/safety-assess', http.RequestMethod.POST, 5000,
+    '添加剂安全评估 — E编号风险评级'),
+  createCloudFunctionConfig('allergen-detect', '/api/allergen/detect', http.RequestMethod.POST, 5000,
+    '过敏原检测 — 成分与用户过敏原匹配'),
+  createCloudFunctionConfig('allergen-cross-check', '/api/allergen/cross-check', http.RequestMethod.POST, 5000,
+    '交叉过敏检测 — 交叉反应性风险分析'),
+  createCloudFunctionConfig('alternative-search', '/api/food/alternative-search', http.RequestMethod.POST, 8000,
+    '替代品搜索 — GaussDB向量检索替代食品'),
+  createCloudFunctionConfig('health-report-generator', '/api/health/report', http.RequestMethod.POST, 10000,
+    '健康报告生成 — 营养摄入汇总与评估'),
+  createCloudFunctionConfig('food-submission', '/api/contribute/food-submission', http.RequestMethod.POST, 5000,
+    '食品贡献 — 用户补录食品信息审核'),
+  createCloudFunctionConfig('submit-feedback', '/api/feedback/submit', http.RequestMethod.POST, 3000,
+    '反馈提交 — 用户反馈工单生成'),
+  createCloudFunctionConfig('user-data-deletion', '/api/user/data-deletion', http.RequestMethod.POST, 10000,
+    '用户数据删除 — GDPR/PIPL一键数据擦除')
 ];
 
 export const CLOUD_DATABASES: CloudDatabaseConfig[] = [

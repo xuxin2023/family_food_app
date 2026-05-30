@@ -129,7 +129,7 @@ struct CloudSyncSettingsPage {
       .border({ width: { bottom: active ? 2 : 0 }, color: { bottom: active ? COLORS.PRIMARY : Color.Transparent } })
       .margin({ right: 24 })
       .onClick(onClick)
-      .accessibilityText(label as Resource)
+      .accessibilityText(label )
       .accessibilityLevel('yes')
   }
 

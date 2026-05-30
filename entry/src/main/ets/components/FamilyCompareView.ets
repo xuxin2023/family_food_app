@@ -23,7 +23,6 @@ export struct FamilyCompareView {
           }, (rec: Recommendation) => rec.memberId)
         }
       }
-      .scrollable(ScrollDirection.Horizontal)
       .width('100%')
     }
     .width('100%')

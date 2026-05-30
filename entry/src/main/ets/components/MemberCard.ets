@@ -51,8 +51,9 @@ export struct MemberCard {
       radius: 16
     })
     .alignItems(HorizontalAlign.Center)
-    .accessibilityText(`选择成员 ${this.member.nickname}`)
-    .accessibilityDescription(`健康目标: ${this.member.healthGoals.join('、')}`)
+    .accessibilityRole('listItem')
+    .accessibilityText(`${this.member.nickname}，${this.member.ageGroup}，健康目标${this.member.healthGoals.join('、')}`)
+    .accessibilityDescription(`过敏原: ${this.member.allergens.length > 0 ? this.member.allergens.join('、') : '无'}`)
     .accessibilityLevel('yes')
     .onClick(() => {
       this.onSelect?.(this.member.memberId);

@@ -1,10 +1,10 @@
-// QuickFoodInput.ets
+﻿// QuickFoodInput.ets
 // 饮食记录快捷录入组件 - 底部弹窗形式
 
 import { NutritionPer100g, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, DietRecord, OfflineFoodEntry, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { getOfflineFoodDatabase } from 'hsp_core';
 import { AppState } from '../AppState';
-import { ElderModeManager } from '../service/ElderModeManager';
+import { ElderModeManager } from 'hsp_service';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG_QFI = 'QuickFoodInput';
@@ -169,7 +169,6 @@ export struct QuickFoodInput {
             }, (record: DietRecord) => `${record.id}`)
           }
         }
-        .scrollable(ScrollDirection.Horizontal)
         .width('100%')
       } else if (this.searchQuery.length === 0 && this.recentFoods.length === 0) {
         Column() {

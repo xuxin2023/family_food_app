@@ -42,6 +42,16 @@ class CertKeywordSet {
 
 const CERT_KEYWORDS = new CertKeywordSet();
 
+/**
+ * Eco-Score生态评分计算引擎
+ *
+ * 基于Open Food Facts可获取字段简化实现Eco-Score算法，
+ * 结合有机认证、公平贸易、碳足迹、可持续认证、本地生产等因素
+ * 计算食品环境影响评级(A~E)。
+ * 参考: https://docs.score-environnemental.com/
+ *
+ * @since 1.0.0
+ */
 export class EcoScoreEngine {
   private static instance: EcoScoreEngine;
   private constructor() {}
@@ -62,6 +72,11 @@ export class EcoScoreEngine {
     [EcoScoreGrade.E, 10]
   ]);
 
+  /**
+   * 获取EcoScoreEngine单例
+   *
+   * @returns EcoScoreEngine实例
+   */
   static getInstance(): EcoScoreEngine {
     if (!EcoScoreEngine.instance) {
       EcoScoreEngine.instance = new EcoScoreEngine();
@@ -70,13 +85,25 @@ export class EcoScoreEngine {
   }
 
   /**
-   * 基于 OFF 字段简化计算 Eco-Score
-   * @param ecoscoreGrade OFF API 返回的 ecoscore_grade (a-e)
-   * @param ecoscoreScore OFF API 返回的 ecoscore_score (0-100)
-   * @param labels 产品的标签列表（如 "Bio","Fair-trade" 等）
-   * @param categories 产品的分类
-   * @param origins 原产地
-   * @param manufacturingPlaces 生产地
+   * 基于OFF字段简化计算Eco-Score
+   *
+   * 优先使用OFF官方评级数据；若不可用，则基于标签关键词匹配
+   * （有机认证、公平贸易、碳足迹、可持续、本地生产）估算评分。
+   *
+   * @param ecoscoreGrade - OFF API返回的ecoscore_grade (a-e)
+   * @param ecoscoreScore - OFF API返回的ecoscore_score (0-100)
+   * @param labels - 产品的标签列表（如"Bio","Fair-trade"等）
+   * @param categories - 产品的分类
+   * @param origins - 原产地
+   * @param manufacturingPlaces - 生产地
+   * @returns EcoScore评级结果，包含等级(A~E)、评分、置信度及各因子明细
+   *
+   * @example
+   * ```typescript
+   * const engine = EcoScoreEngine.getInstance();
+   * const result = engine.evaluate('b', 70, 'Bio,Fair-trade', 'plant-based', 'France', 'France');
+   * console.log(result.grade); // EcoScoreGrade.B
+   * ```
    */
   evaluate(
     ecoscoreGrade: string | undefined,

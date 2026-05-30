@@ -56,11 +56,11 @@ export class CommunityImageService {
       const response: SecureJsonResponse = await SecureHttpHelper.post(uploadUrl, uploadBody as Object, header, 30000);
 
       if (response.responseCode === 200 && response.data) {
-        const data = response.data as Record<string, Object>;
-        result.url = (data['url'] as string) ?? '';
-        result.thumbnailUrl = (data['thumbnailUrl'] as string) ?? result.url;
-        result.width = (data['width'] as number) ?? 0;
-        result.height = (data['height'] as number) ?? 0;
+        const data = response.data;
+        result.url = (data.get('url') as string) ?? '';
+        result.thumbnailUrl = (data.get('thumbnailUrl') as string) ?? result.url;
+        result.width = (data.get('width') as number) ?? 0;
+        result.height = (data.get('height') as number) ?? 0;
 
         hilog.info(DOMAIN_ZERO, TAG, 'Image uploaded: %{public}s (%{public}dKB)',
           result.url, result.sizeKB);

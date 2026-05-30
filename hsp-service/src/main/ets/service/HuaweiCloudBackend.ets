@@ -3,7 +3,7 @@
 // 实际部署请使用华为云 AGC (AppGallery Connect) 控制台
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN_DEFAULT, API_CONFIG } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, API_CONFIG, serialScheduler } from 'hsp_core';
 import { http } from '@kit.NetworkKit';
 import { SecureHttpClient, SecureRequestOptions } from './SecureHttpClient';
 import { ConfigManager } from './ConfigManager';
@@ -162,7 +162,33 @@ export class HuaweiCloudBackend {
     hilog.info(DOMAIN_ZERO, TAG, 'HuaweiCloudBackend init: %{public}s', baseUrl);
   }
 
-  async callFunction(functionName: string, payload: Object, token?: string): Promise<Object | null> {
+  private requestCache: Map<string, { result: Object | null; timestamp: number }> = new Map();
+  private static readonly IDEMPOTENT_TTL_MS = 5000;
+
+  async callFunction(functionName: string, payload: Object, token?: string, idempotencyKey?: string): Promise<Object | null> {
+    const cacheKey = idempotencyKey ?? `${functionName}_${Date.now()}`;
+    const cached = this.requestCache.get(cacheKey);
+    if (cached !== undefined && Date.now() - cached.timestamp < HuaweiCloudBackend.IDEMPOTENT_TTL_MS) {
+      return cached.result;
+    }
+
+    return serialScheduler.enqueue(`cf_${functionName}_${cacheKey}`, async (): Promise<Object | null> => {
+      const cachedInner = this.requestCache.get(cacheKey);
+      if (cachedInner !== undefined && Date.now() - cachedInner.timestamp < HuaweiCloudBackend.IDEMPOTENT_TTL_MS) {
+        return cachedInner.result;
+      }
+
+      const result = await this.doCallFunction(functionName, payload, token);
+      this.requestCache.set(cacheKey, { result: result, timestamp: Date.now() });
+      if (this.requestCache.size > 100) {
+        const oldestKey = this.requestCache.keys().next().value;
+        if (oldestKey !== undefined) this.requestCache.delete(oldestKey);
+      }
+      return result;
+    });
+  }
+
+  private async doCallFunction(functionName: string, payload: Object, token?: string): Promise<Object | null> {
     const config = CLOUD_FUNCTIONS.find(f => f.name === functionName);
     if (!config) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Unknown cloud function: %{public}s', functionName);

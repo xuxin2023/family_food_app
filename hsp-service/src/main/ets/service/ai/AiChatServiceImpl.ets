@@ -4,6 +4,7 @@ import { AiServiceBase } from './AiServiceBase';
 import { AI_SERVICE_DEFAULTS, SYSTEM_PROMPTS } from './AiConfig';
 import { OnDeviceLlmService } from './OnDeviceLlmService';
 import { IAiStateProvider } from '../IAiStateProvider';
+import { IAiChatService } from './IAiChatService';
 
 const TAG = 'AiChatServiceImpl';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -11,7 +12,7 @@ const MAX_HISTORY_ROUNDS = 10;
 
 class ChatHistoryItem { role: string = ''; content: string = ''; }
 
-export class AiChatServiceImpl extends AiServiceBase {
+export class AiChatServiceImpl extends AiServiceBase implements IAiChatService {
   private conversationHistory: ChatMessage[] = [];
   private currentMemberId: string = '';
   private onDeviceLlm: OnDeviceLlmService = OnDeviceLlmService.getInstance();

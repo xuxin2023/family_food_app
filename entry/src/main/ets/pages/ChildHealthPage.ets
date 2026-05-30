@@ -139,38 +139,38 @@ struct ChildHealthPage {
                   .fontWeight(FontWeight.Bold)
                   .margin({ bottom: 12 })
 
-                Text(`安全评分: ${(this.result as ChildHealthAssessment).overallSafetyScore}/100`)
+                Text(`安全评分: ${(this.result as ChildHealthAssessment)?.overallSafetyScore ?? 0}/100`)
                   .fontSize(14)
                   .fontWeight(FontWeight.Medium)
                   .margin({ bottom: 6 })
-                Text((this.result as ChildHealthAssessment).overallAdvice)
+                Text((this.result as ChildHealthAssessment)?.overallAdvice ?? '')
                   .fontSize(14)
                   .fontColor(COLORS.TEXT_GRAY_3333)
                   .margin({ bottom: 8 })
 
-                if ((this.result as ChildHealthAssessment).snackImpact.recommendation.length > 0) {
+                if (((this.result as ChildHealthAssessment)?.snackImpact?.recommendation?.length ?? 0) > 0) {
                   Text($r('app.string.child_health_snack_impact'))
                     .fontSize(14)
                     .fontWeight(FontWeight.Medium)
                     .margin({ bottom: 4 })
-                  Text((this.result as ChildHealthAssessment).snackImpact.recommendation)
+                  Text((this.result as ChildHealthAssessment)?.snackImpact?.recommendation ?? '')
                     .fontSize(13)
                     .fontColor(COLORS.TEXT_GRAY_3333)
                     .margin({ bottom: 4 })
-                  if ((this.result as ChildHealthAssessment).snackImpact.portionAdvice.length > 0) {
-                    Text((this.result as ChildHealthAssessment).snackImpact.portionAdvice)
+                  if (((this.result as ChildHealthAssessment)?.snackImpact?.portionAdvice?.length ?? 0) > 0) {
+                    Text((this.result as ChildHealthAssessment)?.snackImpact?.portionAdvice ?? '')
                       .fontSize(13)
                       .fontColor(COLORS.PRIMARY)
                       .margin({ bottom: 6 })
                   }
                 }
 
-                if ((this.result as ChildHealthAssessment).additiveResults.length > 0) {
+                if (((this.result as ChildHealthAssessment)?.additiveResults?.length ?? 0) > 0) {
                   Text($r('app.string.child_health_additive_assessment'))
                     .fontSize(14)
                     .fontWeight(FontWeight.Medium)
                     .margin({ top: 8, bottom: 4 })
-                  ForEach((this.result as ChildHealthAssessment).additiveResults, (ar: AdditiveSafetyResult, index: number) => {
+                  ForEach((this.result as ChildHealthAssessment)?.additiveResults ?? [], (ar: AdditiveSafetyResult, index: number) => {
                     Row() {
                       Text(ar.safetyLevel === AdditiveSafetyLevel.SAFE ? '✓' :
                         ar.safetyLevel === AdditiveSafetyLevel.AVOID ? '✕' : '⚠')
@@ -193,12 +193,12 @@ struct ChildHealthPage {
                   }, (ar: AdditiveSafetyResult, index: number) => `${index}`)
                 }
 
-                if ((this.result as ChildHealthAssessment).growthNutritionCheck.length > 0) {
+                if (((this.result as ChildHealthAssessment)?.growthNutritionCheck?.length ?? 0) > 0) {
                   Text($r('app.string.child_health_growth_check'))
                     .fontSize(14)
                     .fontWeight(FontWeight.Medium)
                     .margin({ top: 8, bottom: 4 })
-                  Text((this.result as ChildHealthAssessment).growthNutritionCheck.join('、'))
+                  Text((this.result as ChildHealthAssessment)?.growthNutritionCheck?.join('、') ?? '')
                     .fontSize(13)
                     .fontColor(COLORS.TEXT_GRAY_3333)
                 }

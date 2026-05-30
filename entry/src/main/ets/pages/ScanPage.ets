@@ -487,7 +487,7 @@ struct ScanPage {
           }
 
           // ---- 扫描次数 ----
-          if (this.appState.member.memberStatus.scansRemainingToday >= 0) {
+          if ((this.appState.member?.memberStatus?.scansRemainingToday ?? -1) >= 0) {
             Row() {
               if (this.vm.scanLimitReached) {
                 Text($r('app.string.scan_today_used_up'))
@@ -791,13 +791,14 @@ struct ScanPage {
   }
 
   private quickNutriScore(label: FoodLabel): number {
-    const nutrition = label.nutrition
+    const nutrition = label?.nutrition
+    if (!nutrition) return 50
     let score = 50
-    score -= Math.min(40, Math.floor(nutrition.sodium / 100) * 2)
-    score -= Math.min(30, Math.floor(nutrition.sugar / 10) * 3)
-    score -= Math.min(20, Math.floor(nutrition.fat / 10) * 2)
-    score += Math.min(20, Math.floor(nutrition.protein / 5) * 2)
-    score -= Math.min(20, Math.floor(nutrition.calories / 100))
+    score -= Math.min(40, Math.floor((nutrition.sodium ?? 0) / 100) * 2)
+    score -= Math.min(30, Math.floor((nutrition.sugar ?? 0) / 10) * 3)
+    score -= Math.min(20, Math.floor((nutrition.fat ?? 0) / 10) * 2)
+    score += Math.min(20, Math.floor((nutrition.protein ?? 0) / 5) * 2)
+    score -= Math.min(20, Math.floor((nutrition.calories ?? 0) / 100))
     return Math.max(0, Math.min(100, score))
   }
 
@@ -933,7 +934,7 @@ struct ScanPage {
     this.vm.scanLimitReached = false
     const remaining = this.appState.member.getRemainingScans()
     this.vm.remainingScans = remaining
-    this.vm.scanLimitReached = remaining <= 0 && TIER_DAILY_SCAN_LIMIT[this.appState.member.memberStatus.tier] !== -1
+    this.vm.scanLimitReached = remaining <= 0 && TIER_DAILY_SCAN_LIMIT[this.appState.member?.memberStatus?.tier ?? 'free'] !== -1
   }
 
   private async scanBatch(barcodes: string[]): Promise<void> {
@@ -1022,18 +1023,19 @@ struct ScanPage {
   // ==================== 编辑表单 ====================
 
   private loadEditFormFromLabel() {
-    this.vm.editPanel.foodName = this.vm.foodLabel.foodName
-    this.vm.editPanel.sodium = `${this.vm.foodLabel.nutrition.sodium}`
-    this.vm.editPanel.sugar = `${this.vm.foodLabel.nutrition.sugar}`
-    this.vm.editPanel.calories = `${this.vm.foodLabel.nutrition.calories}`
-    this.vm.editPanel.fat = `${this.vm.foodLabel.nutrition.fat}`
-    this.vm.editPanel.carbohydrate = `${this.vm.foodLabel.nutrition.carbohydrate}`
-    this.vm.editPanel.protein = `${this.vm.foodLabel.nutrition.protein}`
-    this.vm.editPanel.ingredients = this.vm.foodLabel.ingredients.join('\\n')
-    this.vm.editPanel.manufacturer = this.vm.foodLabel.manufacturer
-    this.vm.editPanel.scNumber = this.vm.foodLabel.scNumber
-    this.vm.editPanel.principal = this.vm.foodLabel.principal
-    this.vm.editPanel.trustee = this.vm.foodLabel.trustee
+    this.vm.editPanel.foodName = this.vm.foodLabel?.foodName ?? ''
+    const n = this.vm.foodLabel?.nutrition
+    this.vm.editPanel.sodium = `${n?.sodium ?? 0}`
+    this.vm.editPanel.sugar = `${n?.sugar ?? 0}`
+    this.vm.editPanel.calories = `${n?.calories ?? 0}`
+    this.vm.editPanel.fat = `${n?.fat ?? 0}`
+    this.vm.editPanel.carbohydrate = `${n?.carbohydrate ?? 0}`
+    this.vm.editPanel.protein = `${n?.protein ?? 0}`
+    this.vm.editPanel.ingredients = (this.vm.foodLabel?.ingredients ?? []).join('\\n')
+    this.vm.editPanel.manufacturer = this.vm.foodLabel?.manufacturer ?? ''
+    this.vm.editPanel.scNumber = this.vm.foodLabel?.scNumber ?? ''
+    this.vm.editPanel.principal = this.vm.foodLabel?.principal ?? ''
+    this.vm.editPanel.trustee = this.vm.foodLabel?.trustee ?? ''
   }
 
   private applyEditFormToLabel() {
@@ -1044,12 +1046,15 @@ struct ScanPage {
       this.vm.foodLabel.identifiedAt = Date.now()
     }
     this.vm.foodLabel.foodName = this.vm.editPanel.foodName.trim()
-    this.vm.foodLabel.nutrition.sodium = this.parseNumber(this.vm.editPanel.sodium)
-    this.vm.foodLabel.nutrition.sugar = this.parseNumber(this.vm.editPanel.sugar)
-    this.vm.foodLabel.nutrition.calories = this.parseNumber(this.vm.editPanel.calories)
-    this.vm.foodLabel.nutrition.fat = this.parseNumber(this.vm.editPanel.fat)
-    this.vm.foodLabel.nutrition.carbohydrate = this.parseNumber(this.vm.editPanel.carbohydrate)
-    this.vm.foodLabel.nutrition.protein = this.parseNumber(this.vm.editPanel.protein)
+    const n = this.vm.foodLabel.nutrition
+    if (n) {
+      n.sodium = this.parseNumber(this.vm.editPanel.sodium)
+      n.sugar = this.parseNumber(this.vm.editPanel.sugar)
+      n.calories = this.parseNumber(this.vm.editPanel.calories)
+      n.fat = this.parseNumber(this.vm.editPanel.fat)
+      n.carbohydrate = this.parseNumber(this.vm.editPanel.carbohydrate)
+      n.protein = this.parseNumber(this.vm.editPanel.protein)
+    }
     const parsedIngredients: string[] = this.vm.editPanel.ingredients
       .split(/\\r?\\n|,|，|、/)
       .map((item: string) => item.trim())
@@ -1112,10 +1117,10 @@ struct ScanPage {
       const scanToday = this.appState.member.getTodayScanCount()
       const budget = this.appState.getDailyBudgetSync(this.memberId)
       const todayIntake = new TodayIntakeInput()
-      todayIntake.sodium_mg = Math.max(0, budget.sodiumBudget - budget.sodiumRemaining)
-      todayIntake.sugar_g = Math.max(0, budget.sugarBudget - budget.sugarRemaining)
-      todayIntake.energy_kcal = Math.max(0, budget.calorieBudget - budget.calorieRemaining)
-      todayIntake.fat_g = Math.max(0, budget.fatBudget - budget.fatRemaining)
+      todayIntake.sodium_mg = Math.max(0, (budget?.sodiumBudget ?? 0) - (budget?.sodiumRemaining ?? 0))
+      todayIntake.sugar_g = Math.max(0, (budget?.sugarBudget ?? 0) - (budget?.sugarRemaining ?? 0))
+      todayIntake.energy_kcal = Math.max(0, (budget?.calorieBudget ?? 0) - (budget?.calorieRemaining ?? 0))
+      todayIntake.fat_g = Math.max(0, (budget?.fatBudget ?? 0) - (budget?.fatRemaining ?? 0))
       const members: FamilyProfile[] = this.appState.getAllMembersSync()
       const m: FamilyProfile = members.length > 0 ? members[0] : new FamilyProfile()
       const s: HealthSignal = this.appState.getHealthSignal(this.memberId)

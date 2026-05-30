@@ -5,12 +5,13 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AiServiceBase } from './AiServiceBase';
 import { AI_SERVICE_DEFAULTS } from './AiConfig';
 import { IAiStateProvider } from '../IAiStateProvider';
+import { IAiNutritionistService } from './IAiNutritionistService';
 
 const TAG = 'AiNutritionistServiceImpl';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const CACHE_TTL_MS = AI_CACHE_CONFIG.NUTRITIONIST_CACHE_TTL_MS;
 
-export class AiNutritionistServiceImpl extends AiServiceBase {
+export class AiNutritionistServiceImpl extends AiServiceBase implements IAiNutritionistService {
   private cache: Map<string, AiNutritionCacheEntry> = new Map();
   private contextPrompt: string = '';
   private stateProvider: IAiStateProvider;

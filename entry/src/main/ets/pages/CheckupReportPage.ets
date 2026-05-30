@@ -108,19 +108,19 @@ struct CheckupReportPage {
                   .fontWeight(FontWeight.Bold)
                   .margin({ bottom: 12 })
 
-                Text() { Span($r('app.string.checkup_report_summary')); Span(`${(this.report as CheckupReport).summary}`) }
+                Text() { Span($r('app.string.checkup_report_summary')); Span(`${(this.report as CheckupReport)?.summary ?? ''}`) }
                   .fontSize(14)
                   .margin({ bottom: 6 })
-                Text() { Span($r('app.string.checkup_risk_score')); Span(`${(this.report as CheckupReport).riskScore}`) }
+                Text() { Span($r('app.string.checkup_risk_score')); Span(`${(this.report as CheckupReport)?.riskScore ?? 0}`) }
                   .fontSize(14)
                   .margin({ bottom: 8 })
 
-                if ((this.report as CheckupReport).items.length > 0) {
+                if (((this.report as CheckupReport)?.items?.length ?? 0) > 0) {
                   Text($r('app.string.checkup_items'))
                     .fontSize(14)
                     .fontWeight(FontWeight.Medium)
                     .margin({ bottom: 4 })
-                  ForEach((this.report as CheckupReport).items, (item: CheckupItem, index: number) => {
+                  ForEach((this.report as CheckupReport)?.items ?? [], (item: CheckupItem, index: number) => {
                     Row() {
                       Text(item.isAbnormal ? '⚠' : '✓')
                         .fontSize(14)
@@ -148,14 +148,14 @@ struct CheckupReportPage {
                       .fontWeight(FontWeight.Medium)
                       .margin({ top: 12, bottom: 8 })
 
-                    if ((this.archiveUpdate as HealthArchiveUpdate).newAlerts.length > 0) {
-                      Text() { Span($r('app.string.checkup_new_alert')); Span(`${(this.archiveUpdate as HealthArchiveUpdate).newAlerts.join('、')}`) }
+                    if (((this.archiveUpdate as HealthArchiveUpdate)?.newAlerts?.length ?? 0) > 0) {
+                      Text() { Span($r('app.string.checkup_new_alert')); Span(`${(this.archiveUpdate as HealthArchiveUpdate)?.newAlerts?.join('、') ?? ''}`) }
                         .fontSize(13)
                         .fontColor('#E53935')
                         .margin({ bottom: 4 })
                     }
-                    if ((this.archiveUpdate as HealthArchiveUpdate).dietaryAdjustments.length > 0) {
-                      ForEach((this.archiveUpdate as HealthArchiveUpdate).dietaryAdjustments, (adj: string, index: number) => {
+                    if (((this.archiveUpdate as HealthArchiveUpdate)?.dietaryAdjustments?.length ?? 0) > 0) {
+                      ForEach((this.archiveUpdate as HealthArchiveUpdate)?.dietaryAdjustments ?? [], (adj: string, index: number) => {
                         Text(`• ${adj}`)
                           .fontSize(13)
                           .fontColor(COLORS.TEXT_GRAY_3333)

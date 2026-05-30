@@ -61,7 +61,7 @@ struct AiChatPage {
         this.selectedMemberId = this.familyMembers[0].memberId;
         this.selectedMemberName = this.familyMembers[0].nickname;
         this.dynamicQuickQuestions = generateDynamicQuickQuestions(
-          this.familyMembers[0].healthGoals.join(',')
+          this.familyMembers[0]?.healthGoals?.join(',') ?? ''
         );
       } else {
         this.dynamicQuickQuestions = QUICK_QUESTIONS;
@@ -467,7 +467,7 @@ struct AiChatPage {
         this.selectedMemberId = member.memberId
         this.selectedMemberName = member.nickname
         this.aiChatService.bindMember(member.memberId)
-        this.dynamicQuickQuestions = generateDynamicQuickQuestions(member.healthGoals.join(','))
+        this.dynamicQuickQuestions = generateDynamicQuickQuestions(member?.healthGoals?.join(',') ?? '')
 
         this.aiChatService.clearHistory()
         this.messages = []

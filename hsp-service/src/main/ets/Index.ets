@@ -136,6 +136,8 @@ export { BasketCheckEngine, BasketCheckResult } from './engine/BasketCheckEngine
 
 // ===== T-075 AI服务迁移: 接口+实现+工厂 =====
 export { IAiStateProvider } from './service/IAiStateProvider';
+export { IAiNutritionistService } from './service/ai/IAiNutritionistService';
+export { IAiChatService } from './service/ai/IAiChatService';
 export { AiNutritionistServiceImpl } from './service/ai/AiNutritionistServiceImpl';
 export { AiChatServiceImpl } from './service/ai/AiChatServiceImpl';
 export { createAiNutritionistService, createAiChatService } from './service/ai/AiServiceFactory';

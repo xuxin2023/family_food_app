@@ -1,6 +1,5 @@
-import { Recommendation, getLevelColorValue, COLORS } from 'hsp_core';
+import { Recommendation, getLevelColorValue, COLORS, NullGuard } from 'hsp_core';
 // 适配结论卡组件 — @ReusableV2 高频复用
-
 
 @ReusableV2
 @ComponentV2
@@ -9,27 +8,44 @@ export struct RecommendationCard {
   @Param memberName: string = '';
   @Param showDetails: boolean = true;
 
+  private get safeLevel(): string {
+    return this.recommendation?.level ?? '';
+  }
+
+  private get safeLevelColor(): string {
+    return this.recommendation?.levelColor ?? '';
+  }
+
+  private get safeMaxAmount(): number {
+    return this.recommendation?.maxAmount ?? 0;
+  }
+
+  private get safeReasons(): string[] {
+    return NullGuard.safeArray(this.recommendation?.reasons);
+  }
+
+  private get safeReminders(): string[] {
+    return NullGuard.safeArray(this.recommendation?.reminders);
+  }
+
   build() {
     Column() {
-      // 顶部：成员名 + 等级标识 + 可吃量
       Row() {
         Text(this.memberName)
           .fontSize(16)
           .fontWeight(FontWeight.Medium)
           .width(50)
 
-        // 等级标识
-        Text(this.recommendation.level)
+        Text(this.safeLevel)
           .fontSize(14)
           .fontColor(COLORS.WHITE)
           .padding({ left: 12, right: 12, top: 4, bottom: 4 })
           .borderRadius(12)
-          .backgroundColor(getLevelColorValue(this.recommendation.levelColor))
+          .backgroundColor(getLevelColorValue(this.safeLevelColor))
           .margin({ left: 8 })
 
-        // 可吃量
-        if (this.recommendation.maxAmount > 0) {
-          Text(`最多${this.recommendation.maxAmount}g`)
+        if (this.safeMaxAmount > 0) {
+          Text(`最多${this.safeMaxAmount}g`)
             .fontSize(14)
             .fontColor(COLORS.TEXT_GRAY_2121)
             .fontWeight(FontWeight.Medium)
@@ -45,10 +61,9 @@ export struct RecommendationCard {
       .width('100%')
       .alignItems(VerticalAlign.Center)
 
-      // 详细原因
-      if (this.showDetails && this.recommendation.reasons.length > 0) {
+      if (this.showDetails && this.safeReasons.length > 0) {
         Column() {
-          ForEach(this.recommendation.reasons, (reason: string) => {
+          ForEach(this.safeReasons, (reason: string) => {
             Row() {
               Text('•').fontSize(12).fontColor(COLORS.TEXT_GRAY_7575).margin({ right: 4 })
               Text(reason).fontSize(12).fontColor(COLORS.TEXT_GRAY_6161)
@@ -61,10 +76,9 @@ export struct RecommendationCard {
         .alignItems(HorizontalAlign.Start)
       }
 
-      // 提醒
-      if (this.showDetails && this.recommendation.reminders.length > 0) {
+      if (this.showDetails && this.safeReminders.length > 0) {
         Column() {
-          ForEach(this.recommendation.reminders, (reminder: string) => {
+          ForEach(this.safeReminders, (reminder: string) => {
             Row() {
               Text('⚠').fontSize(12).margin({ right: 4 })
               Text(reminder).fontSize(12).fontColor(COLORS.ACCENT_ORANGE)
@@ -83,7 +97,7 @@ export struct RecommendationCard {
     .borderRadius(12)
     .alignItems(HorizontalAlign.Start)
     .accessibilityRole('listItem')
-    .accessibilityText(`适配建议：${this.memberName}，${this.recommendation.level}，${this.recommendation?.reasons?.join('，') ?? ''}`)
+    .accessibilityText(`适配建议：${this.memberName}，${this.safeLevel}，${this.safeReasons.join('，')}`)
     .accessibilityLevel('yes')
   }
 }

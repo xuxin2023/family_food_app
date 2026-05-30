@@ -484,7 +484,7 @@ struct DietDiaryPage {
             .width('100%')
 
           // 营养素分析
-          if (this.aiAdvice.nutrientAnalyses.length > 0) {
+          if ((this.aiAdvice?.nutrientAnalyses?.length ?? 0) > 0) {
             Row({ space: 6 }) {
               ForEach(this.aiAdvice.nutrientAnalyses, (na: NutrientAnalysisItem) => {
                 this.buildNutrientMiniCard(na)
@@ -494,8 +494,7 @@ struct DietDiaryPage {
             .margin({ top: 8 })
           }
 
-          // 问题与亮点
-          if (this.aiAdvice.patternAnalysis.issues.length > 0) {
+          if ((this.aiAdvice?.patternAnalysis?.issues?.length ?? 0) > 0) {
             Column() {
               Text($r('app.string.need_attention'))
                 .fontSize(13)
@@ -513,22 +512,22 @@ struct DietDiaryPage {
             .margin({ top: 8 })
           }
 
-          // 建议列表
-          Row() {
-            Text('💡 ' + this.aiAdvice.suggestions[0])
-              .fontSize(13)
-              .fontColor(COLORS.ACCENT_PURPLE)
-              .maxLines(2)
-              .textOverflow({ overflow: TextOverflow.Ellipsis })
+          if ((this.aiAdvice?.suggestions?.length ?? 0) > 0) {
+            Row() {
+              Text('💡 ' + this.aiAdvice.suggestions[0])
+                .fontSize(13)
+                .fontColor(COLORS.ACCENT_PURPLE)
+                .maxLines(2)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+            }
+            .width('100%')
+            .padding(10)
+            .backgroundColor(COLORS.BG_WARM_PURPLE)
+            .borderRadius(RADIUS.MD)
+            .margin({ top: 8 })
           }
-          .width('100%')
-          .padding(10)
-          .backgroundColor(COLORS.BG_WARM_PURPLE)
-          .borderRadius(RADIUS.MD)
-          .margin({ top: 8 })
 
-          // 鼓励语
-          Text(this.aiAdvice.motivationalMessage)
+          Text(this.aiAdvice?.motivationalMessage ?? '')
             .fontSize(12)
             .fontColor(COLORS.TEXT_GRAY_9E9E)
             .margin({ top: 8 })

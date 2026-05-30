@@ -1,5 +1,5 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN_DEFAULT, FamilyProfile, HealthSignal, DailyBudget } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, FamilyProfile, HealthSignal, DailyBudget, serialScheduler } from 'hsp_core';
 import { IAiStateProvider } from '../IAiStateProvider';
 import { DistributedSyncPayload, ConflictAction } from './SyncTypes';
 
@@ -56,13 +56,15 @@ export class DistributedSyncEnhancerImpl {
     }
   }
 
-  resolveConflict(local: DistributedSyncPayload, remote: DistributedSyncPayload, action: ConflictAction): DistributedSyncPayload {
-    switch (action) {
-      case ConflictAction.KEEP_LOCAL: return local;
-      case ConflictAction.KEEP_REMOTE: return remote;
-      case ConflictAction.MERGE: return this.mergePayloads(local, remote);
-      default: return local.timestamp >= remote.timestamp ? local : remote;
-    }
+  async resolveConflict(local: DistributedSyncPayload, remote: DistributedSyncPayload, action: ConflictAction): Promise<DistributedSyncPayload> {
+    return serialScheduler.enqueue(`sync_${local.deviceId}`, async () => {
+      switch (action) {
+        case ConflictAction.KEEP_LOCAL: return local;
+        case ConflictAction.KEEP_REMOTE: return remote;
+        case ConflictAction.MERGE: return this.mergePayloads(local, remote);
+        default: return local.timestamp >= remote.timestamp ? local : remote;
+      }
+    });
   }
 
   private mergePayloads(local: DistributedSyncPayload, remote: DistributedSyncPayload): DistributedSyncPayload {

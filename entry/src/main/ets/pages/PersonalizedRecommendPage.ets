@@ -128,42 +128,42 @@ struct PersonalizedRecommendPage {
                   .fontWeight(FontWeight.Bold)
                   .margin({ bottom: 12 })
 
-                Text() { Span($r('app.string.personalized_overall_score')); Span(`${(this.result as PersonalizedRecommendation).overallScore}/100`) }
+                Text() { Span($r('app.string.personalized_overall_score')); Span(`${(this.result as PersonalizedRecommendation)?.overallScore ?? 0}/100`) }
                   .fontSize(14)
                   .fontWeight(FontWeight.Medium)
                   .margin({ bottom: 6 })
 
-                Text() { Span($r('app.string.personalized_recommend_level')); Span(`${(this.result as PersonalizedRecommendation).level}`) }
+                Text() { Span($r('app.string.personalized_recommend_level')); Span(`${(this.result as PersonalizedRecommendation)?.level ?? ''}`) }
                   .fontSize(14)
                   .margin({ bottom: 6 })
 
-                Text() { Span($r('app.string.personalized_max_portion')); Span(`${(this.result as PersonalizedRecommendation).maxPortion}`) }
+                Text() { Span($r('app.string.personalized_max_portion')); Span(`${(this.result as PersonalizedRecommendation)?.maxPortion ?? 0}`) }
                   .fontSize(14)
                   .margin({ bottom: 6 })
 
-                Text() { Span($r('app.string.personalized_confidence')); Span(`${Math.round((this.result as PersonalizedRecommendation).dataConfidence * 100)}%`) }
+                Text() { Span($r('app.string.personalized_confidence')); Span(`${Math.round(((this.result as PersonalizedRecommendation)?.dataConfidence ?? 0) * 100)}%`) }
                   .fontSize(13)
                   .fontColor(COLORS.TEXT_GRAY_7575)
                   .margin({ bottom: 6 })
 
-                if ((this.result as PersonalizedRecommendation).urgencyNote.length > 0) {
-                  Text() { Span($r('app.string.personalized_urgency_note')); Span(`${(this.result as PersonalizedRecommendation).urgencyNote}`) }
+                if (((this.result as PersonalizedRecommendation)?.urgencyNote?.length ?? 0) > 0) {
+                  Text() { Span($r('app.string.personalized_urgency_note')); Span(`${(this.result as PersonalizedRecommendation)?.urgencyNote ?? ''}`) }
                     .fontSize(13)
                     .fontColor('#E53935')
                     .margin({ bottom: 6 })
                 }
 
-                if ((this.result as PersonalizedRecommendation).factors.length > 0) {
+                if (((this.result as PersonalizedRecommendation)?.factors?.length ?? 0) > 0) {
                   Text($r('app.string.personalized_factors'))
                     .fontSize(14)
                     .fontWeight(FontWeight.Medium)
                     .margin({ top: 8, bottom: 4 })
-                  ForEach((this.result as PersonalizedRecommendation).factors, (factor: PersonalizedFactor, index: number) => {
+                  ForEach((this.result as PersonalizedRecommendation)?.factors ?? [], (factor: PersonalizedFactor, index: number) => {
                     Column() {
-                      Text(`${factor.name}: ${factor.score}/100`)
+                      Text(`${factor?.name ?? ''}: ${factor?.score ?? 0}/100`)
                         .fontSize(13)
                         .fontWeight(FontWeight.Medium)
-                      if (factor.reasoning.length > 0) {
+                      if ((factor?.reasoning?.length ?? 0) > 0) {
                         Text(factor.reasoning)
                           .fontSize(11)
                           .fontColor(COLORS.TEXT_GRAY_7575)
@@ -176,8 +176,8 @@ struct PersonalizedRecommendPage {
                   }, (factor: PersonalizedFactor, index: number) => `${index}`)
                 }
 
-                if ((this.result as PersonalizedRecommendation).personalizedSummary.length > 0) {
-                  Text((this.result as PersonalizedRecommendation).personalizedSummary)
+                if (((this.result as PersonalizedRecommendation)?.personalizedSummary?.length ?? 0) > 0) {
+                  Text((this.result as PersonalizedRecommendation)?.personalizedSummary ?? '')
                     .fontSize(13)
                     .fontColor(COLORS.TEXT_GRAY_3333)
                     .margin({ top: 12 })

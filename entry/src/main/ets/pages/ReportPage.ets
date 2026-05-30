@@ -446,12 +446,14 @@ struct ReportPage {
 
   // 获取指定营养素标签对应的食品含量
   private getNutrientValue(label: string): number {
+    const n = this.foodLabel?.nutrition;
+    if (!n) return 0;
     switch (label) {
-      case '热量': return this.foodLabel.nutrition.calories;
-      case '钠': return this.foodLabel.nutrition.sodium;
-      case '糖': return this.foodLabel.nutrition.sugar;
-      case '脂肪': return this.foodLabel.nutrition.fat;
-      case '蛋白质': return this.foodLabel.nutrition.protein;
+      case '热量': return n.calories ?? 0;
+      case '钠': return n.sodium ?? 0;
+      case '糖': return n.sugar ?? 0;
+      case '脂肪': return n.fat ?? 0;
+      case '蛋白质': return n.protein ?? 0;
       default: return 0;
     }
   }
@@ -467,11 +469,11 @@ struct ReportPage {
   NutritionQuickSummary() {
     Scroll() {
       Row({ space: SPACING.XS }) {
-        this.NutrientTag($r('app.string.calorie'), `${this.foodLabel.nutrition.calories}`, 'kcal', this.getNutrientPercentage('热量'))
-        this.NutrientTag($r('app.string.sodium'), `${this.foodLabel.nutrition.sodium}`, 'mg', this.getNutrientPercentage('钠'))
-        this.NutrientTag($r('app.string.sugar'), `${this.foodLabel.nutrition.sugar}`, 'g', this.getNutrientPercentage('糖'))
-        this.NutrientTag($r('app.string.fat'), `${this.foodLabel.nutrition.fat}`, 'g', this.getNutrientPercentage('脂肪'))
-        this.NutrientTag($r('app.string.protein'), `${this.foodLabel.nutrition.protein}`, 'g', this.getNutrientPercentage('蛋白质'))
+        this.NutrientTag($r('app.string.calorie'), `${this.foodLabel?.nutrition?.calories ?? 0}`, 'kcal', this.getNutrientPercentage('热量'))
+        this.NutrientTag($r('app.string.sodium'), `${this.foodLabel?.nutrition?.sodium ?? 0}`, 'mg', this.getNutrientPercentage('钠'))
+        this.NutrientTag($r('app.string.sugar'), `${this.foodLabel?.nutrition?.sugar ?? 0}`, 'g', this.getNutrientPercentage('糖'))
+        this.NutrientTag($r('app.string.fat'), `${this.foodLabel?.nutrition?.fat ?? 0}`, 'g', this.getNutrientPercentage('脂肪'))
+        this.NutrientTag($r('app.string.protein'), `${this.foodLabel?.nutrition?.protein ?? 0}`, 'g', this.getNutrientPercentage('蛋白质'))
       }
       .padding({ left: 16, right: 16 })
     }

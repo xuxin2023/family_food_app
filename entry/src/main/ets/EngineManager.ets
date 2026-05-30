@@ -26,17 +26,7 @@ import { CheckupReportEngine, CheckupReport } from 'feature_report';
 import { ChildHealthAssessmentEngine, ChildHealthAssessment, SnackImpactAssessment } from 'feature_report';
 import { PersonalizedRecommendEngine, PersonalizedRecommendation, RecommendationContext } from 'feature_report';
 
-/** 根据 AgeGroup 估算年龄（用于 FoodAdapterEngine 输入） */
-function estimateAgeFromGroup(ageGroup: AgeGroup): number {
-  switch (ageGroup) {
-    case AgeGroup.CHILD: return 8;
-    case AgeGroup.TEEN: return 15;
-    case AgeGroup.ADULT: return 35;
-    case AgeGroup.MIDDLE_OLD: return 55;
-    case AgeGroup.OLD: return 70;
-    default: return 35;
-  }
-}
+import { ModelConverter } from './facade/ModelConverter';
 
 export class EngineManager {
   // 规则引擎
@@ -152,44 +142,9 @@ export class EngineManager {
     todayIntake: TodayIntakeInput,
     scanIndex: number
   ): EnhancedFoodRecommendation {
-    // 转换为主模型 → FoodAdapterEngine 的独立输入类型
-    const memberInput = new FamilyMemberSimpleInput();
-    memberInput.id = member.memberId;
-    memberInput.name = member.nickname;
-    memberInput.role = member.ageGroup as string;
-    memberInput.age = estimateAgeFromGroup(member.ageGroup);
-    memberInput.healthGoal = member.healthGoals.length > 0 ? member.healthGoals[0] : '无特殊';
-    const mb = new DailyBudgetInput();
-    mb.sodium_mg = member.dailyBudget.sodiumBudget;
-    mb.sugar_g = member.dailyBudget.sugarBudget;
-    mb.energy_kcal = member.dailyBudget.calorieBudget;
-    mb.fat_g = member.dailyBudget.fatBudget;
-    mb.saturatedFat_g = 0;
-    memberInput.dailyBudget = mb;
-    memberInput.allergenRedline = member.allergens;
-    memberInput.dislikedAdditives = [];
-
-    const foodInput = new FoodNutritionInput();
-    foodInput.productName = food.foodName;
-    foodInput.brand = food.manufacturer;
-    foodInput.sodium_mg = food.nutrition.sodium;
-    foodInput.sugar_g = food.nutrition.sugar;
-    foodInput.energy_kj = Math.round(food.nutrition.calories * 4.184);
-    foodInput.fat_g = food.nutrition.fat;
-    foodInput.saturatedFat_g = food.nutrition.saturatedFat;
-    foodInput.transFat_g = 0;
-    foodInput.carbs_g = food.nutrition.carbohydrate;
-    foodInput.protein_g = food.nutrition.protein;
-    foodInput.allergens = food.ingredients;
-    foodInput.manufacturer = food.manufacturer;
-
-    const healthInput = new HealthSignalInput();
-    healthInput.steps = signal.stepLevel;
-    healthInput.sleep = signal.sleepStatus;
-    healthInput.weightTrend = signal.weightTrend;
-    healthInput.manualBpStatus = signal.manualBpStatus;
-    healthInput.manualBgStatus = signal.manualBsStatus;
-
+    const memberInput = ModelConverter.toMemberInput(member);
+    const foodInput = ModelConverter.toFoodInput(food);
+    const healthInput = ModelConverter.toHealthInput(signal);
     return FoodAdapterEngine.calculateDynamicIntake(memberInput, foodInput, healthInput, todayIntake, scanIndex);
   }
 

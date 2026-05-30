@@ -227,6 +227,16 @@ export class DailyBudgetConfig {
     config.fatBudget = json.fatBudget;
     return config;
   }
+  static estimateAgeFromGroup(ageGroup: AgeGroup): number {
+    switch (ageGroup) {
+      case AgeGroup.CHILD: return 8;
+      case AgeGroup.TEEN: return 15;
+      case AgeGroup.ADULT: return 35;
+      case AgeGroup.MIDDLE_OLD: return 55;
+      case AgeGroup.OLD: return 70;
+      default: return 35;
+    }
+  }
 }
 
 export function createDefaultMembers(): FamilyProfile[] {

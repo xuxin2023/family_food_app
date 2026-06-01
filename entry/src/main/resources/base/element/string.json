@@ -1175,8 +1175,9 @@
     {
       "name": "health_data_reason",
       "value": "用于读取步数、心率等健康数据以提供个性化食品适配建议"
-    },
-    {
+    }
+  ]
+}
       "name": "read_health_data_reason",
       "value": "用于读取步数、心率等健康数据以提供个性化食品适配建议"
     },
@@ -1255,6 +1256,30 @@
     {
       "name": "delete",
       "value": "删除"
+    },
+    {
+      "name": "partial_data_estimated",
+      "value": "部分数据为估算值"
+    },
+    {
+      "name": "accent_orange",
+      "value": "橙色强调"
+    },
+    {
+      "name": "connect_device_hint",
+      "value": "连接设备获取实时健康数据"
+    },
+    {
+      "name": "text_hint",
+      "value": "提示文本"
+    },
+    {
+      "name": "connect_device",
+      "value": "连接设备"
+    },
+    {
+      "name": "link_blue",
+      "value": "蓝色链接"
     },
     {
       "name": "data_refreshed",
@@ -5874,7 +5899,33 @@
     },
     {
       "name": "report_max_intake_format",
-      "value": "最多%dg"
+      "value": "鏈�澶?dg"
+    },
+    {
+      "name": "health_mock_data_estimated",
+      "value": "健康数据为估算值"
+    },
+    {
+      "name": "health_mock_connect_hint",
+      "value": "连接华为健康设备获取真实数据"
+    },
+    {
+      "name": "health_mock_connect_device",
+      "value": "连接设备"
+    },
+    {
+      "name": "partial_data_estimated",
+      "value": "部分数据为估算"
+    },
+    {
+      "name": "connect_device_hint",
+      "value": "连接设备获取完整数据"
+    },
+    {
+      "name": "connect_device",
+      "value": "连接设备"
     }
+  ]
+}
   ]
 }

@@ -451,7 +451,9 @@ struct AiChatPage {
 
     promptAction.showActionMenu({
       title: $r('app.string.ai_chat_switch_member') as ResourceStr,
-      buttons: [btn0, btn1, btn2, btn3, btn4, btn5]
+      buttons: [btn0, btn1, btn2, btn3, btn4, btn5].filter(
+        (b: promptAction.Button | undefined): b is promptAction.Button => b !== undefined
+      )
     }, async (err: Error, data: promptAction.ActionMenuSuccessResponse) => {
       if (err) {
         hilog.warn(0x0000, 'AiChatPage', 'showActionMenu err: %{public}s', JSON.stringify(err));

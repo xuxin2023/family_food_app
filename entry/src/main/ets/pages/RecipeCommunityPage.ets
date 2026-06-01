@@ -333,7 +333,7 @@ struct RecipeCommunityPage {
       // 封面图占位
       Column() {
         if (recipe.coverImageUrl.length > 0) {
-          Image(ImageCache.has(recipe.coverImageUrl) ? ImageCache.get(recipe.coverImageUrl)! : recipe.coverImageUrl)
+          Image(ImageCache.has(recipe.coverImageUrl) ? (ImageCache.get(recipe.coverImageUrl) ?? recipe.coverImageUrl) : recipe.coverImageUrl)
             .width('100%')
             .height(160)
             .objectFit(ImageFit.Cover)

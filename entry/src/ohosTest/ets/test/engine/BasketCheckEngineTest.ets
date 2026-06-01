@@ -1,8 +1,7 @@
 // BasketCheckEngine 单元测试 - 购物篮检测
 import { describe, it, expect } from '@ohos/hypium';
-import { BasketCheckEngine } from '../../../../../src/main/ets/engine/BasketCheckEngine';
-import { FamilyProfile, AgeGroup, HealthGoal } from '../../../../../src/main/ets/model/FamilyProfile';
-import { FoodLabel, FoodSource } from '../../../../../src/main/ets/model/FoodLabel';
+import { BasketCheckEngine } from 'hsp_service';
+import { FamilyProfile, AgeGroup, HealthGoal, FoodLabel, FoodSource } from 'hsp_core';
 
 function createBasketFood(name: string, sodium: number, sugar: number, fat: number): FoodLabel {
   const f = new FoodLabel();

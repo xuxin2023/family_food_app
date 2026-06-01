@@ -2,7 +2,7 @@
 // AiConfig 单元测试 - 验证 AI 统一配置常量的正确性
 
 import { describe, it, expect } from '@ohos/hypium';
-import { AGENT_ARTS_ENDPOINT, AGENT_ARTS_MODEL, AI_SERVICE_DEFAULTS } from '../../../../src/main/ets/service/ai/AiConfig';
+import { AGENT_ARTS_ENDPOINT, AGENT_ARTS_MODEL, AI_SERVICE_DEFAULTS } from 'hsp_service';
 
 export default function aiConfigTest() {
   describe('AiConfigTest', () => {

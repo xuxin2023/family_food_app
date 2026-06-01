@@ -1,8 +1,6 @@
 import { describe, it, expect } from '@ohos/hypium';
 import { MemberFacade } from '../../../../../src/main/ets/facade/MemberFacade';
-import {
-  FamilyProfile, HealthSignal, DailyBudget, NutritionTarget
-} from '../../../../../../hsp_core/src/main/ets/model/FamilyProfile';
+import { FamilyProfile, HealthSignal, DailyBudget, NutritionTarget } from 'hsp_core';
 
 class MockFamilyRepository {
   private members: FamilyProfile[] = [];

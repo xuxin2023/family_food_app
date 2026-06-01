@@ -1,10 +1,8 @@
 // ChildProtectionEngine 单元测试 - 儿童保护
 
 import { describe, it, expect } from '@ohos/hypium';
-import { ChildProtectionEngine } from '../../../../src/main/ets/engine/ChildProtectionEngine';
-import { ChildProtection } from '../../../../src/main/ets/model/ChildProtection';
-import { FamilyProfile, AgeGroup, HealthGoal } from '../../../../src/main/ets/model/FamilyProfile';
-import { FoodLabel, FoodSource } from '../../../../src/main/ets/model/FoodLabel';
+import { ChildProtectionEngine } from 'feature_report';
+import { ChildProtection, FamilyProfile, AgeGroup, HealthGoal, FoodLabel, FoodSource } from 'hsp_core';
 
 function createChildProfile(): FamilyProfile {
   const p = new FamilyProfile();

@@ -27,6 +27,9 @@ import { ChildHealthAssessmentEngine, ChildHealthAssessment, SnackImpactAssessme
 import { PersonalizedRecommendEngine, PersonalizedRecommendation, RecommendationContext } from 'feature_report';
 
 import { ModelConverter } from './facade/ModelConverter';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+
+const DOMAIN_ZERO = 0x0001;
 
 export class EngineManager {
   // 规则引擎
@@ -183,9 +186,11 @@ export class EngineManager {
   }
 
   /** 获取正向补足建议 — 基于实际食品标签和推荐结果 */
-  getPositiveAdvice(foodLabel: FoodLabel, recommendation: Recommendation): PositiveAdvice[] {
-    const profile = new FamilyProfile();
-    // 根据食品类型推断场景
+  getPositiveAdvice(foodLabel: FoodLabel, recommendation: Recommendation, profile?: FamilyProfile): PositiveAdvice[] {
+    if (!profile || !profile.memberId) {
+      hilog.warn(DOMAIN_ZERO, 'EngineManager', 'getPositiveAdvice called without valid profile');
+      return [];
+    }
     let scenario = MealScenario.BBQ;
     if (foodLabel.isHighSugar()) scenario = MealScenario.DESSERT;
     else if (foodLabel.isHighSodium()) scenario = MealScenario.LUWEI;

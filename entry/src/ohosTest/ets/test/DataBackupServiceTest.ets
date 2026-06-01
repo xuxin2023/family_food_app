@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@ohos/hypium';
-import { DataBackupService, BackupResult, RestoreResult } from '../../../../src/main/ets/service/DataBackupService';
+import { DataBackupService, BackupResult, RestoreResult } from 'hsp_service';
 
 export default function dataBackupServiceTest() {
   describe('DataBackupServiceTest', () => {

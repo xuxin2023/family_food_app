@@ -1,0 +1,12 @@
+{
+  "name": "hsp_llm",
+  "version": "1.0.0",
+  "description": "端侧大模型调用HSP模块 — MindSpore Lite推理、降级策略、模型管理",
+  "main": "Index.ets",
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "hsp_core": "file://../hsp_core"
+  },
+  "devDependencies": {}
+}

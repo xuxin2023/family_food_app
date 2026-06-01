@@ -1,9 +1,7 @@
 // ExerciseNutritionEngine 单元测试 - 运动后实时营养推荐引擎
 import { describe, it, expect } from '@ohos/hypium';
-import { ExerciseNutritionEngine, ExerciseSession, ExerciseType, NutrientSupplement, ExerciseNutritionRecommendation } from '../../../../../src/main/ets/engine/ExerciseNutritionEngine';
-import { FamilyProfile, AgeGroup } from '../../../../../src/main/ets/model/FamilyProfile';
-import { HealthSignal, StepLevel, HeartRateZone, BpStatus, BsStatus } from '../../../../../src/main/ets/model/HealthSignal';
-import { NutritionTarget } from '../../../../../src/main/ets/model/NutritionTarget';
+import { ExerciseNutritionEngine, ExerciseSession, ExerciseType, NutrientSupplement, ExerciseNutritionRecommendation } from 'feature_report';
+import { FamilyProfile, AgeGroup, HealthSignal, StepLevel, HeartRateZone, BpStatus, BsStatus, NutritionTarget } from 'hsp_core';
 
 function createExProfile(): FamilyProfile {
   const profile: FamilyProfile = new FamilyProfile();

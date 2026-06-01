@@ -32,7 +32,8 @@ struct ScanHistoryTimelinePage {
           ? new Date(food.identifiedAt).toISOString().slice(0, 10)
           : '未知日期';
         if (!grouped.has(date)) { grouped.set(date, []); }
-        grouped.get(date)!.push(food);
+        const foods = grouped.get(date);
+        if (foods) { foods.push(food); }
       }
       const entries: TimelineEntry[] = [];
       for (const [date, foods] of grouped) {

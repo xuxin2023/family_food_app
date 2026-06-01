@@ -1,0 +1,12 @@
+{
+  "name": "hsp_rating",
+  "version": "1.0.0",
+  "description": "营养健康评级引擎HSP模块 — Nutri-Score/Nova Group/Eco-Score评级算法",
+  "main": "Index.ets",
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "hsp_core": "file://../hsp_core"
+  },
+  "devDependencies": {}
+}

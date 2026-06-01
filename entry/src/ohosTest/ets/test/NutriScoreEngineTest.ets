@@ -2,8 +2,8 @@
 // 评分模型基于中国居民膳食营养素参考摄入量（DRIs 2023）
 
 import { describe, it, expect } from '@ohos/hypium';
-import { NutriScoreEngine, NutriScoreInput, NutriScoreBreakdown } from '../../../../src/main/ets/engine/NutriScoreEngine';
-import { NutritionPer100g } from '../../../../src/main/ets/model/FoodLabel';
+import { NutriScoreEngine, NutriScoreInput, NutriScoreBreakdown } from 'feature_scan';
+import { NutritionPer100g } from 'hsp_core';
 
 export default function nutriscore_engine_test() {
   describe('NutriScoreEngine', () => {

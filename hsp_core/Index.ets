@@ -133,6 +133,7 @@ export { getJsonString, getJsonNumber, getJsonBoolean } from './src/main/ets/uti
 export { MapUtil } from './src/main/ets/utils/MapUtil';
 export { ImageCache } from './src/main/ets/utils/ImageCache';
 export { ImageCacheUtil } from './src/main/ets/utils/ImageCacheUtil';
+export { ImageProgressiveLoader, ImageLoadStage, ProgressiveLoadConfig, lazyForEachKey } from './src/main/ets/utils/ImageProgressiveLoader';
 export { BasicDataSource } from './src/main/ets/utils/BasicDataSource';
 export { LazyDataSource } from './src/main/ets/utils/LazyDataSource';
 export { SecureDataStore } from './src/main/ets/utils/SecureDataStore';
@@ -140,6 +141,7 @@ export { RateLimiter, RateLimitConfig, RateLimitResult } from './src/main/ets/ut
 export { SecureKeyStore } from './src/main/ets/utils/SecureKeyStore';
 export { AccessibilityUtil } from './src/main/ets/utils/AccessibilityUtil';
 export { AccessibilityManager } from './src/main/ets/utils/AccessibilityManager';
+export { AccessibilityCompliance, AccessibilityConfig, ColorContrastChecker } from './src/main/ets/utils/AccessibilityCompliance';
 export { PerformanceMonitor, PerfMetric, PerfPercentiles, PerfAlert } from './src/main/ets/utils/PerformanceMonitor';
 export { LocaleManager } from './src/main/ets/utils/LocaleManager';
 export { SUPPORTED_LOCALES, LOCALE_DISPLAY_NAMES } from './src/main/ets/utils/LocaleManager';
@@ -275,3 +277,9 @@ export {
   PersonalizedFactor, PersonalizedRecommendation,
   ChildHealthAssessment
 } from './src/main/ets/model/HealthReportTypes';
+
+// 审计日志
+export { AuditLogger, AuditEntry, AuditAction } from './src/main/ets/logger/AuditLogger';
+
+// ===== API 版本守卫 =====
+export { VersionGuard, ApiLevel } from './src/main/ets/utils/VersionGuard';

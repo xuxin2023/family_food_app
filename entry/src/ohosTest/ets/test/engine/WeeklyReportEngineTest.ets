@@ -1,7 +1,7 @@
 // WeeklyReportEngine 单元测试 - 家庭饮食周报
 import { describe, it, expect } from '@ohos/hypium';
-import { WeeklyReportEngine, WeeklyDietData, WeeklyReport } from '../../../../../src/main/ets/engine/WeeklyReportEngine';
-import { FamilyProfile, AgeGroup, HealthGoal } from '../../../../../src/main/ets/model/FamilyProfile';
+import { WeeklyReportEngine, WeeklyDietData, WeeklyReport } from 'feature_report';
+import { FamilyProfile, AgeGroup, HealthGoal } from 'hsp_core';
 
 function createWeeklyDietData(): WeeklyDietData {
   return {

@@ -1,0 +1,13 @@
+{
+  "module": {
+    "name": "hsp_rating",
+    "type": "shared",
+    "description": "营养评级引擎 — NutriScore/Nova/EcoScore 三维评级与替代品推荐",
+    "deviceTypes": [
+      "phone",
+      "tablet",
+      "2in1"
+    ],
+    "deliveryWithInstall": true
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "hsp_allergy",
+  "version": "1.0.0",
+  "description": "过敏原/不耐受检测引擎HSP模块 — 多成员预警、交叉污染检测、严重度分级",
+  "main": "Index.ets",
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "hsp_core": "file://../hsp_core"
+  },
+  "devDependencies": {}
+}

@@ -1,7 +1,7 @@
 // CheckupReportEngine 单元测试 - 体检报告解析与长效更新引擎
 import { describe, it, expect } from '@ohos/hypium';
-import { CheckupReportEngine, CheckupReport, CheckupItem, HealthArchiveUpdate } from '../../../../../src/main/ets/engine/CheckupReportEngine';
-import { HealthSignal, BpStatus, BsStatus, StepLevel, SleepStatus, DataSource } from '../../../../../src/main/ets/model/HealthSignal';
+import { CheckupReportEngine, CheckupReport, CheckupItem, HealthArchiveUpdate } from 'feature_report';
+import { HealthSignal, BpStatus, BsStatus, StepLevel, SleepStatus, DataSource } from 'hsp_core';
 
 function createCheckupSignal(): HealthSignal {
   const signal: HealthSignal = new HealthSignal();

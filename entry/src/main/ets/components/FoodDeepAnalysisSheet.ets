@@ -85,22 +85,22 @@ export struct FoodDeepAnalysisSheet {
           .fontSize(14)
           .fontWeight(FontWeight.Bold)
         Blank()
-        Text(this.riskLabel(this.additiveReport!.overallRisk))
+        Text(this.riskLabel(this.additiveReport?.overallRisk ?? AdditiveSafetyRiskLevel.LOW))
           .fontSize(13)
           .fontWeight(FontWeight.Medium)
-          .fontColor(this.riskColor(this.additiveReport!.overallRisk))
+          .fontColor(this.riskColor(this.additiveReport?.overallRisk ?? AdditiveSafetyRiskLevel.LOW))
       }
       .width('100%')
       .margin({ bottom: 8 })
 
-      Text(this.additiveReport!.summary)
+      Text(this.additiveReport?.summary ?? '暂无分析结果')
         .fontSize(13)
         .fontColor(COLORS.TEXT_SECONDARY)
         .lineHeight(20)
         .margin({ bottom: 12 })
 
-      if (this.additiveReport!.assessments.length > 0) {
-        ForEach(this.additiveReport!.assessments, (a: AdditiveAssessment, index: number) => {
+      if ((this.additiveReport?.assessments?.length ?? 0) > 0) {
+        ForEach(this.additiveReport?.assessments ?? [], (a: AdditiveAssessment, index: number) => {
           Row() {
             Column() {
               Text(`${a.eNumber} ${a.name}`)
@@ -149,30 +149,30 @@ export struct FoodDeepAnalysisSheet {
           .fontSize(14)
           .fontWeight(FontWeight.Bold)
         Blank()
-        Text(this.allergenRiskLabel(this.allergenReport!.overallRisk))
+        Text(this.allergenRiskLabel(this.allergenReport?.overallRisk ?? 'low'))
           .fontSize(13)
           .fontWeight(FontWeight.Medium)
-          .fontColor(this.allergenRiskColor(this.allergenReport!.overallRisk))
+          .fontColor(this.allergenRiskColor(this.allergenReport?.overallRisk ?? 'low'))
       }
       .width('100%')
       .margin({ bottom: 8 })
 
-      Text(this.allergenReport!.recommendation)
+      Text(this.allergenReport?.recommendation ?? '暂无建议')
         .fontSize(13)
         .fontColor(COLORS.TEXT_SECONDARY)
         .lineHeight(20)
         .margin({ bottom: 12 })
 
-      if (this.allergenReport!.directAllergens.length > 0) {
+      if ((this.allergenReport?.directAllergens?.length ?? 0) > 0) {
         Text('直接过敏原:').fontSize(13).fontWeight(FontWeight.Medium).margin({ bottom: 4 })
-        ForEach(this.allergenReport!.directAllergens, (a: string) => {
+        ForEach(this.allergenReport?.directAllergens ?? [], (a: string) => {
           Text(`• ${a}`).fontSize(12).fontColor(COLORS.ACCENT_RED_EF53).margin({ bottom: 2 })
         }, (a: string) => a)
       }
 
-      if (this.allergenReport!.crossReactiveRisks.length > 0) {
+      if ((this.allergenReport?.crossReactiveRisks?.length ?? 0) > 0) {
         Text('交叉反应性风险:').fontSize(13).fontWeight(FontWeight.Medium).margin({ top: 8, bottom: 4 })
-        ForEach(this.allergenReport!.crossReactiveRisks, (risk: CrossReactiveRisk, index: number) => {
+        ForEach(this.allergenReport?.crossReactiveRisks ?? [], (risk: CrossReactiveRisk, index: number) => {
           Column() {
             Text(`${risk.allergen} ← ${risk.triggeredBy}`)
               .fontSize(12)
@@ -187,7 +187,7 @@ export struct FoodDeepAnalysisSheet {
         }, (risk: CrossReactiveRisk, index: number) => `${risk.allergen}_${index}`)
       }
 
-      if (this.allergenReport!.directAllergens.length === 0 && this.allergenReport!.crossReactiveRisks.length === 0) {
+      if ((this.allergenReport?.directAllergens?.length ?? 0) === 0 && (this.allergenReport?.crossReactiveRisks?.length ?? 0) === 0) {
         Text('未检测到过敏风险').fontSize(13).fontColor(COLORS.ACCENT_GREEN_4CAF).margin({ top: 8 })
       }
     }

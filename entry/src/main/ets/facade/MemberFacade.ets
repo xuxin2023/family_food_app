@@ -187,6 +187,13 @@ export class MemberFacade {
     return this._nutriTargetCache.get(memberId) ?? new NutritionTarget();
   }
 
+  async saveNutritionTarget(target: NutritionTarget): Promise<void> {
+    await this.nutriTargetRepo.save(target);
+    if (target.memberId) {
+      this._nutriTargetCache.set(target.memberId, target);
+    }
+  }
+
   async refreshMemberCache(): Promise<void> {
     this.cache.clearHealthSignalsCache();
     try {

@@ -145,17 +145,16 @@ export class OnlineAlternativeSearchService {
     label.manufacturer = String(product['brands'] || '');
     const nutrition = product['nutrition'] as Record<string, Object> | undefined;
     if (nutrition) {
-      label.nutrition = new NutritionPer100g(
-        Number(nutrition['energy_kj'] || 0),
-        Number(nutrition['fat'] || 0),
-        Number(nutrition['saturated_fat'] || 0),
-        Number(nutrition['carbohydrates'] || 0),
-        Number(nutrition['sugars'] || 0),
-        Number(nutrition['fiber'] || 0),
-        Number(nutrition['proteins'] || 0),
-        Number(nutrition['salt'] || 0),
-        Number(nutrition['sodium'] || 0)
-      );
+      const n = new NutritionPer100g();
+      n.calories = Number(nutrition['energy_kj'] || 0);
+      n.fat = Number(nutrition['fat'] || 0);
+      n.saturatedFat = Number(nutrition['saturated_fat'] || 0);
+      n.carbohydrate = Number(nutrition['carbohydrates'] || 0);
+      n.sugar = Number(nutrition['sugars'] || 0);
+      n.fiber = Number(nutrition['fiber'] || 0);
+      n.protein = Number(nutrition['proteins'] || 0);
+      n.sodium = Number(nutrition['sodium'] || 0);
+      label.nutrition = n;
     }
     const gradeStr = String(product['nutrition_grade'] || '');
     if (gradeStr.length > 0) {

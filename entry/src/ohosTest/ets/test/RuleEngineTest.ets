@@ -1,12 +1,8 @@
 // RuleEngine 单元测试 - 核心适配判断逻辑
 
 import { describe, it, expect } from '@ohos/hypium';
-import { RuleEngine, RuleEngineParams, DynamicModifiers } from '../../../../src/main/ets/engine/RuleEngine';
-import { FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig } from '../../../../src/main/ets/model/FamilyProfile';
-import { HealthSignal, StepLevel, SleepStatus, WeightTrend, BpStatus, BsStatus, DataSource } from '../../../../src/main/ets/model/HealthSignal';
-import { FoodLabel, FoodSource } from '../../../../src/main/ets/model/FoodLabel';
-import { DailyBudget } from '../../../../src/main/ets/model/DailyBudget';
-import { RecommendLevel, LevelColor } from '../../../../src/main/ets/model/Recommendation';
+import { RuleEngine, RuleEngineParams, DynamicModifiers } from 'feature_report';
+import { FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig, HealthSignal, StepLevel, SleepStatus, WeightTrend, BpStatus, BsStatus, DataSource, FoodLabel, FoodSource, DailyBudget, RecommendLevel, LevelColor } from 'hsp_core';
 
 function createRuleProfile(goals: HealthGoal[] = [], allergens: string[] = [],
   ageGroup: AgeGroup = AgeGroup.ADULT): FamilyProfile {

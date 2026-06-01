@@ -49,6 +49,8 @@
     { "name": "border_danger_light", "value": "#FFCDD2" },
     { "name": "btn_inactive", "value": "#CCCCCC" },
     { "name": "success_green", "value": "#4CAF50" },
-    { "name": "warning_amber", "value": "#FF9800" }
+    { "name": "warning_amber", "value": "#FF9800" },
+    { "name": "accent_orange", "value": "#FF5722" },
+    { "name": "link_blue", "value": "#2196F3" }
   ]
 }

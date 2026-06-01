@@ -30,7 +30,7 @@ export struct LikeButton {
       TapGesture({ count: 2 })
         .onAction(() => this.onToggle())
     )
-    .accessibilityRole(AccessibilityRoleType.Button)
+    .accessibilityRole('button')
     .accessibilityText(`${this.isLiked ? '已赞' : '赞'}，${this.likeCount}次`)
     .accessibilityLevel('yes')
     .focusable(true)

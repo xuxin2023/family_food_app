@@ -1,0 +1,13 @@
+{
+  "module": {
+    "name": "hsp_cloud",
+    "type": "shared",
+    "description": "华为云服务封装 — CloudDB/云函数/云存储统一客户端",
+    "deviceTypes": [
+      "phone",
+      "tablet",
+      "2in1"
+    ],
+    "deliveryWithInstall": true
+  }
+}

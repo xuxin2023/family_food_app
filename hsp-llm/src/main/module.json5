@@ -1,0 +1,13 @@
+{
+  "module": {
+    "name": "hsp_llm",
+    "type": "shared",
+    "description": "端侧大模型桥接 — mindspore-lite 推理封装与降级策略管理",
+    "deviceTypes": [
+      "phone",
+      "tablet",
+      "2in1"
+    ],
+    "deliveryWithInstall": true
+  }
+}

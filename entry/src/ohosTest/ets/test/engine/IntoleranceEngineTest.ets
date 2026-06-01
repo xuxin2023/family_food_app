@@ -2,10 +2,10 @@ import { describe, it, expect } from '@ohos/hypium';
 import {
   IntoleranceEngine, IntoleranceType, IntoleranceSeverity,
   IntoleranceCheckResult, IntoleranceWarning
-} from '../../../../../../feature-scan/src/main/ets/engine/IntoleranceEngine';
+} from 'feature_scan';
 import {
   HealthSignal, BpStatus, BsStatus, SleepStatus
-} from '../../../../../../hsp_core/src/main/ets/model/HealthSignal';
+} from 'hsp_core';
 
 export default function intoleranceEngineTest() {
   describe('IntoleranceEngine', () => {

@@ -127,7 +127,7 @@ export class PrivacyManager {
     }
 
     const ossBase = API_CONFIG.HUAWEI_CLOUD_BASE_URL.length > 0
-      ? DEFAULT_PRIVACY_OSS_BASE
+      ? API_CONFIG.HUAWEI_CLOUD_BASE_URL
       : DEFAULT_PRIVACY_OSS_BASE;
     result.privacyPolicyUrl = ossBase + PRIVACY_POLICY_PATH.replace('{version}', PrivacyManager.CURRENT_PRIVACY_VERSION);
     result.userAgreementUrl = ossBase + USER_AGREEMENT_PATH.replace('{version}', PrivacyManager.CURRENT_PRIVACY_VERSION);

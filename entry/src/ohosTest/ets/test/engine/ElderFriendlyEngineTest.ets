@@ -1,9 +1,7 @@
 // ElderFriendlyEngine 单元测试 - 老人友好模式
 import { describe, it, expect } from '@ohos/hypium';
-import { ElderFriendlyEngine, ElderFriendlyReport } from '../../../../../src/main/ets/engine/ElderFriendlyEngine';
-import { FamilyProfile, AgeGroup, HealthGoal } from '../../../../../src/main/ets/model/FamilyProfile';
-import { FoodLabel, NutritionPer100g } from '../../../../../src/main/ets/model/FoodLabel';
-import { Recommendation, RecommendLevel, LevelColor } from '../../../../../src/main/ets/model/Recommendation';
+import { ElderFriendlyEngine, ElderFriendlyReport } from 'feature_report';
+import { FamilyProfile, AgeGroup, HealthGoal, FoodLabel, NutritionPer100g, Recommendation, RecommendLevel, LevelColor } from 'hsp_core';
 
 function createElderRec(level: RecommendLevel, maxAmount: number,
   reasons: string[], reminders: string[]): Recommendation {

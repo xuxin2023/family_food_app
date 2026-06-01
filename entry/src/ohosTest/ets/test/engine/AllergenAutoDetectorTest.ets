@@ -1,7 +1,7 @@
 import { describe, it, expect } from '@ohos/hypium';
 import {
   AllergenAutoDetector, AllergenCheckResult
-} from '../../../../../../feature-scan/src/main/ets/engine/AllergenAutoDetector';
+} from 'feature_scan';
 
 export default function allergenAutoDetectorTest() {
   describe('AllergenAutoDetector', () => {

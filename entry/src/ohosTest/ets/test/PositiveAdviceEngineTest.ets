@@ -1,9 +1,8 @@
 // PositiveAdviceEngine 单元测试 - 正向补足建议
 
 import { describe, it, expect } from '@ohos/hypium';
-import { PositiveAdviceEngine, PositiveAdvice } from '../../../../src/main/ets/engine/PositiveAdviceEngine';
-import { MealScenario } from '../../../../src/main/ets/model/MealBalance';
-import { FamilyProfile, AgeGroup, HealthGoal } from '../../../../src/main/ets/model/FamilyProfile';
+import { PositiveAdviceEngine, PositiveAdvice } from 'feature_report';
+import { MealScenario, FamilyProfile, AgeGroup, HealthGoal } from 'hsp_core';
 
 function createPositiveProfile(goals: HealthGoal[] = [], ageGroup: AgeGroup = AgeGroup.ADULT): FamilyProfile {
   const p = new FamilyProfile();

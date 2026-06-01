@@ -1,0 +1,13 @@
+{
+  "module": {
+    "name": "feature_profile",
+    "type": "shared",
+    "description": "个人档案模块 — 家庭档案管理、营养摄入追踪、扫描历史查询",
+    "deviceTypes": [
+      "phone",
+      "tablet",
+      "2in1"
+    ],
+    "deliveryWithInstall": true
+  }
+}

@@ -1,7 +1,66 @@
 {
+  "files": [
+    "**/*.ets",
+    "**/*.ts",
+    "**/*.js"
+  ],
+  "ignore": [
+    "**/oh_modules/**",
+    "**/build/**",
+    "**/node_modules/**",
+    "**/.preview/**",
+    "**/*.test.ets",
+    "**/ohosTest/**"
+  ],
   "rules": {
-    "@performance/hp-arkui-remove-container-without-property": "warn",
-    "@performance/hp-arkui-use-object-link-to-replace-prop": "warn",
-    "@performance/hp-arkui-use-row-column-to-replace-flex": "suggestion"
+    "@hw-stylistic/indent": [
+      "warn",
+      2
+    ],
+    "@hw-stylistic/quotes": [
+      "warn",
+      "single"
+    ],
+    "@hw-stylistic/semi": [
+      "warn",
+      "always"
+    ],
+    "@hw-stylistic/comma-dangle": [
+      "warn",
+      "always-multiline"
+    ],
+    "@hw-stylistic/max-len": [
+      "warn",
+      {
+        "code": 120,
+        "ignoreComments": true,
+        "ignoreStrings": true,
+        "ignoreTemplateLiterals": true
+      }
+    ],
+    "@hw-stylistic/no-trailing-spaces": "warn",
+    "@hw-stylistic/eol-last": "warn",
+    "@hw-security/no-eval": "error",
+    "@hw-security/no-implied-eval": "error",
+    "@hw-performance/avoid-leaking-events": "error",
+    "@hw-performance/detached-watch-development": "warn",
+    "@hw-performance/no-memory-leaking-containers": "warn",
+    "@hw-arkts/no-any": "warn",
+    "@hw-arkts/no-unknown-record": "warn",
+    "@hw-arkts/prefer-const": "warn",
+    "@hw-arkts/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    "@hw-arkts/restrict-plus-operands": "error",
+    "@hw-accessibility/image-alt": "warn",
+    "@hw-accessibility/button-accessible": "warn",
+    "@hw-accessibility/input-label": "warn",
+    "@hw-accessibility/list-item-role": "warn",
+    "@hw-theme/hardcoded-color": "warn",
+    "@hw-theme/missing-dark-mode": "warn"
   }
 }

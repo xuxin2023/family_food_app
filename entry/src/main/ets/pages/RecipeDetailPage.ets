@@ -126,14 +126,14 @@ struct RecipeDetailPage {
   @Builder
   coverSection() {
     Column() {
-      Text(getCategoryEmoji(this.recipe!.category))
+      Text(getCategoryEmoji(this.recipe?.category ?? 'other'))
         .fontSize(72)
-      Text(this.recipe!.title)
+      Text(this.recipe?.title ?? '食谱详情')
         .fontSize(24)
         .fontWeight(FontWeight.Bold)
         .fontColor(COLORS.WHITE)
         .margin({ top: 16 })
-      Text(getCategoryLabel(this.recipe!.category) + ' · ' + getDifficultyLabel(this.recipe!.difficulty))
+      Text(getCategoryLabel(this.recipe?.category ?? 'other') + ' · ' + getDifficultyLabel(this.recipe?.difficulty ?? 'medium'))
         .fontSize(14)
         .fontColor(COLORS.WHITE)
         .opacity(0.8)
@@ -150,9 +150,9 @@ struct RecipeDetailPage {
   infoSection() {
     Column() {
       Row({ space: 0 }) {
-        this.infoItem('⏱️', `${this.recipe!.totalMinutes}分钟`)
-        this.infoItem('🍽️', `${this.recipe!.servings}人份`)
-        this.infoItem('📝', `${this.recipe!.steps.length}步`)
+        this.infoItem('⏱️', `${this.recipe?.totalMinutes ?? 0}分钟`)
+        this.infoItem('🍽️', `${this.recipe?.servings ?? 1}人份`)
+        this.infoItem('📝', `${this.recipe?.steps?.length ?? 0}步`)
       }
       .width('100%')
       .padding(16)
@@ -162,7 +162,7 @@ struct RecipeDetailPage {
       Row({ space: 16 }) {
         LikeButton({
           isLiked: this.hasLiked,
-          likeCount: this.recipe!.likeCount,
+          likeCount: this.recipe?.likeCount ?? 0,
           onToggle: () => {
             this.appState.toggleRecipeLike(this.recipeId).then((newState: boolean) => {
               if (this.recipe) {
@@ -233,10 +233,10 @@ struct RecipeDetailPage {
   @Builder
   detailSection() {
     Column() {
-      if (this.recipe!.description.length > 0) {
+      if ((this.recipe?.description?.length ?? 0) > 0) {
         Column() {
           Text($r('app.string.intro_label')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 8 })
-          Text(this.recipe!.description).fontSize(14).fontColor(COLORS.TEXT_SECONDARY).lineHeight(22)
+          Text(this.recipe?.description ?? '').fontSize(14).fontColor(COLORS.TEXT_SECONDARY).lineHeight(22)
         }
         .width('100%')
         .padding(16)
@@ -248,7 +248,7 @@ struct RecipeDetailPage {
       if (this.currentBreakpoint === 'lg') {
         Row({ space: 12 }) {
           this.ingredientsColumn()
-          if (this.recipe!.nutrition) {
+          if (this.recipe?.nutrition) {
             this.nutritionColumn()
           }
         }
@@ -256,14 +256,14 @@ struct RecipeDetailPage {
         .alignItems(VerticalAlign.Top)
       } else {
         this.ingredientsColumn()
-        if (this.recipe!.nutrition) {
+        if (this.recipe?.nutrition) {
           this.nutritionColumn()
         }
       }
 
       Column() {
         Text($r('app.string.cook_steps')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
-        ForEach(this.recipe!.steps, (step: RecipeStep) => {
+        ForEach(this.recipe?.steps ?? [], (step: RecipeStep) => {
           Row() {
             Stack() {
               Circle()
@@ -294,11 +294,11 @@ struct RecipeDetailPage {
       .borderRadius(RADIUS.LG)
       .margin({ bottom: 12 })
 
-      if (this.recipe!.dietTags.length > 0) {
+      if ((this.recipe?.dietTags?.length ?? 0) > 0) {
         Column() {
           Text($r('app.string.suitable_persons')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 8 })
           Row({ space: 8 }) {
-            ForEach(this.recipe!.dietTags, (tag: DietTag) => {
+            ForEach(this.recipe?.dietTags ?? [], (tag: DietTag) => {
               Text(getDietTagLabel(tag))
                 .fontSize(12)
                 .fontColor(COLORS.ACCENT_GREEN_4CAF)
@@ -316,7 +316,7 @@ struct RecipeDetailPage {
       }
 
       Row() {
-        Text(`👩‍🍳 发布者：${this.recipe!.authorName}`)
+        Text(`👩‍🍳 发布者：${this.recipe?.authorName ?? '未知作者'}`)
           .fontSize(13)
           .fontColor(COLORS.TEXT_GRAY_9E9E)
       }
@@ -331,7 +331,7 @@ struct RecipeDetailPage {
   ingredientsColumn() {
     Column() {
       Text($r('app.string.ingredient_list')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
-      ForEach(this.recipe!.ingredients, (ing: RecipeIngredient) => {
+      ForEach(this.recipe?.ingredients ?? [], (ing: RecipeIngredient) => {
         Row() {
           Text('•').fontSize(14).fontColor(COLORS.PRIMARY).margin({ right: 8 })
           Text(ing.name).fontSize(14).fontWeight(FontWeight.Medium)
@@ -359,12 +359,12 @@ struct RecipeDetailPage {
   nutritionColumn() {
     Column() {
       Text($r('app.string.nutrition_per_serving')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
-      this.nutritionRow($r('app.string.recipe_detail_calories'), this.recipe!.nutrition!.calories.toString() + ' kcal')
-      this.nutritionRow($r('app.string.recipe_detail_protein'), this.recipe!.nutrition!.protein.toString())
-      this.nutritionRow($r('app.string.recipe_detail_fat'), this.recipe!.nutrition!.fat.toString())
-      this.nutritionRow($r('app.string.recipe_detail_carbohydrate'), this.recipe!.nutrition!.carbohydrate.toString())
-      this.nutritionRow($r('app.string.recipe_detail_sodium'), this.recipe!.nutrition!.sodium.toString())
-      this.nutritionRow($r('app.string.recipe_detail_sugar'), this.recipe!.nutrition!.sugar.toString())
+      this.nutritionRow($r('app.string.recipe_detail_calories'), (this.recipe?.nutrition?.calories ?? 0).toString() + ' kcal')
+      this.nutritionRow($r('app.string.recipe_detail_protein'), (this.recipe?.nutrition?.protein ?? 0).toString())
+      this.nutritionRow($r('app.string.recipe_detail_fat'), (this.recipe?.nutrition?.fat ?? 0).toString())
+      this.nutritionRow($r('app.string.recipe_detail_carbohydrate'), (this.recipe?.nutrition?.carbohydrate ?? 0).toString())
+      this.nutritionRow($r('app.string.recipe_detail_sodium'), (this.recipe?.nutrition?.sodium ?? 0).toString())
+      this.nutritionRow($r('app.string.recipe_detail_sugar'), (this.recipe?.nutrition?.sugar ?? 0).toString())
     }
     .layoutWeight(1)
     .padding(16)

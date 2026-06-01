@@ -1,9 +1,8 @@
 // FoodAdapterEngine 单元测试 - 动态适配矩阵
 import { describe, it, expect } from '@ohos/hypium';
 import { FoodAdapterEngine, TodayIntakeInput,
-  FamilyMemberSimpleInputInput, FoodNutritionInputInput, HealthSignalInputInput } from '../../../../../src/main/ets/engine/FoodAdapterEngine';
-import {
-  RecommendationLevel, EnhancedFoodRecommendation } from '../../../../../src/main/ets/model/FoodAdapterTypes';
+  FamilyMemberSimpleInputInput, FoodNutritionInputInput, HealthSignalInputInput,
+  RecommendationLevel, EnhancedFoodRecommendation } from 'feature_scan';
 
 function createAdapterMember(): FamilyMemberSimpleInputInput {
   const budget = new TodayIntakeInputInput();

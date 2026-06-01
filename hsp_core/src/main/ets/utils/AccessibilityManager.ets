@@ -74,7 +74,7 @@ export class AccessibilityManager {
     return this.isScreenReaderActive;
   }
 
-  isScreenReaderActive(): boolean {
+  getScreenReaderActive(): boolean {
     return this.isScreenReaderActive;
   }
 

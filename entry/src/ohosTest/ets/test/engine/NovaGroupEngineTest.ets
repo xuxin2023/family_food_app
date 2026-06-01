@@ -1,7 +1,7 @@
 import { describe, it, expect } from '@ohos/hypium';
 import {
   NovaGroupEngine, NovaGroup, NovaEvaluationResult
-} from '../../../../../../feature-scan/src/main/ets/engine/NovaGroupEngine';
+} from 'feature_scan';
 
 export default function novaGroupEngineTest() {
   describe('NovaGroupEngine', () => {

@@ -1,11 +1,7 @@
 // PersonalizedRecommendEngine 单元测试 - 个性化数据驱动推荐引擎
 import { describe, it, expect } from '@ohos/hypium';
-import { PersonalizedRecommendEngine, PersonalizedContext, PersonalizedRecommendation, PersonalizedFactor } from '../../../../../src/main/ets/engine/PersonalizedRecommendEngine';
-import { FamilyProfile, AgeGroup, HealthGoal } from '../../../../../src/main/ets/model/FamilyProfile';
-import { HealthSignal, StepLevel, BpStatus, BsStatus, HeartRateZone, StressLevel, SleepStatus } from '../../../../../src/main/ets/model/HealthSignal';
-import { FoodLabel, NutritionPer100g } from '../../../../../src/main/ets/model/FoodLabel';
-import { NutritionTarget } from '../../../../../src/main/ets/model/NutritionTarget';
-import { DailyBudget } from '../../../../../src/main/ets/model/DailyBudget';
+import { PersonalizedRecommendEngine, PersonalizedContext, PersonalizedRecommendation, PersonalizedFactor } from 'feature_report';
+import { FamilyProfile, AgeGroup, HealthGoal, HealthSignal, StepLevel, BpStatus, BsStatus, HeartRateZone, StressLevel, SleepStatus, FoodLabel, NutritionPer100g, NutritionTarget, DailyBudget } from 'hsp_core';
 
 function createPerProfile(): FamilyProfile {
   const profile: FamilyProfile = new FamilyProfile();

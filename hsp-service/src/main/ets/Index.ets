@@ -69,6 +69,12 @@ export { ScanToShoppingService, ShoppingItemInput, PriceCompareResult } from './
 export { HealthReportExportService, HealthReportRequest, HealthReportResult } from './service/HealthReportExportService';
 export { PermissionProgressiveGuide, PermissionGuideStep } from './service/PermissionProgressiveGuide';
 
+// ===== 电商直链服务 =====
+export { EcommerceLinkService, EcommercePlatform, PurchaseLink } from './service/EcommerceLinkService';
+
+// ===== UDMF 跨应用数据共享 =====
+export { UdmfFoodShareService, FoodShareData } from './service/UdmfFoodShareService';
+
 // ===== 功能增强服务 =====
 export { ConfigManager } from './service/ConfigManager';
 export { BatchScanService, BatchScanResult, ILocalCacheProvider, IRemoteLookupProvider } from './service/BatchScanService';

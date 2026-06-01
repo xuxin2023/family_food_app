@@ -1,8 +1,7 @@
 // ChildHealthAssessmentEngine 单元测试 - 儿童专属健康评估与推荐引擎
 import { describe, it, expect } from '@ohos/hypium';
-import { ChildHealthAssessmentEngine, ChildHealthAssessment, SnackImpactAssessment, AdditiveSafetyResult, AdditiveSafetyLevel } from '../../../../../src/main/ets/engine/ChildHealthAssessmentEngine';
-import { FamilyProfile, AgeGroup } from '../../../../../src/main/ets/model/FamilyProfile';
-import { FoodLabel, NutritionPer100g } from '../../../../../src/main/ets/model/FoodLabel';
+import { ChildHealthAssessmentEngine, ChildHealthAssessment, SnackImpactAssessment, AdditiveSafetyResult, AdditiveSafetyLevel } from 'feature_report';
+import { FamilyProfile, AgeGroup, FoodLabel, NutritionPer100g } from 'hsp_core';
 
 function createChildProfile(): FamilyProfile {
   const profile: FamilyProfile = new FamilyProfile();

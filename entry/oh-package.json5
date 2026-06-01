@@ -10,7 +10,12 @@
     "hsp_service": "file:../hsp-service",
     "feature_scan": "file:../feature-scan",
     "feature_report": "file:../feature-report",
-    "feature_community": "file:../feature-community"
+    "feature_community": "file:../feature-community",
+    "hsp_allergy": "file:../hsp-allergy",
+    "hsp_rating": "file:../hsp-rating",
+    "hsp_llm": "file:../hsp-llm",
+    "hsp_cloud": "file:../hsp-cloud",
+    "feature_profile": "file:../feature-profile"
   },
   "devDependencies": {
     "@ohos/hypium": "1.0.25"

@@ -1,8 +1,8 @@
 import { describe, it, expect } from '@ohos/hypium';
 import {
   AdditiveSafetyEngine, AdditiveRiskLevel, AdditiveAssessment, FoodAdditiveReport
-} from '../../../../../../feature-scan/src/main/ets/engine/AdditiveSafetyEngine';
-import { FoodLabel } from '../../../../../../hsp_core/src/main/ets/model/FoodLabel';
+} from 'feature_scan';
+import { FoodLabel } from 'hsp_core';
 
 export default function additiveSafetyEngineTest() {
   describe('AdditiveSafetyEngine', () => {

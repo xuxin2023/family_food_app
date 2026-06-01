@@ -67,27 +67,30 @@ export class AppState {
 
   constructor() {
     const self = this;
-    const cacheProvider = new ILocalCacheProvider();
-    cacheProvider.findFoodByBarcode = (barcode: string) => self.findFoodByBarcode(barcode);
+    const cacheProvider: ILocalCacheProvider = {
+      findFoodByBarcode: (barcode: string) => self.findFoodByBarcode(barcode)
+    };
     this.scanService.setCacheProvider(cacheProvider);
 
-    const remoteProvider = new IRemoteLookupProvider();
-    remoteProvider.lookupByBarcode = async (barcode: string) => {
-      const result = await OpenFoodFactsService.getInstance().lookupByBarcode(barcode);
-      if (result && result.found && result.foodLabel) {
-        const r = new RemoteLookupResult();
-        r.found = true;
-        r.foodLabel = result.foodLabel;
-        r.confidence = result.confidence;
-        return r;
+    const remoteProvider: IRemoteLookupProvider = {
+      lookupByBarcode: async (barcode: string) => {
+        const result = await OpenFoodFactsService.getInstance().lookupByBarcode(barcode);
+        if (result && result.found && result.foodLabel) {
+          const r = new RemoteLookupResult();
+          r.found = true;
+          r.foodLabel = result.foodLabel;
+          r.confidence = result.confidence;
+          return r;
+        }
+        return null;
       }
-      return null;
     };
     this.scanService.setRemoteProvider(remoteProvider);
 
-    const lineageRecorder = new IDataLineageRecorder();
-    lineageRecorder.recordLineage = (foodId: string, source: string, confidence: number, transforms: string[]) => {
-      DataLineage.record(DataLineage.createRecord(foodId, source, confidence, transforms, '', ''));
+    const lineageRecorder: IDataLineageRecorder = {
+      recordLineage: (foodId: string, source: string, confidence: number, transforms: string[]) => {
+        DataLineage.record(DataLineage.createRecord(foodId, source, confidence, transforms, '', ''));
+      }
     };
     this.scanService.setLineageRecorder(lineageRecorder);
   }
@@ -100,6 +103,8 @@ export class AppState {
     this.readyResolver = resolve;
     this.readyRejecter = reject;
     this.initTimeoutId = setTimeout(() => {
+      this.readyResolver = null;
+      this.readyRejecter = null;
       reject(new Error('AppState init timeout after 15s'));
     }, 15000);
   });
@@ -250,7 +255,7 @@ export class AppState {
     return this.memberFacade.getNutritionTargetOrDefault(memberId);
   }
   async saveNutritionTarget(target: NutritionTarget): Promise<void> {
-    await this.food.saveNutritionTarget(target);
+    await this.memberFacade.saveNutritionTarget(target);
   }
 
   // --- Health ---

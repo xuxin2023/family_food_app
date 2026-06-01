@@ -1,9 +1,8 @@
 // CredibilityEngine 单元测试 - 食品可信度雷达模块
 
 import { describe, it, expect } from '@ohos/hypium';
-import { CredibilityEngine } from '../../../../src/main/ets/engine/CredibilityEngine';
-import { CredibilityResult, DataGrade } from '../../../../src/main/ets/model/CredibilityResult';
-import { FoodLabel, FoodSource } from '../../../../src/main/ets/model/FoodLabel';
+import { CredibilityEngine } from 'feature_report';
+import { CredibilityResult, DataGrade, FoodLabel, FoodSource } from 'hsp_core';
 
 function createFood(manufacturer: string = '', scNumber: string = '',
   principal: string = '', trustee: string = '',

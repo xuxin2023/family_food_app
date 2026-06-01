@@ -1,6 +1,6 @@
 import { describe, it, expect } from '@ohos/hypium';
 import { FoodFacade } from '../../../../../src/main/ets/facade/FoodFacade';
-import { FoodLabel, NutritionPer100g, FamilyProfile, HealthSignal, DailyBudget, Recommendation } from '../../../../../../hsp_core/src/main/ets/model/FoodLabel';
+import { FoodLabel, NutritionPer100g, FamilyProfile, HealthSignal, DailyBudget, Recommendation } from 'hsp_core';
 
 class MockFoodRepository {
   private store: Map<string, FoodLabel> = new Map();

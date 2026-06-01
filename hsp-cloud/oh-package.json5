@@ -1,0 +1,12 @@
+{
+  "name": "hsp_cloud",
+  "version": "1.0.0",
+  "description": "华为云Serverless封装HSP模块 — 云函数/CloudDB/CloudStorage/AGConnect",
+  "main": "Index.ets",
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "hsp_core": "file://../hsp_core"
+  },
+  "devDependencies": {}
+}

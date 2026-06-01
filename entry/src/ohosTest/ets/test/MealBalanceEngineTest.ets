@@ -1,10 +1,8 @@
 // MealBalanceEngine 单元测试 - 美食平衡建议
 
 import { describe, it, expect } from '@ohos/hypium';
-import { MealBalanceEngine } from '../../../../src/main/ets/engine/MealBalanceEngine';
-import { MealScenario, RiskTag } from '../../../../src/main/ets/model/MealBalance';
-import { FamilyProfile, AgeGroup, HealthGoal } from '../../../../src/main/ets/model/FamilyProfile';
-import { HealthSignal, StepLevel, SleepStatus, DataSource } from '../../../../src/main/ets/model/HealthSignal';
+import { MealBalanceEngine } from 'feature_report';
+import { MealScenario, RiskTag, FamilyProfile, AgeGroup, HealthGoal, HealthSignal, StepLevel, SleepStatus, DataSource } from 'hsp_core';
 
 function createMealProfile(goals: HealthGoal[] = [], ageGroup: AgeGroup = AgeGroup.ADULT): FamilyProfile {
   const p = new FamilyProfile();

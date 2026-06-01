@@ -1,4 +1,4 @@
-import { FamilyProfile, HealthSignal, FoodLabel, DailyBudget, TodayIntakeInput } from 'hsp_core';
+import { FamilyProfile, HealthSignal, FoodLabel, DailyBudget, DailyBudgetConfig, TodayIntakeInput } from 'hsp_core';
 import { FamilyMemberSimpleInput, FoodNutritionInput, HealthSignalInput, DailyBudgetInput } from 'feature_scan';
 
 export class ModelConverter {
@@ -7,7 +7,7 @@ export class ModelConverter {
     input.id = member.memberId;
     input.name = member.nickname;
     input.role = member.ageGroup as string;
-    input.age = FamilyProfile.estimateAgeFromGroup(member.ageGroup);
+    input.age = DailyBudgetConfig.estimateAgeFromGroup(member.ageGroup);
     input.healthGoal = member.healthGoals.length > 0 ? member.healthGoals[0] : '无特殊';
     const mb = new DailyBudgetInput();
     mb.sodium_mg = member.dailyBudget.sodiumBudget;

@@ -15,7 +15,7 @@ import {
   TIER_DAILY_SCAN_LIMIT,
   TIER_MEMBER_LIMIT,
   TIER_WEEKLY_REPORT_LIMIT
-} from '../../../../src/main/ets/model/MemberStatus';
+} from 'hsp_core';
 
 export default function memberStatusTest() {
   describe('MemberTier', () => {

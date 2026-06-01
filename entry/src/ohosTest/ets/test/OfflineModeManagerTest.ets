@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@ohos/hypium';
-import { OfflineModeManager, OfflineOperationType, OfflineOperation } from '../../../../src/main/ets/service/OfflineModeManager';
+import { OfflineModeManager, OfflineOperationType, OfflineOperation } from 'hsp_service';
 
 export default function offlineModeManagerTest() {
   describe('OfflineModeManagerTest', () => {

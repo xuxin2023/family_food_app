@@ -1,0 +1,13 @@
+{
+  "name": "feature_profile",
+  "version": "1.0.0",
+  "description": "个人档案与历史记录功能模块 — 扫描历史、营养追踪、趋势报告、数据导出删除",
+  "main": "Index.ets",
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "hsp_core": "file:../hsp_core",
+    "hsp_service": "file:../hsp-service"
+  },
+  "devDependencies": {}
+}

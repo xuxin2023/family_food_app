@@ -1,0 +1,13 @@
+{
+  "module": {
+    "name": "hsp_allergy",
+    "type": "shared",
+    "description": "过敏原检测引擎 — 多成员过敏原匹配、交叉污染检测、不耐受识别",
+    "deviceTypes": [
+      "phone",
+      "tablet",
+      "2in1"
+    ],
+    "deliveryWithInstall": true
+  }
+}

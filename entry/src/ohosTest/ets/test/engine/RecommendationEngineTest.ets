@@ -1,11 +1,7 @@
 // RecommendationEngine 单元测试 - 适配计算引擎（高层封装）
 import { describe, it, expect } from '@ohos/hypium';
-import { RecommendationEngine } from '../../../../../src/main/ets/engine/RecommendationEngine';
-import { FamilyProfile, AgeGroup, HealthGoal } from '../../../../../src/main/ets/model/FamilyProfile';
-import { FoodLabel, NutritionPer100g } from '../../../../../src/main/ets/model/FoodLabel';
-import { DailyBudget } from '../../../../../src/main/ets/model/DailyBudget';
-import { HealthSignal, StepLevel, SleepStatus, WeightTrend } from '../../../../../src/main/ets/model/HealthSignal';
-import { RecommendLevel, LevelColor } from '../../../../../src/main/ets/model/Recommendation';
+import { RecommendationEngine } from 'feature_report';
+import { FamilyProfile, AgeGroup, HealthGoal, FoodLabel, NutritionPer100g, DailyBudget, HealthSignal, StepLevel, SleepStatus, WeightTrend, RecommendLevel, LevelColor } from 'hsp_core';
 
 function createRecProfile(): FamilyProfile {
   const profile: FamilyProfile = new FamilyProfile();

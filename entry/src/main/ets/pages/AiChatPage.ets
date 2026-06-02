@@ -8,8 +8,7 @@ import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
 import { ErrorBoundary } from '../components/ErrorBoundary';
-import { AiChatService } from '../service/AiChatService';
-import { OnDeviceInferenceEngine, InferenceResult } from 'feature_scan';
+import { LlmChatProxy, LlmSource, MemberHealthContext } from 'hsp_service';
 
 import { ChatHistoryPrefsService } from 'hsp_service';
 
@@ -43,7 +42,7 @@ struct AiChatPage {
   @Local hasPageError: boolean = false;
 
   private appState: AppState = AppState.getInstance();
-  private aiChatService: AiChatService = new AiChatService();
+  private llmProxy: LlmChatProxy = LlmChatProxy.getInstance();
   private scrollController: Scroller = new Scroller();
   private componentActive: boolean = true;
   private pendingTimers: number[] = [];
@@ -93,7 +92,7 @@ struct AiChatPage {
       }
 
       if (this.selectedMemberId.length > 0) {
-        this.aiChatService.bindMember(this.selectedMemberId);
+        // V5: LlmChatProxy 按请求传入 memberId，无需 bindMember
       }
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'aboutToAppear failed: %{public}s', JSON.stringify(error));
@@ -345,16 +344,16 @@ struct AiChatPage {
   }
 
   // ========== 鍙戦€佹秷鎭?==========
+
   private async sendMessage(): Promise<void> {
     const text = this.inputText.trim()
     if (text.length === 0 || this.isLoading) return
 
     PerformanceMonitor.getInstance().startSpan('ai_response:chat');
 
-    // 闅愯棌蹇嵎鎻愰棶
     this.showQuickQuestions = false
 
-    // 娣诲姞鐢ㄦ埛娑堟伅鍒板垪琛?    const userMsg = new ChatMessage(
+    const userMsg = new ChatMessage(
       generateMessageId(),
       text,
       ChatRole.USER,
@@ -365,7 +364,7 @@ struct AiChatPage {
     this.inputText = ''
     this.isLoading = true
 
-    // 婊氬姩鍒板簳閮?    const tid1 = setTimeout(() => {
+    const tid1 = setTimeout(() => {
       const idx = this.pendingTimers.indexOf(tid1);
       if (idx >= 0) { this.pendingTimers.splice(idx, 1); this.pendingTimers = [...this.pendingTimers]; }
       if (!this.componentActive) return;
@@ -374,66 +373,69 @@ struct AiChatPage {
     this.pendingTimers.push(tid1)
 
     try {
-      if (this.isOfflineMode) {
-        const engine = OnDeviceInferenceEngine.getInstance();
-        const ingredients = text.split(/[锛?銆乗s]+/).filter((s: string) => s.length > 0);
-        const result = await engine.predictIngredientRisk(ingredients);
-        const offlineMsg = new ChatMessage(
-          generateMessageId(),
-          `${$r('app.string.ai_chat_offline_result') as string}: ${result.score}/100, ${result.label}, ${(result.confidence * 100).toFixed(0)}%\n\n${$r('app.string.ai_chat_offline_suffix') as string}`,
-          ChatRole.ASSISTANT,
-          Date.now()
-        );
-        userMsg.status = MessageStatus.SENT;
-        this.messages.push(offlineMsg);
-        this.saveCurrentMessages();
-      } else {
-        const aiMsg = await this.aiChatService.sendMessage(text)
+      const context: string[] = this.messages
+        .filter(m => m.role === ChatRole.ASSISTANT && m.content.length > 0)
+        .slice(-4)
+        .map(m => typeof m.content === 'string' ? m.content : '');
+      const healthCtx = this.buildMemberHealthContext();
+      const preferOffline = this.isOfflineMode;
 
-        if (!this.componentActive) return;
+      const response = await this.llmProxy.chat({
+        question: text,
+        context: context,
+        memberId: this.selectedMemberId,
+        preferOffline: preferOffline,
+      }, healthCtx);
 
-        userMsg.status = MessageStatus.SENT
+      if (!this.componentActive) return;
 
-        this.messages.push(aiMsg)
-        this.saveCurrentMessages()
-      }
+      userMsg.status = MessageStatus.SENT;
+      const sourceLabel = response.source === LlmSource.ON_DEVICE
+        ? ' [端侧]' : response.source === LlmSource.CLOUD_PANGU
+        ? ' [AI]' : '';
+      const aiMsg = new ChatMessage(
+        generateMessageId(),
+        response.answer + sourceLabel,
+        ChatRole.ASSISTANT,
+        Date.now()
+      );
+      this.messages.push(aiMsg);
+      this.saveCurrentMessages();
     } catch (error) {
       userMsg.status = MessageStatus.FAILED
       hilog.error(DOMAIN_ZERO, TAG, 'sendMessage failed: %{public}s', JSON.stringify(error))
-
-      try {
-        const engine = OnDeviceInferenceEngine.getInstance();
-        const fallbackIngredients = text.split(/[锛?銆乗s]+/).filter((s: string) => s.length > 0);
-        const fallbackResult = await engine.predictIngredientRisk(fallbackIngredients);
-        const fallbackMsg = new ChatMessage(
-          generateMessageId(),
-          `${$r('app.string.ai_chat_fallback_result') as string}: ${fallbackResult.score}/100, ${fallbackResult.label}\n\n${$r('app.string.ai_chat_fallback_suffix') as string}`,
-          ChatRole.ASSISTANT,
-          Date.now()
-        );
-        this.messages.push(fallbackMsg);
-      } catch (_) {
-        const errorMsg = new ChatMessage(
-          generateMessageId(),
-          $r('app.string.ai_chat_error_reply') as ResourceStr,
-          ChatRole.ASSISTANT,
-          Date.now()
-        )
-        this.messages.push(errorMsg)
-      }
+      const errorMsg = new ChatMessage(
+        generateMessageId(),
+        $r('app.string.ai_chat_error_reply') as ResourceStr,
+        ChatRole.ASSISTANT,
+        Date.now()
+      )
+      this.messages.push(errorMsg)
       this.saveCurrentMessages()
     }
 
     this.isLoading = false
     PerformanceMonitor.getInstance().endSpan('ai_response:chat');
 
-    // 婊氬姩鍒板簳閮?    const tid2 = setTimeout(() => {
+    const tid2 = setTimeout(() => {
       const idx2 = this.pendingTimers.indexOf(tid2);
       if (idx2 >= 0) { this.pendingTimers.splice(idx2, 1); this.pendingTimers = [...this.pendingTimers]; }
       if (!this.componentActive) return;
       this.scrollController.scrollEdge(Edge.End)
     }, 100)
     this.pendingTimers.push(tid2)
+  }
+
+  private buildMemberHealthContext(): MemberHealthContext {
+    const member = this.familyMembers.find(m => m.memberId === this.selectedMemberId);
+    return {
+      age: member?.age ?? 30,
+      gender: member?.gender ?? 'other',
+      allergens: member?.allergens ?? [],
+      healthGoal: (member?.healthGoals?.join(',') ?? '维持体重'),
+      conditions: member?.conditions ?? [],
+      dietPreference: member?.dietPreference ?? '',
+    };
   }
 
   // ========== 鍒囨崲鎴愬憳 ==========
@@ -465,10 +467,7 @@ struct AiChatPage {
 
         this.selectedMemberId = member.memberId
         this.selectedMemberName = member.nickname
-        this.aiChatService.bindMember(member.memberId)
         this.dynamicQuickQuestions = generateDynamicQuickQuestions(member?.healthGoals?.join(',') ?? '')
-
-        this.aiChatService.clearHistory()
         this.messages = []
         this.showQuickQuestions = true
 

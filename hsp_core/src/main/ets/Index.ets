@@ -1,3 +1,6 @@
+// ⚠️ 注意: 此文件是 hsp_core 内部源文件索引，仅供开发参考。
+// 模块对外 API 统一由根目录下的 hsp_core/Index.ets (334行) 导出。
+// 导入方请使用: import { ... } from 'hsp_core';
 export { ChatRole, MessageStatus, ChatMessage, ChatSession, QUICK_QUESTIONS, generateMessageId, generateDynamicQuickQuestions } from './model/AiChat';
 export { NutrientStatusLevel, NutrientTrend, MealRating, AiRecipeRecommendation, AiRecipeRequest, AiRecipeRecommendationResult, AiNutritionistRequest, MealAnalysis, NutrientAnalysis, DietPatternAnalysis, AiNutritionAdvice, AiRecommendationCacheEntry, AiNutritionCacheEntry, getHealthGoalDescription } from './model/AiModels';
 export { Severity, AllergyItem, IntoleranceItem, AllergyProfile, AllergyHint, IntoleranceHint, createDefaultAllergyProfile, severityToLabel, severityToColor } from './model/AllergyProfile';

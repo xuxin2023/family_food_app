@@ -281,8 +281,6 @@ export {
   ChildHealthAssessment
 } from './src/main/ets/model/HealthReportTypes';
 
-// 审计日志
-export { AuditLogger, AuditEntry, AuditAction } from './src/main/ets/logger/AuditLogger';
 
 // 安全加密引擎 — AES-256-GCM
 export { CryptoEngine } from './src/main/ets/utils/CryptoEngine';

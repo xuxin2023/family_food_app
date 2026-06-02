@@ -7,7 +7,9 @@
   "license": "",
   "dependencies": {
     "hsp_core": "file:../hsp_core",
-    "hsp_service": "file:../hsp-service"
+    "hsp_service": "file:../hsp-service",
+    "hsp_rating": "file:../hsp-rating",
+    "hsp_core_cj": "file:../hsp-core-cj"
   },
   "devDependencies": {}
 }

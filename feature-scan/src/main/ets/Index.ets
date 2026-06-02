@@ -7,9 +7,9 @@ export { FoodInputService, FoodInputResult } from './service/FoodInputService';
 
 // ===== 扫描相关引擎 =====
 export { FoodAdapterEngine, TodayIntakeInput, DailyBudgetInput, FamilyMemberSimpleInput, FoodNutritionInput, HealthSignalInput } from './engine/FoodAdapterEngine';
-export { NutriScoreEngine, NutriScoreBreakdown, NutriScoreInput } from './engine/NutriScoreEngine';
-export { NovaGroupEngine, NovaGroup, NovaGroupOne, NovaGroupTwo, NovaGroupThree, NovaGroupFour, NovaEvaluationResult } from './engine/NovaGroupEngine';
-export { EcoScoreEngine, EcoScoreGrade, EcoScoreResult, EcoScoreFactor } from './engine/EcoScoreEngine';
+export { NutriScoreEngine, NutriScoreBreakdown, NutriScoreInput } from 'hsp_rating';
+export { NovaGroupEngine, NovaGroup, NovaEvaluationResult } from 'hsp_rating';
+export { EcoScoreEngine, EcoScoreGrade, EcoScoreResult, EcoScoreFactor } from 'hsp_rating';
 export { AlternativeFoodRecommender, alternativeFoodRecommender } from './engine/AlternativeFoodRecommender';
 export { IntoleranceEngine, IntoleranceType, IntoleranceSeverity, IntoleranceWarning, IntoleranceCheckResult } from './engine/IntoleranceEngine';
 export { IngredientKnowledgeBase, IngredientRiskLevel, IngredientAssessment } from './engine/IngredientKnowledgeBase';

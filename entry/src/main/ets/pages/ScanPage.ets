@@ -817,7 +817,7 @@ struct ScanPage {
     }
 
     this.vm.scanPhase = ScanPhase.RECOGNIZING
-    const options: scanBarcode.ScanOptions = {
+      const options: scanBarcode.ScanOptions = {
         scanTypes: [scanCore.ScanType.ALL],
         enableMultiMode: false,
         enableAlbum: true

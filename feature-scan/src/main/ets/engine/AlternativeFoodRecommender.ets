@@ -4,6 +4,7 @@ import {
 } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
+import { CjCompute } from 'hsp_core_cj';
 
 const TAG = 'AltFoodRecommender';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -82,10 +83,9 @@ class NutritionVector {
   }
 
   cosineSimilarity(other: NutritionVector): number {
-    const m1 = this.magnitude();
-    const m2 = other.magnitude();
-    if (m1 < 0.001 || m2 < 0.001) return 0;
-    return this.dot(other) / (m1 * m2);
+    const v1 = [this.energy, this.fat, this.sugar, this.sodium, this.protein, this.fiber, this.carbohydrate];
+    const v2 = [other.energy, other.fat, other.sugar, other.sodium, other.protein, other.fiber, other.carbohydrate];
+    return CjCompute.cosineSimilarity(v1, v2);
   }
 }
 

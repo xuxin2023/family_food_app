@@ -155,3 +155,7 @@ export { createAiNutritionistService, createAiChatService } from './service/ai/A
 export { DistributedSyncPayload, ConflictAction } from './service/sync/SyncTypes';
 export { DistributedSyncEnhancerImpl } from './service/sync/DistributedSyncEnhancerImpl';
 export { DeferredInitQueue } from './service/sync/DeferredInitQueue';
+
+// ===== V5 新增: LlmChatProxy 统一 LLM 对话门面 =====
+export { LlmChatProxy, createLlmChatProxy, LlmSource } from './service/ai/LlmChatProxy';
+export type { LlmChatRequest, LlmChatResponse, MemberHealthContext } from './service/ai/LlmChatProxy';

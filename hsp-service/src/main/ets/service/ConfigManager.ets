@@ -1,7 +1,7 @@
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, API_CONFIG, OffApiConfig } from 'hsp_core';
 
 const TAG = 'ConfigManager';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -13,12 +13,12 @@ export class ConfigManager {
   private initialized: boolean = false;
 
   private static readonly DEFAULTS: Map<string, string> = new Map([
-    ['cloud_function_base', 'https://familyfood-api.cn-north-4.myhuaweicloud.com'],
+    ['cloud_function_base', API_CONFIG.HUAWEI_CLOUD_BASE_URL],
     ['cloud_function_dev_base', 'https://familyfood-dev.cn-north-4.myhuaweicloud.com'],
-    ['off_api_base', 'https://world.openfoodfacts.org/api/v2/'],
-    ['off_product_url_template', 'https://world.openfoodfacts.org/api/v2/product/{barcode}.json'],
+    ['off_api_base', OffApiConfig.BASE_URL],
+    ['off_product_url_template', `${OffApiConfig.BASE_URL}product/{barcode}.json`],
     ['obs_privacy_base', 'https://familyfood-privacy.obs.cn-north-4.myhuaweicloud.com'],
-    ['feedback_url', 'https://familyfood-api.cn-north-4.myhuaweicloud.com/api/feedback'],
+    ['feedback_url', `${API_CONFIG.HUAWEI_CLOUD_BASE_URL}/api/feedback`],
     ['cloud_region', 'cn-north-4'],
   ]);
 

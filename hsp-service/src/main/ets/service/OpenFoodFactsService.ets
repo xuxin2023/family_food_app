@@ -4,7 +4,7 @@
 // API 文档: https://openfoodfacts.github.io/openfoodfacts-server/api/
 // Base URL: https://world.openfoodfacts.org/api/v2/
 
-import { FoodLabel, NutritionPer100g, FoodSource, JsonObject, API_TIMEOUT_CONFIG, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
+import { FoodLabel, NutritionPer100g, FoodSource, JsonObject, API_TIMEOUT_CONFIG, HILOG_DOMAIN_DEFAULT, OffApiConfig } from 'hsp_core';
 import { http } from '@kit.NetworkKit';
 import { image } from '@kit.ImageKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -40,14 +40,14 @@ export interface OffFoodNutrition {
 
 // ===== 常量定义 =====
 
-/** Open Food Facts API 基础地址 */
-const OFF_BASE_URL: string = 'https://world.openfoodfacts.org/api/v2/';
+/** Open Food Facts API 基础地址（统一引用 OffApiConfig） */
+const OFF_BASE_URL: string = OffApiConfig.BASE_URL;
 
 /** 请求超时时间（毫秒） */
 const REQUEST_TIMEOUT: number = API_TIMEOUT_CONFIG.DEFAULT_CONNECT_TIMEOUT_MS;
 
 /** User-Agent 标识 */
-const USER_AGENT: string = 'FamilyFoodApp/1.0';
+const USER_AGENT: string = OffApiConfig.USER_AGENT;
 
 // ===== 响应数据结构 =====
 

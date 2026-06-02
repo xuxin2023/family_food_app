@@ -19,6 +19,7 @@ export class NutritionThreshold {
   static readonly HIGH_SODIUM_MG: number = 300;
   static readonly HIGH_FAT_G: number = 20;
   static readonly HIGH_SUGAR_G: number = 20;
+  /** @deprecated 自 v4.0 起不再使用，该阈值内置在 NutriScoreEngine 命名常量中。将在 v4.2 移除。 */
   static readonly PROTEIN_BONUS_THRESHOLD: number = 20;
 
   static readonly INTAKE_RATIO_LIMIT: number = 0.5;

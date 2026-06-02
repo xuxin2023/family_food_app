@@ -13,7 +13,7 @@ import { AppState } from '../AppState';
 import { NutriScoreBadge, AllergenHighlightList, PaywallDialog, AdditiveTrafficLightList, AdditiveClassifier } from 'feature_scan';
 import { NovaGroupBadge, EcoScoreBadge, EcoScore, RiskAssessmentPanel, ShareCardGenerator, MemberShareInfo, ShareImageParams, ComprehensiveRatingPanel } from 'feature_report';
 import { NutriScore } from 'hsp_core';
-import { AdditiveInteractionEngine, InteractionAssessmentResult, NovaGroup } from 'feature_scan';
+import { InteractionAssessmentResult, NovaGroup } from 'feature_scan';
 import { AdditiveInteractionCard } from '../components/AdditiveInteractionCard';
 
 // ===== 页面级别类型 =====

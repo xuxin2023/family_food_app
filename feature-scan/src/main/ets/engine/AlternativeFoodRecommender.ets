@@ -9,6 +9,40 @@ import { CjCompute } from 'hsp_core_cj';
 const TAG = 'AltFoodRecommender';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
+/** 推荐评分权重常量 */
+const SIMILARITY_MIN_THRESHOLD = 0.5;
+const SIMILARITY_WEIGHT = 40;
+const NUTRI_SCORE_IMPROVE_WEIGHT = 8;
+const NUTRI_SCORE_DEGRADE_WEIGHT = 10;
+const NOVA_IMPROVE_WEIGHT = 5;
+const NOVA_DEGRADE_WEIGHT = 6;
+const SODIUM_REDUCTION_BONUS = 3;
+const SUGAR_REDUCTION_BONUS = 3;
+const CALORIE_REDUCTION_BONUS = 2;
+const MIN_CANDIDATE_SCORE = 10;
+const HIGH_SIMILARITY_THRESHOLD = 0.8;
+const MODERATE_SIMILARITY_THRESHOLD = 0.6;
+const SODIUM_SIGNIFICANT_REDUCTION = 0.7;
+const SUGAR_SIGNIFICANT_REDUCTION = 0.5;
+
+/** 健康目标相关阈值 */
+const BP_SAFE_SODIUM_MG = 120;
+const HIGH_SODIUM_PENALTY_MG = 400;
+const SUGAR_SAFE_THRESHOLD_G = 5;
+const LOSE_FAT_SAFE_KCAL = 80;
+const HIGH_CALORIE_PENALTY_KCAL = 250;
+
+/** 综合评分系数 */
+const HEALTH_SCORE_WEIGHT = 0.5;
+const GREEN_LEVEL_BONUS = 25;
+const YELLOW_LEVEL_BONUS = 15;
+const ORANGE_LEVEL_BONUS = 5;
+const LOW_SODIUM_MG = 200;
+const MEDIUM_SODIUM_MG = 400;
+const LOW_SUGAR_G = 5;
+const MEDIUM_SUGAR_G = 15;
+const LOW_CALORIE_KCAL = 200;
+
 class AlternativeEntry {
   originalCategory: string = '';
   alternativeName: string = '';

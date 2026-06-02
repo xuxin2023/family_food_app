@@ -1,13 +1,11 @@
 // MainTabsPage.ets
-// HarmonyOS 6.1 悬浮页签 + 沉浸光感 集成主页面
-// V6.3: 升级 @ComponentV2 状态管理 — @Local + @Monitor 替代 @Local + @Watch
-// barOverlap + barFloatingStyle 实现毛玻璃悬浮栏，内容区延伸至导航栏背后
-// systemMaterialEffect 自适应沉浸光感材质，系统自动根据设备算力调节渲染精度
-// V6.2: 懒加载优化 — 仅在首次访问时构建 Tab 内容，减少初始渲染开销
+// HarmonyOS 6.1 鎮诞椤电 + 娌夋蹈鍏夋劅 闆嗘垚涓婚〉闈?// V6.3: 鍗囩骇 @ComponentV2 鐘舵€佺鐞?鈥?@Local + @Monitor 鏇夸唬 @Local + @Watch
+// barOverlap + barFloatingStyle 瀹炵幇姣涚幓鐠冩偓娴爮锛屽唴瀹瑰尯寤朵几鑷冲鑸爮鑳屽悗
+// systemMaterialEffect 鑷€傚簲娌夋蹈鍏夋劅鏉愯川锛岀郴缁熻嚜鍔ㄦ牴鎹澶囩畻鍔涜皟鑺傛覆鏌撶簿搴?// V6.2: 鎳掑姞杞戒紭鍖?鈥?浠呭湪棣栨璁块棶鏃舵瀯寤?Tab 鍐呭锛屽噺灏戝垵濮嬫覆鏌撳紑閿€
 //
-// Tab 结构: 首页 | 饮食 | AI | 社区 | 我的
+// Tab 缁撴瀯: 棣栭〉 | 楗 | AI | 绀惧尯 | 鎴戠殑
 
-import { safePushUrl, COLORS, HILOG_DOMAIN_DEFAULT, NavigationManager } from 'hsp_core';
+import { safePushUrl, COLORS, HILOG_DOMAIN_DEFAULT, NavigationManager, PageResourceTracker, createPageTracker } from 'hsp_core';
 import { AppState } from '../AppState';
 import { HdsTabs, HdsTabsController } from '@kit.UIDesignKit';
 import { hdsMaterial } from '@kit.UIDesignKit';
@@ -48,22 +46,21 @@ const TAG = 'MainTabsPage';
 @ComponentV2
 struct MainTabsPage {
   private tabsController: HdsTabsController = new HdsTabsController();
+  private tracker: PageResourceTracker = createPageTracker('MainTabsPage')
   @Local currentIndex: number = 0;
   @Local appInitFailed: boolean = false;
 
-  // 懒加载状态：记录各 Tab 是否已被访问过
-  // Tab 0（首页）始终加载
+  // 鎳掑姞杞界姸鎬侊細璁板綍鍚?Tab 鏄惁宸茶璁块棶杩?  // Tab 0锛堥椤碉級濮嬬粓鍔犺浇
   @Local tabLoaded: boolean[] = [true, false, false, false, false];
 
   aboutToAppear() {
+    this.tracker.onAppear()
     hilog.info(DOMAIN_ZERO, TAG, 'MainTabsPage aboutToAppear');
     this.appInitFailed = AppState.getInstance().isInitFailed();
   }
 
   /**
-   * 页签切换回调 — @Monitor 精细监听（V2 替代 @Watch）
-   * 可获取变更前后的值
-   */
+   * 椤电鍒囨崲鍥炶皟 鈥?@Monitor 绮剧粏鐩戝惉锛圴2 鏇夸唬 @Watch锛?   * 鍙幏鍙栧彉鏇村墠鍚庣殑鍊?   */
   @Monitor('currentIndex')
   onTabChange(monitor: IMonitor) {
     const idx = monitor.value()?.now as number;
@@ -94,15 +91,15 @@ struct MainTabsPage {
     Column() {
       if (this.appInitFailed) {
         Column() {
-          Text('应用初始化异常')
+          Text('搴旂敤鍒濆鍖栧紓甯?)
             .fontSize(18)
             .fontWeight(FontWeight.Bold)
             .fontColor(COLORS.TEXT_PRIMARY)
-          Text('请重启应用，如问题持续请联系客服')
+          Text('璇烽噸鍚簲鐢紝濡傞棶棰樻寔缁鑱旂郴瀹㈡湇')
             .fontSize(14)
             .fontColor(COLORS.TEXT_TERTIARY)
             .margin({ top: 8 })
-          Button('重试')
+          Button('閲嶈瘯')
             .margin({ top: 16 })
             .onClick(() => {
               this.appInitFailed = AppState.getInstance().isInitFailed();
@@ -118,7 +115,7 @@ struct MainTabsPage {
           index: this.currentIndex
         }) {
       // ================================================================
-      // Tab 0: 首页 — 始终加载
+      // Tab 0: 棣栭〉 鈥?濮嬬粓鍔犺浇
       // ================================================================
       TabContent() {
         this.HomePageContent()
@@ -131,8 +128,7 @@ struct MainTabsPage {
       }, $r('app.string.tab_home')))
 
       // ================================================================
-      // Tab 1: 饮食 — 懒加载
-      // ================================================================
+      // Tab 1: 楗 鈥?鎳掑姞杞?      // ================================================================
       TabContent() {
         Column() {
           if (this.tabLoaded[1]) {
@@ -151,8 +147,7 @@ struct MainTabsPage {
       }, $r('app.string.tab_diet')))
 
       // ================================================================
-      // Tab 2: AI — 懒加载
-      // ================================================================
+      // Tab 2: AI 鈥?鎳掑姞杞?      // ================================================================
       TabContent() {
         Column() {
           if (this.tabLoaded[2]) {
@@ -171,8 +166,7 @@ struct MainTabsPage {
       }, $r('app.string.tab_ai')))
 
       // ================================================================
-      // Tab 3: 社区 — 懒加载
-      // ================================================================
+      // Tab 3: 绀惧尯 鈥?鎳掑姞杞?      // ================================================================
       TabContent() {
         Column() {
           if (this.tabLoaded[3]) {
@@ -191,8 +185,7 @@ struct MainTabsPage {
       }, $r('app.string.tab_community')))
 
       // ================================================================
-      // Tab 4: 我的 — 懒加载
-      // ================================================================
+      // Tab 4: 鎴戠殑 鈥?鎳掑姞杞?      // ================================================================
       TabContent() {
         Column() {
           if (this.tabLoaded[4]) {
@@ -278,7 +271,7 @@ struct MainTabsPage {
     .hideTitleBar(true)
   }
 
-  // ──── Tab 占位符（未加载时的空白页面）────
+  // 鈹€鈹€鈹€鈹€ Tab 鍗犱綅绗︼紙鏈姞杞芥椂鐨勭┖鐧介〉闈級鈹€鈹€鈹€鈹€
   @Builder
   TabPlaceholder(emojiTitle: ResourceStr, hint: ResourceStr) {
     Column() {
@@ -300,11 +293,11 @@ struct MainTabsPage {
     .backgroundColor(COLORS.BG_PAGE)
   }
 
-  // ──── Tab 0: 首页内容 ────
+  // 鈹€鈹€鈹€鈹€ Tab 0: 棣栭〉鍐呭 鈹€鈹€鈹€鈹€
   @Builder
   HomePageContent() {
     Column() {
-      Text('🏠')
+      Text('馃彔')
         .fontSize(48)
         .margin({ top: 60 })
       Text($r('app.string.main_tabs_home'))
@@ -319,7 +312,7 @@ struct MainTabsPage {
 
       Button() {
         Row({ space: 6 }) {
-          Text('📷').fontSize(18)
+          Text('馃摲').fontSize(18)
           Text($r('app.string.main_tabs_scan_identify')).fontSize(16).fontColor(COLORS.WHITE)
         }
       }
@@ -335,7 +328,7 @@ struct MainTabsPage {
 
       Button() {
         Row({ space: 6 }) {
-          Text('🍽️').fontSize(18)
+          Text('馃嵔锔?).fontSize(18)
           Text($r('app.string.main_tabs_enter_home')).fontSize(16).fontColor(COLORS.PRIMARY)
         }
       }
@@ -358,7 +351,7 @@ struct MainTabsPage {
     .backgroundColor(COLORS.BG_PAGE)
   }
 
-  // ──── Tab 1: 饮食内容 ────
+  // 鈹€鈹€鈹€鈹€ Tab 1: 楗鍐呭 鈹€鈹€鈹€鈹€
   @Builder
   DietContent() {
     Column() {
@@ -373,15 +366,15 @@ struct MainTabsPage {
 
       Scroll() {
         Column({ space: 12 }) {
-          this.QuickEntryCard('📝', $r('app.string.main_tabs_record_food'), $r('app.string.main_tabs_record_food_desc'),
+          this.QuickEntryCard('馃摑', $r('app.string.main_tabs_record_food'), $r('app.string.main_tabs_record_food_desc'),
             'pages/BalancePage')
-          this.QuickEntryCard('📖', $r('app.string.main_tabs_diet_diary'), $r('app.string.main_tabs_diet_diary_desc'),
+          this.QuickEntryCard('馃摉', $r('app.string.main_tabs_diet_diary'), $r('app.string.main_tabs_diet_diary_desc'),
             'pages/DietDiaryPage')
-          this.QuickEntryCard('📋', $r('app.string.main_tabs_history'), $r('app.string.main_tabs_history_desc'),
+          this.QuickEntryCard('馃搵', $r('app.string.main_tabs_history'), $r('app.string.main_tabs_history_desc'),
             'pages/HistoryPage')
-          this.QuickEntryCard('📊', $r('app.string.main_tabs_nutrition_dashboard'), $r('app.string.main_tabs_nutrition_dashboard_desc'),
+          this.QuickEntryCard('馃搳', $r('app.string.main_tabs_nutrition_dashboard'), $r('app.string.main_tabs_nutrition_dashboard_desc'),
             'pages/DashboardPage')
-          this.QuickEntryCard('🛒', $r('app.string.main_tabs_basket_analysis'), $r('app.string.main_tabs_basket_analysis_desc'),
+          this.QuickEntryCard('馃洅', $r('app.string.main_tabs_basket_analysis'), $r('app.string.main_tabs_basket_analysis_desc'),
             'pages/BasketCheckPage')
         }
         .padding({ left: 16, right: 16, bottom: 80 })
@@ -393,7 +386,7 @@ struct MainTabsPage {
     .backgroundColor(COLORS.BG_PAGE)
   }
 
-  // ──── Tab 2: AI 内容 ────
+  // 鈹€鈹€鈹€鈹€ Tab 2: AI 鍐呭 鈹€鈹€鈹€鈹€
   @Builder
   AiContent() {
     Column() {
@@ -408,13 +401,13 @@ struct MainTabsPage {
 
       Scroll() {
         Column({ space: 12 }) {
-          this.QuickEntryCard('💬', $r('app.string.main_tabs_ai_nutritionist'), $r('app.string.main_tabs_ai_nutritionist_desc'),
+          this.QuickEntryCard('馃挰', $r('app.string.main_tabs_ai_nutritionist'), $r('app.string.main_tabs_ai_nutritionist_desc'),
             'pages/AiChatPage')
-          this.QuickEntryCard('🍳', $r('app.string.main_tabs_ai_recipe'), $r('app.string.main_tabs_ai_recipe_desc'),
+          this.QuickEntryCard('馃嵆', $r('app.string.main_tabs_ai_recipe'), $r('app.string.main_tabs_ai_recipe_desc'),
             'pages/RecipeCommunityPage', new Map([['aiMode', 'recommend']]))
-          this.QuickEntryCard('🧪', $r('app.string.main_tabs_nutrition_trend'), $r('app.string.main_tabs_nutrition_trend_desc'),
+          this.QuickEntryCard('馃И', $r('app.string.main_tabs_nutrition_trend'), $r('app.string.main_tabs_nutrition_trend_desc'),
             'pages/NutritionTrendPage')
-          this.QuickEntryCard('📈', $r('app.string.main_tabs_weekly_report'), $r('app.string.main_tabs_weekly_report_desc'),
+          this.QuickEntryCard('馃搱', $r('app.string.main_tabs_weekly_report'), $r('app.string.main_tabs_weekly_report_desc'),
             'pages/WeeklyReportPage')
         }
         .padding({ left: 16, right: 16, bottom: 80 })
@@ -426,7 +419,7 @@ struct MainTabsPage {
     .backgroundColor(COLORS.BG_PAGE)
   }
 
-  // ──── Tab 3: 社区内容 ────
+  // 鈹€鈹€鈹€鈹€ Tab 3: 绀惧尯鍐呭 鈹€鈹€鈹€鈹€
   @Builder
   CommunityContent() {
     Column() {
@@ -441,11 +434,11 @@ struct MainTabsPage {
 
       Scroll() {
         Column({ space: 12 }) {
-          this.QuickEntryCard('🍳', $r('app.string.main_tabs_recipe_community'), $r('app.string.main_tabs_recipe_community_desc'),
+          this.QuickEntryCard('馃嵆', $r('app.string.main_tabs_recipe_community'), $r('app.string.main_tabs_recipe_community_desc'),
             'pages/RecipeCommunityPage')
-          this.QuickEntryCard('👨‍👩‍👧‍👦', $r('app.string.main_tabs_family_group'), $r('app.string.main_tabs_family_group_desc'),
+          this.QuickEntryCard('馃懆鈥嶐煈┾€嶐煈р€嶐煈?, $r('app.string.main_tabs_family_group'), $r('app.string.main_tabs_family_group_desc'),
             'pages/FamilyGroupPage')
-          this.QuickEntryCard('✨', $r('app.string.main_tabs_create_recipe'), $r('app.string.main_tabs_create_recipe_desc'),
+          this.QuickEntryCard('鉁?, $r('app.string.main_tabs_create_recipe'), $r('app.string.main_tabs_create_recipe_desc'),
             'pages/RecipeCreatePage')
         }
         .padding({ left: 16, right: 16, bottom: 80 })
@@ -457,7 +450,7 @@ struct MainTabsPage {
     .backgroundColor(COLORS.BG_PAGE)
   }
 
-  // ──── Tab 4: 我的内容 ────
+  // 鈹€鈹€鈹€鈹€ Tab 4: 鎴戠殑鍐呭 鈹€鈹€鈹€鈹€
   @Builder
   ProfileContent() {
     Column() {
@@ -472,19 +465,19 @@ struct MainTabsPage {
 
       Scroll() {
         Column({ space: 12 }) {
-          this.QuickEntryCard('👤', $r('app.string.main_tabs_member_management'), $r('app.string.main_tabs_member_management_desc'),
+          this.QuickEntryCard('馃懁', $r('app.string.main_tabs_member_management'), $r('app.string.main_tabs_member_management_desc'),
             'pages/MemberPage')
-          this.QuickEntryCard('📊', $r('app.string.main_tabs_nutrition_dashboard'), $r('app.string.main_tabs_nutrition_dashboard_all'),
+          this.QuickEntryCard('馃搳', $r('app.string.main_tabs_nutrition_dashboard'), $r('app.string.main_tabs_nutrition_dashboard_all'),
             'pages/DashboardPage')
-          this.QuickEntryCard('🏥', $r('app.string.main_tabs_health_device'), $r('app.string.main_tabs_health_device_desc'),
+          this.QuickEntryCard('馃彞', $r('app.string.main_tabs_health_device'), $r('app.string.main_tabs_health_device_desc'),
             'pages/DeviceDashboardPage')
-          this.QuickEntryCard('💎', $r('app.string.main_tabs_subscription'), $r('app.string.main_tabs_subscription_desc'),
+          this.QuickEntryCard('馃拵', $r('app.string.main_tabs_subscription'), $r('app.string.main_tabs_subscription_desc'),
             'pages/SubscriptionPage')
-          this.QuickEntryCard('☁️', $r('app.string.main_tabs_cloud_sync'), $r('app.string.main_tabs_cloud_sync_desc'),
+          this.QuickEntryCard('鈽侊笍', $r('app.string.main_tabs_cloud_sync'), $r('app.string.main_tabs_cloud_sync_desc'),
             'pages/CloudSyncSettingsPage')
-          this.QuickEntryCard('🔧', $r('app.string.main_tabs_settings'), $r('app.string.main_tabs_settings_desc'),
+          this.QuickEntryCard('馃敡', $r('app.string.main_tabs_settings'), $r('app.string.main_tabs_settings_desc'),
             'pages/SettingsPage')
-          this.QuickEntryCard('🧪', $r('app.string.main_tabs_api_lab'), $r('app.string.main_tabs_api_lab_desc'),
+          this.QuickEntryCard('馃И', $r('app.string.main_tabs_api_lab'), $r('app.string.main_tabs_api_lab_desc'),
             'pages/V2DemoPage')
         }
         .padding({ left: 16, right: 16, bottom: 80 })
@@ -496,7 +489,7 @@ struct MainTabsPage {
     .backgroundColor(COLORS.BG_PAGE)
   }
 
-  // ──── 通用快捷入口卡片 ────
+  // 鈹€鈹€鈹€鈹€ 閫氱敤蹇嵎鍏ュ彛鍗＄墖 鈹€鈹€鈹€鈹€
   @Builder
   QuickEntryCard(icon: string, title: ResourceStr, desc: ResourceStr, targetUrl: string, extraParams?: Map<string, Object>) {
     Row() {
@@ -517,7 +510,7 @@ struct MainTabsPage {
       }
       .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)
-      Text('›')
+      Text('鈥?)
         .fontSize(22)
         .fontColor(COLORS.TEXT_GRAY_BDBD)
     }
@@ -533,4 +526,7 @@ struct MainTabsPage {
     })
   }
 
+  aboutToDisappear(): void {
+    this.tracker.onDisappear()
+  }
 }

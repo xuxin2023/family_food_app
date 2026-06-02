@@ -1,4 +1,4 @@
-import { COLORS, safeBack, FamilyProfile, HealthSignal, NutritionTarget, createDefaultNutritionTarget, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
+import { COLORS, safeBack, FamilyProfile, HealthSignal, NutritionTarget, createDefaultNutritionTarget, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker } from 'hsp_core';
 import { ExerciseNutritionRecommendation } from 'feature_report';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
@@ -22,7 +22,9 @@ struct ExerciseNutritionPage {
 
   private appState: AppState = AppState.getInstance()
 
+  private tracker: PageResourceTracker = createPageTracker('ExerciseNutritionPage')
   async aboutToAppear() {
+    this.tracker.onAppear()
     this.isLoading = true
     try {
       const members = await this.appState.getAllMembers()
@@ -117,7 +119,7 @@ struct ExerciseNutritionPage {
                 TextInput({ text: this.calorieBurn, placeholder: '200' })
                   .height(40)
                   .onChange((value: string) => { this.calorieBurn = value })
-                  .accessibilityText('消耗热量输入')
+                  .accessibilityText('消耗热量输�?)
                   .accessibilityLevel('yes')
               }
               .width('100%')
@@ -185,7 +187,7 @@ struct ExerciseNutritionPage {
                 }
 
                 if ((this.result as ExerciseNutritionRecommendation).avoidItems.length > 0) {
-                  Text() { Span($r('app.string.exercise_nutrition_avoid')); Span(`${(this.result as ExerciseNutritionRecommendation).avoidItems.join('、')}`) }
+                  Text() { Span($r('app.string.exercise_nutrition_avoid')); Span(`${(this.result as ExerciseNutritionRecommendation).avoidItems.join('�?)}`) }
                     .fontSize(13)
                     .fontColor('#E53935')
                     .margin({ top: 8 })
@@ -216,6 +218,12 @@ struct ExerciseNutritionPage {
       this.currentProfile.memberId, this.exerciseType, minutes, 'medium'
     )) as Object as ExerciseNutritionRecommendation;
   }
+
+  aboutToDisappear(): void {
+    this.tracker.onDisappear()
+  }
+
+
 
   pageTransition() {
     PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })

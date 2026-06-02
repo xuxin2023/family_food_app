@@ -1,4 +1,4 @@
-import { COLORS, safeBack, FoodLabel, FamilyProfile, AgeGroup, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
+import { COLORS, safeBack, FoodLabel, FamilyProfile, AgeGroup, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker } from 'hsp_core';
 import { ChildHealthAssessment } from 'feature_report';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
@@ -20,7 +20,9 @@ struct ChildHealthPage {
 
   private appState: AppState = AppState.getInstance()
 
+  private tracker: PageResourceTracker = createPageTracker('ChildHealthPage')
   async aboutToAppear() {
+    this.tracker.onAppear()
     this.isLoading = true
     try {
       const members = await this.appState.getAllMembers()
@@ -93,7 +95,7 @@ struct ChildHealthPage {
                   TextInput({ text: this.todaySnackCalories, placeholder: '0' })
                     .height(40)
                     .onChange((value: string) => { this.todaySnackCalories = value })
-                    .accessibilityText('零食卡路里')
+                    .accessibilityText('零食卡路�?)
                     .accessibilityLevel('yes')
                 }
                 .layoutWeight(1)
@@ -107,7 +109,7 @@ struct ChildHealthPage {
                   TextInput({ text: this.todaySnackSugarG, placeholder: '0' })
                     .height(40)
                     .onChange((value: string) => { this.todaySnackSugarG = value })
-                    .accessibilityText('零食糖分(克)')
+                    .accessibilityText('零食糖分(�?')
                     .accessibilityLevel('yes')
                 }
                 .layoutWeight(1)
@@ -122,7 +124,7 @@ struct ChildHealthPage {
                 .fontColor(COLORS.WHITE)
                 .borderRadius(22)
                 .onClick(() => { this.runAssessment() })
-                .accessibilityText('开始评估')
+                .accessibilityText('开始评�?)
                 .accessibilityLevel('yes')
             }
             .width('92%')
@@ -172,8 +174,8 @@ struct ChildHealthPage {
                     .margin({ top: 8, bottom: 4 })
                   ForEach((this.result as ChildHealthAssessment)?.additiveResults ?? [], (ar: AdditiveSafetyResult, index: number) => {
                     Row() {
-                      Text(ar.safetyLevel === AdditiveSafetyLevel.SAFE ? '✓' :
-                        ar.safetyLevel === AdditiveSafetyLevel.AVOID ? '✕' : '⚠')
+                      Text(ar.safetyLevel === AdditiveSafetyLevel.SAFE ? '�? :
+                        ar.safetyLevel === AdditiveSafetyLevel.AVOID ? '�? : '�?)
                         .fontSize(14)
                         .fontColor(ar.safetyLevel === AdditiveSafetyLevel.SAFE ? '#4CAF50' :
                           ar.safetyLevel === AdditiveSafetyLevel.AVOID ? '#E53935' : '#FF9800')
@@ -198,7 +200,7 @@ struct ChildHealthPage {
                     .fontSize(14)
                     .fontWeight(FontWeight.Medium)
                     .margin({ top: 8, bottom: 4 })
-                  Text((this.result as ChildHealthAssessment)?.growthNutritionCheck?.join('、') ?? '')
+                  Text((this.result as ChildHealthAssessment)?.growthNutritionCheck?.join('�?) ?? '')
                     .fontSize(13)
                     .fontColor(COLORS.TEXT_GRAY_3333)
                 }
@@ -230,6 +232,12 @@ struct ChildHealthPage {
       this.childProfile.memberId, foodLabel
     )) as Object as ChildHealthAssessment;
   }
+
+  aboutToDisappear(): void {
+    this.tracker.onDisappear()
+  }
+
+
 
   pageTransition() {
     PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })

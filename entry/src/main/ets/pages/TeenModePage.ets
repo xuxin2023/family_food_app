@@ -1,4 +1,4 @@
-import { safeBack, COLORS, BUTTON, SPACING, FONT_SIZE } from 'hsp_core';
+import { safeBack, COLORS, BUTTON, SPACING, FONT_SIZE, PageResourceTracker, createPageTracker } from 'hsp_core';
 import { TeenModeManager } from 'hsp_service';
 import { promptAction } from '@kit.ArkUI';
 
@@ -10,7 +10,9 @@ struct TeenModePage {
 
   private teenModeManager: TeenModeManager = TeenModeManager.getInstance()
 
+  private tracker: PageResourceTracker = createPageTracker('TeenModePage')
   aboutToAppear(): void {
+    this.tracker.onAppear()
     this.isTeenModeEnabled = this.teenModeManager.isEnabled()
     this.isLoading = false
   }
@@ -106,7 +108,7 @@ struct TeenModePage {
   @Builder
   RestrictionItem(title: ResourceStr, desc: ResourceStr) {
     Row() {
-      Text('â€¢').fontSize(14).fontColor(COLORS.PRIMARY).margin({ right: 8 })
+      Text('â€?).fontSize(14).fontColor(COLORS.PRIMARY).margin({ right: 8 })
       Column() {
         Text(title).fontSize(14).fontWeight(FontWeight.Medium).fontColor(COLORS.TEXT_GRAY_2121)
         Text(desc).fontSize(12).fontColor(COLORS.TEXT_GRAY_7575).margin({ top: 2 })
@@ -117,6 +119,12 @@ struct TeenModePage {
     .width('100%')
     .padding({ top: 8, bottom: 8 })
   }
+
+  aboutToDisappear(): void {
+    this.tracker.onDisappear()
+  }
+
+
 
   pageTransition() {
     PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })

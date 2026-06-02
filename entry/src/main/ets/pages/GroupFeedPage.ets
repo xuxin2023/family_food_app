@@ -1,5 +1,6 @@
 import {
   ToastHelper, safeBack, getPageParams, GroupFeed, FeedType, COLORS, RADIUS, BasicDataSource, PAGE_SIZE_CONFIG, HILOG_DOMAIN_DEFAULT
+  PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -19,8 +20,10 @@ struct GroupFeedPage {
   private appState: AppState = AppState.getInstance()
   private feeds: GroupFeed[] = []
   private feedDS = new BasicDataSource<GroupFeed>()
+  private tracker: PageResourceTracker = createPageTracker('GroupFeedPage')
 
   async aboutToAppear() {
+    this.tracker.onAppear()
     const params = getPageParams()
     const rawGroupId = params !== undefined ? params.get('groupId') : undefined;
     const rawGroupName = params !== undefined ? params.get('groupName') : undefined;
@@ -232,6 +235,10 @@ struct GroupFeedPage {
     if (diff < 86400000) return `${Math.floor(diff / 3600000)}` + ($r('app.string.group_feed_hours_ago') as ResourceStr)
     const d = new Date(timestamp)
     return `${d.getMonth() + 1}/${d.getDate()}`
+  }
+
+  aboutToDisappear(): void {
+    this.tracker.onDisappear()
   }
 
   pageTransition() {

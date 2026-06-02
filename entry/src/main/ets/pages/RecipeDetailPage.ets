@@ -3,6 +3,7 @@
 
 import {
   ToastHelper, getPageParams, Recipe, RecipeComment, DietTag, RecipeIngredient, RecipeStep, COLORS, RADIUS, BasicDataSource, HILOG_DOMAIN_DEFAULT, getCategoryLabel, getCategoryEmoji, getDifficultyLabel, getDietTagLabel, formatTime
+  PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -28,8 +29,10 @@ struct RecipeDetailPage {
   private comments: RecipeComment[] = []
   private commentDS = new BasicDataSource<RecipeComment>()
   private recipeId: string = ''
+  private tracker: PageResourceTracker = createPageTracker('RecipeDetailPage')
 
   async aboutToAppear() {
+    this.tracker.onAppear()
     const params = getPageParams()
     const raw = params !== undefined ? params.get('recipeId') : undefined;
     this.recipeId = (typeof raw === 'string' ? raw : '');
@@ -482,4 +485,7 @@ struct RecipeDetailPage {
     .width('100%')
   }
 
+  aboutToDisappear(): void {
+    this.tracker.onDisappear()
+  }
 }

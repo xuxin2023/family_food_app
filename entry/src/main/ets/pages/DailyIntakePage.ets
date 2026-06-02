@@ -1,6 +1,6 @@
 import {
   ToastHelper, safeBack, DietRecord, NutritionTarget, FamilyProfile, MealScenario,
-  COLORS, FONT_SIZE, RADIUS, SPACING, HILOG_DOMAIN_DEFAULT
+  COLORS, FONT_SIZE, RADIUS, SPACING, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { NutritionTargetGauge } from '../components/NutritionTargetGauge';
@@ -31,7 +31,9 @@ struct DailyIntakePage {
 
   private appState: AppState = AppState.getInstance()
 
+  private tracker: PageResourceTracker = createPageTracker('DailyIntakePage')
   aboutToAppear(): void {
+    this.tracker.onAppear()
     const now = new Date();
     this.selectedDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     this.familyMembers = this.appState.getAllMembersSync();
@@ -68,8 +70,8 @@ struct DailyIntakePage {
   private buildBuckets(): NutrientBucket[] {
     return [
       { label: '热量', unit: 'kcal', current: this.calcTotal('calorieIntake'), target: this.target.caloriesTarget, color: COLORS.PRIMARY, lowerIsBetter: false },
-      { label: '钠', unit: 'mg', current: this.calcTotal('sodiumIntake'), target: this.target.sodiumMax_mg, color: COLORS.ACCENT_RED_EF53, lowerIsBetter: true },
-      { label: '糖', unit: 'g', current: this.calcTotal('sugarIntake'), target: this.target.sugarMax_g, color: COLORS.ORANGE_ACCENT, lowerIsBetter: true },
+      { label: '�?, unit: 'mg', current: this.calcTotal('sodiumIntake'), target: this.target.sodiumMax_mg, color: COLORS.ACCENT_RED_EF53, lowerIsBetter: true },
+      { label: '�?, unit: 'g', current: this.calcTotal('sugarIntake'), target: this.target.sugarMax_g, color: COLORS.ORANGE_ACCENT, lowerIsBetter: true },
       { label: '脂肪', unit: 'g', current: this.calcTotal('fatIntake'), target: this.target.fatMax_g, color: '#FF9800', lowerIsBetter: true },
     ];
   }
@@ -224,7 +226,7 @@ struct DailyIntakePage {
   @Builder
   MealBreakdown() {
     Column() {
-      Text('分餐汇总')
+      Text('分餐汇�?)
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
         .margin({ bottom: 8 })
@@ -287,10 +289,10 @@ struct DailyIntakePage {
           .layoutWeight(1)
 
           Column() {
-            Text(`钠 ${record.sodiumIntake.toFixed(0)}mg`)
+            Text(`�?${record.sodiumIntake.toFixed(0)}mg`)
               .fontSize(10)
               .fontColor(COLORS.TEXT_TERTIARY)
-            Text(`糖 ${record.sugarIntake.toFixed(1)}g`)
+            Text(`�?${record.sugarIntake.toFixed(1)}g`)
               .fontSize(10)
               .fontColor(COLORS.TEXT_TERTIARY)
               .margin({ top: 2 })
@@ -320,6 +322,12 @@ struct DailyIntakePage {
       default: return type;
     }
   }
+
+  aboutToDisappear(): void {
+    this.tracker.onDisappear()
+  }
+
+
 
   pageTransition() {
     PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })

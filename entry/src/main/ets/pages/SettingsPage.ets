@@ -1,5 +1,6 @@
 import {
   ToastHelper, safeBack, safePushUrl, safeReplaceUrl, FamilyProfile, DateUtil, COLORS, RADIUS, ThemeColors, ThemeMode, getPrivacyPolicyHtml, getUserAgreementHtml, HILOG_DOMAIN_DEFAULT, ROUTE_NUTRITION_TARGET_PAGE, ROUTE_NUTRITION_KNOWLEDGE_PAGE, ROUTE_MEAL_PLAN_PAGE, ROUTE_SHOPPING_LIST_PAGE, ROUTE_REMINDER_RULE_PAGE, ROUTE_FEEDBACK_PAGE, LocaleManager, SUPPORTED_LOCALES, LOCALE_DISPLAY_NAMES, DATA_VERSION, DB_NAME, HealthSignal, StepLevel, SleepStatus, BpStatus, BsStatus, DataSource, LEGAL_CONFIG
+  PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
@@ -50,8 +51,10 @@ struct SettingsPage {
   private componentActive: boolean = true
   private appState: AppState = AppState.getInstance()
   private restartTimer: number = -1  // 重启定时器ID，用于防止内存泄漏
+  private tracker: PageResourceTracker = createPageTracker('SettingsPage')
 
   async aboutToAppear() {
+    this.tracker.onAppear()
     this.componentActive = true
     try {
       this.vm.isLoading = true
@@ -69,6 +72,7 @@ struct SettingsPage {
   }
 
   aboutToDisappear(): void {
+    this.tracker.onDisappear()
     this.componentActive = false
     if (this.restartTimer !== -1) {
       clearTimeout(this.restartTimer)

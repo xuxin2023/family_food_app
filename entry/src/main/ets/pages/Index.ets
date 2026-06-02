@@ -2,7 +2,7 @@
 // 应用入口页面 - 判断引导状态后进入主页面
 // V2增强：三屏引导内容具体化
 
-import { safeReplaceUrl, COLORS } from 'hsp_core';
+import { safeReplaceUrl, COLORS, PageResourceTracker, createPageTracker } from 'hsp_core';
 import { AppState } from '../AppState';
 
 @Entry
@@ -12,7 +12,9 @@ struct Index {
   @Local isReady: boolean = false;
   @Local isLoading: boolean = true;
 
+  private tracker: PageResourceTracker = createPageTracker('IndexPage')
   async aboutToAppear(): Promise<void> {
+        this.tracker.onAppear()
     this.isLoading = true;
     try {
       await AppState.waitForReady()
@@ -46,6 +48,8 @@ struct Index {
     state.hasShownGuide = true;
     this.navigateToHome();
   }
+  aboutToDisappear(): void { this.tracker.onDisappear() }
+
 }
 
 @ComponentV2

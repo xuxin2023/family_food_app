@@ -4,6 +4,7 @@
 
 import {
   ToastHelper, safeBack, MemberTier, PurchaseResult, ProductPlan, getProductPlanForTier, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, HILOG_DOMAIN_DEFAULT
+  PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { AppState } from '../AppState';
 import { IapService } from 'hsp_service';
@@ -37,8 +38,10 @@ struct SubscriptionPage {
 
   private appState: AppState = AppState.getInstance()
   private iapService: IapService = IapService.getInstance()
+  private tracker: PageResourceTracker = createPageTracker('SubscriptionPage')
 
   async aboutToAppear() {
+    this.tracker.onAppear()
     this.isLoading = true
     this.currentTier = this.appState.member.memberStatus.tier
     this.plans = this.buildPlanDisplays()
@@ -359,6 +362,10 @@ struct SubscriptionPage {
       case MemberTier.PREMIUM: return $r('app.string.subscription_tier_premium');
       default: return $r('app.string.subscription_tier_unknown');
     }
+  }
+
+  aboutToDisappear(): void {
+    this.tracker.onDisappear()
   }
 
   pageTransition() {

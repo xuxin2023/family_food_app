@@ -1,4 +1,4 @@
-import { ToastHelper, safeBack, ShoppingItem, SHOPPING_CATEGORIES, COLORS, HILOG_DOMAIN_DEFAULT, DB_NAME, BasicDataSource } from 'hsp_core';
+import { ToastHelper, safeBack, ShoppingItem, SHOPPING_CATEGORIES, COLORS, HILOG_DOMAIN_DEFAULT, DB_NAME, BasicDataSource, PageResourceTracker, createPageTracker } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { ShoppingListRepository } from '../repository/ShoppingListRepository';
@@ -21,7 +21,7 @@ class ShoppingListPageViewModel {
   @Trace unpurchasedCount: number = 0
   @Trace totalCount: number = 0
   @Trace newItemName: string = ''
-  @Trace newItemCategory: string = '其他'
+  @Trace newItemCategory: string = '閸忔湹绮?
   @Trace newItemQuantity: string = ''
   @Trace showCategoryPicker: boolean = false
   @Trace hasPurchased: boolean = false
@@ -35,8 +35,10 @@ struct ShoppingListPage {
   private dataSource: ShoppingListDataSource = new ShoppingListDataSource()
   private repo: ShoppingListRepository = new ShoppingListRepository()
   private appState: AppState = AppState.getInstance()
+  private tracker: PageResourceTracker = createPageTracker('ShoppingListPage')
 
   async aboutToAppear() {
+    this.tracker.onAppear()
     this.vm.isLoading = true
     const ctx = AppStorage.get<common.Context>('appContext')
     if (ctx) {
@@ -61,7 +63,7 @@ struct ShoppingListPage {
       Row() {
         BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
           .onClick(() => { safeBack() })
-          .accessibilityText('返回')
+          .accessibilityText('鏉╂柨娲?)
           .accessibilityLevel('yes')
         Text($r('app.string.shopping_title'))
           .fontSize(20)
@@ -95,7 +97,7 @@ struct ShoppingListPage {
           .borderRadius(22)
           .margin({ top: 8, bottom: 16 })
           .onClick(() => { this.clearPurchased() })
-          .accessibilityText('清除已购')
+          .accessibilityText('濞撳懘娅庡鑼跺枠')
           .accessibilityLevel('yes')
       }
     }
@@ -112,7 +114,7 @@ struct ShoppingListPage {
           .width('40%')
           .height(40)
           .onChange((value: string) => { this.vm.newItemName = value })
-          .accessibilityText('物品名称')
+          .accessibilityText('閻椻晛鎼ч崥宥囆?)
           .accessibilityLevel('yes')
 
         Text(this.vm.newItemCategory)
@@ -122,7 +124,7 @@ struct ShoppingListPage {
           .border({ width: 1, color: COLORS.PRIMARY, radius: 16 })
           .margin({ left: 8 })
           .onClick(() => { this.vm.showCategoryPicker = !this.vm.showCategoryPicker })
-          .accessibilityText('选择分类')
+          .accessibilityText('闁瀚ㄩ崚鍡欒')
           .accessibilityLevel('yes')
 
         TextInput({ placeholder: $r('app.string.shopping_quantity') })
@@ -130,7 +132,7 @@ struct ShoppingListPage {
           .height(40)
           .margin({ left: 8 })
           .onChange((value: string) => { this.vm.newItemQuantity = value })
-          .accessibilityText('数量')
+          .accessibilityText('閺佷即鍣?)
           .accessibilityLevel('yes')
 
         Button($r('app.string.shopping_add'))
@@ -140,7 +142,7 @@ struct ShoppingListPage {
           .borderRadius(20)
           .margin({ left: 8 })
           .onClick(() => { this.addItem() })
-          .accessibilityText('添加物品')
+          .accessibilityText('濞ｈ濮為悧鈺佹惂')
           .accessibilityLevel('yes')
       }
       .width('100%')
@@ -266,11 +268,11 @@ struct ShoppingListPage {
       .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)
 
-      Text('✕')
+      Text('閴?)
         .fontSize(16)
         .fontColor(COLORS.TEXT_GRAY_BDBD)
         .onClick(() => { this.removeItem(item.id) })
-        .accessibilityText('删除物品')
+        .accessibilityText('閸掔娀娅庨悧鈺佹惂')
         .accessibilityLevel('yes')
     }
     .width('100%')
@@ -316,7 +318,7 @@ struct ShoppingListPage {
   private async clearPurchased(): Promise<void> {
     const count = await this.repo.clearPurchased();
     await this.refreshList();
-    ToastHelper.show(this.getUIContext(), `已清除${count}项`);
+    ToastHelper.show(this.getUIContext(), `瀹稿弶绔婚梽?{count}妞ょ);
   }
 
   private async refreshList(): Promise<void> {
@@ -325,6 +327,10 @@ struct ShoppingListPage {
     this.vm.totalCount = items.length;
     this.vm.unpurchasedCount = items.filter((item: ShoppingItem) => !item.isPurchased).length;
     this.vm.hasPurchased = items.some((item: ShoppingItem) => item.isPurchased);
+  }
+
+  aboutToDisappear(): void {
+    this.tracker.onDisappear()
   }
 
   pageTransition() {

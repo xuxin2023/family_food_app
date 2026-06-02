@@ -2,7 +2,7 @@
 // 隐私政策与用户协议确认页面 - 首次启动时展示
 // 用户同意后方可进入主页面
 
-import { safeReplaceUrl, getPrivacyPolicyHtml, getUserAgreementHtml, COLORS, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
+import { safeReplaceUrl, getPrivacyPolicyHtml, getUserAgreementHtml, COLORS, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
@@ -26,7 +26,9 @@ struct PrivacyDialogPage {
 
   private appState: AppState = AppState.getInstance()
 
+  private tracker: PageResourceTracker = createPageTracker('PrivacyDialogPage')
   async aboutToAppear() {
+        this.tracker.onAppear()
     try {
       this.isLoading = true
       await AppState.waitForReady()
@@ -351,6 +353,9 @@ struct PrivacyDialogPage {
     .width('100%')
     .height('100%')
   }
+
+    aboutToDisappear(): void { this.tracker.onDisappear() }
+
 
   pageTransition() {
     PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })

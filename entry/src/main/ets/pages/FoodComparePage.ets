@@ -1,7 +1,6 @@
 // FoodComparePage.ets
-// 食品对比页 — 两个食品的并排营养对比视图
-
-import { FoodLabel, NutritionPer100g, COLORS, RADIUS, HILOG_DOMAIN_DEFAULT, ToastHelper, NutritionSnapshot, resourceToStr } from 'hsp_core';
+// 椋熷搧瀵规瘮椤?鈥?涓や釜椋熷搧鐨勫苟鎺掕惀鍏诲姣旇鍥?
+import { FoodLabel, NutritionPer100g, COLORS, RADIUS, HILOG_DOMAIN_DEFAULT, ToastHelper, NutritionSnapshot, resourceToStr, PageResourceTracker, createPageTracker } from 'hsp_core';
 import { FoodCompareService, FoodCompareResult, NutritionDelta } from 'hsp_service';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
@@ -39,8 +38,10 @@ struct FoodComparePage {
   private compareService: FoodCompareService = new FoodCompareService()
   private mContext: UIContext | undefined = undefined
   private componentActive: boolean = true
+  private tracker: PageResourceTracker = createPageTracker('FoodComparePage')
 
   async aboutToAppear(): Promise<void> {
+    this.tracker.onAppear()
     this.componentActive = true;
     this.mContext = this.getUIContext() as UIContext;
     try {
@@ -67,6 +68,7 @@ struct FoodComparePage {
   }
 
   aboutToDisappear(): void {
+    this.tracker.onDisappear()
     this.componentActive = false
   }
 
@@ -74,7 +76,7 @@ struct FoodComparePage {
     Column() {
       Row() {
         BackButton()
-        .accessibilityText('返回')
+        .accessibilityText('杩斿洖')
         .accessibilityLevel('yes')
         Text($r('app.string.food_compare_title')).fontSize(20).fontWeight(FontWeight.Bold).margin({ left: 12 })
       }
@@ -141,7 +143,7 @@ struct FoodComparePage {
           .backgroundColor(COLORS.PRIMARY)
           .fontColor(COLORS.WHITE)
           .borderRadius(RADIUS.LG)
-          .accessibilityText('开始对比')
+          .accessibilityText('寮€濮嬪姣?)
           .accessibilityLevel('yes')
       }
     }
@@ -163,7 +165,7 @@ struct FoodComparePage {
           if (side === 1) { this.barcode1 = v } else { this.barcode2 = v }
         })
         .onSubmit(() => { this.searchByBarcode(side) })
-        .accessibilityText('条码输入')
+        .accessibilityText('鏉＄爜杈撳叆')
         .accessibilityLevel('yes')
 
       Text($r('app.string.food_compare_from_history'))
@@ -174,7 +176,7 @@ struct FoodComparePage {
           this.pickingSide = side
           this.showHistoryPicker = true
         })
-        .accessibilityText('从历史选择')
+        .accessibilityText('浠庡巻鍙查€夋嫨')
         .accessibilityLevel('yes')
 
       if (this.savedSnapshots.length > 0) {
@@ -186,7 +188,7 @@ struct FoodComparePage {
             this.pickingSide = side
             this.pickFromSnapshot(side)
           })
-          .accessibilityText('选择快照')
+          .accessibilityText('閫夋嫨蹇収')
           .accessibilityLevel('yes')
       }
     }
@@ -209,7 +211,7 @@ struct FoodComparePage {
         .onClick(() => {
           if (side === 1) { this.food1 = null } else { this.food2 = null }
         })
-        .accessibilityText('替换食品')
+        .accessibilityText('鏇挎崲椋熷搧')
         .accessibilityLevel('yes')
     }
     .width('100%')
@@ -228,7 +230,7 @@ struct FoodComparePage {
         Text($r('app.string.food_compare_close')).fontSize(14).fontColor(COLORS.PRIMARY).onClick(() => {
           this.showHistoryPicker = false
         })
-        .accessibilityText('关闭')
+        .accessibilityText('鍏抽棴')
         .accessibilityLevel('yes')
       }
       .width('100%')
@@ -403,15 +405,15 @@ struct FoodComparePage {
     const diffs = this.buildNutrientDiffs();
     const better1 = diffs.filter(d => d.betterSide === 1);
     const better2 = diffs.filter(d => d.betterSide === 2);
-    const name1 = this.food1?.foodName ?? '食品A';
-    const name2 = this.food2?.foodName ?? '食品B';
+    const name1 = this.food1?.foodName ?? '椋熷搧A';
+    const name2 = this.food2?.foodName ?? '椋熷搧B';
 
     if (better1.length > better2.length) {
-      return `综合来看，${name1} 在 ${better1.map(d => resourceToStr(d.name)).join('、')} 方面优于${name2} 在 ${better2.map(d => resourceToStr(d.name)).join('、') || '无明显优势'} 方面`;
+      return `缁煎悎鏉ョ湅锛?{name1} 鍦?${better1.map(d => resourceToStr(d.name)).join('銆?)} 鏂归潰浼樹簬${name2} 鍦?${better2.map(d => resourceToStr(d.name)).join('銆?) || '鏃犳槑鏄句紭鍔?} 鏂归潰`;
     } else if (better2.length > better1.length) {
-      return `综合来看，${name2} 在 ${better2.map(d => resourceToStr(d.name)).join('、')} 方面优于${name1} 在 ${better1.map(d => resourceToStr(d.name)).join('、') || '无明显优势'} 方面`;
+      return `缁煎悎鏉ョ湅锛?{name2} 鍦?${better2.map(d => resourceToStr(d.name)).join('銆?)} 鏂归潰浼樹簬${name1} 鍦?${better1.map(d => resourceToStr(d.name)).join('銆?) || '鏃犳槑鏄句紭鍔?} 鏂归潰`;
     }
-    return '两种食品营养表现相当';
+    return '涓ょ椋熷搧钀ュ吇琛ㄧ幇鐩稿綋';
   }
 
   private async searchByBarcode(side: 1 | 2): Promise<void> {

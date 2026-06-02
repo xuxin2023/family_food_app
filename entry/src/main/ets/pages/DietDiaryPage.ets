@@ -3,6 +3,7 @@
 
 import {
   ToastHelper, FamilyProfile, DailyBudget, DateUtil, safeBack, safePushUrl, getPageParams, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, AiNutritionAdvice, NutrientStatusLevel, FoodLabel, HealthSignal, HILOG_DOMAIN_DEFAULT, StringRes, MealScenario, safeParseMealScenario, DietRecord, MealGroup
+  PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -78,8 +79,10 @@ struct DietDiaryPage {
   @Local currentBreakpoint: string = 'md'
 
   private appState: AppState = AppState.getInstance()
+  private tracker: PageResourceTracker = createPageTracker('DietDiaryPage')
 
   async aboutToAppear() {
+    this.tracker.onAppear()
     try {
       this.currentDate = DateUtil.getToday()
       this.familyMembers = await this.appState.getAllMembers()
@@ -755,6 +758,10 @@ struct DietDiaryPage {
 
   private getScenarioEmoji(scenario: string): string {
     return SCENARIO_EMOJI.get(scenario) ?? '🍽️'
+  }
+
+  aboutToDisappear(): void {
+    this.tracker.onDisappear()
   }
 
   pageTransition() {

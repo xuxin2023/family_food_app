@@ -1,4 +1,4 @@
-import { FamilyProfile, AgeGroup, COLORS, BUTTON, RADIUS, SPACING, FONT_SIZE, safePushUrl, DateUtil, HILOG_DOMAIN_DEFAULT, LazyDataSource, DeviceAdapter, Breakpoint } from 'hsp_core';
+import { FamilyProfile, AgeGroup, COLORS, BUTTON, RADIUS, SPACING, FONT_SIZE, safePushUrl, DateUtil, HILOG_DOMAIN_DEFAULT, LazyDataSource, DeviceAdapter, Breakpoint, PageResourceTracker, createPageTracker } from 'hsp_core';
 import { AppState } from '../AppState';
 import { AllergenAlertCard } from '../components/AllergenAlertCard';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -19,7 +19,9 @@ struct HomePage {
   private appState: AppState = AppState.getInstance()
   private sideMargin: number = 16
 
+  private tracker: PageResourceTracker = createPageTracker('HomePage')
   async aboutToAppear() {
+        this.tracker.onAppear()
     try {
       this.isWideScreen = DeviceAdapter.isWideScreen()
       this.sideMargin = DeviceAdapter.getSideMargin()
@@ -285,4 +287,6 @@ struct HomePage {
     .width('100%')
     .padding({ left: 16, right: 16, bottom: 16 })
   }
+  aboutToDisappear(): void { this.tracker.onDisappear() }
+
 }

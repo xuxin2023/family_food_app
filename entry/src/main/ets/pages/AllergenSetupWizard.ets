@@ -1,4 +1,4 @@
-import { safeBack, COLORS, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
+import { safeBack, COLORS, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -7,18 +7,18 @@ const TAG = 'AllergenSetupWizard';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 const COMMON_ALLERGENS: string[] = [
-  '牛奶', '鸡蛋', '花生', '坚果', '大豆', '小麦', '鱼', '甲壳类',
-  '芝麻', '芹菜', '芥末', '羽扇豆', '软体动物', '二氧化硫'
+  '牛奶', '鸡蛋', '花生', '坚果', '大豆', '小麦', '�?, '甲壳�?,
+  '芝麻', '芹菜', '芥末', '羽扇�?, '软体动物', '二氧化硫'
 ];
 
 const COMMON_INTOLERANCES: string[] = [
   '乳糖不耐受', '麸质不耐受', '组胺不耐受', '果糖不耐受',
-  '水杨酸敏感', '亚硫酸盐敏感', '味精敏感'
+  '水杨酸敏�?, '亚硫酸盐敏感', '味精敏感'
 ];
 
 const AGE_GROUP_OPTIONS: string[] = [
-  '婴幼儿(0-3岁)', '儿童(4-12岁)', '青少年(13-17岁)',
-  '成人(18-59岁)', '老年人(60+岁)', '孕期', '哺乳期'
+  '婴幼�?0-3�?', '儿童(4-12�?', '青少�?13-17�?',
+  '成人(18-59�?', '老年�?60+�?', '孕期', '哺乳�?
 ];
 
 const HEALTH_GOAL_OPTIONS: string[] = [
@@ -42,13 +42,20 @@ struct AllergenSetupWizard {
   private appState: AppState = AppState.getInstance()
   private readonly TOTAL_STEPS: number = 4
 
+  private tracker: PageResourceTracker = createPageTracker('AllergenSetupWizard')
+
+  aboutToAppear(): void {
+    this.tracker.onAppear()
+  }
+
+
   build() {
     Column() {
       Row() {
         if (this.currentStep > 0 && !this.isComplete) {
           BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
             .onClick(() => { this.currentStep-- })
-            .accessibilityText('上一步')
+            .accessibilityText('上一�?)
             .accessibilityLevel('yes')
         }
         Blank()
@@ -106,7 +113,7 @@ struct AllergenSetupWizard {
       if (!this.isComplete) {
         Row() {
           if (this.currentStep > 0) {
-            Button('上一步')
+            Button('上一�?)
               .layoutWeight(1)
               .height(44)
               .backgroundColor('#F0F0F0')
@@ -115,7 +122,7 @@ struct AllergenSetupWizard {
               .margin({ right: 8 })
               .onClick(() => { this.currentStep-- })
           }
-          Button(this.currentStep === this.TOTAL_STEPS - 1 ? '完成配置' : '下一步')
+          Button(this.currentStep === this.TOTAL_STEPS - 1 ? '完成配置' : '下一�?)
             .layoutWeight(1)
             .height(44)
             .backgroundColor(COLORS.PRIMARY)
@@ -130,7 +137,7 @@ struct AllergenSetupWizard {
                 this.currentStep++
               }
             })
-            .accessibilityText(this.currentStep === this.TOTAL_STEPS - 1 ? '完成配置' : '下一步')
+            .accessibilityText(this.currentStep === this.TOTAL_STEPS - 1 ? '完成配置' : '下一�?)
             .accessibilityLevel('yes')
         }
         .width('92%')
@@ -177,7 +184,7 @@ struct AllergenSetupWizard {
 
   @Builder
   buildGoalStep() {
-    Text('选择健康目标（可多选，影响推荐策略）')
+    Text('选择健康目标（可多选，影响推荐策略�?)
       .fontSize(14)
       .fontColor(COLORS.TEXT_GRAY_7575)
       .margin({ bottom: 12 })
@@ -201,7 +208,7 @@ struct AllergenSetupWizard {
 
   @Builder
   buildAllergenStep() {
-    Text('选择需要避免的过敏原')
+    Text('选择需要避免的过敏�?)
       .fontSize(14)
       .fontColor(COLORS.TEXT_GRAY_7575)
       .margin({ bottom: 12 })
@@ -246,7 +253,7 @@ struct AllergenSetupWizard {
           (allergen: string) => {
             Row() {
               Text(allergen).fontSize(14).layoutWeight(1)
-              Text('✕').fontSize(16).fontColor('#FF4444')
+              Text('�?).fontSize(16).fontColor('#FF4444')
                 .onClick(() => { this.toggleAllergen(allergen) })
             }
             .width('100%')
@@ -260,7 +267,7 @@ struct AllergenSetupWizard {
 
   @Builder
   buildIntoleranceStep() {
-    Text('选择食物不耐受/敏感项')
+    Text('选择食物不耐受/敏感�?)
       .fontSize(14)
       .fontColor(COLORS.TEXT_GRAY_7575)
       .margin({ bottom: 12 })
@@ -283,7 +290,7 @@ struct AllergenSetupWizard {
     .margin({ bottom: 16 })
 
     Row() {
-      TextInput({ placeholder: '添加自定义不耐受项' })
+      TextInput({ placeholder: '添加自定义不耐受�? })
         .width('65%')
         .height(40)
         .onChange((value: string) => { this.customIntolerance = value })
@@ -303,7 +310,7 @@ struct AllergenSetupWizard {
   @Builder
   buildCompleteStep() {
     Column() {
-      Text('✓')
+      Text('�?)
         .fontSize(48)
         .fontColor(COLORS.PRIMARY)
         .margin({ bottom: 16 })
@@ -314,16 +321,16 @@ struct AllergenSetupWizard {
         .margin({ bottom: 24 })
 
       if (this.selectedAgeGroup.length > 0) {
-        this.buildSummaryRow('年龄段', this.selectedAgeGroup)
+        this.buildSummaryRow('年龄�?, this.selectedAgeGroup)
       }
       if (this.selectedGoals.length > 0) {
-        this.buildSummaryRow('健康目标', this.selectedGoals.join('、'))
+        this.buildSummaryRow('健康目标', this.selectedGoals.join('�?))
       }
       if (this.selectedAllergens.length > 0) {
-        this.buildSummaryRow('过敏原', this.selectedAllergens.join('、'))
+        this.buildSummaryRow('过敏�?, this.selectedAllergens.join('�?))
       }
       if (this.selectedIntolerances.length > 0) {
-        this.buildSummaryRow('不耐受', this.selectedIntolerances.join('、'))
+        this.buildSummaryRow('不耐受', this.selectedIntolerances.join('�?))
       }
 
       Button('完成')
@@ -361,7 +368,7 @@ struct AllergenSetupWizard {
   }
 
   private stepTitle(): string {
-    const titles: string[] = ['年龄段', '健康目标', '过敏原', '食物不耐受'];
+    const titles: string[] = ['年龄�?, '健康目标', '过敏�?, '食物不耐受'];
     return titles[this.currentStep] || '';
   }
 
@@ -369,8 +376,8 @@ struct AllergenSetupWizard {
     const descs: string[] = [
       '不同年龄段的安全阈值不同，如儿童钠摄入上限更低',
       '选择您关注的健康方向，系统将优化推荐策略',
-      '选中的过敏原将在扫描时触发红色警告',
-      '不耐受不同于过敏，但同样需要控制摄入'
+      '选中的过敏原将在扫描时触发红色警�?,
+      '不耐受不同于过敏，但同样需要控制摄�?
     ];
     return descs[this.currentStep] || '';
   }
@@ -446,4 +453,9 @@ struct AllergenSetupWizard {
     }
     this.isLoading = false;
   }
+
+  aboutToDisappear(): void {
+    this.tracker.onDisappear()
+  }
+
 }

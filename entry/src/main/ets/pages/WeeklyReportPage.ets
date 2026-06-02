@@ -1,5 +1,5 @@
 import {
-  safeBack, FamilyProfile, MealScenario, DateUtil, PaywallTrigger, MemberTier, COLORS, NUTRIENT_LIMITS_V2, ToastHelper, ShoppingItem, DB_NAME, HILOG_DOMAIN_DEFAULT
+  safeBack, FamilyProfile, MealScenario, DateUtil, PaywallTrigger, MemberTier, COLORS, NUTRIENT_LIMITS_V2, ToastHelper, ShoppingItem, DB_NAME, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
@@ -41,7 +41,9 @@ struct WeeklyReportPage {
   private componentActive: boolean = true
   private exportCancelled: boolean = false
 
+  private tracker: PageResourceTracker = createPageTracker('WeeklyReportPage')
   async aboutToAppear() {
+        this.tracker.onAppear()
     try {
       this.componentActive = true
       this.vm.isLoading = true
@@ -80,6 +82,7 @@ struct WeeklyReportPage {
   }
 
   aboutToDisappear(): void {
+        this.tracker.onDisappear()
     this.componentActive = false
     this.exportCancelled = true
   }

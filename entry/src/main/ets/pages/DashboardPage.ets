@@ -4,6 +4,7 @@
 // V6.1: 引入 NumericTextTransition 数字翻牌动效，提升健康评分变化时的视觉反馈
 import {
   safeBack, getPageParams, FamilyProfile, NutritionSnapshot, DailyBudget, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, DateUtil, HILOG_DOMAIN_DEFAULT, HealthConfig, NutritionTarget, ToastHelper, DailyNutritionSummary, NutrientTrendData, TrendDirection, DailyNutrientPoint
+  PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -117,8 +118,10 @@ struct DashboardPage {
   private appState: AppState = AppState.getInstance()
   private trendPredictor: HealthTrendPredictor = new HealthTrendPredictor()
   private summaryDataSource: SummaryDataSource = new SummaryDataSource()
+  private tracker: PageResourceTracker = createPageTracker('DashboardPage')
 
   async aboutToAppear() {
+    this.tracker.onAppear()
     this.componentActive = true
     try {
       const params = getPageParams();
@@ -1298,6 +1301,7 @@ struct DashboardPage {
   }
 
   aboutToDisappear(): void {
+    this.tracker.onDisappear()
     this.componentActive = false
     if (this.chartDelayTimer !== -1) {
       clearTimeout(this.chartDelayTimer);

@@ -1,8 +1,7 @@
 // FavoritePage.ets
-// 我的收藏页面 - 展示用户收藏的食品列表
-
+// 鎴戠殑鏀惰棌椤甸潰 - 灞曠ず鐢ㄦ埛鏀惰棌鐨勯鍝佸垪琛?
 import {
-  ToastHelper, safeBack, safePushUrl, COLORS, FONT_SIZE, FONT_WEIGHT, SPACING, RADIUS, BUTTON, HILOG_DOMAIN_DEFAULT, FEATURE_LIMITS, ImageCache
+  ToastHelper, safeBack, safePushUrl, COLORS, FONT_SIZE, FONT_WEIGHT, SPACING, RADIUS, BUTTON, HILOG_DOMAIN_DEFAULT, FEATURE_LIMITS, ImageCache, PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { AppState } from '../AppState';
 import { FavoriteItem } from '../repository/FavoriteRepository';
@@ -72,7 +71,7 @@ export struct FavoriteItemRow {
             })
         } else {
           Column() {
-            Text('🥫').fontSize(20)
+            Text('馃カ').fontSize(20)
           }
           .width(40)
           .height(40)
@@ -142,7 +141,7 @@ export struct FavoriteItemRow {
         this.onRemove(this.item.foodId);
       }
     })
-    .accessibilityText('删除收藏')
+    .accessibilityText('鍒犻櫎鏀惰棌')
     .accessibilityLevel('yes')
   }
 }
@@ -155,8 +154,10 @@ struct FavoritePage {
   private componentActive: boolean = true
   private appState: AppState = AppState.getInstance()
   private favoriteDS: FavoriteDataSource = new FavoriteDataSource()
+  private tracker: PageResourceTracker = createPageTracker('FavoritePage')
 
   async aboutToAppear() {
+    this.tracker.onAppear()
     this.componentActive = true
     await this.loadFavorites();
     this.vm.isLoading = false;
@@ -169,6 +170,7 @@ struct FavoritePage {
   }
 
   aboutToDisappear(): void {
+    this.tracker.onDisappear()
     this.componentActive = false
     ImageCache.clear();
   }
@@ -204,17 +206,17 @@ struct FavoritePage {
     }
     switch (key) {
       case 'low_sodium':
-        return item.foodName.includes('低钠');
+        return item.foodName.includes('浣庨挔');
       case 'low_sugar':
-        return item.foodName.includes('低糖') || item.foodName.includes('无糖');
+        return item.foodName.includes('浣庣硸') || item.foodName.includes('鏃犵硸');
       case 'high_protein':
-        return item.foodName.includes('高蛋白');
+        return item.foodName.includes('楂樿泲鐧?);
       case 'high_fiber':
-        return item.foodName.includes('高纤维');
+        return item.foodName.includes('楂樼氦缁?);
       case 'organic':
-        return item.foodName.includes('有机');
+        return item.foodName.includes('鏈夋満');
       case 'no_added_sugar':
-        return item.foodName.includes('无添加糖') || item.foodName.includes('无糖');
+        return item.foodName.includes('鏃犳坊鍔犵硸') || item.foodName.includes('鏃犵硸');
       default:
         return false;
     }
@@ -253,7 +255,7 @@ struct FavoritePage {
     Column() {
       Row() {
         Row() {
-          Text('←')
+          Text('鈫?)
             .fontSize(FONT_SIZE.LARGE)
             .fontColor(COLORS.TEXT_PRIMARY)
         }
@@ -261,7 +263,7 @@ struct FavoritePage {
         .height(BUTTON.HEIGHT_SMALL)
         .justifyContent(FlexAlign.Center)
         .onClick(() => { safeBack() })
-        .accessibilityText('返回')
+        .accessibilityText('杩斿洖')
         .accessibilityLevel('yes')
 
         Text($r('app.string.favorite_title'))
@@ -283,7 +285,7 @@ struct FavoritePage {
       .padding({ left: 8, right: 8 })
       .backgroundColor(COLORS.BG_CARD)
 
-      // 标签筛选栏
+      // 鏍囩绛涢€夋爮
       if (!this.vm.isLoading && this.vm.allFavorites.length > 0) {
         FoodTagFilter({
           tags: this.vm.filterTags,
@@ -304,13 +306,13 @@ struct FavoritePage {
         .justifyContent(FlexAlign.Center)
       } else if (this.vm.allFavorites.length === 0) {
         EmptyState({
-          icon: '❤️',
+          icon: '鉂わ笍',
           title: $r('app.string.favorite_empty_title'),
           subtitle: $r('app.string.favorite_empty_subtitle')
         })
       } else if (this.vm.filteredFavorites.length === 0 && this.vm.selectedFilterKeys.length > 0) {
         Column() {
-          Text('🔍')
+          Text('馃攳')
             .fontSize(48)
             .margin({ bottom: 12 })
           Text($r('app.string.favorite_no_match'))
@@ -368,7 +370,7 @@ struct FavoritePage {
             const navParams = new Map<string, Object>();
             safePushUrl('pages/SubscriptionPage', navParams);
           })
-          .accessibilityText('升级会员')
+          .accessibilityText('鍗囩骇浼氬憳')
           .accessibilityLevel('yes')
         }
         .width('100%')

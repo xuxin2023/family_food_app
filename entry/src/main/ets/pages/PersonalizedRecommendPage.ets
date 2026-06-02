@@ -1,5 +1,5 @@
 import {
-  COLORS, safeBack, FoodLabel, FamilyProfile, HealthSignal, NutritionTarget, createDefaultNutritionTarget, DailyBudget, HILOG_DOMAIN_DEFAULT
+  COLORS, safeBack, FoodLabel, FamilyProfile, HealthSignal, NutritionTarget, createDefaultNutritionTarget, DailyBudget, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { PersonalizedRecommendation } from 'feature_report';
 import { BackButton } from '../components/BackButton';
@@ -24,7 +24,9 @@ struct PersonalizedRecommendPage {
 
   private appState: AppState = AppState.getInstance()
 
+  private tracker: PageResourceTracker = createPageTracker('PersonalizedRecommendPage')
   async aboutToAppear() {
+    this.tracker.onAppear()
     this.isLoading = true
     try {
       const members = await this.appState.getAllMembers()
@@ -212,6 +214,12 @@ struct PersonalizedRecommendPage {
     foodLabel.foodName = this.foodName;
     this.result = (await this.appState.getPersonalizedRecommendation(this.currentProfile.memberId, foodLabel)) as Object as PersonalizedRecommendation;
   }
+
+  aboutToDisappear(): void {
+    this.tracker.onDisappear()
+  }
+
+
 
   pageTransition() {
     PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })

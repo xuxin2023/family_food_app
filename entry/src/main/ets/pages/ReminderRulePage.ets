@@ -1,5 +1,5 @@
 import {
-  ToastHelper, safeBack, COLORS, HILOG_DOMAIN_DEFAULT, DB_NAME, ReminderRule, PRESET_REMINDER_RULES, getReminderTypeLabel, getReminderTypeIcon, FamilyProfile
+  ToastHelper, safeBack, COLORS, HILOG_DOMAIN_DEFAULT, DB_NAME, ReminderRule, PRESET_REMINDER_RULES, getReminderTypeLabel, getReminderTypeIcon, FamilyProfile, PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { ReminderService, ReminderRule as ServiceReminderRule, ReminderEvent } from 'hsp_service';
 import { BackButton } from '../components/BackButton';
@@ -32,7 +32,9 @@ struct ReminderRulePage {
   private repo: ReminderRuleRepository = new ReminderRuleRepository()
   private reminderService: ReminderService = ReminderService.getInstance()
 
+  private tracker: PageResourceTracker = createPageTracker('ReminderRulePage')
   async aboutToAppear() {
+    this.tracker.onAppear()
     this.isLoading = true
     const ctx = AppStorage.get<common.Context>('appContext')
     if (ctx) {
@@ -434,6 +436,12 @@ struct ReminderRulePage {
   private async refreshList(): Promise<void> {
     this.rules = await this.repo.getAllRules();
   }
+
+  aboutToDisappear(): void {
+    this.tracker.onDisappear()
+  }
+
+
 
   pageTransition() {
     PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })

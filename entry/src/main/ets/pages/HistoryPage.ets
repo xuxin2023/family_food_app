@@ -1,4 +1,4 @@
-import { safeBack, FamilyProfile, DateUtil, COLORS, BasicDataSource, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
+import { safeBack, FamilyProfile, DateUtil, COLORS, BasicDataSource, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { ScanHistoryRecord } from '../repository/HistoryRepository';
@@ -31,7 +31,9 @@ struct HistoryPage {
   private historyRecords: ScanHistoryRecord[] = []
   private historyDS = new BasicDataSource<ScanHistoryRecord>()
 
+  private tracker: PageResourceTracker = createPageTracker('HistoryPage')
   async aboutToAppear() {
+        this.tracker.onAppear()
     this.vm.isLoading = true
     try {
       this.vm.familyMembers = await this.appState.getAllMembers()
@@ -43,6 +45,7 @@ struct HistoryPage {
   }
 
   aboutToDisappear(): void {
+        this.tracker.onDisappear()
     this.componentActive = false
   }
 

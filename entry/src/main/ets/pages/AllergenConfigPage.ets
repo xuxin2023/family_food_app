@@ -1,4 +1,4 @@
-import { safeBack, COLORS, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
+import { safeBack, COLORS, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -7,8 +7,8 @@ const TAG = 'AllergenConfigPage';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 const PRESET_ALLERGENS: string[] = [
-  '牛奶', '鸡蛋', '花生', '坚果', '大豆', '小麦', '鱼', '甲壳类', '芝麻', '芹菜',
-  '芥末', '羽扇豆', '软体动物', '二氧化硫'
+  '牛奶', '鸡蛋', '花生', '坚果', '大豆', '小麦', '�?, '甲壳�?, '芝麻', '芹菜',
+  '芥末', '羽扇�?, '软体动物', '二氧化硫'
 ];
 
 @Entry
@@ -20,7 +20,9 @@ struct AllergenConfigPage {
 
   private appState: AppState = AppState.getInstance()
 
+  private tracker: PageResourceTracker = createPageTracker('AllergenConfigPage')
   async aboutToAppear() {
+    this.tracker.onAppear()
     const memberId = this.appState.member.getCurrentMemberId();
     const members = this.appState.getAllMembersSync();
     const member = members.find((m) => m.memberId === memberId);
@@ -111,7 +113,7 @@ struct AllergenConfigPage {
                       .fontSize(14)
                       .layoutWeight(1)
 
-                    Text('✕')
+                    Text('�?)
                       .fontSize(16)
                       .fontColor(COLORS.TEXT_GRAY_BDBD)
                       .onClick(() => { this.toggleAllergen(allergen) })
@@ -174,4 +176,8 @@ struct AllergenConfigPage {
     }
     safeBack();
   }
+  aboutToDisappear(): void {
+    this.tracker.onDisappear()
+  }
+
 }

@@ -20,7 +20,7 @@
 //     └─ 离线模式 → 纯本地规则引擎
 
 import {
-  ToastHelper, safePushUrl, getPageParams, FoodLabel, FamilyProfile, HealthSignal, Throttler, PaywallTrigger, TIER_DAILY_SCAN_LIMIT, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON, SCAN_CONFIG, HILOG_DOMAIN_DEFAULT, EnhancedFoodRecommendation, AccessibilityUtil, TodayIntakeInput, DeviceAdapter, Breakpoint, PerformanceMonitor
+  ToastHelper, safePushUrl, getPageParams, FoodLabel, FamilyProfile, HealthSignal, Throttler, PaywallTrigger, TIER_DAILY_SCAN_LIMIT, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON, SCAN_CONFIG, HILOG_DOMAIN_DEFAULT, EnhancedFoodRecommendation, AccessibilityUtil, TodayIntakeInput, DeviceAdapter, Breakpoint, PerformanceMonitor, PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { FoodInputResult, IRemoteLookupProvider } from 'feature_scan';
 import { BatchScanService, BatchScanResult } from 'hsp_service';
@@ -133,9 +133,11 @@ struct ScanPage {
   private componentActive: boolean = true
   private scanThrottler: Throttler = new Throttler(500)
 
+  private tracker: PageResourceTracker = createPageTracker('ScanPage')
   // ==================== 生命周期 ====================
 
   async aboutToAppear() {
+        this.tracker.onAppear()
     PerformanceMonitor.getInstance().pageEnter('ScanPage');
     try {
       const params = getPageParams();
@@ -183,6 +185,7 @@ struct ScanPage {
   }
 
   aboutToDisappear(): void {
+        this.tracker.onDisappear()
     PerformanceMonitor.getInstance().pageLeave('ScanPage');
     this.componentActive = false
     if (this.autoScanTimer !== -1) {

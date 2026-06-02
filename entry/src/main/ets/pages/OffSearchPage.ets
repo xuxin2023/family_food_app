@@ -1,8 +1,8 @@
 // OffSearchPage.ets
-// Open Food Facts 食品搜索页 — 支持按名称搜索全球食品数据库
+// Open Food Facts 椋熷搧鎼滅储椤?鈥?鏀寔鎸夊悕绉版悳绱㈠叏鐞冮鍝佹暟鎹簱
 
 import {
-  FoodLabel, safeBack, safePushUrl, ROUTE_REPORT_PAGE, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, HILOG_DOMAIN_DEFAULT, Debouncer, ImageCache, FoodSearchDataSource
+  FoodLabel, safeBack, safePushUrl, ROUTE_REPORT_PAGE, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, HILOG_DOMAIN_DEFAULT, Debouncer, ImageCache, FoodSearchDataSource, PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { OpenFoodFactsService, OnlineLookupResult } from 'hsp_service';
 import { AppState } from '../AppState';
@@ -43,8 +43,14 @@ struct OffSearchPage {
   private searchTimeoutIds: number[] = [];
   private componentActive: boolean = true;
   private searchDS: FoodSearchDataSource = new FoodSearchDataSource();
+  private tracker: PageResourceTracker = createPageTracker('OffSearchPage')
+
+  aboutToAppear(): void {
+    this.tracker.onAppear()
+  }
 
   aboutToDisappear(): void {
+    this.tracker.onDisappear()
     this.componentActive = false;
     this.searchDebouncer.cancel();
     for (const tid of this.searchTimeoutIds) {
@@ -66,7 +72,7 @@ struct OffSearchPage {
       return;
     }
     if (trimmed.length < SEARCH_MIN_LENGTH) {
-      this.validationHint = '请输入至少2个字符';
+      this.validationHint = '璇疯緭鍏ヨ嚦灏?涓瓧绗?;
       return;
     }
     this.validationHint = '';
@@ -80,7 +86,7 @@ struct OffSearchPage {
       timedOut = true;
       this.isSearching = false;
       this.hasSearched = true;
-      this.errorMessage = '搜索超时，请重试';
+      this.errorMessage = '鎼滅储瓒呮椂锛岃閲嶈瘯';
       hilog.warn(DOMAIN_ZERO, TAG, 'Search timeout for: %{public}s', trimmed);
     }, SEARCH_TIMEOUT_MS);
     this.searchTimeoutIds.push(timeoutId);
@@ -106,7 +112,7 @@ struct OffSearchPage {
       this.isSearching = false;
       this.hasSearched = true;
       const httpCode = (err as Record<string, Object>)?.['code'] as number ?? 0;
-      this.errorMessage = '搜索失败' + ` (${httpCode})`;
+      this.errorMessage = '鎼滅储澶辫触' + ` (${httpCode})`;
       hilog.error(DOMAIN_ZERO, TAG, 'Search failed: code=%{public}d', httpCode);
     });
   }
@@ -160,9 +166,9 @@ struct OffSearchPage {
       case 'high_fiber':
         return food.nutrition.fiber >= 3;
       case 'organic':
-        return food.ingredientsText().includes('有机') || food.foodName.includes('有机');
+        return food.ingredientsText().includes('鏈夋満') || food.foodName.includes('鏈夋満');
       case 'no_added_sugar':
-        return food.nutrition.sugar < 1 || food.foodName.includes('无糖') || food.foodName.includes('无添加糖');
+        return food.nutrition.sugar < 1 || food.foodName.includes('鏃犵硸') || food.foodName.includes('鏃犳坊鍔犵硸');
       default:
         return false;
     }
@@ -176,7 +182,7 @@ struct OffSearchPage {
   private onSearchInput(value: string): void {
     this.searchQuery = value;
     if (value.trim().length > 0 && value.trim().length < SEARCH_MIN_LENGTH) {
-      this.validationHint = '请输入至少2个字符';
+      this.validationHint = '璇疯緭鍏ヨ嚦灏?涓瓧绗?;
       this.searchDebouncer.cancel();
       return;
     }
@@ -197,8 +203,7 @@ struct OffSearchPage {
 
   build() {
     Column() {
-      // 顶部导航栏
-      Row() {
+      // 椤堕儴瀵艰埅鏍?      Row() {
         Row() {
           BackButton({ fontSize: FONT_SIZE.LARGE, fontColor: COLORS.TEXT_PRIMARY })
         }
@@ -206,7 +211,7 @@ struct OffSearchPage {
         .height(44)
         .justifyContent(FlexAlign.Center)
         .onClick(() => { safeBack() })
-        .accessibilityText('返回')
+        .accessibilityText('杩斿洖')
         .accessibilityLevel('yes')
 
         Search({ value: $$this.searchQuery, placeholder: $r('app.string.off_search_placeholder') })
@@ -220,7 +225,7 @@ struct OffSearchPage {
           .margin({ left: 8 })
           .onSubmit(() => { this.performSearch() })
           .onChange((value: string) => { this.onSearchInput(value) })
-          .accessibilityText('搜索食品')
+          .accessibilityText('鎼滅储椋熷搧')
           .accessibilityLevel('yes')
       }
       .width('100%')
@@ -238,7 +243,7 @@ struct OffSearchPage {
 
       if (this.isOffline) {
         Row() {
-          Text('⚠️')
+          Text('鈿狅笍')
             .fontSize(14)
             .margin({ right: 6 })
           Text($r('app.string.off_search_offline_hint'))
@@ -250,7 +255,7 @@ struct OffSearchPage {
         .backgroundColor('#FFF3E0')
       }
 
-      // 标签筛选栏
+      // 鏍囩绛涢€夋爮
       if (this.hasSearched && this.allResults.length > 0) {
         FoodTagFilter({
           tags: this.filterTags,
@@ -259,8 +264,7 @@ struct OffSearchPage {
           .margin({ top: SPACING.XS, bottom: SPACING.XS })
       }
 
-      // 内容区
-      if (this.isSearching && this.allResults.length === 0) {
+      // 鍐呭鍖?      if (this.isSearching && this.allResults.length === 0) {
         Column() {
           LoadingProgress()
             .width(40)
@@ -284,7 +288,7 @@ struct OffSearchPage {
         }
       } else if (this.hasSearched && this.filteredResults.length === 0 && this.selectedFilterKeys.length > 0) {
         Column() {
-          Text('🔍')
+          Text('馃攳')
             .fontSize(48)
             .margin({ bottom: 12 })
           Text($r('app.string.off_search_no_filter_result'))
@@ -300,7 +304,7 @@ struct OffSearchPage {
         .justifyContent(FlexAlign.Center)
       } else if (this.hasSearched && this.allResults.length === 0) {
         Column() {
-          Text('🔍')
+          Text('馃攳')
             .fontSize(48)
             .margin({ bottom: 12 })
           Text($r('app.string.off_search_no_result'))
@@ -319,7 +323,7 @@ struct OffSearchPage {
             .padding({ left: 24, right: 24 })
             .margin({ top: 16 })
             .onClick(() => { this.performSearch() })
-            .accessibilityText('重试搜索')
+            .accessibilityText('閲嶈瘯鎼滅储')
             .accessibilityLevel('yes')
         }
         .width('100%')
@@ -327,7 +331,7 @@ struct OffSearchPage {
         .justifyContent(FlexAlign.Center)
       } else if (!this.hasSearched) {
         Column() {
-          Text('🌍')
+          Text('馃實')
             .fontSize(48)
             .margin({ bottom: 12 })
           Text($r('app.string.off_search_welcome_title'))
@@ -343,7 +347,7 @@ struct OffSearchPage {
         .layoutWeight(1)
         .justifyContent(FlexAlign.Center)
       } else {
-        // 搜索结果列表
+        // 鎼滅储缁撴灉鍒楄〃
         Refresh({ refreshing: $$this.isRefreshing }) {
           List() {
             LazyForEach(this.searchDS, (food: FoodLabel) => {
@@ -352,7 +356,7 @@ struct OffSearchPage {
               }
             }, (food: FoodLabel) => `${food.foodId}`)
 
-            // 底部：加载更多 / 全部加载完毕
+            // 搴曢儴锛氬姞杞芥洿澶?/ 鍏ㄩ儴鍔犺浇瀹屾瘯
             ListItem() {
               Row() {
                 if (this.isLoadingMore) {
@@ -374,7 +378,7 @@ struct OffSearchPage {
                     .padding({ left: 12, right: 12 })
                     .margin({ left: 8 })
                     .onClick(() => { this.loadMore() })
-                    .accessibilityText('重试加载')
+                    .accessibilityText('閲嶈瘯鍔犺浇')
                     .accessibilityLevel('yes')
                 } else if (!this.canLoadMore && this.allResults.length > 0) {
                   Text($r('app.string.off_search_all_loaded'))
@@ -431,18 +435,18 @@ struct OffSearchPage {
           Text(`${Math.round(food.nutrition.calories)}kcal`)
             .fontSize(10)
             .fontColor(COLORS.TEXT_SECONDARY)
-          Text('·')
+          Text('路')
             .fontSize(10)
             .fontColor(COLORS.TEXT_TERTIARY)
             .margin({ left: 4, right: 4 })
-          Text('钠 ' + `${Math.round(food.nutrition.sodium)}mg`)
+          Text('閽?' + `${Math.round(food.nutrition.sodium)}mg`)
             .fontSize(10)
             .fontColor(COLORS.TEXT_SECONDARY)
-          Text('·')
+          Text('路')
             .fontSize(10)
             .fontColor(COLORS.TEXT_TERTIARY)
             .margin({ left: 4, right: 4 })
-          Text('糖 ' + `${food.nutrition.sugar}g`)
+          Text('绯?' + `${food.nutrition.sugar}g`)
             .fontSize(10)
             .fontColor(COLORS.TEXT_SECONDARY)
         }

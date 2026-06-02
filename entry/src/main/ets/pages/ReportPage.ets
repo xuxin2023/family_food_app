@@ -3,7 +3,7 @@
 // 三段式布局：顶部评测区 | 家庭矩阵区 | 辅助信息区
 
 import {
-  safeBack, safePushUrl, FamilyProfile, FoodLabel, Recommendation, RecommendLevel, LevelColor, getLevelColorValue, AlternativeFood, ChildProtection, CredibilityResult, PaywallTrigger, MemberTier, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON, AccessibilityUtil, NavigationManager
+  safeBack, safePushUrl, FamilyProfile, FoodLabel, Recommendation, RecommendLevel, LevelColor, getLevelColorValue, AlternativeFood, ChildProtection, CredibilityResult, PaywallTrigger, MemberTier, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON, AccessibilityUtil, NavigationManager, PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { promptAction, curves } from '@kit.ArkUI';
 import { BackButton } from '../components/BackButton';
@@ -54,9 +54,11 @@ struct ReportPage {
   private swiperController: SwiperController = new SwiperController()
   private componentActive: boolean = true
 
+  private tracker: PageResourceTracker = createPageTracker('ReportPage')
   // ==================== 生命周期 ====================
 
   async aboutToAppear() {
+        this.tracker.onAppear()
     // 优先从路由缓存读取（避免 router params 序列化大对象的限制）
     const cachedFoodLabel = this.appState.reportCache.consumeFoodLabel()
     const cachedRecs = this.appState.reportCache.consumeRecommendations()
@@ -93,6 +95,7 @@ struct ReportPage {
   }
 
   aboutToDisappear(): void {
+        this.tracker.onDisappear()
     this.componentActive = false
   }
 

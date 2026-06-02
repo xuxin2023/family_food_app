@@ -1,4 +1,4 @@
-import { COLORS, safeBack, HealthSignal, FamilyProfile, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
+import { COLORS, safeBack, HealthSignal, FamilyProfile, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker } from 'hsp_core';
 import { CheckupReport, HealthArchiveUpdate, CheckupItem } from 'feature_report';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
@@ -19,7 +19,9 @@ struct CheckupReportPage {
 
   private appState: AppState = AppState.getInstance()
 
+  private tracker: PageResourceTracker = createPageTracker('CheckupReportPage')
   async aboutToAppear() {
+    this.tracker.onAppear()
     this.isLoading = true
     try {
       const members = await this.appState.getAllMembers()
@@ -122,7 +124,7 @@ struct CheckupReportPage {
                     .margin({ bottom: 4 })
                   ForEach((this.report as CheckupReport)?.items ?? [], (item: CheckupItem, index: number) => {
                     Row() {
-                      Text(item.isAbnormal ? 'âš ' : 'âœ“')
+                      Text(item.isAbnormal ? 'âš? : 'âœ?)
                         .fontSize(14)
                         .fontColor(item.isAbnormal ? '#E53935' : '#4CAF50')
                         .margin({ right: 8 })
@@ -149,14 +151,14 @@ struct CheckupReportPage {
                       .margin({ top: 12, bottom: 8 })
 
                     if (((this.archiveUpdate as HealthArchiveUpdate)?.newAlerts?.length ?? 0) > 0) {
-                      Text() { Span($r('app.string.checkup_new_alert')); Span(`${(this.archiveUpdate as HealthArchiveUpdate)?.newAlerts?.join('ã€') ?? ''}`) }
+                      Text() { Span($r('app.string.checkup_new_alert')); Span(`${(this.archiveUpdate as HealthArchiveUpdate)?.newAlerts?.join('ã€?) ?? ''}`) }
                         .fontSize(13)
                         .fontColor('#E53935')
                         .margin({ bottom: 4 })
                     }
                     if (((this.archiveUpdate as HealthArchiveUpdate)?.dietaryAdjustments?.length ?? 0) > 0) {
                       ForEach((this.archiveUpdate as HealthArchiveUpdate)?.dietaryAdjustments ?? [], (adj: string, index: number) => {
-                        Text(`â€¢ ${adj}`)
+                        Text(`â€?${adj}`)
                           .fontSize(13)
                           .fontColor(COLORS.TEXT_GRAY_3333)
                           .margin({ bottom: 2 })
@@ -201,6 +203,12 @@ struct CheckupReportPage {
       this.archiveUpdate = null;
     }
   }
+
+  aboutToDisappear(): void {
+    this.tracker.onDisappear()
+  }
+
+
 
   pageTransition() {
     PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })

@@ -1,5 +1,5 @@
 import {
-  ToastHelper, FamilyProfile, NutritionTarget, NutritionPreset, NUTRITION_PRESETS, applyPresetToTarget, createDefaultNutritionTarget, COLORS, safeBack, HILOG_DOMAIN_DEFAULT
+  ToastHelper, FamilyProfile, NutritionTarget, NutritionPreset, NUTRITION_PRESETS, applyPresetToTarget, createDefaultNutritionTarget, COLORS, safeBack, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
@@ -21,8 +21,10 @@ struct NutritionTargetPage {
   private componentActive: boolean = true
   private appState: AppState = AppState.getInstance()
   private sliderDebounceTimer: number = -1
+  private tracker: PageResourceTracker = createPageTracker('NutritionTargetPage')
 
   async aboutToAppear() {
+    this.tracker.onAppear()
     this.componentActive = true
     try {
       this.isLoading = true
@@ -39,6 +41,7 @@ struct NutritionTargetPage {
   }
 
   aboutToDisappear(): void {
+    this.tracker.onDisappear()
     this.componentActive = false
     if (this.sliderDebounceTimer !== -1) {
       clearTimeout(this.sliderDebounceTimer)
@@ -93,7 +96,7 @@ struct NutritionTargetPage {
         Row() {
           BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
             .onClick(() => { safeBack() })
-            .accessibilityText('返回')
+            .accessibilityText('杩斿洖')
             .accessibilityLevel('yes')
           Text($r('app.string.nutrition_target_title'))
             .fontSize(20)
@@ -119,7 +122,7 @@ struct NutritionTargetPage {
             .borderRadius(24)
             .enabled(!this.isSaving)
             .onClick(() => { this.onSave() })
-            .accessibilityText('保存')
+            .accessibilityText('淇濆瓨')
             .accessibilityLevel('yes')
           Button($r('app.string.reset_to_default'))
             .width('45%')
@@ -128,7 +131,7 @@ struct NutritionTargetPage {
             .fontColor(COLORS.WHITE)
             .borderRadius(24)
             .onClick(() => { this.onReset() })
-            .accessibilityText('重置为默认')
+            .accessibilityText('閲嶇疆涓洪粯璁?)
             .accessibilityLevel('yes')
         }
         .width('92%')

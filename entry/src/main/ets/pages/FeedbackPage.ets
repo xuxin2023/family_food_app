@@ -2,7 +2,7 @@
 // 用户反馈页面 - 支持 Bug报告/功能建议/使用问题/其他
 // 匿名模式：无需登录即可提交
 
-import { ToastHelper, safeBack, COLORS, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
+import { ToastHelper, safeBack, COLORS, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker } from 'hsp_core';
 import { FeedbackService, FeedbackSubmission, FeedbackResult } from 'hsp_service';
 import { BackButton } from '../components/BackButton';
 import { HuaweiCloudService } from 'hsp_service';
@@ -37,6 +37,13 @@ struct FeedbackPage {
   @Local contact: string = ''
   @Local screenshotUris: string[] = []
   @Local isSubmitting: boolean = false
+
+  private tracker: PageResourceTracker = createPageTracker('FeedbackPage')
+
+  aboutToAppear(): void {
+    this.tracker.onAppear()
+  }
+
 
   build() {
     Column() {
@@ -334,6 +341,12 @@ struct FeedbackPage {
     this.contact = '';
     this.screenshotUris = [];
   }
+
+  aboutToDisappear(): void {
+    this.tracker.onDisappear()
+  }
+
+
 
   pageTransition() {
     PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })

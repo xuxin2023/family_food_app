@@ -1,8 +1,7 @@
 // AiChatPage.ets
-// AI 营养师对话页面 — 支持多轮对话、成员绑定、快捷提问
-
+// AI 钀ュ吇甯堝璇濋〉闈?鈥?鏀寔澶氳疆瀵硅瘽銆佹垚鍛樼粦瀹氥€佸揩鎹锋彁闂?
 import {
-  safeBack, FamilyProfile, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, HILOG_DOMAIN_DEFAULT, ChatRole, ChatMessage, MessageStatus, QUICK_QUESTIONS, generateDynamicQuickQuestions, generateMessageId, PerformanceMonitor
+  safeBack, FamilyProfile, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, HILOG_DOMAIN_DEFAULT, ChatRole, ChatMessage, MessageStatus, QUICK_QUESTIONS, generateDynamicQuickQuestions, generateMessageId, PerformanceMonitor, PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { promptAction } from '@kit.ArkUI';
 import { BackButton } from '../components/BackButton';
@@ -51,7 +50,10 @@ struct AiChatPage {
 
   private chatHistoryService: ChatHistoryPrefsService = ChatHistoryPrefsService.getInstance();
 
+  private tracker: PageResourceTracker = createPageTracker('AiChatPage')
+
   async aboutToAppear() {
+    this.tracker.onAppear()
     PerformanceMonitor.getInstance().pageEnter('AiChatPage');
     this.componentActive = true;
     this.isLoading = true;
@@ -67,7 +69,7 @@ struct AiChatPage {
         this.dynamicQuickQuestions = QUICK_QUESTIONS;
       }
 
-      // 从持久化存储加载该成员的历史消息
+      // 浠庢寔涔呭寲瀛樺偍鍔犺浇璇ユ垚鍛樼殑鍘嗗彶娑堟伅
       const savedJson = await this.chatHistoryService.getMessages(this.selectedMemberId);
       let savedMessages: ChatMessage[] = [];
       try {
@@ -101,9 +103,10 @@ struct AiChatPage {
   }
 
   aboutToDisappear(): void {
+    this.tracker.onDisappear()
     PerformanceMonitor.getInstance().pageLeave('AiChatPage');
     this.componentActive = false
-    // 持久化保存当前成员的对话
+    // 鎸佷箙鍖栦繚瀛樺綋鍓嶆垚鍛樼殑瀵硅瘽
     if (this.selectedMemberId.length > 0 && this.messages.length > 0) {
       this.chatHistoryService.saveMessages(this.selectedMemberId, JSON.stringify(this.messages));
     }
@@ -121,15 +124,15 @@ struct AiChatPage {
       boundaryName: 'AiChatPage'
     }) {
       Column() {
-      // ===== 顶部导航栏 =====
+      // ===== 椤堕儴瀵艰埅鏍?=====
       Row() {
-        // 返回按钮
+        // 杩斿洖鎸夐挳
         BackButton({ fontSize: 28, fontColor: COLORS.TEXT_PRIMARY })
           .onClick(() => safeBack())
           .accessibilityText($r('app.string.back_arrow'))
           .accessibilityLevel('yes')
 
-        // 标题 + 当前成员
+        // 鏍囬 + 褰撳墠鎴愬憳
         Column({ space: 2 }) {
           Text($r('app.string.ai_chat_title'))
             .fontSize(FONT_SIZE.TITLE)
@@ -145,7 +148,7 @@ struct AiChatPage {
         .layoutWeight(1)
         .alignItems(HorizontalAlign.Center)
 
-        // 切换成员按钮
+        // 鍒囨崲鎴愬憳鎸夐挳
         if (this.familyMembers.length > 1) {
           Text($r('app.string.ai_chat_switch'))
             .fontSize(FONT_SIZE.BODY)
@@ -160,15 +163,14 @@ struct AiChatPage {
       .backgroundColor(COLORS.WHITE)
       .shadow({ radius: 2, color: COLORS.SHADOW, offsetY: 2 })
 
-      // ===== 消息列表 =====
+      // ===== 娑堟伅鍒楄〃 =====
       Scroll(this.scrollController) {
         Column() {
-          // 快捷提问（仅首次显示）
-          if (this.showQuickQuestions && this.messages.length <= 2) {
+          // 蹇嵎鎻愰棶锛堜粎棣栨鏄剧ず锛?          if (this.showQuickQuestions && this.messages.length <= 2) {
             this.QuickQuestionsPanel()
           }
 
-          // 消息列表
+          // 娑堟伅鍒楄〃
           ForEach(this.messages, (msg: ChatMessage) => {
             this.MessageBubble(msg)
           }, (msg: ChatMessage) => msg.id)
@@ -180,7 +182,7 @@ struct AiChatPage {
       .backgroundColor(COLORS.BG_PAGE)
       .scrollBar(BarState.Off)
 
-      // ===== 底部输入区 =====
+      // ===== 搴曢儴杈撳叆鍖?=====
       Row() {
         TextInput({ placeholder: $r('app.string.ai_chat_input_placeholder') as ResourceStr, text: this.inputText })
           .layoutWeight(1)
@@ -231,7 +233,7 @@ struct AiChatPage {
     }
   }
 
-  // ========== 快捷提问面板 ==========
+  // ========== 蹇嵎鎻愰棶闈㈡澘 ==========
   @Builder
   QuickQuestionsPanel() {
     Column({ space: SPACING.SM }) {
@@ -265,13 +267,12 @@ struct AiChatPage {
     .margin({ bottom: SPACING.MD })
   }
 
-  // ========== 消息气泡 ==========
+  // ========== 娑堟伅姘旀场 ==========
   @Builder
   MessageBubble(msg: ChatMessage) {
     Row() {
       if (msg.role === ChatRole.USER) {
-        // 右侧：用户消息
-        Blank()
+        // 鍙充晶锛氱敤鎴锋秷鎭?        Blank()
           .layoutWeight(1)
 
         Column() {
@@ -303,8 +304,8 @@ struct AiChatPage {
           bottomRight: RADIUS.SM
         })
       } else {
-        // 左侧：AI 消息
-        // AI 头像
+        // 宸︿晶锛欰I 娑堟伅
+        // AI 澶村儚
         Circle()
           .width(32)
           .height(32)
@@ -343,18 +344,17 @@ struct AiChatPage {
     .alignItems(VerticalAlign.Top)
   }
 
-  // ========== 发送消息 ==========
+  // ========== 鍙戦€佹秷鎭?==========
   private async sendMessage(): Promise<void> {
     const text = this.inputText.trim()
     if (text.length === 0 || this.isLoading) return
 
     PerformanceMonitor.getInstance().startSpan('ai_response:chat');
 
-    // 隐藏快捷提问
+    // 闅愯棌蹇嵎鎻愰棶
     this.showQuickQuestions = false
 
-    // 添加用户消息到列表
-    const userMsg = new ChatMessage(
+    // 娣诲姞鐢ㄦ埛娑堟伅鍒板垪琛?    const userMsg = new ChatMessage(
       generateMessageId(),
       text,
       ChatRole.USER,
@@ -365,8 +365,7 @@ struct AiChatPage {
     this.inputText = ''
     this.isLoading = true
 
-    // 滚动到底部
-    const tid1 = setTimeout(() => {
+    // 婊氬姩鍒板簳閮?    const tid1 = setTimeout(() => {
       const idx = this.pendingTimers.indexOf(tid1);
       if (idx >= 0) { this.pendingTimers.splice(idx, 1); this.pendingTimers = [...this.pendingTimers]; }
       if (!this.componentActive) return;
@@ -377,7 +376,7 @@ struct AiChatPage {
     try {
       if (this.isOfflineMode) {
         const engine = OnDeviceInferenceEngine.getInstance();
-        const ingredients = text.split(/[，,、\s]+/).filter((s: string) => s.length > 0);
+        const ingredients = text.split(/[锛?銆乗s]+/).filter((s: string) => s.length > 0);
         const result = await engine.predictIngredientRisk(ingredients);
         const offlineMsg = new ChatMessage(
           generateMessageId(),
@@ -404,7 +403,7 @@ struct AiChatPage {
 
       try {
         const engine = OnDeviceInferenceEngine.getInstance();
-        const fallbackIngredients = text.split(/[，,、\s]+/).filter((s: string) => s.length > 0);
+        const fallbackIngredients = text.split(/[锛?銆乗s]+/).filter((s: string) => s.length > 0);
         const fallbackResult = await engine.predictIngredientRisk(fallbackIngredients);
         const fallbackMsg = new ChatMessage(
           generateMessageId(),
@@ -428,8 +427,7 @@ struct AiChatPage {
     this.isLoading = false
     PerformanceMonitor.getInstance().endSpan('ai_response:chat');
 
-    // 滚动到底部
-    const tid2 = setTimeout(() => {
+    // 婊氬姩鍒板簳閮?    const tid2 = setTimeout(() => {
       const idx2 = this.pendingTimers.indexOf(tid2);
       if (idx2 >= 0) { this.pendingTimers.splice(idx2, 1); this.pendingTimers = [...this.pendingTimers]; }
       if (!this.componentActive) return;
@@ -438,7 +436,7 @@ struct AiChatPage {
     this.pendingTimers.push(tid2)
   }
 
-  // ========== 切换成员 ==========
+  // ========== 鍒囨崲鎴愬憳 ==========
   private showMemberPicker(): void {
     const items: string[] = this.familyMembers.map(m => m.nickname)
     const maxButtons = Math.min(items.length, 6)
@@ -463,8 +461,7 @@ struct AiChatPage {
       if (index >= 0 && index < this.familyMembers.length) {
         const member = this.familyMembers[index]
 
-        // 保存当前成员的对话
-        await this.saveCurrentMessages()
+        // 淇濆瓨褰撳墠鎴愬憳鐨勫璇?        await this.saveCurrentMessages()
 
         this.selectedMemberId = member.memberId
         this.selectedMemberName = member.nickname
@@ -475,7 +472,7 @@ struct AiChatPage {
         this.messages = []
         this.showQuickQuestions = true
 
-        // 加载新成员的历史消息
+        // 鍔犺浇鏂版垚鍛樼殑鍘嗗彶娑堟伅
         try {
           const savedJson = await this.chatHistoryService.getMessages(member.memberId);
           const savedMessages: ChatMessage[] = JSON.parse(savedJson);
@@ -503,7 +500,7 @@ struct AiChatPage {
     })
   }
 
-  // ========== 工具方法 ==========
+  // ========== 宸ュ叿鏂规硶 ==========
   private async saveCurrentMessages(): Promise<void> {
     if (this.selectedMemberId.length > 0 && this.messages.length > 0) {
       await this.chatHistoryService.saveMessages(this.selectedMemberId, JSON.stringify(this.messages));

@@ -1,5 +1,5 @@
 import {
-  ToastHelper, safeBack, safePushUrl, FoodLabel, NutritionPer100g, FamilyProfile, AlternativeFood, COLORS, FONT_SIZE, RADIUS, SPACING, ROUTE_ALTERNATIVE_FOOD_PAGE, IOfflineFoodProvider
+  ToastHelper, safeBack, safePushUrl, FoodLabel, NutritionPer100g, FamilyProfile, AlternativeFood, COLORS, FONT_SIZE, RADIUS, SPACING, ROUTE_ALTERNATIVE_FOOD_PAGE, IOfflineFoodProvider, PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
@@ -23,8 +23,10 @@ struct AlternativeFoodPage {
 
   private appState: AppState = AppState.getInstance()
   private componentActive: boolean = true
+  private tracker: PageResourceTracker = createPageTracker('AlternativeFoodPage')
 
   aboutToAppear(): void {
+    this.tracker.onAppear()
     const cachedFoodLabel = this.appState.reportCache.consumeFoodLabel()
     if (cachedFoodLabel !== null) {
       this.foodLabel = cachedFoodLabel as FoodLabel
@@ -68,7 +70,7 @@ struct AlternativeFoodPage {
         Row() {
           BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
             .onClick(() => { safeBack() })
-            .accessibilityText('返回')
+            .accessibilityText('杩斿洖')
             .accessibilityLevel('yes')
           Text($r('app.string.alternative_food_title'))
             .fontSize(20)
@@ -104,7 +106,7 @@ struct AlternativeFoodPage {
               } else if (this.recommendReady) {
                 if (this.candidates.length === 0 && this.legacyAlternatives.length === 0) {
                   EmptyState({
-                    icon: '🔍',
+                    icon: '馃攳',
                     title: $r('app.string.alt_food_no_alternative'),
                     subtitle: $r('app.string.alt_food_no_alternative_hint'),
                     topPadding: 40
@@ -274,7 +276,7 @@ struct AlternativeFoodPage {
           .backgroundColor(AlternativeFoodPage.gradeBgColor(item.nutriGrade))
       }
 
-      Text('›')
+      Text('鈥?)
         .fontSize(20)
         .fontColor(COLORS.TEXT_TERTIARY)
         .margin({ left: 8 })
@@ -326,7 +328,7 @@ struct AlternativeFoodPage {
           .backgroundColor(AlternativeFoodPage.gradeBgColor(item.nutriGrade))
       }
 
-      Text('›')
+      Text('鈥?)
         .fontSize(20)
         .fontColor(COLORS.TEXT_TERTIARY)
         .margin({ left: 8 })
@@ -376,7 +378,7 @@ struct AlternativeFoodPage {
             .layoutWeight(1)
 
             Column() {
-              Text(`${alt.healthScore}分`)
+              Text(`${alt.healthScore}鍒哷)
                 .fontSize(14)
                 .fontWeight(FontWeight.Bold)
                 .fontColor(COLORS.SUCCESS)
@@ -400,7 +402,7 @@ struct AlternativeFoodPage {
     if (item.barcode && item.barcode.length > 0) {
       safePushUrl(`pages/ReportPage?barcode=${item.barcode}`)
     } else {
-      ToastHelper.show(this.getUIContext(), `已选择: ${item.foodName}`)
+      ToastHelper.show(this.getUIContext(), `宸查€夋嫨: ${item.foodName}`)
     }
   }
 
@@ -428,6 +430,7 @@ struct AlternativeFoodPage {
   }
 
   aboutToDisappear(): void {
+    this.tracker.onDisappear()
     this.componentActive = false;
   }
 }

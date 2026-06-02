@@ -1,5 +1,5 @@
 import {
-  ToastHelper, safeBack, safePushUrl, getPageParams, Recommendation, FamilyProfile, GroupSummary, FeedType, BUTTON, COLORS, HILOG_DOMAIN_DEFAULT
+  ToastHelper, safeBack, safePushUrl, getPageParams, Recommendation, FamilyProfile, GroupSummary, FeedType, BUTTON, COLORS, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { ShareCard } from 'feature_report';
@@ -36,7 +36,9 @@ struct SharePage {
   private appState: AppState = AppState.getInstance()
   private shareService: ShareService = new ShareService()
 
+  private tracker: PageResourceTracker = createPageTracker('SharePage')
   async aboutToAppear() {
+        this.tracker.onAppear()
     try {
       this.isLoading = true
       const params = getPageParams()
@@ -559,6 +561,9 @@ struct SharePage {
       ToastHelper.show(this.getUIContext(), `分享失败：${(e as Error).message}`)
     }
   }
+
+    aboutToDisappear(): void { this.tracker.onDisappear() }
+
 
   pageTransition() {
     PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })

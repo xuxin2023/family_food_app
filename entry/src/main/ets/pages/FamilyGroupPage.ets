@@ -3,6 +3,7 @@
 
 import {
   ToastHelper, GroupMember, GroupRole, GroupSummary, COLORS, RADIUS, BUTTON, BasicDataSource, safePushUrl, HILOG_DOMAIN_DEFAULT
+  PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -23,8 +24,10 @@ struct FamilyGroupPage {
 
   private appState: AppState = AppState.getInstance();
   private groupDS = new BasicDataSource<GroupSummary>();
+  private tracker: PageResourceTracker = createPageTracker('FamilyGroupPage')
 
   async aboutToAppear() {
+    this.tracker.onAppear()
     try {
       await this.loadGroups();
     } catch (e) {
@@ -333,6 +336,10 @@ struct FamilyGroupPage {
     } catch (e) {
       ToastHelper.show(this.getUIContext(), `加入失败: ${(e as Error).message}`)
     }
+  }
+
+  aboutToDisappear(): void {
+    this.tracker.onDisappear()
   }
 
   pageTransition() {

@@ -5,6 +5,7 @@
 
 import {
   ToastHelper, safeBack, safePushUrl, FamilyProfile, COLORS, RADIUS, getPaywallTriggerForFeature, HILOG_DOMAIN_DEFAULT, HealthConfig, HealthSignal, StepLevel, SleepStatus, DataSource, HeartRateZone, SpO2Level, StressLevel
+  PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -52,8 +53,10 @@ struct DeviceDashboardPage {
   @Local showPermissionGuide: boolean = false
 
   private appState: AppState = AppState.getInstance()
+  private tracker: PageResourceTracker = createPageTracker('DeviceDashboardPage')
 
   async aboutToAppear() {
+    this.tracker.onAppear()
     try {
       this.familyMembers = await this.appState.getAllMembers()
 
@@ -583,4 +586,7 @@ struct DeviceDashboardPage {
     return texts
   }
 
+  aboutToDisappear(): void {
+    this.tracker.onDisappear()
+  }
 }

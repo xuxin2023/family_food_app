@@ -1,7 +1,7 @@
 // 成员编辑页 - 创建/编辑家庭成员画像
 
 import {
-  safeBack, getPageParams, FamilyProfile, AgeGroup, HealthGoal, HealthSignal, StepLevel, SleepStatus, BpStatus, BsStatus, DateUtil, PaywallTrigger, MemberTier, getTierDisplayName, BUTTON, COLORS, HILOG_DOMAIN_DEFAULT
+  safeBack, getPageParams, FamilyProfile, AgeGroup, HealthGoal, HealthSignal, StepLevel, SleepStatus, BpStatus, BsStatus, DateUtil, PaywallTrigger, MemberTier, getTierDisplayName, BUTTON, COLORS, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { AppState } from '../AppState';
 import { PaywallDialog } from 'feature_scan';
@@ -41,6 +41,7 @@ struct MemberEditPage {
   private commonAllergenLabels: ResourceStr[] = [$r('app.string.member_edit_allergen_nuts'), $r('app.string.member_edit_allergen_dairy'), $r('app.string.member_edit_allergen_gluten'), $r('app.string.member_edit_allergen_egg'), $r('app.string.member_edit_allergen_seafood'), $r('app.string.member_edit_allergen_soy'), $r('app.string.member_edit_allergen_sesame'), $r('app.string.member_edit_allergen_peanut')]
   @Local selectedAllergens: boolean[] = [false, false, false, false, false, false, false, false]
 
+  private tracker: PageResourceTracker = createPageTracker('MemberEditPage')
   // 将 AgeGroup 转换为索引
   private ageGroupToIndex(ageGroup: AgeGroup): number {
     for (let i = 0; i < AGE_GROUP_VALUES.length; i++) {
@@ -286,6 +287,7 @@ struct MemberEditPage {
   }
 
   async aboutToAppear() {
+        this.tracker.onAppear()
     try {
       this.isLoading = true
       const params = getPageParams();
@@ -384,6 +386,9 @@ struct MemberEditPage {
 
     safeBack()
   }
+
+    aboutToDisappear(): void { this.tracker.onDisappear() }
+
 
   pageTransition() {
     PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })

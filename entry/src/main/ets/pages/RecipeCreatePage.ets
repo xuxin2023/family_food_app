@@ -3,6 +3,7 @@
 
 import {
   ToastHelper, safeBack, getPageParams, RecipeCategory, RecipeDifficulty, DietTag, RecipeIngredient, RecipeStep, COLORS, RADIUS, safeParseDietTag
+  PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
@@ -59,8 +60,10 @@ struct RecipeCreatePage {
 
   private appState: AppState = AppState.getInstance()
   private relatedFoodId: string = ''
+  private tracker: PageResourceTracker = createPageTracker('RecipeCreatePage')
 
   async aboutToAppear() {
+    this.tracker.onAppear()
     this.isLoading = true;
     try {
     const params = getPageParams()
@@ -494,6 +497,10 @@ struct RecipeCreatePage {
     } catch (e) {
       ToastHelper.show(this.getUIContext(), `发布失败：${(e as Error).message}`)
     }
+  }
+
+  aboutToDisappear(): void {
+    this.tracker.onDisappear()
   }
 
   pageTransition() {

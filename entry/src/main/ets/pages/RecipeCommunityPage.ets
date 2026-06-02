@@ -3,6 +3,7 @@
 
 import {
   safeBack, safePushUrl, getPageParams, Recipe, RecipeCategory, DietTag, RecipeQueryParams, safeParseRecipeCategory, COLORS, RADIUS, BUTTON, BasicDataSource, PAGE_SIZE_CONFIG, HILOG_DOMAIN_DEFAULT, AiRecipeRecommendation, AiRecipeRecommendationResult, AiRecipeRequest, getCategoryLabel, getCategoryEmoji, getDietTagLabel, ImageCache
+  PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -27,6 +28,7 @@ struct RecipeCommunityPage {
   @Local aiSummary: string = ''
   @Local errorMessage: ResourceStr = ''
   private componentActive: boolean = true
+  private tracker: PageResourceTracker = createPageTracker('RecipeCommunityPage')
 
   private appState: AppState = AppState.getInstance()
   private recipes: Recipe[] = []
@@ -34,6 +36,7 @@ struct RecipeCommunityPage {
   private readonly categoryKeys: string[] = ['breakfast', 'lunch', 'dinner', 'snack', 'beverage', 'dessert', 'soup', 'staple']
 
   async aboutToAppear() {
+    this.tracker.onAppear()
     const params = getPageParams();
     if (params !== null && params !== undefined && params!.get('aiMode') === 'recommend') {
       this.showAiRecommend = true
@@ -47,6 +50,7 @@ struct RecipeCommunityPage {
   }
 
   aboutToDisappear(): void {
+    this.tracker.onDisappear()
     this.componentActive = false
   }
 

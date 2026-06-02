@@ -1,6 +1,6 @@
 // 购物篮检查页 - 连续扫描后检查一篮子食品
 
-import { safeBack, safePushUrl, FoodLabel, PaywallTrigger, BUTTON, COLORS } from 'hsp_core';
+import { safeBack, safePushUrl, FoodLabel, PaywallTrigger, BUTTON, COLORS, PageResourceTracker, createPageTracker } from 'hsp_core';
 import { BasketCheckResult, BasketCheckEngine } from 'hsp_service';
 import { AppState } from '../AppState';
 import { PaywallDialog } from 'feature_scan';
@@ -16,7 +16,9 @@ struct BasketCheckPage {
 
   private appState: AppState = AppState.getInstance()
 
+  private tracker: PageResourceTracker = createPageTracker('BasketCheckPage')
   async aboutToAppear() {
+        this.tracker.onAppear()
     this.isLoading = true;
     try {
     const trigger = this.appState.member.getPaywallTrigger('basket_check')
@@ -187,5 +189,7 @@ struct BasketCheckPage {
     .width('100%')
     .height('100%')
   }
+
+  aboutToDisappear(): void { this.tracker.onDisappear() }
 
 }

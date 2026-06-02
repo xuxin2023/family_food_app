@@ -1,0 +1,16 @@
+{
+  "apiType": "stageMode",
+  "buildOption": {
+    "nativeLib": {
+      "filter": {},
+      "headerPath": "./src/main/cj"
+    }
+  },
+  "buildOptionSet": [
+    { "name": "release" },
+    { "name": "debug" }
+  ],
+  "targets": [
+    { "name": "default", "runtimeOS": "HarmonyOS" }
+  ]
+}

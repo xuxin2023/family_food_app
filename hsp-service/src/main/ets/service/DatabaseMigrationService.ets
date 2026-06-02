@@ -20,6 +20,66 @@ const VERSION_KEY = 'schema_version';
 // 索引 = 目标版本号，值 = (rdbStore) => Promise<void>
 // 每次发布新版本时，在此添加迁移函数
 const MIGRATIONS: Map<number, (store: relationalStore.RdbStore) => Promise<void>> = new Map([
+  [7, async (store) => {
+    await store.executeSql(
+      `CREATE TABLE IF NOT EXISTS allergy_profiles (
+        member_id TEXT PRIMARY KEY,
+        allergies_json TEXT NOT NULL DEFAULT '[]',
+        intolerances_json TEXT NOT NULL DEFAULT '[]',
+        cross_contamination_sensitive INTEGER DEFAULT 0,
+        updated_at INTEGER NOT NULL
+      )`
+    );
+    await store.executeSql(
+      `CREATE TABLE IF NOT EXISTS nutrition_daily (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        member_id TEXT NOT NULL,
+        date TEXT NOT NULL,
+        total_calories REAL DEFAULT 0,
+        total_sodium_mg REAL DEFAULT 0,
+        total_sugar_g REAL DEFAULT 0,
+        total_fat_g REAL DEFAULT 0,
+        total_saturated_fat_g REAL DEFAULT 0,
+        total_protein_g REAL DEFAULT 0,
+        total_carbohydrate_g REAL DEFAULT 0,
+        total_fiber_g REAL DEFAULT 0,
+        scan_count INTEGER DEFAULT 0,
+        score_avg REAL DEFAULT 0,
+        updated_at INTEGER NOT NULL
+      )`
+    );
+    await store.executeSql(
+      `CREATE TABLE IF NOT EXISTS parsed_ingredient_results (
+        product_barcode TEXT PRIMARY KEY,
+        product_name TEXT DEFAULT '',
+        ingredients_json TEXT NOT NULL DEFAULT '[]',
+        high_risk_count INTEGER DEFAULT 0,
+        moderate_risk_count INTEGER DEFAULT 0,
+        summary TEXT DEFAULT '',
+        additive_interactions TEXT DEFAULT '[]',
+        parsed_at INTEGER NOT NULL
+      )`
+    );
+    await store.executeSql(
+      `CREATE TABLE IF NOT EXISTS additive_hazard_db (
+        e_number TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        hazard_level TEXT DEFAULT 'low_risk',
+        category TEXT DEFAULT '',
+        description TEXT DEFAULT '',
+        long_term_effect TEXT DEFAULT '',
+        co_warning TEXT DEFAULT '',
+        regulation_status TEXT DEFAULT ''
+      )`
+    );
+    await store.executeSql(
+      `INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('version', '7')`
+    );
+    await store.executeSql(
+      `INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('migration_status', 'COMPLETED')`
+    );
+  }],
+
   [6, async (store) => {
     await store.executeSql(
       `CREATE TABLE IF NOT EXISTS user_intolerance_config (
@@ -149,7 +209,8 @@ export async function migrateDatabase(
 
 async function rollbackMigration(store: relationalStore.RdbStore, targetVersion: number): Promise<void> {
   hilog.info(DOMAIN_ZERO, TAG, `Rolling back to schema version ${targetVersion}`);
-  const tablesToDrop = ['user_intolerance_config', 'ingredient_kb', 'schema_meta'];
+  const tablesToDrop = ['allergy_profiles', 'nutrition_daily', 'parsed_ingredient_results', 'additive_hazard_db',
+    'user_intolerance_config', 'ingredient_kb', 'schema_meta'];
   for (const table of tablesToDrop) {
     try {
       await store.executeSql(`DROP TABLE IF EXISTS ${table}`);
@@ -163,6 +224,8 @@ async function verifyDataIntegrity(store: relationalStore.RdbStore): Promise<boo
     await store.executeSql('SELECT COUNT(*) FROM food_label', []);
     await store.executeSql('SELECT COUNT(*) FROM family_profile', []);
     await store.executeSql('SELECT COUNT(*) FROM scan_history', []);
+    await store.executeSql('SELECT COUNT(*) FROM allergy_profiles', []);
+    await store.executeSql('SELECT COUNT(*) FROM nutrition_daily', []);
     return true;
   } catch (e) {
     hilog.error(DOMAIN_ZERO, TAG, `Integrity check failed: ${JSON.stringify(e)}`);

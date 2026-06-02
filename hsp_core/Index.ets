@@ -155,6 +155,9 @@ export { ErrorHandler } from './src/main/ets/utils/ErrorHandler';
 export { BusinessError } from './src/main/ets/utils/BusinessError';
 export { DataIntegrityChecker } from './src/main/ets/utils/DataIntegrityChecker';
 export { ObservableMap } from './src/main/ets/utils/ObservableMap';
+export { ImageCacheManager } from './src/main/ets/utils/ImageCacheManager';
+export { MemoryMonitor } from './src/main/ets/utils/MemoryMonitor';
+export { LazyLoadStrategy, LazyLoadConfig } from './src/main/ets/utils/LazyLoadStrategy';
 export { getCategoryLabel, getCategoryEmoji, formatTime, getDifficultyLabel, getDietTagLabel } from './src/main/ets/utils/RecipeUtil';
 export { getPrivacyPolicyHtml, getUserAgreementHtml } from './src/main/ets/utils/PrivacyContentUtil';
 
@@ -280,6 +283,28 @@ export {
 
 // 审计日志
 export { AuditLogger, AuditEntry, AuditAction } from './src/main/ets/logger/AuditLogger';
+
+// 安全加密引擎 — AES-256-GCM
+export { CryptoEngine } from './src/main/ets/utils/CryptoEngine';
+
+// 防抓包安全检测器 — 代理/VPN检测 + SSL Pinning
+export { AntiCaptureDetector } from './src/main/ets/security/AntiCaptureDetector';
+
+// 过敏原/不耐受档案模型 — 对标Yuka/Olive
+export {
+  Severity, AllergyItem, IntoleranceItem, AllergyProfile,
+  AllergyHint, IntoleranceHint, createDefaultAllergyProfile,
+  severityToLabel, severityToColor
+} from './src/main/ets/model/AllergyProfile';
+
+// 成分有害性解析模型
+export {
+  HazardLevel, ParsedIngredient, AdditiveHazard,
+  ParsedIngredientList, hazardLevelToLabel, hazardLevelToColor
+} from './src/main/ets/model/ParsedIngredient';
+
+// 营养日汇总模型
+export { NutritionDaily } from './src/main/ets/model/NutritionDaily';
 
 // ===== API 版本守卫 =====
 export { VersionGuard, ApiLevel } from './src/main/ets/utils/VersionGuard';

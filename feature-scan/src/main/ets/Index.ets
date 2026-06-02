@@ -37,3 +37,7 @@ export { OnDeviceAiEngine, IngredientAnalysis as AiIngredientAnalysis, Personali
 // ===== T-068 entry瘦身迁移: 扫描服务 =====
 export { OcrService } from './service/OcrService';
 export { OnlineShoppingParser, ParsedShoppingItem } from './service/OnlineShoppingParser';
+
+// ===== UI组件 =====
+export { AllergyAlertBanner, AllergyAlertData } from './components/AllergyAlertBanner';
+export { AlternativeCard, AlternativeFoodItem } from './components/AlternativeCard';

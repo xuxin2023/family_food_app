@@ -224,6 +224,59 @@
         "updatedAt": { "type": "number" }
       },
       "indexes": [{ "fields": ["submittedBy"] }, { "fields": ["barcode"] }, { "fields": ["status"] }]
+    },
+    "AllergyProfile": {
+      "fields": {
+        "memberId": { "type": "string", "primaryKey": true },
+        "allergies_json": { "type": "string" },
+        "intolerances_json": { "type": "string" },
+        "cross_contamination_sensitive": { "type": "number" },
+        "updated_at": { "type": "number" }
+      },
+      "indexes": [{ "fields": ["memberId"], "unique": true }]
+    },
+    "NutritionDaily": {
+      "fields": {
+        "id": { "type": "string", "primaryKey": true },
+        "memberId": { "type": "string" },
+        "date": { "type": "string" },
+        "total_calories": { "type": "number" },
+        "total_sodium_mg": { "type": "number" },
+        "total_sugar_g": { "type": "number" },
+        "total_fat_g": { "type": "number" },
+        "total_protein_g": { "type": "number" },
+        "total_carbohydrate_g": { "type": "number" },
+        "total_fiber_g": { "type": "number" },
+        "scan_count": { "type": "number" },
+        "score_avg": { "type": "number" },
+        "updated_at": { "type": "number" }
+      },
+      "indexes": [{ "fields": ["memberId", "date"], "unique": true }]
+    },
+    "ParsedIngredientResult": {
+      "fields": {
+        "product_barcode": { "type": "string", "primaryKey": true },
+        "product_name": { "type": "string" },
+        "ingredients_json": { "type": "string" },
+        "high_risk_count": { "type": "number" },
+        "moderate_risk_count": { "type": "number" },
+        "summary": { "type": "string" },
+        "parsed_at": { "type": "number" }
+      },
+      "indexes": [{ "fields": ["product_barcode"], "unique": true }]
+    },
+    "AdditiveHazard": {
+      "fields": {
+        "e_number": { "type": "string", "primaryKey": true },
+        "name": { "type": "string" },
+        "hazard_level": { "type": "string" },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "long_term_effect": { "type": "string" },
+        "co_warning": { "type": "string" },
+        "regulation_status": { "type": "string" }
+      },
+      "indexes": [{ "fields": ["e_number"], "unique": true }, { "fields": ["hazard_level"] }]
     }
   }
 }

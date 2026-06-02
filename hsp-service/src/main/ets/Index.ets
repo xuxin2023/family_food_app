@@ -15,6 +15,9 @@ export { ReminderRuleRepository } from './repository/ReminderRuleRepository';
 export { NutritionTargetRepository } from './repository/NutritionTargetRepository';
 export { NutritionSnapshotRepository } from './repository/NutritionSnapshotRepository';
 export { SyncQueueRepository } from './repository/SyncQueueRepository';
+export { AllergyProfileRepository } from './repository/AllergyProfileRepository';
+export { NutritionDailyRepository } from './repository/NutritionDailyRepository';
+export { ParsedIngredientRepository } from './repository/ParsedIngredientRepository';
 
 // ===== Service 层导出（Sprint2 已迁移） =====
 export { AuthService, AuthUser } from './service/AuthService';

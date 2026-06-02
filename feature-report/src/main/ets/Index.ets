@@ -44,6 +44,7 @@ export { TrendPredictionBar } from './components/TrendPredictionBar';
 export { ShareCard, ShareCardGenerator, MemberShareInfo, ShareImageParams } from './components/ShareCard';
 export { ComprehensiveRatingPanel } from './components/ComprehensiveRatingPanel';
 export { AlternativeComparePanel, AlternativeCompareItem, computeNutritionDelta } from './components/AlternativeComparePanel';
+export { RatingVisualizer, NutrientRdaItem } from './components/RatingVisualizer';
 
 // ===== T-068 entry瘦身迁移: 报告引擎 =====
 export { MealBalanceEngine } from './engine/MealBalanceEngine';

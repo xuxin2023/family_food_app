@@ -1,0 +1,14 @@
+{
+  "module": {
+    "name": "hsp_core_cj",
+    "type": "shared",
+    "description": "仓颉高性能计算引擎 — 数值密集型计算路径NAPI桥接",
+    "deviceTypes": [
+      "phone",
+      "tablet",
+      "2in1"
+    ],
+    "deliveryWithInstall": true,
+    "installationFree": false
+  }
+}

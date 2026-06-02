@@ -2,7 +2,7 @@
 // 家庭群组服务 - 创建、加入、成员管理、群组动态
 
 import {
-  FamilyProfile, GROUP_CONFIG, HILOG_DOMAIN_DEFAULT, FamilyGroup, GroupMember, JoinRequest, GroupFeed, GroupSummary, GroupRole, JoinMethod, JoinRequestStatus, FeedType, FoodScanFeedContent
+  FamilyProfile, GROUP_CONFIG, HILOG_DOMAIN_DEFAULT, FamilyGroup, GroupMember, JoinRequest, GroupFeed, GroupSummary, GroupRole, JoinMethod, JoinRequestStatus, FeedType, FoodScanFeedContent, FamilyGroupE2EEncryptor, EncryptedPayload, CryptoEngine
 } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FamilyGroupRepository } from '../repository/FamilyGroupRepository';
@@ -40,6 +40,8 @@ function toGroupSummary(group: FamilyGroup, members: GroupMember[], myRole: Grou
 export class FamilyGroupService {
   private groupRepo: FamilyGroupRepository;
   private authService: AuthService;
+  private groupKeyMap: Map<string, string> = new Map();
+  private e2eEnabled: boolean = true;
 
   constructor(groupRepo: FamilyGroupRepository, authService: AuthService) {
     this.groupRepo = groupRepo;
@@ -77,6 +79,13 @@ export class FamilyGroupService {
 
     // 保存群组
     await this.groupRepo.saveGroup(group);
+
+    // V5: 生成群组端到端加密密钥(E2E)
+    if (this.e2eEnabled) {
+      const keyMaterial = FamilyGroupE2EEncryptor.generateGroupKey();
+      this.groupKeyMap.set(groupId, keyMaterial.groupKey);
+      hilog.info(DOMAIN_ZERO, TAG, 'E2E key generated for group: %{public}s', groupId);
+    }
 
     // 添加创建者为群主
     const ownerMember = new GroupMember();
@@ -306,7 +315,16 @@ export class FamilyGroupService {
     feed.feedType = FeedType.FOOD_SCAN_SHARE;
     feed.senderUid = uid;
     feed.senderName = member.displayName;
-    feed.content = JSON.stringify(content);
+
+    const rawContent = JSON.stringify(content);
+    const groupKey = this.groupKeyMap.get(groupId);
+    if (groupKey && this.e2eEnabled) {
+      const encrypted = FamilyGroupE2EEncryptor.encrypt(rawContent, groupKey);
+      feed.content = JSON.stringify(encrypted);
+    } else {
+      feed.content = rawContent;
+    }
+
     feed.mediaUri = '';
     feed.createdAt = Date.now();
     feed.commentCount = 0;

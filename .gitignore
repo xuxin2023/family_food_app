@@ -15,12 +15,19 @@ Thumbs.db
 .DS_Store
 
 # Build outputs and caches
+**/build/
 entry/build/
 hsp_core/build/
 hsp-service/build/
 feature-scan/build/
 feature-report/build/
 feature-community/build/
+hsp-allergy/build/
+hsp-cloud/build/
+hsp-llm/build/
+hsp-rating/build/
+feature-profile/build/
+hsp-core-cj/build/
 build_error.log
 build_error_clean.txt
 
@@ -41,6 +48,7 @@ full_build_log.txt
 build_errors.*
 arkts_errors.*
 *.log
+
 
 # Temporary and backup files
 _backup.ets

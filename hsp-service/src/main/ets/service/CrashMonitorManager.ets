@@ -6,7 +6,7 @@
 import { common, errorManager } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN_DEFAULT, API_CONFIG } from 'hsp_core';
-
+import { http } from '@kit.NetworkKit';
 import { deviceInfo } from '@kit.BasicServicesKit';
 import { preferences } from '@kit.ArkData';
 import { remoteErrorReporter } from './RemoteErrorReporter';

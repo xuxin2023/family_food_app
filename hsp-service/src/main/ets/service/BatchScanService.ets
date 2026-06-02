@@ -68,7 +68,9 @@ export class BatchScanService {
             source = 'off_api';
             confidence = remote.confidence;
           }
-        } catch (_) {}
+        } catch (err) {
+          hilog.warn(DOMAIN_ZERO, TAG, 'remote lookup failed for barcode %{public}s: %{public}s', barcode, JSON.stringify(err));
+        }
       }
 
       const result: BatchScanResult = {

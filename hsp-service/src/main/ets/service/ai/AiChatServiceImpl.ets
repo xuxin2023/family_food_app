@@ -60,8 +60,10 @@ export class AiChatServiceImpl extends AiServiceBase implements IAiChatService {
         : '';
 
       if (!this.onDeviceLlmInitialized) {
-        try { await this.onDeviceLlm.initialize(); } catch (_e) { /* ignore */ }
-        this.onDeviceLlmInitialized = true;
+        try { await this.onDeviceLlm.initialize(); } catch (e) {
+          hilog.warn(DOMAIN_ZERO, TAG, 'LLM init failed: %{public}s', JSON.stringify(e));
+        }
+        this.onDeviceLlmInitialized = this.onDeviceLlm.isOnDeviceLlmAvailable();
       }
 
       if (this.onDeviceLlm.isOnDeviceLlmAvailable()) {
@@ -132,7 +134,10 @@ export class AiChatServiceImpl extends AiServiceBase implements IAiChatService {
       }
 
       return `${contextParts.join('；')}\n\n用户问题：${userMessage}`;
-    } catch (_e) { return userMessage; }
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'buildEnhancedPrompt failed: %{public}s', JSON.stringify(e));
+      return userMessage;
+    }
   }
 
   private buildFallbackResponse(): string {

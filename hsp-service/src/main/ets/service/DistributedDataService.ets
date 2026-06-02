@@ -265,6 +265,8 @@ export class DistributedDataService {
 
   destroy(): void {
     if (this.kvStore) {
+      this.kvStore.off('dataChange');
+      this.kvStore.off('syncComplete');
       this.kvStore = null
     }
     if (this.kvManager) {

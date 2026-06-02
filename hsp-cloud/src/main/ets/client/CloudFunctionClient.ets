@@ -30,8 +30,8 @@ export class CloudFunctionClient {
       }
       this.initialized = true;
       hilog.info(DOMAIN_ZERO, TAG, 'CloudFunctionClient initialized');
-    } catch (_e) {
-      this.initialized = true;
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'CloudFunctionClient init failed (offline mode): %{public}s', JSON.stringify(e));
     }
   }
 

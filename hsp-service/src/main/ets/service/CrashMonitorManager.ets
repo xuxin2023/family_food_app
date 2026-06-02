@@ -6,7 +6,7 @@
 import { common, errorManager } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN_DEFAULT, API_CONFIG } from 'hsp_core';
-import { http } from '@kit.NetworkKit';
+
 import { deviceInfo } from '@kit.BasicServicesKit';
 import { preferences } from '@kit.ArkData';
 import { remoteErrorReporter } from './RemoteErrorReporter';
@@ -139,21 +139,19 @@ export class CrashMonitorManager {
 
   private fillDeviceInfo(record: CrashRecord): void {
     try {
-      record.deviceModel = 'HarmonyOS';
-      record.osVersion = 'HarmonyOS 6.1';
+      record.deviceModel = deviceInfo.marketName ?? deviceInfo.productModel ?? 'HarmonyOS';
+      record.osVersion = deviceInfo.osFullName ?? 'HarmonyOS';
+      record.appVersion = '';
     } catch (_e) {
       record.deviceModel = 'unknown';
       record.osVersion = 'unknown';
     }
-    record.totalMemory = '';
-    record.totalStorage = '';
-    record.appVersion = '';
   }
 
   private collectDeviceInfo(): void {
     try {
       hilog.info(DOMAIN_ZERO, TAG, 'Device: model=%{public}s, os=%{public}s',
-        'HarmonyOS', 'HarmonyOS 6.1');
+        deviceInfo.marketName ?? 'HarmonyOS', deviceInfo.osFullName ?? 'HarmonyOS');
     } catch (_e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Collect device info failed');
     }

@@ -1,15 +1,13 @@
 // hsp-rating: Eco-Score 生态评分计算引擎 (V2)
 // 优先接入 Open Food Facts 实时数据 / 不可用时基于标签关键词匹配估算
 // 参考: https://docs.score-environnemental.com/
-// OFF API: https://world.openfoodfacts.org/api/v2/
 
-import { FoodLabel, NutritionThreshold, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
+import { FoodLabel, NutritionThreshold, HILOG_DOMAIN_DEFAULT, OffApiConfig } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { http } from '@kit.NetworkKit';
 
 const TAG = 'EcoScoreEngine';
-const OFF_API_BASE = 'https://world.openfoodfacts.org/api/v2';
-const OFF_SEARCH = '/search';
+const OFF_SEARCH = 'search';
 const REQUEST_TIMEOUT = 8000;
 
 export enum EcoScoreGrade {
@@ -96,14 +94,14 @@ export class EcoScoreEngine {
   }
 
   private async fetchFromOpenFoodFacts(barcode: string): Promise<EcoScoreResult | null> {
-    const url = `${OFF_API_BASE}${OFF_SEARCH}?code=${encodeURIComponent(barcode)}&fields=ecoscore_grade,ecoscore_score,labels_tags,categories_tags,origins,manufacturing_places,carbon_footprint_from_known_ingredients`;
+    const url = `${OffApiConfig.BASE_URL}${OFF_SEARCH}?code=${encodeURIComponent(barcode)}&fields=ecoscore_grade,ecoscore_score,labels_tags,categories_tags,origins,manufacturing_places,carbon_footprint_from_known_ingredients`;
     const request = http.createHttp();
     try {
       const response = await request.request(url, {
         method: http.RequestMethod.GET,
         connectTimeout: REQUEST_TIMEOUT,
         readTimeout: REQUEST_TIMEOUT,
-        header: { 'User-Agent': 'FamilyFoodApp-HarmonyOS/4.0.0' },
+        header: { 'User-Agent': OffApiConfig.USER_AGENT },
       });
       if (response.responseCode === 200 && response.result) {
         const body = typeof response.result === 'string'

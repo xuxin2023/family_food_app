@@ -1,6 +1,6 @@
 // FoodComparePage.ets
 // 椋熷搧瀵规瘮椤?鈥?涓や釜椋熷搧鐨勫苟鎺掕惀鍏诲姣旇鍥?
-import { FoodLabel, NutritionPer100g, COLORS, RADIUS, HILOG_DOMAIN_DEFAULT, ToastHelper, NutritionSnapshot, resourceToStr, PageResourceTracker, createPageTracker } from 'hsp_core';
+import { FoodLabel, NutritionPer100g, COLORS, RADIUS, HILOG_DOMAIN_DEFAULT, ToastHelper, NutritionSnapshot, resourceToStr, PageResourceTracker, createPageTracker, LazyDataSource } from 'hsp_core';
 import { FoodCompareService, FoodCompareResult, NutritionDelta } from 'hsp_service';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
@@ -39,6 +39,7 @@ struct FoodComparePage {
   private mContext: UIContext | undefined = undefined
   private componentActive: boolean = true
   private tracker: PageResourceTracker = createPageTracker('FoodComparePage')
+  private recentFoodsDs: LazyDataSource<FoodLabel> = new LazyDataSource()
 
   async aboutToAppear(): Promise<void> {
     this.tracker.onAppear()
@@ -59,10 +60,12 @@ struct FoodComparePage {
       const recentFoods = allResults[0] as FoodLabel[]
       const savedSnapshots = allResults[1] as NutritionSnapshot[]
       this.recentFoods = recentFoods
+      this.recentFoodsDs.reloadData(this.recentFoods)
       this.savedSnapshots = savedSnapshots
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'aboutToAppear failed: %{public}s', JSON.stringify(e));
       this.recentFoods = []
+      this.recentFoodsDs.reloadData([])
       this.savedSnapshots = []
     }
   }
@@ -237,7 +240,7 @@ struct FoodComparePage {
       .padding(16)
 
       List() {
-        ForEach(this.recentFoods, (food: FoodLabel) => {
+        LazyForEach(this.recentFoodsDs, (food: FoodLabel, index: number) => {
           ListItem() {
             Row() {
               Column() {
@@ -257,7 +260,7 @@ struct FoodComparePage {
             .accessibilityText(food.foodName)
             .accessibilityLevel('yes')
           }
-        }, (food: FoodLabel, index: number) => `${food.barcode}_${index}`)
+        }, (food: FoodLabel) => `${food.barcode}_0`)
       }
       .width('100%')
       .layoutWeight(1)

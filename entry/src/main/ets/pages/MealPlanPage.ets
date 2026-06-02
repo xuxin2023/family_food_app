@@ -1,5 +1,5 @@
 import {
-  ToastHelper, safeBack, FamilyProfile, HealthGoal, COLORS, FONT_SIZE, RADIUS, SPACING, MealPlanDay, MealPlanItem, MealPlanTemplate, createDefaultMealPlan, createLowSodiumMealPlan, createLowSugarMealPlan, DailyBudget
+  ToastHelper, safeBack, FamilyProfile, HealthGoal, COLORS, FONT_SIZE, RADIUS, SPACING, MealPlanDay, MealPlanItem, MealPlanTemplate, createDefaultMealPlan, createLowSodiumMealPlan, createLowSugarMealPlan, DailyBudget, PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { MealPlanService, MealPlan, MealPlanItem as SmartMealPlanItem } from 'hsp_service';
 import { BackButton } from '../components/BackButton';
@@ -19,11 +19,15 @@ struct MealPlanPage {
 
   private appState: AppState = AppState.getInstance()
   private mealPlanService: MealPlanService = new MealPlanService()
+  private tracker: PageResourceTracker = createPageTracker('MealPlanPage')
 
   aboutToAppear(): void {
+    this.tracker.onAppear()
     this.familyMembers = this.appState.getAllMembersSync()
     this.selectBestPlan()
   }
+
+  aboutToDisappear(): void { this.tracker.onDisappear() }
 
   private selectBestPlan(): void {
     let needLowSodium = false;

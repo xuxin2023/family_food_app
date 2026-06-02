@@ -1,5 +1,5 @@
 import {
-  ToastHelper, safeBack, FamilyProfile, DailyBudget, FoodLabel, FoodSource, MealBalance, MealScenario, ChildProtection, PaywallTrigger, MemberTier, COLORS, DateUtil
+  ToastHelper, safeBack, FamilyProfile, DailyBudget, FoodLabel, FoodSource, MealBalance, MealScenario, ChildProtection, PaywallTrigger, MemberTier, COLORS, DateUtil, PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
@@ -32,10 +32,12 @@ struct BalancePage {
 
   private appState: AppState = AppState.getInstance()
   private readonly DAILY_FREE_LIMIT: number = 3
+  private tracker: PageResourceTracker = createPageTracker('BalancePage')
 
   private scenarios: ScenarioOption[] = []
 
   aboutToAppear() {
+    this.tracker.onAppear()
     // 检查是否有高级美食平衡功能权限
     const trigger = this.appState.member.getPaywallTrigger('meal_balance_advanced')
     if (trigger !== null && trigger.requiredTier !== MemberTier.FREE) {
@@ -520,4 +522,6 @@ struct BalancePage {
     PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
       .slide(SlideEffect.Left)
   }
+
+  aboutToDisappear(): void { this.tracker.onDisappear() }
 }

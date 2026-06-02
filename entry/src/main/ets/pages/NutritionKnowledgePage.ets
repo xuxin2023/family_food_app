@@ -1,5 +1,5 @@
 import {
-  ToastHelper, safeBack, KnowledgeArticle, getAllKnowledgeArticles, getArticleCategories, getArticlesByCategory, COLORS, FONT_SIZE, RADIUS, SPACING
+  ToastHelper, safeBack, KnowledgeArticle, getAllKnowledgeArticles, getArticleCategories, getArticlesByCategory, COLORS, FONT_SIZE, RADIUS, SPACING, LazyDataSource, PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { NutritionKnowledgeService, KnowledgeEntry } from 'hsp_service';
 import { BackButton } from '../components/BackButton';
@@ -18,16 +18,22 @@ struct NutritionKnowledgePage {
   @Local showSearchResults: boolean = false
 
   private knowledgeService: NutritionKnowledgeService = NutritionKnowledgeService.getInstance()
+  private articleDataSource: LazyDataSource<KnowledgeArticle> = new LazyDataSource()
+  private tracker: PageResourceTracker = createPageTracker('NutritionKnowledgePage')
 
   aboutToAppear(): void {
+    this.tracker.onAppear()
     this.allArticles = getAllKnowledgeArticles()
     this.categories = getArticleCategories()
     if (this.categories.length > 0) {
       this.selectedCategory = this.categories[0]
       this.filteredArticles = getArticlesByCategory(this.selectedCategory)
+      this.articleDataSource.reloadData(this.filteredArticles)
     }
     this.syncToKnowledgeService()
   }
+
+  aboutToDisappear(): void { this.tracker.onDisappear() }
 
   private syncToKnowledgeService(): void {
     for (const article of this.allArticles) {
@@ -136,6 +142,7 @@ struct NutritionKnowledgePage {
           .onClick(() => {
             this.selectedCategory = cat
             this.filteredArticles = getArticlesByCategory(cat)
+            this.articleDataSource.reloadData(this.filteredArticles)
             this.expandedArticleId = ''
           })
           .accessibilityText(cat)
@@ -157,9 +164,9 @@ struct NutritionKnowledgePage {
       })
     } else {
       Column() {
-        ForEach(this.filteredArticles, (article: KnowledgeArticle, index: number) => {
+        LazyForEach(this.articleDataSource, (article: KnowledgeArticle, index: number) => {
           this.ArticleCard(article)
-        }, (article: KnowledgeArticle, index: number) => article.id)
+        }, (article: KnowledgeArticle) => article.id)
       }
       .width('92%')
       .margin({ bottom: 24 })

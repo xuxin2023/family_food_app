@@ -1,4 +1,4 @@
-import { ToastHelper, safeBack, FoodLabel, COLORS, RADIUS, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
+import { ToastHelper, safeBack, FoodLabel, COLORS, RADIUS, HILOG_DOMAIN_DEFAULT, LazyDataSource, PageResourceTracker, createPageTracker } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -21,8 +21,11 @@ struct ScanHistoryTimelinePage {
   @Local expandedDate: string = ''
 
   private appState: AppState = AppState.getInstance()
+  private expandedFoodsDs: LazyDataSource<FoodLabel> = new LazyDataSource()
+  private tracker: PageResourceTracker = createPageTracker('ScanHistoryTimelinePage')
 
   async aboutToAppear(): Promise<void> {
+    this.tracker.onAppear()
     this.isLoading = true;
     try {
       const recentFoods = await this.appState.historyRepo.getRecentFoods(100);
@@ -138,13 +141,16 @@ struct ScanHistoryTimelinePage {
       .width('100%')
       .onClick(() => {
         this.expandedDate = this.expandedDate === entry.date ? '' : entry.date;
+        if (this.expandedDate === entry.date) {
+          this.expandedFoodsDs.reloadData(entry.foods);
+        }
       })
       .accessibilityText(entry.date)
       .accessibilityLevel('yes')
 
       if (this.expandedDate === entry.date) {
         Column() {
-          ForEach(entry.foods, (food: FoodLabel, index: number) => {
+          LazyForEach(this.expandedFoodsDs, (food: FoodLabel, index: number) => {
             Row() {
               Column() {
                 Text(food.foodName)
@@ -170,7 +176,7 @@ struct ScanHistoryTimelinePage {
             }
             .width('100%')
             .padding({ top: 6, bottom: 6 })
-          }, (food: FoodLabel, index: number) => `${food.barcode}_${index}`)
+          }, (food: FoodLabel) => `${food.barcode}_${index}`)
         }
         .width('100%')
         .padding({ top: 8 })
@@ -189,6 +195,8 @@ struct ScanHistoryTimelinePage {
     if (score >= 60) return COLORS.ORANGE_ACCENT;
     return COLORS.ACCENT_RED_EF53;
   }
+
+  aboutToDisappear(): void { this.tracker.onDisappear() }
 
   pageTransition() {
     PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })

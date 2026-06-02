@@ -1,7 +1,7 @@
 // NutritionTrendPage.ets
 // 营养摄入趋势图表页面 - 7天/30天营养素趋势、每日汇总、预算对比
 
-import { safeBack, getPageParams, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, HILOG_DOMAIN_DEFAULT, DateUtil, NutrientTrendData, DailyNutritionSummary, TrendDirection, DailyNutrientPoint, MealGroup, resourceToStr } from 'hsp_core';
+import { safeBack, getPageParams, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, HILOG_DOMAIN_DEFAULT, DateUtil, NutrientTrendData, DailyNutritionSummary, TrendDirection, DailyNutrientPoint, MealGroup, resourceToStr, LazyDataSource, PageResourceTracker, createPageTracker } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { TrendChart } from '../components/TrendChart';
@@ -40,6 +40,8 @@ struct NutritionTrendPage {
 
   private appState: AppState = AppState.getInstance()
   private periodOptions: PeriodOption[] = PERIOD_OPTIONS
+  private summariesDataSource: LazyDataSource<DailyNutritionSummary> = new LazyDataSource()
+  private tracker: PageResourceTracker = createPageTracker('NutritionTrendPage')
 
   // 概览统计数据
   private overviewTotalRecords: number = 0
@@ -48,6 +50,7 @@ struct NutritionTrendPage {
   private overviewAvgSugar: number = 0
 
   async aboutToAppear() {
+    this.tracker.onAppear()
     try {
       const params = getPageParams();
       if (params !== undefined) {
@@ -107,6 +110,7 @@ struct NutritionTrendPage {
     }
     this.trends = result
     this.summaries = dailySummaries
+    this.summariesDataSource.reloadData(this.summaries)
 
     // 计算概览数据
     let totalRecords = 0;
@@ -125,6 +129,8 @@ struct NutritionTrendPage {
 
     this.isLoading = false
   }
+
+  aboutToDisappear(): void { this.tracker.onDisappear() }
 
   private switchPeriod(index: number): void {
     this.selectedPeriodIndex = index
@@ -322,7 +328,7 @@ struct NutritionTrendPage {
       .width('100%')
       .padding({ left: SPACING.MD, right: SPACING.MD, bottom: SPACING.SM })
 
-      ForEach(this.summaries, (summary: DailyNutritionSummary) => {
+      LazyForEach(this.summariesDataSource, (summary: DailyNutritionSummary, index: number) => {
         Row() {
           Text(this.formatShortDate(summary.date))
             .fontSize(FONT_SIZE.SMALL)

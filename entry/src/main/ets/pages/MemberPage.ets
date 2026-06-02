@@ -1,6 +1,6 @@
 // 成员管理页 - 家庭成员列表
 
-import { safeBack, safePushUrl, FamilyProfile, BUTTON, COLORS, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
+import { safeBack, safePushUrl, FamilyProfile, BUTTON, COLORS, HILOG_DOMAIN_DEFAULT, LazyDataSource, PageResourceTracker, createPageTracker } from 'hsp_core';
 import { AppState } from '../AppState';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
@@ -14,14 +14,19 @@ struct MemberPage {
   @Local isLoading: boolean = true
 
   private appState: AppState = AppState.getInstance()
+  private memberDataSource: LazyDataSource<FamilyProfile> = new LazyDataSource()
+  private tracker: PageResourceTracker = createPageTracker('MemberPage')
 
   async aboutToAppear() {
+    this.tracker.onAppear()
     try {
       await this.loadMembers();
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'aboutToAppear failed: %{public}s', JSON.stringify(e));
     }
   }
+
+  aboutToDisappear(): void { this.tracker.onDisappear() }
 
   async onPageShow() {
     await this.loadMembers();
@@ -30,12 +35,12 @@ struct MemberPage {
   private async loadMembers() {
     this.isLoading = true
     this.members = await this.appState.getAllMembers();
+    this.memberDataSource.reloadData(this.members)
     this.isLoading = false
   }
 
   build() {
     Column() {
-      // 顶部导航
       Row() {
         Text($r('app.string.back_arrow')).fontSize(24).fontColor(COLORS.PRIMARY)
           .onClick(() => { safeBack() })
@@ -45,15 +50,13 @@ struct MemberPage {
       .width('100%')
       .padding({ left: 16, right: 16, top: 16, bottom: 16 })
 
-      // 成员列表
       List() {
-        ForEach(this.members, (member: FamilyProfile) => {
+        LazyForEach(this.memberDataSource, (member: FamilyProfile, index: number) => {
           ListItem() {
             this.MemberListItem(member)
           }
         }, (member: FamilyProfile) => member.memberId)
 
-        // 添加成员按钮
         ListItem() {
           Row() {
             Text($r('app.string.add_family_member')).fontSize(16).fontColor(COLORS.PRIMARY)

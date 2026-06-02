@@ -158,7 +158,7 @@ export class SyncService {
       if (this.config.enabled) {
         this.startAutoSync();
       }
-    } catch (error: Object) {
+    } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'SyncService init failed: %{public}s',
         JSON.stringify(error));
       // 不标记 isInitialized，允许下次重试
@@ -310,7 +310,7 @@ export class SyncService {
       });
 
       return result;
-    } catch (error: Object) {
+    } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Sync error: %{public}s', JSON.stringify(error));
       this.notifyEvent({
         type: 'sync_failed',
@@ -522,7 +522,7 @@ export class SyncService {
         r.syncStatus !== SyncStatus.SYNCED
       );
 
-    } catch (error: Object) {
+    } catch (error) {
       for (const item of pendingItems) {
         item.syncStatus = SyncStatus.FAILED;
         item.retryCount++;
@@ -600,7 +600,7 @@ export class SyncService {
         await prefs.flush();
       }
       return deviceId;
-    } catch (error: Object) {
+    } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'getOrCreateDeviceId failed: %{public}s', JSON.stringify(error));
       return `device_${Date.now()}`;
     }
@@ -629,7 +629,7 @@ export class SyncService {
           this.config.pendingCount = parsed.pendingCount;
         }
       }
-    } catch (error: Object) {
+    } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Restore config failed: %{public}s',
         JSON.stringify(error));
     }
@@ -641,7 +641,7 @@ export class SyncService {
       const prefs = await preferences.getPreferences(this.context, PREF_SYNC_CONFIG);
       prefs.putSync('config', JSON.stringify(this.config));
       await prefs.flush();
-    } catch (error: Object) {
+    } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Persist config failed: %{public}s',
         JSON.stringify(error));
     }
@@ -655,7 +655,7 @@ export class SyncService {
       if (saved.length > 0) {
         this.syncQueue = JSON.parse(saved) as SyncChangeRecord[];
       }
-    } catch (error: Object) {
+    } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Restore queue failed: %{public}s',
         JSON.stringify(error));
     }
@@ -667,7 +667,7 @@ export class SyncService {
       const prefs = await preferences.getPreferences(this.context, PREF_SYNC_QUEUE);
       prefs.putSync('queue', JSON.stringify(this.syncQueue.slice(0, 500))); // 最多存500条
       await prefs.flush();
-    } catch (error: Object) {
+    } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Persist queue failed: %{public}s',
         JSON.stringify(error));
     }
@@ -677,7 +677,7 @@ export class SyncService {
     for (const cb of this.eventListeners) {
       try {
         cb(event);
-      } catch (err: Object) {
+      } catch (err) {
         hilog.error(DOMAIN_ZERO, TAG, 'Event listener error: %{public}s',
           JSON.stringify(err));
       }

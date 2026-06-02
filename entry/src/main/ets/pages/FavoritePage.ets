@@ -34,7 +34,7 @@ class FavoritePageViewModel {
 }
 
 @ComponentV2
-struct FavoriteItemRow {
+export struct FavoriteItemRow {
   @Param item: FavoriteItem = new FavoriteItem()
   @Event onRemove?: (foodId: string) => void
   @Event onItemClick?: (item: FavoriteItem) => void

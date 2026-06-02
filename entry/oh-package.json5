@@ -15,7 +15,8 @@
     "hsp_rating": "file:../hsp-rating",
     "hsp_llm": "file:../hsp-llm",
     "hsp_cloud": "file:../hsp-cloud",
-    "feature_profile": "file:../feature-profile"
+    "feature_profile": "file:../feature-profile",
+    "hsp_core_cj": "file:../hsp-core-cj"
   },
   "devDependencies": {
     "@ohos/hypium": "1.0.25"

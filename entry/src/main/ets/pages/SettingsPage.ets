@@ -94,10 +94,9 @@ struct SettingsPage {
 
         GridRow({
           columns: { sm: 4, md: 8, lg: 12 },
-          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] } as BreakPoints
+          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
         }) {
           GridCol({ span: { sm: 4, md: 8, lg: 10 }, offset: { sm: 0, md: 0, lg: 1 } }) {
-            Column() {
             Column() {
               Text($r('app.string.mvp_hint'))
                 .fontSize(16)
@@ -183,7 +182,7 @@ struct SettingsPage {
 
               // 暗黑模式开关
               Row() {
-                Text(this.vm.currentThemeMode === 'dark' ? $r('app.string.settings_dark_mode') : $r('app.string.settings_light_mode'))
+                Text(this.vm.currentThemeMode === ThemeMode.DARK ? $r('app.string.settings_dark_mode') : $r('app.string.settings_light_mode'))
                   .fontSize(15)
                   .fontColor(COLORS.TEXT_PRIMARY)
                   .layoutWeight(1)

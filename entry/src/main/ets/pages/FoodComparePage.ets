@@ -45,12 +45,12 @@ struct FoodComparePage {
     this.mContext = this.getUIContext() as UIContext;
     try {
       const allResults = await Promise.all([
-        this.appState.historyRepo.getRecentFoods(20).catch((e: Object) => {
+        this.appState.historyRepo.getRecentFoods(20).catch((e) => {
           hilog.warn(DOMAIN_ZERO, TAG, 'Load recent foods failed: %{public}s', JSON.stringify(e))
           const emptyArr: FoodLabel[] = []
           return emptyArr
         }),
-        this.appState.getNutritionSnapshots('', 20).catch((_e: Object) => {
+        this.appState.getNutritionSnapshots('', 20).catch((_e) => {
           const emptySnapshots: NutritionSnapshot[] = []
           return emptySnapshots
         })

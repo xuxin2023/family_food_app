@@ -226,7 +226,7 @@ struct ScanPage {
         usage: 'physicalFeedback'
       }).then(() => {
         // 振动成功，无需额外处理
-      }).catch((err: Error) => {
+      }).catch((err) => {
         hilog.warn(DOMAIN_ZERO, TAG, '振动失败: %{public}s', JSON.stringify(err));
       })
     } catch (err) {
@@ -247,7 +247,7 @@ struct ScanPage {
         usage: 'physicalFeedback'
       }).then(() => {
         // 振动成功
-      }).catch((err: Error) => {
+      }).catch((err) => {
         hilog.warn(DOMAIN_ZERO, TAG, '错误振动失败: %{public}s', JSON.stringify(err));
       })
     } catch (err) {
@@ -396,7 +396,7 @@ struct ScanPage {
       Stack() {
       GridRow({
         columns: { sm: 4, md: 8, lg: 12 },
-        breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] } as BreakPoints
+        breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
       }) {
         GridCol({ span: { sm: 4, md: 8, lg: this.vm.showEditPanel ? 8 : 12 }, offset: { sm: 0, md: 0, lg: 0 } }) {
           Scroll() {
@@ -834,7 +834,7 @@ struct ScanPage {
           // 用扫码结果查询食品
           this.processScanResult(result.originalValue)
         })
-        .catch((err: BusinessError) => {
+        .catch((err) => {
           if (!this.componentActive) return
           hilog.warn(DOMAIN_ZERO, TAG, 'scanBarcode failed: %{public}s', err.message)
           this.vm.scanPhase = ScanPhase.IDLE

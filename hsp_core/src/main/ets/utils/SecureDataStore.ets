@@ -141,11 +141,11 @@ export class SecureDataStore {
     const ivBytes = new Uint8Array(randomBlob.data);
     const aadArr: Uint8Array = new Uint8Array(0);
     const tagArr: Uint8Array = new Uint8Array(TAG_LENGTH);
-    const params = new cryptoFramework.GcmParamsSpec();
-    params.iv = { data: ivBytes.buffer as ArrayBuffer };
-    params.aad = { data: aadArr.buffer as ArrayBuffer };
-    params.authTag = { data: tagArr.buffer as ArrayBuffer };
-    params.algName = 'GcmParamsSpec';
+    const params: cryptoFramework.GcmParamsSpec = {
+      iv: { data: ivBytes.buffer as ArrayBuffer },
+      aad: { data: aadArr.buffer as ArrayBuffer },
+      authTag: { data: tagArr.buffer as ArrayBuffer }
+    } as cryptoFramework.GcmParamsSpec;
 
     await cipher.init(cryptoFramework.CryptoMode.ENCRYPT_MODE, symKey, params);
     const input: cryptoFramework.DataBlob = {
@@ -182,11 +182,11 @@ export class SecureDataStore {
 
     const aadArr2: Uint8Array = new Uint8Array(0);
     const decipher = cryptoFramework.createCipher('AES256|GCM|NONE');
-    const params = new cryptoFramework.GcmParamsSpec();
-    params.iv = { data: iv.buffer as ArrayBuffer };
-    params.aad = { data: aadArr2.buffer as ArrayBuffer };
-    params.authTag = { data: tag.buffer as ArrayBuffer };
-    params.algName = 'GcmParamsSpec';
+    const gcmParams2: cryptoFramework.GcmParamsSpec = {
+      iv: { data: iv.buffer as ArrayBuffer },
+      aad: { data: aadArr2.buffer as ArrayBuffer },
+      authTag: { data: tag.buffer as ArrayBuffer }
+    } as cryptoFramework.GcmParamsSpec;
 
     await decipher.init(cryptoFramework.CryptoMode.DECRYPT_MODE, symKey, params);
     const input: cryptoFramework.DataBlob = { data: cipherData.buffer as ArrayBuffer };

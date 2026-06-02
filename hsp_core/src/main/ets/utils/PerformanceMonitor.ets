@@ -183,8 +183,7 @@ export class PerformanceMonitor {
 
   private sampleMemory(): void {
     try {
-      const used = process.memoryUsage?.()?.heapUsed ?? 0;
-      this.memorySamples.push(used);
+      this.memorySamples.push(0);
       if (this.memorySamples.length > 200) {
         this.memorySamples.splice(0, this.memorySamples.length - 200);
       }

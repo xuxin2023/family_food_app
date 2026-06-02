@@ -13,7 +13,6 @@
 import { BasicDataSource } from './BasicDataSource';
 
 class LazyDataSource<T> extends BasicDataSource<T> {
-  protected dataArray: T[] = []
 
   totalCount(): number {
     return this.dataArray.length

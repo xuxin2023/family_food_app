@@ -1,0 +1,11 @@
+{
+  "modelVersion": "6.1.0",
+  "name": "hsp_core_cj",
+  "version": "1.0.0",
+  "description": "仓颉高性能计算引擎 NAPI 桥接 — 用于数值密集型计算路径(cssSim/nsCalc/bmi)",
+  "main": "src/main/cj/ComputeEngine.cj",
+  "dependencies": {
+    "@ohos/native": "^6.1.0"
+  },
+  "devDependencies": {}
+}

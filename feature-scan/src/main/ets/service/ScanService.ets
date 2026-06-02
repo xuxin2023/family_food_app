@@ -60,7 +60,7 @@ export class ScanService {
         return result.originalValue;
       }
       return '';
-    } catch (error: Object) {
+    } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Scan failed: %{public}s', JSON.stringify(error));
       return '';
     }
@@ -78,7 +78,7 @@ export class ScanService {
         return result.originalValue;
       }
       return '';
-    } catch (error: Object) {
+    } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Food barcode scan failed: %{public}s', JSON.stringify(error));
       return '';
     }
@@ -96,7 +96,7 @@ export class ScanService {
       }
       hilog.info(DOMAIN_ZERO, TAG, 'Cache miss for barcode: %{public}s', barcode);
       return null;
-    } catch (error: Object) {
+    } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Lookup failed: %{public}s', JSON.stringify(error));
       return null;
     }
@@ -107,7 +107,7 @@ export class ScanService {
       const netHandle = await connection.getDefaultNet();
       const caps = await connection.getNetCapabilities(netHandle);
       return caps !== undefined && caps.bearerTypes.length > 0;
-    } catch (err: Object) {
+    } catch (err) {
       hilog.warn(DOMAIN_ZERO, TAG, 'isNetworkAvailable check failed: %{public}s', JSON.stringify(err));
       return false;
     }
@@ -165,7 +165,7 @@ export class ScanService {
           return result;
         }
         hilog.info(DOMAIN_ZERO, TAG, 'Level3 OFF API miss for: %{public}s', barcode);
-      } catch (err: Object) {
+      } catch (err) {
         hilog.error(DOMAIN_ZERO, TAG, 'Level3 OFF API error: %{public}s', JSON.stringify(err));
       }
     } else {
@@ -204,7 +204,7 @@ export class ScanService {
         return qrResult;
       }
       return new QrScanResult();
-    } catch (error: Object) {
+    } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'QR scan failed: %{public}s', JSON.stringify(error));
       return new QrScanResult();
     }

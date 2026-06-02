@@ -70,7 +70,7 @@ struct HomePage {
       } else {
         GridRow({
           columns: { sm: 4, md: 8, lg: 12 },
-          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['600vp', '840vp'] } as BreakPoints
+          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['600vp', '840vp'] }
         }) {
           GridCol({ span: { sm: 4, md: 8, lg: 10 }, offset: { sm: 0, md: 0, lg: 1 } }) {
             Scroll() {

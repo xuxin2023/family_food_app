@@ -1,0 +1,32 @@
+{
+  "string": [
+    { "name": "food_scan_title", "value": "扫描食品" },
+    { "name": "food_scan_hint", "value": "将食品条码对准取景框" },
+    { "name": "food_scan_by_photo", "value": "从相册选择" },
+    { "name": "food_scan_by_ocr", "value": "拍照OCR识别" },
+    { "name": "food_scan_timeout", "value": "扫描超时，请手动对准条码" },
+    { "name": "food_label_title", "value": "食品标签" },
+    { "name": "food_name_label", "value": "食品名称" },
+    { "name": "food_brand_label", "value": "品牌" },
+    { "name": "food_weight_label", "value": "净含量" },
+    { "name": "food_ingredients_label", "value": "配料表" },
+    { "name": "food_nutrition_label", "value": "营养成分表" },
+    { "name": "food_allergen_label", "value": "过敏原提示" },
+    { "name": "food_additive_title", "value": "食品添加剂" },
+    { "name": "food_additive_safe", "value": "安全" },
+    { "name": "food_additive_caution", "value": "需谨慎" },
+    { "name": "food_additive_danger", "value": "有害" },
+    { "name": "food_alternative_title", "value": "更健康的替代品" },
+    { "name": "food_alternative_no_data", "value": "暂无替代品推荐" },
+    { "name": "food_alternative_load_fail", "value": "替代品加载失败" },
+    { "name": "food_basket_title", "value": "购物篮检查" },
+    { "name": "food_basket_empty", "value": "购物篮为空" },
+    { "name": "food_basket_analysis", "value": "整篮分析" },
+    { "name": "food_basket_total", "value": "购物篮评分" },
+    { "name": "food_report_title", "value": "适配分析报告" },
+    { "name": "food_report_adaptation", "value": "食品适配评级" },
+    { "name": "food_report_elderly", "value": "老年人友好度" },
+    { "name": "food_report_child", "value": "儿童保护评分" },
+    { "name": "food_report_credibility", "value": "信息可信度" }
+  ]
+}

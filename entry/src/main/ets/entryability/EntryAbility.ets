@@ -110,7 +110,7 @@ export default class EntryAbility extends UIAbility {
 
         SecureHttpClient.getInstance().init(this.context, false).then(() => {
           hilog.info(DOMAIN_ZERO, TAG, 'SSL Pinning initialized (TOFU mode)');
-        }).catch((err: Error) => {
+        }).catch((err) => {
           hilog.warn(DOMAIN_ZERO, TAG, 'SSL Pinning init failed: %{public}s', err.message);
         });
 
@@ -153,7 +153,7 @@ export default class EntryAbility extends UIAbility {
     // 埋点统计服务
     AnalyticsService.getInstance().init(this.context).then(() => {
       hilog.info(DOMAIN_ZERO, TAG, 'AnalyticsService init success (deferred)');
-    }).catch((err: Error) => {
+    }).catch((err) => {
       hilog.warn(DOMAIN_ZERO, TAG, 'AnalyticsService init failed: %{public}s', err.message);
     });
 
@@ -163,7 +163,7 @@ export default class EntryAbility extends UIAbility {
     // Push Kit 初始化
     PushService.getInstance().init().then(() => {
       hilog.info(DOMAIN_ZERO, TAG, 'PushService init success (deferred)');
-    }).catch((err: Error) => {
+    }).catch((err) => {
       hilog.warn(DOMAIN_ZERO, TAG, 'PushService init failed: %{public}s', err.message);
     });
 
@@ -229,7 +229,7 @@ export default class EntryAbility extends UIAbility {
     }
 
     // 保存应用状态到Preferences
-    this.persistAppState().catch((err: Error) => {
+    this.persistAppState().catch((err) => {
       hilog.warn(DOMAIN_ZERO, TAG, 'persistAppState onDestroy failed: %{public}s', JSON.stringify(err));
     });
 
@@ -285,7 +285,7 @@ export default class EntryAbility extends UIAbility {
         // ignore if not supported on older API levels
       }
       hilog.info(DOMAIN_ZERO, TAG, 'Window fullscreen layout set (HarmonyOS 6.1 immersive)');
-    }).catch((err: Error) => {
+    }).catch((err) => {
       hilog.warn(DOMAIN_ZERO, TAG, 'Set fullscreen failed: %{public}s', err.message);
     });
   }
@@ -430,7 +430,7 @@ export default class EntryAbility extends UIAbility {
     }
 
     // 保存当前状态到Preferences（使用Promise确保完成）
-    this.persistAppState().catch((err: Error) => {
+    this.persistAppState().catch((err) => {
       hilog.warn(DOMAIN_ZERO, TAG, 'persistAppState onBackground failed: %{public}s', JSON.stringify(err));
     });
   }
@@ -573,7 +573,7 @@ export default class EntryAbility extends UIAbility {
             hilog.info(DOMAIN_ZERO, TAG, 'First launch detected, privacy dialog required');
           }
         });
-      }).catch((e: Error) => {
+      }).catch((e) => {
         hilog.warn(DOMAIN_ZERO, TAG, 'checkFirstLaunchPrivacy failed: %{public}s', e.message);
         AppStorage.setOrCreate('isFirstLaunchNeedPrivacy', true);
       });

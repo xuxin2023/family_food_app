@@ -10,7 +10,7 @@ import { AppState } from '../AppState';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
 import { photoAccessHelper } from '@kit.MediaLibraryKit';
-import { fileIo } from '@kit.FileIo';
+import { fileIo } from '@kit.CoreFileKit';
 
 const TAG = 'SharePage';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -53,7 +53,7 @@ struct SharePage {
 
       const allResults = await Promise.all([
         membersPromise,
-        this.appState.getMyGroups().catch((e: Object) => {
+        this.appState.getMyGroups().catch((e) => {
           hilog.warn(DOMAIN_ZERO, TAG, '加载群组列表失败: %{public}s', JSON.stringify(e));
           return [] as GroupSummary[]
         })
@@ -94,7 +94,7 @@ struct SharePage {
 
         GridRow({
           columns: { sm: 4, md: 8, lg: 12 },
-          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] } as BreakPoints
+          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
         }) {
           GridCol({ span: { sm: 4, md: 8, lg: 10 }, offset: { sm: 0, md: 0, lg: 1 } }) {
             Column() {

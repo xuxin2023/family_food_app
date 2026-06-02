@@ -135,7 +135,7 @@ struct ReportPage {
       Scroll() {
         GridRow({
           columns: { sm: 4, md: 8, lg: 12 },
-          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] } as BreakPoints
+          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
         }) {
           GridCol({ span: { sm: 4, md: 8, lg: 12 } }) {
             // ---- 顶部导航 ----

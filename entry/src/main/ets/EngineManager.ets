@@ -347,15 +347,22 @@ export class EngineManager {
       };
       const engine = new WeeklyReportEngine();
       const report = engine.generate(data, member);
-      return [
-        `📊 ${member.nickname} 的周报 (${report.weekRange})`,
-        `📝 ${report.summary}`,
-        '---',
-        ...report.highlights.map(h => `✅ ${h}`),
-        ...report.suggestions.map(s => `💡 ${s}`),
-        ...(report.buyLess.length > 0 ? ['---', '🛑 少买:', ...report.buyLess.map(b => `  • ${b}`)] : []),
-        ...(report.buyMore.length > 0 ? ['🛒 建议备:', ...report.buyMore.map(b => `  • ${b}`)] : [])
-      ].join('\n');
+      let resultLines: string[] = [];
+      resultLines.push(`📊 ${member.nickname} 的周报 (${report.weekRange})`);
+      resultLines.push(`📝 ${report.summary}`);
+      resultLines.push('---');
+      resultLines = resultLines.concat(report.highlights.map(h => `✅ ${h}`));
+      resultLines = resultLines.concat(report.suggestions.map(s => `💡 ${s}`));
+      if (report.buyLess.length > 0) {
+        resultLines.push('---');
+        resultLines.push('🛑 少买:');
+        resultLines = resultLines.concat(report.buyLess.map(b => `  • ${b}`));
+      }
+      if (report.buyMore.length > 0) {
+        resultLines.push('🛒 建议备:');
+        resultLines = resultLines.concat(report.buyMore.map(b => `  • ${b}`));
+      }
+      return resultLines.join('\n');
     } catch (_e) {
       return `本周暂无足够数据生成周报。继续扫描食品，积累7天数据后将自动生成详细报告。`;
     }

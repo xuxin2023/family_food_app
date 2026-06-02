@@ -171,7 +171,7 @@ export class MemberFacade {
       defaultTarget.caloriesTarget = 2000;
       this._nutriTargetCache.set(memberId, defaultTarget);
       return defaultTarget;
-    } catch (_e: Object) {
+    } catch (_e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'getNutritionTarget failed: %{public}s', JSON.stringify(_e));
       return null;
     } finally {
@@ -198,7 +198,7 @@ export class MemberFacade {
     this.cache.clearHealthSignalsCache();
     try {
       this._membersCache = await this.familyRepo.getAllMembers();
-    } catch (_e: Error) {
+    } catch (_e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'refreshMemberCache failed: %{public}s', JSON.stringify(_e));
     }
   }

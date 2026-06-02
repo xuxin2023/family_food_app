@@ -81,7 +81,7 @@ export class OnlineAlternativeSearchService {
       candidates.sort((a: OnlineSearchResult, b: OnlineSearchResult) => b.similarityScore - a.similarityScore);
       hilog.info(DOMAIN_ZERO, TAG, 'Found %{public}d online alternatives (OFF fallback)', candidates.length);
       return candidates.slice(0, maxResults);
-    } catch (error: Object) {
+    } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Online search failed: %{public}s', JSON.stringify(error));
       return [];
     }
@@ -131,7 +131,7 @@ export class OnlineAlternativeSearchService {
       candidates.sort((a: OnlineSearchResult, b: OnlineSearchResult) => b.similarityScore - a.similarityScore);
       hilog.info(DOMAIN_ZERO, TAG, 'Found %{public}d cloud alternatives', candidates.length);
       return candidates.slice(0, maxResults);
-    } catch (error: Object) {
+    } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Cloud search failed: %{public}s', JSON.stringify(error));
       return [];
     }

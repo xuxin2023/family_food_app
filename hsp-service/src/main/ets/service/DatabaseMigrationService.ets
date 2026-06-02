@@ -199,7 +199,7 @@ export async function migrateDatabase(
     await prefs.put('migration_status', 'COMPLETED');
     await prefs.flush();
     hilog.info(DOMAIN_ZERO, TAG, `Migration complete: ${currentVersion}`);
-  } catch (error: Object) {
+  } catch (error) {
     hilog.error(DOMAIN_ZERO, TAG, `Migration failed: ${JSON.stringify(error)}`);
     const prefs = await preferences.getPreferences(context, PREFS_NAME);
     await prefs.put('migration_status', 'FAILED');

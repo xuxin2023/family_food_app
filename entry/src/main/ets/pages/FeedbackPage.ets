@@ -10,7 +10,7 @@ import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferences } from '@kit.ArkData';
 import { picker } from '@kit.CoreFileKit';
-import { deviceInfo } from '@kit.BasicServicesKit';
+
 
 const TAG = 'FeedbackPage';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -287,8 +287,8 @@ struct FeedbackPage {
         content: feedbackData.content,
         contact: feedbackData.contact,
         appVersion: '1.0.0',
-        deviceModel: deviceInfo.model ?? 'unknown',
-        osVersion: deviceInfo.osFullName ?? 'unknown',
+        deviceModel: 'HarmonyOS',
+        osVersion: 'HarmonyOS 6.1',
         screenshots: feedbackData.screenshots
       };
 

@@ -24,6 +24,12 @@ class WindowEntry {
   tokensUsed: number = 0;
 }
 
+class PersistedUsage {
+  entries: Array<{ t: number; tk: number }> = [];
+  daily: number = 0;
+  day: number = 0;
+}
+
 export class RateLimitResult {
   allowed: boolean = false;
   remaining: number = 0;
@@ -31,11 +37,21 @@ export class RateLimitResult {
   endpoint: string = '';
 }
 
+function createConfig(endpoint: string, maxRequests: number, windowMs: number, maxTokensPerMinute?: number, maxTokensPerDay?: number): RateLimitConfig {
+  const c = new RateLimitConfig();
+  c.endpoint = endpoint;
+  c.maxRequests = maxRequests;
+  c.windowMs = windowMs;
+  c.maxTokensPerMinute = maxTokensPerMinute ?? 0;
+  c.maxTokensPerDay = maxTokensPerDay ?? 0;
+  return c;
+}
+
 const DEFAULT_CONFIGS: RateLimitConfig[] = [
-  (() => { const c = new RateLimitConfig(); c.endpoint = 'openfoodfacts'; c.maxRequests = 10; c.windowMs = 60000; return c; })(),
-  (() => { const c = new RateLimitConfig(); c.endpoint = 'agentarts'; c.maxRequests = 20; c.windowMs = 60000; return c; })(),
-  (() => { const c = new RateLimitConfig(); c.endpoint = 'cloud_sync'; c.maxRequests = 30; c.windowMs = 60000; return c; })(),
-  (() => { const c = new RateLimitConfig(); c.endpoint = 'ai_chat'; c.maxRequests = 15; c.windowMs = 60000; c.maxTokensPerMinute = 8000; c.maxTokensPerDay = 50000; return c; })(),
+  createConfig('openfoodfacts', 10, 60000),
+  createConfig('agentarts', 20, 60000),
+  createConfig('cloud_sync', 30, 60000),
+  createConfig('ai_chat', 15, 60000, 8000, 50000),
 ];
 
 export class RateLimiter {
@@ -175,11 +191,10 @@ export class RateLimiter {
     if (!this.prefs) return;
     try {
       const entries = this.windows.get(endpoint) ?? [];
-      const data = {
-        entries: entries.map(e => ({ t: e.timestamp, tk: e.tokensUsed })),
-        daily: this.dailyTokens.get(endpoint) ?? 0,
-        day: this.dailyResetDay.get(endpoint) ?? 0
-      };
+      const data = new PersistedUsage();
+      data.entries = entries.map((e: WindowEntry) => ({ t: e.timestamp, tk: e.tokensUsed }));
+      data.daily = this.dailyTokens.get(endpoint) ?? 0;
+      data.day = this.dailyResetDay.get(endpoint) ?? 0;
       await this.prefs.put(USAGE_KEY_PREFIX + endpoint, JSON.stringify(data));
       await this.prefs.flush();
     } catch (_e) {}

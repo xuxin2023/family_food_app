@@ -36,7 +36,7 @@ struct PrivacyDialogPage {
         PrivacyManager.getDocumentUrls(context).then((urls: PrivacyDocumentUrls) => {
           this.onlineDocUrls = urls
           hilog.info(DOMAIN_ZERO, TAG, 'Online doc URLs loaded, isOnline=%{public}s', urls.isOnline ? 'true' : 'false');
-        }).catch((_e: Error) => {
+        }).catch((_e) => {
           hilog.warn(DOMAIN_ZERO, TAG, 'Failed to load online doc URLs');
         })
       }

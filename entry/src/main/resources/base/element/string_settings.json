@@ -1,0 +1,28 @@
+{
+  "string": [
+    { "name": "settings_title", "value": "设置" },
+    { "name": "settings_theme", "value": "主题模式" },
+    { "name": "settings_theme_light", "value": "浅色模式" },
+    { "name": "settings_theme_dark", "value": "深色模式" },
+    { "name": "settings_theme_system", "value": "跟随系统" },
+    { "name": "settings_eye_care", "value": "护眼模式" },
+    { "name": "settings_eye_care_desc", "value": "降低蓝光，保护视力" },
+    { "name": "settings_language", "value": "语言设置" },
+    { "name": "settings_language_cn", "value": "简体中文" },
+    { "name": "settings_language_en", "value": "English" },
+    { "name": "settings_notification", "value": "通知设置" },
+    { "name": "settings_cloud_sync", "value": "云同步" },
+    { "name": "settings_cloud_sync_desc", "value": "跨设备同步家庭数据" },
+    { "name": "settings_subscription", "value": "会员订阅" },
+    { "name": "settings_subscription_free", "value": "免费版" },
+    { "name": "settings_subscription_premium", "value": "高级版" },
+    { "name": "settings_about", "value": "关于" },
+    { "name": "settings_version", "value": "版本" },
+    { "name": "settings_privacy", "value": "隐私设置" },
+    { "name": "settings_data_delete", "value": "删除我的数据" },
+    { "name": "settings_data_export", "value": "导出我的数据" },
+    { "name": "settings_cache_clear", "value": "清除缓存" },
+    { "name": "settings_feedback", "value": "意见反馈" },
+    { "name": "settings_teen_mode", "value": "青少年模式" }
+  ]
+}

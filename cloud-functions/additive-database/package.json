@@ -1,0 +1,9 @@
+{
+  "name": "additive-database",
+  "version": "1.0.0",
+  "description": "华为云云函数 - 300+ 食品添加剂数据库查询",
+  "main": "index.js",
+  "dependencies": {
+    "@hw-agcloud/cloud-database": "^1.0.0"
+  }
+}

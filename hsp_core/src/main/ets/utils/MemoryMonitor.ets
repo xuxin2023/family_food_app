@@ -7,13 +7,19 @@ import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
 const TAG = 'MemoryMonitor';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
-export interface MemorySnapshot {
-  timestamp: number;
-  totalJSHeapSize: number;
-  usedJSHeapSize: number;
-  jsHeapSizeLimit: number;
-  imageCacheSize: number;
-  gcCount: number;
+export class MemorySnapshot {
+  timestamp: number = 0;
+  totalJSHeapSize: number = 0;
+  usedJSHeapSize: number = 0;
+  jsHeapSizeLimit: number = 0;
+  imageCacheSize: number = 0;
+  gcCount: number = 0;
+}
+
+export class MemoryHealth {
+  status: string = '';
+  percentage: number = 0;
+  warning: string = '';
 }
 
 export class MemoryMonitor {
@@ -56,17 +62,21 @@ export class MemoryMonitor {
   }
 
   captureSnapshot(): MemorySnapshot {
-    const performance = (globalThis as Record<string, unknown>)['performance'] as Record<string, unknown>;
-    const memory = (performance?.['memory'] as Record<string, number>) ?? {};
-
-    const snapshot: MemorySnapshot = {
-      timestamp: Date.now(),
-      totalJSHeapSize: memory['totalJSHeapSize'] ?? 0,
-      usedJSHeapSize: memory['usedJSHeapSize'] ?? 0,
-      jsHeapSizeLimit: memory['jsHeapSizeLimit'] ?? 0,
-      imageCacheSize: 0,
-      gcCount: this.gcTriggerCount
-    };
+    const snapshot = new MemorySnapshot();
+    snapshot.timestamp = Date.now();
+    snapshot.imageCacheSize = 0;
+    snapshot.gcCount = this.gcTriggerCount;
+    try {
+      const perf = (globalThis as Record<string, Object>)['performance'] as Record<string, Object> | undefined;
+      if (perf) {
+        const mem = perf['memory'] as Record<string, Object> | undefined;
+        if (mem) {
+          snapshot.totalJSHeapSize = (mem['totalJSHeapSize'] as number) ?? 0;
+          snapshot.usedJSHeapSize = (mem['usedJSHeapSize'] as number) ?? 0;
+          snapshot.jsHeapSizeLimit = (mem['jsHeapSizeLimit'] as number) ?? 0;
+        }
+      }
+    } catch (_e) {}
 
     this.snapshots.push(snapshot);
 
@@ -104,9 +114,10 @@ export class MemoryMonitor {
   triggerGC(): void {
     this.gcTriggerCount++;
     try {
-      const gc = (globalThis as Record<string, unknown>)['gc'] as (() => void) | undefined;
-      if (gc) {
-        gc();
+      const globalRecord: Object = globalThis as Object;
+      const gcFn = (globalRecord as Record<string, Object>)['gc'];
+      if (gcFn !== undefined && gcFn !== null) {
+        (gcFn as Function)();
         hilog.info(DOMAIN_ZERO, TAG, 'Manual GC triggered (#%{public}d)', this.gcTriggerCount);
       }
     } catch (_e) {
@@ -118,18 +129,23 @@ export class MemoryMonitor {
     return this.snapshots.length > 0 ? this.snapshots[this.snapshots.length - 1] : null;
   }
 
-  getMemoryHealth(): { status: string; percentage: number; warning: string } {
+  getMemoryHealth(): MemoryHealth {
     const usage = this.getMemoryUsage();
+    const result = new MemoryHealth();
     if (usage >= this.criticalThreshold) {
-      return { status: 'critical', percentage: Math.round(usage / this.criticalThreshold * 100),
-        warning: '内存使用接近上限，建议释放不必要资源' };
+      result.status = 'critical';
+      result.percentage = Math.round(usage / this.criticalThreshold * 100);
+      result.warning = '内存使用接近上限，建议释放不必要资源';
+    } else if (usage >= this.warningThreshold) {
+      result.status = 'warning';
+      result.percentage = Math.round(usage / this.warningThreshold * 100);
+      result.warning = '内存使用较高，注意监控趋势';
+    } else {
+      result.status = 'healthy';
+      result.percentage = Math.round(usage / this.warningThreshold * 100);
+      result.warning = '';
     }
-    if (usage >= this.warningThreshold) {
-      return { status: 'warning', percentage: Math.round(usage / this.warningThreshold * 100),
-        warning: '内存使用较高，注意监控趋势' };
-    }
-    return { status: 'healthy', percentage: Math.round(usage / this.warningThreshold * 100),
-      warning: '' };
+    return result;
   }
 
   getFormattedMemoryUsage(): string {

@@ -69,7 +69,7 @@ export class CommunityImageService {
         result.thumbnailUrl = result.url;
         hilog.info(DOMAIN_ZERO, TAG, 'Cloud upload failed, saved locally: %{public}s', result.url);
       }
-    } catch (error: Object) {
+    } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Image upload failed: %{public}s', JSON.stringify(error));
       throw new Error(JSON.stringify(error));
     }
@@ -83,7 +83,7 @@ export class CommunityImageService {
       try {
         const result = await this.uploadImage(path, category);
         results.push(result);
-      } catch (_: Object) {
+      } catch (_) {
         continue;
       }
     }
@@ -95,7 +95,7 @@ export class CommunityImageService {
     const filesDir = this.context.filesDir + '/community_images';
     try {
       await fileIo.access(filesDir);
-    } catch (_: Object) {
+    } catch (_) {
       await fileIo.mkdir(filesDir);
     }
     const destPath = filesDir + '/' + fileName;

@@ -1175,6 +1175,22 @@
     {
       "name": "health_data_reason",
       "value": "用于读取步数、心率等健康数据以提供个性化食品适配建议"
+    },
+    {
+      "name": "read_health_data_reason",
+      "value": "用于读取步数、心率等健康数据以提供个性化食品适配建议"
+    },
+    {
+      "name": "distributed_reason",
+      "value": "用于在多设备间同步数据"
+    },
+    {
+      "name": "running_state_reason",
+      "value": "用于监听应用运行状态以优化后台任务调度"
+    },
+    {
+      "name": "media_reason",
+      "value": "用于读取和保存食品标签图片"
     }
   ]
 }

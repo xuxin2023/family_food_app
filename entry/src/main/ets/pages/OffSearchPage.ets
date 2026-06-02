@@ -98,7 +98,7 @@ struct OffSearchPage {
       this.canLoadMore = labels.length >= PAGE_SIZE;
       this.isSearching = false;
       this.applyFilter();
-    }).catch((err: Object) => {
+    }).catch((err) => {
       if (timedOut || !this.componentActive) return;
       clearTimeout(timeoutId);
       const idx = this.searchTimeoutIds.indexOf(timeoutId);
@@ -124,7 +124,7 @@ struct OffSearchPage {
       this.canLoadMore = labels.length >= PAGE_SIZE;
       this.isLoadingMore = false;
       this.applyFilter();
-    }).catch((err: Object) => {
+    }).catch((err) => {
       this.isLoadingMore = false;
       this.loadMoreError = true;
       this.currentPage--;

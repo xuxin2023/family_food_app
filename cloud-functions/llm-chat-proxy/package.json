@@ -1,0 +1,21 @@
+{
+  "name": "llm-chat-proxy",
+  "version": "1.0.0",
+  "description": "食品分析AI代理 — 盘古大模型Pangu-3B集成",
+  "main": "index.ts",
+  "runtime": "Nodejs18.17",
+  "memorySize": 512,
+  "timeout": 30,
+  "triggers": [
+    {
+      "name": "llm-chat-proxy",
+      "type": "http",
+      "route": "/api/llm-chat-proxy"
+    }
+  ],
+  "dependencies": {},
+  "env": {
+    "PANGU_MODEL": "pangu-nlp-3b",
+    "PANGU_ENDPOINT": "https://pangu-api.huaweicloud.com/v1/chat/completions"
+  }
+}

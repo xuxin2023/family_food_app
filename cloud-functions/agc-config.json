@@ -50,6 +50,46 @@
       "memory": 256,
       "timeout": 15,
       "triggers": [{ "type": "http", "path": "/api/food-safety-alert" }]
+    },
+    {
+      "name": "alternative-recommendation",
+      "handler": "index.handler",
+      "runtime": "Node.js18.17",
+      "memory": 512,
+      "timeout": 10,
+      "triggers": [{ "type": "http", "path": "/v1/alternative-recommendation" }]
+    },
+    {
+      "name": "additive-database",
+      "handler": "index.handler",
+      "runtime": "Node.js18.17",
+      "memory": 256,
+      "timeout": 3,
+      "triggers": [{ "type": "http", "path": "/v1/additive-database" }]
+    },
+    {
+      "name": "ingredient-hazard",
+      "handler": "index.handler",
+      "runtime": "Node.js18.17",
+      "memory": 512,
+      "timeout": 5,
+      "triggers": [{ "type": "http", "path": "/v1/ingredient-hazard-assessment" }]
+    },
+    {
+      "name": "llm-chat-proxy",
+      "handler": "index.handler",
+      "runtime": "Node.js18.17",
+      "memory": 512,
+      "timeout": 30,
+      "triggers": [{ "type": "http", "path": "/api/llm-chat-proxy" }]
+    },
+    {
+      "name": "ingredient-deep-analyze",
+      "handler": "index.handler",
+      "runtime": "Node.js18.17",
+      "memory": 512,
+      "timeout": 20,
+      "triggers": [{ "type": "http", "path": "/api/ingredient-deep-analyze" }]
     }
   ]
 }

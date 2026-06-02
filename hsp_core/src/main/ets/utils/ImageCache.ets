@@ -1,7 +1,8 @@
 import { fileIo as fs } from '@kit.CoreFileKit';
 import { common } from '@kit.AbilityKit';
-import { hash } from '@kit.BasicServicesKit';
+
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { util } from '@kit.ArkTS';
 
 const TAG = 'ImageCache';
 const DISK_CACHE_DIR = 'image_disk_cache';
@@ -50,7 +51,7 @@ export class ImageCache {
         const fd = fs.openSync(path, fs.OpenMode.READ_ONLY);
         fs.readSync(fd, buf);
         fs.closeSync(fd);
-        const decoder = new TextDecoder('utf-8');
+        const decoder = new util.TextDecoder('utf-8');
         return decoder.decodeToString(new Uint8Array(buf));
       }
     } catch (e) {
@@ -67,7 +68,7 @@ export class ImageCache {
         fs.copyFileSync(localPath, dest);
       } else {
         const fd = fs.openSync(dest, fs.OpenMode.CREATE | fs.OpenMode.WRITE_ONLY);
-        const encoder = new TextEncoder();
+        const encoder = new util.TextEncoder();
         const data = encoder.encodeInto(localPath);
         fs.writeSync(fd, data.buffer as ArrayBuffer);
         fs.closeSync(fd);

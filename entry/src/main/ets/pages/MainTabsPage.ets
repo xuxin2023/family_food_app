@@ -70,7 +70,9 @@ struct MainTabsPage {
     if (idx === undefined || idx === null) return;
     if (!this.tabLoaded[idx]) {
       this.tabLoaded[idx] = true;
-      this.tabLoaded = [...this.tabLoaded]; // 触发数组引用更新
+      const copy = new Array<boolean>(5);
+      for (let i = 0; i < this.tabLoaded.length; i++) { copy[i] = this.tabLoaded[i]; }
+      this.tabLoaded = copy;
       hilog.info(DOMAIN_ZERO, TAG, 'Tab %{public}d first loaded (lazy)', idx);
     } else {
       hilog.info(DOMAIN_ZERO, TAG, 'Tab switched to: %{public}d', idx);
@@ -283,7 +285,7 @@ struct MainTabsPage {
       Column() {
         Text(emojiTitle)
           .fontSize(22)
-          .fontWeight(600)
+          .fontWeight(FontWeight.Medium)
           .fontColor(COLORS.TEXT_PRIMARY)
           .margin({ top: 60, bottom: 12 })
         Text(hint)
@@ -307,9 +309,9 @@ struct MainTabsPage {
         .margin({ top: 60 })
       Text($r('app.string.main_tabs_home'))
         .fontSize(20)
-        .fontWeight(600)
-        .fontColor(COLORS.TEXT_PRIMARY)
-        .margin({ top: 12, bottom: 8 })
+.fontWeight(FontWeight.Medium)
+          .fontColor(COLORS.TEXT_PRIMARY)
+          .margin({ top: 12, bottom: 8 })
       Text($r('app.string.main_tabs_app_slogan'))
         .fontSize(14)
         .fontColor(COLORS.TEXT_GRAY_7575)
@@ -363,7 +365,7 @@ struct MainTabsPage {
       Row() {
         Text($r('app.string.main_tabs_diet_center'))
           .fontSize(22)
-          .fontWeight(600)
+          .fontWeight(FontWeight.Medium)
           .fontColor(COLORS.TEXT_PRIMARY)
       }
       .width('100%')
@@ -398,7 +400,7 @@ struct MainTabsPage {
       Row() {
         Text($r('app.string.main_tabs_ai_assistant'))
           .fontSize(22)
-          .fontWeight(600)
+          .fontWeight(FontWeight.Medium)
           .fontColor(COLORS.TEXT_PRIMARY)
       }
       .width('100%')
@@ -431,7 +433,7 @@ struct MainTabsPage {
       Row() {
         Text($r('app.string.main_tabs_community_center'))
           .fontSize(22)
-          .fontWeight(600)
+          .fontWeight(FontWeight.Medium)
           .fontColor(COLORS.TEXT_PRIMARY)
       }
       .width('100%')
@@ -462,7 +464,7 @@ struct MainTabsPage {
       Row() {
         Text($r('app.string.main_tabs_profile_center'))
           .fontSize(22)
-          .fontWeight(600)
+          .fontWeight(FontWeight.Medium)
           .fontColor(COLORS.TEXT_PRIMARY)
       }
       .width('100%')
@@ -504,7 +506,7 @@ struct MainTabsPage {
       Column() {
         Text(title)
           .fontSize(16)
-          .fontWeight(500)
+          .fontWeight(FontWeight.Medium)
           .fontColor(COLORS.TEXT_PRIMARY)
           .margin({ bottom: 2 })
         Text(desc)
@@ -524,7 +526,7 @@ struct MainTabsPage {
     .backgroundColor(COLORS.BG_CARD)
     .borderRadius(12)
     .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
-    .accessibilityText(typeof title === 'string' ? title : '')
+    .accessibilityText('')
     .accessibilityLevel('yes')
     .onClick(() => {
       safePushUrl(targetUrl, extraParams)

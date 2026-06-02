@@ -5,6 +5,7 @@ import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { deviceInfo } from '@kit.BasicServicesKit';
 
+
 const TAG = 'AccessibilityCompliance';
 
 /** 无障碍属性配置 */

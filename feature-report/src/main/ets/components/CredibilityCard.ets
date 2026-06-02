@@ -254,7 +254,7 @@ export struct CredibilityCard {
       const systemPasteboard: pasteboard.SystemPasteboard = pasteboard.getSystemPasteboard();
       systemPasteboard.setData(pasteData).then(() => {
         ToastHelper.show(this.getUIContext(), $r('app.string.credibility_copied'), 1500);
-      }).catch((err: BusinessError) => {
+      }).catch((err) => {
         hilog.warn(DOMAIN_ZERO, TAG, 'Copy to clipboard failed: %{public}s', err.message);
         ToastHelper.show(this.getUIContext(), $r('app.string.credibility_copy_fail'), 1500);
       });

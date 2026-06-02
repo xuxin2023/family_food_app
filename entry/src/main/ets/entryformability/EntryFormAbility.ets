@@ -139,10 +139,10 @@ export default class EntryFormAbility extends FormExtensionAbility {
       const data: Record<string, Object> = rawData as Record<string, Object>;
       data['formId'] = formId;
       const updatedData = formBindingData.createFormBindingData(data);
-      formProvider.updateForm(formId, updatedData).catch((err: BusinessError) => {
+      formProvider.updateForm(formId, updatedData).catch((err) => {
         hilog.error(DOMAIN_NUMBER, TAG, `updateForm failed, code: ${err.code}, msg: ${err.message}`);
       });
-    }).catch((err: Error) => {
+    }).catch((err) => {
       hilog.error(DOMAIN_NUMBER, TAG, `buildFormData failed: ${err.message}`);
     });
   }
@@ -159,10 +159,10 @@ export default class EntryFormAbility extends FormExtensionAbility {
       const data: Record<string, Object> = rawData as Record<string, Object>;
       data['formId'] = formId;
       const updatedData = formBindingData.createFormBindingData(data);
-      formProvider.updateForm(formId, updatedData).catch((err: BusinessError) => {
+      formProvider.updateForm(formId, updatedData).catch((err) => {
         hilog.error(DOMAIN_NUMBER, TAG, `onFormEvent updateForm failed: ${err.message}`);
       });
-    }).catch((err: Error) => {
+    }).catch((err) => {
       hilog.error(DOMAIN_NUMBER, TAG, `onFormEvent buildFormData failed: ${err.message}`);
     });
   }

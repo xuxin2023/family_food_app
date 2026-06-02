@@ -1,0 +1,30 @@
+{
+  "string": [
+    { "name": "report_personal_title", "value": "个人适配报告" },
+    { "name": "report_family_title", "value": "家庭适配报告" },
+    { "name": "report_weekly_title", "value": "本周饮食报告" },
+    { "name": "report_score_overall", "value": "综合评分" },
+    { "name": "report_score_nutri", "value": "营养评分" },
+    { "name": "report_score_nova", "value": "加工度评分" },
+    { "name": "report_score_eco", "value": "生态评分" },
+    { "name": "report_detail_calories", "value": "热量" },
+    { "name": "report_detail_sugar", "value": "糖分" },
+    { "name": "report_detail_sodium", "value": "钠含量" },
+    { "name": "report_detail_fat", "value": "脂肪" },
+    { "name": "report_detail_protein", "value": "蛋白质" },
+    { "name": "report_detail_fiber", "value": "膳食纤维" },
+    { "name": "report_chart_radar", "value": "营养雷达图" },
+    { "name": "report_chart_trend", "value": "趋势图" },
+    { "name": "report_chart_ring", "value": "营养占比" },
+    { "name": "report_advice_title", "value": "健康建议" },
+    { "name": "report_advice_positive", "value": "正向补足建议" },
+    { "name": "report_warning_allergen", "value": "过敏原预警" },
+    { "name": "report_warning_intolerance", "value": "不耐受预警" },
+    { "name": "report_warning_cross", "value": "交叉反应风险" },
+    { "name": "report_compare_title", "value": "食品对比" },
+    { "name": "report_compare_select", "value": "选择对比食品" },
+    { "name": "report_share_title", "value": "分享报告" },
+    { "name": "report_export_pdf", "value": "导出PDF" },
+    { "name": "report_no_data", "value": "暂无报告数据" }
+  ]
+}

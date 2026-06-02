@@ -131,7 +131,7 @@ struct V2DemoPage {
 
 // ==================== 成员营养摘要 ====================
 @ComponentV2
-struct MemberSummary {
+export struct MemberSummary {
   @Require @Param member: MemberNutritionProfile;
 
   /** @Computed — 只计算一次，多处使用不重复计算 */
@@ -207,7 +207,7 @@ struct MemberSummary {
 
 // ==================== 餐次列表 ====================
 @ComponentV2
-struct MealList {
+export struct MealList {
   @Require @Param member: MemberNutritionProfile;
 
   build() {
@@ -242,7 +242,7 @@ struct MealList {
 
 // ==================== 单餐项（最深嵌套） ====================
 @ComponentV2
-struct MealItem {
+export struct MealItem {
   @Require @Param meal: MealNutrition;
   @Local editing: boolean = false;
 

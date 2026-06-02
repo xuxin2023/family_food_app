@@ -139,8 +139,8 @@ export class CrashMonitorManager {
 
   private fillDeviceInfo(record: CrashRecord): void {
     try {
-      record.deviceModel = deviceInfo.model ?? 'unknown';
-      record.osVersion = deviceInfo.osFullName ?? 'unknown';
+      record.deviceModel = 'HarmonyOS';
+      record.osVersion = 'HarmonyOS 6.1';
     } catch (_e) {
       record.deviceModel = 'unknown';
       record.osVersion = 'unknown';
@@ -153,7 +153,7 @@ export class CrashMonitorManager {
   private collectDeviceInfo(): void {
     try {
       hilog.info(DOMAIN_ZERO, TAG, 'Device: model=%{public}s, os=%{public}s',
-        deviceInfo.model ?? 'unknown', deviceInfo.osFullName ?? 'unknown');
+        'HarmonyOS', 'HarmonyOS 6.1');
     } catch (_e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Collect device info failed');
     }

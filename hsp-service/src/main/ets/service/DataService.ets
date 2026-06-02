@@ -100,7 +100,7 @@ export class DataService {
       if (this.foodRepo) {
         try {
           await this.foodRepo.saveFoodLabel(label);
-        } catch (_e: Object) {
+        } catch (_e) {
           hilog.warn(DOMAIN_ZERO, TAG, 'Save to local cache failed');
         }
       }
@@ -134,7 +134,7 @@ export class DataService {
     if (!this.foodRepo || !barcode) return null;
     try {
       return await this.foodRepo.findByBarcode(barcode);
-    } catch (error: Object) {
+    } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Local cache lookup failed: %{public}s', JSON.stringify(error));
       return null;
     }
@@ -167,7 +167,7 @@ export class DataService {
         }
       }
       return null;
-    } catch (error: Object) {
+    } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Remote API lookup failed: %{public}s', JSON.stringify(error));
       return null;
     }
@@ -218,7 +218,7 @@ export class DataService {
       }
 
       return label;
-    } catch (error: Object) {
+    } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Parse API response failed: %{public}s', JSON.stringify(error));
       return null;
     }
@@ -288,7 +288,7 @@ export class DataService {
           const params = new RuleEngineParams(member, signal, label, budget);
           const rec = this.ruleEngine.calculate(params);
           recommendations.push(rec);
-        } catch (error: Object) {
+        } catch (error) {
           // RuleEngine 计算失败时提供安全兜底
           hilog.warn(DOMAIN_ZERO, TAG, 'RuleEngine calculate failed for member %{public}s: %{public}s',
             member.memberId, JSON.stringify(error));
@@ -314,7 +314,7 @@ export class DataService {
       }).catch(() => {
         alternatives = [];
       });
-    } catch (error: Object) {
+    } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'generateFullReport failed: %{public}s', JSON.stringify(error));
       alternatives = [];
     }

@@ -308,3 +308,27 @@ export { NutritionDaily } from './src/main/ets/model/NutritionDaily';
 
 // ===== API 版本守卫 =====
 export { VersionGuard, ApiLevel } from './src/main/ets/utils/VersionGuard';
+
+// ===== V5 新增: 页面生命周期资源追踪 =====
+export { PageResourceTracker, createPageTracker } from './src/main/ets/utils/PageLifecycleMixin';
+
+// ===== V5 新增: CRDT 向量时钟分布式冲突解决 =====
+export { CrdtSyncResolver, ConflictResolutionStrategy } from './src/main/ets/utils/CrdtSyncResolver';
+export type { VectorClock, ConflictRecord } from './src/main/ets/utils/CrdtSyncResolver';
+
+// ===== V5 新增: 增强安全检测器 (DeviceSecurityKit) =====
+export { EnhancedSecurityDetector } from './src/main/ets/security/EnhancedSecurityDetector';
+
+// ===== V5 新增: 家庭群组 E2E 加密 =====
+export { FamilyGroupE2EEncryptor } from './src/main/ets/security/FamilyGroupE2EEncryptor';
+export type { EncryptedPayload, GroupKeyMaterial } from './src/main/ets/security/FamilyGroupE2EEncryptor';
+
+// ===== V5 新增: LazyForEach 通用列表组件 =====
+export { ReusableLazyList, ReusableLazyListController } from './src/main/ets/components/ReusableLazyList';
+
+// ===== V5 新增: AppTheme 护眼模式 =====
+export { AppThemeState, ColorScheme } from './src/main/ets/constants/AppThemeState';
+
+// ===== V5 新增: 审计日志 PIA 增强 =====
+export { AuditLogger, AuditAction, AuditEntry, PIASensitivity } from './src/main/ets/logger/AuditLogger';
+export type { DataInventoryItem } from './src/main/ets/logger/AuditLogger';

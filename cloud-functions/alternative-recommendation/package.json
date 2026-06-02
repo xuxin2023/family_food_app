@@ -1,0 +1,9 @@
+{
+  "name": "alternative-recommendation",
+  "version": "1.0.0",
+  "description": "华为云云函数 - 替代品推荐（加权排序算法）",
+  "main": "index.js",
+  "dependencies": {
+    "@hw-agcloud/cloud-database": "^1.0.0"
+  }
+}

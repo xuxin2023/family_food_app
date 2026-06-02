@@ -1197,6 +1197,37 @@
       "value": "用于读取步数、心率等健康数据以提供个性化食品适配建议"
     },
     {
+      "name": "distributed_reason",
+      "value": "用于在多设备间同步数据"
+    },
+    {
+      "name": "running_state_reason",
+      "value": "用于监听应用运行状态以优化后台任务调度"
+    },
+    {
+      "name": "media_reason",
+      "value": "用于读取和保存食品标签图片"
+    }
+  ]
+}alue": "建议避免食用"
+    },
+    {
+      "name": "distributed_sync_reason",
+      "value": "用于在多设备间同步数据"
+    },
+    {
+      "name": "activity_motion_reason",
+      "value": "用于获取活动数据以动态调整营养预算"
+    },
+    {
+      "name": "health_data_reason",
+      "value": "用于读取步数、心率等健康数据以提供个性化食品适配建议"
+    },
+    {
+      "name": "read_health_data_reason",
+      "value": "用于读取步数、心率等健康数据以提供个性化食品适配建议"
+    },
+    {
       "name": "microphone_reason",
       "value": "用于AI营养师语音对话输入"
     },

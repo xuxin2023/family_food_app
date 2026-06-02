@@ -49,7 +49,7 @@ struct Index {
 }
 
 @ComponentV2
-struct GuidePage {
+export struct GuidePage {
   @Local currentPage: number = 0;
   @Event onComplete?: () => void;
 

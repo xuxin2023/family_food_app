@@ -186,7 +186,7 @@ export class DistributedDataManager {
     return this.kvStore.put(entry.key, entry.value.value as string).then(() => {
       hilog.info(DOMAIN_ZERO, TAG, 'Manual conflict resolved for key: %{public}s', key);
       return true;
-    }).catch((_e: Error) => false);
+    }).catch((_e) => false);
   }
 
   async init(context: common.Context): Promise<boolean> {

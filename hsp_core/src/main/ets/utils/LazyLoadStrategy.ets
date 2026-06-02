@@ -14,6 +14,13 @@ export interface LazyLoadConfig {
   debounceMs: number;
 }
 
+class LazyLoadConfigImpl implements LazyLoadConfig {
+  pageSize: number = 20;
+  preloadThreshold: number = 5;
+  maxCacheSize: number = 200;
+  debounceMs: number = 300;
+}
+
 const DEFAULT_CONFIG: LazyLoadConfig = {
   pageSize: 20,
   preloadThreshold: 5,
@@ -33,7 +40,12 @@ export class LazyLoadStrategy<T> {
     loadCallback: (start: number, count: number) => Promise<T[]>,
     config?: Partial<LazyLoadConfig>
   ) {
-    this.config = { ...DEFAULT_CONFIG, ...config };
+    const merged = new LazyLoadConfigImpl();
+    merged.pageSize = config?.pageSize ?? DEFAULT_CONFIG.pageSize;
+    merged.preloadThreshold = config?.preloadThreshold ?? DEFAULT_CONFIG.preloadThreshold;
+    merged.maxCacheSize = config?.maxCacheSize ?? DEFAULT_CONFIG.maxCacheSize;
+    merged.debounceMs = config?.debounceMs ?? DEFAULT_CONFIG.debounceMs;
+    this.config = merged;
     this.loadCallback = loadCallback;
   }
 

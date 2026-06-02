@@ -297,7 +297,7 @@ export class OpenFoodFactsService {
         });
       }
       return results;
-    } catch (e: Object) {
+    } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'searchByName parse failed: %{public}s', JSON.stringify(e));
       return [];
     }
@@ -328,7 +328,7 @@ export class OpenFoodFactsService {
       }
 
       return this.parseOffProduct(barcode, productRaw)
-    } catch (error: Object) {
+    } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Failed to parse product response: %{public}s', JSON.stringify(error))
       return null
     }
@@ -371,7 +371,7 @@ export class OpenFoodFactsService {
         pageSize: respPageSize,
         products: products
       }
-    } catch (error: Object) {
+    } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Failed to parse search response: %{public}s', JSON.stringify(error))
       return null
     }
@@ -391,7 +391,7 @@ export class OpenFoodFactsService {
       if (cached !== undefined && cached !== null) {
       return cached;
       }
-    } catch (_: Object) {}
+    } catch (_) {}
 
     try {
       const options: SecureRequestOptions = {
@@ -412,9 +412,9 @@ export class OpenFoodFactsService {
       try {
         const cacheUtil = ImageCacheUtil.getInstance();
         cacheUtil.set(imageUrl, pixelMap);
-      } catch (_: Object) {}
+      } catch (_) {}
       return pixelMap;
-    } catch (error: Object) {
+    } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Image request failed: %{public}s', JSON.stringify(error));
       return null;
     }
@@ -531,7 +531,7 @@ export class OpenFoodFactsService {
         hilog.warn(DOMAIN_ZERO, TAG, 'HTTP %{public}d for %{public}s', response.responseCode, url);
       }
       return null;
-    } catch (error: Object) {
+    } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Request failed: %{public}s', JSON.stringify(error));
       return null;
     }

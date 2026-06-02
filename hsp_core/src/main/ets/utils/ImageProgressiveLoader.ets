@@ -5,6 +5,9 @@
 import { image } from '@kit.ImageKit';
 import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { util } from '@kit.ArkTS';
+
+const B64_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 const TAG = 'ImageProgressiveLoader';
 
@@ -175,14 +178,19 @@ export class ImageProgressiveLoader {
   }
 
   private arrayBufferToBase64(buffer: ArrayBuffer): string {
-    const bytes = new Uint8Array(buffer);
-    const CHUNK_SIZE = 8192;
+    const data = new Uint8Array(buffer);
     let result = '';
-    for (let i = 0; i < bytes.length; i += CHUNK_SIZE) {
-      const chunk = bytes.subarray(i, i + CHUNK_SIZE);
-      result += String.fromCharCode(...chunk);
+    for (let i = 0; i < data.length; i += 3) {
+      const b1 = data[i];
+      const b2 = (i + 1 < data.length) ? data[i + 1] : 0;
+      const b3 = (i + 2 < data.length) ? data[i + 2] : 0;
+      const n = (b1 << 16) | (b2 << 8) | b3;
+      result += B64_CHARS.charAt((n >> 18) & 63);
+      result += B64_CHARS.charAt((n >> 12) & 63);
+      result += (i + 1 < data.length) ? B64_CHARS.charAt((n >> 6) & 63) : '=';
+      result += (i + 2 < data.length) ? B64_CHARS.charAt(n & 63) : '=';
     }
-    return btoa(result);
+    return result;
   }
 }
 

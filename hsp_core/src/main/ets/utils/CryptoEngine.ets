@@ -6,6 +6,13 @@ import { util } from '@kit.ArkTS';
 const TAG = 'CryptoEngine';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const AES_KEY_ALIAS = 'family_food_aes256_key';
+const B64_TABLE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+
+class GcmSeparatedData {
+  iv: Uint8Array = new Uint8Array(0);
+  ciphertext: Uint8Array = new Uint8Array(0);
+  authTag: Uint8Array = new Uint8Array(0);
+}
 
 export class CryptoEngine {
   private static instance: CryptoEngine | null = null;
@@ -40,8 +47,12 @@ export class CryptoEngine {
     try {
       const cipher = cryptoFramework.createCipher('AES256|GCM|PKCS7');
       const iv = this.generateIv(12);
-      const params = cryptoFramework.createGcmParams(iv, new Uint8Array(0), new Uint8Array(16));
-      await cipher.init(cryptoFramework.CryptoMode.ENCRYPT_MODE, this.symKey, params);
+      const gcmParams: cryptoFramework.GcmParamsSpec = {
+        iv: { data: iv.buffer as ArrayBuffer },
+        aad: { data: (new Uint8Array(0)).buffer as ArrayBuffer },
+        authTag: { data: (new Uint8Array(16)).buffer as ArrayBuffer }
+      } as cryptoFramework.GcmParamsSpec;
+      await cipher.init(cryptoFramework.CryptoMode.ENCRYPT_MODE, this.symKey, gcmParams);
 
       const input: cryptoFramework.DataBlob = {
         data: new util.TextEncoder().encodeInto(plaintext)
@@ -49,7 +60,7 @@ export class CryptoEngine {
       const output = await cipher.doFinal(input);
 
       const combined = this.combineIvAndCiphertext(iv, output.data);
-      return util.Base64Helper.encodeToStringSync(combined);
+      return this.uint8ArrayToBase64(combined);
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Encrypt failed: %{public}s', JSON.stringify(error));
       throw new Error(String(error));
@@ -60,12 +71,19 @@ export class CryptoEngine {
     if (!this.symKey) throw new Error('CryptoEngine not initialized');
 
     try {
-      const combined = util.Base64Helper.decodeSync(ciphertextBase64);
-      const { iv, ciphertext, authTag } = this.separateIvAndCiphertext(combined);
+      const combined = this.base64ToUint8Array(ciphertextBase64);
+      const separated = this.separateIvAndCiphertext(combined);
+      const iv = separated.iv;
+      const ciphertext = separated.ciphertext;
+      const authTag = separated.authTag;
 
       const decipher = cryptoFramework.createCipher('AES256|GCM|PKCS7');
-      const params = cryptoFramework.createGcmParams(iv, new Uint8Array(0), authTag);
-      await decipher.init(cryptoFramework.CryptoMode.DECRYPT_MODE, this.symKey, params);
+      const gcmParams2: cryptoFramework.GcmParamsSpec = {
+        iv: { data: iv.buffer as ArrayBuffer },
+        aad: { data: (new Uint8Array(0)).buffer as ArrayBuffer },
+        authTag: { data: authTag.buffer as ArrayBuffer }
+      } as cryptoFramework.GcmParamsSpec;
+      await decipher.init(cryptoFramework.CryptoMode.DECRYPT_MODE, this.symKey, gcmParams2);
 
       const input: cryptoFramework.DataBlob = { data: ciphertext };
       const output = await decipher.doFinal(input);
@@ -135,14 +153,49 @@ export class CryptoEngine {
     return combined;
   }
 
-  private separateIvAndCiphertext(combined: Uint8Array): {
-    iv: Uint8Array; ciphertext: Uint8Array; authTag: Uint8Array
-  } {
+  private separateIvAndCiphertext(combined: Uint8Array): GcmSeparatedData {
     const ivLen = 12;
     const authTagLen = 16;
-    const iv = combined.slice(0, ivLen);
-    const ciphertext = combined.slice(ivLen, combined.length - authTagLen);
-    const authTag = combined.slice(combined.length - authTagLen);
-    return { iv, ciphertext, authTag };
+    const result = new GcmSeparatedData();
+    result.iv = combined.slice(0, ivLen);
+    result.ciphertext = combined.slice(ivLen, combined.length - authTagLen);
+    result.authTag = combined.slice(combined.length - authTagLen);
+    return result;
+  }
+
+  private uint8ArrayToBase64(data: Uint8Array): string {
+    let result = '';
+    for (let i = 0; i < data.length; i += 3) {
+      const b1 = data[i];
+      const b2 = (i + 1 < data.length) ? data[i + 1] : 0;
+      const b3 = (i + 2 < data.length) ? data[i + 2] : 0;
+      const n = (b1 << 16) | (b2 << 8) | b3;
+      result += B64_TABLE.charAt((n >> 18) & 63);
+      result += B64_TABLE.charAt((n >> 12) & 63);
+      result += (i + 1 < data.length) ? B64_TABLE.charAt((n >> 6) & 63) : '=';
+      result += (i + 2 < data.length) ? B64_TABLE.charAt(n & 63) : '=';
+    }
+    return result;
+  }
+
+  private base64ToUint8Array(str: string): Uint8Array {
+    const lookup = new Array<number>(128);
+    for (let i = 0; i < 128; i++) { lookup[i] = -1; }
+    for (let i = 0; i < B64_TABLE.length; i++) { lookup[B64_TABLE.charCodeAt(i)] = i; }
+    const len = str.length;
+    let padCount = 0;
+    if (len > 0 && str.charAt(len - 1) === '=') { padCount++; }
+    if (len > 1 && str.charAt(len - 2) === '=') { padCount++; }
+    const byteLen = (len * 3) / 4 - padCount;
+    const result = new Uint8Array(byteLen);
+    let p = 0;
+    for (let i = 0; i < len; i += 4) {
+      const n = (lookup[str.charCodeAt(i)] << 18) | (lookup[str.charCodeAt(i + 1)] << 12) |
+                (lookup[str.charCodeAt(i + 2)] << 6) | lookup[str.charCodeAt(i + 3)];
+      result[p++] = (n >> 16) & 255;
+      if (str.charAt(i + 2) !== '=') { result[p++] = (n >> 8) & 255; }
+      if (str.charAt(i + 3) !== '=') { result[p++] = n & 255; }
+    }
+    return result;
   }
 }

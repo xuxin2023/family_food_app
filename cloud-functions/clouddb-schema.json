@@ -277,6 +277,31 @@
         "regulation_status": { "type": "string" }
       },
       "indexes": [{ "fields": ["e_number"], "unique": true }, { "fields": ["hazard_level"] }]
+    },
+    "additive_entries": {
+      "fields": {
+        "code": { "type": "string", "primaryKey": true },
+        "name": { "type": "string" },
+        "nameEn": { "type": "string" },
+        "hazard": { "type": "number" },
+        "category": { "type": "string" },
+        "adi": { "type": "string" },
+        "efsaRef": { "type": "string" },
+        "gb2760Status": { "type": "string" },
+        "interactions": { "type": "array", "items": "string" },
+        "description": { "type": "string" },
+        "riskFactor": { "type": "string" },
+        "updatedAt": { "type": "number" }
+      },
+      "indexes": [{ "fields": ["code"], "unique": true }, { "fields": ["hazard"] }]
+    },
+    "alternative_cache": {
+      "fields": {
+        "key": { "type": "string", "primaryKey": true },
+        "data": { "type": "string" },
+        "updatedAt": { "type": "number" }
+      },
+      "indexes": [{ "fields": ["key"], "unique": true }]
     }
   }
 }

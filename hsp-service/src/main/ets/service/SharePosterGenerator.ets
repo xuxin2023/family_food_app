@@ -1,6 +1,6 @@
 import { common } from '@kit.AbilityKit';
 import { image } from '@kit.ImageKit';
-import { fileIo } from '@kit.FileIo';
+import { fileIo } from '@kit.CoreFileKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN_DEFAULT, COLORS } from 'hsp_core';
 

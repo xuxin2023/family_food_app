@@ -108,7 +108,7 @@ export { ElderModeManager } from './service/ElderModeManager';
 export { FamilyDomainService } from './service/FamilyDomainService';
 export { FoodDomainService } from './service/FoodDomainService';
 export { FoodWidgetManager } from './service/FoodWidgetManager';
-export { FoodInputService, FoodInputResult } from './service/FoodInputService';
+
 export { IapServerValidator } from './service/IapServerValidator';
 export { IntentRegistrationService } from './service/IntentRegistrationService';
 export { ModelConverter } from './service/ModelConverter';

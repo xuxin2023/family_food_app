@@ -17,7 +17,7 @@ import { OpenFoodFactsService, DataLineage } from 'hsp_service';
 import { FavoriteItem, FavoriteRepository } from './repository/FavoriteRepository';
 import { CreateRecipeParams } from 'hsp_core';
 import { FamilyGroupRepository, RecipeRepository } from 'feature_community';
-import { FoodInputService, FoodInputResult } from 'hsp_service';
+import { FoodInputService, FoodInputResult } from 'feature_scan';
 import { DistributedSyncHelper } from 'hsp_service';
 import { OnDeviceAiEngine } from 'feature_scan';
 import { ExerciseNutritionRecommendation } from 'feature_report';

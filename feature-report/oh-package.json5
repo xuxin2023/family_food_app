@@ -8,7 +8,8 @@
   "dependencies": {
     "hsp_core": "file:../hsp_core",
     "feature_scan": "file:../feature-scan",
-    "hsp_service": "file:../hsp-service"
+    "hsp_service": "file:../hsp-service",
+    "hsp_rating": "file:../hsp-rating"
   },
   "devDependencies": {}
 }

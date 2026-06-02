@@ -1,123 +1,141 @@
-// ⚠️ 注意: 此文件是 hsp_core 内部源文件索引，仅供开发参考。
-// 模块对外 API 统一由根目录下的 hsp_core/Index.ets (334行) 导出。
-// 导入方请使用: import { ... } from 'hsp_core';
-export { ChatRole, MessageStatus, ChatMessage, ChatSession, QUICK_QUESTIONS, generateMessageId, generateDynamicQuickQuestions } from './model/AiChat';
-export { NutrientStatusLevel, NutrientTrend, MealRating, AiRecipeRecommendation, AiRecipeRequest, AiRecipeRecommendationResult, AiNutritionistRequest, MealAnalysis, NutrientAnalysis, DietPatternAnalysis, AiNutritionAdvice, AiRecommendationCacheEntry, AiNutritionCacheEntry, getHealthGoalDescription } from './model/AiModels';
-export { Severity, AllergyItem, IntoleranceItem, AllergyProfile, AllergyHint, IntoleranceHint, createDefaultAllergyProfile, severityToLabel, severityToColor } from './model/AllergyProfile';
-export { AnalyticsEvent, EventType, ANALYTICS_TABLE_NAME, AnalyticsColumns, ANALYTICS_COLUMNS } from './model/AnalyticsRecord';
-export { ChildProtectionJson, ChildProtection } from './model/ChildProtection';
-export { SyncStrategy, ConflictResolution, CloudSyncConfig, createDefaultSyncConfig } from './model/CloudSyncConfig';
-export { DataGrade, RadarDimension, PublicQueryEntry, CredibilityResultJson, CredibilityResult } from './model/CredibilityResult';
-export { DailyBudgetJson, DailyBudget } from './model/DailyBudget';
-export { LineageRecord, DataLineage } from './model/DataLineageTypes';
-export { DietRecord } from './model/DietRecord';
-export { ExerciseType } from './model/ExerciseTypeDef';
-export { FamilyComparisonItem } from './model/FamilyComparisonItem';
-export { GroupRole, JoinMethod, JoinRequestStatus, FeedType, FamilyGroup, GroupMember, JoinRequest, GroupFeed, FoodScanFeedContent, RecipeFeedContent, GroupSummary } from './model/FamilyGroup';
-export { AgeGroup, HealthGoal, PregnancyStatus, MealTimes, FamilyProfileJson, DailyBudgetConfigJson, FamilyProfile, DailyBudgetConfig, createDefaultMembers } from './model/FamilyProfile';
-export { RecommendationLevel, FoodRecommendation, EnhancedFoodRecommendation, AlternativeFood, DislikedAdditive } from './model/FoodAdapterTypes';
-export { FoodInputResult } from './model/FoodInputResult';
-export { NutritionPer100g, FoodSource, FoodLabelJson, FoodLabel } from './model/FoodLabel';
-export { CheckupItem, CheckupReport, HealthArchiveUpdate, NutrientSupplement, ExerciseNutritionRecommendation, PersonalizedFactor, PersonalizedRecommendation, ChildHealthAssessment } from './model/HealthReportTypes';
-export { DAILY_STEP_GOAL, SPO2_NORMAL_THRESHOLD, RESTING_HEART_RATE_HIGH, ACTIVE_HEART_RATE_HIGH, StepLevel, SleepStatus, WeightTrend, BpStatus, BsStatus, BloodPressure, BloodSugar, DataSource, HeartRateZone, SpO2Level, StressLevel, HealthSignal } from './model/HealthSignal';
-export { IDietRecordProvider } from './model/IDietRecordProvider';
-export { INutritionTrendCalculator } from './model/INutritionTrendCalculator';
-export { IOfflineFoodProvider } from './model/IOfflineFoodProvider';
-export { IRecommendationEngine } from './model/IRecommendationEngine';
-export { JsonTypes } from './model/JsonTypes';
-export { MealBalance } from './model/MealBalance';
-export { MealPlan } from './model/MealPlan';
-export { MemberStatus } from './model/MemberStatus';
-export { NovaGroupDef, NovaGroup } from './model/NovaGroupDef';
-export { NutriScoreDef, NutriScoreGrade } from './model/NutriScoreDef';
-export { NutritionDaily } from './model/NutritionDaily';
-export { NutritionSnapshot } from './model/NutritionSnapshot';
-export { NutritionTarget } from './model/NutritionTarget';
-export { NutritionTrend } from './model/NutritionTrend';
-export { ParsedIngredient } from './model/ParsedIngredient';
-export { PositiveAdvice } from './model/PositiveAdvice';
-export { PricingModel, MemberTier, PaywallTrigger } from './model/PricingModel';
-export { PushSubscription } from './model/PushSubscription';
-export { Recipe, RecipeCategory, RecipeDifficulty, RecipeStatus, RecipeComment, RecipeLike, RecipeBookmark } from './model/Recipe';
-export { Recommendation } from './model/Recommendation';
-export { ReminderRule } from './model/ReminderRule';
-export { ScoreWeightProfile } from './model/ScoreWeightProfile';
-export { ShoppingItem } from './model/ShoppingItem';
-export { TodayIntakeInput } from './model/TodayIntakeInput';
-export { V2StateDemo } from './model/V2StateDemo';
-export { WeeklyReport } from './model/WeeklyReport';
-
-export { ApiConfig, API_CONFIG, FeatureFlags, FEATURE_FLAGS, ScanConfig, SCAN_CONFIG, PageSizeConfig, PAGE_SIZE_CONFIG, TimeIntervalConfig, TIME_INTERVAL_CONFIG, AiCacheConfig, AI_CACHE_CONFIG, HealthConfig, HEALTH_CONFIG, ApiTimeoutConfig, API_TIMEOUT_CONFIG, CrashLogConfig, CRASH_LOG_CONFIG, GroupConfig, GROUP_CONFIG, HILOG_DOMAIN_DEFAULT, DB_SCHEMA_VERSION, NutritionLimits, NUTRITION_LIMITS, ScanQuotaPrefsConfig, SCAN_QUOTA_PREFS_CONFIG, EngineConfig, ENGINE_CONFIG, NUTRIENT_LIMITS_V2, FEATURE_LIMITS, REMINDER_PRESETS, DATA_VERSION, OffApiConfig, LegalConfig, LEGAL_CONFIG } from './constants/AppConfig';
-export { ThemeMode, ThemeColors, TC, COLORS, RADIUS, SPACING, BUTTON, FONT_SIZE, FONT_WEIGHT, SCORE_COLORS } from './constants/AppTheme';
-export { DB_NAME, DB_SECURITY_LEVEL, TABLE_FOOD_LABEL, COL_FOOD_ID, COL_FOOD_NAME, COL_BARCODE, COL_INGREDIENTS, COL_NUTRITION, COL_ALLERGEN_HINTS, COL_MANUFACTURER, COL_SC_NUMBER, COL_PRINCIPAL, COL_TRUSTEE, COL_TRACE_CODE, COL_SOURCE, COL_IDENTIFIED_AT, TABLE_FAMILY_PROFILE, COL_MEMBER_ID, COL_NICKNAME, COL_AGE_GROUP, COL_HEALTH_GOALS, COL_ALLERGENS, COL_SODIUM_BUDGET, COL_SUGAR_BUDGET, COL_CALORIE_BUDGET, COL_FAT_BUDGET, COL_MEAL_TIMES, COL_BEDTIME, TABLE_SCAN_HISTORY, COL_ID, COL_LEVEL, COL_MAX_AMOUNT, COL_REASONS, COL_SCANNED_AT, TABLE_DIET_RECORD, COL_DATE, COL_SCENARIO, COL_MEAL_TYPE, COL_AMOUNT_G, COL_SODIUM_INTAKE, COL_SUGAR_INTAKE, COL_CALORIE_INTAKE, COL_FAT_INTAKE, COL_RECORDED_AT, TABLE_RECIPE, TABLE_RECIPE_COMMENT, TABLE_RECIPE_LIKE, TABLE_RECIPE_BOOKMARK, COL_RECIPE_ID, COL_TITLE, COL_DESCRIPTION, COL_COVER_IMAGE_URL, COL_AUTHOR_UID, COL_AUTHOR_NAME, COL_AUTHOR_AVATAR } from './constants/DbSchema';
-export { HotFoods } from './constants/HotFoods';
-export { HspArchitecturePlan } from './constants/HspArchitecturePlan';
-export { MealTemplates } from './constants/MealTemplates';
-export { NutritionKnowledge } from './constants/NutritionKnowledge';
-export { NutritionThreshold } from './constants/NutritionThreshold';
-export { PermissionDescriptions } from './constants/PermissionDescriptions';
-export { RoutePath } from './constants/RoutePath';
-export { ROUTE_INDEX, ROUTE_REPORT_PAGE, ROUTE_SETTINGS_PAGE, ROUTE_SCAN_PAGE, ROUTE_HOME_PAGE, RouteTable } from './constants/RouteTable';
-export { StringRes } from './constants/StringRes';
-
-export { AccessibilityConfig, AccessibilityCompliance, ColorContrastChecker } from './utils/AccessibilityCompliance';
-export { A11yNode, AccessibilityManager } from './utils/AccessibilityManager';
-export { ButtonAction, LevelAccessibility, AccessibilityUtil } from './utils/AccessibilityUtil';
-export { AnimationPresets, ButtonStylePreset, PageTransitionStyle } from './utils/AnimationPresets';
-export { AppStorageKeys, AppStorageSync } from './utils/AppStorageSync';
-export { KeyAlias, AssetKeyManager } from './utils/AssetKeyManager';
-export { BasicDataSource } from './utils/BasicDataSource';
-export { BusinessError } from './utils/BusinessError';
-export { CacheManager } from './utils/CacheManager';
-export { CryptoEngine } from './utils/CryptoEngine';
-export { ValidationResult, DataIntegrityChecker } from './utils/DataIntegrityChecker';
-export { DateUtil } from './utils/DateUtil';
-export { Debouncer, Throttler } from './utils/DebounceThrottle';
-export { DeviceType, Breakpoint, DeviceAdapter } from './utils/DeviceAdapter';
-export { NpuLevel, DeviceCapability } from './utils/DeviceCapability';
-export { CacheInvalidationData, DomainEventBus, DomainEvents } from './utils/DomainEventBus';
-export { safeParse, safeParseStepLevel, safeParseSleepStatus, safeParseWeightTrend, safeParseBpStatus, safeParseBsStatus, safeParseDataSource, safeParseHeartRateZone, safeParseSpO2Level, safeParseStressLevel, safeParseFoodSource, safeParseRecipeCategory, safeParseRecipeDifficulty, safeParseAgeGroup, safeParseHealthGoal, safeParseGroupRole, safeParseMemberTier, safeParseRecommendLevel, safeParseLevelColor, safeParseHealthGoalArray, safeParseDietTagArray, safeParseNovaGroup, safeParseMealScenario, safeParseDietTag, safeParseExerciseType, safeParseRiskTag, safeParseJoinMethod, safeParseJoinRequestStatus, safeParseFeedType } from './utils/EnumSafeParse';
-export { ErrorHandler } from './utils/ErrorHandler';
-export { FamilyMemberDataSource } from './utils/FamilyMemberDataSource';
-export { FoodLabelDataSource } from './utils/FoodLabelDataSource';
-export { FoodSearchDataSource } from './utils/FoodSearchDataSource';
-export { GlobalAppState, getGlobalState, AppStorageV2Compat } from './utils/GlobalStateProvider';
-export { ImageCache } from './utils/ImageCache';
-export { ImageCacheManager } from './utils/ImageCacheManager';
-export { ImageCacheUtil } from './utils/ImageCacheUtil';
-export { ImageLoadStage, ProgressiveLoadConfig, ImageLoadState, ImageProgressiveLoader, lazyForEachKey } from './utils/ImageProgressiveLoader';
-export { JsonHelper } from './utils/JsonHelper';
-export { getJsonString, getJsonNumber, getJsonBoolean, getJsonObject, getJsonStringArray, getJsonObjectArray, hasJsonKey, isObject, isNumber, safeString, safeNumber, safeInt } from './utils/JsonUtil';
-export { LazyDataSource } from './utils/LazyDataSource';
-export { LazyLoadManager } from './utils/LazyLoadManager';
-export { LazyLoadConfig, LazyLoadStrategy } from './utils/LazyLoadStrategy';
-export { LifecycleGuard, createLifecycleGuard } from './utils/LifecycleGuard';
-export { SUPPORTED_LOCALES, LOCALE_DISPLAY_NAMES, LocaleInfo, LocaleManager } from './utils/LocaleManager';
-export { Logger } from './utils/Logger';
-export { LruCache } from './utils/LruCache';
-export { MapUtil } from './utils/MapUtil';
-export { MathUtil } from './utils/MathUtil';
-export { MemoryLeakGuard, createMemoryLeakGuard } from './utils/MemoryLeakGuard';
-export { MemoryMonitor } from './utils/MemoryMonitor';
-export { NavigationManager, safeBack, safePushUrl } from './utils/NavigationManager';
-export { NullGuard } from './utils/NullGuard';
-export { ObservableMap } from './utils/ObservableMap';
-export { OfflineFoodDatabase } from './utils/OfflineFoodDatabase';
-export { PageTransitionConfig } from './utils/PageTransitionConfig';
-export { PerformanceMonitor } from './utils/PerformanceMonitor';
-export { PrivacyContentUtil } from './utils/PrivacyContentUtil';
-export { ProxyDetector } from './utils/ProxyDetector';
-export { RateLimiter } from './utils/RateLimiter';
-export { RecipeUtil } from './utils/RecipeUtil';
-export { RecommendationDataSource } from './utils/RecommendationDataSource';
-export { ResourceUtil } from './utils/ResourceUtil';
-export { RouterUtil } from './utils/RouterUtil';
-export { RsUtil } from './utils/RsUtil';
-export { SafeJsonParse } from './utils/SafeJsonParse';
-export { SecureDataStore } from './utils/SecureDataStore';
-export { SecureKeyStore } from './utils/SecureKeyStore';
-export { SecureStorageUtil } from './utils/SecureStorageUtil';
-export { SerialScheduler, serialScheduler } from './utils/SerialScheduler';
-export { ServiceLocator } from './utils/ServiceLocator';
-export { ToastHelper } from './utils/ToastHelper';
-export { VersionGuard } from './utils/VersionGuard';
+// ⚠️ 此文件已降级为纯导航索引，仅供 IDE 开发时快速定位源文件。
+// 所有对外 API 统一由项目根目录 hsp_core/Index.ets (334行) 导出。
+// 调用方请使用:  import { ... } from 'hsp_core';
+//
+// ===== 模型层 =====
+// model/AiChat.ets           -> ChatRole, MessageStatus, ChatMessage, ChatSession, QUICK_QUESTIONS
+// model/AiModels.ets         -> NutrientStatusLevel, MealRating, AiRecipeRecommendation, AiNutritionAdvice ...
+// model/AllergyProfile.ets   -> Severity, AllergyItem, AllergyProfile, severityToLabel ...
+// model/AnalyticsRecord.ets  -> AnalyticsEvent, EventType, ANALYTICS_TABLE_NAME ...
+// model/ChildProtection.ets  -> ChildProtectionJson, ChildProtection
+// model/CloudSyncConfig.ets  -> SyncStrategy, ConflictResolution, CloudSyncConfig ...
+// model/CredibilityResult.ets-> DataGrade, RadarDimension, CredibilityResult ...
+// model/DailyBudget.ets      -> DailyBudgetJson, DailyBudget
+// model/DataLineageTypes.ets -> LineageRecord, DataLineage
+// model/DietRecord.ets       -> DietRecord
+// model/ExerciseTypeDef.ets  -> ExerciseType
+// model/FamilyComparisonItem.ets -> FamilyComparisonItem
+// model/FamilyGroup.ets      -> GroupRole, FamilyGroup, GroupMember, GroupFeed, GroupSummary ...
+// model/FamilyProfile.ets    -> AgeGroup, HealthGoal, FamilyProfile, createDefaultMembers ...
+// model/FoodAdapterTypes.ets -> RecommendationLevel, FoodRecommendation, AlternativeFood ...
+// model/FoodInputResult.ets  -> FoodInputResult
+// model/FoodLabel.ets        -> NutritionPer100g, FoodSource, FoodLabelJson, FoodLabel
+// model/HealthReportTypes.ets-> CheckupItem, CheckupReport, ChildHealthAssessment ...
+// model/HealthSignal.ets     -> StepLevel, SleepStatus, HealthSignal, HeartRateZone ...
+// model/IDietRecordProvider.ets -> IDietRecordProvider
+// model/INutritionTrendCalculator.ets -> INutritionTrendCalculator
+// model/IOfflineFoodProvider.ets -> IOfflineFoodProvider
+// model/IRecommendationEngine.ets  -> IRecommendationEngine
+// model/JsonTypes.ets        -> JsonTypes
+// model/MealBalance.ets      -> MealBalance
+// model/MealPlan.ets         -> MealPlan
+// model/MemberStatus.ets     -> MemberStatus
+// model/NovaGroupDef.ets     -> NovaGroupDef
+// model/NutriScoreDef.ets    -> NutriScoreDef, NutriScoreGrade
+// model/NutritionDaily.ets   -> NutritionDaily
+// model/NutritionSnapshot.ets-> NutritionSnapshot
+// model/NutritionTarget.ets  -> NutritionTarget
+// model/NutritionTrend.ets   -> NutritionTrend
+// model/ParsedIngredient.ets -> ParsedIngredient
+// model/PositiveAdvice.ets   -> PositiveAdvice
+// model/PricingModel.ets     -> PricingModel, MemberTier, PaywallTrigger
+// model/PushSubscription.ets -> PushSubscription
+// model/Recipe.ets           -> Recipe, RecipeCategory, RecipeDifficulty, RecipeComment ...
+// model/Recommendation.ets   -> Recommendation
+// model/ReminderRule.ets     -> ReminderRule
+// model/ScoreWeightProfile.ets -> ScoreWeightProfile
+// model/ShoppingItem.ets     -> ShoppingItem
+// model/TodayIntakeInput.ets -> TodayIntakeInput
+// model/V2StateDemo.ets      -> V2StateDemo
+// model/WeeklyReport.ets     -> WeeklyReport
+//
+// ===== 常量层 =====
+// constants/AppConfig.ets    -> HILOG_DOMAIN_DEFAULT, ApiConfig, FeatureFlags, ScanConfig, NUTRIENT_LIMITS_V2 ...
+// constants/AppTheme.ets     -> ThemeMode, ThemeColors, COLORS, RADIUS, SPACING, BUTTON, FONT_SIZE ...
+// constants/AppThemeState.ets-> AppThemeState, ColorScheme (V5 护眼模式)
+// constants/DbSchema.ets     -> DB_NAME, TABLE_FOOD_LABEL, COL_* ...
+// constants/HotFoods.ets     -> HotFoods
+// constants/HspArchitecturePlan.ets -> HspArchitecturePlan
+// constants/MealTemplates.ets-> MealTemplates
+// constants/NutritionKnowledge.ets -> NutritionKnowledge
+// constants/NutritionThreshold.ets -> NutritionThreshold
+// constants/PermissionDescriptions.ets -> PermissionDescriptions
+// constants/RoutePath.ets    -> RoutePath
+// constants/RouteTable.ets   -> ROUTE_INDEX, ROUTE_REPORT_PAGE ...
+// constants/StringRes.ets    -> StringRes
+//
+// ===== 工具层 =====
+// utils/AccessibilityCompliance.ets -> AccessibilityConfig, ColorContrastChecker
+// utils/AccessibilityManager.ets    -> A11yNode, AccessibilityManager
+// utils/AccessibilityUtil.ets       -> ButtonAction, LevelAccessibility
+// utils/AnimationPresets.ets        -> AnimationPresets, PageTransitionStyle
+// utils/AppStorageSync.ets          -> AppStorageKeys, AppStorageSync
+// utils/AssetKeyManager.ets         -> KeyAlias
+// utils/BasicDataSource.ets         -> BasicDataSource
+// utils/BusinessError.ets           -> BusinessError
+// utils/CacheManager.ets            -> CacheManager
+// utils/CrdtSyncResolver.ets        -> CrdtSyncResolver (V5 CRDT向量时钟)
+// utils/CryptoEngine.ets            -> CryptoEngine
+// utils/DataIntegrityChecker.ets    -> ValidationResult, DataIntegrityChecker
+// utils/DateUtil.ets                -> DateUtil
+// utils/DebounceThrottle.ets        -> Debouncer, Throttler
+// utils/DeviceAdapter.ets           -> DeviceType, Breakpoint, DeviceAdapter
+// utils/DeviceCapability.ets        -> NpuLevel, DeviceCapability
+// utils/DomainEventBus.ets          -> DomainEventBus, DomainEvents
+// utils/EnumSafeParse.ets           -> safeParse, safeParseStepLevel ...
+// utils/ErrorHandler.ets            -> ErrorHandler
+// utils/FamilyMemberDataSource.ets  -> FamilyMemberDataSource
+// utils/FoodLabelDataSource.ets     -> FoodLabelDataSource
+// utils/FoodSearchDataSource.ets    -> FoodSearchDataSource
+// utils/GlobalStateProvider.ets     -> GlobalAppState, AppStorageV2Compat
+// utils/ImageCache.ets              -> ImageCache
+// utils/ImageCacheManager.ets       -> ImageCacheManager
+// utils/ImageCacheUtil.ets          -> ImageCacheUtil
+// utils/ImageProgressiveLoader.ets  -> ImageProgressiveLoader, lazyForEachKey
+// utils/JsonHelper.ets              -> JsonHelper
+// utils/JsonUtil.ets                -> getJsonString, safeNumber, safeInt ...
+// utils/LazyDataSource.ets          -> LazyDataSource
+// utils/LazyLoadManager.ets         -> LazyLoadManager
+// utils/LazyLoadStrategy.ets        -> LazyLoadConfig, LazyLoadStrategy
+// utils/LifecycleGuard.ets          -> LifecycleGuard, createLifecycleGuard
+// utils/LocaleManager.ets           -> LocaleManager, SUPPORTED_LOCALES
+// utils/Logger.ets                  -> Logger
+// utils/LruCache.ets                -> LruCache
+// utils/MapUtil.ets                 -> MapUtil
+// utils/MathUtil.ets                -> MathUtil
+// utils/MemoryLeakGuard.ets         -> MemoryLeakGuard (V5内存泄漏守卫)
+// utils/MemoryMonitor.ets           -> MemoryMonitor
+// utils/NavigationManager.ets       -> NavigationManager, safeBack, safePushUrl
+// utils/NullGuard.ets               -> NullGuard
+// utils/ObservableMap.ets           -> ObservableMap
+// utils/OfflineFoodDatabase.ets     -> OfflineFoodDatabase
+// utils/PageLifecycleMixin.ets      -> PageResourceTracker, createPageTracker (V5)
+// utils/PageTransitionConfig.ets    -> PageTransitionConfig
+// utils/PerformanceMonitor.ets      -> PerformanceMonitor
+// utils/PrivacyContentUtil.ets      -> PrivacyContentUtil
+// utils/ProxyDetector.ets           -> ProxyDetector
+// utils/RateLimiter.ets             -> RateLimiter
+// utils/RecipeUtil.ets              -> RecipeUtil
+// utils/RecommendationDataSource.ets -> RecommendationDataSource
+// utils/ResourceUtil.ets            -> ResourceUtil
+// utils/RouterUtil.ets              -> RouterUtil
+// utils/RsUtil.ets                  -> RsUtil
+// utils/SafeJsonParse.ets           -> SafeJsonParse
+// utils/SecureDataStore.ets         -> SecureDataStore
+// utils/SecureKeyStore.ets          -> SecureKeyStore
+// utils/SecureStorageUtil.ets       -> SecureStorageUtil
+// utils/SerialScheduler.ets         -> SerialScheduler, serialScheduler
+// utils/ServiceLocator.ets          -> ServiceLocator
+// utils/ToastHelper.ets             -> ToastHelper
+// utils/VersionGuard.ets            -> VersionGuard
+//
+// ===== 安全层 =====
+// security/AntiCaptureDetector.ets           -> AntiCaptureDetector
+// security/EnhancedSecurityDetector.ets       -> EnhancedSecurityDetector (V5)
+// security/FamilyGroupE2EEncryptor.ets        -> FamilyGroupE2EEncryptor (V5 E2E)
+//
+// ===== 组件层 =====
+// components/ReusableLazyList.ets             -> ReusableLazyList (V5)
+//
+// ===== 日志层 =====
+// logger/AuditLogger.ets                      -> AuditLogger, AuditAction, PIASensitivity (V5 PIA)

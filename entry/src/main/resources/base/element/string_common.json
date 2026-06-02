@@ -1,17 +1,6 @@
 {
   "string": [
-    { "name": "module_desc", "value": "家庭食品适配助手" },
-    { "name": "app_name", "value": "食品适配助手" },
-    { "name": "home_title", "value": "今天给谁看？" },
-    { "name": "scan_button", "value": "拍食品标签" },
-    { "name": "balance_button", "value": "记录美食" },
-    { "name": "member_dad", "value": "爸爸" },
-    { "name": "member_mom", "value": "妈妈" },
-    { "name": "member_child", "value": "孩子" },
-    { "name": "member_me", "value": "我" },
-    { "name": "level_suitable", "value": "适合" },
     { "name": "level_caution", "value": "谨慎" },
-    { "name": "level_avoid", "value": "避免" },
     { "name": "btn_scan", "value": "扫一扫" },
     { "name": "btn_history", "value": "历史记录" },
     { "name": "btn_settings", "value": "设置" },

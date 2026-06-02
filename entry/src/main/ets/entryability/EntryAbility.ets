@@ -2,7 +2,7 @@
 // V5新增：首次启动隐私政策与用户协议确认弹窗
 
 import {
-  DataSource, MemberTier, TIME_INTERVAL_CONFIG, CRASH_LOG_CONFIG, HILOG_DOMAIN_DEFAULT, DB_NAME, NavigationManager, LocaleManager, RoutePath, ThemeColors, ThemeMode, PerformanceMonitor
+  DataSource, MemberTier, TIME_INTERVAL_CONFIG, CRASH_LOG_CONFIG, HILOG_DOMAIN_DEFAULT, DB_NAME, NavigationManager, LocaleManager, RoutePath, ThemeColors, ThemeMode, PerformanceMonitor, EnhancedSecurityDetector, AppThemeState
 } from 'hsp_core';
 import { UIAbility, Want, AbilityConstant, errorManager } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -150,6 +150,18 @@ export default class EntryAbility extends UIAbility {
   }
 
   private initDeferredServices(): void {
+    // V5: 设备安全检查(代理/VPN/完整性)
+    EnhancedSecurityDetector.performFullCheck().then((result) => {
+      AppStorage.setOrCreate('deviceSecurityOk', result.isSafe);
+      AppStorage.setOrCreate('securityRiskLevel', result.riskLevel);
+      if (!result.isSafe) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'Security alert — %{public}d risk(s): %{public}s',
+          result.risks.length, result.risks.join('; '));
+      }
+    }).catch((err) => {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Security check failed: %{public}s', err.message);
+    });
+
     // 埋点统计服务
     AnalyticsService.getInstance().init(this.context).then(() => {
       hilog.info(DOMAIN_ZERO, TAG, 'AnalyticsService init success (deferred)');
@@ -692,8 +704,9 @@ export default class EntryAbility extends UIAbility {
     try {
       const colorMode = newConfig['colorMode'] as number;
       if (colorMode !== undefined) {
-        const isDark: boolean = colorMode === 1; // 0=light, 1=dark
+        const isDark: boolean = colorMode === 1;
         ThemeColors.onSystemThemeChange(isDark ? 'dark' : 'light');
+        AppThemeState.INSTANCE.applySystemColorMode(isDark ? 1 : 0);
         hilog.info(DOMAIN_ZERO, TAG, 'System theme changed: %{public}s', isDark ? 'dark' : 'light');
       }
     } catch (e) {

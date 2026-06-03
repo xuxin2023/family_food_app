@@ -74,7 +74,23 @@ const PROCESSED_CULINARY_MARKERS: string[] = [
   '小苏打', '泡打粉', '酵母', '豆豉', '腐乳'
 ];
 
+/**
+ * NOVA 食品加工度分类引擎 (V2)
+ *
+ * 基于 Monteiro et al. (2019) 的 NOVA 四级分类系统:
+ *   Group 1 — 未加工/微加工 (天然或仅经物理处理)
+ *   Group 2 — 加工烹饪配料 (厨房级提取物)
+ *   Group 3 — 加工食品 (Group1+Group2组合制造)
+ *   Group 4 — 超加工食品 (工业配方,含多种添加剂)
+ *
+ * 判定逻辑: 配料数量 + 工业标记词库匹配 + 添加糖/盐/油检测
+ */
 export class NovaGroupEngine {
+  /**
+   * 从食品标签计算 NOVA 分类
+   * @param food - 食品标签(需含 ingredients 配料表)
+   * @returns 分类评估结果(含等级/置信度/匹配标记)
+   */
   compute(food: FoodLabel): NovaEvaluationResult {
     const result = this.evaluate(food.ingredients);
     hilog.info(HILOG_DOMAIN_DEFAULT, TAG, 'NovaGroup=%{public}d for %{public}s, conf=%{public}f',
@@ -82,6 +98,11 @@ export class NovaGroupEngine {
     return result;
   }
 
+  /**
+   * 纯函数: 根据配料表评估 NOVA 分类
+   * @param ingredients - 配料名称列表
+   * @returns 分类评估结果
+   */
   evaluate(ingredients: string[]): NovaEvaluationResult {
     const ingredientCount = ingredients.length;
     if (ingredientCount === 0) {

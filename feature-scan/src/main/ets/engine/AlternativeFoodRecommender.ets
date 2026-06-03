@@ -147,6 +147,17 @@ class OfflineFoodCandidate {
   }
 }
 
+/**
+ * 替代食品推荐引擎
+ *
+ * 综合四层降级推荐管道:
+ *   1. 过敏原过滤 (剔除冲突候选)
+ *   2. 离线食品数据库 (余弦相似度+NutriScore+NovaGroup三维评分)
+ *   3. 在线电商搜索 (OnlineShoppingParser)
+ *   4. 基于规则的营养分析 (高钠/高糖/高热量触发的替换建议)
+ *
+ * 评分权重见文件顶层30+命名常量。
+ */
 export class AlternativeFoodRecommender implements IAlternativeRecommender {
   private readonly ALTERNATIVE_FOODS: AlternativeEntry[] = AlternativeFoodRecommender.buildAlternativeFoods();
   private readonly CATEGORY_KEYWORDS: CategoryKeywordEntry[] = AlternativeFoodRecommender.buildCategoryKeywords();

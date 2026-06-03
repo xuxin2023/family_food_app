@@ -2,7 +2,7 @@
 
 > 项目: family_food_app (com.familyfood.helper)  
 > 目标: HarmonyOS 6.1 AppGallery  
-> 版本: v4.0.0
+> 版本: v5.0.0
 
 ## 1. 隐私与合规 ✅
 
@@ -38,7 +38,7 @@
 ## 5. 技术合规 ✅
 
 - [x] **API 23 兼容** — 全部使用 `@kit.*` 导入，零 `@ohos.*` 废弃API
-- [x] **TYPE CHECK SUCCESSFUL** — hvigor 全部11模块编译通过
+- [x] **TYPE CHECK SUCCESSFUL** — hvigor 全部12模块编译通过
 - [x] **防抓包** — `SecureHttpClient` SSL Pinning + `AntiCaptureDetector` 代理检测
 - [x] **无障碍** — `AccessibilityManager` + `AccessibilityUtil` + `AccessibilityCompliance` 全覆盖
 - [x] **暗黑模式** — ThemeColors 主题系统，300ms内切换无闪烁
@@ -48,10 +48,10 @@
 
 - [x] 应用名称: 家庭食品适配助手
 - [x] 包名: com.familyfood.helper
-- [x] 版本号: 4.0.0
+- [x] 版本号: 5.0.0
 - [x] SDK版本: HarmonyOS 6.1.0 (API 23)
 - [x] 设备类型: phone, tablet, 2in1
-- [x] 模块数: 11 (1 entry + 6 hsp + 4 feature)
+- [x] 模块数: 12 (1 entry + 7 hsp + 4 feature)
 
 ## 7. 构建制品 ✅
 

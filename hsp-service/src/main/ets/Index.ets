@@ -167,3 +167,15 @@ export type { LlmChatRequest, LlmChatResponse, MemberHealthContext } from './ser
 // ===== V6 新增: 大规模成分数据库分析服务 =====
 export { IngredientAnalysisService } from './service/IngredientAnalysisService';
 export type { IngredientAnalysisResult, HazardItem } from './service/IngredientAnalysisService';
+
+// ===== V7 新增: IAP会员订阅完整落地 =====
+export { IapProductManager } from './service/IapProductManager';
+export type { IapProductDefinition } from './service/IapProductManager';
+export { SubscriptionStateManager, SubscriptionStatus } from './service/SubscriptionStateManager';
+export type { SubscriptionState } from './service/SubscriptionStateManager';
+
+// ===== V8 新增: 智能购物篮+AI营养计划 =====
+export { SmartBasketService } from './service/SmartBasketService';
+export type { SmartBasketResult, SmartBasketItem, SwapSuggestion } from './service/SmartBasketService';
+export { SmartMealPlanService } from './service/SmartMealPlanService';
+export type { WeeklyMealPlan, GoalProgress } from './service/SmartMealPlanService';

@@ -276,6 +276,7 @@ export struct CloudBackupPanel {
       }
     } catch (err) {
       clearInterval(progressTimer)
+      hilog.warn(DOMAIN, TAG, 'backup failed: %{public}s', JSON.stringify(err));
       this.backupStatus = 'error'
       this.statusMessage = '备份失败'
     }
@@ -313,6 +314,7 @@ export struct CloudBackupPanel {
       }
     } catch (err) {
       clearInterval(progressTimer)
+      hilog.warn(DOMAIN, TAG, 'restore failed: %{public}s', JSON.stringify(err));
       this.backupStatus = 'error'
       this.statusMessage = '恢复失败'
     }

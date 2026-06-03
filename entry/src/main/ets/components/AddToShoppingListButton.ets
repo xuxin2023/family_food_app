@@ -1,5 +1,6 @@
-import { FoodLabel, COLORS, RADIUS, BUTTON } from 'hsp_core';
+import { FoodLabel, COLORS, RADIUS, BUTTON, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { ScanToShoppingService } from 'hsp_service';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 
 @ComponentV2
 export struct AddToShoppingListButton {
@@ -29,7 +30,8 @@ export struct AddToShoppingListButton {
             const service = ScanToShoppingService.getInstance();
             const success = await service.addScannedFoodToShoppingList(this.foodLabel);
             this.isAdded = success;
-          } catch (_e) {
+          } catch (e) {
+            hilog.warn(HILOG_DOMAIN_DEFAULT, 'AddToShoppingList', 'add failed: %{public}s', JSON.stringify(e));
             this.isAdded = false;
           }
           this.isAdding = false;

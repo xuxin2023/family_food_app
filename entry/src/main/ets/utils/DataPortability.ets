@@ -67,6 +67,7 @@ export class DataPortability {
     try {
       parsed = JSON.parse(jsonStr) as Record<string, Object>;
     } catch (error) {
+      hilog.warn(HILOG_DOMAIN_DEFAULT, 'DataPortability', 'JSON parse failed: %{public}s', JSON.stringify(error));
       result.success = false;
       result.errors.push('JSON解析失败');
       return result;

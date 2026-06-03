@@ -12,6 +12,7 @@ import { common } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { util } from '@kit.ArkTS';
 import { IapErrorUtil } from './IapErrorUtil';
+import { IapProductManager } from './IapProductManager';
 
 // ==================== 沙箱测试报告类型 ====================
 
@@ -41,69 +42,14 @@ export class SandboxTestReport {
 const TAG = 'IapService';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
-// ==================== 商品ID ====================
+// ==================== 商品ID（兼容旧版引用，正向 IapProductManager 迁移） ====================
+/** @deprecated 使用 IapProductManager 中的 ProductIdMap 替代 */
+export const PRODUCT_IDS = IapProductManager['PRODUCT_IDS'] as Record<string, string>;
 
-class ProductIdMap {
-  PERSONAL_MONTHLY: string = '';
-  PERSONAL_YEARLY: string = '';
-  FAMILY_YEARLY: string = '';
-  PREMIUM_YEARLY: string = '';
-  TRANSPARENCY_REPORT: string = '';
-  BRAND_TRACE: string = '';
-}
-
-/**
- * 所有可购买商品的ID常量
- */
-export const PRODUCT_IDS: ProductIdMap = new ProductIdMap();
-PRODUCT_IDS.PERSONAL_MONTHLY = 'family_food_personal_monthly';
-PRODUCT_IDS.PERSONAL_YEARLY = 'family_food_personal_yearly';
-PRODUCT_IDS.FAMILY_YEARLY = 'family_food_family_yearly';
-PRODUCT_IDS.PREMIUM_YEARLY = 'family_food_premium_yearly';
-PRODUCT_IDS.TRANSPARENCY_REPORT = 'family_food_transparency_report';
-PRODUCT_IDS.BRAND_TRACE = 'family_food_brand_trace';
-
-const PRODUCT_IDS_VALUES: string[] = [
-  PRODUCT_IDS.PERSONAL_MONTHLY,
-  PRODUCT_IDS.PERSONAL_YEARLY,
-  PRODUCT_IDS.FAMILY_YEARLY,
-  PRODUCT_IDS.PREMIUM_YEARLY,
-  PRODUCT_IDS.TRANSPARENCY_REPORT,
-  PRODUCT_IDS.BRAND_TRACE
-];
-
-// ==================== 商品内部定义 ====================
-
-class ProductDefinition {
-  productId: string = '';
-  tier: MemberTier | null = null;
-  price: string = '';
-  originalPrice: string = '';
-  title: string = '';
-  description: string = '';
-  iapProductType: number = 0;
-}
-
-function makeProductDef(productId: string, tier: MemberTier | null, price: string,
-  originalPrice: string, title: string, description: string, iapProductType: number): ProductDefinition {
-  const d = new ProductDefinition();
-  d.productId = productId;
-  d.tier = tier;
-  d.price = price;
-  d.originalPrice = originalPrice;
-  d.title = title;
-  d.description = description;
-  d.iapProductType = iapProductType;
-  return d;
-}
-
-const PRODUCT_DEFINITIONS: ProductDefinition[] = [
-  makeProductDef(PRODUCT_IDS.PERSONAL_MONTHLY, MemberTier.PERSONAL, '¥9/月', '', '个人月度版', '无限扫码、个人历史记录、今日预算、饮食平衡建议，按月订阅', iap.ProductType.NONRENEWABLE),
-  makeProductDef(PRODUCT_IDS.PERSONAL_YEARLY, MemberTier.PERSONAL, '¥39/年', '¥108', '个人年度版', '无限扫码、个人历史记录、今日预算、饮食平衡建议、购物清单', iap.ProductType.NONRENEWABLE),
-  makeProductDef(PRODUCT_IDS.FAMILY_YEARLY, MemberTier.FAMILY, '¥69/年', '¥199', '家庭年度版', '不限家庭成员、家庭购物清单、家庭饮食周报、儿童正餐保护', iap.ProductType.NONRENEWABLE),
-  makeProductDef(PRODUCT_IDS.PREMIUM_YEARLY, MemberTier.PREMIUM, '¥129/年', '¥299', '高级家庭版', '深度可信度报告、动态健康数据联动、个性化周报、品牌信用等级', iap.ProductType.NONRENEWABLE),
-  makeProductDef(PRODUCT_IDS.TRANSPARENCY_REPORT, null, '¥3.9/次', '', '透明度深度报告', '查看每款食品的深度数据可信度分析、数据来源和评分依据', iap.ProductType.CONSUMABLE),
-  makeProductDef(PRODUCT_IDS.BRAND_TRACE, null, '¥2.9/次', '', '品牌溯源查询', '查询品牌生产信息、SC证书编号、委托商信息等溯源数据', iap.ProductType.CONSUMABLE)
+const ALL_PRODUCT_IDS: string[] = [
+  PRODUCT_IDS.PERSONAL_MONTHLY, PRODUCT_IDS.PERSONAL_YEARLY,
+  PRODUCT_IDS.FAMILY_YEARLY, PRODUCT_IDS.PREMIUM_YEARLY,
+  PRODUCT_IDS.TRANSPARENCY_REPORT, PRODUCT_IDS.BRAND_TRACE
 ];
 
 // ==================== 外部接口 ====================
@@ -393,7 +339,8 @@ export class IapService {
     const iapPrices = await this.fetchIapPrices();
 
     const results: ProductInfo[] = [];
-    for (const def of PRODUCT_DEFINITIONS) {
+    const allProducts = IapProductManager.getAllProducts();
+    for (const def of allProducts) {
       // 按 tier 筛选
       if (tier !== undefined && def.tier !== tier) {
         continue;
@@ -426,9 +373,7 @@ export class IapService {
 
     // 查询非续期订阅商品
     try {
-      const nonRenewableIds: string[] = PRODUCT_DEFINITIONS
-        .filter(d => d.iapProductType === iap.ProductType.NONRENEWABLE)
-        .map(d => d.productId);
+      const nonRenewableIds: string[] = IapProductManager.getSubscriptionIds();
       if (nonRenewableIds.length > 0) {
         const param: iap.QueryProductsParameter = {
           productType: iap.ProductType.NONRENEWABLE,
@@ -447,9 +392,7 @@ export class IapService {
 
     // 查询消耗型商品
     try {
-      const consumableIds: string[] = PRODUCT_DEFINITIONS
-        .filter(d => d.iapProductType === iap.ProductType.CONSUMABLE)
-        .map(d => d.productId);
+      const consumableIds: string[] = IapProductManager.getConsumableIds();
       if (consumableIds.length > 0) {
         const param: iap.QueryProductsParameter = {
           productType: iap.ProductType.CONSUMABLE,
@@ -488,7 +431,7 @@ export class IapService {
       return this.failResult(productId, $r('app.string.iap_service_not_init') as ResourceStr);
     }
 
-    const def = PRODUCT_DEFINITIONS.find(d => d.productId === productId);
+    const def = IapProductManager.getProductById(productId);
     if (def === undefined) {
       return this.failResult(productId, StringRes.TOAST_UNKNOWN_PRODUCT);
     }
@@ -665,9 +608,9 @@ export class IapService {
       return;
     }
 
-    const def = PRODUCT_DEFINITIONS.find(d => d.productId === productId);
-    if (def === undefined || def.iapProductType !== iap.ProductType.CONSUMABLE) {
-      return;  // 仅消耗型需要消耗确认
+    const def = IapProductManager.getProductById(productId);
+    if (def === undefined || !IapProductManager.isConsumable(productId)) {
+      return;
     }
 
     try {
@@ -894,9 +837,8 @@ export class IapService {
       }
 
       // 设置过期时间
-      const def = PRODUCT_DEFINITIONS.find(d => d.productId === productId);
       let days = 0;
-      if (def !== undefined && def.tier !== null) {
+      if (IapProductManager.isSubscription(productId)) {
         days = (productId === PRODUCT_IDS.PERSONAL_MONTHLY) ? 30 : 365;
       }
       if (days > 0) {
@@ -924,11 +866,9 @@ export class IapService {
    * 根据商品ID获取对应等级字符串
    */
   private getTierForProductId(productId: string): string {
-    const def = PRODUCT_DEFINITIONS.find(d => d.productId === productId);
-    if (def === undefined || def.tier === null) {
-      return '';
-    }
-    return def.tier;
+    const tier = IapProductManager.getTierForProductId(productId);
+    if (tier === null) return '';
+    return tier;
   }
 
   /**

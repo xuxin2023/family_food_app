@@ -110,7 +110,7 @@ export { FoodDomainService } from './service/FoodDomainService';
 export { FoodWidgetManager } from './service/FoodWidgetManager';
 
 export { IapServerValidator } from './service/IapServerValidator';
-export { IapProductManager } from './service/IapProductManager';
+export { IapProductManager, PRODUCT_IDS as IAP_PRODUCT_IDS } from './service/IapProductManager';
 export type { IapProductDefinition } from './service/IapProductManager';
 export { SubscriptionStateManager, SubscriptionStatus } from './service/SubscriptionStateManager';
 export type { SubscriptionState } from './service/SubscriptionStateManager';
@@ -184,3 +184,11 @@ export type { WeeklyMealPlan, GoalProgress } from './service/SmartMealPlanServic
 export { ModelDownloadService } from './service/ModelDownloadService';
 export { ModelDownloadStatus } from './service/ModelDownloadService';
 export type { ModelManifest, ModelDescriptor, ModelDownloadState } from './service/ModelDownloadService';
+
+// ===== V10 新增: 社区功能增强(食谱PK+挑战赛+排行榜+成就) =====
+export { RecipeCommunityService } from './service/RecipeCommunityService';
+export { ChallengeCategory, AchievementCategory } from './service/RecipeCommunityService';
+export type {
+  RecipePkVote, ChallengeRule, ChallengeParticipant,
+  Leaderboard, LeaderboardEntry, Achievement
+} from './service/RecipeCommunityService';

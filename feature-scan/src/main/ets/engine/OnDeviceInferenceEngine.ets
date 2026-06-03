@@ -46,6 +46,7 @@ export class OnDeviceInferenceEngine {
   private ingredientRiskModel: MsModelContext = { model: null, session: null };
   private initialized: boolean = false;
   private modelBasePath: string = '';
+  private sandboxModelPath: string = '';
   private inferenceCount: number = 0;
   private lastInferenceTime: number = 0;
 
@@ -56,13 +57,24 @@ export class OnDeviceInferenceEngine {
     return OnDeviceInferenceEngine.instance;
   }
 
+  /**
+   * 初始化引擎 — 双源加载策略
+   * 1. rawfile内置模型(打包时附带,快速)
+   * 2. ModelDownloadService沙箱路径(云端下载,WiFi环境下拉取最新版)
+   */
   async init(context: common.Context): Promise<boolean> {
     if (this.initialized) return true;
     try {
       this.modelBasePath = context.resourceDir + '/rawfile/models/';
+      this.sandboxModelPath = context.filesDir + '/ai_models/';
 
       for (const config of MODEL_CONFIGS) {
-        const loaded = await this.loadModelFromRawfile(context.resourceManager, config.name, config.sizeLimit);
+        // 优先从沙箱加载(云端下载的版本可能更新)
+        let loaded = await this.loadModelFromSandbox(config.name, config.sizeLimit);
+        if (!loaded) {
+          // 降级:从rawfile加载内置模型
+          loaded = await this.loadModelFromRawfile(context.resourceManager, config.name, config.sizeLimit);
+        }
         if (loaded) {
           hilog.info(DOMAIN_ZERO, TAG, 'Model loaded: %{public}s', config.name);
         }
@@ -78,6 +90,42 @@ export class OnDeviceInferenceEngine {
       hilog.error(DOMAIN_ZERO, TAG, 'Init failed: %{public}s', JSON.stringify(e));
       this.initialized = true;
       return false;
+    }
+  }
+
+  /** 从ModelDownloadService沙箱路径加载(云下载的模型) */
+  private async loadModelFromSandbox(modelName: string, sizeLimit: number): Promise<boolean> {
+    const filePath = `${this.sandboxModelPath}${modelName}`;
+    try {
+      const stat = fileIo.statSync(filePath);
+      if (stat.size === 0 || stat.size > sizeLimit) {
+        hilog.debug(DOMAIN_ZERO, TAG, 'Sandbox model %{public}s invalid size: %{public}d', modelName, stat.size);
+        return false;
+      }
+
+      const buffer = new ArrayBuffer(stat.size);
+      const file = fileIo.openSync(filePath, fileIo.OpenMode.READ_ONLY);
+      fileIo.readSync(file.fd, buffer);
+      fileIo.closeSync(file);
+
+      const ctx = { priority: mindSporeLite.Priority.PRIORITY_MIDDLE };
+      const model = await mindSporeLite.loadModelFromBuffer(buffer, ctx);
+      const session = await mindSporeLite.createSession(model, ctx);
+
+      this.assignModel(modelName, model, session);
+      hilog.info(DOMAIN_ZERO, TAG, 'Sandbox model loaded: %{public}s (%{public}d bytes)', modelName, stat.size);
+      return true;
+    } catch (_err) {
+      hilog.debug(DOMAIN_ZERO, TAG, 'Sandbox model %{public}s not found, trying rawfile', modelName);
+      return false;
+    }
+  }
+
+  private assignModel(modelName: string, model: mindSporeLite.Model, session: mindSporeLite.Session): void {
+    if (modelName.includes('food_classifier')) {
+      this.foodClassifier = { model, session };
+    } else if (modelName.includes('ingredient_risk')) {
+      this.ingredientRiskModel = { model, session };
     }
   }
 

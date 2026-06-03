@@ -52,7 +52,8 @@ struct FoodComparePage {
           const emptyArr: FoodLabel[] = []
           return emptyArr
         }),
-        this.appState.getNutritionSnapshots('', 20).catch((_e) => {
+        this.appState.getNutritionSnapshots('', 20).catch((e) => {
+          hilog.warn(DOMAIN_ZERO, TAG, 'Load snapshots failed: %{public}s', JSON.stringify(e))
           const emptySnapshots: NutritionSnapshot[] = []
           return emptySnapshots
         })

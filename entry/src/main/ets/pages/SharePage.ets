@@ -416,6 +416,7 @@ struct SharePage {
         : this.buildShareLink();
       await ShareKitService.shareText(context, shareContent, '分享食品报告');
     } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'systemShareText failed: %{public}s', JSON.stringify(e));
       ToastHelper.show(this.getUIContext(), `分享失败：${(e as Error).message}`);
     }
   }
@@ -430,6 +431,7 @@ struct SharePage {
       if (!context) return;
       await ShareKitService.shareImage(context, this.posterUri, '分享食品海报');
     } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'shareImage failed: %{public}s', JSON.stringify(e));
       ToastHelper.show(this.getUIContext(), `图片分享失败：${(e as Error).message}`);
     }
   }
@@ -509,6 +511,7 @@ struct SharePage {
       systemPasteboard.setData(pasteData);
       ToastHelper.show(this.getUIContext(), '链接已复制');
     } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'copyLink failed: %{public}s', JSON.stringify(e));
       ToastHelper.show(this.getUIContext(), '复制失败');
     }
   }

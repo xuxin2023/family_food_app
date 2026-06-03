@@ -318,6 +318,7 @@ struct FamilyGroupPage {
       this.groupSummaries = await this.appState.getMyGroups()
       this.groupDS.reload(this.groupSummaries)
     } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'createGroup failed: %{public}s', JSON.stringify(e));
       ToastHelper.show(this.getUIContext(), `创建失败: ${(e as Error).message}`)
     }
   }
@@ -334,6 +335,7 @@ struct FamilyGroupPage {
       this.groupSummaries = await this.appState.getMyGroups()
       this.groupDS.reload(this.groupSummaries)
     } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'joinGroup failed: %{public}s', JSON.stringify(e));
       ToastHelper.show(this.getUIContext(), `加入失败: ${(e as Error).message}`)
     }
   }

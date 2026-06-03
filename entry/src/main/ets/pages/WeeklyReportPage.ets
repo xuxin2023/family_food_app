@@ -300,6 +300,7 @@ struct WeeklyReportPage {
       }
       ToastHelper.show(this.getUIContext(), $r('app.string.weekly_report_added_to_list'));
     } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'addToShoppingList failed: %{public}s', JSON.stringify(error));
       ToastHelper.show(this.getUIContext(), $r('app.string.weekly_report_add_failed'));
     }
   }
@@ -412,7 +413,8 @@ struct WeeklyReportPage {
       const context = getContext(this) as common.UIAbilityContext;
       await ReportExporter.exportToFile(content, filename, context);
       ToastHelper.show(this.getUIContext(), $r('app.string.export_success'));
-    } catch (_e) {
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'exportSummary failed: %{public}s', JSON.stringify(e));
       ToastHelper.show(this.getUIContext(), $r('app.string.export_failed'));
     }
   }

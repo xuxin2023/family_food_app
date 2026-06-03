@@ -215,7 +215,8 @@ struct GroupFeedPage {
             const data = pasteboard.createData('text/plain', this.groupId)
             pasteboard.getSystemPasteboard().setData(data)
             ToastHelper.show(this.getUIContext(), $r('app.string.group_feed_copied'))
-          } catch (_e) {
+          } catch (e) {
+            hilog.warn(DOMAIN_ZERO, 'GroupFeedPage', 'copyInviteCode failed: %{public}s', JSON.stringify(e));
             ToastHelper.show(this.getUIContext(), $r('app.string.group_feed_copy_failed'))
           }
         }

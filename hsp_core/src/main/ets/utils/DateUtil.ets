@@ -58,4 +58,39 @@ export class DateUtil {
     if (diffDay === 1) return `昨天 ${DateUtil.formatTime(date)}`;
     return DateUtil.formatDate(date);
   }
+
+  /**
+   * 当前毫秒时间戳（语义统一入口）
+   */
+  static now(): number {
+    return Date.now();
+  }
+
+  /**
+   * 生成带时间戳的ID后缀
+   */
+  static nowForId(): string {
+    return Date.now().toString(36);
+  }
+
+  /**
+   * 当前小时(0-23)
+   */
+  static currentHour(): number {
+    return new Date().getHours();
+  }
+
+  /**
+   * ISO 8601 格式日期时间字符串
+   */
+  static todayISO(): string {
+    return new Date().toISOString();
+  }
+
+  /**
+   * 从起始时间戳计算已耗时(ms)
+   */
+  static elapsedSince(startMs: number): number {
+    return Date.now() - startMs;
+  }
 }

@@ -391,7 +391,9 @@ export class OpenFoodFactsService {
       if (cached !== undefined && cached !== null) {
       return cached;
       }
-    } catch (_) {}
+      } catch (e) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'Image cache write failed: %{public}s', JSON.stringify(e));
+      }
 
     try {
       const options: SecureRequestOptions = {
@@ -412,7 +414,9 @@ export class OpenFoodFactsService {
       try {
         const cacheUtil = ImageCacheUtil.getInstance();
         cacheUtil.set(imageUrl, pixelMap);
-      } catch (_) {}
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Image cache read failed: %{public}s', JSON.stringify(e));
+    }
       return pixelMap;
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Image request failed: %{public}s', JSON.stringify(error));

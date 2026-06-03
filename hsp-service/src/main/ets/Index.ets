@@ -159,3 +159,7 @@ export { DeferredInitQueue } from './service/sync/DeferredInitQueue';
 // ===== V5 新增: LlmChatProxy 统一 LLM 对话门面 =====
 export { LlmChatProxy, createLlmChatProxy, LlmSource } from './service/ai/LlmChatProxy';
 export type { LlmChatRequest, LlmChatResponse, MemberHealthContext } from './service/ai/LlmChatProxy';
+
+// ===== V6 新增: 大规模成分数据库分析服务 =====
+export { IngredientAnalysisService } from './service/IngredientAnalysisService';
+export type { IngredientAnalysisResult, HazardItem } from './service/IngredientAnalysisService';

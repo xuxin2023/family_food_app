@@ -1,0 +1,20 @@
+{
+  "name": "ingredient-deep-analyze",
+  "version": "1.0.0",
+  "description": "大规模成分深度分析 — 本地知识库+CloudDB+OFF API三源融合",
+  "main": "index.ts",
+  "runtime": "Nodejs18.17",
+  "memorySize": 512,
+  "timeout": 20,
+  "triggers": [
+    {
+      "name": "ingredient-deep-analyze",
+      "type": "http",
+      "route": "/api/ingredient-deep-analyze"
+    }
+  ],
+  "env": {
+    "CLOUD_DB_ENDPOINT": "https://familyfood-api.cn-north-4.myhuaweicloud.com",
+    "OFF_API_BASE": "https://world.openfoodfacts.org/api/v2"
+  }
+}

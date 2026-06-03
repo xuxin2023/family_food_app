@@ -208,7 +208,7 @@ export class EngineManager {
     const result = ShanghaiGradeEngine.evaluate(foodLabel.nutrition);
     return result.grade;
   }
-
+8
   /** 获取替代食品推荐 — 委托 AlternativeFoodRecommender */
   async getAlternativeFoods(foodLabel: FoodLabel, members: FamilyProfile[] = []): Promise<EnhancedFoodRecommendation[]> {
     try {

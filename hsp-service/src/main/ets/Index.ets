@@ -110,6 +110,10 @@ export { FoodDomainService } from './service/FoodDomainService';
 export { FoodWidgetManager } from './service/FoodWidgetManager';
 
 export { IapServerValidator } from './service/IapServerValidator';
+export { IapProductManager } from './service/IapProductManager';
+export type { IapProductDefinition } from './service/IapProductManager';
+export { SubscriptionStateManager, SubscriptionStatus } from './service/SubscriptionStateManager';
+export type { SubscriptionState } from './service/SubscriptionStateManager';
 export { IntentRegistrationService } from './service/IntentRegistrationService';
 export { ModelConverter } from './service/ModelConverter';
 export { NutritionDomainService } from './service/NutritionDomainService';

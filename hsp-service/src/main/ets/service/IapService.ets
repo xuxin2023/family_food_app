@@ -11,6 +11,7 @@ import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { util } from '@kit.ArkTS';
+import { IapErrorUtil } from './IapErrorUtil';
 
 // ==================== 沙箱测试报告类型 ====================
 
@@ -377,96 +378,6 @@ export class IapService {
 
   // ==================== 增强的错误码映射 ====================
 
-  /**
-   * 将 IAP Kit 错误码映射为可读的中文错误信息
-   * 覆盖正式环境与沙箱环境的常见错误码
-   *
-   * 错误码参考：
-   *   -1  = 未知错误
-   *   -2  = 网络异常/链接断开
-   *   -3  = 沙箱特有错误（仅沙箱环境）
-   *   1001 = SDK 未初始化/未登录
-   *   1002 = 不支持的API版本
-   *   35001-35008 = IAP Kit 通用错误
-   *   PRODUCT_OWNED (7000002) = 商品已拥有（可用于测试补发货）
-   *   SYSTEM_ERROR (7000003) = 系统错误（可触发补发货流程）
-   */
-  private parseIapError(err: BusinessError): ResourceStr {
-    // 先匹配 IAP Kit 内置错误码
-    if (err.code === iap.IAPErrorCode.PRODUCT_OWNED) {
-      return $r('app.string.iap_err_product_owned') as ResourceStr;
-    }
-    if (err.code === iap.IAPErrorCode.SYSTEM_ERROR) {
-      return $r('app.string.iap_err_system_busy') as ResourceStr;
-    }
-    if (err.code === iap.IAPErrorCode.USER_CANCELED) {
-      return $r('app.string.iap_err_user_canceled') as ResourceStr;
-    }
-    if (err.code === iap.IAPErrorCode.PURCHASE_NOT_PAID) {
-      return $r('app.string.iap_err_no_record') as ResourceStr;
-    }
-    if (err.code === iap.IAPErrorCode.FREQUENT_CALLS) {
-      return $r('app.string.iap_err_frequent') as ResourceStr;
-    }
-    if (err.code === iap.IAPErrorCode.NETWORK_ERROR) {
-      return $r('app.string.iap_err_network_unstable') as ResourceStr;
-    }
-    if (err.code === iap.IAPErrorCode.ACCOUNT_NOT_TEST) {
-      return $r('app.string.iap_err_not_test_account') as ResourceStr;
-    }
-    if (err.code === iap.IAPErrorCode.APP_NOT_DEBUG) {
-      return $r('app.string.iap_err_not_debug') as ResourceStr;
-    }
-
-    // 匹配扩展错误码
-    const mapped = this.mapExtendedErrorCode(err.code);
-    if (mapped !== undefined) {
-      return mapped;
-    }
-
-    // 沙箱环境特殊提示
-    if (IS_SANDBOX_ENABLED) {
-      return `${$r('app.string.iap_err_sandbox_anomaly') as ResourceStr}`.replace('%s', `${err.code}`);
-    }
-
-    return `${$r('app.string.iap_err_payment_failed') as ResourceStr}`.replace('%s', `${err.code}`);
-  }
-
-  /**
-   * 映射扩展错误码（避免在普通方法中使用 Record<number, string> 的语法限制）
-   */
-  private mapExtendedErrorCode(code: number): ResourceStr | undefined {
-    switch (code) {
-      case -1:
-        return $r('app.string.iap_err_internal') as ResourceStr;
-      case -2:
-        return $r('app.string.iap_err_network_error') as ResourceStr;
-      case -3:
-        return $r('app.string.iap_err_sandbox_config') as ResourceStr;
-      case 1001:
-        return $r('app.string.iap_err_huawei_not_ready') as ResourceStr;
-      case 1002:
-        return $r('app.string.iap_err_api_incompatible') as ResourceStr;
-      case 35001:
-        return $r('app.string.iap_err_service_exception') as ResourceStr;
-      case 35002:
-        return $r('app.string.iap_err_param_invalid') as ResourceStr;
-      case 35003:
-        return $r('app.string.iap_err_product_invalid') as ResourceStr;
-      case 35004:
-        return $r('app.string.iap_err_order_failed') as ResourceStr;
-      case 35005:
-        return $r('app.string.iap_err_purchase_canceled') as ResourceStr;
-      case 35006:
-        return $r('app.string.iap_err_password_failed') as ResourceStr;
-      case 35007:
-        return $r('app.string.iap_err_insufficient_balance') as ResourceStr;
-      case 35008:
-        return $r('app.string.iap_err_daily_limit') as ResourceStr;
-      default:
-        return undefined;
-    }
-  }
 
   // ==================== 商品查询 ====================
 
@@ -672,7 +583,7 @@ export class IapService {
         this.handlePendingDelivery();
       }
 
-      const errMsg = this.parseIapError(error);
+      const errMsg = IapErrorUtil.parse(error);
       return this.failResult(productId, errMsg);
     }
   }

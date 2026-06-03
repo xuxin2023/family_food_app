@@ -9,11 +9,12 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferences } from '@kit.ArkData';
 import { http } from '@kit.NetworkKit';
 import { SecureHttpClient, SecureRequestOptions } from './SecureHttpClient';
+import { ConfigManager } from './ConfigManager';
 
 const TAG = 'PrivacyManager';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
-const DEFAULT_PRIVACY_OSS_BASE = 'https://familyfood-privacy.obs.cn-north-4.myhuaweicloud.com';
+const DEFAULT_PRIVACY_OSS_BASE = ConfigManager.getInstance().getObsPrivacyBase();
 const PRIVACY_POLICY_PATH = '/privacy-policy-v{version}.html';
 const USER_AGREEMENT_PATH = '/user-agreement-v{version}.html';
 const VERSION_MANIFEST_PATH = '/manifest.json';

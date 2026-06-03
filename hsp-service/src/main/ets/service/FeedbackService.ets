@@ -1,7 +1,8 @@
-import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, API_CONFIG } from 'hsp_core';
 import { SecureHttpClient, SecureRequestOptions } from './SecureHttpClient';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
+import { ConfigManager } from './ConfigManager';
 
 const TAG = 'FeedbackService';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -37,7 +38,7 @@ export class FeedbackService {
   async submitFeedback(submission: FeedbackSubmission, context: common.Context): Promise<FeedbackResult> {
     try {
       const options: SecureRequestOptions = {
-        url: 'https://familyfood-api.cn-north-4.myhuaweicloud.com/api/feedback',
+        url: ConfigManager.getInstance().getFeedbackUrl(),
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(submission),

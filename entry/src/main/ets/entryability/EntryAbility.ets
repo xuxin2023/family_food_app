@@ -10,7 +10,7 @@ import { window } from '@kit.ArkUI';
 import { fileIo } from '@kit.CoreFileKit';
 import { util } from '@kit.ArkTS';
 import { AppState } from '../AppState';
-import { AnalyticsService, PermissionManager, NetworkMonitorService, PrivacyManager, SecureHttpClient, UpdateChecker, UpdateInfo, PermissionProgressiveGuide, SystemPrivacyService } from 'hsp_service';
+import { AnalyticsService, PermissionManager, NetworkMonitorService, PrivacyManager, SecureHttpClient, UpdateChecker, UpdateInfo, PermissionProgressiveGuide, SystemPrivacyService, ModelDownloadService } from 'hsp_service';
 import { preferences, relationalStore } from '@kit.ArkData';
 import { warmUpOfflineDatabase } from 'hsp_core';
 import { GlobalErrorHandler } from 'hsp_service';
@@ -172,6 +172,9 @@ export default class EntryAbility extends UIAbility {
     // 隐私合规检查
     this.checkPrivacyCompliance();
 
+    // V9: 端侧AI模型下载(仅WiFi环境,不阻塞UI)
+    this.initOnDeviceModels();
+
     // Push Kit 初始化
     PushService.getInstance().init().then(() => {
       hilog.info(DOMAIN_ZERO, TAG, 'PushService init success (deferred)');
@@ -182,6 +185,27 @@ export default class EntryAbility extends UIAbility {
     this.updateCheckTimer = setTimeout(() => {
       this.silentCheckUpdate();
     }, 5000);
+  }
+
+  private initOnDeviceModels(): void {
+    const modelSvc = ModelDownloadService.getInstance();
+    modelSvc.init(this.context).then(() => {
+      return modelSvc.checkAndDownload({
+        onProgress: (state) => {
+          hilog.debug(DOMAIN_ZERO, TAG, 'Model %{public}s: %{public}d%',
+            state.modelName, state.progressPercent);
+        },
+        onComplete: (allReady) => {
+          if (allReady) {
+            hilog.info(DOMAIN_ZERO, TAG, 'All AI models ready');
+          } else {
+            hilog.warn(DOMAIN_ZERO, TAG, 'Some models unavailable, fallback active');
+          }
+        },
+      });
+    }).catch((err) => {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Model download init failed: %{public}s', err.message);
+    });
   }
 
   private async checkPrivacyCompliance(): Promise<boolean> {

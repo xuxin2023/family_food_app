@@ -179,3 +179,8 @@ export { SmartBasketService } from './service/SmartBasketService';
 export type { SmartBasketResult, SmartBasketItem, SwapSuggestion } from './service/SmartBasketService';
 export { SmartMealPlanService } from './service/SmartMealPlanService';
 export type { WeeklyMealPlan, GoalProgress } from './service/SmartMealPlanService';
+
+// ===== V9 新增: 端侧AI模型下载管理 =====
+export { ModelDownloadService } from './service/ModelDownloadService';
+export { ModelDownloadStatus } from './service/ModelDownloadService';
+export type { ModelManifest, ModelDescriptor, ModelDownloadState } from './service/ModelDownloadService';

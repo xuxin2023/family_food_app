@@ -1,0 +1,57 @@
+{
+  "name": "familyfood-models",
+  "region": "cn-north-4",
+  "bucket": "familyfood-models",
+  "policy": {
+    "publicRead": true,
+    "cors": {
+      "allowedOrigins": ["*"],
+      "allowedMethods": ["GET", "HEAD"],
+      "allowedHeaders": ["*"],
+      "maxAgeSeconds": 3600
+    }
+  },
+  "paths": {
+    "models": "models/",
+    "manifest": "models/manifest.json",
+    "versioning": {
+      "strategy": "semantic",
+      "currentStable": 1,
+      "keepVersions": 3
+    }
+  },
+  "models": [
+    {
+      "name": "food_classifier_fp16.ms",
+      "version": 1,
+      "sizeBytes": 8388608,
+      "format": "MindSpore Lite FP16",
+      "inputShape": [1, 7],
+      "outputShape": [1, 2],
+      "accelerator": "CPU/NPU",
+      "runsOn": "HarmonyOS 5.0+"
+    },
+    {
+      "name": "ingredient_risk_fp16.ms",
+      "version": 1,
+      "sizeBytes": 4194304,
+      "format": "MindSpore Lite FP16",
+      "inputShape": [1, 30],
+      "outputShape": [1, 2],
+      "accelerator": "CPU/NPU",
+      "runsOn": "HarmonyOS 5.0+"
+    }
+  ],
+  "download": {
+    "maxConcurrency": 2,
+    "retryCount": 3,
+    "chunkSize": 262144,
+    "wifiOnly": true,
+    "backgroundAllowed": true
+  },
+  "security": {
+    "urlSigning": true,
+    "signatureExpiryHours": 24,
+    "checksumRequired": true
+  }
+}

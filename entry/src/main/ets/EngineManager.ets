@@ -220,7 +220,8 @@ export class EngineManager {
         results.push(rec);
       }
       return results;
-    } catch (_e) {
+    } catch (e) {
+      hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'getAlternativeFoods failed: %{public}s', JSON.stringify(e));
       return [];
     }
   }
@@ -249,7 +250,8 @@ export class EngineManager {
         return Recommendation.getDefault(profile.memberId, foodLabel.foodId);
       }
       return result;
-    } catch (_e) {
+    } catch (e) {
+      hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'calculateRecommendationSafe fallback: %{public}s', JSON.stringify(e));
       return Recommendation.getDefault(profile.memberId, foodLabel.foodId);
     }
   }
@@ -259,7 +261,8 @@ export class EngineManager {
       const safeSignal = signal ?? new HealthSignal();
       const result = this.mealBalanceEngine.calculate(scenario, profile, safeSignal);
       return result ?? MealBalance.getDefault();
-    } catch (_e) {
+    } catch (e) {
+      hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'calculateMealBalanceSafe fallback: %{public}s', JSON.stringify(e));
       return MealBalance.getDefault();
     }
   }
@@ -270,7 +273,8 @@ export class EngineManager {
       const mealTimes = new MealTimeParams();
       const result = this.childProtectionEngine.calculate(profile, foodLabel, now, mealTimes, '21:00');
       return result ?? ChildProtection.getDefault();
-    } catch (_e) {
+    } catch (e) {
+      hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'calculateChildProtectionSafe fallback: %{public}s', JSON.stringify(e));
       return ChildProtection.getDefault();
     }
   }
@@ -279,7 +283,8 @@ export class EngineManager {
     try {
       const result = this.credibilityEngine.calculate(foodLabel);
       return result ?? CredibilityResult.getDefault();
-    } catch (_e) {
+    } catch (e) {
+      hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'calculateCredibilitySafe fallback: %{public}s', JSON.stringify(e));
       return CredibilityResult.getDefault();
     }
   }
@@ -288,7 +293,8 @@ export class EngineManager {
     try {
       const result = NutriScoreEngine.calculateFromNutrition(foodLabel.nutrition);
       return NullGuard.safeString(result?.grade, 'unknown');
-    } catch (_e) {
+    } catch (e) {
+      hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'getNutriScoreSafe fallback: %{public}s', JSON.stringify(e));
       return 'unknown';
     }
   }
@@ -297,7 +303,8 @@ export class EngineManager {
     try {
       const result = ShanghaiGradeEngine.evaluate(foodLabel.nutrition);
       return NullGuard.safeString(result?.grade, 'unknown');
-    } catch (_e) {
+    } catch (e) {
+      hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'getShanghaiGradeSafe fallback: %{public}s', JSON.stringify(e));
       return 'unknown';
     }
   }
@@ -363,7 +370,8 @@ export class EngineManager {
         resultLines = resultLines.concat(report.buyMore.map(b => `  • ${b}`));
       }
       return resultLines.join('\n');
-    } catch (_e) {
+    } catch (e) {
+      hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'generateWeeklyReport failed: %{public}s', JSON.stringify(e));
       return `本周暂无足够数据生成周报。继续扫描食品，积累7天数据后将自动生成详细报告。`;
     }
   }

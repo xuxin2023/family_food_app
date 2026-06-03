@@ -1,5 +1,5 @@
 import {
-  ToastHelper, safeBack, safePushUrl, FoodLabel, NutritionPer100g, FamilyProfile, AlternativeFood, COLORS, FONT_SIZE, RADIUS, SPACING, ROUTE_ALTERNATIVE_FOOD_PAGE, IOfflineFoodProvider, PageResourceTracker, createPageTracker
+  ToastHelper, safeBack, safePushUrl, FoodLabel, NutritionPer100g, FamilyProfile, AlternativeFood, COLORS, FONT_SIZE, RADIUS, SPACING, ROUTE_ALTERNATIVE_FOOD_PAGE, IOfflineFoodProvider, PageResourceTracker, createPageTracker, HILOG_DOMAIN_DEFAULT
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
@@ -8,6 +8,7 @@ import { OfflineFoodProvider } from 'hsp_core';
 import { EmptyState } from '../components/EmptyState';
 import { OnlineAlternativeSearchService } from 'hsp_service';
 import { AlternativeComparePanel } from 'feature_report';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 
 @Entry
 @ComponentV2
@@ -60,6 +61,7 @@ struct AlternativeFoodPage {
       const results = await onlineService.searchAlternatives(this.foodLabel, undefined, 5)
       this.onlineAlternatives = onlineService.toAlternativeFoods(results)
     } catch (_) {
+      hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'loadOnlineAlternatives failed');
       this.onlineAlternatives = []
     }
   }

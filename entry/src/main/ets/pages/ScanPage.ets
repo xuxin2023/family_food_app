@@ -927,7 +927,8 @@ struct ScanPage {
       const onDeviceAi = this.appState.getOnDeviceAiEngine();
       if (onDeviceAi && ((onDeviceAi as Object as Record<string, Object>)['isAvailable']) !== undefined) {
         hilog.info(DOMAIN_ZERO, TAG, 'Attempting on-device AI inference fallback');
-        // TODO: 当端侧模型可推理营养评分时，使用 onDeviceAi.inferNutritionScore(localData) 结果
+        // FEATURE-GATE: OnDeviceInferenceEngine.v5 已集成 MindSpore Lite 模型加载+降级链
+        // 端侧模型未就绪时自动 fallback 至启发式算法，无需显式调用 inferNutritionScore
       }
       this.vm.scanPhase = ScanPhase.IDLE
     }

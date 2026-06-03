@@ -7,6 +7,7 @@ import {
   PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
+import { MemberSelector } from '../components/MemberSelector';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
 // 导入图表组件
@@ -489,7 +490,11 @@ struct DashboardPage {
             Scroll() {
               Column() {
                 // ─══─①─ 成员选择器 ─══─
-                this.buildMemberSelector()
+                MemberSelector({
+                  members: this.vm.familyMembers,
+                  selectedMemberId: this.vm.selectedMemberId,
+                  onSelectMember: (id: string) => { this.switchMember(id) }
+                }).margin({ bottom: SPACING.MD })
                 // ─══─②─ 健康概览卡片（左侧评分 + 右侧统计）─══─
                 this.buildHealthOverviewCard()
                 // ─══─③─ 营养均衡雷达图面板（延迟加载）─══─
@@ -595,40 +600,6 @@ struct DashboardPage {
     .backgroundColor(COLORS.WHITE)
   }
 
-  // ─══─成员选择器─══─
-  @Builder
-  buildMemberSelector() {
-    Scroll() {
-      Row({ space: SPACING.SM }) {
-        ForEach(this.vm.familyMembers, (member: FamilyProfile) => {
-          Column() {
-            Text(this.getMemberEmoji(member))
-              .fontSize(FONT_SIZE.XXL)
-              .margin({ bottom: 2 })
-            Text(member.nickname)
-              .fontSize(FONT_SIZE.TINY)
-              .fontColor(this.vm.selectedMemberId === member.memberId ? COLORS.WHITE : COLORS.TEXT_GRAY_6161)
-              .fontWeight(this.vm.selectedMemberId === member.memberId ? FONT_WEIGHT.BOLD : FONT_WEIGHT.REGULAR)
-              .maxLines(1)
-          }
-          .width(60)
-          .height(72)
-          .justifyContent(FlexAlign.Center)
-          .alignItems(HorizontalAlign.Center)
-          .borderRadius(RADIUS.MD)
-          .backgroundColor(this.vm.selectedMemberId === member.memberId ? COLORS.PRIMARY : COLORS.BG_LIGHT_GRAY_F5)
-          .onClick(() => { this.switchMember(member.memberId) })
-          .accessibilityText(member.nickname)
-          .accessibilityLevel('yes')
-        }, (member: FamilyProfile) => member.memberId)
-      }
-      .padding({ left: SPACING.LG, right: SPACING.LG })
-    }
-    .width('100%')
-    .height(84)
-    .scrollBar(BarState.Off)
-    .margin({ bottom: SPACING.MD })
-  }
 
   // ─══─健康概览卡片─══─
   @Builder

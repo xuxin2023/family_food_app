@@ -15,6 +15,7 @@ import { NovaGroupBadge, EcoScoreBadge, EcoScore, RiskAssessmentPanel, ShareCard
 import { NutriScore } from 'hsp_core';
 import { InteractionAssessmentResult, NovaGroup } from 'feature_scan';
 import { AdditiveInteractionCard } from '../components/AdditiveInteractionCard';
+import { NutrientTag } from '../components/NutrientTag';
 
 // ===== 页面级别类型 =====
 
@@ -472,11 +473,11 @@ struct ReportPage {
   NutritionQuickSummary() {
     Scroll() {
       Row({ space: SPACING.XS }) {
-        this.NutrientTag($r('app.string.calorie'), `${this.foodLabel?.nutrition?.calories ?? 0}`, 'kcal', this.getNutrientPercentage('热量'))
-        this.NutrientTag($r('app.string.sodium'), `${this.foodLabel?.nutrition?.sodium ?? 0}`, 'mg', this.getNutrientPercentage('钠'))
-        this.NutrientTag($r('app.string.sugar'), `${this.foodLabel?.nutrition?.sugar ?? 0}`, 'g', this.getNutrientPercentage('糖'))
-        this.NutrientTag($r('app.string.fat'), `${this.foodLabel?.nutrition?.fat ?? 0}`, 'g', this.getNutrientPercentage('脂肪'))
-        this.NutrientTag($r('app.string.protein'), `${this.foodLabel?.nutrition?.protein ?? 0}`, 'g', this.getNutrientPercentage('蛋白质'))
+        NutrientTag({ label: $r('app.string.calorie'), value: `${this.foodLabel?.nutrition?.calories ?? 0}`, unit: 'kcal', percentage: this.getNutrientPercentage('热量') })
+        NutrientTag({ label: $r('app.string.sodium'), value: `${this.foodLabel?.nutrition?.sodium ?? 0}`, unit: 'mg', percentage: this.getNutrientPercentage('钠') })
+        NutrientTag({ label: $r('app.string.sugar'), value: `${this.foodLabel?.nutrition?.sugar ?? 0}`, unit: 'g', percentage: this.getNutrientPercentage('糖') })
+        NutrientTag({ label: $r('app.string.fat'), value: `${this.foodLabel?.nutrition?.fat ?? 0}`, unit: 'g', percentage: this.getNutrientPercentage('脂肪') })
+        NutrientTag({ label: $r('app.string.protein'), value: `${this.foodLabel?.nutrition?.protein ?? 0}`, unit: 'g', percentage: this.getNutrientPercentage('蛋白质') })
       }
       .padding({ left: 16, right: 16 })
     }
@@ -486,48 +487,7 @@ struct ReportPage {
     .margin({ bottom: 4 })
   }
 
-  @Builder
-  NutrientTag(label: ResourceStr, value: string, unit: string, percentage: number = 0) {
-    Column() {
-      Text(label)
-        .fontSize(10)
-        .fontColor(COLORS.TEXT_TERTIARY)
-        .margin({ bottom: 1 })
-      Row() {
-        Text(value)
-          .fontSize(FONT_SIZE.SMALL)
-          .fontWeight(FONT_WEIGHT.BOLD)
-          .fontColor(COLORS.TEXT_PRIMARY)
-        Text(unit)
-          .fontSize(9)
-          .fontColor(COLORS.TEXT_TERTIARY)
-          .margin({ left: 1 })
-          .alignSelf(ItemAlign.End)
-      }
-      .margin({ bottom: 4 })
-      // 进度条 + 百分比
-      Column() {
-        Row()
-          .width(percentage > 100 ? '100%' : `${Math.round(percentage)}%`)
-          .height(3)
-          .borderRadius(2)
-          .backgroundColor(percentage > 80 ? COLORS.ACCENT_RED_EF53 : percentage > 50 ? COLORS.ACCENT_ORANGE_FFA7 : COLORS.ACCENT_GREEN_66BB)
-        Text(`${Math.round(percentage)}%`)
-          .fontSize(8)
-          .fontColor(percentage > 80 ? COLORS.ACCENT_RED_EF53 : percentage > 50 ? COLORS.ACCENT_ORANGE_FFA7 : COLORS.TEXT_GRAY_9E9E)
-          .lineHeight(10)
-      }
-      .width(40)
-      .alignItems(HorizontalAlign.Start)
-    }
-    .padding({ left: 8, right: 8, top: 6, bottom: 6 })
-    .backgroundColor(COLORS.BG_LIGHTER_GRAY_F8)
-    .borderRadius(10)
-    .alignItems(HorizontalAlign.Center)
-    .height(60)
-  }
-
-  // ==================== ③ 家庭矩阵区 ====================  // ==================== ③ 家庭矩阵区 ====================
+  // ==================== ③ 家庭矩阵区 ====================
 
   @Builder
   FamilyMatrixSection() {

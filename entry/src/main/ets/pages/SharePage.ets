@@ -241,7 +241,7 @@ struct SharePage {
                         Text(group.groupName)
                           .fontSize(14)
                           .fontWeight(FontWeight.Medium)
-                        Text(`${group.memberCount}浣嶆垚鍛?)
+                        Text(`${group.memberCount}位成员`)
                           .fontSize(11)
                           .fontColor(COLORS.TEXT_GRAY_9E9E)
                       }

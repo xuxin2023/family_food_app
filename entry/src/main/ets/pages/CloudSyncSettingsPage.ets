@@ -382,7 +382,7 @@ struct CloudSyncSettingsPage {
           this.InfoRow($r('app.string.cloud_sync_label_device_id'), this.deviceId.length > 0 ?
             this.deviceId.substring(0, 20) + '...' : $r('app.string.cloud_sync_loading_text'))
           this.InfoRow($r('app.string.cloud_sync_label_network_status'), this.getNetworkStatusText())
-          this.InfoRow($r('app.string.cloud_sync_label_pending_items'), `${this.pendingCount} 椤?)
+          this.InfoRow($r('app.string.cloud_sync_label_pending_items'), `${this.pendingCount} 项`)
         }
 
         Text($r('app.string.encrypt_transport'))
@@ -433,7 +433,7 @@ struct CloudSyncSettingsPage {
               .fontSize(14)
               .fontColor('#757575')
             Blank()
-            Text(`${this.pendingCount} 椤?)
+            Text(`${this.pendingCount} 项`)
               .fontSize(14)
               .fontColor(this.pendingCount > 0 ? '#F57C00' : '#2E7D32')
           }
@@ -560,10 +560,10 @@ struct CloudSyncSettingsPage {
     const result = await this.syncService.triggerSync();
     await this.refreshAllState();
     if (result) {
-      this.addLog(`同步完成: ${result.syncedIds.length}条成功 +
-        (result.failedIds.length > 0 ? `, ${result.failedIds.length}条失败 : ''));
+      this.addLog(`同步完成: ${result.syncedIds.length}条成功` +
+        (result.failedIds.length > 0 ? `, ${result.failedIds.length}条失败` : ''));
     } else {
-      this.addLog('同步被跳过(可能正在同步中或网络不可用));
+      this.addLog('同步被跳过(可能正在同步中或网络不可用)');
     }
   }
 

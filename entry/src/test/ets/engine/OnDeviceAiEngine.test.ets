@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@ohos/hypium';
-import { OnDeviceAiEngine, IngredientAnalysis } from '../../../main/ets/engine/OnDeviceAiEngine';
+import { OnDeviceAiEngine, IngredientAnalysis } from 'feature_scan';
 
 export default function onDeviceAiEngineTest() {
   describe('OnDeviceAiEngine', () => {

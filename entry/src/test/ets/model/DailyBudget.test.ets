@@ -2,7 +2,7 @@
 // 每日预算模型单元测试
 
 import { describe, it, expect } from '@ohos/hypium';
-import { DailyBudget } from '../../../main/ets/model/DailyBudget';
+import { DailyBudget } from 'hsp_core';
 
 export default function dailyBudgetTest() {
   describe('DailyBudget', () => {

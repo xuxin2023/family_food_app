@@ -2,7 +2,7 @@
 // EcoScore 生态评分引擎单元测试
 
 import { TestSuite, TestCase, expect } from '@ohos/hypium';
-import { EcoScoreEngine, EcoScoreResult, EcoScoreGrade } from '../../../main/ets/engine/EcoScoreEngine';
+import { EcoScoreEngine, EcoScoreResult, EcoScoreGrade } from 'hsp_rating';
 
 export default function ecoScoreTest(): TestSuite {
   const suite = new TestSuite('EcoScoreEngine');

@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@ohos/hypium';
-import { HistoryRepository } from '../../../main/ets/repository/HistoryRepository';
+import { HistoryRepository } from 'hsp_service';
 
 export default function historyRepositoryTest() {
   describe('HistoryRepository', () => {

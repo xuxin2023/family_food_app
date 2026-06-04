@@ -2,7 +2,7 @@
 // CloudAuthService 单元测试 — 验证 AuthUser class + signIn 流程
 
 import { TestSuite, TestCase, expect } from '@ohos/hypium';
-import { AuthUser } from '../../../main/ets/service/CloudAuthService';
+import { AuthUser } from 'hsp_service';
 
 export default function cloudAuthTest(): TestSuite {
   const suite = new TestSuite('CloudAuthService');

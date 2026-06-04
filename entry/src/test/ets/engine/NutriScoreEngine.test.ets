@@ -2,7 +2,7 @@
 // 营养评分引擎单元测试 — 验证扣分/加分/等级算法
 
 import { TestSuite, TestCase, expect } from '@ohos/hypium';
-import { NutriScoreEngine, NutriScoreInput } from '../../../main/ets/engine/NutriScoreEngine';
+import { NutriScoreEngine, NutriScoreInput } from 'hsp_rating';
 
 class NutriScoreInputOverrides {
   calories: number | undefined = undefined;

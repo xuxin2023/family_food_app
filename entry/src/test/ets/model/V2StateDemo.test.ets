@@ -8,7 +8,7 @@ import {
   MemberNutritionProfile,
   FamilyNutritionManager,
   createDemoFamilyManager
-} from '../../../main/ets/model/V2StateDemo';
+} from 'hsp_core';
 
 export default function v2StateDemoTest(): TestSuite {
   const suite = new TestSuite('V2StateDemo');

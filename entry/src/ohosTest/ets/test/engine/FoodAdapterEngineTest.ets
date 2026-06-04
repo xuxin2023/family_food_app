@@ -1,17 +1,18 @@
 // FoodAdapterEngine 单元测试 - 动态适配矩阵
 import { describe, it, expect } from '@ohos/hypium';
 import { FoodAdapterEngine, TodayIntakeInput,
-  FamilyMemberSimpleInputInput, FoodNutritionInputInput, HealthSignalInputInput,
-  RecommendationLevel, EnhancedFoodRecommendation } from 'feature_scan';
+  FamilyMemberSimpleInput, FoodNutritionInput, HealthSignalInput
+} from 'feature_scan';
+import { RecommendationLevel, EnhancedFoodRecommendation } from 'hsp_core';
 
-function createAdapterMember(): FamilyMemberSimpleInputInput {
-  const budget = new TodayIntakeInputInput();
+function createAdapterMember(): FamilyMemberSimpleInput {
+  const budget = new TodayIntakeInput();
   budget.sodium_mg = 2000;
   budget.sugar_g = 50;
   budget.energy_kcal = 2000;
   budget.fat_g = 65;
   budget.saturatedFat_g = 20;
-  const member = new FamilyMemberSimpleInputInput();
+  const member = new FamilyMemberSimpleInput();
   member.id = 'dad_1';
   member.name = '爸爸';
   member.role = '爸爸';
@@ -23,15 +24,15 @@ function createAdapterMember(): FamilyMemberSimpleInputInput {
   return member;
 }
 
-function createAdapterMemberWithId(id: string): FamilyMemberSimpleInputInput {
+function createAdapterMemberWithId(id: string): FamilyMemberSimpleInput {
   const m = createAdapterMember();
   m.id = id;
   m.name = id;
   return m;
 }
 
-function createAdapterFood(): FoodNutritionInputInput {
-  const f = new FoodNutritionInputInput();
+function createAdapterFood(): FoodNutritionInput {
+  const f = new FoodNutritionInput();
   f.productName = '测试饼干';
   f.brand = '测试品牌';
   f.energy_kj = 840;
@@ -47,13 +48,13 @@ function createAdapterFood(): FoodNutritionInputInput {
   return f;
 }
 
-function createAdapterFoodLowSodium(): FoodNutritionInputInput {
+function createAdapterFoodLowSodium(): FoodNutritionInput {
   const f = createAdapterFood();
   f.sodium_mg = 50;
   return f;
 }
 
-function createAdapterFoodHighSodium(sodium_mg: number): FoodNutritionInputInput {
+function createAdapterFoodHighSodium(sodium_mg: number): FoodNutritionInput {
   const f = createAdapterFood();
   f.sodium_mg = sodium_mg;
   return f;
@@ -80,7 +81,7 @@ function createAdapterFoodHighSodium600(): FoodNutritionInput {
 }
 
 function createAdapterHealthSignalInput(): HealthSignalInput {
-  const s = new HealthSignalInputInput();
+  const s = new HealthSignalInput();
   s.steps = '8000';
   s.sleep = '良好';
   s.weightTrend = '稳定';
@@ -90,7 +91,7 @@ function createAdapterHealthSignalInput(): HealthSignalInput {
 }
 
 function createAdapterSignalLowSteps(): HealthSignalInput {
-  const s = new HealthSignalInputInput();
+  const s = new HealthSignalInput();
   s.steps = '正常';
   s.sleep = '好';
   s.weightTrend = '稳定';
@@ -100,7 +101,7 @@ function createAdapterSignalLowSteps(): HealthSignalInput {
 }
 
 function createAdapterSignalLowSteps(): HealthSignalInput {
-  const s = new HealthSignalInputInput();
+  const s = new HealthSignalInput();
   s.steps = '低';
   s.sleep = '好';
   s.weightTrend = '稳定';
@@ -110,7 +111,7 @@ function createAdapterSignalLowSteps(): HealthSignalInput {
 }
 
 function createAdapterSignalPoorSleep(): HealthSignalInput {
-  const s = new HealthSignalInputInput();
+  const s = new HealthSignalInput();
   s.steps = '正常';
   s.sleep = '差';
   s.weightTrend = '稳定';
@@ -120,7 +121,7 @@ function createAdapterSignalPoorSleep(): HealthSignalInput {
 }
 
 function createAdapterTodayIntake(): TodayIntakeInput {
-  const t = new TodayIntakeInputInput();
+  const t = new TodayIntakeInput();
   t.sodium_mg = 500;
   t.sugar_g = 10;
   t.energy_kcal = 600;
@@ -129,7 +130,7 @@ function createAdapterTodayIntake(): TodayIntakeInput {
 }
 
 function createAdapterIntakeExhausted(): TodayIntakeInput {
-  const t = new TodayIntakeInputInput();
+  const t = new TodayIntakeInput();
   t.sodium_mg = 2000;
   t.sugar_g = 50;
   t.energy_kcal = 2000;

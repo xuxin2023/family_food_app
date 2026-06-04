@@ -2,9 +2,8 @@
 // 购物篮检查引擎单元测试
 
 import { describe, it, expect } from '@ohos/hypium';
-import { BasketCheckEngine } from '../../../main/ets/engine/BasketCheckEngine';
-import { FoodLabel } from '../../../main/ets/model/FoodLabel';
-import { FamilyProfile, AgeGroup, HealthGoal } from '../../../main/ets/model/FamilyProfile';
+import { BasketCheckEngine } from 'hsp_service';
+import { FoodLabel, FamilyProfile, AgeGroup, HealthGoal } from 'hsp_core';
 
 export default function basketCheckEngineTest() {
   describe('BasketCheckEngine', () => {

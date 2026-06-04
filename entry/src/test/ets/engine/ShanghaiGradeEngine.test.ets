@@ -2,8 +2,8 @@
 // 上海营养分级引擎单元测试
 
 import { describe, it, expect } from '@ohos/hypium';
-import { ShanghaiGradeEngine, ShanghaiGrade } from '../../../main/ets/engine/ShanghaiGradeEngine';
-import { NutritionPer100g } from '../../../main/ets/model/FoodLabel';
+import { ShanghaiGradeEngine, ShanghaiGrade } from 'feature_report';
+import { NutritionPer100g } from 'hsp_core';
 
 export default function shanghaiGradeTest() {
   describe('ShanghaiGradeEngine', () => {

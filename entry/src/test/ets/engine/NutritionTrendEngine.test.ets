@@ -2,8 +2,8 @@
 // 营养趋势引擎单元测试
 
 import { describe, it, expect } from '@ohos/hypium';
-import { NutritionTrendEngine } from '../../../main/ets/engine/NutritionTrendEngine';
-import { DietRecord } from '../../../main/ets/repository/HistoryRepository';
+import { NutritionTrendEngine } from 'feature_report';
+import { DietRecord } from 'hsp_service';
 
 export default function nutritionTrendTest() {
   describe('NutritionTrendEngine', () => {

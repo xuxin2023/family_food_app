@@ -2,7 +2,7 @@ import { describe, it, expect } from '@ohos/hypium';
 import {
   IngredientKnowledgeBase, IngredientAssessment, IngredientRiskLevel,
   IngredientListAssessment
-} from '../../../main/ets/engine/IngredientKnowledgeBase';
+} from 'feature_scan';
 
 export default function ingredientKnowledgeBaseTest() {
   describe('IngredientKnowledgeBase', () => {

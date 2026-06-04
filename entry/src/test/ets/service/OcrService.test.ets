@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@ohos/hypium';
-import { OcrService, OcrResult } from '../../../main/ets/service/OcrService';
+import { OcrService, OcrResult } from 'feature_scan';
 
 export default function ocrServiceTest() {
   describe('OcrService', () => {

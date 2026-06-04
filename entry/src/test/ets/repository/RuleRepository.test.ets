@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@ohos/hypium';
-import { RuleRepository, AllergenKeywordMap } from '../../../main/ets/repository/RuleRepository';
+import { RuleRepository, AllergenKeywordMap } from 'hsp_service';
 
 export default function ruleRepositoryTest() {
   describe('RuleRepository', () => {

@@ -2,7 +2,7 @@
 // 动态食品适配引擎单元测试
 
 import { describe, it, expect } from '@ohos/hypium';
-import { FoodAdapterEngine, FamilyMemberSimpleInput, FoodNutritionInput, HealthSignalInput, TodayIntakeInput } from '../../../main/ets/engine/FoodAdapterEngine';
+import { FoodAdapterEngine, FamilyMemberSimpleInput, FoodNutritionInput, HealthSignalInput, TodayIntakeInput } from 'feature_scan';
 
 export default function foodAdapterEngineTest() {
   describe('FoodAdapterEngine', () => {

@@ -97,40 +97,36 @@ struct SettingsPage {
         .width('100%')
         .padding({ left: 16, right: 16, top: 16, bottom: 16 })
 
-        GridRow({
-          columns: { sm: 4, md: 8, lg: 12 },
-          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
-        }) {
-          GridCol({ span: { sm: 4, md: 8, lg: 10 }, offset: { sm: 0, md: 0, lg: 1 } }) {
-            Column() {
-              Text($r('app.string.mvp_hint'))
-                .fontSize(16)
-                .fontWeight(FontWeight.Bold)
-                .margin({ bottom: 6 })
-              Text($r('app.string.mvp_detail'))
-                .fontSize(12)
-                .fontColor(COLORS.TEXT_GRAY_6161)
-                .lineHeight(18)
-            }
-            .width('92%')
-            .padding(16)
-            .backgroundColor(COLORS.WHITE)
-            .borderRadius(16)
-            .alignItems(HorizontalAlign.Start)
-            .margin({ bottom: 14 })
+        Column() {
+          Column() {
+            Text($r('app.string.mvp_hint'))
+              .fontSize(16)
+              .fontWeight(FontWeight.Bold)
+              .margin({ bottom: 6 })
+            Text($r('app.string.mvp_detail'))
+              .fontSize(12)
+              .fontColor(COLORS.TEXT_GRAY_6161)
+              .lineHeight(18)
+          }
+          .width('92%')
+          .padding(16)
+          .backgroundColor(COLORS.WHITE)
+          .borderRadius(16)
+          .alignItems(HorizontalAlign.Start)
+          .margin({ bottom: 14 })
 
-            this.MemberSelector()
-            this.ManualHealthPanel()
+          this.MemberSelector()
+          this.ManualHealthPanel()
 
-            Button($r('app.string.save_today_status'))
-              .width('90%')
-              .height(50)
-              .backgroundColor(COLORS.PRIMARY)
-              .borderRadius(25)
-              .margin({ top: 8, bottom: 24 })
-              .onClick(() => { this.saveManualStatus() })
-              .accessibilityText($r('app.string.settings_save_today_status_accessibility'))
-              .accessibilityLevel('yes')
+          Button($r('app.string.save_today_status'))
+            .width('90%')
+            .height(50)
+            .backgroundColor(COLORS.PRIMARY)
+            .borderRadius(25)
+            .margin({ top: 8, bottom: 24 })
+            .onClick(() => { this.saveManualStatus() })
+            .accessibilityText($r('app.string.settings_save_today_status_accessibility'))
+            .accessibilityLevel('yes')
 
             // ---- 隐私与合规区域 ----
             Column() {
@@ -477,11 +473,8 @@ struct SettingsPage {
             .borderRadius(16)
             .alignItems(HorizontalAlign.Start)
             .margin({ bottom: 24 })
-            }
-          }
-        }
-        .width('100%')
-        .onBreakpointChange((bp: string) => { this.vm.currentBreakpoint = bp })
+
+
       }
     }
     .width('100%')

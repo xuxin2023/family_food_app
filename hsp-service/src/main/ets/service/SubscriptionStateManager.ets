@@ -5,7 +5,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN_DEFAULT, MemberTier } from 'hsp_core';
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
-import { IapProductManager } from './IapProductManager';
+import { IapProductManager, IapProductDefinition } from './IapProductManager';
 import { IapServerValidator } from './IapServerValidator';
 
 const TAG = 'SubscriptionState';

@@ -70,8 +70,8 @@ struct DailyIntakePage {
   private buildBuckets(): NutrientBucket[] {
     return [
       { label: '热量', unit: 'kcal', current: this.calcTotal('calorieIntake'), target: this.target.caloriesTarget, color: COLORS.PRIMARY, lowerIsBetter: false },
-      { label: '�?, unit: 'mg', current: this.calcTotal('sodiumIntake'), target: this.target.sodiumMax_mg, color: COLORS.ACCENT_RED_EF53, lowerIsBetter: true },
-      { label: '�?, unit: 'g', current: this.calcTotal('sugarIntake'), target: this.target.sugarMax_g, color: COLORS.ORANGE_ACCENT, lowerIsBetter: true },
+      { label: '钠', unit: 'mg', current: this.calcTotal('sodiumIntake'), target: this.target.sodiumMax_mg, color: COLORS.ACCENT_RED_EF53, lowerIsBetter: true },
+      { label: '糖', unit: 'g', current: this.calcTotal('sugarIntake'), target: this.target.sugarMax_g, color: COLORS.ORANGE_ACCENT, lowerIsBetter: true },
       { label: '脂肪', unit: 'g', current: this.calcTotal('fatIntake'), target: this.target.fatMax_g, color: '#FF9800', lowerIsBetter: true },
     ];
   }
@@ -226,7 +226,7 @@ struct DailyIntakePage {
   @Builder
   MealBreakdown() {
     Column() {
-      Text('分餐汇�?)
+      Text('分餐汇总)
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
         .margin({ bottom: 8 })
@@ -289,10 +289,10 @@ struct DailyIntakePage {
           .layoutWeight(1)
 
           Column() {
-            Text(`�?${record.sodiumIntake.toFixed(0)}mg`)
+            Text(`钠${record.sodiumIntake.toFixed(0)}mg`)
               .fontSize(10)
               .fontColor(COLORS.TEXT_TERTIARY)
-            Text(`�?${record.sugarIntake.toFixed(1)}g`)
+            Text(`糖${record.sugarIntake.toFixed(1)}g`)
               .fontSize(10)
               .fontColor(COLORS.TEXT_TERTIARY)
               .margin({ top: 2 })

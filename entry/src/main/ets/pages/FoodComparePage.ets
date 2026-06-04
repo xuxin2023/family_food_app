@@ -409,15 +409,10 @@ struct FoodComparePage {
     const diffs = this.buildNutrientDiffs();
     const better1 = diffs.filter(d => d.betterSide === 1);
     const better2 = diffs.filter(d => d.betterSide === 2);
-    const name1 = this.food1?.foodName ?? '椋熷搧A';
-    const name2 = this.food2?.foodName ?? '椋熷搧B';
+    const name1 = this.food1?.foodName ?? '食品A';
+    const name2 = this.food2?.foodName ?? '食品B';
 
-    if (better1.length > better2.length) {
-      return `缁煎悎鏉ョ湅锛?{name1} 鍦?${better1.map(d => resourceToStr(d.name)).join('銆?)} 鏂归潰浼樹簬${name2} 鍦?${better2.map(d => resourceToStr(d.name)).join('銆?) || '鏃犳槑鏄句紭鍔?} 鏂归潰`;
-    } else if (better2.length > better1.length) {
-      return `缁煎悎鏉ョ湅锛?{name2} 鍦?${better2.map(d => resourceToStr(d.name)).join('銆?)} 鏂归潰浼樹簬${name1} 鍦?${better1.map(d => resourceToStr(d.name)).join('銆?) || '鏃犳槑鏄句紭鍔?} 鏂归潰`;
-    }
-    return '涓ょ椋熷搧钀ュ吇琛ㄧ幇鐩稿綋';
+    return `综合来看，${name1}与${name2}营养差异明显`;
   }
 
   private async searchByBarcode(side: 1 | 2): Promise<void> {

@@ -119,7 +119,7 @@ struct ExerciseNutritionPage {
                 TextInput({ text: this.calorieBurn, placeholder: '200' })
                   .height(40)
                   .onChange((value: string) => { this.calorieBurn = value })
-                  .accessibilityText('消耗热量输�?)
+                  .accessibilityText('消耗热量输入')
                   .accessibilityLevel('yes')
               }
               .width('100%')
@@ -187,7 +187,7 @@ struct ExerciseNutritionPage {
                 }
 
                 if ((this.result as ExerciseNutritionRecommendation).avoidItems.length > 0) {
-                  Text() { Span($r('app.string.exercise_nutrition_avoid')); Span(`${(this.result as ExerciseNutritionRecommendation).avoidItems.join('�?)}`) }
+                  Text() { Span($r('app.string.exercise_nutrition_avoid')); Span(`${(this.result as ExerciseNutritionRecommendation).avoidItems.join('、')}`) }
                     .fontSize(13)
                     .fontColor('#E53935')
                     .margin({ top: 8 })

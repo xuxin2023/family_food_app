@@ -1,4 +1,4 @@
-﻿// MainTabsPage.ets
+// MainTabsPage.ets
 // HarmonyOS 6.1 悬浮页签 + 沉浸光感 集成主页面
 // barOverlap + barFloatingStyle 实现毛玻璃悬浮栏，内容区延伸至导航栏背后
 // systemMaterialEffect 自适应沉浸光感材质，系统自动根据设备算力调节渲染精度
@@ -60,7 +60,7 @@ struct MainTabsPage {
   }
 
   /**
-   * 椤电鍒囨崲鍥炶皟 鈥?@Monitor 绮剧粏鐩戝惉锛圴2 鏇夸唬 @Watch锛?   * 鍙幏鍙栧彉鏇村墠鍚庣殑鍊?   */
+   * 椤电鍒囨崲鍥炶皟 更多@Monitor 绮剧粏鐩戝惉锛圴2 鏇夸唬 @Watch锛?   * 鍙幏鍙栧彉鏇村墠鍚庣殑鍊?   */
   @Monitor('currentIndex')
   onTabChange(monitor: IMonitor) {
     const idx = monitor.value()?.now as number;
@@ -91,7 +91,7 @@ struct MainTabsPage {
     Column() {
       if (this.appInitFailed) {
         Column() {
-          Text('搴旂敤鍒濆鍖栧紓甯?)
+          Text('应用初始化异常')
             .fontSize(18)
             .fontWeight(FontWeight.Bold)
             .fontColor(COLORS.TEXT_PRIMARY)
@@ -128,7 +128,7 @@ struct MainTabsPage {
       }, $r('app.string.tab_home')))
 
       // ================================================================
-      // Tab 1: 楗 鈥?鎳掑姞杞?      // ================================================================
+      // Tab 1: 楗 更多鎳掑姞杞?      // ================================================================
       TabContent() {
         Column() {
           if (this.tabLoaded[1]) {
@@ -147,7 +147,7 @@ struct MainTabsPage {
       }, $r('app.string.tab_diet')))
 
       // ================================================================
-      // Tab 2: AI 鈥?鎳掑姞杞?      // ================================================================
+      // Tab 2: AI 更多鎳掑姞杞?      // ================================================================
       TabContent() {
         Column() {
           if (this.tabLoaded[2]) {
@@ -166,7 +166,7 @@ struct MainTabsPage {
       }, $r('app.string.tab_ai')))
 
       // ================================================================
-      // Tab 3: 绀惧尯 鈥?鎳掑姞杞?      // ================================================================
+      // Tab 3: 绀惧尯 更多鎳掑姞杞?      // ================================================================
       TabContent() {
         Column() {
           if (this.tabLoaded[3]) {
@@ -185,7 +185,7 @@ struct MainTabsPage {
       }, $r('app.string.tab_community')))
 
       // ================================================================
-      // Tab 4: 鎴戠殑 鈥?鎳掑姞杞?      // ================================================================
+      // Tab 4: 鎴戠殑 更多鎳掑姞杞?      // ================================================================
       TabContent() {
         Column() {
           if (this.tabLoaded[4]) {
@@ -328,7 +328,7 @@ struct MainTabsPage {
 
       Button() {
         Row({ space: 6 }) {
-          Text('馃嵔锔?).fontSize(18)
+          Text('📷).fontSize(18)
           Text($r('app.string.main_tabs_enter_home')).fontSize(16).fontColor(COLORS.PRIMARY)
         }
       }
@@ -510,7 +510,7 @@ struct MainTabsPage {
       }
       .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)
-      Text('鈥?)
+      Text('更多)
         .fontSize(22)
         .fontColor(COLORS.TEXT_GRAY_BDBD)
     }

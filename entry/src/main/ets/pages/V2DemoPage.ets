@@ -1,4 +1,4 @@
-﻿// V2DemoPage.ets
+// V2DemoPage.ets
 // V2 状态管理演示页面 - @ComponentV2 + @ObservedV2 + @Trace 新一代状态管理测试
 // 涵盖以下特性:
 // 3. @Monitor - 监听属性变化自动回调
@@ -25,7 +25,7 @@ struct V2DemoPage {
   /** 闁烩晜鍨甸幆澶愬箣閹邦剚鍠呴柛鎺戞处瀹?闁?@Monitor 闁告瑯鍨甸獮蹇涘矗閺嵮冪秮闁告牗鐗曟晶鐘诲触鎼粹檧鍋?*/
   @Monitor('manager.selectedMemberIndex')
   onMemberChanged(monitor: IMonitor): void {
-    hilog.info(DOMAIN_ZERO, TAG, '成员鎶藉礆閸ャ劌搴婇悗鐟版湰閸?);
+    hilog.info(DOMAIN_ZERO, TAG, '成员创建完成');
   }
 
   build() {
@@ -64,7 +64,7 @@ struct V2DemoPage {
             this.newMemberName = '成员? + (this.manager.members.length + 1);
             this.manager.addMember(this.newMemberName);
           })
-          .accessibilityText('添加成员?)
+          .accessibilityText('添加成员')
           .accessibilityLevel('yes')
       }
       .width('100%')
@@ -256,12 +256,12 @@ export struct MealItem {
         .alignItems(HorizontalAlign.Start)
         .layoutWeight(1)
 
-        Button('编辑?).fontSize(12)
+        Button('编辑').fontSize(12)
           .width(28).height(28)
           .borderRadius(14)
           .backgroundColor('#E8E8E8')
           .onClick(() => { this.editing = !this.editing; })
-          .accessibilityText('编辑餐食?)
+          .accessibilityText('编辑餐食')
           .accessibilityLevel('yes')
       }
       .width('100%')
@@ -275,15 +275,15 @@ export struct MealItem {
           Text() { Span($r('app.string.v2_demo_calorie_inline')); Span(`: ${this.meal.calories}`) }.fontSize(12)
           Button('+50').fontSize(11).height(24)
             .onClick(() => { this.meal.calories += 50; })
-            .accessibilityText('濠⒀呭仜婵?0闁告銈囩唴闂?)
+            .accessibilityText('早餐(约350kcal)')
             .accessibilityLevel('yes')
           Button('-50').fontSize(11).height(24)
             .onClick(() => { this.meal.calories = Math.max(0, this.meal.calories - 50); })
-            .accessibilityText('闁告垵绻愰惃?0闁告銈囩唴闂?)
+            .accessibilityText('午餐(约650kcal)')
             .accessibilityLevel('yes')
           Button($r('app.string.v2_demo_reset')).fontSize(11).height(24)
             .onClick(() => { this.meal.calories = 300; })
-            .accessibilityText('闂佹彃绉堕悿鍡涘础闄囬惌楣冩煂?)
+            .accessibilityText('晚餐(约500kcal)')
             .accessibilityLevel('yes')
         }
         .width('100%')

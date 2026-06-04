@@ -124,7 +124,7 @@ struct CheckupReportPage {
                     .margin({ bottom: 4 })
                   ForEach((this.report as CheckupReport)?.items ?? [], (item: CheckupItem, index: number) => {
                     Row() {
-                      Text(item.isAbnormal ? '‚ö? : '‚ú?)
+                      Text(item.isAbnormal ? '‚óè' : '‚óã')
                         .fontSize(14)
                         .fontColor(item.isAbnormal ? '#E53935' : '#4CAF50')
                         .margin({ right: 8 })
@@ -151,14 +151,14 @@ struct CheckupReportPage {
                       .margin({ top: 12, bottom: 8 })
 
                     if (((this.archiveUpdate as HealthArchiveUpdate)?.newAlerts?.length ?? 0) > 0) {
-                      Text() { Span($r('app.string.checkup_new_alert')); Span(`${(this.archiveUpdate as HealthArchiveUpdate)?.newAlerts?.join('„Ä?) ?? ''}`) }
+                      Text() { Span($r('app.string.checkup_new_alert')); Span(`${(this.archiveUpdate as HealthArchiveUpdate)?.newAlerts?.join('„ÄÅ') ?? ''}`) }
                         .fontSize(13)
                         .fontColor('#E53935')
                         .margin({ bottom: 4 })
                     }
                     if (((this.archiveUpdate as HealthArchiveUpdate)?.dietaryAdjustments?.length ?? 0) > 0) {
                       ForEach((this.archiveUpdate as HealthArchiveUpdate)?.dietaryAdjustments ?? [], (adj: string, index: number) => {
-                        Text(`‚Ä?${adj}`)
+                        Text(`‚óè${adj}`)
                           .fontSize(13)
                           .fontColor(COLORS.TEXT_GRAY_3333)
                           .margin({ bottom: 2 })

@@ -278,7 +278,7 @@ struct AlternativeFoodPage {
           .backgroundColor(AlternativeFoodPage.gradeBgColor(item.nutriGrade))
       }
 
-      Text('鈥?)
+      Text('更多)
         .fontSize(20)
         .fontColor(COLORS.TEXT_TERTIARY)
         .margin({ left: 8 })
@@ -330,7 +330,7 @@ struct AlternativeFoodPage {
           .backgroundColor(AlternativeFoodPage.gradeBgColor(item.nutriGrade))
       }
 
-      Text('鈥?)
+      Text('更多)
         .fontSize(20)
         .fontColor(COLORS.TEXT_TERTIARY)
         .margin({ left: 8 })
@@ -380,7 +380,7 @@ struct AlternativeFoodPage {
             .layoutWeight(1)
 
             Column() {
-              Text(`${alt.healthScore}鍒哷)`
+              Text(`${alt.healthScore}分)`
                 .fontSize(14)
                 .fontWeight(FontWeight.Bold)
                 .fontColor(COLORS.SUCCESS)

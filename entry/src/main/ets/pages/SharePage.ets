@@ -1,4 +1,4 @@
-﻿import {
+import {
   ToastHelper, safeBack, safePushUrl, getPageParams, Recommendation, FamilyProfile, GroupSummary, FeedType, BUTTON, COLORS, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
@@ -218,7 +218,7 @@ struct SharePage {
                       .onClick(() => {
                         safePushUrl('pages/FamilyGroupPage')
                       })
-                      .accessibilityText('鍒涘缓鎴栧姞鍏ョ兢缁?)
+                      .accessibilityText('创建或加入群组')
                       .accessibilityLevel('yes')
                   }
                   .width('100%')
@@ -253,7 +253,7 @@ struct SharePage {
                         .onClick(async () => {
                           await this.shareToGroup(group.groupId)
                         })
-                        .accessibilityText('鍒嗕韩鍒扮兢缁?)
+                        .accessibilityText('分享到群组')
                         .accessibilityLevel('yes')
                     }
                     .width('100%')
@@ -269,7 +269,7 @@ struct SharePage {
               .margin({ bottom: 16 })
 
               Column() {
-                Text('鍒嗕韩鍒?)
+                Text('分享到')
                   .fontSize(16)
                   .fontWeight(FontWeight.Bold)
                   .margin({ bottom: 12 })
@@ -329,7 +329,7 @@ struct SharePage {
                     .accessibilityText('鐢熸垚娴锋姤')
                     .accessibilityLevel('yes')
 
-                  Button('淇濆瓨鍒扮浉鍐?)
+                  Button('保存到相册')
                     .layoutWeight(1)
                     .height(BUTTON.HEIGHT_SECONDARY)
                     .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
@@ -338,7 +338,7 @@ struct SharePage {
                     .margin({ left: 10 })
                     .enabled(this.posterUri.length > 0)
                     .onClick(() => { this.savePosterToAlbum() })
-                    .accessibilityText('淇濆瓨鍒扮浉鍐?)
+                    .accessibilityText('保存到相册')
                     .accessibilityLevel('yes')
                 }
                 .width('100%')
@@ -491,7 +491,7 @@ struct SharePage {
 
       const generator = new SharePosterGenerator(context);
       this.posterUri = await generator.generatePoster(posterData);
-      ToastHelper.show(this.getUIContext(), '娴锋姤宸茬敓鎴?);
+      ToastHelper.show(this.getUIContext(), '海报已生成);
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'generatePoster failed: %{public}s', JSON.stringify(e));
       ToastHelper.show(this.getUIContext(), '娴锋姤鐢熸垚澶辫触');
@@ -524,7 +524,7 @@ struct SharePage {
       ToastHelper.show(this.getUIContext(), '宸蹭繚瀛樺埌鐩稿唽');
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'savePosterToAlbum failed: %{public}s', JSON.stringify(e));
-      ToastHelper.show(this.getUIContext(), '淇濆瓨鍒扮浉鍐屽け璐?);
+      ToastHelper.show(this.getUIContext(), '保存到相册失败);
     }
   }
 
@@ -535,7 +535,7 @@ struct SharePage {
       const pasteData = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, this.shareLink);
       const systemPasteboard = pasteboard.getSystemPasteboard();
       systemPasteboard.setData(pasteData);
-      ToastHelper.show(this.getUIContext(), '閾炬帴宸插鍒?);
+      ToastHelper.show(this.getUIContext(), '链接已复制);
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'copyLink failed: %{public}s', JSON.stringify(e));
       ToastHelper.show(this.getUIContext(), '澶嶅埗澶辫触');

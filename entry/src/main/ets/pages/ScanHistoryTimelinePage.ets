@@ -176,7 +176,7 @@ struct ScanHistoryTimelinePage {
             }
             .width('100%')
             .padding({ top: 6, bottom: 6 })
-          }, (food: FoodLabel) => `${food.barcode}_${index}`)
+          }, (food: FoodLabel, idx: number) => `${food.barcode}_${idx}`)
         }
         .width('100%')
         .padding({ top: 8 })

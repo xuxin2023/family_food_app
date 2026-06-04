@@ -131,7 +131,7 @@ struct NutritionTargetPage {
             .fontColor(COLORS.WHITE)
             .borderRadius(24)
             .onClick(() => { this.onReset() })
-            .accessibilityText('閲嶇疆涓洪粯璁?)
+            .accessibilityText('重置为默认')
             .accessibilityLevel('yes')
         }
         .width('92%')

@@ -1,4 +1,4 @@
-﻿import { ToastHelper, safeBack, ShoppingItem, SHOPPING_CATEGORIES, COLORS, HILOG_DOMAIN_DEFAULT, DB_NAME, BasicDataSource, PageResourceTracker, createPageTracker } from 'hsp_core';
+import { ToastHelper, safeBack, ShoppingItem, SHOPPING_CATEGORIES, COLORS, HILOG_DOMAIN_DEFAULT, DB_NAME, BasicDataSource, PageResourceTracker, createPageTracker } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { ShoppingListRepository } from '../repository/ShoppingListRepository';
@@ -63,7 +63,7 @@ struct ShoppingListPage {
       Row() {
         BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
           .onClick(() => { safeBack() })
-          .accessibilityText('鏉╂柨娲?)
+          .accessibilityText('返回')
           .accessibilityLevel('yes')
         Text($r('app.string.shopping_title'))
           .fontSize(20)
@@ -114,7 +114,7 @@ struct ShoppingListPage {
           .width('40%')
           .height(40)
           .onChange((value: string) => { this.vm.newItemName = value })
-          .accessibilityText('閻椻晛鎼ч崥宥囆?)
+          .accessibilityText('清除已完成项目')
           .accessibilityLevel('yes')
 
         Text(this.vm.newItemCategory)
@@ -132,7 +132,7 @@ struct ShoppingListPage {
           .height(40)
           .margin({ left: 8 })
           .onChange((value: string) => { this.vm.newItemQuantity = value })
-          .accessibilityText('閺佷即鍣?)
+          .accessibilityText('编辑')
           .accessibilityLevel('yes')
 
         Button($r('app.string.shopping_add'))
@@ -268,7 +268,7 @@ struct ShoppingListPage {
       .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)
 
-      Text('閴?)
+      Text('×)
         .fontSize(16)
         .fontColor(COLORS.TEXT_GRAY_BDBD)
         .onClick(() => { this.removeItem(item.id) })

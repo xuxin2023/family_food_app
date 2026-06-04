@@ -7,8 +7,8 @@ const TAG = 'AllergenConfigPage';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 const PRESET_ALLERGENS: string[] = [
-  '牛奶', '鸡蛋', '花生', '坚果', '大豆', '小麦', '�?, '甲壳�?, '芝麻', '芹菜',
-  '芥末', '羽扇�?, '软体动物', '二氧化硫'
+  '牛奶', '鸡蛋', '花生', '坚果', '大豆', '小麦', '鱼', '甲壳类', '芝麻', '芹菜',
+  '芥末', '羽扇豆', '软体动物', '二氧化硫'
 ];
 
 @Entry

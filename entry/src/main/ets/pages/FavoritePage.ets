@@ -210,9 +210,9 @@ struct FavoritePage {
       case 'low_sugar':
         return item.foodName.includes('浣庣硸') || item.foodName.includes('鏃犵硸');
       case 'high_protein':
-        return item.foodName.includes('楂樿泲鐧?);
+        return item.foodName.includes('高蛋白');
       case 'high_fiber':
-        return item.foodName.includes('楂樼氦缁?);
+        return item.foodName.includes('高纤维');
       case 'organic':
         return item.foodName.includes('鏈夋満');
       case 'no_added_sugar':
@@ -255,7 +255,7 @@ struct FavoritePage {
     Column() {
       Row() {
         Row() {
-          Text('鈫?)
+          Text('展开)
             .fontSize(FONT_SIZE.LARGE)
             .fontColor(COLORS.TEXT_PRIMARY)
         }

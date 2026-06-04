@@ -95,7 +95,7 @@ struct ChildHealthPage {
                   TextInput({ text: this.todaySnackCalories, placeholder: '0' })
                     .height(40)
                     .onChange((value: string) => { this.todaySnackCalories = value })
-                    .accessibilityText('零食卡路�?)
+                    .accessibilityText('零食卡路里)
                     .accessibilityLevel('yes')
                 }
                 .layoutWeight(1)
@@ -109,7 +109,7 @@ struct ChildHealthPage {
                   TextInput({ text: this.todaySnackSugarG, placeholder: '0' })
                     .height(40)
                     .onChange((value: string) => { this.todaySnackSugarG = value })
-                    .accessibilityText('零食糖分(�?')
+                    .accessibilityText('零食糖分(g')
                     .accessibilityLevel('yes')
                 }
                 .layoutWeight(1)
@@ -124,7 +124,7 @@ struct ChildHealthPage {
                 .fontColor(COLORS.WHITE)
                 .borderRadius(22)
                 .onClick(() => { this.runAssessment() })
-                .accessibilityText('开始评�?)
+                .accessibilityText('开始评估)
                 .accessibilityLevel('yes')
             }
             .width('92%')
@@ -174,8 +174,8 @@ struct ChildHealthPage {
                     .margin({ top: 8, bottom: 4 })
                   ForEach((this.result as ChildHealthAssessment)?.additiveResults ?? [], (ar: AdditiveSafetyResult, index: number) => {
                     Row() {
-                      Text(ar.safetyLevel === AdditiveSafetyLevel.SAFE ? '�? :
-                        ar.safetyLevel === AdditiveSafetyLevel.AVOID ? '�? : '�?)
+                      Text(ar.safetyLevel === AdditiveSafetyLevel.SAFE ? '✓' :
+                        ar.safetyLevel === AdditiveSafetyLevel.AVOID ? '✗' : '⚠')
                         .fontSize(14)
                         .fontColor(ar.safetyLevel === AdditiveSafetyLevel.SAFE ? '#4CAF50' :
                           ar.safetyLevel === AdditiveSafetyLevel.AVOID ? '#E53935' : '#FF9800')
@@ -200,7 +200,7 @@ struct ChildHealthPage {
                     .fontSize(14)
                     .fontWeight(FontWeight.Medium)
                     .margin({ top: 8, bottom: 4 })
-                  Text((this.result as ChildHealthAssessment)?.growthNutritionCheck?.join('�?) ?? '')
+                  Text((this.result as ChildHealthAssessment)?.growthNutritionCheck?.join('、') ?? '')
                     .fontSize(13)
                     .fontColor(COLORS.TEXT_GRAY_3333)
                 }

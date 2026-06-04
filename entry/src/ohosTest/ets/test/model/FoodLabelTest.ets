@@ -1,7 +1,6 @@
 // FoodLabel 单元测试 - 食品标签模型
 import { describe, it, expect } from '@ohos/hypium';
-import { FoodLabel, NutritionPer100g, FoodLabelJson, FoodSource } from '../../../../../src/main/ets/model/FoodLabel';
-import { JsonHelper } from '../../../../main/ets/utils/JsonHelper';
+import { FoodLabel, NutritionPer100g, FoodLabelJson, FoodSource, JsonHelper } from 'hsp_core';
 
 function jsonParse(text: string): Map<string, Object> {
   const raw = JSON.parse(text) as Record<string, Object>;

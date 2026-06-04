@@ -1,8 +1,7 @@
 // HealthSignal 单元测试 - 健康信号模型
 import { describe, it, expect } from '@ohos/hypium';
 import { HealthSignal, StepLevel, SleepStatus, WeightTrend,
-  BpStatus, BsStatus, DataSource } from '../../../../../src/main/ets/model/HealthSignal';
-import { JsonHelper } from '../../../../main/ets/utils/JsonHelper';
+  BpStatus, BsStatus, DataSource, JsonHelper } from 'hsp_core';
 
 function createHealthSignal(stepLevel: StepLevel, sleepStatus: SleepStatus,
   weightTrend: WeightTrend, activityCaloriesLevel: StepLevel,

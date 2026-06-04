@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@ohos/hypium';
-import { PerformanceMonitor, PerfMetric, PerfPercentiles, PerfAlert } from '../../../../../../hsp_core/src/main/ets/utils/PerformanceMonitor';
+import { PerformanceMonitor, PerfMetric, PerfPercentiles, PerfAlert } from 'hsp_core';
 
 export default function performanceMonitorTest() {
   describe('PerformanceMonitorTest', () => {

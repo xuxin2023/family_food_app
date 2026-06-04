@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@ohos/hypium';
-import { MathUtil } from '../../../../../../hsp_core/src/main/ets/utils/MathUtil';
+import { MathUtil } from 'hsp_core';
 
 export default function mathUtilTest() {
   describe('MathUtil', () => {

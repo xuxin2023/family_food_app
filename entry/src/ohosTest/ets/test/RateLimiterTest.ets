@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@ohos/hypium';
-import { RateLimiter, RateLimitConfig, RateLimitResult } from '../../../../../../hsp_core/src/main/ets/utils/RateLimiter';
+import { RateLimiter, RateLimitConfig, RateLimitResult } from 'hsp_core';
 
 export default function rateLimiterTest() {
   describe('RateLimiterTest', () => {

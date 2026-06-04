@@ -1,8 +1,7 @@
 // Recommendation 单元测试 - 适配结论模型
 import { describe, it, expect } from '@ohos/hypium';
 import { Recommendation, RecommendLevel, LevelColor,
-  getLevelColorValue } from '../../../../../src/main/ets/model/Recommendation';
-import { JsonHelper } from '../../../../main/ets/utils/JsonHelper';
+  getLevelColorValue, JsonHelper } from 'hsp_core';
 
 function createRec(level: RecommendLevel, levelColor: LevelColor, maxAmount: number,
   maxServings: number, reasons: string[], reminders: string[]): Recommendation {

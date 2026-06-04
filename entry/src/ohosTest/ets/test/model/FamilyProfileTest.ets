@@ -1,6 +1,6 @@
 // FamilyProfile 单元测试 - 家庭成员画像模型
 import { describe, it, expect } from '@ohos/hypium';
-import { FamilyProfile, FamilyProfileJson, DailyBudgetConfig, DailyBudgetConfigJson, AgeGroup, HealthGoal, MealTimes } from '../../../../../src/main/ets/model/FamilyProfile';
+import { FamilyProfile, FamilyProfileJson, DailyBudgetConfig, DailyBudgetConfigJson, AgeGroup, HealthGoal, MealTimes } from 'hsp_core';
 
 function createProfile(ageGroup: AgeGroup, healthGoals: HealthGoal[], allergens: string[],
   memberId: string, nickname: string): FamilyProfile {

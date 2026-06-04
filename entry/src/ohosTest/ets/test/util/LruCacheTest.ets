@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@ohos/hypium';
-import { LruCache } from '../../../../../../hsp_core/src/main/ets/utils/LruCache';
+import { LruCache } from 'hsp_core';
 
 export default function lruCacheTest() {
   describe('LruCache', () => {

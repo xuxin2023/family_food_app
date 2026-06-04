@@ -1,6 +1,6 @@
 // DailyBudget 单元测试 - 今日预算模型
 import { describe, it, expect } from '@ohos/hypium';
-import { DailyBudget, DailyBudgetJson } from '../../../../../src/main/ets/model/DailyBudget';
+import { DailyBudget, DailyBudgetJson } from 'hsp_core';
 
 function createDefaultBudget(): DailyBudget {
   const budget: DailyBudget = new DailyBudget();

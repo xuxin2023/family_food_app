@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@ohos/hypium';
-import { IntoleranceEngine, IntoleranceType, IntoleranceSeverity, IntoleranceCheckResult } from '../../../../../../feature-scan/src/main/ets/engine/IntoleranceEngine';
+import { IntoleranceEngine, IntoleranceType, IntoleranceSeverity, IntoleranceCheckResult } from 'feature_scan';
 
 export default function fodmapEngineTest() {
   describe('FodmapEngineTest', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@ohos/hypium';
-import { AlternativeRecommender, AlternativeCandidate } from '../../../../../../feature-scan/src/main/ets/engine/AlternativeRecommender';
+import { AlternativeRecommender, AlternativeCandidate } from 'feature_scan';
 
 class MockOfflineFoodProvider implements IOfflineFoodProvider {
   private entries: OfflineFoodEntry[] = [];

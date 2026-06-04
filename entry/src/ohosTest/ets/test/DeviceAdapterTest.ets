@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@ohos/hypium';
-import { DeviceAdapter, DeviceType, Breakpoint } from '../../../../../../hsp_core/src/main/ets/utils/DeviceAdapter';
+import { DeviceAdapter, DeviceType, Breakpoint } from 'hsp_core';
 
 export default function deviceAdapterTest() {
   describe('DeviceAdapterTest', () => {

@@ -1,7 +1,7 @@
 import { describe, it, expect } from '@ohos/hypium';
 import {
   AdditiveSafetyEngine, AdditiveRiskLevel, FoodAdditiveReport, AdditiveAssessment
-} from '../../../../../../feature-scan/src/main/ets/engine/AdditiveSafetyEngine';
+} from 'feature_scan';
 
 export default function cnAdditiveEngineTest() {
   describe('CnAdditiveEngineTest', () => {

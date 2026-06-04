@@ -390,13 +390,7 @@ struct ScanPage {
   // ==================== UI ====================
 
   build() {
-    ErrorBoundary({
-      fallbackMessage: $r('app.string.scan_page_load_failed'),
-      onRetry: () => { this.aboutToAppear() },
-      hasError: this.hasPageError,
-      boundaryName: 'ScanPage'
-    }) {
-      Stack() {
+    Column() {
       GridRow({
         columns: { sm: 4, md: 8, lg: 12 },
         breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
@@ -675,7 +669,6 @@ struct ScanPage {
       }
       .width('100%')
       .height('100%')
-        }
 
         if (this.vm.currentBreakpoint === 'lg' && this.vm.showEditPanel) {
           GridCol({ span: { sm: 0, md: 0, lg: 4 }, offset: { sm: 0, md: 0, lg: 0 } }) {

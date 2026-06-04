@@ -122,13 +122,7 @@ struct ReportPage {
   // ==================== 构建 UI ====================
 
   build() {
-    ErrorBoundary({
-      fallbackMessage: $r('app.string.report_page_load_failed'),
-      onRetry: () => { this.aboutToAppear() },
-      hasError: this.hasPageError,
-      boundaryName: 'ReportPage'
-    }) {
-      Stack() {
+    Column() {
       // 骨架屏 - 使用条件渲染容器
       if (this.showSkeleton) {
         Stack() {
@@ -189,7 +183,7 @@ struct ReportPage {
     .width('100%')
     .height('100%')
     }
-  }
+
 
 // ==================== ① 顶部导航栏 ====================
 

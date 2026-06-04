@@ -226,7 +226,7 @@ struct DailyIntakePage {
   @Builder
   MealBreakdown() {
     Column() {
-      Text('分餐汇总)
+      Text('分餐汇总')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
         .margin({ bottom: 8 })

@@ -245,11 +245,10 @@ export class SubscriptionStateManager {
     return Date.now() - this.cachedState.lastVerified < VERIFY_INTERVAL_MS;
   }
 
-  private findProductByTier(tier: MemberTier): IapProductManager | null {
+  private findProductByTier(tier: MemberTier): IapProductDefinition | null {
     const products = IapProductManager.getSubscriptionProducts()
       .filter(p => p.tier === tier);
-    if (products.length > 0) return products[0] as unknown as IapProductManager;
-    return null;
+    return products.length > 0 ? products[0] : null;
   }
 
   private defaultState(): SubscriptionState {

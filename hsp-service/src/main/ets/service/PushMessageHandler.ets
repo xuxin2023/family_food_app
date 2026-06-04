@@ -58,6 +58,36 @@ export interface ProductUpdateData {
   after?: string;
 }
 
+function isFoodSafetyAlertData(raw: Record<string, string> | undefined): raw is Record<string, string> & FoodSafetyAlertData {
+  return raw !== undefined
+    && typeof raw['alertId'] === 'string'
+    && typeof raw['productName'] === 'string'
+    && typeof raw['reason'] === 'string';
+}
+
+function isAdditiveRiskData(raw: Record<string, string> | undefined): raw is Record<string, string> & AdditiveRiskData {
+  return raw !== undefined
+    && typeof raw['additiveName'] === 'string'
+    && typeof raw['riskLevel'] === 'string';
+}
+
+function isNutritionTipData(raw: Record<string, string> | undefined): raw is Record<string, string> & NutritionTipData {
+  return raw !== undefined
+    && typeof raw['tipId'] === 'string'
+    && typeof raw['summary'] === 'string';
+}
+
+function isProductUpdateData(raw: Record<string, string> | undefined): raw is Record<string, string> & ProductUpdateData {
+  return raw !== undefined
+    && typeof raw['productId'] === 'string'
+    && typeof raw['productName'] === 'string'
+    && typeof raw['updateType'] === 'string';
+}
+
+function parsePayloadData<T>(raw: Record<string, string> | undefined): T {
+  return raw as unknown as T;
+}
+
 export class PushMessageHandler {
   private static instance: PushMessageHandler | null = null;
   private subscription: PushSubscription = new PushSubscription();
@@ -132,7 +162,11 @@ export class PushMessageHandler {
   }
 
   private handleFoodSafetyAlert(payload: PushMessagePayload): void {
-    const alertData: FoodSafetyAlertData = payload.data as unknown as FoodSafetyAlertData;
+    if (!isFoodSafetyAlertData(payload.data)) {
+      hilog.warn(DOMAIN, TAG, 'Invalid food safety alert payload');
+      return;
+    }
+    const alertData: FoodSafetyAlertData = parsePayloadData<FoodSafetyAlertData>(payload.data);
     hilog.info(DOMAIN, TAG, 'Food safety alert: %{public}s - %{public}s',
       alertData.alertType, alertData.productName);
     AppStorage.setOrCreate('latestFoodSafetyAlert', alertData);
@@ -140,20 +174,32 @@ export class PushMessageHandler {
   }
 
   private handleAdditiveRisk(payload: PushMessagePayload): void {
-    const riskData: AdditiveRiskData = payload.data as unknown as AdditiveRiskData;
+    if (!isAdditiveRiskData(payload.data)) {
+      hilog.warn(DOMAIN, TAG, 'Invalid additive risk payload');
+      return;
+    }
+    const riskData: AdditiveRiskData = parsePayloadData<AdditiveRiskData>(payload.data);
     hilog.info(DOMAIN, TAG, 'Additive risk: %{public}s (level: %{public}s)',
       riskData.additiveName, riskData.riskLevel);
     AppStorage.setOrCreate('latestAdditiveRisk', riskData);
   }
 
   private handleNutritionTip(payload: PushMessagePayload): void {
-    const tipData: NutritionTipData = payload.data as unknown as NutritionTipData;
+    if (!isNutritionTipData(payload.data)) {
+      hilog.warn(DOMAIN, TAG, 'Invalid nutrition tip payload');
+      return;
+    }
+    const tipData: NutritionTipData = parsePayloadData<NutritionTipData>(payload.data);
     hilog.info(DOMAIN, TAG, 'Nutrition tip: %{public}s', tipData.summary);
     AppStorage.setOrCreate('latestNutritionTip', tipData);
   }
 
   private handleProductUpdate(payload: PushMessagePayload): void {
-    const updateData: ProductUpdateData = payload.data as unknown as ProductUpdateData;
+    if (!isProductUpdateData(payload.data)) {
+      hilog.warn(DOMAIN, TAG, 'Invalid product update payload');
+      return;
+    }
+    const updateData: ProductUpdateData = parsePayloadData<ProductUpdateData>(payload.data);
     hilog.info(DOMAIN, TAG, 'Product update: %{public}s (%{public}s)',
       updateData.productName, updateData.updateType);
     AppStorage.setOrCreate('latestProductUpdate', updateData);

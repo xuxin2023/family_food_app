@@ -12,7 +12,7 @@ import { common } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { util } from '@kit.ArkTS';
 import { IapErrorUtil } from './IapErrorUtil';
-import { IapProductManager } from './IapProductManager';
+import { IapProductManager, PRODUCT_IDS as IAP_PRODUCT_IDS } from './IapProductManager';
 
 // ==================== 沙箱测试报告类型 ====================
 
@@ -43,8 +43,8 @@ const TAG = 'IapService';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 // ==================== 商品ID（兼容旧版引用，正向 IapProductManager 迁移） ====================
-/** @deprecated 使用 IapProductManager 中的 ProductIdMap 替代 */
-export const PRODUCT_IDS = IapProductManager['PRODUCT_IDS'] as Record<string, string>;
+/** @deprecated v10 使用 IapProductManager 替代。保留以兼容旧版调用方 */
+export const PRODUCT_IDS = IAP_PRODUCT_IDS;
 
 const ALL_PRODUCT_IDS: string[] = [
   PRODUCT_IDS.PERSONAL_MONTHLY, PRODUCT_IDS.PERSONAL_YEARLY,

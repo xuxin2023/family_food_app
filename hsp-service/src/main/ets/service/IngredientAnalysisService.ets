@@ -4,7 +4,7 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN_DEFAULT, FoodLabel, OffApiConfig } from 'hsp_core';
 import { CloudFunctionClient } from 'hsp_cloud';
-import { AdditiveSafetyEngine, IngredientKnowledgeBase } from 'feature_scan';
+
 
 const TAG = 'IngredientAnalysisService';
 const DOMAIN = HILOG_DOMAIN_DEFAULT;
@@ -39,13 +39,9 @@ export interface IngredientAnalysisResult {
 export class IngredientAnalysisService {
   private static instance: IngredientAnalysisService | null = null;
   private cloudClient: CloudFunctionClient;
-  private safetyEngine: AdditiveSafetyEngine;
-  private knowledgeBase: IngredientKnowledgeBase;
 
   private constructor() {
     this.cloudClient = new CloudFunctionClient();
-    this.safetyEngine = AdditiveSafetyEngine.getInstance();
-    this.knowledgeBase = new IngredientKnowledgeBase();
   }
 
   static getInstance(): IngredientAnalysisService {
@@ -61,9 +57,7 @@ export class IngredientAnalysisService {
       return this.emptyResult();
     }
 
-    const localResult = this.analyzeLocal(ingredients);
     let cloudResult: IngredientAnalysisResult | null = null;
-
     try {
       cloudResult = await this.analyzeCloud(ingredients);
     } catch (e) {
@@ -71,71 +65,42 @@ export class IngredientAnalysisService {
     }
 
     if (cloudResult && cloudResult.assessments.length > 0) {
-      cloudResult.dataSources.push('local_db');
+      cloudResult.dataSources.push('local_kb');
       return cloudResult;
     }
 
-    return localResult;
+    return this.analyzeLocalEOnly(ingredients);
   }
 
-  private analyzeLocal(ingredients: string[]): IngredientAnalysisResult {
-    const eCodes = this.extractECodes(ingredients);
-    const assessments: HazardItem[] = [];
+  private analyzeLocalEOnly(ingredients: string[]): IngredientAnalysisResult {
+    const codes = this.extractECodes(ingredients);
+    const assessments: HazardItem[] = codes.map(code => ({
+      code,
+      name: code,
+      hazardScore: 0,
+      hazardLevel: 'attention' as const,
+      category: '',
+      description: `${code} — 食品添加剂`,
+      longTermEffects: [] as string[],
+      populationWarnings: [] as string[],
+    }));
 
-    for (const code of eCodes) {
-      try {
-        const safetyInfo = this.safetyEngine.getAdditiveInfo(code);
-        if (safetyInfo) {
-          const hazard = safetyInfo as Record<string, Object>;
-          assessments.push({
-            code,
-            name: (hazard['name'] as string) ?? code,
-            hazardScore: (hazard['hazardLevel'] as number) ?? 0,
-            hazardLevel: this.numToLevel((hazard['hazardLevel'] as number) ?? 0),
-            category: (hazard['category'] as string) ?? '',
-            description: (hazard['description'] as string) ?? '',
-            longTermEffects: (hazard['longTermEffect'] as string)?.split(',') ?? [],
-            populationWarnings: [],
-          });
-          continue;
-        }
-      } catch (_) { /* fall through to local knowledge base */ }
-
-      const kbAssessment = this.knowledgeBase.analyzeIngredient(code);
-      if (kbAssessment) {
-        assessments.push({
-          code,
-          name: code,
-          hazardScore: kbAssessment.score ?? 0,
-          hazardLevel: 'attention',
-          category: kbAssessment.category ?? '',
-          description: kbAssessment.description ?? '',
-          longTermEffects: [],
-          populationWarnings: [],
-        });
-      }
+    if (assessments.length === 0 && ingredients.length > 0) {
+      assessments.push({
+        code: 'ingredients',
+        name: `共${ingredients.length}种配料`,
+        hazardScore: 0,
+        hazardLevel: 'safe',
+        category: '',
+        description: '请在联网状态下获取深度分析',
+        longTermEffects: [],
+        populationWarnings: [],
+      });
     }
 
-    if (assessments.length === 0) {
-      for (const ing of ingredients.slice(0, 10)) {
-        const kb = this.knowledgeBase.analyzeIngredient(ing);
-        if (kb && kb.score && kb.score > 0) {
-          assessments.push({
-            code: ing.substring(0, 20),
-            name: ing,
-            hazardScore: kb.score,
-            hazardLevel: 'attention',
-            category: kb.category ?? '',
-            description: kb.description ?? '',
-            longTermEffects: [],
-            populationWarnings: [],
-          });
-        }
-      }
-    }
-
-    return this.buildResult(assessments, ['local_db']);
+    return this.buildResult(assessments, ['local_kb']);
   }
+
 
   private async analyzeCloud(ingredients: string[]): Promise<IngredientAnalysisResult | null> {
     try {
@@ -220,10 +185,6 @@ export class IngredientAnalysisService {
     return [...new Set(codes)];
   }
 
-  private numToLevel(level: number): HazardItem['hazardLevel'] {
-    const map: HazardItem['hazardLevel'][] = ['safe', 'attention', 'warning', 'danger'];
-    return map[level] ?? 'attention';
-  }
 
   private emptyResult(): IngredientAnalysisResult {
     return this.buildResult([], ['local_db']);

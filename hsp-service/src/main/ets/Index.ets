@@ -89,7 +89,7 @@ export { FeedbackService, FeedbackSubmission, FeedbackResult } from './service/F
 
 // ===== T-068 entry瘦身迁移: AI服务层 =====
 export { AiClient } from './service/ai/AiClient';
-export { AiConfig, AI_SERVICE_DEFAULTS, SYSTEM_PROMPTS } from './service/ai/AiConfig';
+export { AiServiceDefaults as AiConfig, AI_SERVICE_DEFAULTS, SYSTEM_PROMPTS } from './service/ai/AiConfig';
 export { AiServiceBase } from './service/ai/AiServiceBase';
 export { OnDeviceLlmService } from './service/ai/OnDeviceLlmService';
 export { AiPolishService } from './service/AiPolishService';

@@ -69,6 +69,8 @@ export class ProductInfo {
   title: string = '';
   /** 商品描述 */
   description: string = '';
+  /** 是否为订阅型商品 */
+  isSubscription: boolean = false;
 }
 
 /**

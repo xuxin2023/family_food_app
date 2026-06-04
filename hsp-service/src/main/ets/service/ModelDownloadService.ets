@@ -281,8 +281,8 @@ export class ModelDownloadService {
       if (!netHandle) return false;
       const capabilities = await connection.getNetCapabilities(netHandle);
       if (!capabilities) return false;
-      const bearerTypes = (capabilities as Record<string, Object>)['bearerTypes'] as number[] | undefined;
-      return bearerTypes !== undefined && bearerTypes.includes(1); // 1 = WiFi
+      const bearerTypes = capabilities.bearerTypes as number[] | undefined;
+      return bearerTypes !== undefined && bearerTypes.includes(1);
     } catch (_) {
       return false;
     }

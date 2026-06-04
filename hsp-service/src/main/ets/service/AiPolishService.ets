@@ -105,7 +105,7 @@ export class AiPolishService extends AiServiceBase {
   }
 
   private buildPrompt(input: PolishInput): string {
-    return `请将以下规则引擎输出润色为用户友好的建议文本。
+    return `请将以下规则引擎输出润色为用户友好的建议文本。`
 要求：语气温和、生活化，不使用恐吓式表达，不使用绝对化表述。
 
 健康目标：${input.healthGoal}
@@ -114,6 +114,6 @@ ${input.maxAmount > 0 ? `建议量：不超过${input.maxAmount}g` : ''}
 ${input.reasons.length > 0 ? `原因：${input.reasons.join('；')}` : ''}
 ${input.reminders.length > 0 ? `提醒：${input.reminders.join('；')}` : ''}
 
-请输出润色后的建议（不超过100字）：`;
+请输出润色后的建议（不超过100字）：`;`
   }
 }

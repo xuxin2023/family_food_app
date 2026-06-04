@@ -44,7 +44,7 @@ export class RecipeRepository {
     }
 
     try {
-      const recipeSql = `CREATE TABLE IF NOT EXISTS ${TABLE_RECIPE} (
+      const recipeSql = `CREATE TABLE IF NOT EXISTS ${TABLE_RECIPE} (`
       recipe_id TEXT PRIMARY KEY,
       title TEXT NOT NULL,
       description TEXT DEFAULT '',
@@ -69,10 +69,10 @@ export class RecipeRepository {
       bookmark_count INTEGER DEFAULT 0,
       is_approved INTEGER DEFAULT 0,
       is_draft INTEGER DEFAULT 1
-    )`;
+    )`;`
       await this.rdbStore.executeSql(recipeSql);
 
-      const commentSql = `CREATE TABLE IF NOT EXISTS ${TABLE_COMMENT} (
+      const commentSql = `CREATE TABLE IF NOT EXISTS ${TABLE_COMMENT} (`
       comment_id TEXT PRIMARY KEY,
       recipe_id TEXT NOT NULL,
       author_uid TEXT NOT NULL,
@@ -83,24 +83,24 @@ export class RecipeRepository {
       created_at INTEGER NOT NULL,
       like_count INTEGER DEFAULT 0,
       is_edited INTEGER DEFAULT 0
-    )`;
+    )`;`
       await this.rdbStore.executeSql(commentSql);
 
-      const likeSql = `CREATE TABLE IF NOT EXISTS ${TABLE_LIKE} (
+      const likeSql = `CREATE TABLE IF NOT EXISTS ${TABLE_LIKE} (`
       id TEXT PRIMARY KEY,
       recipe_id TEXT NOT NULL,
       uid TEXT NOT NULL,
       created_at INTEGER NOT NULL
-    )`;
+    )`;`
       await this.rdbStore.executeSql(likeSql);
 
-      const bookmarkSql = `CREATE TABLE IF NOT EXISTS ${TABLE_BOOKMARK} (
+      const bookmarkSql = `CREATE TABLE IF NOT EXISTS ${TABLE_BOOKMARK} (`
       id TEXT PRIMARY KEY,
       recipe_id TEXT NOT NULL,
       uid TEXT NOT NULL,
       created_at INTEGER NOT NULL,
       note TEXT DEFAULT ''
-    )`;
+    )`;`
       await this.rdbStore.executeSql(bookmarkSql);
 
       // 索引

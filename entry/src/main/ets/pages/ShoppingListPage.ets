@@ -318,7 +318,7 @@ struct ShoppingListPage {
   private async clearPurchased(): Promise<void> {
     const count = await this.repo.clearPurchased();
     await this.refreshList();
-    ToastHelper.show(this.getUIContext(), `瀹稿弶绔婚梽?{count}妞ょ);
+    ToastHelper.show(this.getUIContext(), `瀹稿弶绔婚梽?{count}妞ょ);`
   }
 
   private async refreshList(): Promise<void> {

@@ -18,7 +18,7 @@ export class ParsedIngredientRepository {
   async init(rdbStore: relationalStore.RdbStore): Promise<void> {
     this.rdbStore = rdbStore;
     try {
-      await rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_PARSE_RESULT} (
+      await rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_PARSE_RESULT} (`
         product_barcode TEXT PRIMARY KEY,
         product_name TEXT DEFAULT '',
         ingredients_json TEXT NOT NULL DEFAULT '[]',
@@ -27,8 +27,8 @@ export class ParsedIngredientRepository {
         summary TEXT DEFAULT '',
         additive_interactions TEXT DEFAULT '[]',
         parsed_at INTEGER NOT NULL
-      )`);
-      await rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_ADDITIVE_DB} (
+      )`);`
+      await rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_ADDITIVE_DB} (`
         e_number TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         hazard_level TEXT DEFAULT 'low_risk',
@@ -37,7 +37,7 @@ export class ParsedIngredientRepository {
         long_term_effect TEXT DEFAULT '',
         co_warning TEXT DEFAULT '',
         regulation_status TEXT DEFAULT ''
-      )`);
+      )`);`
       await this.loadFromDb();
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'init failed: %{public}s', JSON.stringify(e));

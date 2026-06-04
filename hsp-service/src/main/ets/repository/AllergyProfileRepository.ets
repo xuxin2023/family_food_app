@@ -24,13 +24,13 @@ export class AllergyProfileRepository {
       hilog.warn(DOMAIN_ZERO, TAG, 'Crypto init failed, storing without encryption');
     }
     try {
-      await rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
+      await rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (`
         member_id TEXT PRIMARY KEY,
         allergies_json TEXT NOT NULL DEFAULT '[]',
         intolerances_json TEXT NOT NULL DEFAULT '[]',
         cross_contamination_sensitive INTEGER DEFAULT 0,
         updated_at INTEGER NOT NULL
-      )`);
+      )`);`
       await this.loadFromDb();
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'init failed: %{public}s', JSON.stringify(e));

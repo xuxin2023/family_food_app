@@ -63,7 +63,7 @@ export class HistoryRepository {
 
     try {
       // 扫描历史表
-      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_SCAN_HISTORY} (
+      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_SCAN_HISTORY} (`
         ${COL_ID} INTEGER PRIMARY KEY AUTOINCREMENT,
         ${COL_MEMBER_ID} TEXT NOT NULL,
         ${COL_FOOD_ID} TEXT NOT NULL,
@@ -72,10 +72,10 @@ export class HistoryRepository {
         ${COL_MAX_AMOUNT} REAL NOT NULL,
         ${COL_REASONS} TEXT NOT NULL,
         ${COL_SCANNED_AT} INTEGER NOT NULL
-      )`);
+      )`);`
 
       // 饮食记录表
-      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_DIET_RECORD} (
+      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_DIET_RECORD} (`
         ${COL_ID} INTEGER PRIMARY KEY AUTOINCREMENT,
         ${COL_MEMBER_ID} TEXT NOT NULL,
         ${COL_DATE} TEXT NOT NULL,
@@ -88,7 +88,7 @@ export class HistoryRepository {
         ${COL_CALORIE_INTAKE} REAL,
         ${COL_FAT_INTAKE} REAL,
         ${COL_RECORDED_AT} INTEGER NOT NULL
-      )`);
+      )`);`
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Init tables failed: %{public}s', JSON.stringify(error));
     }

@@ -15,7 +15,7 @@ export class FoodRepository {
 
   async init(rdbStore: relationalStore.RdbStore): Promise<void> {
     this.rdbStore = rdbStore;
-    const sql = `CREATE TABLE IF NOT EXISTS ${TABLE_FOOD_LABEL} (
+    const sql = `CREATE TABLE IF NOT EXISTS ${TABLE_FOOD_LABEL} (`
       ${COL_FOOD_ID} TEXT PRIMARY KEY,
       ${COL_FOOD_NAME} TEXT NOT NULL,
       ${COL_BARCODE} TEXT,
@@ -29,7 +29,7 @@ export class FoodRepository {
       ${COL_TRACE_CODE} TEXT,
       ${COL_SOURCE} TEXT NOT NULL,
       ${COL_IDENTIFIED_AT} INTEGER NOT NULL
-    )`;
+    )`;`
     try {
       await this.rdbStore.executeSql(sql);
     } catch (error) {

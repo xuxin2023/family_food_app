@@ -380,7 +380,7 @@ struct AlternativeFoodPage {
             .layoutWeight(1)
 
             Column() {
-              Text(`${alt.healthScore}鍒哷)
+              Text(`${alt.healthScore}鍒哷)`
                 .fontSize(14)
                 .fontWeight(FontWeight.Bold)
                 .fontColor(COLORS.SUCCESS)

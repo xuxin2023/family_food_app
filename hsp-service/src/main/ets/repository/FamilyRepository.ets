@@ -32,7 +32,7 @@ export class FamilyRepository {
   private async createTable(): Promise<void> {
     if (!this.rdbStore) return;
 
-    const sql = `CREATE TABLE IF NOT EXISTS ${TABLE_FAMILY_PROFILE} (
+    const sql = `CREATE TABLE IF NOT EXISTS ${TABLE_FAMILY_PROFILE} (`
       ${COL_MEMBER_ID} TEXT PRIMARY KEY,
       ${COL_NICKNAME} TEXT NOT NULL,
       ${COL_AGE_GROUP} TEXT NOT NULL,
@@ -46,7 +46,7 @@ export class FamilyRepository {
       ${COL_BEDTIME} TEXT,
       ${COL_CREATED_AT} INTEGER NOT NULL,
       ${COL_UPDATED_AT} INTEGER NOT NULL
-    )`;
+    )`;`
 
     try {
       await this.rdbStore.executeSql(sql);

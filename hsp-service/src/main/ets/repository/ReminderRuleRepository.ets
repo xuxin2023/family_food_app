@@ -14,7 +14,7 @@ export class ReminderRuleRepository {
   async init(rdbStore: relationalStore.RdbStore): Promise<void> {
     this.rdbStore = rdbStore;
     try {
-      await rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
+      await rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (`
         id TEXT PRIMARY KEY,
         rule_type TEXT NOT NULL,
         enabled INTEGER DEFAULT 1,
@@ -25,7 +25,7 @@ export class ReminderRuleRepository {
         priority TEXT DEFAULT 'normal',
         member_id TEXT DEFAULT '',
         created_at INTEGER NOT NULL
-      )`);
+      )`);`
       await this.loadFromDb();
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'init failed: %{public}s', JSON.stringify(e));

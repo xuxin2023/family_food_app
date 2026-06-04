@@ -22,16 +22,16 @@ const VERSION_KEY = 'schema_version';
 const MIGRATIONS: Map<number, (store: relationalStore.RdbStore) => Promise<void>> = new Map([
   [7, async (store) => {
     await store.executeSql(
-      `CREATE TABLE IF NOT EXISTS allergy_profiles (
+      `CREATE TABLE IF NOT EXISTS allergy_profiles (`
         member_id TEXT PRIMARY KEY,
         allergies_json TEXT NOT NULL DEFAULT '[]',
         intolerances_json TEXT NOT NULL DEFAULT '[]',
         cross_contamination_sensitive INTEGER DEFAULT 0,
         updated_at INTEGER NOT NULL
-      )`
+      )``
     );
     await store.executeSql(
-      `CREATE TABLE IF NOT EXISTS nutrition_daily (
+      `CREATE TABLE IF NOT EXISTS nutrition_daily (`
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         member_id TEXT NOT NULL,
         date TEXT NOT NULL,
@@ -46,10 +46,10 @@ const MIGRATIONS: Map<number, (store: relationalStore.RdbStore) => Promise<void>
         scan_count INTEGER DEFAULT 0,
         score_avg REAL DEFAULT 0,
         updated_at INTEGER NOT NULL
-      )`
+      )``
     );
     await store.executeSql(
-      `CREATE TABLE IF NOT EXISTS parsed_ingredient_results (
+      `CREATE TABLE IF NOT EXISTS parsed_ingredient_results (`
         product_barcode TEXT PRIMARY KEY,
         product_name TEXT DEFAULT '',
         ingredients_json TEXT NOT NULL DEFAULT '[]',
@@ -58,10 +58,10 @@ const MIGRATIONS: Map<number, (store: relationalStore.RdbStore) => Promise<void>
         summary TEXT DEFAULT '',
         additive_interactions TEXT DEFAULT '[]',
         parsed_at INTEGER NOT NULL
-      )`
+      )``
     );
     await store.executeSql(
-      `CREATE TABLE IF NOT EXISTS additive_hazard_db (
+      `CREATE TABLE IF NOT EXISTS additive_hazard_db (`
         e_number TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         hazard_level TEXT DEFAULT 'low_risk',
@@ -70,7 +70,7 @@ const MIGRATIONS: Map<number, (store: relationalStore.RdbStore) => Promise<void>
         long_term_effect TEXT DEFAULT '',
         co_warning TEXT DEFAULT '',
         regulation_status TEXT DEFAULT ''
-      )`
+      )``
     );
     await store.executeSql(
       `INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('version', '7')`
@@ -82,7 +82,7 @@ const MIGRATIONS: Map<number, (store: relationalStore.RdbStore) => Promise<void>
 
   [6, async (store) => {
     await store.executeSql(
-      `CREATE TABLE IF NOT EXISTS user_intolerance_config (
+      `CREATE TABLE IF NOT EXISTS user_intolerance_config (`
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         member_id TEXT NOT NULL,
         intolerance_type TEXT NOT NULL,
@@ -90,11 +90,11 @@ const MIGRATIONS: Map<number, (store: relationalStore.RdbStore) => Promise<void>
         severity TEXT DEFAULT 'CAUTION',
         updated_at TEXT DEFAULT (datetime('now','localtime')),
         UNIQUE(member_id, intolerance_type)
-      )`
+      )``
     );
 
     await store.executeSql(
-      `CREATE TABLE IF NOT EXISTS ingredient_kb (
+      `CREATE TABLE IF NOT EXISTS ingredient_kb (`
         ingredient_name TEXT PRIMARY KEY,
         safety_level TEXT DEFAULT 'UNKNOWN',
         traffic_light TEXT DEFAULT 'GRAY',
@@ -105,7 +105,7 @@ const MIGRATIONS: Map<number, (store: relationalStore.RdbStore) => Promise<void>
         health_risk_desc TEXT DEFAULT '',
         regulatory_status TEXT DEFAULT 'UNKNOWN',
         updated_at TEXT DEFAULT (datetime('now','localtime'))
-      )`
+      )``
     );
 
     const histamineKeywords = [
@@ -114,8 +114,8 @@ const MIGRATIONS: Map<number, (store: relationalStore.RdbStore) => Promise<void>
     ];
     for (const kw of histamineKeywords) {
       await store.executeSql(
-        `INSERT OR IGNORE INTO ingredient_kb (ingredient_name, is_high_histamine, safety_level, traffic_light)
-         VALUES (?, 1, 'CAUTION', 'YELLOW')`, [kw]
+        `INSERT OR IGNORE INTO ingredient_kb (ingredient_name, is_high_histamine, safety_level, traffic_light)`
+         VALUES (?, 1, 'CAUTION', 'YELLOW')`, [kw]`
       );
     }
 
@@ -125,8 +125,8 @@ const MIGRATIONS: Map<number, (store: relationalStore.RdbStore) => Promise<void>
     ];
     for (const kw of salicylateKeywords) {
       await store.executeSql(
-        `INSERT OR IGNORE INTO ingredient_kb (ingredient_name, is_high_salicylate, safety_level, traffic_light)
-         VALUES (?, 1, 'CAUTION', 'YELLOW')`, [kw]
+        `INSERT OR IGNORE INTO ingredient_kb (ingredient_name, is_high_salicylate, safety_level, traffic_light)`
+         VALUES (?, 1, 'CAUTION', 'YELLOW')`, [kw]`
       );
     }
 
@@ -138,10 +138,10 @@ const MIGRATIONS: Map<number, (store: relationalStore.RdbStore) => Promise<void>
     } catch(_) {}
 
     await store.executeSql(
-      `CREATE TABLE IF NOT EXISTS schema_meta (
+      `CREATE TABLE IF NOT EXISTS schema_meta (`
         key TEXT PRIMARY KEY,
         value TEXT NOT NULL
-      )`
+      )``
     );
     await store.executeSql(
       `INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('version', '6')`

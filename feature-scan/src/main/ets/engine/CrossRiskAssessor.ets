@@ -85,11 +85,11 @@ export class CrossRiskAssessor {
    * @returns 综合风险评估结果，包含各风险因子及整体风险等级
    *
    * @example
-   * ```typescript
+   * ```typescript`
    * const assessor = new CrossRiskAssessor();
    * const result = assessor.assess(foodLabel, members, targets, dailyIntake);
    * console.log(result.overallRiskLevel); // 'low' | 'medium' | 'high' | 'critical'
-   * ```
+   * ````
    */
   assess(
     foodLabel: FoodLabel,

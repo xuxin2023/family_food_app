@@ -16,7 +16,7 @@ export class NutritionDailyRepository {
   async init(rdbStore: relationalStore.RdbStore): Promise<void> {
     this.rdbStore = rdbStore;
     try {
-      await rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
+      await rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (`
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         member_id TEXT NOT NULL,
         date TEXT NOT NULL,
@@ -31,7 +31,7 @@ export class NutritionDailyRepository {
         scan_count INTEGER DEFAULT 0,
         score_avg REAL DEFAULT 0,
         updated_at INTEGER NOT NULL
-      )`);
+      )`);`
       await this.loadFromDb();
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'init failed: %{public}s', JSON.stringify(e));

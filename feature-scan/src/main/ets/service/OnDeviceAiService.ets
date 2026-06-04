@@ -52,11 +52,11 @@ export class OnDeviceAiService {
       };
     }
     try {
-      const prompt = `分析食品"${foodLabel.foodName}"的营养成分：
+      const prompt = `分析食品"${foodLabel.foodName}"的营养成分：`
 热量:${foodLabel.nutrition.calories}kcal, 蛋白质:${foodLabel.nutrition.protein}g,
 脂肪:${foodLabel.nutrition.fat}g, 碳水:${foodLabel.nutrition.carbohydrate}g,
 钠:${foodLabel.nutrition.sodium}mg, 糖:${foodLabel.nutrition.sugar}g。
-请给出营养评价和健康建议。`;
+请给出营养评价和健康建议。`;`
       const result = await this.runLocalInference(prompt);
       return {
         success: true,
@@ -86,8 +86,8 @@ export class OnDeviceAiService {
       };
     }
     try {
-      const prompt = `分析以下食品成分的安全性：${ingredients.join('、')}。
-请标注每种成分的安全性等级（安全/争议/避免）和E编号。`;
+      const prompt = `分析以下食品成分的安全性：${ingredients.join('、')}。`
+请标注每种成分的安全性等级（安全/争议/避免）和E编号。`;`
       const result = await this.runLocalInference(prompt);
       return {
         success: true,

@@ -90,11 +90,11 @@ export class AllergenAutoDetector {
    * @returns 检测结果，包含是否告警、匹配的过敏原及详情
    *
    * @example
-   * ```typescript
+   * ```typescript`
    * const detector = AllergenAutoDetector.getInstance();
    * const result = detector.checkAllergens(['花生', '牛奶'], ['花生酱', '面粉', '乳清蛋白']);
    * console.log(result.hasAlert); // true
-   * ```
+   * ````
    */
   checkAllergens(userAllergens: string[], ingredients: string[]): AllergenCheckResult {
     const result: AllergenCheckResult = {

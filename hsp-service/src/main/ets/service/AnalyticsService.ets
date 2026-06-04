@@ -55,7 +55,7 @@ export class AnalyticsService {
       this.rdbStore = await relationalStore.getRdbStore(context, rdbConfig);
 
       // 创建事件表
-      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${ANALYTICS_TABLE_NAME} (
+      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${ANALYTICS_TABLE_NAME} (`
         ${ANALYTICS_COLUMNS.ID} INTEGER PRIMARY KEY AUTOINCREMENT,
         ${ANALYTICS_COLUMNS.EVENT_ID} TEXT NOT NULL,
         ${ANALYTICS_COLUMNS.EVENT_TYPE} TEXT NOT NULL,
@@ -65,7 +65,7 @@ export class AnalyticsService {
         ${ANALYTICS_COLUMNS.USER_ID} TEXT,
         ${ANALYTICS_COLUMNS.USER_TIER} TEXT,
         ${ANALYTICS_COLUMNS.MEMBER_COUNT} INTEGER
-      )`);
+      )`);`
 
       // 创建索引（按事件类型和时间戳查询优化）
       await this.rdbStore.executeSql(

@@ -195,11 +195,11 @@ export class AdditiveSafetyEngine {
    * @returns 添加剂评估报告，包含各添加剂详情及整体风险等级
    *
    * @example
-   * ```typescript
+   * ```typescript`
    * const engine = AdditiveSafetyEngine.getInstance();
    * const report = engine.assessFood(foodLabel);
    * console.log(report.overallRisk); // AdditiveRiskLevel.AVOID | CAUTION | SAFE
-   * ```
+   * ````
    */
   assessFood(foodLabel: FoodLabel): FoodAdditiveReport {
     const assessments: AdditiveAssessment[] = [];

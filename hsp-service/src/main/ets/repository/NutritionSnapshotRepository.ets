@@ -14,7 +14,7 @@ export class NutritionSnapshotRepository {
   async init(rdbStore: relationalStore.RdbStore): Promise<void> {
     this.rdbStore = rdbStore;
     try {
-      await rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
+      await rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (`
         snapshot_id TEXT PRIMARY KEY,
         member_id TEXT NOT NULL,
         date TEXT NOT NULL,
@@ -26,7 +26,7 @@ export class NutritionSnapshotRepository {
         carbohydrate REAL DEFAULT 0,
         fiber REAL DEFAULT 0,
         created_at INTEGER NOT NULL
-      )`);
+      )`);`
       await this.loadFromDb();
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'init failed: %{public}s', JSON.stringify(e));

@@ -14,7 +14,7 @@ export class ShoppingListRepository {
   async init(rdbStore: relationalStore.RdbStore): Promise<void> {
     this.rdbStore = rdbStore;
     try {
-      await rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
+      await rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (`
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         category TEXT DEFAULT '',
@@ -23,7 +23,7 @@ export class ShoppingListRepository {
         added_by TEXT DEFAULT '',
         added_at INTEGER NOT NULL,
         related_barcode TEXT DEFAULT ''
-      )`);
+      )`);`
       await this.loadFromDb();
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'init failed: %{public}s', JSON.stringify(e));

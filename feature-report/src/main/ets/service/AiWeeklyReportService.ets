@@ -62,7 +62,7 @@ export class AiWeeklyReportService extends AiServiceBase {
     data: WeeklyDietData,
     profile: FamilyProfile
   ): string {
-    return `你是一个家庭饮食健康周报润色助手。请根据以下规则引擎生成的周报数据，生成个性化的周报文案。
+    return `你是一个家庭饮食健康周报润色助手。请根据以下规则引擎生成的周报数据，生成个性化的周报文案。`
 
 要求：
 1. 语气温暖、鼓励为主，不使用恐吓式表达
@@ -96,7 +96,7 @@ export class AiWeeklyReportService extends AiServiceBase {
   "suggestions": ["建议1", "建议2"],
   "personalizedTip": "针对该成员的个性化提醒",
   "motivationalMessage": "鼓励语"
-}`;
+}`;`
   }
 
   private parseAiResponse(text: string, fallback: WeeklyReport): AiWeeklyReportResult {

@@ -385,7 +385,7 @@ export class AiRecipeRecommenderService extends AiServiceBase {
       recipeList += `[${idx + 1}] ${sr.recipe.title}（分类：${sr.recipe.category}，标签：${sr.recipe.dietTags.join(',')}，评分：${sr.score}）\n`;
     }
 
-    return `你是一个家庭健康食谱推荐助手。请根据以下家庭成员的健康信息和候选食谱，输出推荐排序和理由。
+    return `你是一个家庭健康食谱推荐助手。请根据以下家庭成员的健康信息和候选食谱，输出推荐排序和理由。`
 
 要求：
 1. 输出必须是合法JSON格式
@@ -414,7 +414,7 @@ ${request.preference !== undefined ? `额外偏好：${request.preference}` : ''
     }
   ],
   "overallSummary": "总评（不超过60字）"
-}`;
+}`;`
   }
 
   private parseAiResponse(

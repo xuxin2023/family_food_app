@@ -35,7 +35,7 @@ export class FamilyGroupRepository {
     try {
       if (!this.rdbStore) return;
 
-      const groupSql = `CREATE TABLE IF NOT EXISTS ${TABLE_GROUP} (
+      const groupSql = `CREATE TABLE IF NOT EXISTS ${TABLE_GROUP} (`
         group_id TEXT PRIMARY KEY,
         group_name TEXT NOT NULL,
         group_avatar TEXT DEFAULT '',
@@ -48,10 +48,10 @@ export class FamilyGroupRepository {
         created_at INTEGER NOT NULL,
         updated_at INTEGER NOT NULL,
         is_archived INTEGER DEFAULT 0
-      )`;
+      )`;`
       await this.rdbStore.executeSql(groupSql);
 
-      const memberSql = `CREATE TABLE IF NOT EXISTS ${TABLE_GROUP_MEMBER} (
+      const memberSql = `CREATE TABLE IF NOT EXISTS ${TABLE_GROUP_MEMBER} (`
         id TEXT PRIMARY KEY,
         group_id TEXT NOT NULL,
         uid TEXT NOT NULL,
@@ -62,10 +62,10 @@ export class FamilyGroupRepository {
         last_active_at INTEGER NOT NULL,
         is_left INTEGER DEFAULT 0,
         local_member_id TEXT DEFAULT ''
-      )`;
+      )`;`
       await this.rdbStore.executeSql(memberSql);
 
-      const requestSql = `CREATE TABLE IF NOT EXISTS ${TABLE_JOIN_REQUEST} (
+      const requestSql = `CREATE TABLE IF NOT EXISTS ${TABLE_JOIN_REQUEST} (`
         request_id TEXT PRIMARY KEY,
         group_id TEXT NOT NULL,
         requester_uid TEXT NOT NULL,
@@ -75,10 +75,10 @@ export class FamilyGroupRepository {
         requested_at INTEGER NOT NULL,
         reviewed_at INTEGER DEFAULT 0,
         reviewer_uid TEXT DEFAULT ''
-      )`;
+      )`;`
       await this.rdbStore.executeSql(requestSql);
 
-      const feedSql = `CREATE TABLE IF NOT EXISTS ${TABLE_GROUP_FEED} (
+      const feedSql = `CREATE TABLE IF NOT EXISTS ${TABLE_GROUP_FEED} (`
         feed_id TEXT PRIMARY KEY,
         group_id TEXT NOT NULL,
         feed_type TEXT NOT NULL,
@@ -88,7 +88,7 @@ export class FamilyGroupRepository {
         created_at INTEGER NOT NULL,
         comment_count INTEGER DEFAULT 0,
         like_count INTEGER DEFAULT 0
-      )`;
+      )`;`
       await this.rdbStore.executeSql(feedSql);
 
       // 创建索引

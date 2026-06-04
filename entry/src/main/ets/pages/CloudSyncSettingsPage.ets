@@ -386,7 +386,7 @@ struct CloudSyncSettingsPage {
           this.InfoRow($r('app.string.cloud_sync_label_device_id'), this.deviceId.length > 0 ?
             this.deviceId.substring(0, 20) + '...' : $r('app.string.cloud_sync_loading_text'))
           this.InfoRow($r('app.string.cloud_sync_label_network_status'), this.getNetworkStatusText())
-          this.InfoRow($r('app.string.cloud_sync_label_pending_items'), `${this.pendingCount} 椤筦)
+          this.InfoRow($r('app.string.cloud_sync_label_pending_items'), `${this.pendingCount} 项`)
         }
 
         Text($r('app.string.encrypt_transport'))
@@ -438,7 +438,7 @@ struct CloudSyncSettingsPage {
               .fontSize(14)
               .fontColor('#757575')
             Blank()
-            Text(`${this.pendingCount} 椤筦)
+            Text(`${this.pendingCount} 项`)
               .fontSize(14)
               .fontColor(this.pendingCount > 0 ? '#F57C00' : '#2E7D32')
           }
@@ -531,11 +531,12 @@ struct CloudSyncSettingsPage {
   }
 
   private async bindAccount(): Promise<void> {
-    // P0鐗堟湰锛氭ā鎷熺粦瀹?    const mockToken = `token_${Date.now()}`;
+    // P0版本: 模拟绑定
+    const mockToken = `token_${Date.now()}`;
     const mockAccount = `user_${Date.now().toString().substring(0, 8)}`;
-    await this.cloudAuth.bindCloudAccount(mockToken, mockAccount, '鎴戠殑璐︽埛');
+    await this.cloudAuth.bindCloudAccount(mockToken, mockAccount, '我的账号');
     await this.refreshAllState();
-    this.addLog('浜戠璐︽埛缁戝畾鎴愬姛');
+    this.addLog('账号绑定成功');
     ToastHelper.show(this.getUIContext(), $r('app.string.cloud_sync_bind_success'));
   }
 
@@ -554,7 +555,7 @@ struct CloudSyncSettingsPage {
           await this.cloudAuth.unbindCloudAccount();
           await this.syncService.updateConfig(this.syncConfig);
           await this.refreshAllState();
-          this.addLog('浜戠璐︽埛宸茶В缁?);
+          this.addLog('账号已解绑');
           ToastHelper.show(this.getUIContext(), $r('app.string.cloud_sync_unbind_success'));
         }
       }
@@ -562,14 +563,14 @@ struct CloudSyncSettingsPage {
   }
 
   private async manuallySync(): Promise<void> {
-    this.addLog('寮€濮嬫墜鍔ㄥ悓姝?..');
+    this.addLog('开始手动同步...');
     const result = await this.syncService.triggerSync();
     await this.refreshAllState();
     if (result) {
-      this.addLog(`鍚屾瀹屾垚: ${result.syncedIds.length}鏉℃垚鍔焋 +
-        (result.failedIds.length > 0 ? `, ${result.failedIds.length}鏉″け璐 : ''));
+      this.addLog(`同步完成: ${result.syncedIds.length}条成功` +
+        (result.failedIds.length > 0 ? `, ${result.failedIds.length}条失败` : ''));
     } else {
-      this.addLog('鍚屾琚烦杩囷紙鍙兘宸插湪鍚屾涓垨缃戠粶涓嶅彲鐢級');
+      this.addLog('同步被跳过(可能正在同步中或网络不可用)');
     }
   }
 
@@ -587,7 +588,7 @@ struct CloudSyncSettingsPage {
         action: async () => {
           await this.syncService.clearQueue();
           await this.refreshAllState();
-          this.addLog('鍚屾闃熷垪宸叉竻闄?);
+          this.addLog('同步队列已清除');
           ToastHelper.show(this.getUIContext(), $r('app.string.cloud_sync_queue_cleared'));
         }
       }
@@ -633,14 +634,14 @@ struct CloudSyncSettingsPage {
       case 'sync_failed':
         this.isSyncing = false;
         this.refreshAllState();
-        this.addLog(`鍚屾澶辫触: ${event.message}`);
+        this.addLog(`同步失败: ${event.message}`);
         break;
       case 'queue_changed':
         this.refreshAllState();
         break;
       case 'network_changed':
         this.refreshAllState();
-        this.addLog(`缃戠粶鐘舵€? ${event.message}`);
+        this.addLog(`网络状态: ${event.message}`);
         break;
     }
   };

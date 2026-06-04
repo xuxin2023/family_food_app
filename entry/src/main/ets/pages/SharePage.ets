@@ -1,4 +1,4 @@
-import {
+﻿import {
   ToastHelper, safeBack, safePushUrl, getPageParams, Recommendation, FamilyProfile, GroupSummary, FeedType, BUTTON, COLORS, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
@@ -14,6 +14,37 @@ import { fileIo } from '@kit.CoreFileKit';
 
 const TAG = 'SharePage';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
+
+@ComponentV2
+struct ShareChannelButtonCmp {
+  @Param label: string = '';
+  @Param color: string = '';
+  @Event action: () => void = () => {};
+
+  build() {
+    Column() {
+      Stack() {
+        Circle()
+          .width(48)
+          .height(48)
+          .fill(this.color)
+        Text(this.label.substring(0, 1))
+          .fontSize(20)
+          .fontColor(COLORS.WHITE)
+          .fontWeight(FontWeight.Bold)
+      }
+      .width(48)
+      .height(48)
+      Text(this.label)
+        .fontSize(11)
+        .fontColor(COLORS.TEXT_GRAY_7575)
+        .margin({ top: 4 })
+    }
+    .onClick(() => { this.action() })
+    .accessibilityText(this.label)
+    .accessibilityLevel('yes')
+  }
+}
 
 @Entry
 @ComponentV2
@@ -56,7 +87,7 @@ struct SharePage {
       const allResults = await Promise.all([
         membersPromise,
         this.appState.getMyGroups().catch((e) => {
-          hilog.warn(DOMAIN_ZERO, TAG, '加载群组列表失败: %{public}s', JSON.stringify(e));
+          hilog.warn(DOMAIN_ZERO, TAG, '鍔犺浇缇ょ粍鍒楄〃澶辫触: %{public}s', JSON.stringify(e));
           return [] as GroupSummary[]
         })
       ])
@@ -84,7 +115,7 @@ struct SharePage {
         Row() {
           BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
             .onClick(() => { safeBack() })
-            .accessibilityText('返回')
+            .accessibilityText('杩斿洖')
             .accessibilityLevel('yes')
           Text($r('app.string.share_title'))
             .fontSize(20)
@@ -113,7 +144,6 @@ struct SharePage {
                 .margin({ bottom: 16 })
               }
 
-              // 分享文案
               Column() {
                 Text($r('app.string.share_copy_text'))
                   .fontSize(17)
@@ -141,7 +171,7 @@ struct SharePage {
                     .fontColor(COLORS.PRIMARY)
                     .borderRadius(BUTTON.RADIUS_SECONDARY)
                     .onClick(() => { this.refreshShareText() })
-                    .accessibilityText('刷新文案')
+                    .accessibilityText('鍒锋柊鏂囨')
                     .accessibilityLevel('yes')
 
                   Button($r('app.string.share_copy'))
@@ -154,7 +184,7 @@ struct SharePage {
                     .onClick(() => {
                       ToastHelper.show(this.getUIContext(), this.copyHint)
                     })
-                    .accessibilityText('复制文案')
+                    .accessibilityText('澶嶅埗鏂囨')
                     .accessibilityLevel('yes')
                 }
                 .width('100%')
@@ -167,7 +197,6 @@ struct SharePage {
               .alignItems(HorizontalAlign.Start)
               .margin({ bottom: 16 })
 
-              // 社交分享区
               Column() {
                 Text($r('app.string.share_to_group_title'))
                   .fontSize(16)
@@ -189,7 +218,7 @@ struct SharePage {
                       .onClick(() => {
                         safePushUrl('pages/FamilyGroupPage')
                       })
-                      .accessibilityText('创建或加入群组')
+                      .accessibilityText('鍒涘缓鎴栧姞鍏ョ兢缁?)
                       .accessibilityLevel('yes')
                   }
                   .width('100%')
@@ -212,7 +241,7 @@ struct SharePage {
                         Text(group.groupName)
                           .fontSize(14)
                           .fontWeight(FontWeight.Medium)
-                        Text(`${group.memberCount}位成员`)
+                        Text(`${group.memberCount}浣嶆垚鍛?)
                           .fontSize(11)
                           .fontColor(COLORS.TEXT_GRAY_9E9E)
                       }
@@ -224,7 +253,7 @@ struct SharePage {
                         .onClick(async () => {
                           await this.shareToGroup(group.groupId)
                         })
-                        .accessibilityText('分享到群组')
+                        .accessibilityText('鍒嗕韩鍒扮兢缁?)
                         .accessibilityLevel('yes')
                     }
                     .width('100%')
@@ -239,18 +268,17 @@ struct SharePage {
               .alignItems(HorizontalAlign.Start)
               .margin({ bottom: 16 })
 
-              // 系统分享按钮
               Column() {
-                Text('分享到')
+                Text('鍒嗕韩鍒?)
                   .fontSize(16)
                   .fontWeight(FontWeight.Bold)
                   .margin({ bottom: 12 })
 
                 Row({ space: 16 }) {
-                  this.ShareChannelButton('微信', '#07C160', () => { this.systemShareText() })
-                  this.ShareChannelButton('微博', '#E6162D', () => { this.systemShareText() })
-                  this.ShareChannelButton('QQ', '#12B7F5', () => { this.systemShareText() })
-                  this.ShareChannelButton('系统分享', COLORS.PRIMARY, () => { this.systemShareText() })
+                  ShareChannelButtonCmp({ label: '寰俊', color: '#07C160', action: () => { this.systemShareText() } })
+                  ShareChannelButtonCmp({ label: '寰崥', color: '#E6162D', action: () => { this.systemShareText() } })
+                  ShareChannelButtonCmp({ label: 'QQ', color: '#12B7F5', action: () => { this.systemShareText() } })
+                  ShareChannelButtonCmp({ label: '绯荤粺鍒嗕韩', color: COLORS.PRIMARY, action: () => { this.systemShareText() } })
                 }
                 .width('100%')
                 .justifyContent(FlexAlign.SpaceEvenly)
@@ -262,9 +290,8 @@ struct SharePage {
               .alignItems(HorizontalAlign.Start)
               .margin({ bottom: 16 })
 
-              // 海报预览与保存
               Column() {
-                Text('分享海报')
+                Text('鍒嗕韩娴锋姤')
                   .fontSize(16)
                   .fontWeight(FontWeight.Bold)
                   .margin({ bottom: 12 })
@@ -278,7 +305,7 @@ struct SharePage {
                     .margin({ bottom: 12 })
                 } else {
                   Column() {
-                    Text('点击生成分享海报')
+                    Text('鐐瑰嚮鐢熸垚鍒嗕韩娴锋姤')
                       .fontSize(13)
                       .fontColor(COLORS.TEXT_GRAY_9E9E)
                   }
@@ -291,7 +318,7 @@ struct SharePage {
                 }
 
                 Row() {
-                  Button('生成海报')
+                  Button('鐢熸垚娴锋姤')
                     .layoutWeight(1)
                     .height(BUTTON.HEIGHT_SECONDARY)
                     .backgroundColor(COLORS.PRIMARY)
@@ -299,10 +326,10 @@ struct SharePage {
                     .borderRadius(BUTTON.RADIUS_SECONDARY)
                     .enabled(!this.isGeneratingPoster)
                     .onClick(() => { this.generatePoster() })
-                    .accessibilityText('生成海报')
+                    .accessibilityText('鐢熸垚娴锋姤')
                     .accessibilityLevel('yes')
 
-                  Button('保存到相册')
+                  Button('淇濆瓨鍒扮浉鍐?)
                     .layoutWeight(1)
                     .height(BUTTON.HEIGHT_SECONDARY)
                     .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
@@ -311,7 +338,7 @@ struct SharePage {
                     .margin({ left: 10 })
                     .enabled(this.posterUri.length > 0)
                     .onClick(() => { this.savePosterToAlbum() })
-                    .accessibilityText('保存到相册')
+                    .accessibilityText('淇濆瓨鍒扮浉鍐?)
                     .accessibilityLevel('yes')
                 }
                 .width('100%')
@@ -324,12 +351,12 @@ struct SharePage {
                       .maxLines(1)
                       .textOverflow({ overflow: TextOverflow.Ellipsis })
                       .layoutWeight(1)
-                    Text('复制链接')
+                    Text('澶嶅埗閾炬帴')
                       .fontSize(12)
                       .fontColor(COLORS.PRIMARY)
                       .margin({ left: 8 })
                       .onClick(() => { this.copyShareLink() })
-                      .accessibilityText('复制链接')
+                      .accessibilityText('澶嶅埗閾炬帴')
                       .accessibilityLevel('yes')
                   }
                   .width('100%')
@@ -343,10 +370,9 @@ struct SharePage {
               .alignItems(HorizontalAlign.Start)
               .margin({ bottom: 16 })
 
-              // 发布食谱
               Column() {
                 Row({ space: 10 }) {
-                  Text('🍳').fontSize(20)
+                  Text('馃嵃').fontSize(20)
                   Column() {
                     Text($r('app.string.publish_as_recipe'))
                       .fontSize(15)
@@ -366,7 +392,7 @@ struct SharePage {
                       publishParams.set('relatedFoodId', this.foodName as Object)
                       safePushUrl('pages/RecipeCreatePage', publishParams)
                     })
-                    .accessibilityText('前往发布食谱')
+                    .accessibilityText('鍓嶅線鍙戝竷椋熻氨')
                     .accessibilityLevel('yes')
                 }
                 .width('100%')
@@ -408,16 +434,16 @@ struct SharePage {
     try {
       const context = AppStorage.get<common.UIAbilityContext>('appContext');
       if (!context) {
-        ToastHelper.show(this.getUIContext(), '分享失败：无法获取上下文');
+        ToastHelper.show(this.getUIContext(), '鍒嗕韩澶辫触锛氭棤娉曡幏鍙栦笂涓嬫枃');
         return;
       }
       const shareContent = this.shareText.length > 0
         ? this.shareText
         : this.buildShareLink();
-      await ShareKitService.shareText(context, shareContent, '分享食品报告');
+      await ShareKitService.shareText(context, shareContent, '鍒嗕韩椋熷搧鎶ュ憡');
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'systemShareText failed: %{public}s', JSON.stringify(e));
-      ToastHelper.show(this.getUIContext(), `分享失败：${(e as Error).message}`);
+      ToastHelper.show(this.getUIContext(), `鍒嗕韩澶辫触锛歿(e as Error).message}`);
     }
   }
 
@@ -429,10 +455,10 @@ struct SharePage {
     try {
       const context = AppStorage.get<common.UIAbilityContext>('appContext');
       if (!context) return;
-      await ShareKitService.shareImage(context, this.posterUri, '分享食品海报');
+      await ShareKitService.shareImage(context, this.posterUri, '鍒嗕韩椋熷搧娴锋姤');
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'shareImage failed: %{public}s', JSON.stringify(e));
-      ToastHelper.show(this.getUIContext(), `图片分享失败：${(e as Error).message}`);
+      ToastHelper.show(this.getUIContext(), `鍥剧墖鍒嗕韩澶辫触锛歿(e as Error).message}`);
     }
   }
 
@@ -442,7 +468,7 @@ struct SharePage {
     try {
       const context = AppStorage.get<common.UIAbilityContext>('appContext');
       if (!context) {
-        ToastHelper.show(this.getUIContext(), '生成失败');
+        ToastHelper.show(this.getUIContext(), '鐢熸垚澶辫触');
         return;
       }
       const posterData = new PosterData();
@@ -456,19 +482,19 @@ struct SharePage {
       for (const rec of this.recommendations) {
         const member = this.familyMembers.find(m => m.memberId === rec.memberId);
         const item = new PosterNutritionItem();
-        item.name = member?.nickname || '成员';
+        item.name = member?.nickname || '鎴愬憳';
         item.value = rec.level;
-        item.unit = rec.maxAmount > 0 ? `≤${rec.maxAmount}g` : '';
+        item.unit = rec.maxAmount > 0 ? `鈮rec.maxAmount}g` : '';
         items.push(item);
       }
       posterData.nutritionItems = items;
 
       const generator = new SharePosterGenerator(context);
       this.posterUri = await generator.generatePoster(posterData);
-      ToastHelper.show(this.getUIContext(), '海报已生成');
+      ToastHelper.show(this.getUIContext(), '娴锋姤宸茬敓鎴?);
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'generatePoster failed: %{public}s', JSON.stringify(e));
-      ToastHelper.show(this.getUIContext(), '海报生成失败');
+      ToastHelper.show(this.getUIContext(), '娴锋姤鐢熸垚澶辫触');
     } finally {
       this.isGeneratingPoster = false;
     }
@@ -479,7 +505,7 @@ struct SharePage {
     try {
       const context = AppStorage.get<common.UIAbilityContext>('appContext');
       if (!context) {
-        ToastHelper.show(this.getUIContext(), '保存失败');
+        ToastHelper.show(this.getUIContext(), '淇濆瓨澶辫触');
         return;
       }
       const helper = photoAccessHelper.getPhotoAccessHelper(context);
@@ -495,10 +521,10 @@ struct SharePage {
       }
       fileIo.closeSync(srcFile.fd);
       fileIo.closeSync(dstFile.fd);
-      ToastHelper.show(this.getUIContext(), '已保存到相册');
+      ToastHelper.show(this.getUIContext(), '宸蹭繚瀛樺埌鐩稿唽');
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'savePosterToAlbum failed: %{public}s', JSON.stringify(e));
-      ToastHelper.show(this.getUIContext(), '保存到相册失败');
+      ToastHelper.show(this.getUIContext(), '淇濆瓨鍒扮浉鍐屽け璐?);
     }
   }
 
@@ -509,45 +535,20 @@ struct SharePage {
       const pasteData = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, this.shareLink);
       const systemPasteboard = pasteboard.getSystemPasteboard();
       systemPasteboard.setData(pasteData);
-      ToastHelper.show(this.getUIContext(), '链接已复制');
+      ToastHelper.show(this.getUIContext(), '閾炬帴宸插鍒?);
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'copyLink failed: %{public}s', JSON.stringify(e));
-      ToastHelper.show(this.getUIContext(), '复制失败');
+      ToastHelper.show(this.getUIContext(), '澶嶅埗澶辫触');
     }
-  }
-
-  @Builder
-  ShareChannelButton(label: string, color: string, action: () => void) {
-    Column() {
-      Stack() {
-        Circle()
-          .width(48)
-          .height(48)
-          .fill(color)
-        Text(label.substring(0, 1))
-          .fontSize(20)
-          .fontColor(COLORS.WHITE)
-          .fontWeight(FontWeight.Bold)
-      }
-      .width(48)
-      .height(48)
-      Text(label)
-        .fontSize(11)
-        .fontColor(COLORS.TEXT_GRAY_7575)
-        .margin({ top: 4 })
-    }
-    .onClick(action)
-    .accessibilityText(label)
-    .accessibilityLevel('yes')
   }
 
   private async shareToGroup(groupId: string) {
     const summaryLines: string[] = []
     for (const rec of this.recommendations) {
       const member = this.familyMembers.find(m => m.memberId === rec.memberId)
-      const name = member?.nickname || '成员'
-      const amount = rec.maxAmount > 0 ? `建议上限 ${rec.maxAmount}g` : '建议暂时不吃'
-      summaryLines.push(`${name}：${rec.level}，${amount}`)
+      const name = member?.nickname || '鎴愬憳'
+      const amount = rec.maxAmount > 0 ? `寤鸿涓婇檺 ${rec.maxAmount}g` : '寤鸿鏆傛椂涓嶅悆'
+      summaryLines.push(`${name}锛歿rec.level}锛宍amount}`)
     }
 
     try {
@@ -556,12 +557,12 @@ struct SharePage {
         this.foodName,
         this.foodName,
         50,
-        `食品扫描：${this.foodName}`,
+        `椋熷搧鎵弿锛歿his.foodName}`,
         summaryLines.join('\n')
       )
       ToastHelper.show(this.getUIContext(), $r('app.string.share_to_group_success'))
     } catch (e) {
-      ToastHelper.show(this.getUIContext(), `分享失败：${(e as Error).message}`)
+      ToastHelper.show(this.getUIContext(), `鍒嗕韩澶辫触锛歿(e as Error).message}`)
     }
   }
 

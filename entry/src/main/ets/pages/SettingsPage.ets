@@ -1,8 +1,9 @@
-import {
+﻿import {
   ToastHelper, safeBack, safePushUrl, safeReplaceUrl, FamilyProfile, DateUtil, COLORS, RADIUS, ThemeColors, ThemeMode, getPrivacyPolicyHtml, getUserAgreementHtml, HILOG_DOMAIN_DEFAULT, ROUTE_NUTRITION_TARGET_PAGE, ROUTE_NUTRITION_KNOWLEDGE_PAGE, ROUTE_MEAL_PLAN_PAGE, ROUTE_SHOPPING_LIST_PAGE, ROUTE_REMINDER_RULE_PAGE, ROUTE_FEEDBACK_PAGE, LocaleManager, SUPPORTED_LOCALES, LOCALE_DISPLAY_NAMES, DATA_VERSION, DB_NAME, HealthSignal, StepLevel, SleepStatus, BpStatus, BsStatus, DataSource, LEGAL_CONFIG
   PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
+import { OptionChip } from '../components/OptionChip';
 import { AppState } from '../AppState';
 
 import { preferences, relationalStore } from '@kit.ArkData';
@@ -528,9 +529,9 @@ struct SettingsPage {
         .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ bottom: 8 })
       Row() {
-        this.OptionChip($r('app.string.settings_activity_low'), this.vm.stepLevel === StepLevel.LOW, () => { this.vm.stepLevel = StepLevel.LOW })
-        this.OptionChip($r('app.string.settings_activity_normal'), this.vm.stepLevel === StepLevel.NORMAL, () => { this.vm.stepLevel = StepLevel.NORMAL })
-        this.OptionChip($r('app.string.settings_activity_high'), this.vm.stepLevel === StepLevel.HIGH, () => { this.vm.stepLevel = StepLevel.HIGH })
+        OptionChip({ label: $r('app.string.settings_activity_low'), active: this.vm.stepLevel === StepLevel.LOW, onTap: () => { this.vm.stepLevel = StepLevel.LOW } })
+        OptionChip({ label: $r('app.string.settings_activity_normal'), active: this.vm.stepLevel === StepLevel.NORMAL, onTap: () => { this.vm.stepLevel = StepLevel.NORMAL } })
+        OptionChip({ label: $r('app.string.settings_activity_high'), active: this.vm.stepLevel === StepLevel.HIGH, onTap: () => { this.vm.stepLevel = StepLevel.HIGH } })
       }
       .margin({ bottom: 14 })
 
@@ -539,9 +540,9 @@ struct SettingsPage {
         .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ bottom: 8 })
       Row() {
-        this.OptionChip($r('app.string.settings_sleep_good'), this.vm.sleepStatus === SleepStatus.GOOD, () => { this.vm.sleepStatus = SleepStatus.GOOD })
-        this.OptionChip($r('app.string.settings_sleep_fair'), this.vm.sleepStatus === SleepStatus.FAIR, () => { this.vm.sleepStatus = SleepStatus.FAIR })
-        this.OptionChip($r('app.string.settings_sleep_poor'), this.vm.sleepStatus === SleepStatus.POOR, () => { this.vm.sleepStatus = SleepStatus.POOR })
+        OptionChip({ label: $r('app.string.settings_sleep_good'), active: this.vm.sleepStatus === SleepStatus.GOOD, onTap: () => { this.vm.sleepStatus = SleepStatus.GOOD } })
+        OptionChip({ label: $r('app.string.settings_sleep_fair'), active: this.vm.sleepStatus === SleepStatus.FAIR, onTap: () => { this.vm.sleepStatus = SleepStatus.FAIR } })
+        OptionChip({ label: $r('app.string.settings_sleep_poor'), active: this.vm.sleepStatus === SleepStatus.POOR, onTap: () => { this.vm.sleepStatus = SleepStatus.POOR } })
       }
       .margin({ bottom: 14 })
 
@@ -550,8 +551,8 @@ struct SettingsPage {
         .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ bottom: 8 })
       Row() {
-        this.OptionChip($r('app.string.settings_high_sodium'), this.vm.hadHighSodiumToday, () => { this.vm.hadHighSodiumToday = !this.vm.hadHighSodiumToday })
-        this.OptionChip($r('app.string.settings_high_sugar'), this.vm.hadHighSugarToday, () => { this.vm.hadHighSugarToday = !this.vm.hadHighSugarToday })
+        OptionChip({ label: $r('app.string.settings_high_sodium'), active: this.vm.hadHighSodiumToday, onTap: () => { this.vm.hadHighSodiumToday = !this.vm.hadHighSodiumToday } })
+        OptionChip({ label: $r('app.string.settings_high_sugar'), active: this.vm.hadHighSugarToday, onTap: () => { this.vm.hadHighSugarToday = !this.vm.hadHighSugarToday } })
       }
 
       Text($r('app.string.status_affect_hint'))
@@ -564,20 +565,6 @@ struct SettingsPage {
     .backgroundColor(COLORS.WHITE)
     .borderRadius(16)
     .alignItems(HorizontalAlign.Start)
-  }
-
-  @Builder
-  OptionChip(label: ResourceStr, active: boolean, onTap: () => void) {
-    Text(label)
-      .fontSize(13)
-      .padding({ left: 12, right: 12, top: 8, bottom: 8 })
-      .borderRadius(18)
-      .backgroundColor(active ? COLORS.PRIMARY : '#F5F5F5')
-      .fontColor(active ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
-      .margin({ right: 8 })
-      .onClick(onTap)
-      .accessibilityText(label )
-      .accessibilityLevel('yes')
   }
 
   private loadMemberSignal(memberId: string) {

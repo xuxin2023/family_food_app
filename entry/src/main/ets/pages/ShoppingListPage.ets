@@ -1,4 +1,4 @@
-import { ToastHelper, safeBack, ShoppingItem, SHOPPING_CATEGORIES, COLORS, HILOG_DOMAIN_DEFAULT, DB_NAME, BasicDataSource, PageResourceTracker, createPageTracker } from 'hsp_core';
+﻿import { ToastHelper, safeBack, ShoppingItem, SHOPPING_CATEGORIES, COLORS, HILOG_DOMAIN_DEFAULT, DB_NAME, BasicDataSource, PageResourceTracker, createPageTracker } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { ShoppingListRepository } from '../repository/ShoppingListRepository';
@@ -142,7 +142,7 @@ struct ShoppingListPage {
           .borderRadius(20)
           .margin({ left: 8 })
           .onClick(() => { this.addItem() })
-          .accessibilityText('濞ｈ濮為悧鈺佹惂')
+          .accessibilityText('添加项目')
           .accessibilityLevel('yes')
       }
       .width('100%')

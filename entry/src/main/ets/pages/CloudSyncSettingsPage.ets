@@ -1,5 +1,5 @@
-// CloudSyncSettingsPage.ets
-// 浜戝悓姝ヨ缃〉闈?- 绠＄悊浜戠璐︽埛缁戝畾銆佸悓姝ュ紑鍏炽€佺瓥鐣ラ€夋嫨
+﻿// CloudSyncSettingsPage.ets
+// 云同步设置页面 - V5: 支持策略选择、冲突处理、数据管理
 
 import {
   ToastHelper, safeBack, CloudSyncConfig, SyncStrategy, ConflictResolution, createDefaultSyncConfig, COLORS, PageResourceTracker, createPageTracker
@@ -27,6 +27,26 @@ function makeConflictItem(label: ResourceStr, value: ConflictResolution): Confli
 enum SyncPageTab {
   SETTINGS = 0,
   STATUS = 1
+}
+
+@ComponentV2
+struct TabButtonCmp {
+  @Param label: ResourceStr = '';
+  @Param active: boolean = false;
+  @Event onClick: () => void = () => {};
+
+  build() {
+    Text(this.label)
+      .fontSize(15)
+      .fontWeight(this.active ? FontWeight.Bold : FontWeight.Normal)
+      .fontColor(this.active ? COLORS.PRIMARY : COLORS.TEXT_GRAY_9E9E)
+      .padding({ bottom: 6 })
+      .border({ width: { bottom: this.active ? 2 : 0 }, color: { bottom: this.active ? COLORS.PRIMARY : Color.Transparent } })
+      .margin({ right: 24 })
+      .onClick(() => { this.onClick() })
+      .accessibilityText(this.label)
+      .accessibilityLevel('yes')
+  }
 }
 
 @Entry
@@ -76,11 +96,10 @@ struct CloudSyncSettingsPage {
 
   build() {
     Column() {
-      // 椤舵爮
       Row() {
         BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
           .onClick(() => { safeBack() })
-          .accessibilityText('杩斿洖')
+          .accessibilityText('返回')
           .accessibilityLevel('yes')
         Text($r('app.string.cloud_sync'))
           .fontSize(20)
@@ -98,14 +117,13 @@ struct CloudSyncSettingsPage {
       .width('100%')
       .padding({ left: 16, right: 16, top: 16, bottom: 12 })
 
-      // Tab鍒囨崲
       Row() {
-        this.TabButton($r('app.string.cloud_sync_tab_settings'), this.currentTab === SyncPageTab.SETTINGS, () => {
+        TabButtonCmp({ label: $r('app.string.cloud_sync_tab_settings'), active: this.currentTab === SyncPageTab.SETTINGS, onClick: () => {
           this.currentTab = SyncPageTab.SETTINGS
-        })
-        this.TabButton($r('app.string.cloud_sync_tab_sync_status'), this.currentTab === SyncPageTab.STATUS, () => {
+        }})
+        TabButtonCmp({ label: $r('app.string.cloud_sync_tab_sync_status'), active: this.currentTab === SyncPageTab.STATUS, onClick: () => {
           this.currentTab = SyncPageTab.STATUS
-        })
+        }})
       }
       .width('100%')
       .padding({ left: 16, right: 16 })
@@ -123,24 +141,9 @@ struct CloudSyncSettingsPage {
   }
 
   @Builder
-  TabButton(label: ResourceStr, active: boolean, onClick: () => void) {
-    Text(label)
-      .fontSize(15)
-      .fontWeight(active ? FontWeight.Bold : FontWeight.Normal)
-      .fontColor(active ? COLORS.PRIMARY : COLORS.TEXT_GRAY_9E9E)
-      .padding({ bottom: 6 })
-      .border({ width: { bottom: active ? 2 : 0 }, color: { bottom: active ? COLORS.PRIMARY : Color.Transparent } })
-      .margin({ right: 24 })
-      .onClick(onClick)
-      .accessibilityText(label )
-      .accessibilityLevel('yes')
-  }
-
-  @Builder
   SettingsPanel() {
     Scroll() {
       Column() {
-        // ---- 浜戠璐︽埛 ----
         Column() {
             Text($r('app.string.cloud_sync_section_cloud_account')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
           if (this.isBound) {
@@ -164,7 +167,7 @@ struct CloudSyncSettingsPage {
                 .borderRadius(16)
                 .height(32)
                 .onClick(() => this.unbindAccount())
-                .accessibilityText('瑙ｇ粦璐︽埛')
+                .accessibilityText('解绑账号')
                 .accessibilityLevel('yes')
             }
           } else {
@@ -183,7 +186,7 @@ struct CloudSyncSettingsPage {
                 .borderRadius(20)
                 .fontColor(Color.White)
                 .onClick(() => this.bindAccount())
-                .accessibilityText('缁戝畾浜戠璐︽埛')
+                .accessibilityText('绑定云端账号')
                 .accessibilityLevel('yes')
             }
             .alignItems(HorizontalAlign.Center)
@@ -191,7 +194,6 @@ struct CloudSyncSettingsPage {
           }
         }
 
-        // ---- 鍚屾寮€鍏?----
         Column() {
             Text($r('app.string.cloud_sync_section_sync_settings')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
           Row() {
@@ -201,7 +203,6 @@ struct CloudSyncSettingsPage {
             Toggle({ type: ToggleType.Switch, isOn: this.syncConfig.enabled })
               .onChange(async (isOn) => {
                 if (isOn) {
-                  // 鍚敤浜戝悓姝ュ墠妫€鏌ュ垎甯冨紡鏁版嵁鍚屾鏉冮檺
                   const hasPermission = await this.appState.permission
                     .requestDistributedSyncPermission();
                   if (!hasPermission) {
@@ -218,7 +219,6 @@ struct CloudSyncSettingsPage {
           .margin({ bottom: 12 })
 
           if (this.syncConfig.enabled) {
-            // 鍚屾绛栫暐
             Row() {
               Text($r('app.string.sync_strategy'))
                 .fontSize(14)
@@ -236,7 +236,7 @@ struct CloudSyncSettingsPage {
             .onClick(() => {
               this.showStrategyPicker = true
             })
-            .accessibilityText('閫夋嫨鍚屾绛栫暐')
+            .accessibilityText('选择同步策略')
             .accessibilityLevel('yes')
 
             if (this.showStrategyPicker) {
@@ -266,7 +266,7 @@ struct CloudSyncSettingsPage {
                     this.showStrategyPicker = false
                     this.refreshAllState()
                   })
-                  .accessibilityText('纭鍚屾绛栫暐')
+                  .accessibilityText('确认同步策略)
                   .accessibilityLevel('yes')
               }
               .padding(8)
@@ -275,7 +275,6 @@ struct CloudSyncSettingsPage {
               .margin({ top: 8 })
             }
 
-            // 鍐茬獊绛栫暐
             Row() {
               Text($r('app.string.conflict_resolution'))
                 .fontSize(14)
@@ -294,7 +293,7 @@ struct CloudSyncSettingsPage {
             .onClick(() => {
               this.showConflictPicker = true
             })
-            .accessibilityText('閫夋嫨鍐茬獊瑙ｅ喅绛栫暐')
+            .accessibilityText('选择冲突解决策略')
             .accessibilityLevel('yes')
 
             if (this.showConflictPicker) {
@@ -324,7 +323,7 @@ struct CloudSyncSettingsPage {
                     this.showConflictPicker = false
                     this.refreshAllState()
                   })
-                  .accessibilityText('纭鍐茬獊绛栫暐')
+                  .accessibilityText('确认冲突策略)
                   .accessibilityLevel('yes')
               }
               .padding(8)
@@ -333,7 +332,6 @@ struct CloudSyncSettingsPage {
               .margin({ top: 8 })
             }
 
-            // 鍚屾闂撮殧
             Row() {
               Text($r('app.string.sync_interval'))
                 .fontSize(14)
@@ -348,7 +346,6 @@ struct CloudSyncSettingsPage {
           }
         }
 
-        // ---- 鎵嬪姩鎿嶄綔 ----
         if (this.syncConfig.enabled && this.isBound) {
           Column() {
             Text($r('app.string.cloud_sync_section_operations')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
@@ -363,7 +360,7 @@ struct CloudSyncSettingsPage {
                 this.manuallySync()
               })
               .margin({ bottom: 10 })
-              .accessibilityText('绔嬪嵆鍚屾')
+              .accessibilityText('立即同步')
               .accessibilityLevel('yes')
 
             Button($r('app.string.cloud_sync_btn_clear_sync_queue'))
@@ -375,18 +372,17 @@ struct CloudSyncSettingsPage {
               .onClick(() => {
                 this.clearSyncQueue()
               })
-              .accessibilityText('娓呴櫎鍚屾闃熷垪')
+              .accessibilityText('清除同步队列')
               .accessibilityLevel('yes')
           }
         }
 
-        // ---- 璁惧淇℃伅 ----
         Column() {
             Text($r('app.string.cloud_sync_section_device_info')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
           this.InfoRow($r('app.string.cloud_sync_label_device_id'), this.deviceId.length > 0 ?
             this.deviceId.substring(0, 20) + '...' : $r('app.string.cloud_sync_loading_text'))
           this.InfoRow($r('app.string.cloud_sync_label_network_status'), this.getNetworkStatusText())
-          this.InfoRow($r('app.string.cloud_sync_label_pending_items'), `${this.pendingCount} 项`)
+          this.InfoRow($r('app.string.cloud_sync_label_pending_items'), `${this.pendingCount} 椤?)
         }
 
         Text($r('app.string.encrypt_transport'))
@@ -406,7 +402,6 @@ struct CloudSyncSettingsPage {
   StatusPanel() {
     Scroll() {
       Column() {
-        // ---- 鍚屾鐘舵€佹瑙?----
         Column() {
             Text($r('app.string.cloud_sync_tab_sync_status')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
           Row() {
@@ -438,14 +433,13 @@ struct CloudSyncSettingsPage {
               .fontSize(14)
               .fontColor('#757575')
             Blank()
-            Text(`${this.pendingCount} 项`)
+            Text(`${this.pendingCount} 椤?)
               .fontSize(14)
               .fontColor(this.pendingCount > 0 ? '#F57C00' : '#2E7D32')
           }
           .width('100%')
         }
 
-        // ---- 鍚屾鏃ュ織 ----
         Column() {
             Text($r('app.string.cloud_sync_section_sync_log')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
           if (this.syncLog.length === 0) {
@@ -531,7 +525,6 @@ struct CloudSyncSettingsPage {
   }
 
   private async bindAccount(): Promise<void> {
-    // P0版本: 模拟绑定
     const mockToken = `token_${Date.now()}`;
     const mockAccount = `user_${Date.now().toString().substring(0, 8)}`;
     await this.cloudAuth.bindCloudAccount(mockToken, mockAccount, '我的账号');
@@ -555,7 +548,7 @@ struct CloudSyncSettingsPage {
           await this.cloudAuth.unbindCloudAccount();
           await this.syncService.updateConfig(this.syncConfig);
           await this.refreshAllState();
-          this.addLog('账号已解绑');
+          this.addLog('账号已解绑);
           ToastHelper.show(this.getUIContext(), $r('app.string.cloud_sync_unbind_success'));
         }
       }
@@ -567,10 +560,10 @@ struct CloudSyncSettingsPage {
     const result = await this.syncService.triggerSync();
     await this.refreshAllState();
     if (result) {
-      this.addLog(`同步完成: ${result.syncedIds.length}条成功` +
-        (result.failedIds.length > 0 ? `, ${result.failedIds.length}条失败` : ''));
+      this.addLog(`同步完成: ${result.syncedIds.length}条成功 +
+        (result.failedIds.length > 0 ? `, ${result.failedIds.length}条失败 : ''));
     } else {
-      this.addLog('同步被跳过(可能正在同步中或网络不可用)');
+      this.addLog('同步被跳过(可能正在同步中或网络不可用));
     }
   }
 
@@ -588,7 +581,7 @@ struct CloudSyncSettingsPage {
         action: async () => {
           await this.syncService.clearQueue();
           await this.refreshAllState();
-          this.addLog('同步队列已清除');
+          this.addLog('同步队列已清除);
           ToastHelper.show(this.getUIContext(), $r('app.string.cloud_sync_queue_cleared'));
         }
       }
@@ -624,12 +617,12 @@ struct CloudSyncSettingsPage {
     switch (event.type) {
       case 'sync_started':
         this.isSyncing = true;
-        this.addLog('鍚屾寮€濮?..');
+        this.addLog('同步开始...');
         break;
       case 'sync_completed':
         this.isSyncing = false;
         this.refreshAllState();
-        this.addLog('鍚屾瀹屾垚');
+        this.addLog('同步完成');
         break;
       case 'sync_failed':
         this.isSyncing = false;
@@ -641,7 +634,7 @@ struct CloudSyncSettingsPage {
         break;
       case 'network_changed':
         this.refreshAllState();
-        this.addLog(`网络状态: ${event.message}`);
+        this.addLog(`缃戠粶鐘舵€? ${event.message}`);
         break;
     }
   };

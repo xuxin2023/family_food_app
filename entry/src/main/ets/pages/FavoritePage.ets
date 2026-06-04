@@ -1,7 +1,7 @@
-// FavoritePage.ets
+﻿// FavoritePage.ets
 // 鎴戠殑鏀惰棌椤甸潰 - 灞曠ず鐢ㄦ埛鏀惰棌鐨勯鍝佸垪琛?
 import {
-  ToastHelper, safeBack, safePushUrl, COLORS, FONT_SIZE, FONT_WEIGHT, SPACING, RADIUS, BUTTON, HILOG_DOMAIN_DEFAULT, FEATURE_LIMITS, ImageCache, PageResourceTracker, createPageTracker
+// 我的收藏页面 - 展示用户收藏的食品列表
 } from 'hsp_core';
 import { AppState } from '../AppState';
 import { FavoriteItem } from '../repository/FavoriteRepository';
@@ -370,7 +370,7 @@ struct FavoritePage {
             const navParams = new Map<string, Object>();
             safePushUrl('pages/SubscriptionPage', navParams);
           })
-          .accessibilityText('鍗囩骇浼氬憳')
+          .accessibilityText('升级会员')
           .accessibilityLevel('yes')
         }
         .width('100%')

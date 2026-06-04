@@ -1,7 +1,7 @@
-// V2DemoPage.ets
-// V2 闁绘鍩栭埀顑胯兌椤撴悂鎮堕崱妯煎窛缂佲偓濞差亗鈧妫?闁?閻庣懓鏈弳锝囦沪閺囩姰浠?@ComponentV2 闁汇垻鍠愰埀?//
-// 閻忕偞娲滈妵姘舵嚄閽樺顫旈柨?// 1. @ObservedV2 + @Trace 闁?婵烇絽宕€瑰啿鐣电仦绛嬫閻庣數顢婇挅鍕喆閸屾氨妾柨娑樼墛濡倝妫侀埀?@ObjectLink 闁瑰嘲妫涚划宥嗙鐠佸湱纾奸柨?// 2. @Computed 闁?闁煎浜滄慨鈺冪磽閹惧磭鎽犻悹渚婄磿閻ｈ崵浠﹂悙绮瑰亾瑜濈槐婵嬫焼閸喖甯抽梺鎻掔Т椤﹁尙鎷嬮敍鍕毈
-// 3. @Monitor 闁?缂侇喖澧界划蹇涙儎閹存繃鍎旈柣妯垮煐閳ь兛绀佽ぐ澶愬礌閺嶇數绀勯柛姘煎亜瑜板宕犻弽褍顤呴柛姘閳ь剛銆嬬槐?// 4. @Param + @Event 闁?闁绘牞娉涢悺娆戠磼閸曨亝顐介梺顐ｇ煯娣?// 5. @Local 闁?缂備礁瀚▎銏ゅ礃閸涙潙鍔ラ柣妯垮煐閳?
+﻿// V2DemoPage.ets
+// V2 状态管理演示页面 - @ComponentV2 + @ObservedV2 + @Trace 新一代状态管理测试
+// 涵盖以下特性:
+// 3. @Monitor - 监听属性变化自动回调
 import {
   MemberNutritionProfile,
   FamilyNutritionManager,
@@ -25,12 +25,12 @@ struct V2DemoPage {
   /** 闁烩晜鍨甸幆澶愬箣閹邦剚鍠呴柛鎺戞处瀹?闁?@Monitor 闁告瑯鍨甸獮蹇涘矗閺嵮冪秮闁告牗鐗曟晶鐘诲触鎼粹檧鍋?*/
   @Monitor('manager.selectedMemberIndex')
   onMemberChanged(monitor: IMonitor): void {
-    hilog.info(DOMAIN_ZERO, TAG, '闁瑰瓨鍔曢幉鎶藉礆閸ャ劌搴婇悗鐟版湰閸?);
+    hilog.info(DOMAIN_ZERO, TAG, '成员鎶藉礆閸ャ劌搴婇悗鐟版湰閸?);
   }
 
   build() {
     Column() {
-      // 闁哄秴娲。浠嬪冀?      Row() {
+      // 标题栏
         Text($r('app.string.v2_demo_title'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
@@ -41,7 +41,7 @@ struct V2DemoPage {
       .backgroundColor('#007AFF')
       .justifyContent(FlexAlign.Center)
 
-      // 闁瑰瓨鍔曢幉鎶芥焻婢跺顏ラ柛?      Row({ space: 8 }) {
+      // 成员选择栏
         ForEach(this.manager.members, (member: MemberNutritionProfile, index: number) => {
           Text(member.name)
             .fontSize(14)
@@ -61,17 +61,17 @@ struct V2DemoPage {
           .borderRadius(16)
           .backgroundColor('#E8E8E8')
           .onClick(() => {
-            this.newMemberName = '闁瑰瓨鍔曢幉? + (this.manager.members.length + 1);
+            this.newMemberName = '成员? + (this.manager.members.length + 1);
             this.manager.addMember(this.newMemberName);
           })
-          .accessibilityText('婵烇綀顕ф慨鐐哄箣閹邦剚鍠?)
+          .accessibilityText('添加成员?)
           .accessibilityLevel('yes')
       }
       .width('100%')
       .padding(12)
       .backgroundColor('#FFFFFF')
 
-      // 鐟滅増鎸告晶鐘诲箣閹邦剚鍠呴悹鍥烽檮閸?      if (this.manager.selectedMember) {
+      // 内容显示区
         Column() {
           MemberSummary({ member: this.manager.selectedMember })
           MealList({ member: this.manager.selectedMember })
@@ -80,18 +80,18 @@ struct V2DemoPage {
         .width('100%')
       }
 
-      // 婵烇綀顕ф慨鐐搭槮閹邦収鍋ч柟绋款樀閹?      if (this.manager.selectedMember) {
+      // 添加餐食按钮区
         Row({ space: 8 }) {
           Button($r('app.string.v2_demo_add_breakfast')).fontSize(13)
-            .onClick(() => this.addMeal('闁哄啠鏅犻ˇ?, 350, 200, 10, 8))
-            .accessibilityText('婵烇綀顕ф慨鐐哄籍閳哄拋妯€')
+            .onClick(() => this.addMeal('早餐?, 350, 200, 10, 8))
+            .accessibilityText('添加早餐')
             .accessibilityLevel('yes')
           Button($r('app.string.v2_demo_add_lunch')).fontSize(13)
             .onClick(() => this.addMeal('闁告鐗撻ˇ?, 650, 500, 12, 18))
             .accessibilityText('婵烇綀顕ф慨鐐哄础閸儺妯€')
             .accessibilityLevel('yes')
           Button($r('app.string.v2_demo_add_dinner')).fontSize(13)
-            .onClick(() => this.addMeal('闁哄懏宀搁ˇ?, 500, 400, 10, 15))
+            .onClick(() => this.addMeal('晚餐?, 500, 400, 10, 15))
             .accessibilityText('婵烇綀顕ф慨鐐哄疾濮橀妯€')
             .accessibilityLevel('yes')
         }
@@ -223,7 +223,7 @@ export struct MealList {
         List() {
           ForEach(this.member.today.meals, (meal: MealNutrition, index: number) => {
             ListItem() {
-              // 闁哄牃鍋撴繛锝呭船缁佸灚绺藉Δ鍐煁濞?闁?濡ょ姴鐭侀惁澶娗庨崡鐐差唺閻熸瑥鍊搁惂?              MealItem({ meal: meal })
+              // 使用 MealItem 组件展示每条餐食记录
             }
           }, (meal: MealNutrition, index: number) => `${index}_${meal.mealName}`)
         }
@@ -256,12 +256,12 @@ export struct MealItem {
         .alignItems(HorizontalAlign.Start)
         .layoutWeight(1)
 
-        Button('闁翠礁楠忕粭?).fontSize(12)
+        Button('编辑?).fontSize(12)
           .width(28).height(28)
           .borderRadius(14)
           .backgroundColor('#E8E8E8')
           .onClick(() => { this.editing = !this.editing; })
-          .accessibilityText('缂傚倹鐗炵欢顐ｎ槮閹邦収鍋?)
+          .accessibilityText('编辑餐食?)
           .accessibilityLevel('yes')
       }
       .width('100%')
@@ -270,7 +270,7 @@ export struct MealItem {
       .borderRadius(8)
       .margin({ bottom: 6 })
 
-      // 闁告劕鎳撴禒鍫㈢磽閺嶎剛甯?闁?閻忕偞娲滈妵?@Local 缂備礁瀚▎銏ゅ礃閸涙潙鍔ラ柣妯垮煐閳?      if (this.editing) {
+      // 编辑模式: 使用 @Local 控制局部展开/折叠状态
         Row({ space: 6 }) {
           Text() { Span($r('app.string.v2_demo_calorie_inline')); Span(`: ${this.meal.calories}`) }.fontSize(12)
           Button('+50').fontSize(11).height(24)

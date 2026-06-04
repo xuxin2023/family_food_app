@@ -1,6 +1,6 @@
 ﻿// PrivacyConsentDialog.ets
-// HarmonyOS 6.1 隐私合规 - 首次启动隐私政策与用户协议确认弹窗
-// 符合华为应用市场审核指南 7.5 条要求
+// HarmonyOS 6.1 闅愮鑼勮 - 棣栨鍚姩闅愮鏀跨瓥涓庣敤鎴峰崗璁‘璁ゅ脊绐?
+// 绗﹀悎鍗庝负搴旂敤甯傚満瀹℃牳鎸囧崡 7.5 鏉¤姹?
 
 import { common } from '@kit.AbilityKit';
 import { bundleManager } from '@kit.AbilityKit';
@@ -8,6 +8,38 @@ import { preferences } from '@kit.ArkData';
 import { ElderModeManager } from 'hsp_service';
 
 const PREF_KEY_PRIVACY_AGREED = 'privacy_agreed_v2';
+
+@ComponentV2
+struct PolicyItemCmp {
+  @Param title: ResourceStr = '';
+  @Param desc: ResourceStr = '';
+  @Event onClick: () => void = () => {};
+
+  build() {
+    Row() {
+      Column() {
+        Text(this.title)
+          .fontSize(15)
+          .fontColor('#333333')
+          .fontWeight(FontWeight.Medium)
+        Text(this.desc)
+          .fontSize(11)
+          .fontColor('#999999')
+          .margin({ top: 2 })
+      }
+      .layoutWeight(1)
+
+      Text($r('app.string.view_detail'))
+        .fontSize(12)
+        .fontColor('#4CAF50')
+    }
+    .width('100%')
+    .padding({ left: 16, right: 16, top: 12, bottom: 12 })
+    .accessibilityText($r('app.string.view_policy'))
+    .accessibilityLevel('yes')
+    .onClick(() => { this.onClick() })
+  }
+}
 
 @ComponentV2
 export struct PrivacyConsentDialog {
@@ -35,18 +67,15 @@ export struct PrivacyConsentDialog {
   build() {
     if (this.isVisible) {
       Column() {
-        // 半透明遮罩
       }
       .width('100%')
       .height('100%')
       .backgroundColor('rgba(0,0,0,0.5)')
       .accessibilityText($r('app.string.close_dialog'))
       .accessibilityLevel('yes')
-      .onClick(() => { /* 禁止点击穿透 */ })
+      .onClick(() => { })
 
-      // 弹窗主体
       Column() {
-        // 标题区
         Text($r('app.string.welcome_title'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
@@ -60,25 +89,24 @@ export struct PrivacyConsentDialog {
           .textAlign(TextAlign.Center)
           .margin({ bottom: 16 })
 
-        // 协议内容摘要
         Column() {
-          this.buildPolicyItem(
-            $r('app.string.privacy_policy') as ResourceStr,
-            $r('app.string.privacy_policy_desc') as ResourceStr,
-            () => this.openUrl('https://www.familyfood.app/privacy')
-          )
+          PolicyItemCmp({
+            title: $r('app.string.privacy_policy') as ResourceStr,
+            desc: $r('app.string.privacy_policy_desc') as ResourceStr,
+            onClick: () => this.openUrl('https://www.familyfood.app/privacy')
+          })
           Divider().color('#EEEEEE').margin({ left: 16, right: 16 })
-          this.buildPolicyItem(
-            $r('app.string.user_agreement') as ResourceStr,
-            $r('app.string.user_agreement_desc') as ResourceStr,
-            () => this.openUrl('https://www.familyfood.app/terms')
-          )
+          PolicyItemCmp({
+            title: $r('app.string.user_agreement') as ResourceStr,
+            desc: $r('app.string.user_agreement_desc') as ResourceStr,
+            onClick: () => this.openUrl('https://www.familyfood.app/terms')
+          })
           Divider().color('#EEEEEE').margin({ left: 16, right: 16 })
-          this.buildPolicyItem(
-            $r('app.string.data_collection_list') as ResourceStr,
-            $r('app.string.data_collection_list_desc') as ResourceStr,
-            () => this.openUrl('https://www.familyfood.app/data-list')
-          )
+          PolicyItemCmp({
+            title: $r('app.string.data_collection_list') as ResourceStr,
+            desc: $r('app.string.data_collection_list_desc') as ResourceStr,
+            onClick: () => this.openUrl('https://www.familyfood.app/data-list')
+          })
         }
         .width('100%')
         .backgroundColor($r('app.color.bg_light'))
@@ -86,22 +114,20 @@ export struct PrivacyConsentDialog {
         .padding({ top: 4, bottom: 4 })
         .margin({ bottom: 20 })
 
-        // 数据使用说明
         Row() {
-          Text('✅ ').fontSize(13)
+          Text('鉁? ').fontSize(13)
           Text($r('app.string.data_local_only')).fontSize(12).fontColor($r('app.color.text_secondary'))
         }
         .width('100%')
         .margin({ bottom: 4 })
 
         Row() {
-          Text('✅ ').fontSize(13)
+          Text('鉁? ').fontSize(13)
           Text($r('app.string.revoke_in_settings')).fontSize(12).fontColor($r('app.color.text_secondary'))
         }
         .width('100%')
         .margin({ bottom: 20 })
 
-        // 按钮区
         Row() {
           Button($r('app.string.disagree_exit'))
             .layoutWeight(1)
@@ -147,39 +173,11 @@ export struct PrivacyConsentDialog {
     }
   }
 
-  @Builder
-  buildPolicyItem(title: ResourceStr, desc: ResourceStr, onClick: () => void) {
-    Row() {
-      Column() {
-        Text(title)
-          .fontSize(15)
-          .fontColor('#333333')
-          .fontWeight(FontWeight.Medium)
-        Text(desc)
-          .fontSize(11)
-          .fontColor('#999999')
-          .margin({ top: 2 })
-      }
-      .layoutWeight(1)
-
-      Text($r('app.string.view_detail'))
-        .fontSize(12)
-        .fontColor('#4CAF50')
-    }
-    .width('100%')
-    .padding({ left: 16, right: 16, top: 12, bottom: 12 })
-    .accessibilityText($r('app.string.view_policy'))
-    .accessibilityLevel('yes')
-    .onClick(onClick)
-  }
-
   private openUrl(url: string): void {
-    // 使用系统浏览器打开隐私政策URL
     try {
       const ctx = getContext(this) as common.UIAbilityContext;
       ctx.openLink(url);
     } catch (_) {
-      // 降级处理
     }
   }
 
@@ -190,11 +188,9 @@ export struct PrivacyConsentDialog {
       await prefs.put(PREF_KEY_PRIVACY_AGREED, true);
       await prefs.flush();
     } catch (_) {
-      // 静默处理
     }
   }
 
-  // 静态方法：检查用户是否已同意隐私政策
   static async isAgreed(context: common.Context): Promise<boolean> {
     try {
       const prefs = await preferences.getPreferences(context, 'app_settings');

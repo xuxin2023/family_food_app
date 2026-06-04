@@ -1,9 +1,9 @@
-// MainTabsPage.ets
-// HarmonyOS 6.1 鎮诞椤电 + 娌夋蹈鍏夋劅 闆嗘垚涓婚〉闈?// V6.3: 鍗囩骇 @ComponentV2 鐘舵€佺鐞?鈥?@Local + @Monitor 鏇夸唬 @Local + @Watch
-// barOverlap + barFloatingStyle 瀹炵幇姣涚幓鐠冩偓娴爮锛屽唴瀹瑰尯寤朵几鑷冲鑸爮鑳屽悗
-// systemMaterialEffect 鑷€傚簲娌夋蹈鍏夋劅鏉愯川锛岀郴缁熻嚜鍔ㄦ牴鎹澶囩畻鍔涜皟鑺傛覆鏌撶簿搴?// V6.2: 鎳掑姞杞戒紭鍖?鈥?浠呭湪棣栨璁块棶鏃舵瀯寤?Tab 鍐呭锛屽噺灏戝垵濮嬫覆鏌撳紑閿€
+﻿// MainTabsPage.ets
+// HarmonyOS 6.1 悬浮页签 + 沉浸光感 集成主页面
+// barOverlap + barFloatingStyle 实现毛玻璃悬浮栏，内容区延伸至导航栏背后
+// systemMaterialEffect 自适应沉浸光感材质，系统自动根据设备算力调节渲染精度
 //
-// Tab 缁撴瀯: 棣栭〉 | 楗 | AI | 绀惧尯 | 鎴戠殑
+// Tab 结构: 首页 | 饮食 | AI | 社区 | 我的
 
 import { safePushUrl, COLORS, HILOG_DOMAIN_DEFAULT, NavigationManager, PageResourceTracker, createPageTracker } from 'hsp_core';
 import { AppState } from '../AppState';
@@ -115,7 +115,7 @@ struct MainTabsPage {
           index: this.currentIndex
         }) {
       // ================================================================
-      // Tab 0: 棣栭〉 鈥?濮嬬粓鍔犺浇
+      // Tab 0: 首页 - 始终加载
       // ================================================================
       TabContent() {
         this.HomePageContent()

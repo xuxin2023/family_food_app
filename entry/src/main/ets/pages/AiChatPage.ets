@@ -1,5 +1,5 @@
-// AiChatPage.ets
-// AI 钀ュ吇甯堝璇濋〉闈?鈥?鏀寔澶氳疆瀵硅瘽銆佹垚鍛樼粦瀹氥€佸揩鎹锋彁闂?
+﻿// AiChatPage.ets
+// AI 营养师对话页面 - V4: 端侧推理 + 云端增强双通道
 import {
   safeBack, FamilyProfile, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, HILOG_DOMAIN_DEFAULT, ChatRole, ChatMessage, MessageStatus, QUICK_QUESTIONS, generateDynamicQuickQuestions, generateMessageId, PerformanceMonitor, PageResourceTracker, createPageTracker
 } from 'hsp_core';
@@ -68,7 +68,7 @@ struct AiChatPage {
         this.dynamicQuickQuestions = QUICK_QUESTIONS;
       }
 
-      // 浠庢寔涔呭寲瀛樺偍鍔犺浇璇ユ垚鍛樼殑鍘嗗彶娑堟伅
+      // 从持久化存储加载该成员的历史消息
       const savedJson = await this.chatHistoryService.getMessages(this.selectedMemberId);
       let savedMessages: ChatMessage[] = [];
       try {
@@ -105,7 +105,7 @@ struct AiChatPage {
     this.tracker.onDisappear()
     PerformanceMonitor.getInstance().pageLeave('AiChatPage');
     this.componentActive = false
-    // 鎸佷箙鍖栦繚瀛樺綋鍓嶆垚鍛樼殑瀵硅瘽
+    // 持久化保存当前成员的对话
     if (this.selectedMemberId.length > 0 && this.messages.length > 0) {
       this.chatHistoryService.saveMessages(this.selectedMemberId, JSON.stringify(this.messages));
     }
@@ -125,7 +125,7 @@ struct AiChatPage {
       Column() {
       // ===== 椤堕儴瀵艰埅鏍?=====
       Row() {
-        // 杩斿洖鎸夐挳
+        // 返回按钮
         BackButton({ fontSize: 28, fontColor: COLORS.TEXT_PRIMARY })
           .onClick(() => safeBack())
           .accessibilityText($r('app.string.back_arrow'))
@@ -147,7 +147,7 @@ struct AiChatPage {
         .layoutWeight(1)
         .alignItems(HorizontalAlign.Center)
 
-        // 鍒囨崲鎴愬憳鎸夐挳
+        // 切换成员按钮
         if (this.familyMembers.length > 1) {
           Text($r('app.string.ai_chat_switch'))
             .fontSize(FONT_SIZE.BODY)
@@ -169,7 +169,7 @@ struct AiChatPage {
             this.QuickQuestionsPanel()
           }
 
-          // 娑堟伅鍒楄〃
+          // 消息列表
           ForEach(this.messages, (msg: ChatMessage) => {
             this.MessageBubble(msg)
           }, (msg: ChatMessage) => msg.id)
@@ -271,7 +271,7 @@ struct AiChatPage {
   MessageBubble(msg: ChatMessage) {
     Row() {
       if (msg.role === ChatRole.USER) {
-        // 鍙充晶锛氱敤鎴锋秷鎭?        Blank()
+        // 右侧：用户消息       Blank()
           .layoutWeight(1)
 
         Column() {
@@ -303,8 +303,8 @@ struct AiChatPage {
           bottomRight: RADIUS.SM
         })
       } else {
-        // 宸︿晶锛欰I 娑堟伅
-        // AI 澶村儚
+        // 左侧：AI 消息
+        // AI 头像
         Circle()
           .width(32)
           .height(32)
@@ -471,7 +471,7 @@ struct AiChatPage {
         this.messages = []
         this.showQuickQuestions = true
 
-        // 鍔犺浇鏂版垚鍛樼殑鍘嗗彶娑堟伅
+        // 加载新成员的历史消息
         try {
           const savedJson = await this.chatHistoryService.getMessages(member.memberId);
           const savedMessages: ChatMessage[] = JSON.parse(savedJson);

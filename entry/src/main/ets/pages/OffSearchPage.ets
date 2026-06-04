@@ -1,8 +1,8 @@
-// OffSearchPage.ets
+﻿// OffSearchPage.ets
 // Open Food Facts 椋熷搧鎼滅储椤?鈥?鏀寔鎸夊悕绉版悳绱㈠叏鐞冮鍝佹暟鎹簱
 
 import {
-  FoodLabel, safeBack, safePushUrl, ROUTE_REPORT_PAGE, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, HILOG_DOMAIN_DEFAULT, Debouncer, ImageCache, FoodSearchDataSource, PageResourceTracker, createPageTracker
+// Open Food Facts 食品搜索页面 - V5: 知识库本地搜索
 } from 'hsp_core';
 import { OpenFoodFactsService, OnlineLookupResult } from 'hsp_service';
 import { AppState } from '../AppState';
@@ -378,7 +378,7 @@ struct OffSearchPage {
                     .padding({ left: 12, right: 12 })
                     .margin({ left: 8 })
                     .onClick(() => { this.loadMore() })
-                    .accessibilityText('閲嶈瘯鍔犺浇')
+                    .accessibilityText('重试加载')
                     .accessibilityLevel('yes')
                 } else if (!this.canLoadMore && this.allResults.length > 0) {
                   Text($r('app.string.off_search_all_loaded'))

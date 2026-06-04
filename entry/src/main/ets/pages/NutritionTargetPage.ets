@@ -122,7 +122,7 @@ struct NutritionTargetPage {
             .borderRadius(24)
             .enabled(!this.isSaving)
             .onClick(() => { this.onSave() })
-            .accessibilityText('淇濆瓨')
+            .accessibilityText('重置为默认')
             .accessibilityLevel('yes')
           Button($r('app.string.reset_to_default'))
             .width('45%')

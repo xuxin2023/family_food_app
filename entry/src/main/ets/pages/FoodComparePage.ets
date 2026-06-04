@@ -1,5 +1,5 @@
 // FoodComparePage.ets
-// 椋熷搧瀵规瘮椤?鈥?涓や釜椋熷搧鐨勫苟鎺掕惀鍏诲姣旇鍥?
+// 食品对比页面 - V5: 营养对比
 import { FoodLabel, NutritionPer100g, COLORS, RADIUS, HILOG_DOMAIN_DEFAULT, ToastHelper, NutritionSnapshot, resourceToStr, PageResourceTracker, createPageTracker, LazyDataSource } from 'hsp_core';
 import { FoodCompareService, FoodCompareResult, NutritionDelta } from 'hsp_service';
 import { BackButton } from '../components/BackButton';
@@ -147,7 +147,7 @@ struct FoodComparePage {
           .backgroundColor(COLORS.PRIMARY)
           .fontColor(COLORS.WHITE)
           .borderRadius(RADIUS.LG)
-          .accessibilityText('寮€濮嬪姣?)
+          .accessibilityText('开始对比
           .accessibilityLevel('yes')
       }
     }

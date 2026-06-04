@@ -15,6 +15,7 @@ import { fileIo } from '@kit.CoreFileKit';
 import { picker } from '@kit.CoreFileKit';
 import { util } from '@kit.ArkTS';
 import { UpdateChecker, UpdateInfo, AuthService, UserDataDeletionService } from 'hsp_service';
+import { SettingsItemRow } from '../components/SettingsItemRow';
 
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const TAG = 'SettingsPage';
@@ -138,51 +139,51 @@ struct SettingsPage {
                 .fontWeight(FontWeight.Bold)
                 .margin({ bottom: 12 })
 
-              this.buildSettingsItem($r('app.string.settings_user_agreement'), $r('app.string.settings_user_agreement_desc'), () => {
+              SettingsItemRow({ title: $r('app.string.settings_user_agreement'), subtitle: $r('app.string.settings_user_agreement_desc'), onTap: () => {
                 this.vm.showAgreementDetail = !this.vm.showAgreementDetail
                 this.vm.showPrivacyDetail = false
-              })
+              }})
 
-              this.buildSettingsItem($r('app.string.settings_feedback'), $r('app.string.settings_feedback_desc'), () => {
+              SettingsItemRow({ title: $r('app.string.settings_feedback'), subtitle: $r('app.string.settings_feedback_desc'), onTap: () => {
                 safePushUrl(ROUTE_FEEDBACK_PAGE)
-              })
+              }})
 
-              this.buildSettingsItem($r('app.string.settings_check_update'), $r('app.string.settings_check_update_desc', DATA_VERSION.APP_VERSION), () => {
+              SettingsItemRow({ title: $r('app.string.settings_check_update'), subtitle: $r('app.string.settings_check_update_desc', DATA_VERSION.APP_VERSION), onTap: () => {
                 this.checkForUpdate()
-              })
+              }})
 
-              this.buildSettingsItem($r('app.string.settings_privacy_policy'), $r('app.string.settings_privacy_policy_desc'), () => {
+              SettingsItemRow({ title: $r('app.string.settings_privacy_policy'), subtitle: $r('app.string.settings_privacy_policy_desc'), onTap: () => {
                 this.vm.showPrivacyDetail = !this.vm.showPrivacyDetail
                 this.vm.showAgreementDetail = false
-              })
+              }})
 
-              this.buildSettingsItem($r('app.string.settings_cloud_sync'), $r('app.string.settings_cloud_sync_desc'), () => {
+              SettingsItemRow({ title: $r('app.string.settings_cloud_sync'), subtitle: $r('app.string.settings_cloud_sync_desc'), onTap: () => {
                 safePushUrl('pages/CloudSyncSettingsPage')
-              })
+              }})
 
-              this.buildSettingsItem($r('app.string.settings_nutrition_target'), $r('app.string.settings_nutrition_target_desc'), () => {
+              SettingsItemRow({ title: $r('app.string.settings_nutrition_target'), subtitle: $r('app.string.settings_nutrition_target_desc'), onTap: () => {
                 safePushUrl(ROUTE_NUTRITION_TARGET_PAGE)
-              })
+              }})
 
-              this.buildSettingsItem($r('app.string.settings_nutrition_knowledge'), $r('app.string.settings_nutrition_knowledge_desc'), () => {
+              SettingsItemRow({ title: $r('app.string.settings_nutrition_knowledge'), subtitle: $r('app.string.settings_nutrition_knowledge_desc'), onTap: () => {
                 safePushUrl(ROUTE_NUTRITION_KNOWLEDGE_PAGE)
-              })
+              }})
 
-              this.buildSettingsItem($r('app.string.settings_meal_plan'), $r('app.string.settings_meal_plan_desc'), () => {
+              SettingsItemRow({ title: $r('app.string.settings_meal_plan'), subtitle: $r('app.string.settings_meal_plan_desc'), onTap: () => {
                 safePushUrl(ROUTE_MEAL_PLAN_PAGE)
-              })
+              }})
 
-              this.buildSettingsItem($r('app.string.settings_shopping_list'), $r('app.string.settings_shopping_list_desc'), () => {
+              SettingsItemRow({ title: $r('app.string.settings_shopping_list'), subtitle: $r('app.string.settings_shopping_list_desc'), onTap: () => {
                 safePushUrl(ROUTE_SHOPPING_LIST_PAGE)
-              })
+              }})
 
-              this.buildSettingsItem($r('app.string.settings_reminder_rule'), $r('app.string.settings_reminder_rule_desc'), () => {
+              SettingsItemRow({ title: $r('app.string.settings_reminder_rule'), subtitle: $r('app.string.settings_reminder_rule_desc'), onTap: () => {
                 safePushUrl(ROUTE_REMINDER_RULE_PAGE)
-              })
+              }})
 
-              this.buildSettingsItem($r('app.string.settings_locale'), $r('app.string.settings_locale_desc'), () => {
+              SettingsItemRow({ title: $r('app.string.settings_locale'), subtitle: $r('app.string.settings_locale_desc'), onTap: () => {
                 this.vm.showLocalePicker = true
-              })
+              }})
 
               // 暗黑模式开关
               Row() {
@@ -370,33 +371,33 @@ struct SettingsPage {
                 .fontWeight(FontWeight.Bold)
                 .margin({ bottom: 12 })
 
-              this.buildSettingsItem($r('app.string.settings_export_data'), $r('app.string.settings_export_data_desc'), () => {
+              SettingsItemRow({ title: $r('app.string.settings_export_data'), subtitle: $r('app.string.settings_export_data_desc'), onTap: () => {
                 this.exportData()
-              })
+              }})
 
-              this.buildSettingsItem($r('app.string.settings_import_data'), $r('app.string.settings_import_data_desc'), () => {
+              SettingsItemRow({ title: $r('app.string.settings_import_data'), subtitle: $r('app.string.settings_import_data_desc'), onTap: () => {
                 this.importData()
-              })
+              }})
 
-              this.buildSettingsItem($r('app.string.settings_data_backup'), $r('app.string.settings_data_backup_desc'), () => {
+              SettingsItemRow({ title: $r('app.string.settings_data_backup'), subtitle: $r('app.string.settings_data_backup_desc'), onTap: () => {
                 this.backupData()
-              })
+              }})
 
-              this.buildSettingsItem($r('app.string.settings_data_restore'), $r('app.string.settings_data_restore_desc'), () => {
+              SettingsItemRow({ title: $r('app.string.settings_data_restore'), subtitle: $r('app.string.settings_data_restore_desc'), onTap: () => {
                 this.restoreData()
-              })
+              }})
 
-              this.buildSettingsItem($r('app.string.settings_clear_data'), $r('app.string.settings_clear_data_desc'), () => {
+              SettingsItemRow({ title: $r('app.string.settings_clear_data'), subtitle: $r('app.string.settings_clear_data_desc'), onTap: () => {
                 this.confirmClearData()
-              })
+              }})
 
-              this.buildSettingsItem($r('app.string.settings_delete_account'), $r('app.string.settings_delete_account_desc'), () => {
+              SettingsItemRow({ title: $r('app.string.settings_delete_account'), subtitle: $r('app.string.settings_delete_account_desc'), onTap: () => {
                 this.vm.showDeleteConfirm = true
-              })
+              }})
 
-              this.buildSettingsItem($r('app.string.settings_collection_list'), $r('app.string.settings_collection_list_desc'), () => {
+              SettingsItemRow({ title: $r('app.string.settings_collection_list'), subtitle: $r('app.string.settings_collection_list_desc'), onTap: () => {
                 this.vm.showCollectionDetail = !this.vm.showCollectionDetail
-              })
+              }})
 
               if (this.vm.showDeleteConfirm) {
                 Column() {
@@ -617,118 +618,7 @@ struct SettingsPage {
     ToastHelper.show(this.getUIContext(), $r('app.string.settings_status_saved'))
   }
 
-  /**
-   * 构建设置项行
-   */
-  @Builder
-  buildSettingsItem(title: ResourceStr, subtitle: ResourceStr, onTap: () => void) {
-    Row() {
-      Column() {
-        Text(title)
-          .fontSize(15)
-          .fontColor(COLORS.TEXT_PRIMARY)
-          .lineHeight(22)
-        Text(subtitle)
-          .fontSize(12)
-          .fontColor(COLORS.TEXT_TERTIARY)
-          .lineHeight(18)
-          .margin({ top: 2 })
-      }
-      .alignItems(HorizontalAlign.Start)
-      .layoutWeight(1)
-
-      Text('›')
-        .fontSize(20)
-        .fontColor(COLORS.TEXT_GRAY_BDBD)
-        .margin({ left: 8 })
-    }
-    .width('100%')
-    .padding({ top: 12, bottom: 12 })
-    .borderRadius(8)
-    .accessibilityRole('listItem')
-    .accessibilityText(`${title}，${subtitle}`)
-    .accessibilityLevel('yes')
-    .onClick(onTap)
-  }
-
-  private async exportData(): Promise<void> {
-    if (this.vm.isExporting) return;
-    this.vm.isExporting = true;
-    try {
-      const ctx = AppStorage.get<common.Context>('appContext');
-      if (!ctx) {
-        ToastHelper.show(this.getUIContext(), $r('app.string.settings_export_failed_no_ctx'));
-        return;
-      }
-      const jsonStr = await DataPortability.exportAllData(ctx);
-      if (jsonStr.length === 0) {
-        ToastHelper.show(this.getUIContext(), $r('app.string.settings_export_failed_empty'));
-        return;
-      }
-      const fileName = `family_food_export_${Date.now()}.json`;
-      const filesDir = ctx.filesDir;
-      const filePath = `${filesDir}/${fileName}`;
-      const file = fileIo.openSync(filePath, fileIo.OpenMode.CREATE | fileIo.OpenMode.TRUNC | fileIo.OpenMode.WRITE_ONLY);
-      fileIo.writeSync(file.fd, jsonStr);
-      fileIo.closeSync(file);
-      ToastHelper.show(this.getUIContext(), $r('app.string.settings_export_success', fileName));
-    } catch (error) {
-      hilog.warn(DOMAIN_ZERO, 'SettingsPage', 'Export failed: ' + JSON.stringify(error));
-      ToastHelper.show(this.getUIContext(), $r('app.string.settings_export_failed_retry'));
-    } finally {
-      this.vm.isExporting = false;
-    }
-  }
-
-  private async importData(): Promise<void> {
-    if (this.vm.isImporting) return;
-    this.vm.isImporting = true;
-    try {
-      const ctx = AppStorage.get<common.Context>('appContext');
-      if (!ctx) {
-        ToastHelper.show(this.getUIContext(), $r('app.string.settings_import_failed_no_ctx'));
-        return;
-      }
-      const documentSaveOptions = new picker.DocumentSaveOptions();
-      documentSaveOptions.newFileNames = ['import.json'];
-      const documentViewPicker = new picker.DocumentViewPicker();
-      const uris = await documentViewPicker.save(documentSaveOptions);
-      if (!uris || uris.length === 0) {
-        ToastHelper.show(this.getUIContext(), $r('app.string.settings_no_file_selected'));
-        return;
-      }
-      const uri = uris[0];
-      const file = fileIo.openSync(uri, fileIo.OpenMode.READ_ONLY);
-      const stat = fileIo.statSync(uri);
-      const buffer = new ArrayBuffer(stat.size);
-      fileIo.readSync(file.fd, buffer);
-      fileIo.closeSync(file);
-      const textDecoder = util.TextDecoder.create('utf-8');
-      const decoded: string = textDecoder.decodeWithStream(new Uint8Array(buffer)) as string;
-      const jsonStr: string = decoded;
-      const result: ImportResult = await DataPortability.importData(jsonStr as string, ctx);
-      if (result.success) {
-        const entries: IterableIterator<[string, number]> = result.importedCounts.entries();
-        const parts: string[] = [];
-        let entry = entries.next();
-        while (!entry.done) {
-          const pair = entry.value;
-          parts.push(`${String(pair[0])}:${String(pair[1])}`);
-          entry = entries.next();
-        }
-        const counts: string = parts.join(', ');
-        ToastHelper.show(this.getUIContext(), $r('app.string.settings_import_success', counts));
-        this.appState.cache.clearAll();
-      } else {
-        ToastHelper.show(this.getUIContext(), $r('app.string.settings_import_failed', result.errors.join('; ')));
-      }
-    } catch (error) {
-      hilog.warn(DOMAIN_ZERO, 'SettingsPage', 'Import failed: ' + JSON.stringify(error));
-      ToastHelper.show(this.getUIContext(), $r('app.string.settings_import_failed_retry'));
-    } finally {
-      this.vm.isImporting = false;
-    }
-  }
+  // ==================== 数据备份/恢复 ====================
 
   private async backupData(): Promise<void> {
     try {

@@ -412,6 +412,7 @@ struct OffSearchPage {
     .height('100%')
     .backgroundColor(COLORS.BG_PAGE)
   }
+}
 
 @ComponentV2
 struct FoodSearchItemCmp {
@@ -490,4 +491,3 @@ struct FoodSearchItemCmp {
   }
 }
 
-}

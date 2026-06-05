@@ -95,7 +95,7 @@ struct ChildHealthPage {
                   TextInput({ text: this.todaySnackCalories, placeholder: '0' })
                     .height(40)
                     .onChange((value: string) => { this.todaySnackCalories = value })
-                    .accessibilityText('零食卡路里)
+                    .accessibilityText('零食卡路里')
                     .accessibilityLevel('yes')
                 }
                 .layoutWeight(1)
@@ -109,7 +109,7 @@ struct ChildHealthPage {
                   TextInput({ text: this.todaySnackSugarG, placeholder: '0' })
                     .height(40)
                     .onChange((value: string) => { this.todaySnackSugarG = value })
-                    .accessibilityText('零食糖分(g')
+                    .accessibilityText('零食糖分(g)')
                     .accessibilityLevel('yes')
                 }
                 .layoutWeight(1)
@@ -124,7 +124,7 @@ struct ChildHealthPage {
                 .fontColor(COLORS.WHITE)
                 .borderRadius(22)
                 .onClick(() => { this.runAssessment() })
-                .accessibilityText('开始评估)
+                .accessibilityText('开始评估')
                 .accessibilityLevel('yes')
             }
             .width('92%')

@@ -448,7 +448,7 @@ struct OffSearchPage {
             .fontSize(10)
             .fontColor(COLORS.TEXT_TERTIARY)
             .margin({ left: 4, right: 4 })
-          Text('绯?' + `${food.nutrition.sugar}g`)
+          Text('糖' + `${food.nutrition.sugar}g`)
             .fontSize(10)
             .fontColor(COLORS.TEXT_SECONDARY)
         }

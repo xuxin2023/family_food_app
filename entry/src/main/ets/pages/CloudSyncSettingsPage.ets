@@ -266,7 +266,7 @@ struct CloudSyncSettingsPage {
                     this.showStrategyPicker = false
                     this.refreshAllState()
                   })
-                  .accessibilityText('确认同步策略)
+                  .accessibilityText('确认同步策略')
                   .accessibilityLevel('yes')
               }
               .padding(8)
@@ -323,7 +323,7 @@ struct CloudSyncSettingsPage {
                     this.showConflictPicker = false
                     this.refreshAllState()
                   })
-                  .accessibilityText('确认冲突策略)
+                  .accessibilityText('确认冲突策略')
                   .accessibilityLevel('yes')
               }
               .padding(8)

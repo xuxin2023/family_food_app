@@ -7,8 +7,7 @@ import {
 } from 'hsp_core';
 import { promptAction, curves } from '@kit.ArkUI';
 import { BackButton } from '../components/BackButton';
-import { ErrorBoundary } from '../components/ErrorBoundary';
-import { common } from '@kit.AbilityKit';
+
 import { AppState } from '../AppState';
 import { NutriScoreBadge, AllergenHighlightList, PaywallDialog, AdditiveTrafficLightList, AdditiveClassifier } from 'feature_scan';
 import { NovaGroupBadge, EcoScoreBadge, EcoScore, RiskAssessmentPanel, ShareCardGenerator, MemberShareInfo, ShareImageParams, ComprehensiveRatingPanel } from 'feature_report';
@@ -47,7 +46,7 @@ struct ReportPage {
   @Local showAlternativesLocked: boolean = false
   @Local currentBreakpoint: string = 'md'
   @Local interactionResult: InteractionAssessmentResult | null = null
-  @Local hasPageError: boolean = false
+
 
   private appState: AppState = AppState.getInstance()
   private credibilityResult: CredibilityResult = new CredibilityResult()

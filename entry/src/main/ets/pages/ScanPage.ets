@@ -33,7 +33,7 @@ import { BusinessError } from '@kit.BasicServicesKit';
 import { AppState } from '../AppState';
 import { PermissionGuideDialog, NutriScoreBadge, PaywallDialog } from 'feature_scan';
 import { BackButton } from '../components/BackButton';
-import { ErrorBoundary } from '../components/ErrorBoundary';
+
 import { ScanResultCard } from '../components/ScanResultCard';
 import { ScanEditPanel } from '../components/ScanEditPanel';
 import { ScanModeSelector } from '../components/ScanModeSelector';
@@ -122,7 +122,7 @@ struct ScanPage {
   @Local vm: ScanViewModel = new ScanViewModel()
   @Local showDeepAnalysis: boolean = false
   @Local showBatchScan: boolean = false
-  @Local hasPageError: boolean = false
+
   private memberId: string = ''
   private appState: AppState = AppState.getInstance()
   private foodInputService = this.appState.foodInput

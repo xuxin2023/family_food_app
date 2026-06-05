@@ -354,7 +354,7 @@ struct OffSearchPage {
           List() {
             LazyForEach(this.searchDS, (food: FoodLabel) => {
               ListItem() {
-                this.FoodSearchItem(food)
+                FoodSearchItemCmp({ food: food, onSelect: (f: FoodLabel) => { this.onSelectFood(f) } })
               }
             }, (food: FoodLabel) => `${food.foodId}`)
 
@@ -413,19 +413,23 @@ struct OffSearchPage {
     .backgroundColor(COLORS.BG_PAGE)
   }
 
-  @Builder
-  FoodSearchItem(food: FoodLabel) {
+@ComponentV2
+struct FoodSearchItemCmp {
+  @Param food: FoodLabel = new FoodLabel();
+  @Event onSelect: (food: FoodLabel) => void = (_f: FoodLabel) => {};
+
+  build() {
     Row() {
       Column() {
-        Text(food.foodName)
+        Text(this.food.foodName)
           .fontSize(FONT_SIZE.BODY)
           .fontWeight(FONT_WEIGHT.MEDIUM)
           .fontColor(COLORS.TEXT_PRIMARY)
           .maxLines(2)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
 
-        if (food.manufacturer.length > 0) {
-          Text(food.manufacturer)
+        if (this.food.manufacturer.length > 0) {
+          Text(this.food.manufacturer)
             .fontSize(FONT_SIZE.SMALL)
             .fontColor(COLORS.TEXT_TERTIARY)
             .maxLines(1)
@@ -434,28 +438,28 @@ struct OffSearchPage {
         }
 
         Row() {
-          Text(`${Math.round(food.nutrition.calories)}kcal`)
+          Text(`${Math.round(this.food.nutrition.calories)}kcal`)
             .fontSize(10)
             .fontColor(COLORS.TEXT_SECONDARY)
-          Text('路')
+          Text('·')
             .fontSize(10)
             .fontColor(COLORS.TEXT_TERTIARY)
             .margin({ left: 4, right: 4 })
-          Text('钠' + `${Math.round(food.nutrition.sodium)}mg`)
+          Text('钠' + `${Math.round(this.food.nutrition.sodium)}mg`)
             .fontSize(10)
             .fontColor(COLORS.TEXT_SECONDARY)
-          Text('路')
+          Text('·')
             .fontSize(10)
             .fontColor(COLORS.TEXT_TERTIARY)
             .margin({ left: 4, right: 4 })
-          Text('糖' + `${food.nutrition.sugar}g`)
+          Text('糖' + `${this.food.nutrition.sugar}g`)
             .fontSize(10)
             .fontColor(COLORS.TEXT_SECONDARY)
         }
         .margin({ top: 4 })
 
-        if (food.source.length > 0) {
-          Text(food.source)
+        if (this.food.source.length > 0) {
+          Text(this.food.source)
             .fontSize(9)
             .fontColor(COLORS.TEXT_TERTIARY)
             .backgroundColor(COLORS.BG_LIGHTER_GRAY_F8)
@@ -468,8 +472,8 @@ struct OffSearchPage {
       .layoutWeight(1)
 
       Column() {
-        if (food.barcode.length > 0) {
-          Text(food.barcode)
+        if (this.food.barcode.length > 0) {
+          Text(this.food.barcode)
             .fontSize(9)
             .fontColor(COLORS.TEXT_TERTIARY)
         }
@@ -480,9 +484,10 @@ struct OffSearchPage {
     .width('100%')
     .padding({ left: 16, right: 16, top: 12, bottom: 12 })
     .backgroundColor(COLORS.WHITE)
-    .onClick(() => { this.onSelectFood(food) })
-    .accessibilityText(food.foodName)
+    .onClick(() => { this.onSelect(this.food) })
+    .accessibilityText(this.food.foodName)
     .accessibilityLevel('yes')
   }
+}
 
 }

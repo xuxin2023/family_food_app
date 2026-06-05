@@ -323,7 +323,7 @@ struct ReminderRulePage {
       .fontColor(this.editPriority === priority ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
       .margin({ right: 6, top: 4 })
       .onClick(() => { this.editPriority = priority })
-      .accessibilityText(label )
+      .accessibilityText(typeof label === 'string' ? label : '')
       .accessibilityLevel('yes')
   }
 

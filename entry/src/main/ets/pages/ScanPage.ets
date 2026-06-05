@@ -726,7 +726,7 @@ struct ScanPage {
   @Builder
   RecentScanBar() {
     Column() {
-      Text() { Span('⏱ '); Span($r('app.string.scan_recent_scans')) }
+      Text($r('app.string.scan_recent_scans'))
         .fontSize(FONT_SIZE.SMALL)
         .fontColor(COLORS.TEXT_SECONDARY)
         .margin({ bottom: SPACING.SM })

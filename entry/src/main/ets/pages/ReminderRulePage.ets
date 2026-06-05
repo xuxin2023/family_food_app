@@ -31,6 +31,7 @@ struct ReminderRulePage {
 
   private repo: ReminderRuleRepository = new ReminderRuleRepository()
   private reminderService: ReminderService = ReminderService.getInstance()
+  private appState: AppState = AppState.getInstance()
 
   private tracker: PageResourceTracker = createPageTracker('ReminderRulePage')
   async aboutToAppear() {
@@ -308,7 +309,7 @@ struct ReminderRulePage {
       .fontColor(this.editType === type ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
       .margin({ right: 6, top: 4 })
       .onClick(() => { this.editType = type })
-      .accessibilityText(label )
+      .accessibilityText(typeof label === 'string' ? label : '')
       .accessibilityLevel('yes')
   }
 

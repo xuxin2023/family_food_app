@@ -391,12 +391,7 @@ struct ScanPage {
 
   build() {
     Column() {
-      GridRow({
-        columns: { sm: 4, md: 8, lg: 12 },
-        breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
-      }) {
-        GridCol({ span: { sm: 4, md: 8, lg: this.vm.showEditPanel ? 8 : 12 }, offset: { sm: 0, md: 0, lg: 0 } }) {
-          Scroll() {
+      Scroll() {
         Column() {
           // ---- 顶部导航栏 ----
           Row() {
@@ -670,16 +665,11 @@ struct ScanPage {
       .width('100%')
       .height('100%')
 
-        if (this.vm.currentBreakpoint === 'lg' && this.vm.showEditPanel) {
-          GridCol({ span: { sm: 0, md: 0, lg: 4 }, offset: { sm: 0, md: 0, lg: 0 } }) {
-            Scroll() {
-              ScanEditPanel({ editPanel: this.vm.editPanel })
-            }
-            .width('100%')
-            .height('100%')
-            .padding({ left: 8, right: 8, top: 16 })
-          }
+      if (this.vm.currentBreakpoint === 'lg' && this.vm.showEditPanel) {
+        Scroll() {
+          ScanEditPanel({ editPanel: this.vm.editPanel })
         }
+        .width('100%')
       }
       .width('100%')
       .height('100%')
@@ -1130,5 +1120,3 @@ struct ScanPage {
       hilog.warn(DOMAIN_ZERO, 'ScanPage', 'viewReport pushUrl failed');
     }
   }
-
-}

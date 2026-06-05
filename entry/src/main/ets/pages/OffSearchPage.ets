@@ -1,8 +1,10 @@
 ﻿// OffSearchPage.ets
-// Open Food Facts 椋熷搧鎼滅储椤?鈥?鏀寔鎸夊悕绉版悳绱㈠叏鐞冮鍝佹暟鎹簱
+// Open Food Facts 食品搜索页面 - V5: 知识库本地搜索
 
 import {
-// Open Food Facts 食品搜索页面 - V5: 知识库本地搜索
+  FoodLabel, safeBack, safePushUrl, ROUTE_REPORT_PAGE, COLORS, RADIUS, SPACING,
+  FONT_SIZE, FONT_WEIGHT, HILOG_DOMAIN_DEFAULT, Debouncer, ImageCache, FoodSearchDataSource,
+  PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { OpenFoodFactsService, OnlineLookupResult } from 'hsp_service';
 import { AppState } from '../AppState';
@@ -439,7 +441,7 @@ struct OffSearchPage {
             .fontSize(10)
             .fontColor(COLORS.TEXT_TERTIARY)
             .margin({ left: 4, right: 4 })
-          Text('閽?' + `${Math.round(food.nutrition.sodium)}mg`)
+          Text('钠' + `${Math.round(food.nutrition.sodium)}mg`)
             .fontSize(10)
             .fontColor(COLORS.TEXT_SECONDARY)
           Text('路')

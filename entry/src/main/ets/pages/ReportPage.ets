@@ -251,9 +251,7 @@ struct ReportPage {
           levelText: this.selectedRec.level as string,
           levelBgColor: getLevelColorValue(this.selectedRec.levelColor)
         })
-        .accessibilityRole('meter')
-        .accessibilityValue({ min: 0, max: 100, now: this.nutriScore })
-        .accessibilityText(`营养评分${this.nutriScore}分`)
+
 
         // Nova 加工分级 + EcoScore 生态评级
         Column({ space: 4 }) {

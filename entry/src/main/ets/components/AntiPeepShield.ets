@@ -142,6 +142,6 @@ export struct AntiPeepShield {
 
     hilog.info(DOMAIN_ZERO, TAG,
       'Peep state changed: %{public}d, blur=%{public}f, overlay=%{public}s',
-      newState, this.blurRadius, String(this.overlayVisible));
+      newState, this.blurRadius, this.overlayVisible.toString());
   }
 }

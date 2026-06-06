@@ -4,7 +4,7 @@
 import { TestSuite, TestCase, expect } from '@ohos/hypium';
 
 export default function assetKeyManagerTest(): TestSuite {
-  const suite = new TestSuite('AssetKeyManager');
+  const suite: TestSuite = new TestSuite(
 
   suite.addTest(new TestCase('loadApiKey_shouldReturnEmptyForMissingKey', () => {
     const result: string[] = [];

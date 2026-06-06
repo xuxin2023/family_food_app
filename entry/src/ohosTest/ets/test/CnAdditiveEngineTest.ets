@@ -6,7 +6,7 @@ import {
 export default function cnAdditiveEngineTest() {
   describe('CnAdditiveEngineTest', () => {
     it('should_assess_cn_additive_with_cns_code', 0, () => {
-      const engine = new AdditiveSafetyEngine();
+      const engine: AdditiveSafetyEngine = new AdditiveSafetyEngine()
       const result = engine.assessByCnsCode('01.101');
       if (result !== null) {
         expect(result.cnsCode).assertEqual('01.101');
@@ -15,7 +15,7 @@ export default function cnAdditiveEngineTest() {
     });
 
     it('should_classify_avoid_level_additives', 0, () => {
-      const engine = new AdditiveSafetyEngine();
+      const engine: AdditiveSafetyEngine = new AdditiveSafetyEngine()
       const assessment = engine.assessByENumber('E621');
       if (assessment !== null) {
         const isCautionOrAvoid = assessment.riskLevel === AdditiveRiskLevel.CAUTION ||
@@ -26,8 +26,8 @@ export default function cnAdditiveEngineTest() {
     });
 
     it('should_generate_food_additive_report', 0, () => {
-      const engine = new AdditiveSafetyEngine();
-      const label = new FoodLabel();
+      const engine: AdditiveSafetyEngine = new AdditiveSafetyEngine()
+      const label: FoodLabel = new FoodLabel()
       label.foodName = '测试食品';
       label.additives = ['E300', 'E621'];
       const report = engine.assessFood(label);

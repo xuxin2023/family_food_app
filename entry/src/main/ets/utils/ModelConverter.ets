@@ -57,13 +57,13 @@ export function toFoodAdapterInputs(
   budget: DailyBudget,
   todayIntake?: TodayIntakeInput
 ): FoodAdapterInputs {
-  const memberInput = new FamilyMemberSimpleInput();
+  const memberInput: FamilyMemberSimpleInput = new FamilyMemberSimpleInput()
   memberInput.id = member.memberId;
   memberInput.name = member.nickname;
   memberInput.role = member.ageGroup;
   memberInput.age = estimateAgeFromGroup(member.ageGroup);
   memberInput.healthGoal = member.healthGoals.length > 0 ? member.healthGoals[0] : '无特殊';
-  const memberBudget = new DailyBudgetInput();
+  const memberBudget: DailyBudgetInput = new DailyBudgetInput()
   memberBudget.sodium_mg = member.dailyBudget.sodiumBudget;
   memberBudget.sugar_g = member.dailyBudget.sugarBudget;
   memberBudget.energy_kcal = member.dailyBudget.calorieBudget;
@@ -73,7 +73,7 @@ export function toFoodAdapterInputs(
   memberInput.allergenRedline = member.allergens;
   memberInput.dislikedAdditives = [];
 
-  const foodInput = new FoodNutritionInput();
+  const foodInput: FoodNutritionInput = new FoodNutritionInput()
   foodInput.productName = food.foodName;
   foodInput.brand = food.manufacturer;
   foodInput.sodium_mg = food.nutrition.sodium;
@@ -87,7 +87,7 @@ export function toFoodAdapterInputs(
   foodInput.allergens = food.ingredients;
   foodInput.manufacturer = food.manufacturer;
 
-  const healthInput = new HealthSignalInput();
+  const healthInput: HealthSignalInput = new HealthSignalInput()
   healthInput.steps = signal.stepLevel;
   healthInput.sleep = signal.sleepStatus;
   healthInput.weightTrend = signal.weightTrend;
@@ -102,7 +102,7 @@ export function toFoodAdapterInputs(
     intakeInput.fat_g = Math.max(0, budget.fatBudget - budget.fatRemaining);
   }
 
-  const result = new FoodAdapterInputs();
+  const result: FoodAdapterInputs = new FoodAdapterInputs()
   result.memberInput = memberInput;
   result.foodInput = foodInput;
   result.healthInput = healthInput;

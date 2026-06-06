@@ -7,7 +7,7 @@ function makeInput(
   cal: number = 100, sug: number = 5, sod: number = 200,
   fat: number = 5, sat: number = 2, pro: number = 8, fib: number = 3
 ): NutriScoreInput {
-  const input = new NutriScoreInput();
+  const input: NutriScoreInput = new NutriScoreInput()
   input.calories = cal;
   input.sugar = sug;
   input.sodium = sod;
@@ -19,7 +19,7 @@ function makeInput(
 }
 
 export default function nutriScoreV2Test(): TestSuite {
-  const suite = new TestSuite('NutriScoreEngine_V2');
+  const suite: TestSuite = new TestSuite(
 
   suite.addTest(new TestCase('optimal food scores A', () => {
     const r = NutriScoreEngine.calculateScore(makeInput(30, 2, 50, 1, 0.5, 25, 12));

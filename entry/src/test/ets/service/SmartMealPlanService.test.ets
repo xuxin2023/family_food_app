@@ -5,7 +5,7 @@ import { SmartMealPlanService, WeeklyMealPlan } from 'hsp_service';
 import { FoodLabel, FamilyProfile, NutritionPer100g, AgeGroup, HealthGoal } from 'hsp_core';
 
 function makeFood(name: string, cal: number): FoodLabel {
-  const f = new FoodLabel();
+  const f: FoodLabel = new FoodLabel()
   f.foodName = name;
   f.barcode = `mp_${name}`;
   f.nutrition = new NutritionPer100g();
@@ -21,7 +21,7 @@ function makeFood(name: string, cal: number): FoodLabel {
 }
 
 function makeProfile(goals: HealthGoal[]): FamilyProfile {
-  const p = new FamilyProfile();
+  const p: FamilyProfile = new FamilyProfile()
   p.memberId = 'test1';
   p.nickname = '测试用户';
   p.age = 35;
@@ -34,7 +34,7 @@ function makeProfile(goals: HealthGoal[]): FamilyProfile {
 }
 
 export default function smartMealPlanTest(): TestSuite {
-  const suite = new TestSuite('SmartMealPlanService');
+  const suite: TestSuite = new TestSuite(
   const svc = SmartMealPlanService.getInstance();
   const foods = [
     makeFood('米饭', 206), makeFood('清蒸鱼', 105), makeFood('炒青菜', 45),

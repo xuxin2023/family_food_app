@@ -8,7 +8,7 @@ import { NutritionPer100g } from 'hsp_core';
 export default function shanghaiGradeTest() {
   describe('ShanghaiGradeEngine', () => {
     it('should return Grade A for healthy food', () => {
-      const nutrition = new NutritionPer100g();
+      const nutrition: NutritionPer100g = new NutritionPer100g()
       nutrition.calories = 30;
       nutrition.fat = 1;
       nutrition.sugar = 3;
@@ -18,7 +18,7 @@ export default function shanghaiGradeTest() {
     });
 
     it('should return Grade D for unhealthy food', () => {
-      const nutrition = new NutritionPer100g();
+      const nutrition: NutritionPer100g = new NutritionPer100g()
       nutrition.calories = 500;
       nutrition.fat = 30;
       nutrition.sugar = 40;
@@ -28,7 +28,7 @@ export default function shanghaiGradeTest() {
     });
 
     it('should return Grade C for moderate food', () => {
-      const nutrition = new NutritionPer100g();
+      const nutrition: NutritionPer100g = new NutritionPer100g()
       nutrition.calories = 200;
       nutrition.fat = 8;
       nutrition.sugar = 15;

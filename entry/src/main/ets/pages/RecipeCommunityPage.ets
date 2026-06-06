@@ -58,7 +58,7 @@ struct RecipeCommunityPage {
     this.isLoadingAi = true
     try {
       const members = await this.appState.getAllMembers()
-      const request = new AiRecipeRequest()
+      const request: AiRecipeRequest = new AiRecipeRequest()
       request.memberIds = members.map(m => m.memberId)
       request.limit = 5
       request.mealCategory = ''
@@ -76,7 +76,7 @@ struct RecipeCommunityPage {
     this.isLoading = true
     this.errorMessage = ''
     try {
-      const params = new RecipeQueryParams()
+      const params: RecipeQueryParams = new RecipeQueryParams()
       params.offset = 0
       params.limit = PAGE_SIZE
       params.category = this.selectedCategory.length > 0 ? safeParseRecipeCategory(this.selectedCategory) : undefined

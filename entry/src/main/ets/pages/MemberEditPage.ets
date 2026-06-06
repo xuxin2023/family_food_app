@@ -336,7 +336,7 @@ struct MemberEditPage {
       }
     }
 
-    const profile = new FamilyProfile()
+    const profile: FamilyProfile = new FamilyProfile()
     profile.memberId = this.editingMemberId.length > 0 ? this.editingMemberId : `member_${Date.now()}`
     profile.nickname = this.nickname
     profile.ageGroup = this.indexToAgeGroup(this.selectedAgeGroup)
@@ -375,7 +375,7 @@ struct MemberEditPage {
     }
 
     // 同步更新健康信号
-    const signal = new HealthSignal()
+    const signal: HealthSignal = new HealthSignal()
     signal.memberId = profile.memberId
     signal.date = DateUtil.getToday()
     signal.stepLevel = [StepLevel.LOW, StepLevel.NORMAL, StepLevel.HIGH][this.stepLevelIndex]

@@ -7,7 +7,7 @@ import {
 } from 'hsp_service';
 
 export default function recipeCommTest(): TestSuite {
-  const suite = new TestSuite('RecipeCommunityService');
+  const suite: TestSuite = new TestSuite(
   const svc = RecipeCommunityService.getInstance();
 
   suite.addTest(new TestCase('getActiveChallenges returns 6', () => {

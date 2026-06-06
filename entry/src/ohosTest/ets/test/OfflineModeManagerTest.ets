@@ -27,7 +27,7 @@ export default function offlineModeManagerTest() {
     });
 
     it('should_create_offline_operation_with_correct_type', 0, () => {
-      const op = new OfflineOperation();
+      const op: OfflineOperation = new OfflineOperation()
       op.type = OfflineOperationType.FAVORITE_ADD;
       op.payload = '{"foodId":"abc"}';
       expect(op.type).assertEqual(OfflineOperationType.FAVORITE_ADD);

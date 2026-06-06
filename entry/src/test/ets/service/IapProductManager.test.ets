@@ -5,7 +5,7 @@ import { IapProductManager, IapProductDefinition, IAP_PRODUCT_IDS } from 'hsp_se
 import { MemberTier } from 'hsp_core';
 
 export default function iapProductTest(): TestSuite {
-  const suite = new TestSuite('IapProductManager');
+  const suite: TestSuite = new TestSuite(
 
   suite.addTest(new TestCase('getAllProducts returns 6 products', () => {
     const products = IapProductManager.getAllProducts();

@@ -4,7 +4,7 @@ import { TestSuite, TestCase, expect } from '@ohos/hypium';
 import { OnDeviceInferenceEngine, InferenceResult } from 'feature_scan';
 
 export default function inferenceEngineTest(): TestSuite {
-  const suite = new TestSuite('OnDeviceInferenceEngine');
+  const suite: TestSuite = new TestSuite(
   const engine = OnDeviceInferenceEngine.getInstance();
 
   suite.addTest(new TestCase('engine is singleton', () => {

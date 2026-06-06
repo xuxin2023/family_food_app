@@ -5,7 +5,7 @@ import {
 
 export default function novaGroupEngineTest() {
   describe('NovaGroupEngine', () => {
-    const engine = new NovaGroupEngine();
+    const engine: NovaGroupEngine = new NovaGroupEngine()
 
     it('should_return_group1_for_unprocessed_food', 0, () => {
       const result = engine.evaluate(['苹果']);

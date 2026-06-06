@@ -4,7 +4,7 @@ import { TestSuite, TestCase, expect } from '@ohos/hypium';
 import { ReusableLazyListController } from 'hsp_core';
 
 export default function reusableLazyListTest(): TestSuite {
-  const suite = new TestSuite('ReusableLazyList');
+  const suite: TestSuite = new TestSuite(
 
   suite.addTest(new TestCase('controller init with empty data', () => {
     const ctrl = new ReusableLazyListController<string>();

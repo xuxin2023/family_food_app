@@ -5,7 +5,7 @@ import { ChildProtectionEngine } from 'feature_report';
 import { ChildProtection, FamilyProfile, AgeGroup, HealthGoal, FoodLabel, FoodSource } from 'hsp_core';
 
 function createChildProfile(): FamilyProfile {
-  const p = new FamilyProfile();
+  const p: FamilyProfile = new FamilyProfile()
   p.memberId = 'child'; p.nickname = '孩子'; p.ageGroup = AgeGroup.CHILD;
   p.healthGoals = [HealthGoal.CHILD]; p.allergens = ['坚果'];
   p.mealTimes = { breakfast: '07:30', lunch: '12:00', dinner: '18:00' };
@@ -15,7 +15,7 @@ function createChildProfile(): FamilyProfile {
 }
 
 function createFood(sugar: number = 10, sodium: number = 200): FoodLabel {
-  const f = new FoodLabel();
+  const f: FoodLabel = new FoodLabel()
   f.foodId = 'test_food'; f.foodName = '测试食品';
   f.nutrition = { sodium, sugar, calories: 200, fat: 5, saturatedFat: 2, carbohydrate: 15, protein: 3 };
   f.ingredients = ['白砂糖', '食用盐'];

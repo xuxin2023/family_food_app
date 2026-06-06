@@ -40,7 +40,7 @@ export struct FavoriteItemRow {
 
   private formatTime(timestamp: number): string {
     const d = new Date(timestamp);
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
   }
 
   private getGradeColor(grade: string): string {

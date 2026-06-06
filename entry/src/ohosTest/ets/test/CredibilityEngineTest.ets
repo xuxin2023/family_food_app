@@ -7,7 +7,7 @@ import { CredibilityResult, DataGrade, FoodLabel, FoodSource } from 'hsp_core';
 function createFood(manufacturer: string = '', scNumber: string = '',
   principal: string = '', trustee: string = '',
   traceCode: string = ''): FoodLabel {
-  const f = new FoodLabel();
+  const f: FoodLabel = new FoodLabel()
   f.foodId = 'test'; f.foodName = '测试食品';
   f.nutrition = { sodium: 100, sugar: 5, calories: 200, fat: 10, saturatedFat: 3, carbohydrate: 15, protein: 5 };
   f.ingredients = ['大米'];

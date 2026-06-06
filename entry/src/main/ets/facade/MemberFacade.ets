@@ -104,7 +104,7 @@ export class MemberFacade {
   getHealthSignal(memberId: string): HealthSignal {
     const cached = this.cache.getHealthSignalFromCache(memberId);
     if (cached) return cached;
-    const signal = new HealthSignal();
+    const signal: HealthSignal = new HealthSignal()
     signal.memberId = memberId;
     signal.date = DateUtil.getToday();
     this.cache.setHealthSignalToCache(memberId, signal);
@@ -122,7 +122,7 @@ export class MemberFacade {
   getDailyBudgetSync(memberId: string): DailyBudget {
     const cached = this._dailyBudgetsCache.get(memberId);
     if (cached) return cached;
-    const budget = new DailyBudget();
+    const budget: DailyBudget = new DailyBudget()
     budget.memberId = memberId;
     budget.date = DateUtil.getToday();
     this._dailyBudgetsCache.set(memberId, budget);
@@ -167,7 +167,7 @@ export class MemberFacade {
         this._nutriTargetCache.set(memberId, target);
         return target;
       }
-      const defaultTarget = new NutritionTarget();
+      const defaultTarget: NutritionTarget = new NutritionTarget()
       defaultTarget.caloriesTarget = 2000;
       this._nutriTargetCache.set(memberId, defaultTarget);
       return defaultTarget;

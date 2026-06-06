@@ -51,7 +51,7 @@ export class SyncFacade {
     if (!this.services.groupService) {
       throw new Error('Group service not initialized');
     }
-    const params = new CreateGroupParams();
+    const params: CreateGroupParams = new CreateGroupParams()
     params.groupName = name;
     params.description = '';
     params.ownerName = '';

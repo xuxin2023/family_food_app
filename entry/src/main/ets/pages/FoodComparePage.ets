@@ -395,7 +395,7 @@ struct FoodComparePage {
         betterSide = diff > 0 ? 2 : 1;
       }
     }
-    const d = new NutrientDiff();
+    const d: NutrientDiff = new NutrientDiff()
     d.name = name; d.unit = unit; d.value1 = v1; d.value2 = v2; d.diff = diff; d.betterSide = betterSide;
     return d;
   }
@@ -444,7 +444,7 @@ struct FoodComparePage {
       return;
     }
     const snapshot = this.savedSnapshots[0];
-    const food = new FoodLabel();
+    const food: FoodLabel = new FoodLabel()
     food.foodId = snapshot.id;
     food.foodName = snapshot.foodName;
     food.manufacturer = snapshot.brand;

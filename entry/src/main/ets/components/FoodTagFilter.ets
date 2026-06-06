@@ -20,7 +20,7 @@ function buildNutriScoreTags(): FilterTag[] {
     ['nutri_e', 'E', SCORE_COLORS.GRADE_E]
   ];
   return grades.map((g: [string, string, string]) => {
-    const tag = new FilterTag();
+    const tag: FilterTag = new FilterTag()
     tag.key = g[0];
     tag.label = g[1];
     tag.color = g[2];
@@ -37,7 +37,7 @@ function buildNovaGroupTags(): FilterTag[] {
     ['nova_4', 'NOVA 4', SCORE_COLORS.NOVA_4]
   ];
   return groups.map((g: [string, string, string]) => {
-    const tag = new FilterTag();
+    const tag: FilterTag = new FilterTag()
     tag.key = g[0];
     tag.label = g[1];
     tag.color = g[2];
@@ -56,7 +56,7 @@ function buildSpecialTags(): FilterTag[] {
     ['no_added_sugar', $r('app.string.tag_no_added_sugar'), '#43A047']
   ];
   return specials.map((s: [string, ResourceStr, string]) => {
-    const tag = new FilterTag();
+    const tag: FilterTag = new FilterTag()
     tag.key = s[0];
     tag.label = s[1];
     tag.color = s[2];

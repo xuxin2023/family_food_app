@@ -16,7 +16,7 @@ class PeriodOption {
 }
 
 function makePeriodOption(label: ResourceStr, days: number): PeriodOption {
-  const opt = new PeriodOption();
+  const opt: PeriodOption = new PeriodOption()
   opt.label = label;
   opt.days = days;
   return opt;
@@ -90,7 +90,7 @@ struct NutritionTrendPage {
     const dailySummaries: DailyNutritionSummary[] = [];
     for (const raw of rawSnapshots) {
       const snap = raw as Record<string, Object>;
-      const d = new DailyNutritionSummary();
+      const d: DailyNutritionSummary = new DailyNutritionSummary()
       d.date = (snap['date'] as string) || '';
       d.sodium = (snap['sodium'] as number) || 0;
       d.sugar = (snap['sugar'] as number) || 0;
@@ -103,10 +103,10 @@ struct NutritionTrendPage {
     const result: NutrientTrendData[] = []
     if (dailySummaries.length > 0) {
       const last = dailySummaries[dailySummaries.length - 1]
-      const t1 = new NutrientTrendData(); t1.nutrientName = $r('app.string.nutrition_trend_sodium') as ResourceStr; t1.unit = 'mg'; t1.dailyValues = dailySummaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.sodium; return p }); t1.currentValue = last.sodium; t1.targetValue = 2000; t1.maxValue = 2500; t1.color = '#FF9800'; t1.trend = TrendDirection.STABLE; result.push(t1)
-      const t2 = new NutrientTrendData(); t2.nutrientName = $r('app.string.nutrition_trend_sugar') as ResourceStr; t2.unit = 'g'; t2.dailyValues = dailySummaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.sugar; return p }); t2.currentValue = last.sugar; t2.targetValue = 50; t2.maxValue = 60; t2.color = '#FF5722'; t2.trend = TrendDirection.STABLE; result.push(t2)
-      const t3 = new NutrientTrendData(); t3.nutrientName = $r('app.string.nutrition_trend_calorie') as ResourceStr; t3.unit = 'kcal'; t3.dailyValues = dailySummaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.calorie; return p }); t3.currentValue = last.calorie; t3.targetValue = 2000; t3.maxValue = 2200; t3.color = '#4CAF50'; t3.trend = TrendDirection.STABLE; result.push(t3)
-      const t4 = new NutrientTrendData(); t4.nutrientName = $r('app.string.nutrition_trend_fat') as ResourceStr; t4.unit = 'g'; t4.dailyValues = dailySummaries.map(s => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.fat; return p }); t4.currentValue = last.fat; t4.targetValue = 65; t4.maxValue = 80; t4.color = '#2196F3'; t4.trend = TrendDirection.STABLE; result.push(t4)
+      const t1: NutrientTrendData = new NutrientTrendData()
+      const t2: NutrientTrendData = new NutrientTrendData()
+      const t3: NutrientTrendData = new NutrientTrendData()
+      const t4: NutrientTrendData = new NutrientTrendData()
     }
     this.trends = result
     this.summaries = dailySummaries

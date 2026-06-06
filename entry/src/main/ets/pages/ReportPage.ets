@@ -103,7 +103,7 @@ struct ReportPage {
 
   private get selectedRec(): Recommendation {
     if (this.recommendations.length === 0) {
-      const fallback = new Recommendation()
+      const fallback: Recommendation = new Recommendation()
       fallback.memberId = 'none'
       fallback.level = RecommendLevel.SUITABLE
       fallback.levelColor = LevelColor.GREEN
@@ -1031,7 +1031,7 @@ struct ReportPage {
       const childJson = params['childProtection'] as ChildProtection[]
       const childProtection = childJson || []
 
-      const pageParams = new ReportPageParams();
+      const pageParams: ReportPageParams = new ReportPageParams()
       pageParams.foodLabel = foodLabel;
       pageParams.recommendations = recommendations;
       pageParams.members = members;
@@ -1068,7 +1068,7 @@ struct ReportPage {
 
       const memberResults: MemberShareInfo[] = this.recommendations.map((rec) => {
         const member = this.familyMembers.find(m => m.memberId === rec.memberId)
-        const info = new MemberShareInfo()
+        const info: MemberShareInfo = new MemberShareInfo()
         info.name = member?.nickname || ''
         info.levelText = rec.level
         info.levelColor = getLevelColorValue(rec.levelColor)
@@ -1076,7 +1076,7 @@ struct ReportPage {
         return info
       })
 
-      const params = new ShareImageParams()
+      const params: ShareImageParams = new ShareImageParams()
       params.foodName = this.foodLabel.foodName
       params.nutriScore = this.nutriScore
       params.levelColor = this.levelColorHex

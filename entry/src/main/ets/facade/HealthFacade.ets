@@ -160,7 +160,7 @@ export class HealthFacade {
     const profile = this.getMemberById(memberId) ?? new FamilyProfile();
     const signal = this.getHealthSignalById(memberId);
     const target = this.getNutritionTargetById(memberId);
-    const session = new ExerciseSession();
+    const session: ExerciseSession = new ExerciseSession()
     return this.engines.exerciseNutritionEngine.recommend(session, profile, signal, target);
   }
 
@@ -180,8 +180,8 @@ export class HealthFacade {
   }
 
   async getPersonalizedRecommendation(memberId: string): Promise<PersonalizedRecommendation> {
-    const foodLabel = new FoodLabel();
-    const ctx = new PersonalizedContext();
+    const foodLabel: FoodLabel = new FoodLabel()
+    const ctx: PersonalizedContext = new PersonalizedContext()
     ctx.profile = this.getMemberById(memberId) ?? new FamilyProfile();
     const signal = this.getHealthSignalById(memberId);
     return this.engines.personalizedRecommendEngine.recommend(foodLabel, ctx);

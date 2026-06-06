@@ -24,7 +24,7 @@ class DetailItem {
 }
 
 function makeDetail(label: ResourceStr, value: ResourceStr): DetailItem {
-  const item = new DetailItem();
+  const item: DetailItem = new DetailItem()
   item.label = label;
   item.value = value;
   return item;
@@ -525,7 +525,7 @@ struct DeviceDashboardPage {
       this.isHwConnected = signal.source === DataSource.HUAWEI_HEALTH
       this.isAuthorized = this.isHwConnected
       const now = new Date()
-      this.lastSyncTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+      this.lastSyncTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'loadHealthData failed, using cache: %{public}s', JSON.stringify(error));
       const cached = this.appState.getHealthSignal(this.selectedMemberId)

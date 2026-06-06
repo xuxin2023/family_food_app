@@ -101,7 +101,7 @@ export class EngineManager {
    */
   calculateChildProtection(profile: FamilyProfile, foodLabel: FoodLabel): ChildProtection {
     const now = new Date();
-    const mealTimes = new MealTimeParams();
+    const mealTimes: MealTimeParams = new MealTimeParams()
     // 使用默认参数调用
     return this.childProtectionEngine.calculate(profile, foodLabel, now, mealTimes, '21:00');
   }
@@ -178,7 +178,7 @@ export class EngineManager {
 
   /** 获取老人友好报告 — 使用实际健康信号 */
   getElderFriendlyReport(profile: FamilyProfile, foodLabel: FoodLabel): ElderFriendlyReport {
-    const signal = new HealthSignal();
+    const signal: HealthSignal = new HealthSignal()
     signal.stepLevel = StepLevel.NORMAL;
     signal.sleepStatus = SleepStatus.GOOD;
     const rec = this.recommendationEngine.calculateForMember(profile, signal, foodLabel, new DailyBudget());
@@ -213,7 +213,7 @@ export class EngineManager {
       const alts = await alternativeFoodRecommender.recommendAlternatives(foodLabel, members, 3);
       const results: EnhancedFoodRecommendation[] = [];
       for (const alt of alts) {
-        const rec = new EnhancedFoodRecommendation();
+        const rec: EnhancedFoodRecommendation = new EnhancedFoodRecommendation()
         rec.productName = alt.productName;
         results.push(rec);
       }
@@ -268,7 +268,7 @@ export class EngineManager {
   calculateChildProtectionSafe(profile: FamilyProfile, foodLabel: FoodLabel): ChildProtection {
     try {
       const now = new Date();
-      const mealTimes = new MealTimeParams();
+      const mealTimes: MealTimeParams = new MealTimeParams()
       const result = this.childProtectionEngine.calculate(profile, foodLabel, now, mealTimes, '21:00');
       return result ?? ChildProtection.getDefault();
     } catch (e) {
@@ -350,7 +350,7 @@ export class EngineManager {
         heavyFlavorCount: heavyFlavorCount,
         childSnackOverLimit: 0
       };
-      const engine = new WeeklyReportEngine();
+      const engine: WeeklyReportEngine = new WeeklyReportEngine()
       const report = engine.generate(data, member);
       let resultLines: string[] = [];
       resultLines.push(`📊 ${member.nickname} 的周报 (${report.weekRange})`);

@@ -4,7 +4,7 @@ import { TestSuite, TestCase, expect } from '@ohos/hypium';
 import { IapErrorUtil } from 'hsp_service';
 
 export default function iapErrorTest(): TestSuite {
-  const suite = new TestSuite('IapErrorUtil');
+  const suite: TestSuite = new TestSuite(
 
   suite.addTest(new TestCase('parse returns ResourceStr for all error codes', () => {
     const codes = [0, 1, 2, 3, -1, -2, -3, 1001, 1002,

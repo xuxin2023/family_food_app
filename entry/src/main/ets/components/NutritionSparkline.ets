@@ -105,7 +105,7 @@ class BarItem {
 }
 
 function makeBarItem(height: number, opacity: number): BarItem {
-  const item = new BarItem();
+  const item: BarItem = new BarItem()
   item.height = height;
   item.opacity = opacity;
   return item;

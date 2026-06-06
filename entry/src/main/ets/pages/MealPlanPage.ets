@@ -63,7 +63,7 @@ struct MealPlanPage {
 
     this.isLoadingAi = true
     const member = this.selectedMember
-    const budget = new DailyBudget()
+    const budget: DailyBudget = new DailyBudget()
     budget.calorieBudget = member.isChild() ? 1800 : 2200
     budget.sodiumBudget = member.isControlBp() ? 1500 : 2300
     budget.sugarBudget = member.isControlSugar() ? 15 : 50
@@ -96,7 +96,7 @@ struct MealPlanPage {
     }
     if (foods.length === 0) {
       // 如果没有历史数据,使用基础食材列表
-      const f = new FoodLabel()
+      const f: FoodLabel = new FoodLabel()
       f.foodName = '清蒸鱼'; f.nutrition.calories = 105; f.nutrition.sodium = 80
       f.nutrition.sugar = 0; f.nutrition.fat = 3; f.nutrition.protein = 18
       f.nutriScore = 85; foods.push(f)

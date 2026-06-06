@@ -215,7 +215,7 @@ export struct RadarChart {
   pointPos(size: number, data: RadarAxis[], index: number): Point {
     const sides = data.length;
     if (index >= sides) {
-      const p0 = new Point();
+      const p0: Point = new Point()
       return p0;
     }
     const cx = size / 2;
@@ -224,7 +224,7 @@ export struct RadarChart {
     const axis = data[index];
     const r = maxR * Math.min(axis.value / (axis.maxValue || 100), 1);
     const angle = (2 * Math.PI * index) / sides - Math.PI / 2;
-    const pt = new Point();
+    const pt: Point = new Point()
     pt.x = cx + r * Math.cos(angle) - 3;
     pt.y = cy + r * Math.sin(angle) - 3;
     return pt;

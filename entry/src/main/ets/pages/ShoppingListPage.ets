@@ -285,7 +285,7 @@ struct ShoppingListPage {
       return;
     }
 
-    const item = new ShoppingItem();
+    const item: ShoppingItem = new ShoppingItem()
     item.id = `shop_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
     item.name = this.vm.newItemName;
     item.category = this.vm.newItemCategory;

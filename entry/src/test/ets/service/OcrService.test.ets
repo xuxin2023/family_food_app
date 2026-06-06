@@ -3,7 +3,7 @@ import { OcrService, OcrResult } from 'feature_scan';
 
 export default function ocrServiceTest() {
   describe('OcrService', () => {
-    const service = new OcrService();
+    const service: OcrService = new OcrService()
 
     it('should return cached config from getConfig', () => {
       const config1 = (service as Record<string, Object>)['getConfig']

@@ -471,7 +471,7 @@ struct SharePage {
         ToastHelper.show(this.getUIContext(), '鐢熸垚澶辫触');
         return;
       }
-      const posterData = new PosterData();
+      const posterData: PosterData = new PosterData()
       posterData.foodName = this.foodName;
       posterData.brand = '';
       posterData.nutritionScore = this.recommendations.length > 0 ? 65 : 50;
@@ -481,7 +481,7 @@ struct SharePage {
       const items: PosterNutritionItem[] = [];
       for (const rec of this.recommendations) {
         const member = this.familyMembers.find(m => m.memberId === rec.memberId);
-        const item = new PosterNutritionItem();
+        const item: PosterNutritionItem = new PosterNutritionItem()
         item.name = member?.nickname || '鎴愬憳';
         item.value = rec.level;
         item.unit = rec.maxAmount > 0 ? `鈮rec.maxAmount}g` : '';
@@ -489,7 +489,7 @@ struct SharePage {
       }
       posterData.nutritionItems = items;
 
-      const generator = new SharePosterGenerator(context);
+      const generator: SharePosterGenerator = new SharePosterGenerator(
       this.posterUri = await generator.generatePoster(posterData);
       ToastHelper.show(this.getUIContext(), '海报已生成);
     } catch (e) {
@@ -513,7 +513,7 @@ struct SharePage {
       const srcFile = fileIo.openSync(this.posterUri, fileIo.OpenMode.READ_ONLY);
       const dstFile = fileIo.openSync(uri, fileIo.OpenMode.WRITE_ONLY);
       const bufferSize = 4096;
-      const buf = new ArrayBuffer(bufferSize);
+      const buf: ArrayBuffer = new ArrayBuffer(
       let readLen = fileIo.readSync(srcFile.fd, buf);
       while (readLen > 0) {
         fileIo.writeSync(dstFile.fd, buf, { length: readLen });

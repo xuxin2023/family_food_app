@@ -4,7 +4,7 @@ import { TestSuite, TestCase, expect } from '@ohos/hypium';
 import { ModelDownloadService, ModelDownloadStatus, ModelDescriptor } from 'hsp_service';
 
 export default function modelDownloadTest(): TestSuite {
-  const suite = new TestSuite('ModelDownloadService');
+  const suite: TestSuite = new TestSuite(
   const svc = ModelDownloadService.getInstance();
 
   suite.addTest(new TestCase('isModelAvailable returns false before init', () => {

@@ -388,7 +388,7 @@ struct RecipeCreatePage {
         .fontColor(COLORS.PRIMARY)
         .margin({ top: 4 })
         .onClick(() => {
-          const newStep = new RecipeStep()
+          const newStep: RecipeStep = new RecipeStep()
           newStep.stepNumber = this.steps.length + 1
           this.steps.push(newStep)
           this.steps = [...this.steps]
@@ -467,7 +467,7 @@ struct RecipeCreatePage {
       const validSteps: RecipeStep[] = this.steps
         .filter(s => s.description.length > 0)
         .map((s, idx) => {
-          const step = new RecipeStep()
+          const step: RecipeStep = new RecipeStep()
           step.stepNumber = idx + 1
           step.description = s.description
           step.imageUrl = s.imageUrl

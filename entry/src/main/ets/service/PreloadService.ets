@@ -48,7 +48,7 @@ export class PreloadService {
         }
       }
 
-      const cache = new PreloadCache();
+      const cache: PreloadCache = new PreloadCache()
       cache.scanHistory = labels;
       cache.members = members;
       cache.cachedAt = Date.now();

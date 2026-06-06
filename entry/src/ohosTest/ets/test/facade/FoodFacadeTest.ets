@@ -65,8 +65,8 @@ class MockCacheManager {
 export default function foodFacadeTest() {
   describe('FoodFacade', () => {
     it('saveFoodLabel_and_findById_should_work', 0, async () => {
-      const foodRepo = new MockFoodRepository();
-      const facade = new FoodFacade(
+      const foodRepo: MockFoodRepository = new MockFoodRepository()
+      const facade: FoodFacade = new FoodFacade(
         foodRepo as Object,
         new MockHistoryRepository() as Object,
         new MockFavoriteRepository() as Object,
@@ -74,7 +74,7 @@ export default function foodFacadeTest() {
         new MockCacheManager() as Object
       );
 
-      const label = new FoodLabel();
+      const label: FoodLabel = new FoodLabel()
       label.foodId = 'test-001';
       label.foodName = '测试牛奶';
       label.barcode = '6901234567890';
@@ -88,8 +88,8 @@ export default function foodFacadeTest() {
     });
 
     it('saveFoodLabel_and_findByBarcode_should_work', 0, async () => {
-      const foodRepo = new MockFoodRepository();
-      const facade = new FoodFacade(
+      const foodRepo: MockFoodRepository = new MockFoodRepository()
+      const facade: FoodFacade = new FoodFacade(
         foodRepo as Object,
         new MockHistoryRepository() as Object,
         new MockFavoriteRepository() as Object,
@@ -97,7 +97,7 @@ export default function foodFacadeTest() {
         new MockCacheManager() as Object
       );
 
-      const label = new FoodLabel();
+      const label: FoodLabel = new FoodLabel()
       label.foodId = 'test-002';
       label.foodName = '测试面包';
       label.barcode = '6909876543210';
@@ -111,8 +111,8 @@ export default function foodFacadeTest() {
     });
 
     it('findFoodById_should_return_null_for_missing', 0, async () => {
-      const foodRepo = new MockFoodRepository();
-      const facade = new FoodFacade(
+      const foodRepo: MockFoodRepository = new MockFoodRepository()
+      const facade: FoodFacade = new FoodFacade(
         foodRepo as Object,
         new MockHistoryRepository() as Object,
         new MockFavoriteRepository() as Object,

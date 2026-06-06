@@ -935,7 +935,7 @@ struct ScanPage {
     // 付费墙拦截
     const trigger = this.appState.member.useScan();
     if (trigger !== null) {
-      const paywallTrigger = new PaywallTrigger();
+      const paywallTrigger: PaywallTrigger = new PaywallTrigger()
     paywallTrigger.featureName = 'scan';
     this.vm.paywallTrigger = paywallTrigger;
       this.vm.showPaywallDialog = true;
@@ -1080,7 +1080,7 @@ struct ScanPage {
       // 调用动态适配增强计算（集成 FoodAdapterEngine）
       const scanToday = this.appState.member.getTodayScanCount()
       const budget = this.appState.getDailyBudgetSync(this.memberId)
-      const todayIntake = new TodayIntakeInput()
+      const todayIntake: TodayIntakeInput = new TodayIntakeInput()
       todayIntake.sodium_mg = Math.max(0, (budget?.sodiumBudget ?? 0) - (budget?.sodiumRemaining ?? 0))
       todayIntake.sugar_g = Math.max(0, (budget?.sugarBudget ?? 0) - (budget?.sugarRemaining ?? 0))
       todayIntake.energy_kcal = Math.max(0, (budget?.calorieBudget ?? 0) - (budget?.calorieRemaining ?? 0))

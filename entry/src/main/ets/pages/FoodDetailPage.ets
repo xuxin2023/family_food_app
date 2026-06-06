@@ -86,7 +86,7 @@ struct FoodDetailPage {
     };
 
     return ingredients.map((ing: string) => {
-      const item = new ParsedIngredientItem();
+      const item: ParsedIngredientItem = new ParsedIngredientItem()
       item.name = ing;
       item.role = '成分';
       item.hazardLevel = '✅ 安全';
@@ -105,7 +105,7 @@ struct FoodDetailPage {
 
   private generateMockAlerts(): void {
     if (this.foodLabel.allergenHints.length > 0) {
-      const alert = new AllergyAlertData();
+      const alert: AllergyAlertData = new AllergyAlertData()
       alert.type = 'allergy';
       alert.severity = Severity.MODERATE;
       alert.memberName = '家人';
@@ -118,7 +118,7 @@ struct FoodDetailPage {
 
   private generateMockAlternatives(): void {
     if (this.nutriScore < 60) {
-      const alt = new AlternativeFoodItem();
+      const alt: AlternativeFoodItem = new AlternativeFoodItem()
       alt.productName = `更健康的${this.foodLabel.foodName}替代品`;
       alt.brand = '推荐品牌';
       alt.healthScore = Math.min(95, this.nutriScore + 25);

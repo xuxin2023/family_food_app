@@ -4,7 +4,7 @@ import { TestSuite, TestCase, expect } from '@ohos/hypium';
 import { FamilyGroupE2EEncryptor } from 'hsp_core';
 
 export default function e2eTest(): TestSuite {
-  const suite = new TestSuite('FamilyGroupE2EEncryptor');
+  const suite: TestSuite = new TestSuite(
 
   suite.addTest(new TestCase('generateGroupKey produces valid key', () => {
     const km = FamilyGroupE2EEncryptor.generateGroupKey();

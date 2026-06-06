@@ -4,7 +4,7 @@ import { TestSuite, TestCase, expect } from '@ohos/hypium';
 import { CrdtSyncResolver, ConflictResolutionStrategy } from 'hsp_core';
 
 export default function crdtTest(): TestSuite {
-  const suite = new TestSuite('CrdtSyncResolver');
+  const suite: TestSuite = new TestSuite(
 
   suite.addTest(new TestCase('mergeVectorClocks_combines disjoint', () => {
     const a = [{ nodeId: 'A', counter: 3 }];

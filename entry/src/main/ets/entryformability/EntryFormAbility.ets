@@ -81,10 +81,10 @@ async function buildFormData(context: common.FormExtensionContext): Promise<form
     return formBindingData.createFormBindingData({
       formId: '',
       todayMenu: `${firstMember.nickname} · 今日营养`,
-      calorieTarget: String(budget.calorieBudget),
-      calorieIntake: String(Math.max(0, budget.calorieBudget - budget.calorieRemaining)),
+      calorieTarget: budget.calorieBudget.toString(),
+      calorieIntake: Math.max(0, budget.calorieBudget - budget.calorieRemaining).toString(),
       waterProgress: Math.min(8, Math.max(0, Math.round(calPct / 12.5))), // 0-8 杯参考值
-      healthScore: String(healthScore),
+      healthScore: healthScore.toString(),
       lastSyncTime: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
     });
   } catch (err) {

@@ -7,7 +7,7 @@ import { DailyBudget } from 'hsp_core';
 export default function dailyBudgetTest() {
   describe('DailyBudget', () => {
     it('should initialize with default values', () => {
-      const budget = new DailyBudget();
+      const budget: DailyBudget = new DailyBudget()
       expect(budget.sodiumBudget).assertEqual(2000);
       expect(budget.sodiumRemaining).assertEqual(2000);
       expect(budget.sugarBudget).assertEqual(50);
@@ -16,13 +16,13 @@ export default function dailyBudgetTest() {
     });
 
     it('should calculate sodium usage percentage', () => {
-      const budget = new DailyBudget();
+      const budget: DailyBudget = new DailyBudget()
       budget.sodiumRemaining = 1000;
       expect(budget.sodiumUsagePercent()).assertEqual(50);
     });
 
     it('should deduct intake correctly', () => {
-      const budget = new DailyBudget();
+      const budget: DailyBudget = new DailyBudget()
       budget.deductIntake(500, 10, 300, 15);
       expect(budget.sodiumRemaining).assertEqual(1500);
       expect(budget.sugarRemaining).assertEqual(40);
@@ -31,7 +31,7 @@ export default function dailyBudgetTest() {
     });
 
     it('should not allow negative remaining values', () => {
-      const budget = new DailyBudget();
+      const budget: DailyBudget = new DailyBudget()
       budget.deductIntake(3000, 100, 3000, 100);
       expect(budget.sodiumRemaining).assertEqual(0);
       expect(budget.sugarRemaining).assertEqual(0);
@@ -40,7 +40,7 @@ export default function dailyBudgetTest() {
     });
 
     it('should report budget exhausted', () => {
-      const budget = new DailyBudget();
+      const budget: DailyBudget = new DailyBudget()
       budget.sodiumRemaining = 0;
       budget.sugarRemaining = 5;
       expect(budget.isSodiumExhausted()).assertEqual(true);
@@ -48,7 +48,7 @@ export default function dailyBudgetTest() {
     });
 
     it('should serialize to JSON and back', () => {
-      const budget = new DailyBudget();
+      const budget: DailyBudget = new DailyBudget()
       budget.memberId = 'm1';
       budget.date = '2026-05-09';
       budget.deductIntake(300, 8, 200, 10);

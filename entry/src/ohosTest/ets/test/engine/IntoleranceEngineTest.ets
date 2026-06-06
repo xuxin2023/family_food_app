@@ -93,7 +93,7 @@ export default function intoleranceEngineTest() {
     });
 
     it('inferFromHealthSignal_high_bs_should_infer_lactose_fructose', 0, () => {
-      const signal = new HealthSignal();
+      const signal: HealthSignal = new HealthSignal()
       signal.manualBsStatus = BsStatus.HIGH;
       const types = IntoleranceEngine.inferFromHealthSignal(signal);
       expect(types.includes(IntoleranceType.LACTOSE)).assertTrue();
@@ -101,7 +101,7 @@ export default function intoleranceEngineTest() {
     });
 
     it('inferFromHealthSignal_high_bp_should_infer_salicylate_histamine', 0, () => {
-      const signal = new HealthSignal();
+      const signal: HealthSignal = new HealthSignal()
       signal.manualBpStatus = BpStatus.HIGH;
       const types = IntoleranceEngine.inferFromHealthSignal(signal);
       expect(types.includes(IntoleranceType.SALICYLATE)).assertTrue();
@@ -109,7 +109,7 @@ export default function intoleranceEngineTest() {
     });
 
     it('inferFromHealthSignal_poor_sleep_should_infer_histamine_caffeine', 0, () => {
-      const signal = new HealthSignal();
+      const signal: HealthSignal = new HealthSignal()
       signal.sleepStatus = SleepStatus.POOR;
       const types = IntoleranceEngine.inferFromHealthSignal(signal);
       expect(types.includes(IntoleranceType.HISTAMINE)).assertTrue();
@@ -117,7 +117,7 @@ export default function intoleranceEngineTest() {
     });
 
     it('inferFromHealthSignal_normal_should_return_empty', 0, () => {
-      const signal = new HealthSignal();
+      const signal: HealthSignal = new HealthSignal()
       const types = IntoleranceEngine.inferFromHealthSignal(signal);
       expect(types.length).assertEqual(0);
     });

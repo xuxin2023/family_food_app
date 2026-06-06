@@ -333,7 +333,7 @@ struct ReminderRulePage {
       ToastHelper.show(this.getUIContext(), $r('app.string.reminder_rule_exists'));
       return;
     }
-    const rule = new ReminderRule();
+    const rule: ReminderRule = new ReminderRule()
     rule.id = preset.id;
     rule.type = preset.type;
     rule.enabled = preset.enabled;
@@ -405,7 +405,7 @@ struct ReminderRulePage {
       return;
     }
 
-    const rule = new ReminderRule();
+    const rule: ReminderRule = new ReminderRule()
     if (this.isEditing) {
       rule.id = this.editingRule.id;
     } else {

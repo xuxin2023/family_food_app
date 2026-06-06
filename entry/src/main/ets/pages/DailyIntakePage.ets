@@ -35,7 +35,7 @@ struct DailyIntakePage {
   aboutToAppear(): void {
     this.tracker.onAppear()
     const now = new Date();
-    this.selectedDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    this.selectedDate = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
     this.familyMembers = this.appState.getAllMembersSync();
     if (this.familyMembers.length > 0) {
       this.selectedMemberId = this.familyMembers[0].memberId;

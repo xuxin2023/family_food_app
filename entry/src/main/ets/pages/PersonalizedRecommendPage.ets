@@ -210,7 +210,7 @@ struct PersonalizedRecommendPage {
 
   private async runRecommendation(): Promise<void> {
     if (this.foodName.length === 0) return;
-    const foodLabel = new FoodLabel();
+    const foodLabel: FoodLabel = new FoodLabel()
     foodLabel.foodName = this.foodName;
     this.result = (await this.appState.getPersonalizedRecommendation(this.currentProfile.memberId, foodLabel)) as Object as PersonalizedRecommendation;
   }

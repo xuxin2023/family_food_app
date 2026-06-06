@@ -449,7 +449,7 @@ export class AppState {
     this.memberFacade.refreshMemberCache();
     this.memberFacade.refreshBudgetCache();
     this.engines.cleanExpiredEngineCache();
-    const cacheData = new CacheInvalidationData();
+    const cacheData: CacheInvalidationData = new CacheInvalidationData()
     cacheData.source = 'sync';
     DomainEventBus.emit(DomainEvents.CACHE_INVALIDATED, cacheData);
   }

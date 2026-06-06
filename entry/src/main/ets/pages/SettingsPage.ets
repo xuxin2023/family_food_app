@@ -582,7 +582,7 @@ struct SettingsPage {
       return
     }
 
-    const signal = new HealthSignal()
+    const signal: HealthSignal = new HealthSignal()
     signal.memberId = this.vm.selectedMemberId
     signal.date = DateUtil.getToday()
     signal.stepLevel = this.vm.stepLevel
@@ -628,8 +628,8 @@ struct SettingsPage {
         ToastHelper.show(this.getUIContext(), $r('app.string.settings_restore_failed_no_ctx'));
         return;
       }
-      const documentSelectOptions = new picker.DocumentSelectOptions();
-      const documentViewPicker = new picker.DocumentViewPicker();
+      const documentSelectOptions: picker.DocumentSelectOptions = new picker.DocumentSelectOptions()
+      const documentViewPicker: picker.DocumentViewPicker = new picker.DocumentViewPicker()
       const uris = await documentViewPicker.select(documentSelectOptions);
       if (!uris || uris.length === 0) {
         return;
@@ -725,7 +725,7 @@ struct SettingsPage {
   private async executeDeleteAccount(): Promise<void> {
     this.vm.showDeleteConfirm = false
     try {
-      const authService = new AuthService()
+      const authService: AuthService = new AuthService()
       const ctx = AppStorage.get<common.Context>('appContext')
       if (ctx) {
         await authService.init(ctx)

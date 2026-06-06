@@ -39,7 +39,7 @@ struct AlternativeFoodPage {
   private loadAlternatives(): void {
     this.isLoading = true
     this.recommendReady = false
-    const recommender = new AlternativeRecommender(new OfflineFoodProvider())
+    const recommender: AlternativeRecommender = new AlternativeRecommender(
     this.candidates = recommender.recommend(this.foodLabel)
     alternativeFoodRecommender.recommendAlternatives(
       this.foodLabel, this.familyMembers, 5
@@ -116,7 +116,7 @@ struct AlternativeFoodPage {
                 } else {
                   this.AlternativeListSection()
                   if (this.candidates.length > 0) {
-                    const altLabel = new FoodLabel();
+                    const altLabel: FoodLabel = new FoodLabel()
                     altLabel.foodName = this.candidates[0].foodName;
                     altLabel.manufacturer = this.candidates[0].brand;
                     altLabel.barcode = this.candidates[0].barcode;

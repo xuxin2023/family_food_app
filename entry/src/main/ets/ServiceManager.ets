@@ -206,7 +206,7 @@ export class ServiceManager {
    */
   async switchToHwHealthKit(context: common.Context): Promise<boolean> {
     try {
-      const hwProvider = new HwHealthSignalProvider(context);
+      const hwProvider: HwHealthSignalProvider = new HwHealthSignalProvider(
       this.healthService.setProvider(hwProvider);
       this.useHwHealthKit = true;
       hilog.info(DOMAIN_ZERO, TAG, 'Switched to HwHealthKit');
@@ -222,7 +222,7 @@ export class ServiceManager {
    * 切换回手动数据提供
    */
   switchToManualProvider(): void {
-    const manualProvider = new ManualHealthSignalProvider();
+    const manualProvider: ManualHealthSignalProvider = new ManualHealthSignalProvider()
     this.healthService.setProvider(manualProvider);
     this.useHwHealthKit = false;
     hilog.info(DOMAIN_ZERO, TAG, 'Switched to Manual provider');

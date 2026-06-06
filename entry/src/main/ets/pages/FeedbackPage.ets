@@ -254,10 +254,10 @@ struct FeedbackPage {
 
   private async pickScreenshot(): Promise<void> {
     try {
-      const photoSelectOptions = new picker.PhotoSelectOptions();
+      const photoSelectOptions: picker.PhotoSelectOptions = new picker.PhotoSelectOptions()
       photoSelectOptions.MIMEType = picker.PhotoViewMIMETypes.IMAGE_TYPE;
       photoSelectOptions.maxSelectNumber = MAX_SCREENSHOTS - this.screenshotUris.length;
-      const photoViewPicker = new picker.PhotoViewPicker();
+      const photoViewPicker: picker.PhotoViewPicker = new picker.PhotoViewPicker()
       const photoSelectResult = await photoViewPicker.select(photoSelectOptions);
       if (photoSelectResult.photoUris && photoSelectResult.photoUris.length > 0) {
         this.screenshotUris = [...this.screenshotUris, ...photoSelectResult.photoUris];
@@ -273,7 +273,7 @@ struct FeedbackPage {
     }
     this.isSubmitting = true;
 
-    const feedbackData = new FeedbackData();
+    const feedbackData: FeedbackData = new FeedbackData()
     feedbackData.type = FEEDBACK_TYPES[this.selectedTypeIndex] as string;
     feedbackData.content = this.content;
     feedbackData.contact = this.contact;

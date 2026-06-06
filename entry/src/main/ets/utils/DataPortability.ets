@@ -47,7 +47,7 @@ export class DataPortability {
       data['shopping_list'] = await DataPortability.queryAllRows(rdbStore, TABLE_SHOPPING_LIST);
       data['reminder_rules'] = await DataPortability.queryAllRows(rdbStore, TABLE_REMINDER_RULES);
 
-      const exportObj = new ExportObj();
+      const exportObj: ExportObj = new ExportObj()
       exportObj.version = DATA_VERSION.EXPORT_VERSION;
       exportObj.exportedAt = Date.now();
       exportObj.appVersion = DATA_VERSION.APP_VERSION;
@@ -61,7 +61,7 @@ export class DataPortability {
   }
 
   static async importData(jsonStr: string, context: common.Context): Promise<ImportResult> {
-    const result = new ImportResult();
+    const result: ImportResult = new ImportResult()
 
     let parsed: Record<string, Object>;
     try {
@@ -106,13 +106,13 @@ export class DataPortability {
 
       const tableImportMap: Map<string, (rows: Record<string, Object>[]) => Promise<number>> = new Map();
 
-      const shopRepo = new ShoppingListRepository();
+      const shopRepo: ShoppingListRepository = new ShoppingListRepository()
       await shopRepo.init(rdbStore);
       tableImportMap.set('shopping_list', async (rows: Record<string, Object>[]) => {
         return await shopRepo.importRows(rows);
       });
 
-      const ruleRepo = new ReminderRuleRepository();
+      const ruleRepo: ReminderRuleRepository = new ReminderRuleRepository()
       await ruleRepo.init(rdbStore);
       tableImportMap.set('reminder_rules', async (rows: Record<string, Object>[]) => {
         return await ruleRepo.importRows(rows);
@@ -168,7 +168,7 @@ export class DataPortability {
     const rows: Object[] = [];
     let resultSet: relationalStore.ResultSet | null = null;
     try {
-      const predicates = new relationalStore.RdbPredicates(tableName);
+      const predicates: relationalStore.RdbPredicates = new relationalStore.RdbPredicates(
       resultSet = await rdbStore.query(predicates);
       const colCount = resultSet.columnCount;
       while (resultSet.goToNextRow()) {
@@ -221,19 +221,19 @@ export class DataPortability {
       const rdbConfig: relationalStore.StoreConfig = { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 };
       const rdbStore = await relationalStore.getRdbStore(context, rdbConfig);
 
-      const memberPredicates = new relationalStore.RdbPredicates(TABLE_FAMILY_PROFILE);
+      const memberPredicates: relationalStore.RdbPredicates = new relationalStore.RdbPredicates(
       memberPredicates.equalTo('member_id', memberId);
       await rdbStore.delete(memberPredicates);
 
-      const dietPredicates = new relationalStore.RdbPredicates(TABLE_DIET_RECORD);
+      const dietPredicates: relationalStore.RdbPredicates = new relationalStore.RdbPredicates(
       dietPredicates.equalTo('member_id', memberId);
       await rdbStore.delete(dietPredicates);
 
-      const targetPredicates = new relationalStore.RdbPredicates(TABLE_NUTRITION_TARGET);
+      const targetPredicates: relationalStore.RdbPredicates = new relationalStore.RdbPredicates(
       targetPredicates.equalTo('member_id', memberId);
       await rdbStore.delete(targetPredicates);
 
-      const snapshotPredicates = new relationalStore.RdbPredicates(TABLE_NUTRITION_SNAPSHOT);
+      const snapshotPredicates: relationalStore.RdbPredicates = new relationalStore.RdbPredicates(
       snapshotPredicates.equalTo('member_id', memberId);
       await rdbStore.delete(snapshotPredicates);
 

@@ -17,15 +17,15 @@ export class ScanState {
 
   constructor() {
     const self = this;
-    const cacheProvider = new ILocalCacheProvider();
+    const cacheProvider: ILocalCacheProvider = new ILocalCacheProvider()
     cacheProvider.findFoodByBarcode = (barcode: string) => self.scanService.getLocalCacheProvider()?.findFoodByBarcode(barcode) ?? null;
     this.scanService.setCacheProvider(cacheProvider);
 
-    const remoteProvider = new IRemoteLookupProvider();
+    const remoteProvider: IRemoteLookupProvider = new IRemoteLookupProvider()
     remoteProvider.lookupByBarcode = async (barcode: string) => {
       const result = await OpenFoodFactsService.getInstance().lookupByBarcode(barcode);
       if (result && result.found && result.foodLabel) {
-        const r = new RemoteLookupResult();
+        const r: RemoteLookupResult = new RemoteLookupResult()
         r.found = true;
         r.foodLabel = result.foodLabel;
         r.confidence = result.confidence;
@@ -35,7 +35,7 @@ export class ScanState {
     };
     this.scanService.setRemoteProvider(remoteProvider);
 
-    const lineageRecorder = new IDataLineageRecorder();
+    const lineageRecorder: IDataLineageRecorder = new IDataLineageRecorder()
     lineageRecorder.recordLineage = (foodId: string, source: string, confidence: number, transforms: string[]) => {
       DataLineage.record(DataLineage.createRecord(foodId, source, confidence, transforms, '', ''));
     };

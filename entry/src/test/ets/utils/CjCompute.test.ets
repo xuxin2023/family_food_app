@@ -4,7 +4,7 @@ import { TestSuite, TestCase, expect } from '@ohos/hypium';
 import { CjCompute } from 'hsp_core_cj';
 
 export default function cjComputeTest(): TestSuite {
-  const suite = new TestSuite('CjCompute');
+  const suite: TestSuite = new TestSuite(
 
   suite.addTest(new TestCase('cosineSimilarity_identical vectors', () => {
     const a = [1, 2, 3];

@@ -5,7 +5,7 @@ import { TestSuite, TestCase, expect } from '@ohos/hypium';
 import { EcoScoreEngine, EcoScoreResult, EcoScoreGrade } from 'hsp_rating';
 
 export default function ecoScoreTest(): TestSuite {
-  const suite = new TestSuite('EcoScoreEngine');
+  const suite: TestSuite = new TestSuite(
 
   suite.addTest(new TestCase('unknownGrade_whenNoData', () => {
     const result = EcoScoreEngine.estimateFromLabels([], '', '');

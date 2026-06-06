@@ -3,7 +3,7 @@ import { HistoryRepository } from 'hsp_service';
 
 export default function historyRepositoryTest() {
   describe('HistoryRepository', () => {
-    const repo = new HistoryRepository();
+    const repo: HistoryRepository = new HistoryRepository()
 
     it('should return empty array when rdbStore not initialized', async () => {
       const result = await repo.getRecentScanHistory(10);

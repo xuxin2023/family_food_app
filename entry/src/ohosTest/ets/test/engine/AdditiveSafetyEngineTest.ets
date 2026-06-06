@@ -9,7 +9,7 @@ export default function additiveSafetyEngineTest() {
     const engine = AdditiveSafetyEngine.getInstance();
 
     it('assessFood_should_return_safe_for_no_additives', 0, () => {
-      const label = new FoodLabel();
+      const label: FoodLabel = new FoodLabel()
       label.foodName = '纯牛奶';
       label.ingredients = ['生牛乳'];
       const report = engine.assessFood(label);
@@ -19,7 +19,7 @@ export default function additiveSafetyEngineTest() {
     });
 
     it('assessFood_should_detect_avoid_additives', 0, () => {
-      const label = new FoodLabel();
+      const label: FoodLabel = new FoodLabel()
       label.foodName = '加工肉';
       label.ingredients = ['E320', 'E321', 'E250'];
       const report = engine.assessFood(label);
@@ -28,7 +28,7 @@ export default function additiveSafetyEngineTest() {
     });
 
     it('assessFood_should_detect_caution_additives', 0, () => {
-      const label = new FoodLabel();
+      const label: FoodLabel = new FoodLabel()
       label.foodName = '饮料';
       label.ingredients = ['E211', 'E102'];
       const report = engine.assessFood(label);
@@ -36,7 +36,7 @@ export default function additiveSafetyEngineTest() {
     });
 
     it('assessFood_should_parse_e_numbers_from_ingredient_text', 0, () => {
-      const label = new FoodLabel();
+      const label: FoodLabel = new FoodLabel()
       label.foodName = '零食';
       label.ingredients = ['小麦粉', 'E320(抗氧化剂)', 'E621(增味剂)'];
       const report = engine.assessFood(label);
@@ -44,7 +44,7 @@ export default function additiveSafetyEngineTest() {
     });
 
     it('assessFood_should_generate_summary', 0, () => {
-      const label = new FoodLabel();
+      const label: FoodLabel = new FoodLabel()
       label.foodName = '测试';
       label.ingredients = ['E300', 'E322'];
       const report = engine.assessFood(label);
@@ -97,7 +97,7 @@ export default function additiveSafetyEngineTest() {
     });
 
     it('assessFood_should_handle_unknown_e_number', 0, () => {
-      const label = new FoodLabel();
+      const label: FoodLabel = new FoodLabel()
       label.foodName = '未知添加剂食品';
       label.ingredients = ['E999'];
       const report = engine.assessFood(label);

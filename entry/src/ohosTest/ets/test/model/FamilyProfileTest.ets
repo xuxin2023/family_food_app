@@ -103,7 +103,7 @@ export default function familyProfileTest() {
       mealData.lunch = '12:00';
       mealData.dinner = '18:00';
 
-      const json = new FamilyProfileJson();
+      const json: FamilyProfileJson = new FamilyProfileJson()
       json.memberId = 'test_from_json';
       json.nickname = '小明';
       json.ageGroup = AgeGroup.CHILD;
@@ -154,7 +154,7 @@ export default function familyProfileTest() {
     });
 
     it('should_deserialize_from_json', 0, () => {
-      const json = new DailyBudgetConfigJson();
+      const json: DailyBudgetConfigJson = new DailyBudgetConfigJson()
       json.sodiumBudget = 1800;
       json.sugarBudget = 40;
       json.calorieBudget = 2200;

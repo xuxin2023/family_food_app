@@ -5,10 +5,10 @@ import { TestSuite, TestCase, expect } from '@ohos/hypium';
 import { AuthUser } from 'hsp_service';
 
 export default function cloudAuthTest(): TestSuite {
-  const suite = new TestSuite('CloudAuthService');
+  const suite: TestSuite = new TestSuite(
 
   suite.addTest(new TestCase('authUser_defaultValues', () => {
-    const user = new AuthUser();
+    const user: AuthUser = new AuthUser()
     expect(user.uid).assertEqual('');
     expect(user.isAnonymous).assertEqual(true);
     expect(user.createdAt).assertEqual(0);
@@ -18,7 +18,7 @@ export default function cloudAuthTest(): TestSuite {
   }));
 
   suite.addTest(new TestCase('authUser_fieldAssignment', () => {
-    const user = new AuthUser();
+    const user: AuthUser = new AuthUser()
     user.uid = 'hw_12345';
     user.isAnonymous = false;
     user.createdAt = 1700000000000;
@@ -31,7 +31,7 @@ export default function cloudAuthTest(): TestSuite {
   }));
 
   suite.addTest(new TestCase('authUser_anonymousByDefault', () => {
-    const user = new AuthUser();
+    const user: AuthUser = new AuthUser()
     user.uid = 'local_abc';
     expect(user.isAnonymous).assertEqual(true);
     expect(user.cloudToken.length).assertEqual(0);

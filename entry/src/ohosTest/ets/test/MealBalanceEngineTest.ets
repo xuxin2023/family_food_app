@@ -5,14 +5,14 @@ import { MealBalanceEngine } from 'feature_report';
 import { MealScenario, RiskTag, FamilyProfile, AgeGroup, HealthGoal, HealthSignal, StepLevel, SleepStatus, DataSource } from 'hsp_core';
 
 function createMealProfile(goals: HealthGoal[] = [], ageGroup: AgeGroup = AgeGroup.ADULT): FamilyProfile {
-  const p = new FamilyProfile();
+  const p: FamilyProfile = new FamilyProfile()
   p.memberId = 'test'; p.nickname = '测试'; p.ageGroup = ageGroup;
   p.healthGoals = goals; p.createdAt = Date.now(); p.updatedAt = Date.now();
   return p;
 }
 
 function createMealSignal(): HealthSignal {
-  const s = new HealthSignal();
+  const s: HealthSignal = new HealthSignal()
   s.memberId = 'test'; s.date = '2026-04-22';
   s.stepLevel = StepLevel.NORMAL; s.sleepStatus = SleepStatus.GOOD;
   s.source = DataSource.MANUAL;

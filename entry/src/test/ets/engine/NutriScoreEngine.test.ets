@@ -18,7 +18,7 @@ function makeOverrides(
   calories?: number, sugar?: number, sodium?: number, fat?: number,
   saturatedFat?: number, protein?: number, fiber?: number
 ): NutriScoreInputOverrides {
-  const o = new NutriScoreInputOverrides();
+  const o: NutriScoreInputOverrides = new NutriScoreInputOverrides()
   if (calories !== undefined) o.calories = calories;
   if (sugar !== undefined) o.sugar = sugar;
   if (sodium !== undefined) o.sodium = sodium;
@@ -30,7 +30,7 @@ function makeOverrides(
 }
 
 function makeInput(overrides: NutriScoreInputOverrides): NutriScoreInput {
-  const input = new NutriScoreInput();
+  const input: NutriScoreInput = new NutriScoreInput()
   input.calories = overrides.calories !== undefined ? overrides.calories : 50;
   input.sugar = overrides.sugar !== undefined ? overrides.sugar : 3;
   input.sodium = overrides.sodium !== undefined ? overrides.sodium : 100;
@@ -42,7 +42,7 @@ function makeInput(overrides: NutriScoreInputOverrides): NutriScoreInput {
 }
 
 export default function nutriScoreTest(): TestSuite {
-  const suite = new TestSuite('NutriScoreEngine');
+  const suite: TestSuite = new TestSuite(
 
   // ===== 边界值：最优食品（全项低于阈值） =====
   suite.addTest(new TestCase('optimalFood_scoresAbove80', () => {

@@ -62,7 +62,7 @@ class PeriodOption {
 }
 
 function makePeriodOption(labelKey: string, days: number): PeriodOption {
-  const opt = new PeriodOption();
+  const opt: PeriodOption = new PeriodOption()
   opt.labelKey = labelKey;
   opt.days = days;
   return opt;
@@ -180,10 +180,10 @@ struct DashboardPage {
     const result: NutrientTrendData[] = []
     if (summaries.length > 0) {
       const last: DailyNutritionSummary = summaries[summaries.length - 1]
-      const t1 = new NutrientTrendData(); t1.nutrientName = $r('app.string.dashboard_sodium') as ResourceStr; t1.unit = 'mg'; t1.dailyValues = summaries.map((s: DailyNutritionSummary): DailyNutrientPoint => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.sodium; return p }); t1.currentValue = last.sodium; t1.targetValue = nt.sodiumMax_mg; t1.maxValue = Math.round(nt.sodiumMax_mg * 1.25); t1.color = COLORS.ACCENT_ORANGE_FFA7; t1.trend = TrendDirection.STABLE; result.push(t1)
-      const t2 = new NutrientTrendData(); t2.nutrientName = $r('app.string.dashboard_sugar') as ResourceStr; t2.unit = 'g'; t2.dailyValues = summaries.map((s: DailyNutritionSummary): DailyNutrientPoint => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.sugar; return p }); t2.currentValue = last.sugar; t2.targetValue = nt.sugarMax_g; t2.maxValue = Math.round(nt.sugarMax_g * 1.2); t2.color = COLORS.ACCENT_ORANGE; t2.trend = TrendDirection.STABLE; result.push(t2)
-      const t3 = new NutrientTrendData(); t3.nutrientName = $r('app.string.dashboard_calorie') as ResourceStr; t3.unit = 'kcal'; t3.dailyValues = summaries.map((s: DailyNutritionSummary): DailyNutrientPoint => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.calorie; return p }); t3.currentValue = last.calorie; t3.targetValue = nt.caloriesTarget; t3.maxValue = Math.round(nt.caloriesTarget * 1.1); t3.color = COLORS.SUCCESS; t3.trend = TrendDirection.STABLE; result.push(t3)
-      const t4 = new NutrientTrendData(); t4.nutrientName = $r('app.string.dashboard_fat') as ResourceStr; t4.unit = 'g'; t4.dailyValues = summaries.map((s: DailyNutritionSummary): DailyNutrientPoint => { const p = new DailyNutrientPoint(); p.date = s.date; p.value = s.fat; return p }); t4.currentValue = last.fat; t4.targetValue = nt.fatMax_g; t4.maxValue = Math.round(nt.fatMax_g * 1.23); t4.color = COLORS.ACCENT_BLUE; t4.trend = TrendDirection.STABLE; result.push(t4)
+      const t1: NutrientTrendData = new NutrientTrendData()
+      const t2: NutrientTrendData = new NutrientTrendData()
+      const t3: NutrientTrendData = new NutrientTrendData()
+      const t4: NutrientTrendData = new NutrientTrendData()
     }
     this.vm.trendsData = result
 
@@ -983,7 +983,7 @@ struct DashboardPage {
   private buildNutrientScores(): NutrientScores {
     const summary = this.vm.summaries.length > 0 ? this.vm.summaries[this.vm.summaries.length - 1] : null
     if (summary === null) {
-      const s = new NutrientScores();
+      const s: NutrientScores = new NutrientScores()
       s.protein = 70; s.fiber = 50; s.vitamins = 80; s.minerals = 60; s.healthyFats = 65;
       return s;
     }
@@ -993,7 +993,7 @@ struct DashboardPage {
     const vitaminsScore = summary.sodium > 0 ? Math.min(100, Math.round((1 - summary.sodium / HealthConfig.SODIUM_VISUAL_MAX_MG) * 100)) : 70
     const mineralsScore = summary.sugar > 0 ? Math.min(100, Math.round((1 - summary.sugar / 60) * 100)) : 70
     const fatScore = budget.fatBudget > 0 ? Math.min(100, Math.round((1 - Math.abs(summary.fat - budget.fatBudget) / budget.fatBudget) * 100)) : 60
-    const result = new NutrientScores();
+    const result: NutrientScores = new NutrientScores()
     result.protein = Math.max(10, proteinScore);
     result.fiber = Math.max(10, fiberScore);
     result.vitamins = Math.max(10, vitaminsScore);

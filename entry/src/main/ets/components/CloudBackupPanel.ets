@@ -1,3 +1,4 @@
+interface BackupItem { timestamp: number; size: number }
 import { COLORS, RADIUS, SPACING, FONT_SIZE } from 'hsp_core';
 import { curves } from '@kit.ArkUI';
 import { HuaweiCloudStorageService, CloudBackupData } from 'hsp_service';
@@ -13,12 +14,12 @@ struct BackupListItem {
 
   private formatDate(timestamp: number): string {
     const date = new Date(timestamp)
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+    return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`
   }
 
   private formatTime(timestamp: number): string {
     const date = new Date(timestamp)
-    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+    return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
   }
 
   private formatSize(bytes: number): string {
@@ -447,7 +448,7 @@ export struct CloudBackupPanel {
             .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
             .borderRadius(RADIUS.MD)
           } else {
-            ForEach(this.backups, (backup: { timestamp: number, size: number }) => {
+            ForEach(this.backups, (backup: BackupItem) => {
               BackupListItem({
                 timestamp: backup.timestamp,
                 size: backup.size,
@@ -462,7 +463,7 @@ export struct CloudBackupPanel {
                   this.selectedBackup = backup.timestamp
                 }
               })
-            }, (backup: { timestamp: number, size: number }) => backup.timestamp.toString())
+            }, (backup: BackupItem) => backup.timestamp.toString())
           }
         }
         .width('100%')

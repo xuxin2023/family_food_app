@@ -226,7 +226,7 @@ struct ChildHealthPage {
 
   private async runAssessment(): Promise<void> {
     if (this.foodName.length === 0) return;
-    const foodLabel = new FoodLabel();
+    const foodLabel: FoodLabel = new FoodLabel()
     foodLabel.foodName = this.foodName;
     this.result = (await this.appState.assessChildHealth(
       this.childProfile.memberId, foodLabel

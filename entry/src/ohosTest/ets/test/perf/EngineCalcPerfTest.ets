@@ -31,7 +31,7 @@ interface PerfResult {
 }
 
 function createSampleFoodLabel(): FoodLabel {
-  const label = new FoodLabel();
+  const label: FoodLabel = new FoodLabel()
   label.foodId = 'perf_test_food';
   label.foodName = '测试食品';
   label.barcode = '6901234567890';
@@ -70,7 +70,7 @@ export class EngineCalcPerfTest {
   private results: PerfResult[] = [];
 
   testNutriScoreEngine(): PerfResult {
-    const input = new NutriScoreInput(250, 12, 400, 8, 3, 15, 4);
+    const input: NutriScoreInput = new NutriScoreInput(
     const samples: number[] = [];
 
     for (let i = 0; i < ITERATIONS; i++) {
@@ -124,7 +124,7 @@ export class EngineCalcPerfTest {
   }
 
   testFoodAdapterEngine(): PerfResult {
-    const memberInput = new FamilyMemberSimpleInput();
+    const memberInput: FamilyMemberSimpleInput = new FamilyMemberSimpleInput()
     memberInput.id = 'perf_member';
     memberInput.name = '测试成员';
     memberInput.role = 'adult';
@@ -135,7 +135,7 @@ export class EngineCalcPerfTest {
 
     const budget = new (FamilyMemberSimpleInput as EsObject).constructor().dailyBudget?.constructor ??
       null;
-    const foodInput = new FoodNutritionInput();
+    const foodInput: FoodNutritionInput = new FoodNutritionInput()
     foodInput.productName = '测试食品';
     foodInput.sodium_mg = 400;
     foodInput.sugar_g = 12;
@@ -145,11 +145,11 @@ export class EngineCalcPerfTest {
     foodInput.protein_g = 15;
     foodInput.allergens = ['花生酱'];
 
-    const healthInput = new HealthSignalInput();
+    const healthInput: HealthSignalInput = new HealthSignalInput()
     healthInput.steps = 'normal';
     healthInput.sleep = 'good';
 
-    const todayIntake = new TodayIntakeInput();
+    const todayIntake: TodayIntakeInput = new TodayIntakeInput()
     todayIntake.sodium_mg = 800;
     todayIntake.sugar_g = 15;
     todayIntake.energy_kcal = 500;
@@ -180,7 +180,7 @@ export class EngineCalcPerfTest {
   }
 
   testNutriScoreFromNutrition(): PerfResult {
-    const nutrition = new NutritionPer100g();
+    const nutrition: NutritionPer100g = new NutritionPer100g()
     nutrition.calories = 250;
     nutrition.sugar = 12;
     nutrition.sodium = 400;

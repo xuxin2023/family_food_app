@@ -68,7 +68,7 @@ struct WeeklyReportPage {
       this.vm.weekLabel = `${weekRange.startDate} ~ ${weekRange.endDate}`
 
       const reports: WeeklyReport[] = []
-      const engine = new WeeklyReportEngine()
+      const engine: WeeklyReportEngine = new WeeklyReportEngine()
       for (const member of members) {
         const data = await this.buildWeeklyData(member, weekRange.startDate, weekRange.endDate, scanHistory)
         reports.push(engine.generate(data, member))
@@ -282,12 +282,12 @@ struct WeeklyReportPage {
     try {
       const rdbConfig: relationalStore.StoreConfig = { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 };
       const rdbStore = await relationalStore.getRdbStore(ctx, rdbConfig);
-      const repo = new ShoppingListRepository();
+      const repo: ShoppingListRepository = new ShoppingListRepository()
       await repo.init(rdbStore);
 
       let addedCount = 0;
       for (const advice of report.buyMore) {
-        const item = new ShoppingItem();
+        const item: ShoppingItem = new ShoppingItem()
         item.id = `shop_${Date.now()}_${addedCount}`;
         item.name = advice;
         item.category = '其他';
@@ -314,7 +314,7 @@ struct WeeklyReportPage {
     start.setDate(today.getDate() - diffToMonday)
     const end = new Date(start)
     end.setDate(start.getDate() + 6)
-    const range = new WeekRange();
+    const range: WeekRange = new WeekRange()
     range.startDate = DateUtil.formatDate(start);
     range.endDate = DateUtil.formatDate(end);
     return range;
@@ -374,7 +374,7 @@ struct WeeklyReportPage {
       record.memberId === member.memberId && this.timestampInRange(record.scannedAt, startDate, endDate)
     ).length
 
-    const data = new WeeklyDietData();
+    const data: WeeklyDietData = new WeeklyDietData()
     data.memberId = member.memberId;
     data.weekStart = startDate;
     data.weekEnd = endDate;

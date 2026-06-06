@@ -4,7 +4,7 @@ import { TestSuite, TestCase, expect } from '@ohos/hypium';
 import { EnhancedSecurityDetector } from 'hsp_core';
 
 export default function securityDetectorTest(): TestSuite {
-  const suite = new TestSuite('EnhancedSecurityDetector');
+  const suite: TestSuite = new TestSuite(
 
   suite.addTest(new TestCase('performFullCheck_returns structured result', async () => {
     const result = await EnhancedSecurityDetector.performFullCheck();

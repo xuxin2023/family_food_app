@@ -12,13 +12,13 @@ class StrategyItem { label: ResourceStr = ''; value: SyncStrategy = SyncStrategy
 class ConflictItem { label: ResourceStr = ''; value: ConflictResolution = ConflictResolution.LOCAL_FIRST; }
 
 function makeStrategyItem(label: ResourceStr, value: SyncStrategy): StrategyItem {
-  const item = new StrategyItem();
+  const item: StrategyItem = new StrategyItem()
   item.label = label;
   item.value = value;
   return item;
 }
 function makeConflictItem(label: ResourceStr, value: ConflictResolution): ConflictItem {
-  const item = new ConflictItem();
+  const item: ConflictItem = new ConflictItem()
   item.label = label;
   item.value = value;
   return item;

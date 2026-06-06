@@ -29,44 +29,44 @@ class TestAiService extends AiServiceBase {
 export default function aiServiceBaseTest() {
   describe('AiServiceBaseTest', () => {
     it('should_be_enabled_by_default', 0, () => {
-      const service = new TestAiService();
+      const service: TestAiService = new TestAiService()
       expect(service.shouldUseAi()).assertFalse();
     });
 
     it('should_not_use_ai_when_disabled', 0, () => {
-      const service = new TestAiService();
+      const service: TestAiService = new TestAiService()
       service.setApiKey('test_key');
       service.setEnabled(false);
       expect(service.shouldUseAi()).assertFalse();
     });
 
     it('should_not_use_ai_without_api_key', 0, () => {
-      const service = new TestAiService();
+      const service: TestAiService = new TestAiService()
       expect(service.shouldUseAi()).assertFalse();
     });
 
     it('should_use_ai_when_configured', 0, () => {
-      const service = new TestAiService();
+      const service: TestAiService = new TestAiService()
       service.setApiKey('test_key');
       expect(service.shouldUseAi()).assertTrue();
     });
 
     it('should_not_use_ai_when_tokens_exhausted', 0, () => {
-      const service = new TestAiService();
+      const service: TestAiService = new TestAiService()
       service.setApiKey('test_key');
       service.setTokensUsed(999999);
       expect(service.shouldUseAi()).assertFalse();
     });
 
     it('should_track_tokens_used', 0, () => {
-      const service = new TestAiService();
+      const service: TestAiService = new TestAiService()
       expect(service.getTokensUsed()).assertEqual(0);
       service.setTokensUsed(100);
       expect(service.getTokensUsed()).assertEqual(100);
     });
 
     it('should_implement_abstract_methods', 0, () => {
-      const service = new TestAiService();
+      const service: TestAiService = new TestAiService()
       expect(service.getTag()).assertEqual('TestAiService');
       expect(service.getDefaultTemperature()).assertEqual(0.5);
       expect(service.getDefaultMaxTokens()).assertEqual(1000);

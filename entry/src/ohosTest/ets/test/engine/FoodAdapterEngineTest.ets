@@ -6,13 +6,13 @@ import { FoodAdapterEngine, TodayIntakeInput,
 import { RecommendationLevel, EnhancedFoodRecommendation } from 'hsp_core';
 
 function createAdapterMember(): FamilyMemberSimpleInput {
-  const budget = new TodayIntakeInput();
+  const budget: TodayIntakeInput = new TodayIntakeInput()
   budget.sodium_mg = 2000;
   budget.sugar_g = 50;
   budget.energy_kcal = 2000;
   budget.fat_g = 65;
   budget.saturatedFat_g = 20;
-  const member = new FamilyMemberSimpleInput();
+  const member: FamilyMemberSimpleInput = new FamilyMemberSimpleInput()
   member.id = 'dad_1';
   member.name = '爸爸';
   member.role = '爸爸';
@@ -32,7 +32,7 @@ function createAdapterMemberWithId(id: string): FamilyMemberSimpleInput {
 }
 
 function createAdapterFood(): FoodNutritionInput {
-  const f = new FoodNutritionInput();
+  const f: FoodNutritionInput = new FoodNutritionInput()
   f.productName = '测试饼干';
   f.brand = '测试品牌';
   f.energy_kj = 840;
@@ -81,7 +81,7 @@ function createAdapterFoodHighSodium600(): FoodNutritionInput {
 }
 
 function createAdapterHealthSignalInput(): HealthSignalInput {
-  const s = new HealthSignalInput();
+  const s: HealthSignalInput = new HealthSignalInput()
   s.steps = '8000';
   s.sleep = '良好';
   s.weightTrend = '稳定';
@@ -91,7 +91,7 @@ function createAdapterHealthSignalInput(): HealthSignalInput {
 }
 
 function createAdapterSignalLowSteps(): HealthSignalInput {
-  const s = new HealthSignalInput();
+  const s: HealthSignalInput = new HealthSignalInput()
   s.steps = '正常';
   s.sleep = '好';
   s.weightTrend = '稳定';
@@ -101,7 +101,7 @@ function createAdapterSignalLowSteps(): HealthSignalInput {
 }
 
 function createAdapterSignalLowSteps(): HealthSignalInput {
-  const s = new HealthSignalInput();
+  const s: HealthSignalInput = new HealthSignalInput()
   s.steps = '低';
   s.sleep = '好';
   s.weightTrend = '稳定';
@@ -111,7 +111,7 @@ function createAdapterSignalLowSteps(): HealthSignalInput {
 }
 
 function createAdapterSignalPoorSleep(): HealthSignalInput {
-  const s = new HealthSignalInput();
+  const s: HealthSignalInput = new HealthSignalInput()
   s.steps = '正常';
   s.sleep = '差';
   s.weightTrend = '稳定';
@@ -121,7 +121,7 @@ function createAdapterSignalPoorSleep(): HealthSignalInput {
 }
 
 function createAdapterTodayIntake(): TodayIntakeInput {
-  const t = new TodayIntakeInput();
+  const t: TodayIntakeInput = new TodayIntakeInput()
   t.sodium_mg = 500;
   t.sugar_g = 10;
   t.energy_kcal = 600;
@@ -130,7 +130,7 @@ function createAdapterTodayIntake(): TodayIntakeInput {
 }
 
 function createAdapterIntakeExhausted(): TodayIntakeInput {
-  const t = new TodayIntakeInput();
+  const t: TodayIntakeInput = new TodayIntakeInput()
   t.sodium_mg = 2000;
   t.sugar_g = 50;
   t.energy_kcal = 2000;

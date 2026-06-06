@@ -311,12 +311,12 @@ export struct QuickFoodInput {
   }
 
   private doConfirm(): void {
-    const result = new QuickFoodInputResult();
+    const result: QuickFoodInputResult = new QuickFoodInputResult()
     result.mealType = this.selectedMealType;
 
     if (this.showAdvanced && this.manualFoodName.length > 0) {
       result.foodName = this.manualFoodName;
-      const n = new NutritionPer100g();
+      const n: NutritionPer100g = new NutritionPer100g()
       n.calories = parseFloat(this.manualCalories) || 0;
       n.sodium = parseFloat(this.manualSodium) || 0;
       n.sugar = parseFloat(this.manualSugar) || 0;

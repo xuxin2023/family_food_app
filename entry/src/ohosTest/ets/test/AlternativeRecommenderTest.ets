@@ -16,10 +16,10 @@ class MockOfflineFoodProvider implements IOfflineFoodProvider {
 export default function alternativeRecommenderTest() {
   describe('AlternativeRecommenderTest', () => {
     it('should_return_empty_when_no_candidates', 0, () => {
-      const provider = new MockOfflineFoodProvider();
+      const provider: MockOfflineFoodProvider = new MockOfflineFoodProvider()
       provider.setEntries([]);
-      const recommender = new AlternativeRecommender(provider);
-      const current = new FoodLabel();
+      const recommender: AlternativeRecommender = new AlternativeRecommender(
+      const current: FoodLabel = new FoodLabel()
       current.barcode = '001';
       current.foodName = '测试牛奶';
       const result = recommender.recommend(current);
@@ -27,14 +27,14 @@ export default function alternativeRecommenderTest() {
     });
 
     it('should_skip_same_barcode', 0, () => {
-      const provider = new MockOfflineFoodProvider();
-      const entry = new OfflineFoodEntry();
+      const provider: MockOfflineFoodProvider = new MockOfflineFoodProvider()
+      const entry: OfflineFoodEntry = new OfflineFoodEntry()
       entry.barcode = '001';
       entry.foodName = '测试牛奶';
       entry.category = '乳制品';
       provider.setEntries([entry]);
-      const recommender = new AlternativeRecommender(provider);
-      const current = new FoodLabel();
+      const recommender: AlternativeRecommender = new AlternativeRecommender(
+      const current: FoodLabel = new FoodLabel()
       current.barcode = '001';
       current.foodName = '测试牛奶';
       const result = recommender.recommend(current);
@@ -42,10 +42,10 @@ export default function alternativeRecommenderTest() {
     });
 
     it('should_limit_to_10_results', 0, () => {
-      const provider = new MockOfflineFoodProvider();
+      const provider: MockOfflineFoodProvider = new MockOfflineFoodProvider()
       const entries: OfflineFoodEntry[] = [];
       for (let i = 0; i < 15; i++) {
-        const entry = new OfflineFoodEntry();
+        const entry: OfflineFoodEntry = new OfflineFoodEntry()
         entry.barcode = `bc_${i}`;
         entry.foodName = `候选_${i}`;
         entry.category = '饮料';
@@ -57,8 +57,8 @@ export default function alternativeRecommenderTest() {
         entries.push(entry);
       }
       provider.setEntries(entries);
-      const recommender = new AlternativeRecommender(provider);
-      const current = new FoodLabel();
+      const recommender: AlternativeRecommender = new AlternativeRecommender(
+      const current: FoodLabel = new FoodLabel()
       current.barcode = 'cur';
       current.foodName = '可乐';
       current.nutrition = new NutritionPer100g();

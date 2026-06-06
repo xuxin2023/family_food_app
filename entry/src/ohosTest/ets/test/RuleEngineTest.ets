@@ -6,7 +6,7 @@ import { FamilyProfile, AgeGroup, HealthGoal, DailyBudgetConfig, HealthSignal, S
 
 function createRuleProfile(goals: HealthGoal[] = [], allergens: string[] = [],
   ageGroup: AgeGroup = AgeGroup.ADULT): FamilyProfile {
-  const p = new FamilyProfile();
+  const p: FamilyProfile = new FamilyProfile()
   p.memberId = 'test_member';
   p.nickname = '测试';
   p.ageGroup = ageGroup;
@@ -21,7 +21,7 @@ function createRuleSignal(step: StepLevel = StepLevel.NORMAL,
   sleep: SleepStatus = SleepStatus.GOOD,
   weightTrend: WeightTrend = WeightTrend.STABLE,
   bp: BpStatus = BpStatus.NORMAL): HealthSignal {
-  const s = new HealthSignal();
+  const s: HealthSignal = new HealthSignal()
   s.memberId = 'test_member';
   s.date = '2026-04-22';
   s.stepLevel = step;
@@ -35,7 +35,7 @@ function createRuleSignal(step: StepLevel = StepLevel.NORMAL,
 function createRuleFood(sodium: number = 0, sugar: number = 0,
   calories: number = 0, fat: number = 0,
   ingredients: string[] = []): FoodLabel {
-  const f = new FoodLabel();
+  const f: FoodLabel = new FoodLabel()
   f.foodId = 'test_food';
   f.foodName = '测试食品';
   f.nutrition = { sodium, sugar, calories, fat, saturatedFat: 0, carbohydrate: 0, protein: 0 };
@@ -47,7 +47,7 @@ function createRuleFood(sodium: number = 0, sugar: number = 0,
 
 function createRuleBudget(sodiumRemaining: number = 1000, sugarRemaining: number = 30,
   calorieRemaining: number = 800, fatRemaining: number = 40): DailyBudget {
-  const b = new DailyBudget();
+  const b: DailyBudget = new DailyBudget()
   b.memberId = 'test_member';
   b.date = '2026-04-22';
   b.sodiumBudget = 2000; b.sodiumRemaining = sodiumRemaining;
@@ -59,7 +59,7 @@ function createRuleBudget(sodiumRemaining: number = 1000, sugarRemaining: number
 
 export default function ruleEngineTest() {
   describe('RuleEngine', () => {
-    const engine = new RuleEngine();
+    const engine: RuleEngine = new RuleEngine()
 
     // ========== 1. 过敏原红线检测 ==========
 

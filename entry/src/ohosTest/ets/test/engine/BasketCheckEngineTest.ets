@@ -4,7 +4,7 @@ import { BasketCheckEngine } from 'hsp_service';
 import { FamilyProfile, AgeGroup, HealthGoal, FoodLabel, FoodSource } from 'hsp_core';
 
 function createBasketFood(name: string, sodium: number, sugar: number, fat: number): FoodLabel {
-  const f = new FoodLabel();
+  const f: FoodLabel = new FoodLabel()
   f.foodId = `food_${name}`;
   f.foodName = name;
   f.nutrition = { sodium, sugar, calories: 200, fat, saturatedFat: 0, carbohydrate: 10, protein: 5 };
@@ -15,7 +15,7 @@ function createBasketFood(name: string, sodium: number, sugar: number, fat: numb
 }
 
 function createBasketProfiles(): FamilyProfile[] {
-  const dad = new FamilyProfile();
+  const dad: FamilyProfile = new FamilyProfile()
   dad.memberId = 'dad';
   dad.nickname = '爸爸';
   dad.ageGroup = AgeGroup.MIDDLE_OLD;
@@ -23,7 +23,7 @@ function createBasketProfiles(): FamilyProfile[] {
   dad.createdAt = Date.now();
   dad.updatedAt = Date.now();
 
-  const child = new FamilyProfile();
+  const child: FamilyProfile = new FamilyProfile()
   child.memberId = 'child';
   child.nickname = '孩子';
   child.ageGroup = AgeGroup.CHILD;
@@ -36,7 +36,7 @@ function createBasketProfiles(): FamilyProfile[] {
 
 export default function basketCheckEngineTest() {
   describe('BasketCheckEngine', () => {
-    const engine = new BasketCheckEngine();
+    const engine: BasketCheckEngine = new BasketCheckEngine()
 
     it('should_warn_high_sodium_basket', 0, () => {
       const items = [

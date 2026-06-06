@@ -131,7 +131,7 @@ export default function dailyBudgetTest() {
     });
 
     it('should_deserialize_from_json', 0, () => {
-      const json = new DailyBudgetJson();
+      const json: DailyBudgetJson = new DailyBudgetJson()
       json.memberId = 'member_test';
       json.date = '2025-12-20';
       json.sodiumBudget = 1800;

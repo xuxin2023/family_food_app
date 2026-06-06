@@ -1,3 +1,5 @@
+interface SyncDevice { name: string; id: string; isOnline: boolean }
+interface SyncType { key: string; label: string; icon: string }
 import { COLORS, RADIUS, SPACING, FONT_SIZE } from 'hsp_core';
 import { curves } from '@kit.ArkUI';
 import { DistributedDataService, SyncDataPayload } from 'hsp_service';
@@ -172,7 +174,7 @@ struct SyncTypeSelector {
         .fontWeight(FontWeight.Medium)
         .margin({ bottom: SPACING.MD })
 
-      ForEach(this.syncTypes, (type: { key: string, label: string, icon: string }) => {
+      ForEach(this.syncTypes, (type: SyncType) => {
         Row() {
           Text(type.icon)
             .fontSize(24)
@@ -196,7 +198,7 @@ struct SyncTypeSelector {
         .onClick(() => {
           this.onToggle(type.key)
         })
-      }, (type: { key: string, label: string, icon: string }) => type.key)
+      }, (type: SyncType) => type.key)
     }
     .width('100%')
     .padding(SPACING.MD)
@@ -317,7 +319,7 @@ export struct DistributedSyncPanel {
             .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
             .borderRadius(RADIUS.MD)
           } else {
-            ForEach(this.connectedDevices, (device: { name: string, id: string, isOnline: boolean }) => {
+            ForEach(this.connectedDevices, (device: SyncDevice) => {
               DeviceListItem({
                 deviceName: device.name,
                 deviceId: device.id,
@@ -333,7 +335,7 @@ export struct DistributedSyncPanel {
                   }
                 }
               })
-            }, (device: { name: string, id: string, isOnline: boolean }) => device.id)
+            }, (device: SyncDevice) => device.id)
           }
         }
         .width('100%')

@@ -57,15 +57,15 @@ class MockNutritionTargetRepository {
 export default function memberFacadeTest() {
   describe('MemberFacade', () => {
     it('saveMember_and_getAllMembersSync_should_work', 0, async () => {
-      const familyRepo = new MockFamilyRepository();
-      const facade = new MemberFacade(
+      const familyRepo: MockFamilyRepository = new MockFamilyRepository()
+      const facade: MemberFacade = new MemberFacade(
         familyRepo as Object,
         new MockMemberManager() as Object,
         new MockCacheManager() as Object,
         new MockNutritionTargetRepository() as Object
       );
 
-      const profile = new FamilyProfile();
+      const profile: FamilyProfile = new FamilyProfile()
       profile.memberId = 'mem-001';
       profile.nickname = '爸爸';
 
@@ -76,15 +76,15 @@ export default function memberFacadeTest() {
     });
 
     it('deleteMember_should_remove_from_cache', 0, async () => {
-      const familyRepo = new MockFamilyRepository();
-      const facade = new MemberFacade(
+      const familyRepo: MockFamilyRepository = new MockFamilyRepository()
+      const facade: MemberFacade = new MemberFacade(
         familyRepo as Object,
         new MockMemberManager() as Object,
         new MockCacheManager() as Object,
         new MockNutritionTargetRepository() as Object
       );
 
-      const profile = new FamilyProfile();
+      const profile: FamilyProfile = new FamilyProfile()
       profile.memberId = 'mem-002';
       profile.nickname = '妈妈';
 
@@ -96,8 +96,8 @@ export default function memberFacadeTest() {
     });
 
     it('getHealthSignal_should_return_default_for_new_member', 0, () => {
-      const familyRepo = new MockFamilyRepository();
-      const facade = new MemberFacade(
+      const familyRepo: MockFamilyRepository = new MockFamilyRepository()
+      const facade: MemberFacade = new MemberFacade(
         familyRepo as Object,
         new MockMemberManager() as Object,
         new MockCacheManager() as Object,
@@ -110,8 +110,8 @@ export default function memberFacadeTest() {
     });
 
     it('getDailyBudgetSync_should_return_default_for_new_member', 0, () => {
-      const familyRepo = new MockFamilyRepository();
-      const facade = new MemberFacade(
+      const familyRepo: MockFamilyRepository = new MockFamilyRepository()
+      const facade: MemberFacade = new MemberFacade(
         familyRepo as Object,
         new MockMemberManager() as Object,
         new MockCacheManager() as Object,
@@ -124,8 +124,8 @@ export default function memberFacadeTest() {
     });
 
     it('getAllMembersSync_should_return_empty_initially', 0, () => {
-      const familyRepo = new MockFamilyRepository();
-      const facade = new MemberFacade(
+      const familyRepo: MockFamilyRepository = new MockFamilyRepository()
+      const facade: MemberFacade = new MemberFacade(
         familyRepo as Object,
         new MockMemberManager() as Object,
         new MockCacheManager() as Object,

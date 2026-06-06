@@ -5,7 +5,7 @@ import { SmartBasketService, SmartBasketResult } from 'hsp_service';
 import { FoodLabel, FamilyProfile, NutritionPer100g, AgeGroup, HealthGoal } from 'hsp_core';
 
 function makeFood(name: string, sodium: number, sugar: number, fat: number, cal: number): FoodLabel {
-  const f = new FoodLabel();
+  const f: FoodLabel = new FoodLabel()
   f.foodName = name;
   f.barcode = `test_${name}`;
   f.nutrition = new NutritionPer100g();
@@ -23,7 +23,7 @@ function makeFood(name: string, sodium: number, sugar: number, fat: number, cal:
 }
 
 function makeAdult(goals: HealthGoal[]): FamilyProfile {
-  const p = new FamilyProfile();
+  const p: FamilyProfile = new FamilyProfile()
   p.memberId = 'adult1';
   p.nickname = '成年人';
   p.age = 30;
@@ -36,7 +36,7 @@ function makeAdult(goals: HealthGoal[]): FamilyProfile {
 }
 
 export default function smartBasketTest(): TestSuite {
-  const suite = new TestSuite('SmartBasketService');
+  const suite: TestSuite = new TestSuite(
   const svc = SmartBasketService.getInstance();
 
   suite.addTest(new TestCase('analyze single food returns valid result', async () => {

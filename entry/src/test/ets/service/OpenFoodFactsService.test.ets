@@ -11,7 +11,7 @@ function isValidBarcode(code: string): boolean {
 }
 
 export default function offServiceTest(): TestSuite {
-  const suite = new TestSuite('OpenFoodFactsService');
+  const suite: TestSuite = new TestSuite(
 
   suite.addTest(new TestCase('validEan13', () => {
     expect(isValidBarcode('3017620422003')).assertEqual(true);

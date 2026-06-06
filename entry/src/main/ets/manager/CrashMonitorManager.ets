@@ -82,11 +82,11 @@ export class CrashMonitorManager {
       const now = new Date();
       const dateStr =
         now.getFullYear() + '-' +
-        String(now.getMonth() + 1).padStart(2, '0') + '-' +
-        String(now.getDate()).padStart(2, '0') + '_' +
-        String(now.getHours()).padStart(2, '0') + '-' +
-        String(now.getMinutes()).padStart(2, '0') + '-' +
-        String(now.getSeconds()).padStart(2, '0');
+        (now.getMonth()+1).toString().padStart(2, '0') + '-' +
+        now.getDate().toString().padStart(2, '0') + '_' +
+        now.getHours().toString().padStart(2, '0') + '-' +
+        now.getMinutes().toString().padStart(2, '0') + '-' +
+        now.getSeconds().toString().padStart(2, '0');
       const fileName = `crash_${dateStr}.log`;
       const filePath = this.crashLogDir + fileName;
 

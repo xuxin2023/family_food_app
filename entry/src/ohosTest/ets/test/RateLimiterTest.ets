@@ -5,7 +5,7 @@ export default function rateLimiterTest() {
   describe('RateLimiterTest', () => {
     it('should_allow_request_within_limit', 0, () => {
       const limiter = RateLimiter.getInstance();
-      const config = new RateLimitConfig();
+      const config: RateLimitConfig = new RateLimitConfig()
       config.endpoint = 'test_ep';
       config.maxRequests = 5;
       config.windowMs = 60000;
@@ -16,7 +16,7 @@ export default function rateLimiterTest() {
 
     it('should_block_request_exceeding_limit', 0, () => {
       const limiter = RateLimiter.getInstance();
-      const config = new RateLimitConfig();
+      const config: RateLimitConfig = new RateLimitConfig()
       config.endpoint = 'test_ep_block';
       config.maxRequests = 2;
       config.windowMs = 60000;

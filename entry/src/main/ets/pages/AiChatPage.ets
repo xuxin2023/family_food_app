@@ -18,7 +18,7 @@ class ActionMenuButton {
 }
 
 function makeActionMenuButton(text: string, color: string): ActionMenuButton {
-  const btn = new ActionMenuButton();
+  const btn: ActionMenuButton = new ActionMenuButton()
   btn.text = text;
   btn.color = color;
   return btn;
@@ -82,7 +82,7 @@ struct AiChatPage {
         const welcomeText = this.selectedMemberId.length > 0
           ? $r('app.string.ai_chat_welcome_with_member', this.selectedMemberName)
           : $r('app.string.ai_chat_welcome');
-        const welcomeMsg = new ChatMessage(
+        const welcomeMsg: ChatMessage = new ChatMessage(
           generateMessageId(),
           welcomeText,
           ChatRole.ASSISTANT,
@@ -353,7 +353,7 @@ struct AiChatPage {
 
     this.showQuickQuestions = false
 
-    const userMsg = new ChatMessage(
+    const userMsg: ChatMessage = new ChatMessage(
       generateMessageId(),
       text,
       ChatRole.USER,
@@ -393,7 +393,7 @@ struct AiChatPage {
       const sourceLabel = response.source === LlmSource.ON_DEVICE
         ? ' [端侧]' : response.source === LlmSource.CLOUD_PANGU
         ? ' [AI]' : '';
-      const aiMsg = new ChatMessage(
+      const aiMsg: ChatMessage = new ChatMessage(
         generateMessageId(),
         response.answer + sourceLabel,
         ChatRole.ASSISTANT,
@@ -404,7 +404,7 @@ struct AiChatPage {
     } catch (error) {
       userMsg.status = MessageStatus.FAILED
       hilog.error(DOMAIN_ZERO, TAG, 'sendMessage failed: %{public}s', JSON.stringify(error))
-      const errorMsg = new ChatMessage(
+      const errorMsg: ChatMessage = new ChatMessage(
         generateMessageId(),
         $r('app.string.ai_chat_error_reply') as ResourceStr,
         ChatRole.ASSISTANT,
@@ -478,7 +478,7 @@ struct AiChatPage {
           if (savedMessages.length > 0) {
             this.messages = savedMessages;
           } else {
-            const switchMsg = new ChatMessage(
+            const switchMsg: ChatMessage = new ChatMessage(
               generateMessageId(),
               $r('app.string.ai_chat_switched_member', member.nickname) as ResourceStr,
               ChatRole.ASSISTANT,
@@ -487,7 +487,7 @@ struct AiChatPage {
             this.messages.push(switchMsg)
           }
         } catch (e) {
-          const switchMsg = new ChatMessage(
+          const switchMsg: ChatMessage = new ChatMessage(
             generateMessageId(),
             $r('app.string.ai_chat_switched_member', member.nickname) as ResourceStr,
             ChatRole.ASSISTANT,

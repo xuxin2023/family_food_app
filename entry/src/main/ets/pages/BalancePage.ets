@@ -72,7 +72,7 @@ struct BalancePage {
   }
 
   private addScenario(emoji: string, label: ResourceStr, value: MealScenario): void {
-    const option = new ScenarioOption();
+    const option: ScenarioOption = new ScenarioOption()
     option.emoji = emoji;
     option.label = label;
     option.value = value;
@@ -370,7 +370,7 @@ struct BalancePage {
   }
 
   private createFoodForScenario(scenario: MealScenario): FoodLabel {
-    const label = new FoodLabel()
+    const label: FoodLabel = new FoodLabel()
     label.foodId = `scenario_${scenario}_${Date.now()}`
     label.foodName = scenario
     label.source = FoodSource.USER_UPLOAD

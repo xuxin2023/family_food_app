@@ -3,7 +3,7 @@ import { RuleRepository, AllergenKeywordMap } from 'hsp_service';
 
 export default function ruleRepositoryTest() {
   describe('RuleRepository', () => {
-    const repo = new RuleRepository();
+    const repo: RuleRepository = new RuleRepository()
 
     it('should return AllergenKeywordMap class instance from loadAllergenKeywords', async () => {
       const result = await repo.loadAllergenKeywords();

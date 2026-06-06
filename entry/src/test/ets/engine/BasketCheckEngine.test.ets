@@ -7,10 +7,10 @@ import { FoodLabel, FamilyProfile, AgeGroup, HealthGoal } from 'hsp_core';
 
 export default function basketCheckEngineTest() {
   describe('BasketCheckEngine', () => {
-    const engine = new BasketCheckEngine();
+    const engine: BasketCheckEngine = new BasketCheckEngine()
 
     function createFood(name: string, sodium: number, sugar: number, calories: number, fat: number): FoodLabel {
-      const food = new FoodLabel();
+      const food: FoodLabel = new FoodLabel()
       food.foodId = name;
       food.foodName = name;
       food.nutrition.sodium = sodium;
@@ -34,7 +34,7 @@ export default function basketCheckEngineTest() {
 
     it('should check child profile for sugar', () => {
       const foods = [createFood('candy', 50, 30, 400, 0)];
-      const child = new FamilyProfile();
+      const child: FamilyProfile = new FamilyProfile()
       child.memberId = 'child1';
       child.ageGroup = AgeGroup.CHILD;
       child.healthGoals = [HealthGoal.CHILD];

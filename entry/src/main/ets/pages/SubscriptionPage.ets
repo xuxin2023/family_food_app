@@ -265,7 +265,7 @@ struct SubscriptionPage {
       const tier = tiers[i]
       const plan = getProductPlanForTier(tier)
       if (!plan) continue
-      const d = new PlanDisplay()
+      const d: PlanDisplay = new PlanDisplay()
       d.index = i
       d.tier = tier
       d.name = this.getTierDisplayName(tier) as string

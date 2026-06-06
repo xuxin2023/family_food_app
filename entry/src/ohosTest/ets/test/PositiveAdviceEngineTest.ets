@@ -5,7 +5,7 @@ import { PositiveAdviceEngine, PositiveAdvice } from 'feature_report';
 import { MealScenario, FamilyProfile, AgeGroup, HealthGoal } from 'hsp_core';
 
 function createPositiveProfile(goals: HealthGoal[] = [], ageGroup: AgeGroup = AgeGroup.ADULT): FamilyProfile {
-  const p = new FamilyProfile();
+  const p: FamilyProfile = new FamilyProfile()
   p.memberId = 'test'; p.nickname = '测试'; p.ageGroup = ageGroup;
   p.healthGoals = goals; p.createdAt = Date.now(); p.updatedAt = Date.now();
   return p;
@@ -13,7 +13,7 @@ function createPositiveProfile(goals: HealthGoal[] = [], ageGroup: AgeGroup = Ag
 
 export default function positiveAdviceEngineTest() {
   describe('PositiveAdviceEngine', () => {
-    const engine = new PositiveAdviceEngine();
+    const engine: PositiveAdviceEngine = new PositiveAdviceEngine()
 
     it('should_suggest_vegetables_after_bbb', 0, () => {
       const profile = createPositiveProfile([HealthGoal.CONTROL_BP]);

@@ -62,12 +62,12 @@ export class MemoryMonitor {
   }
 
   captureSnapshot(): MemorySnapshot {
-    const snapshot: MemorySnapshot = new MemorySnapshot(
+    const snapshot: MemorySnapshot = new MemorySnapshot()
     snapshot.timestamp = Date.now();
     snapshot.imageCacheSize = 0;
     snapshot.gcCount = this.gcTriggerCount;
     try {
-      const perf = (globalThis as Record<string, Object>)['performance'] as Record<string, Object> | undefined;
+      const perf = (Object.create(null) as Record<string, Object>)['performance'] as Record<string, Object> | undefined;
       if (perf) {
         const mem = perf['memory'] as Record<string, Object> | undefined;
         if (mem) {

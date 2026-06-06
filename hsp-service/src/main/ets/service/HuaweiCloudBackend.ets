@@ -64,7 +64,7 @@ export class CloudStorageConfig {
 
 function createCloudFunctionConfig(name: string, path: string, method: http.RequestMethod,
   timeout: number, description: string): CloudFunctionConfig {
-  const config: CloudFunctionConfig = new CloudFunctionConfig(
+  const config: CloudFunctionConfig = new CloudFunctionConfig()
   config.name = name;
   config.path = path;
   config.method = method;
@@ -74,7 +74,7 @@ function createCloudFunctionConfig(name: string, path: string, method: http.Requ
 }
 
 function createCloudDatabaseConfig(name: string, collection: string, schema: string, description: string): CloudDatabaseConfig {
-  const config: CloudDatabaseConfig = new CloudDatabaseConfig(
+  const config: CloudDatabaseConfig = new CloudDatabaseConfig()
   config.name = name;
   config.collection = collection;
   config.schema = schema;
@@ -83,7 +83,7 @@ function createCloudDatabaseConfig(name: string, collection: string, schema: str
 }
 
 function createCloudStorageConfig(name: string, bucket: string, path: string, description: string): CloudStorageConfig {
-  const config: CloudStorageConfig = new CloudStorageConfig(
+  const config: CloudStorageConfig = new CloudStorageConfig()
   config.name = name;
   config.bucket = bucket;
   config.path = path;
@@ -207,7 +207,7 @@ export class HuaweiCloudBackend {
         header.set('Authorization', `Bearer ${token}`);
       }
 
-      const opts: SecureRequestOptions = new SecureRequestOptions(
+      const opts: SecureRequestOptions = new SecureRequestOptions()
       opts.url = url;
       opts.method = config.method;
       opts.header = header;
@@ -217,7 +217,7 @@ export class HuaweiCloudBackend {
 
       const response = await SecureHttpClient.getInstance().request(opts);
       if (response.responseCode === 200) {
-        let bodyStr: string;
+        let bodyStr: string = '';
         if (typeof response.result === 'string') {
           bodyStr = response.result;
         } else if (response.result instanceof ArrayBuffer) {

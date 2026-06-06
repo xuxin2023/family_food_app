@@ -55,14 +55,14 @@ struct AllergySetupWizard {
 
   private buildOptions(): void {
     this.allergyOptions = COMMON_ALLERGENS.map((name: string) => {
-      const opt: AllergyOption = new AllergyOption(
+      const opt: AllergyOption = new AllergyOption()
       opt.name = name;
       opt.category = 'allergy';
       return opt;
     });
 
     this.intoleranceOptions = COMMON_INTOLERANCES.map((name: string) => {
-      const opt: AllergyOption = new AllergyOption(
+      const opt: AllergyOption = new AllergyOption()
       opt.name = name;
       opt.category = 'intolerance';
       return opt;
@@ -73,7 +73,7 @@ struct AllergySetupWizard {
     const selectedAllergies = this.allergyOptions
       .filter((o: AllergyOption) => o.selected)
       .map((o: AllergyOption) => {
-        const item: AllergyItem = new AllergyItem(
+        const item: AllergyItem = new AllergyItem()
         item.allergen = o.name;
         item.severity = o.severity;
         item.confirmedAt = Date.now();
@@ -83,7 +83,7 @@ struct AllergySetupWizard {
     const selectedIntolerances = this.intoleranceOptions
       .filter((o: AllergyOption) => o.selected)
       .map((o: AllergyOption) => {
-        const item: IntoleranceItem = new IntoleranceItem(
+        const item: IntoleranceItem = new IntoleranceItem()
         item.substance = o.name;
         item.severity = o.severity;
         item.confirmedAt = Date.now();

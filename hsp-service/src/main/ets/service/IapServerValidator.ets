@@ -54,7 +54,7 @@ export class IapServerValidator {
   }
 
   async verifyPurchaseToken(purchaseToken: string, productId: string): Promise<IapVerifyResult> {
-    const result: IapVerifyResult = new IapVerifyResult(
+    const result: IapVerifyResult = new IapVerifyResult()
     result.purchaseToken = purchaseToken;
     result.productId = productId;
     result.isValid = false;
@@ -64,7 +64,7 @@ export class IapServerValidator {
 
     const secureClient = SecureHttpClient.getInstance();
     try {
-      const opts: SecureRequestOptions = new SecureRequestOptions(
+      const opts: SecureRequestOptions = new SecureRequestOptions()
       opts.url = VERIFY_API_URL;
       opts.method = http.RequestMethod.POST;
       opts.header = new Map([

@@ -5,7 +5,7 @@ import { Driver, ON } from '@kit.TestKit';
 
 export default function historySearchTest() {
   describe('HistorySearchTest', () => {
-    let driver: Driver;
+    let driver: Driver = new Driver();
 
     // 导航至历史记录页面
     it('should_navigate_to_history', 0, async () => {

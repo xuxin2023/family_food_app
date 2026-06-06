@@ -38,7 +38,7 @@ export class SecureHttpHelper {
   ): Promise<SecureJsonResponse> {
     const result: SecureJsonResponse = new SecureJsonResponse(
     try {
-      const opts: SecureRequestOptions = new SecureRequestOptions(
+      const opts: SecureRequestOptions = new SecureRequestOptions()
       opts.url = url;
       opts.method = method;
       opts.header = header ?? new Map<string, string>();
@@ -84,7 +84,7 @@ export class SecureHttpHelper {
 
   static async downloadBuffer(url: string, header?: Map<string, string>, timeoutMs: number = 30000): Promise<ArrayBuffer | null> {
     try {
-      const opts: SecureRequestOptions = new SecureRequestOptions(
+      const opts: SecureRequestOptions = new SecureRequestOptions()
       opts.url = url;
       opts.method = http.RequestMethod.GET;
       opts.header = header ?? new Map<string, string>();

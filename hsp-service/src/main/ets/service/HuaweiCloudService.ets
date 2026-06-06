@@ -74,7 +74,7 @@ export class HuaweiCloudService {
   async callFunction(functionName: string, payload: Map<string, Object>): Promise<CloudFunctionResult> {
     // 可通过 HuaweiCloudBackend 统一出口调用云函数
     // 例如: HuaweiCloudBackend.getInstance().callFunction(functionName, payload)
-    const emptyResult: CloudFunctionResult = new CloudFunctionResult(
+    const emptyResult: CloudFunctionResult = new CloudFunctionResult()
     emptyResult.success = false;
     emptyResult.data = null;
     emptyResult.errorMessage = '';
@@ -85,7 +85,7 @@ export class HuaweiCloudService {
     try {
       const token = await this.ensureAccessToken();
       const url = `${API_CONFIG.HUAWEI_CLOUD_BASE_URL}/function/${functionName}`;
-      const opts: SecureRequestOptions = new SecureRequestOptions(
+      const opts: SecureRequestOptions = new SecureRequestOptions()
       opts.url = url;
       opts.method = http.RequestMethod.POST;
       opts.header = new Map([
@@ -99,21 +99,21 @@ export class HuaweiCloudService {
 
       if (response.responseCode === 200) {
         const raw = SafeJsonParse.parseRecord(response.result);
-        const r: CloudFunctionResult = new CloudFunctionResult(
+        const r: CloudFunctionResult = new CloudFunctionResult()
         r.success = true;
         const dataMap = JsonHelper.recordToMap(raw);
         r.data = dataMap;
         r.errorMessage = '';
         return r;
       }
-      const r2: CloudFunctionResult = new CloudFunctionResult(
+      const r2: CloudFunctionResult = new CloudFunctionResult()
       r2.success = false;
       r2.data = null;
       r2.errorMessage = `Cloud function returned HTTP ${response.responseCode}`;
       return r2;
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'callFunction %{public}s failed: %{public}s', functionName, JSON.stringify(error));
-      const r3: CloudFunctionResult = new CloudFunctionResult(
+      const r3: CloudFunctionResult = new CloudFunctionResult()
       r3.success = false;
       r3.data = null;
       r3.errorMessage = (error as Error).message || 'Network error';
@@ -122,7 +122,7 @@ export class HuaweiCloudService {
   }
 
   async queryCloudDb(query: CloudDbQuery): Promise<CloudDbResult> {
-    const emptyResult: CloudDbResult = new CloudDbResult(
+    const emptyResult: CloudDbResult = new CloudDbResult()
     emptyResult.success = false;
     emptyResult.records = [];
     emptyResult.totalCount = 0;
@@ -134,7 +134,7 @@ export class HuaweiCloudService {
     try {
       const token = await this.ensureAccessToken();
       const url = `${API_CONFIG.HUAWEI_CLOUD_BASE_URL}/db/query`;
-      const opts2: SecureRequestOptions = new SecureRequestOptions(
+      const opts2: SecureRequestOptions = new SecureRequestOptions()
       opts2.url = url;
       opts2.method = http.RequestMethod.POST;
       opts2.header = new Map([
@@ -156,14 +156,14 @@ export class HuaweiCloudService {
           records.push(m);
         }
         const totalCount = typeof raw['totalCount'] === 'number' ? raw['totalCount'] as number : records.length;
-        const r: CloudDbResult = new CloudDbResult(
+        const r: CloudDbResult = new CloudDbResult()
         r.success = true;
         r.records = records;
         r.totalCount = totalCount;
         r.errorMessage = '';
         return r;
       }
-      const r2: CloudDbResult = new CloudDbResult(
+      const r2: CloudDbResult = new CloudDbResult()
       r2.success = false;
       r2.records = [];
       r2.totalCount = 0;
@@ -171,7 +171,7 @@ export class HuaweiCloudService {
       return r2;
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'queryCloudDb failed: %{public}s', JSON.stringify(error));
-      const r3: CloudDbResult = new CloudDbResult(
+      const r3: CloudDbResult = new CloudDbResult()
       r3.success = false;
       r3.records = [];
       r3.totalCount = 0;

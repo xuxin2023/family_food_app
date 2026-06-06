@@ -42,7 +42,7 @@ export class CloudSyncConfig {
  * 创建默认同步配置
  */
 export function createDefaultSyncConfig(): CloudSyncConfig {
-  const config: CloudSyncConfig = new CloudSyncConfig(
+  const config: CloudSyncConfig = new CloudSyncConfig()
   config.enabled = false;
   config.strategy = SyncStrategy.ALWAYS;
   config.conflictResolution = ConflictResolution.LOCAL_WINS;

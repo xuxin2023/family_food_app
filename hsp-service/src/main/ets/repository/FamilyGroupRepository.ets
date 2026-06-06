@@ -453,7 +453,7 @@ export class FamilyGroupRepository {
     const groups = await this.queryGroups(predicates);
     const results: GroupSummary[] = [];
     for (const g of groups) {
-      const s: GroupSummary = new GroupSummary(
+      const s: GroupSummary = new GroupSummary()
       s.groupId = g.groupId;
       s.groupName = g.groupName;
       s.memberCount = g.memberCount;
@@ -467,7 +467,7 @@ export class FamilyGroupRepository {
     try {
       const id = 'g_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
       const code = 'INV_' + Math.random().toString(36).substring(2, 10).toUpperCase();
-      const group: FamilyGroup = new FamilyGroup(
+      const group: FamilyGroup = new FamilyGroup()
       group.groupId = id;
       group.groupName = params.name;
       group.inviteCode = code;
@@ -477,7 +477,7 @@ export class FamilyGroupRepository {
       group.memberCount = 1;
       group.maxMembers = 20;
       await this.saveGroup(group);
-      const s: GroupSummary = new GroupSummary(
+      const s: GroupSummary = new GroupSummary()
       s.groupId = id;
       s.groupName = params.name;
       s.memberCount = 1;
@@ -497,7 +497,7 @@ export class FamilyGroupRepository {
       group.updatedAt = Date.now();
       const mcUpdate: Record<string, Object> = { 'memberCount': group.memberCount };
       await this.updateGroup(group.groupId, mcUpdate);
-      const s: GroupSummary = new GroupSummary(
+      const s: GroupSummary = new GroupSummary()
       s.groupId = group.groupId;
       s.groupName = group.groupName;
       s.memberCount = group.memberCount;
@@ -515,7 +515,7 @@ export class FamilyGroupRepository {
   async saveFeedSimple(groupId: string, feed: GroupFeed): Promise<void> {
     try {
       if (!this.rdbStore) return;
-      const f: GroupFeed = new GroupFeed(
+      const f: GroupFeed = new GroupFeed()
       f.feedId = 'fd_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
       f.groupId = groupId;
       f.feedType = feed.feedType || FeedType.TEXT;
@@ -566,7 +566,7 @@ export class FamilyGroupRepository {
   }
 
   private parseGroup(resultSet: relationalStore.ResultSet): FamilyGroup {
-    const g: FamilyGroup = new FamilyGroup(
+    const g: FamilyGroup = new FamilyGroup()
     g.groupId = this.safeGetString(resultSet, 'group_id');
     g.groupName = this.safeGetString(resultSet, 'group_name');
     g.groupAvatar = this.safeGetString(resultSet, 'group_avatar');
@@ -604,7 +604,7 @@ export class FamilyGroupRepository {
   }
 
   private parseMember(resultSet: relationalStore.ResultSet): GroupMember {
-    const m: GroupMember = new GroupMember(
+    const m: GroupMember = new GroupMember()
     m.id = this.safeGetString(resultSet, 'id')
     m.groupId = this.safeGetString(resultSet, 'group_id')
     m.uid = this.safeGetString(resultSet, 'uid')
@@ -640,7 +640,7 @@ export class FamilyGroupRepository {
   }
 
   private parseRequest(resultSet: relationalStore.ResultSet): JoinRequest {
-    const r: JoinRequest = new JoinRequest(
+    const r: JoinRequest = new JoinRequest()
     r.requestId = this.safeGetString(resultSet, 'request_id')
     r.groupId = this.safeGetString(resultSet, 'group_id')
     r.requesterUid = this.safeGetString(resultSet, 'requester_uid')
@@ -675,7 +675,7 @@ export class FamilyGroupRepository {
   }
 
   private parseFeed(resultSet: relationalStore.ResultSet): GroupFeed {
-    const feed: GroupFeed = new GroupFeed(
+    const feed: GroupFeed = new GroupFeed()
     feed.feedId = this.safeGetString(resultSet, 'feed_id');
     feed.groupId = this.safeGetString(resultSet, 'group_id');
     feed.feedType = this.safeGetString(resultSet, 'feed_type') as FeedType;

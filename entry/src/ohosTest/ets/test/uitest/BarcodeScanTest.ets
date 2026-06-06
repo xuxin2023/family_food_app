@@ -5,7 +5,7 @@ import { Driver, ON } from '@kit.TestKit';
 
 export default function barcodeScanTest() {
   describe('BarcodeScanTest', () => {
-    let driver: Driver;
+    let driver: Driver = new Driver();
 
     // 点击"拍食品标签"按钮进入扫描页
     it('should_navigate_to_scan_page', 0, async () => {

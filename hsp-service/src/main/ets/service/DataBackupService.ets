@@ -74,7 +74,7 @@ export class DataBackupService {
     const result: BackupResult = new BackupResult(
     try {
       const rdbStore = await this.getRdbStore(context);
-      const manifest: BackupManifest = new BackupManifest(
+      const manifest: BackupManifest = new BackupManifest()
       manifest.schemaVersion = DB_SCHEMA_VERSION;
       manifest.exportedAt = Date.now();
       manifest.isIncremental = incremental;

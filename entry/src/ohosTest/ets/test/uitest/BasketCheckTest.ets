@@ -5,7 +5,7 @@ import { Driver, ON } from '@kit.TestKit';
 
 export default function basketCheckTest() {
   describe('BasketCheckTest', () => {
-    let driver: Driver;
+    let driver: Driver = new Driver();
 
     // 导航到购物篮页面
     it('should_navigate_to_basket', 0, async () => {

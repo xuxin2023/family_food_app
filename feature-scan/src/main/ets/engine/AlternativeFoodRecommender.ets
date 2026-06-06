@@ -615,7 +615,7 @@ export class AlternativeFoodRecommender implements IAlternativeRecommender {
     nutrition: NutritionPer100g,
     members: FamilyProfile[]
   ): Promise<AlternativeFood[]> {
-    const foodLabel: FoodLabel = new FoodLabel(
+    const foodLabel: FoodLabel = new FoodLabel()
     foodLabel.foodName = '扫描食品';
     foodLabel.nutrition = nutrition;
     foodLabel.ingredients = [];

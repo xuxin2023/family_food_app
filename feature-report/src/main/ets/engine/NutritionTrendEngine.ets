@@ -97,7 +97,7 @@ export class NutritionTrendEngine implements INutritionTrendCalculator {
         values.push(val);
       }
 
-      const data: NutrientTrendData = new NutrientTrendData(
+      const data: NutrientTrendData = new NutrientTrendData()
       data.nutrientName = cfg.name;
       data.unit = cfg.unit;
       data.color = cfg.color;
@@ -157,7 +157,7 @@ export class NutritionTrendEngine implements INutritionTrendCalculator {
         fatTotal += r.fatIntake;
       }
 
-      const mg: MealGroup = new MealGroup(
+      const mg: MealGroup = new MealGroup()
       mg.mealType = key;
       mg.mealLabel = MEAL_LABELS[key] || key;
       mg.records = groupRecords;

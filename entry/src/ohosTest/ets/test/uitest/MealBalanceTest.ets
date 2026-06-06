@@ -5,7 +5,7 @@ import { Driver, ON } from '@kit.TestKit';
 
 export default function mealBalanceTest() {
   describe('MealBalanceTest', () => {
-    let driver: Driver;
+    let driver: Driver = new Driver();
 
     // 进入报告页面
     it('should_navigate_to_report', 0, async () => {

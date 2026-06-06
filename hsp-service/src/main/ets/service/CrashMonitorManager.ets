@@ -85,7 +85,7 @@ export class CrashMonitorManager {
   }
 
   captureCrash(errorType: string, message: string, stack: string): void {
-    const record: CrashRecord = new CrashRecord(
+    const record: CrashRecord = new CrashRecord()
     record.id = `crash_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
     record.errorType = errorType;
     record.message = message.substring(0, 500);

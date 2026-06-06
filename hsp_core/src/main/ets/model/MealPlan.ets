@@ -22,7 +22,7 @@ export class MealPlanTemplate {
 }
 
 export function createDefaultMealPlan(): MealPlanTemplate {
-  const plan: MealPlanTemplate = new MealPlanTemplate(
+  const plan: MealPlanTemplate = new MealPlanTemplate()
   plan.id = 'default_balanced';
   plan.name = '均衡饮食周计划';
   plan.description = '适合普通成人的均衡一周饮食模板';
@@ -71,7 +71,7 @@ export function createDefaultMealPlan(): MealPlanTemplate {
   ];
 
   for (let i = 0; i < 7; i++) {
-    const day: MealPlanDay = new MealPlanDay(
+    const day: MealPlanDay = new MealPlanDay()
     day.day = dayNames[i];
     day.breakfast = breakfasts[i];
     day.lunch = lunches[i];
@@ -84,7 +84,7 @@ export function createDefaultMealPlan(): MealPlanTemplate {
 }
 
 export function createLowSodiumMealPlan(): MealPlanTemplate {
-  const plan: MealPlanTemplate = new MealPlanTemplate(
+  const plan: MealPlanTemplate = new MealPlanTemplate()
   plan.id = 'low_sodium';
   plan.name = '低盐饮食周计划';
   plan.description = '适合控压人群的低钠一周饮食模板';
@@ -133,7 +133,7 @@ export function createLowSodiumMealPlan(): MealPlanTemplate {
   ];
 
   for (let i = 0; i < 7; i++) {
-    const day: MealPlanDay = new MealPlanDay(
+    const day: MealPlanDay = new MealPlanDay()
     day.day = dayNames[i];
     day.breakfast = breakfasts[i];
     day.lunch = lunches[i];
@@ -146,7 +146,7 @@ export function createLowSodiumMealPlan(): MealPlanTemplate {
 }
 
 export function createLowSugarMealPlan(): MealPlanTemplate {
-  const plan: MealPlanTemplate = new MealPlanTemplate(
+  const plan: MealPlanTemplate = new MealPlanTemplate()
   plan.id = 'low_sugar';
   plan.name = '低糖饮食周计划';
   plan.description = '适合控糖人群的低糖一周饮食模板';
@@ -155,7 +155,7 @@ export function createLowSugarMealPlan(): MealPlanTemplate {
   const dayNames: string[] = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
 
   for (let i = 0; i < 7; i++) {
-    const day: MealPlanDay = new MealPlanDay(
+    const day: MealPlanDay = new MealPlanDay()
     day.day = dayNames[i];
     day.breakfast = [
       makeItem('无糖豆浆', '', 1, 40),
@@ -182,7 +182,7 @@ export function createLowSugarMealPlan(): MealPlanTemplate {
 }
 
 function makeItem(foodName: string, barcode: string, servings: number, calories: number): MealPlanItem {
-  const item: MealPlanItem = new MealPlanItem(
+  const item: MealPlanItem = new MealPlanItem()
   item.foodName = foodName;
   item.barcode = barcode;
   item.servings = servings;

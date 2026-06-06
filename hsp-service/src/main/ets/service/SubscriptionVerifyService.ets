@@ -50,7 +50,7 @@ export class SubscriptionVerifyService {
       const verifyHeader = new Map<string, string>();
       verifyHeader.set('Content-Type', API_CONFIG.HEADER_CONTENT_TYPE_JSON);
 
-      const opts: SecureRequestOptions = new SecureRequestOptions(
+      const opts: SecureRequestOptions = new SecureRequestOptions()
       opts.url = verifyEndpoint;
       opts.method = http.RequestMethod.POST;
       opts.header = verifyHeader;
@@ -143,7 +143,7 @@ export class SubscriptionVerifyService {
   }
 
   private invalidResult(reason: string): SubscriptionVerifyResult {
-    const result: SubscriptionVerifyResult = new SubscriptionVerifyResult(
+    const result: SubscriptionVerifyResult = new SubscriptionVerifyResult()
     result.valid = false;
     result.tier = MemberTier.FREE;
     result.expiresAt = 0;

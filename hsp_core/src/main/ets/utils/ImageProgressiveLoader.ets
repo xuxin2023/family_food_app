@@ -73,7 +73,7 @@ export class ImageProgressiveLoader {
    */
   loadImage(key: string, highResUri: string, width: number, height: number): ImageLoadState {
     if (!this.config.enabled) {
-      const immediate: ImageLoadState = new ImageLoadState(
+      const immediate: ImageLoadState = new ImageLoadState()
       immediate.stage = ImageLoadStage.HIGH_RES;
       immediate.highResUri = highResUri;
       immediate.width = width;
@@ -81,7 +81,7 @@ export class ImageProgressiveLoader {
       return immediate;
     }
 
-    const state: ImageLoadState = new ImageLoadState(
+    const state: ImageLoadState = new ImageLoadState()
     state.stage = ImageLoadStage.PLACEHOLDER;
     state.highResUri = highResUri;
     state.width = width;

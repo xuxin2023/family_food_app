@@ -223,7 +223,7 @@ export class PushNotificationService {
   }
 
   async updateConfig(config: NotificationConfigUpdate): Promise<void> {
-    const merged: NotificationConfig = new NotificationConfig(
+    const merged: NotificationConfig = new NotificationConfig()
     merged.dietReminderEnabled = config.dietReminderEnabled;
     merged.dietReminderHour = config.dietReminderHour;
     merged.dietReminderMinute = config.dietReminderMinute;

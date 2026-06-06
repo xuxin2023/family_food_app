@@ -75,7 +75,7 @@ export class AlternativeRecommender {
   }
 
   private static buildCandidate(entry: OfflineFoodEntry, current: NutritionPer100g): AlternativeCandidate {
-    const candidate: AlternativeCandidate = new AlternativeCandidate(
+    const candidate: AlternativeCandidate = new AlternativeCandidate()
     candidate.foodName = entry.foodName;
     candidate.barcode = entry.barcode;
     candidate.brand = entry.manufacturer;

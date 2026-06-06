@@ -128,7 +128,7 @@ export class AdditiveClassifier {
   static classifyIngredients(ingredients: string[]): AdditiveEntry[] {
     const entries: AdditiveEntry[] = [];
     for (const ing of ingredients) {
-      const entry: AdditiveEntry = new AdditiveEntry(
+      const entry: AdditiveEntry = new AdditiveEntry()
       entry.name = ing;
 
       const eMatch = ing.match(/E\d{3,4}[a-z]?/i);

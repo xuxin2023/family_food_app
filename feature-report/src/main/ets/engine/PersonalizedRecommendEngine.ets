@@ -60,7 +60,7 @@ export class PersonalizedRecommendEngine {
    * 基于食品和个性化上下文，生成5维因子综合推荐
    */
   recommend(food: FoodLabel, ctx: PersonalizedContext): PersonalizedRecommendation {
-    const result: PersonalizedRecommendation = new PersonalizedRecommendation(
+    const result: PersonalizedRecommendation = new PersonalizedRecommendation()
     result.memberId = ctx.profile.memberId;
     result.foodId = food.foodId;
     result.factors = [];
@@ -68,31 +68,31 @@ export class PersonalizedRecommendEngine {
 
     // 因子1: 健康目标契合度 (0-100)
     const goalScore = this.assessGoalAlignment(food, ctx);
-    const f1: PersonalizedFactor = new PersonalizedFactor(
+    const f1: PersonalizedFactor = new PersonalizedFactor()
     f1.name = '健康目标契合度'; f1.score = goalScore; f1.detail = this.describeGoalFactor(ctx);
     result.factors.push(f1);
 
     // 因子2: 营养预算占用 (0-100)
     const budgetScore = this.assessBudgetFit(food, ctx);
-    const f2: PersonalizedFactor = new PersonalizedFactor(
+    const f2: PersonalizedFactor = new PersonalizedFactor()
     f2.name = '营养预算占用'; f2.score = budgetScore; f2.detail = this.describeBudgetFactor(ctx);
     result.factors.push(f2);
 
     // 因子3: 健康信号影响 (0-100)
     const signalScore = this.assessSignalImpact(food, ctx);
-    const f3: PersonalizedFactor = new PersonalizedFactor(
+    const f3: PersonalizedFactor = new PersonalizedFactor()
     f3.name = '健康信号影响'; f3.score = signalScore; f3.detail = this.describeSignalFactor(ctx);
     result.factors.push(f3);
 
     // 因子4: 体检约束 (0-100)
     const checkupScore = this.assessCheckupConstraints(food, ctx);
-    const f4: PersonalizedFactor = new PersonalizedFactor(
+    const f4: PersonalizedFactor = new PersonalizedFactor()
     f4.name = '体检约束'; f4.score = checkupScore; f4.detail = this.describeCheckupFactor(ctx);
     result.factors.push(f4);
 
     // 因子5: 行为模式 (0-100)
     const behaviorScore = this.assessBehaviorPattern(ctx);
-    const f5: PersonalizedFactor = new PersonalizedFactor(
+    const f5: PersonalizedFactor = new PersonalizedFactor()
     f5.name = '行为模式'; f5.score = behaviorScore; f5.detail = this.describeBehaviorFactor(ctx);
     result.factors.push(f5);
 

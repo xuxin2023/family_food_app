@@ -201,7 +201,7 @@ export class NovaGroupEngine {
     const summary = matchedMarkers.length > 0
       ? `检出${matchedMarkers.length}项加工标记: ${matchedMarkers.slice(0, 3).join('、')}${matchedMarkers.length > 3 ? '等' : ''}`
       : this.getDescription(group);
-    const result: NovaEvaluationResult = new NovaEvaluationResult(
+    const result: NovaEvaluationResult = new NovaEvaluationResult()
     result.group = group;
     result.label = this.getLabel(group);
     result.color = this.getColor(group);

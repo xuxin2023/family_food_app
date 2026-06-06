@@ -343,7 +343,7 @@ export class RecipeRepository {
       resultSet = await this.rdbStore.query(predicates);
       const comments: RecipeComment[] = [];
       while (resultSet.goToNextRow()) {
-        const c: RecipeComment = new RecipeComment(
+        const c: RecipeComment = new RecipeComment()
         c.commentId = resultSet.getString(resultSet.getColumnIndex('comment_id'));
         c.recipeId = resultSet.getString(resultSet.getColumnIndex('recipe_id'));
         c.authorUid = resultSet.getString(resultSet.getColumnIndex('author_uid'));
@@ -573,7 +573,7 @@ export class RecipeRepository {
   // ========== 内部方法 ==========
 
   private parseRecipe(resultSet: relationalStore.ResultSet): Recipe {
-    const recipe: Recipe = new Recipe(
+    const recipe: Recipe = new Recipe()
     recipe.recipeId = resultSet.getString(resultSet.getColumnIndex('recipe_id'));
     recipe.title = resultSet.getString(resultSet.getColumnIndex('title'));
     recipe.description = resultSet.getString(resultSet.getColumnIndex('description')) || '';
@@ -657,7 +657,7 @@ export class RecipeRepository {
   // ========== AppState 兼容桥 ==========
 
   async createRecipe(params: CreateRecipeParams): Promise<Recipe | null> {
-    const recipe: Recipe = new Recipe(
+    const recipe: Recipe = new Recipe()
     recipe.recipeId = 'r_' + Date.now().toString(36);
     recipe.title = params.title || '';
     recipe.description = params.description || '';
@@ -689,7 +689,7 @@ export class RecipeRepository {
   }
 
   async addComment(recipeId: string, text: string, authorName: string): Promise<RecipeComment | null> {
-    const comment: RecipeComment = new RecipeComment(
+    const comment: RecipeComment = new RecipeComment()
     comment.commentId = 'c_' + Date.now().toString(36);
     comment.recipeId = recipeId;
     comment.authorUid = 'self';

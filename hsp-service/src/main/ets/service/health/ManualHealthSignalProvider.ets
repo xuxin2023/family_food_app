@@ -18,7 +18,7 @@ export class ManualHealthSignalProvider extends HealthSignalProvider {
   }
 
   async getTodayHealthData(memberId: string): Promise<HealthSignal> {
-    const signal: HealthSignal = new HealthSignal(
+    const signal: HealthSignal = new HealthSignal()
     signal.memberId = memberId;
     signal.date = this.getTodayDate();
     signal.stepLevel = StepLevel.NORMAL;

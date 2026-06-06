@@ -27,7 +27,7 @@ export class CreateGroupParams {
 }
 
 function toGroupSummary(group: FamilyGroup, members: GroupMember[], myRole: GroupRole): GroupSummary {
-  const s: GroupSummary = new GroupSummary(
+  const s: GroupSummary = new GroupSummary()
   s.groupId = group.groupId;
   s.groupName = group.groupName;
   s.memberCount = group.memberCount;
@@ -63,7 +63,7 @@ export class FamilyGroupService {
     const inviteCode = this.generateInviteCode();
     const now = Date.now();
 
-    const group: FamilyGroup = new FamilyGroup(
+    const group: FamilyGroup = new FamilyGroup()
     group.groupId = groupId;
     group.groupName = params.groupName;
     group.groupAvatar = '';
@@ -88,7 +88,7 @@ export class FamilyGroupService {
     }
 
     // 添加创建者为群主
-    const ownerMember: GroupMember = new GroupMember(
+    const ownerMember: GroupMember = new GroupMember()
     ownerMember.id = `gm_${groupId}_${uid}`;
     ownerMember.groupId = groupId;
     ownerMember.uid = uid;
@@ -136,7 +136,7 @@ export class FamilyGroupService {
     }
 
     const now = Date.now();
-    const member: GroupMember = new GroupMember(
+    const member: GroupMember = new GroupMember()
     member.id = `gm_${group.groupId}_${uid}`;
     member.groupId = group.groupId;
     member.uid = uid;
@@ -159,7 +159,7 @@ export class FamilyGroupService {
 
     hilog.info(DOMAIN_ZERO, TAG, 'User %{public}s joined group %{public}s', uid, group.groupId);
 
-    const updatedGroup: FamilyGroup = new FamilyGroup(
+    const updatedGroup: FamilyGroup = new FamilyGroup()
     updatedGroup.groupId = group.groupId;
     updatedGroup.groupName = group.groupName;
     updatedGroup.groupAvatar = group.groupAvatar;
@@ -302,14 +302,14 @@ export class FamilyGroupService {
     const member = await this.groupRepo.getMemberInGroup(groupId, uid);
     if (!member) throw new Error('您不是该群组成员');
 
-    const content: FoodScanFeedContent = new FoodScanFeedContent(
+    const content: FoodScanFeedContent = new FoodScanFeedContent()
     content.foodName = foodName;
     content.foodId = foodId;
     content.nutriScore = nutriScore;
     content.summary = summary;
     content.memberResults = memberResults;
 
-    const feed: GroupFeed = new GroupFeed(
+    const feed: GroupFeed = new GroupFeed()
     feed.feedId = `feed_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
     feed.groupId = groupId;
     feed.feedType = FeedType.FOOD_SCAN_SHARE;
@@ -343,7 +343,7 @@ export class FamilyGroupService {
     const member = await this.groupRepo.getMemberInGroup(groupId, uid);
     if (!member) throw new Error('您不是该群组成员');
 
-    const feed: GroupFeed = new GroupFeed(
+    const feed: GroupFeed = new GroupFeed()
     feed.feedId = `feed_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
     feed.groupId = groupId;
     feed.feedType = feedType;
@@ -415,7 +415,7 @@ export class FamilyGroupService {
   private async addSystemFeed(
     groupId: string, senderUid: string, senderName: string, message: string
   ): Promise<void> {
-    const feed: GroupFeed = new GroupFeed(
+    const feed: GroupFeed = new GroupFeed()
     feed.feedId = `feed_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
     feed.groupId = groupId;
     feed.feedType = FeedType.SYSTEM;

@@ -5,7 +5,7 @@ import { Driver, ON } from '@kit.TestKit';
 
 export default function boundaryScenarioTest() {
   describe('BoundaryScenarioTest', () => {
-    let driver: Driver;
+    let driver: Driver = new Driver();
 
     // ========== 边界场景1: 无网络环境 ==========
 

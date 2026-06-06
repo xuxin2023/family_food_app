@@ -49,7 +49,7 @@ class PinRule {
 }
 
 function makePinRule(hostname: string, pinHashes: string[], includeSubdomains: boolean = false): PinRule {
-  const rule: PinRule = new PinRule(
+  const rule: PinRule = new PinRule()
   rule.hostname = hostname;
   rule.pinHashes = pinHashes;
   rule.includeSubdomains = includeSubdomains;

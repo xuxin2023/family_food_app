@@ -63,7 +63,7 @@ export class DataPortability {
   static async importData(jsonStr: string, context: common.Context): Promise<ImportResult> {
     const result: ImportResult = new ImportResult()
 
-    let parsed: Record<string, Object>;
+    let parsed: Record<string, Object> = {} as Record<string, Object>;
     try {
       parsed = JSON.parse(jsonStr) as Record<string, Object>;
     } catch (error) {

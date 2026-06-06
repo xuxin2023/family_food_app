@@ -27,7 +27,7 @@ export class CopyTextProvider extends ShareProvider {
 
   private notImplemented(message: string): ShareActionResult {
     hilog.info(DOMAIN_ZERO, TAG, message);
-    const result: ShareActionResult = new ShareActionResult(
+    const result: ShareActionResult = new ShareActionResult()
     result.success = false;
     result.message = message;
     return result;

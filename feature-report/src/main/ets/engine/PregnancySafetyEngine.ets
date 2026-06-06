@@ -27,7 +27,7 @@ export class PregnancySafetyResult {
 }
 
 function makeRule(name: string, severity: string, reason: string, maxDailyMg: number = 0): PregnancyIngredientRule {
-  const r: PregnancyIngredientRule = new PregnancyIngredientRule(
+  const r: PregnancyIngredientRule = new PregnancyIngredientRule()
   r.name = name; r.severity = severity; r.reason = reason;
   if (maxDailyMg > 0) { r.maxDailyMg = maxDailyMg; r.hasMaxDaily = true; }
   return r;
@@ -107,7 +107,7 @@ export class PregnancySafetyEngine {
       const matchedIngredients = ingredients.filter(i => keywords.some(k => i.includes(k)));
       if (matchedIngredients.length > 0) {
         for (const ing of matchedIngredients) {
-          const w: PregnancyWarning = new PregnancyWarning(
+          const w: PregnancyWarning = new PregnancyWarning()
           w.ingredient = ing; w.matchedRule = rule;
           warnings.push(w);
         }
@@ -125,7 +125,7 @@ export class PregnancySafetyEngine {
       hilog.info(DOMAIN_ZERO, TAG, 'Pregnancy check: %{public}d warnings, safe=%{public}s', warnings.length, safe.toString());
     }
 
-    const result: PregnancySafetyResult = new PregnancySafetyResult(
+    const result: PregnancySafetyResult = new PregnancySafetyResult()
     result.safe = safe; result.warnings = warnings; result.summary = summary;
     return result;
   }

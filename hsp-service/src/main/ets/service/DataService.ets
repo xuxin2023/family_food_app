@@ -50,7 +50,7 @@ export class DataService {
   static getInstance(): DataService {
     if (dataServiceInstance === null) {
       const ruleEngine: RuleEngine = new RuleEngine(
-      const altRecommender: AlternativeFoodRecommender = new AlternativeFoodRecommender(
+      const altRecommender: AlternativeFoodRecommender = new AlternativeFoodRecommender()
       dataServiceInstance = new DataService(ruleEngine, altRecommender);
     }
     return dataServiceInstance;
@@ -175,7 +175,7 @@ export class DataService {
 
   private parseOpenFoodFactsResponse(product: Map<string, Object>, barcode: string): FoodLabel | null {
     try {
-      const label: FoodLabel = new FoodLabel(
+      const label: FoodLabel = new FoodLabel()
       label.foodId = `remote_${barcode}_${Date.now()}`;
       label.foodName = MapUtil.safeGetString(product, 'product_name') || MapUtil.safeGetString(product, 'product_name_zh') || '未知食品';
       label.barcode = barcode;
@@ -229,7 +229,7 @@ export class DataService {
    */
   async recognizeFromCamera(_imageUri: string): Promise<FoodLabel | null> {
     // 简易实现：从图片 URI 构造一个基础 FoodLabel
-    const label: FoodLabel = new FoodLabel(
+    const label: FoodLabel = new FoodLabel()
     label.foodId = `ocr_${Date.now()}`;
     label.foodName = StringRes.OCR_FOOD;
     label.source = FoodSource.OCR_RECOGNIZE;
@@ -243,7 +243,7 @@ export class DataService {
    */
   async recognizeWithAiFallback(barcode?: string, _imageUri?: string): Promise<FoodLabel | null> {
     // 简易实现：返回基于条码或图片的兜底数据
-    const label: FoodLabel = new FoodLabel(
+    const label: FoodLabel = new FoodLabel()
     label.foodId = `ai_${Date.now()}`;
     label.foodName = 'AI识别的食品';
     label.source = FoodSource.OCR_RECOGNIZE;
@@ -268,7 +268,7 @@ export class DataService {
 
     if (membersList.length === 0) {
       // 无成员时生成通用推荐
-      const rec: Recommendation = new Recommendation(
+      const rec: Recommendation = new Recommendation()
       rec.memberId = '';
       rec.foodId = label.foodId;
       rec.level = RecommendLevel.SUITABLE;
@@ -292,7 +292,7 @@ export class DataService {
           // RuleEngine 计算失败时提供安全兜底
           hilog.warn(DOMAIN_ZERO, TAG, 'RuleEngine calculate failed for member %{public}s: %{public}s',
             member.memberId, JSON.stringify(error));
-          const fallbackRec: Recommendation = new Recommendation(
+          const fallbackRec: Recommendation = new Recommendation()
           fallbackRec.memberId = member.memberId;
           fallbackRec.foodId = label.foodId;
           fallbackRec.level = RecommendLevel.SUITABLE;

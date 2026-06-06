@@ -489,7 +489,7 @@ struct SharePage {
       }
       posterData.nutritionItems = items;
 
-      const generator: SharePosterGenerator = new SharePosterGenerator(
+      const generator: SharePosterGenerator = new SharePosterGenerator()
       this.posterUri = await generator.generatePoster(posterData);
       ToastHelper.show(this.getUIContext(), '海报已生成);
     } catch (e) {

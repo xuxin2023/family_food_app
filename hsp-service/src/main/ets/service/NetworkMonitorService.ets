@@ -177,7 +177,7 @@ export class NetworkMonitorService {
     try {
       const netHandle = await connection.getDefaultNet();
       if (!netHandle || netHandle.netId < 100) {
-        const s: NetworkState = new NetworkState(
+        const s: NetworkState = new NetworkState()
         s.isConnected = false;
         s.isValidated = false;
         s.netType = NetType.NONE;
@@ -216,7 +216,7 @@ export class NetworkMonitorService {
         }
       }
 
-      const s2: NetworkState = new NetworkState(
+      const s2: NetworkState = new NetworkState()
       s2.isConnected = true;
       s2.isValidated = validated;
       s2.netType = netType;
@@ -225,7 +225,7 @@ export class NetworkMonitorService {
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Refresh state failed: %{public}s',
         JSON.stringify(error));
-      const s3: NetworkState = new NetworkState(
+      const s3: NetworkState = new NetworkState()
       s3.isConnected = false;
       s3.isValidated = false;
       s3.netType = NetType.NONE;

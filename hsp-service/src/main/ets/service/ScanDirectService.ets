@@ -110,7 +110,7 @@ export class ScanDirectService {
       const scanPromise = this.startScanFromControlCenter(context);
       const timeoutPromise = new Promise<ScanDirectResult>((resolve) => {
         setTimeout(() => {
-          const timeoutResult: ScanDirectResult = new ScanDirectResult(
+          const timeoutResult: ScanDirectResult = new ScanDirectResult()
           timeoutResult.scanDuration = timeoutMs;
           resolve(timeoutResult);
         }, timeoutMs);
@@ -125,7 +125,7 @@ export class ScanDirectService {
   // ========== 内部方法 ==========
 
   private buildEnvironmentConfig(): ScanEnvironmentConfig {
-    const config: ScanEnvironmentConfig = new ScanEnvironmentConfig(
+    const config: ScanEnvironmentConfig = new ScanEnvironmentConfig()
     config.enableLowLightEnhancement = true;
     config.enableDistortionCorrection = true;
     config.enableMultiAngleRecognition = true;

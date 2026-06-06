@@ -99,7 +99,7 @@ export class OfflineModeManager {
   }
 
   async enqueue(type: OfflineOperationType, payload: string): Promise<void> {
-    const op: OfflineOperation = new OfflineOperation(
+    const op: OfflineOperation = new OfflineOperation()
     op.type = type;
     op.payload = payload;
     op.createdAt = Date.now();

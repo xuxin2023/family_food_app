@@ -23,7 +23,7 @@ export default function v2StateDemoTest(): TestSuite {
 
   // ===== @Trace 属性修改 =====
   suite.addTest(new TestCase('MealNutrition_tracePropertyUpdate', () => {
-    const m: MealNutrition = new MealNutrition(
+    const m: MealNutrition = new MealNutrition()
     m.calories = 700;
     m.sodium = 550;
     expect(m.calories).assertEqual(700);

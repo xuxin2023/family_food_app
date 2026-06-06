@@ -117,7 +117,7 @@ export class AiNutritionistServiceImpl extends AiServiceBase implements IAiNutri
 
   async generateAdvice(memberId: string, dietRecords: DietRecord[], days: number,
     includeMealPlan: boolean, budget: DailyBudget, _target: NutritionTarget): Promise<AiNutritionAdvice> {
-    const member: FamilyProfile = new FamilyProfile(
+    const member: FamilyProfile = new FamilyProfile()
     member.memberId = memberId;
     return this.getAdvice(member, new HealthSignal(), budget, dietRecords, days, includeMealPlan);
   }
@@ -134,7 +134,7 @@ export class AiNutritionistServiceImpl extends AiServiceBase implements IAiNutri
     const mealAnalyses = this.buildMealAnalyses(mealGroups, member);
     const nutrientAnalyses = this.buildNutrientAnalyses(summaries, budget, member, days);
     const patternAnalysis = this.buildPatternAnalysis(records, summaries, member);
-    const r: AiNutritionAdvice = new AiNutritionAdvice(
+    const r: AiNutritionAdvice = new AiNutritionAdvice()
     r.memberId = member.memberId;
     r.dateRange = `近${days}天`;
     r.summary = this.buildSummary(member, nutrientAnalyses, patternAnalysis);
@@ -164,7 +164,7 @@ export class AiNutritionistServiceImpl extends AiServiceBase implements IAiNutri
       } else if (totalCal > member.dailyBudget.calorieBudget * 0.5) {
         rating = MealRating.FAIR; comment = '此餐热量较高'; suggestion = '多吃蔬菜增加饱腹感';
       } else { comment = '此餐营养搭配合理'; suggestion = '继续保持'; }
-      const m: MealAnalysis = new MealAnalysis(
+      const m: MealAnalysis = new MealAnalysis()
       m.mealType = group.mealType; m.rating = rating; m.comment = comment; m.suggestion = suggestion;
       analyses.push(m);
     }
@@ -186,7 +186,7 @@ export class AiNutritionistServiceImpl extends AiServiceBase implements IAiNutri
   }
 
   private nutrientHelper(name: string, avg: number, target: number, status: NutrientStatusLevel): NutrientAnalysis {
-    const r: NutrientAnalysis = new NutrientAnalysis(
+    const r: NutrientAnalysis = new NutrientAnalysis()
     r.name = name; r.averageDaily = Math.round(avg * 10) / 10; r.target = target; r.trend = NutrientTrend.STABLE; r.status = status;
     r.insight = status === NutrientStatusLevel.OVER ? `${name}摄入超标` : status === NutrientStatusLevel.WARNING ? `${name}摄入偏高` : `${name}摄入合理`;
     return r;
@@ -203,7 +203,7 @@ export class AiNutritionistServiceImpl extends AiServiceBase implements IAiNutri
     if (highSodiumDays <= totalDays * 0.1) highlights.push('钠摄入控制良好');
     if (highSugarDays <= totalDays * 0.1) highlights.push('糖摄入控制良好');
     if (records.length > 0) highlights.push(`共记录${records.length}次饮食`);
-    const r: DietPatternAnalysis = new DietPatternAnalysis(
+    const r: DietPatternAnalysis = new DietPatternAnalysis()
     r.regularityScore = Math.min(100, totalDays > 0 ? Math.round((records.length / totalDays) * 20) : 0);
     r.diversityScore = Math.min(100, records.length > 0 ? Math.round(new Set(records.map(r2 => r2.mealType)).size * 15) : 0);
     r.issues = issues;
@@ -260,7 +260,7 @@ ${includeMealPlan ? '请包含明日饮食计划。' : ''}输出JSON。`;`
       const parsed = JsonHelper.recordToMap(rawParsed);
       const aiSuggestions = MapUtil.safeGetStringArray(parsed, 'suggestions');
       const aiMealPlan = MapUtil.safeGetStringArray(parsed, 'mealPlanSuggestions');
-      const r: AiNutritionAdvice = new AiNutritionAdvice(
+      const r: AiNutritionAdvice = new AiNutritionAdvice()
       r.memberId = member.memberId;
       r.dateRange = baseResult.dateRange;
       r.summary = MapUtil.safeGetString(parsed, 'summary', baseResult.summary);
@@ -276,7 +276,7 @@ ${includeMealPlan ? '请包含明日饮食计划。' : ''}输出JSON。`;`
   }
 
   private makeBudgetStatusValues(budget: DailyBudget): BudgetStatusValues {
-    const s: BudgetStatusValues = new BudgetStatusValues(
+    const s: BudgetStatusValues = new BudgetStatusValues()
     s.sodiumPct = Math.round(((budget.sodiumBudget - budget.sodiumRemaining) / budget.sodiumBudget) * 100);
     s.sugarPct = Math.round(((budget.sugarBudget - budget.sugarRemaining) / budget.sugarBudget) * 100);
     s.calPct = Math.round(((budget.calorieBudget - budget.calorieRemaining) / budget.calorieBudget) * 100);
@@ -285,7 +285,7 @@ ${includeMealPlan ? '请包含明日饮食计划。' : ''}输出JSON。`;`
   }
 
   private makePromptHealthStatus(signal: HealthSignal): PromptHealthStatus {
-    const s: PromptHealthStatus = new PromptHealthStatus(
+    const s: PromptHealthStatus = new PromptHealthStatus()
     s.bp = signal.manualBpStatus === BpStatus.HIGH || signal.manualBpStatus === BpStatus.ELEVATED ? '偏高' : '正常';
     s.bs = signal.manualBsStatus === BsStatus.HIGH || signal.manualBsStatus === BsStatus.ELEVATED ? '偏高' : '正常';
     s.sleep = signal.sleepStatus === SleepStatus.POOR ? '不足' : '正常';

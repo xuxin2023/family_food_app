@@ -67,7 +67,7 @@ export class OcrService {
       return result;
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'OCR recognize failed: %{public}s', JSON.stringify(error));
-      const emptyResult: OcrResult = new OcrResult(
+      const emptyResult: OcrResult = new OcrResult()
       emptyResult.text = '';
       emptyResult.confidence = 0;
       emptyResult.blocks = [];
@@ -104,7 +104,7 @@ export class OcrService {
       return this.parseOcrResult(textResult);
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'OCR recognize from PixelMap failed: %{public}s', JSON.stringify(error));
-      const emptyResult: OcrResult = new OcrResult(
+      const emptyResult: OcrResult = new OcrResult()
       emptyResult.text = '';
       emptyResult.confidence = 0;
       emptyResult.blocks = [];
@@ -118,7 +118,7 @@ export class OcrService {
    * @returns 结构化的FoodLabel
    */
   extractFoodLabel(ocrText: string): FoodLabel {
-    const label: FoodLabel = new FoodLabel(
+    const label: FoodLabel = new FoodLabel()
     label.foodId = `food_${Date.now()}`;
     label.source = FoodSource.USER_UPLOAD;
     label.identifiedAt = Date.now();
@@ -161,7 +161,7 @@ export class OcrService {
     const ocrResult = await this.recognizeText(imageUri);
     if (ocrResult.text.length === 0) {
       // OCR失败，返回空标签
-      const label: FoodLabel = new FoodLabel(
+      const label: FoodLabel = new FoodLabel()
       label.foodId = `food_${Date.now()}`;
       label.foodName = StringRes.OCR_FAILED_FOOD;
       label.source = FoodSource.USER_UPLOAD;
@@ -203,7 +203,7 @@ export class OcrService {
         continue;
       }
 
-      const ocrBlock: OcrBlock = new OcrBlock(
+      const ocrBlock: OcrBlock = new OcrBlock()
       ocrBlock.text = blockText;
       ocrBlock.confidence = 0;
       ocrBlock.bounds = this.buildBounds(this.resolveCornerPoints(block))
@@ -214,7 +214,7 @@ export class OcrService {
       fullText = blocks.map((block) => block.text).join('\n').trim();
     }
 
-    const result: OcrResult = new OcrResult(
+    const result: OcrResult = new OcrResult()
     result.text = fullText;
     result.confidence = 0;
     result.blocks = blocks;

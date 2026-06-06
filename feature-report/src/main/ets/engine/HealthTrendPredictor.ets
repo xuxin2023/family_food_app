@@ -45,7 +45,7 @@ export class HealthTrendPredictor {
     targetValue: number,
     isUpperLimit: boolean
   ): TrendPrediction {
-    const p: TrendPrediction = new TrendPrediction(
+    const p: TrendPrediction = new TrendPrediction()
     p.nutrient = name;
     p.unit = unit;
 
@@ -84,7 +84,7 @@ export class HealthTrendPredictor {
     }
     recentAvg /= recent7.length;
 
-    let prev7: number[];
+    let prev7: number[] = [];
     if (len >= 14) {
       prev7 = values.slice(-14, -7);
     } else {

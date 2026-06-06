@@ -181,7 +181,7 @@ export class CredibilityEngine {
     if (nutrition.fiber > 0) filled++;
     if (nutrition.carbohydrate > 0) filled++;
 
-    const r: CompletenessResult = new CompletenessResult(
+    const r: CompletenessResult = new CompletenessResult()
     r.filledFields = filled;
     r.coverage = filled / CORE_NUTRIENT_FIELDS;
     r.bonus = Math.round(r.coverage * 10);
@@ -190,7 +190,7 @@ export class CredibilityEngine {
   }
 
   private evaluateFreshness(identifiedAt: number): FreshnessResult {
-    const r: FreshnessResult = new FreshnessResult(
+    const r: FreshnessResult = new FreshnessResult()
     r.bonus = 0;
     r.tip = '';
     if (identifiedAt === 0) {

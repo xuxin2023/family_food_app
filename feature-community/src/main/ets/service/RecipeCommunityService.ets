@@ -62,7 +62,7 @@ export class RecipeCommunityService {
     const user = this.authService.getCurrentUser();
 
     const now = Date.now();
-    const recipe: Recipe = new Recipe(
+    const recipe: Recipe = new Recipe()
     recipe.recipeId = `recipe_${now}_${Math.random().toString(36).substring(2, 8)}`;
     recipe.title = params.title;
     recipe.description = params.description;
@@ -175,7 +175,7 @@ export class RecipeCommunityService {
     const uid = this.authService.getUid();
     const user = this.authService.getCurrentUser();
 
-    const comment: RecipeComment = new RecipeComment(
+    const comment: RecipeComment = new RecipeComment()
     comment.commentId = `cmt_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
     comment.recipeId = recipeId;
     comment.authorUid = uid;

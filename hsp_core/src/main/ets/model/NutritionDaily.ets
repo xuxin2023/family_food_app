@@ -33,7 +33,7 @@ export class NutritionDaily {
   }
 
   static createForDate(memberId: string, date: string): NutritionDaily {
-    const d: NutritionDaily = new NutritionDaily(
+    const d: NutritionDaily = new NutritionDaily()
     d.memberId = memberId;
     d.date = date;
     d.updatedAt = Date.now();

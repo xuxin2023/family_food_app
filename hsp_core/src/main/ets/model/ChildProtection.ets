@@ -24,7 +24,7 @@ export class ChildProtection {
   }
 
   toJson(): ChildProtectionJson {
-    const json: ChildProtectionJson = new ChildProtectionJson(
+    const json: ChildProtectionJson = new ChildProtectionJson()
     json.memberId = this.memberId;
     json.mealProtection = this.mealProtection;
     json.bedtimeProtection = this.bedtimeProtection;
@@ -34,7 +34,7 @@ export class ChildProtection {
   }
 
   static getDefault(): ChildProtection {
-    const cp: ChildProtection = new ChildProtection(
+    const cp: ChildProtection = new ChildProtection()
     cp.mealProtection = '';
     cp.bedtimeProtection = '';
     cp.tasteProtection = '儿童保护数据不足，建议谨慎';

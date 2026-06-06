@@ -117,7 +117,7 @@ export class IapProductManager {
   }
 
   static buildProductInfo(def: IapProductDefinition, iapPrice?: string): ProductInfo {
-    const info: ProductInfo = new ProductInfo(
+    const info: ProductInfo = new ProductInfo()
     info.productId = def.productId;
     info.title = def.title;
     info.description = def.description;

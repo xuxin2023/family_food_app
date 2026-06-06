@@ -30,7 +30,7 @@ function makeIntent(
   name: string, version: string, displayName: string, description: string,
   keywords: string[], sampleUtterances: string[], category: string, priority: number
 ): IntentDefinition {
-  const d: IntentDefinition = new IntentDefinition(
+  const d: IntentDefinition = new IntentDefinition()
   d.name = name;
   d.version = version;
   d.displayName = displayName;
@@ -101,7 +101,7 @@ export class IntentRegistrationService {
 
   private async registerSingleIntent(intent: IntentDefinition): Promise<boolean> {
     try {
-      const registration: IntentRegistration = new IntentRegistration(
+      const registration: IntentRegistration = new IntentRegistration()
       registration.intentName = intent.name;
       registration.intentVersion = intent.version;
       registration.displayName = intent.displayName;

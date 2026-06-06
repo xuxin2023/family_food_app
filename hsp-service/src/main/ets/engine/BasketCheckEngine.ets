@@ -38,7 +38,7 @@ export class BasketCheckEngine {
    * @param profiles 家庭成员画像
    */
   check(items: FoodLabel[], profiles: FamilyProfile[]): BasketCheckResult {
-    const result: BasketCheckResult = new BasketCheckResult(
+    const result: BasketCheckResult = new BasketCheckResult()
     result.totalItems = items.length;
 
     const hasChild = profiles.some(p => p.isChild());

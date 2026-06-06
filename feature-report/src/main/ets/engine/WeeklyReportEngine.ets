@@ -9,7 +9,7 @@ export class WeeklyReportEngine {
    * 生成周报
    */
   generate(data: WeeklyDietData, profile: FamilyProfile): WeeklyReport {
-    const report: WeeklyReport = new WeeklyReport(
+    const report: WeeklyReport = new WeeklyReport()
     report.memberId = data.memberId;
     report.memberName = profile.nickname;
     report.weekRange = `${data.weekStart} ~ ${data.weekEnd}`;

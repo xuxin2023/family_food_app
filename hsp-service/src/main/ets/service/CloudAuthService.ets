@@ -41,7 +41,7 @@ export class CloudAuthService {
       const prefs = await preferences.getPreferences(context, 'cloud_auth');
       const savedUid = prefs.getSync('uid', '') as string;
       if (savedUid.length > 0) {
-        const user: AuthUser = new AuthUser(
+        const user: AuthUser = new AuthUser()
         user.uid = savedUid;
         user.isAnonymous = prefs.getSync('is_anonymous', true) as boolean;
         user.createdAt = prefs.getSync('created_at', 0) as number;
@@ -171,7 +171,7 @@ export class CloudAuthService {
 
   private generateLocalUid(): AuthUser {
     const uid = `local_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
-    const user: AuthUser = new AuthUser(
+    const user: AuthUser = new AuthUser()
     user.uid = uid;
     user.isAnonymous = true;
     user.createdAt = Date.now();

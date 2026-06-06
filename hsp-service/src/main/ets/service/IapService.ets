@@ -347,7 +347,7 @@ export class IapService {
       }
       // 查找 IAP 返回的价格，优先使用实时价格
       const iapPrice = iapPrices.get(def.productId);
-      const info: ProductInfo = new ProductInfo(
+      const info: ProductInfo = new ProductInfo()
       info.productId = def.productId;
       info.tier = def.tier || MemberTier.FREE;
       info.price = iapPrice || def.price;
@@ -848,7 +848,7 @@ export class IapService {
       // 追加历史记录
       const historyJson = prefs.getSync(KEY_PURCHASE_HISTORY, '[]') as string;
       const history: PurchaseRecord[] = safeJsonParse<PurchaseRecord[]>(historyJson) || [];
-      const rec: PurchaseRecord = new PurchaseRecord(
+      const rec: PurchaseRecord = new PurchaseRecord()
       rec.productId = productId;
       rec.purchaseTime = now;
       rec.orderId = orderId;
@@ -875,7 +875,7 @@ export class IapService {
    * 构造失败结果
    */
   private failResult(productId: string, message: ResourceStr): PurchaseResult {
-    const r: PurchaseResult = new PurchaseResult(
+    const r: PurchaseResult = new PurchaseResult()
     r.success = false;
     r.productId = productId;
     r.errorCode = 0;
@@ -884,7 +884,7 @@ export class IapService {
   }
 
   private successResult(productId: string): PurchaseResult {
-    const r: PurchaseResult = new PurchaseResult(
+    const r: PurchaseResult = new PurchaseResult()
     r.success = true;
     r.productId = productId;
     r.errorCode = 0;
@@ -988,7 +988,7 @@ export class IapService {
     const steps: SandboxTestStep[] = [];
     const recordStep = (name: string, success: boolean, duration: number,
       errorCode: number, errorMessage: ResourceStr, details: string): void => {
-      const step: SandboxTestStep = new SandboxTestStep(
+      const step: SandboxTestStep = new SandboxTestStep()
       step.name = name;
       step.success = success;
       step.duration = duration;
@@ -1106,7 +1106,7 @@ export class IapService {
 
     const totalDuration = Date.now() - startTime;
     const overallSuccess = steps.every(s => s.success);
-    const report: SandboxTestReport = new SandboxTestReport(
+    const report: SandboxTestReport = new SandboxTestReport()
     report.overallSuccess = overallSuccess;
     report.totalDuration = totalDuration;
     report.sandboxMode = this.isSandboxMode();

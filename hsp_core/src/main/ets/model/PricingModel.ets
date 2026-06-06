@@ -24,7 +24,7 @@ function createProductPlan(
   tier: MemberTier, productId: string, title: string, price: string,
   priceValue: number, isYearly: boolean, features: string[], limitations: string[], badge: string
 ): ProductPlan {
-  const plan: ProductPlan = new ProductPlan(
+  const plan: ProductPlan = new ProductPlan()
   plan.tier = tier;
   plan.productId = productId;
   plan.title = title;
@@ -67,7 +67,7 @@ export function getProductPlanForTier(tier: MemberTier): ProductPlan | null {
  */
 export function getProductInfoForTier(tier: MemberTier, price: string): ProductInfo {
   const plan = getProductPlanForTier(tier);
-  const info: ProductInfo = new ProductInfo(
+  const info: ProductInfo = new ProductInfo()
   info.productId = plan?.productId || `product_${tier}`;
   info.tier = tier;
   info.price = price || plan?.price || '0元';

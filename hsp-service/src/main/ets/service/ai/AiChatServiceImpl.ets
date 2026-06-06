@@ -89,7 +89,7 @@ export class AiChatServiceImpl extends AiServiceBase implements IAiChatService {
     for (let i = startIndex; i < this.conversationHistory.length; i++) {
       const msg = this.conversationHistory[i];
       if (msg.role === ChatRole.ASSISTANT || msg.role === ChatRole.USER) {
-        const item: ChatHistoryItem = new ChatHistoryItem(
+        const item: ChatHistoryItem = new ChatHistoryItem()
         item.role = msg.role === ChatRole.USER ? 'user' : 'assistant';
         item.content = msg.content as string;
         items.push(item);

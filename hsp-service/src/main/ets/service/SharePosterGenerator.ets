@@ -67,7 +67,7 @@ export class SharePosterGenerator {
     };
     const pixelMap = await image.createPixelMap(buffer, opts);
 
-    const canvas: CanvasRenderingContext2D = new CanvasRenderingContext2D(
+    const canvas: CanvasRenderingContext2D = new CanvasRenderingContext2D()
     canvas.width = POSTER_WIDTH;
     canvas.height = POSTER_HEIGHT;
 

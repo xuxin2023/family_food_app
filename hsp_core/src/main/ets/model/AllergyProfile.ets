@@ -76,7 +76,7 @@ export class IntoleranceHint {
 }
 
 export function createDefaultAllergyProfile(memberId: string): AllergyProfile {
-  const profile: AllergyProfile = new AllergyProfile(
+  const profile: AllergyProfile = new AllergyProfile()
   profile.memberId = memberId;
   profile.updatedAt = Date.now();
   return profile;

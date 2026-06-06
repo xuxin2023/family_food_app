@@ -39,7 +39,7 @@ class RemoteErrorReporter {
     }
     this.lastReported.set(dedupKey, now);
 
-    const payload: ErrorReportPayload = new ErrorReportPayload(
+    const payload: ErrorReportPayload = new ErrorReportPayload()
     payload.errorType = errorType;
     payload.message = typeof error === 'string' ? error : error.message;
     payload.stackSnippet = this.sanitizeStack(error);
@@ -81,7 +81,7 @@ class RemoteErrorReporter {
         header.set('Authorization', `Bearer ${apiKey}`);
       }
 
-      const opts: SecureRequestOptions = new SecureRequestOptions(
+      const opts: SecureRequestOptions = new SecureRequestOptions()
       opts.url = url;
       opts.method = http.RequestMethod.POST;
       opts.header = header;

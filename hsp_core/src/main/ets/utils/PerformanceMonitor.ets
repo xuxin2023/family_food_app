@@ -76,7 +76,7 @@ export class PerformanceMonitor {
     this.activeSpans.delete(key);
 
     const duration = Date.now() - startTime;
-    const metric: PerfMetric = new PerfMetric(
+    const metric: PerfMetric = new PerfMetric()
     metric.key = key;
     metric.durationMs = duration;
     metric.timestamp = Date.now();
@@ -103,7 +103,7 @@ export class PerformanceMonitor {
 
   trackOperation(opName: string, startTime: number, metadata?: Map<string, string>): number {
     const duration = Date.now() - startTime;
-    const metric: PerfMetric = new PerfMetric(
+    const metric: PerfMetric = new PerfMetric()
     metric.key = opName;
     metric.durationMs = duration;
     metric.timestamp = Date.now();
@@ -167,7 +167,7 @@ export class PerformanceMonitor {
     }
 
     if (threshold > 0 && duration > threshold) {
-      const alert: PerfAlert = new PerfAlert(
+      const alert: PerfAlert = new PerfAlert()
       alert.key = key;
       alert.durationMs = duration;
       alert.thresholdMs = threshold;

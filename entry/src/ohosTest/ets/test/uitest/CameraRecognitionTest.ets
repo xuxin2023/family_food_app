@@ -5,7 +5,7 @@ import { Driver, ON } from '@kit.TestKit';
 
 export default function cameraRecognitionTest() {
   describe('CameraRecognitionTest', () => {
-    let driver: Driver;
+    let driver: Driver = new Driver();
 
     // 从首页进入拍照识别模式
     it('should_navigate_to_camera_from_main', 0, async () => {

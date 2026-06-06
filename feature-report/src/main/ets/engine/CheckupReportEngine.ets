@@ -111,7 +111,7 @@ export class CheckupReportEngine {
 
   /** 解析OCR文本，提取体检项目并生成报告 */
   parseOcrText(ocrText: string, memberId: string): CheckupReport {
-    const report: CheckupReport = new CheckupReport(
+    const report: CheckupReport = new CheckupReport()
     report.memberId = memberId;
     report.date = new Date().toISOString().split('T')[0];
     report.items = [];
@@ -119,7 +119,7 @@ export class CheckupReportEngine {
     for (const rule of CHECKUP_RULES) {
       const match = rule.pattern.exec(ocrText);
       if (match) {
-        const item: CheckupItem = new CheckupItem(
+        const item: CheckupItem = new CheckupItem()
         item.name = rule.name;
         item.value = parseFloat(match[1]);
         item.unit = rule.unit;
@@ -164,7 +164,7 @@ export class CheckupReportEngine {
 
   /** 根据体检报告生成健康档案更新建议 */
   generateHealthArchiveUpdate(report: CheckupReport, signal: HealthSignal): HealthArchiveUpdate {
-    const update: HealthArchiveUpdate = new HealthArchiveUpdate(
+    const update: HealthArchiveUpdate = new HealthArchiveUpdate()
     update.memberId = report.memberId;
     update.newAlerts = [];
     update.dietaryAdjustments = [];

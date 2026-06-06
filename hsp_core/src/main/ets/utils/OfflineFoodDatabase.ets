@@ -40,7 +40,7 @@ interface JsonFoodDatabase {
 
 // ============ 内部辅助函数 ============
 function jsonEntryToOfflineEntry(json: JsonFoodEntry): OfflineFoodEntry {
-  const e: OfflineFoodEntry = new OfflineFoodEntry(
+  const e: OfflineFoodEntry = new OfflineFoodEntry()
   e.barcode = json.barcode;
   e.foodName = json.foodName;
   e.manufacturer = json.manufacturer;
@@ -70,7 +70,7 @@ function makeEntry(
   carbohydrate: number, sugar: number, protein: number, sodium: number,
   fiber: number, ingredients: string[], allergenHints: string[]
 ): OfflineFoodEntry {
-  const e: OfflineFoodEntry = new OfflineFoodEntry(
+  const e: OfflineFoodEntry = new OfflineFoodEntry()
   e.barcode = barcode; e.foodName = foodName; e.manufacturer = manufacturer;
   e.category = category;
   e.nutrition.calories = calories; e.nutrition.fat = fat;
@@ -190,12 +190,12 @@ export function lookupByBarcode(barcode: string): OfflineFoodEntry | null {
 
 /** 转换 OfflineFoodEntry → FoodLabel */
 export function convertToFoodLabel(entry: OfflineFoodEntry): FoodLabel {
-  const label: FoodLabel = new FoodLabel(
+  const label: FoodLabel = new FoodLabel()
   label.foodId = `offline_${entry.barcode}`;
   label.foodName = entry.foodName;
   label.barcode = entry.barcode;
   label.manufacturer = entry.manufacturer;
-  const nutrition: NutritionPer100g = new NutritionPer100g(
+  const nutrition: NutritionPer100g = new NutritionPer100g()
   nutrition.calories = entry.nutrition.calories;
   nutrition.fat = entry.nutrition.fat;
   nutrition.saturatedFat = entry.nutrition.saturatedFat;

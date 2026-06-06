@@ -118,7 +118,7 @@ export class HwHealthSignalProvider extends HealthSignalProvider {
    * 从华为 Health Store 读取真实穿戴设备数据（失败时降级为模拟数据）
    */
   async getTodayHealthData(memberId: string): Promise<HealthSignal> {
-    const signal: HealthSignal = new HealthSignal(
+    const signal: HealthSignal = new HealthSignal()
     signal.memberId = memberId;
     signal.date = this.getTodayDate();
     signal.source = DataSource.HUAWEI_HEALTH;

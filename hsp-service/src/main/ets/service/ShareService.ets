@@ -46,14 +46,14 @@ export class ShareService {
     const memberResults: ShareMemberResult[] = [];
     for (const recommendation of recommendations) {
       const member = memberMap.get(recommendation.memberId);
-      const mr: ShareMemberResult = new ShareMemberResult(
+      const mr: ShareMemberResult = new ShareMemberResult()
       mr.displayName = member ? this.getDisplayName(member) : StringRes.FAMILY_MEMBERS;
       mr.level = recommendation.level;
       mr.maxAmount = recommendation.maxAmount;
       memberResults.push(mr);
     }
 
-    const params: ShareParams = new ShareParams(
+    const params: ShareParams = new ShareParams()
     params.foodName = foodName.length > 0 ? foodName : StringRes.UNNAMED_FOOD;
     params.memberResults = memberResults;
     return params;

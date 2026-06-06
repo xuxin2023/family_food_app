@@ -39,7 +39,7 @@ export class ComplianceService {
   }
 
   static getMinorRestrictions(): MinorRestrictions {
-    const restrictions: MinorRestrictions = new MinorRestrictions(
+    const restrictions: MinorRestrictions = new MinorRestrictions()
     restrictions.disableCommunity = true;
     restrictions.disableAIShare = true;
     restrictions.disableThirdPartyLogin = true;
@@ -51,7 +51,7 @@ export class ComplianceService {
   }
 
   static getAdultRestrictions(): MinorRestrictions {
-    const restrictions: MinorRestrictions = new MinorRestrictions(
+    const restrictions: MinorRestrictions = new MinorRestrictions()
     restrictions.disableCommunity = false;
     restrictions.disableAIShare = false;
     restrictions.disableThirdPartyLogin = false;
@@ -91,7 +91,7 @@ export class ComplianceService {
     favoriteItems: string,
     settings: string
   ): DataExportPackage {
-    const pkg: DataExportPackage = new DataExportPackage(
+    const pkg: DataExportPackage = new DataExportPackage()
     pkg.memberProfiles = memberProfiles;
     pkg.scanHistory = scanHistory;
     pkg.dietRecords = dietRecords;

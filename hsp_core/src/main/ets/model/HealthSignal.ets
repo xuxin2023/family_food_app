@@ -259,7 +259,7 @@ export class HealthSignal {
   }
 
   toJson(): HealthSignalJson {
-    const json: HealthSignalJson = new HealthSignalJson(
+    const json: HealthSignalJson = new HealthSignalJson()
     json.memberId = this.memberId;
     json.date = this.date;
     json.stepLevel = this.stepLevel;
@@ -287,7 +287,7 @@ export class HealthSignal {
   }
 
   static fromJson(json: Record<string, Object>): HealthSignal {
-    const signal: HealthSignal = new HealthSignal(
+    const signal: HealthSignal = new HealthSignal()
     signal.memberId = (json.memberId as string) ?? '';
     signal.date = (json.date as string) ?? '';
     signal.stepLevel = (json.stepLevel as StepLevel) ?? StepLevel.LOW;

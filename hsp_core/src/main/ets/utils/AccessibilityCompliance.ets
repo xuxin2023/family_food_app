@@ -35,7 +35,7 @@ export class AccessibilityConfig {
 export class AccessibilityCompliance {
   /** 获取标准按钮无障碍配置 */
   static button(label: string, description?: string): AccessibilityConfig {
-    const config: AccessibilityConfig = new AccessibilityConfig(
+    const config: AccessibilityConfig = new AccessibilityConfig()
     config.label = label;
     config.role = 'button';
     config.stateDescription = description ?? '';
@@ -45,7 +45,7 @@ export class AccessibilityCompliance {
 
   /** 获取标准图片无障碍配置 */
   static image(label: string, isDecorative: boolean = false): AccessibilityConfig {
-    const config: AccessibilityConfig = new AccessibilityConfig(
+    const config: AccessibilityConfig = new AccessibilityConfig()
     config.label = label;
     config.role = 'image';
     config.isDecorative = isDecorative;
@@ -54,7 +54,7 @@ export class AccessibilityCompliance {
 
   /** 获取标准文本无障碍配置 */
   static text(label: string): AccessibilityConfig {
-    const config: AccessibilityConfig = new AccessibilityConfig(
+    const config: AccessibilityConfig = new AccessibilityConfig()
     config.label = label;
     config.role = 'text';
     return config;
@@ -62,7 +62,7 @@ export class AccessibilityCompliance {
 
   /** 获取标题无障碍配置 */
   static heading(label: string, level: number = 1): AccessibilityConfig {
-    const config: AccessibilityConfig = new AccessibilityConfig(
+    const config: AccessibilityConfig = new AccessibilityConfig()
     config.label = label;
     config.role = 'text';
     config.isHeading = true;
@@ -72,7 +72,7 @@ export class AccessibilityCompliance {
 
   /** 获取列表项无障碍配置 */
   static listItem(label: string, index: number, total: number): AccessibilityConfig {
-    const config: AccessibilityConfig = new AccessibilityConfig(
+    const config: AccessibilityConfig = new AccessibilityConfig()
     config.label = label;
     config.role = 'listitem';
     config.stateDescription = `第${index + 1}项，共${total}项`;
@@ -81,7 +81,7 @@ export class AccessibilityCompliance {
 
   /** 获取开关无障碍配置 */
   static toggle(label: string, isOn: boolean): AccessibilityConfig {
-    const config: AccessibilityConfig = new AccessibilityConfig(
+    const config: AccessibilityConfig = new AccessibilityConfig()
     config.label = label;
     config.role = 'switch';
     config.stateDescription = isOn ? '已开启' : '已关闭';

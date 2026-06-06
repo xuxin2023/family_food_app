@@ -151,7 +151,7 @@ export class RuleEngine implements IRuleCalculator {
     const healthSignal = params.healthSignal;
     const foodLabel = params.foodLabel;
     const dailyBudget = params.dailyBudget;
-    const rec: Recommendation = new Recommendation(
+    const rec: Recommendation = new Recommendation()
     rec.memberId = profile.memberId;
     rec.foodId = foodLabel.foodId;
     rec.generatedAt = Date.now();

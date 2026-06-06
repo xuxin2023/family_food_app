@@ -5,7 +5,7 @@ import { Driver, ON } from '@kit.TestKit';
 
 export default function membershipPageTest() {
   describe('MembershipPageTest', () => {
-    let driver: Driver;
+    let driver: Driver = new Driver();
 
     // 导航至会员页面
     it('should_navigate_to_membership', 0, async () => {

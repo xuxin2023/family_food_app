@@ -50,7 +50,7 @@ export class ParsedIngredientRepository {
       const predicates = new relationalStore.RdbPredicates(TABLE_PARSE_RESULT);
       const resultSet = await this.rdbStore.query(predicates);
       while (resultSet.goToNextRow()) {
-        const result: ParsedIngredientList = new ParsedIngredientList(
+        const result: ParsedIngredientList = new ParsedIngredientList()
         result.productBarcode = resultSet.getString(0);
         result.productName = resultSet.getString(1);
         const raw = resultSet.getString(2);

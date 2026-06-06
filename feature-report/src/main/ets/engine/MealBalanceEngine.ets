@@ -9,7 +9,7 @@ export class MealBalanceEngine {
    * 计算美食平衡建议
    */
   calculate(scenario: MealScenario, profile: FamilyProfile, healthSignal: HealthSignal): MealBalance {
-    const result: MealBalance = new MealBalance(
+    const result: MealBalance = new MealBalance()
     result.memberId = profile.memberId;
     result.scenario = scenario;
 

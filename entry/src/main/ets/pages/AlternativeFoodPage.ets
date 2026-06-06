@@ -39,7 +39,7 @@ struct AlternativeFoodPage {
   private loadAlternatives(): void {
     this.isLoading = true
     this.recommendReady = false
-    const recommender: AlternativeRecommender = new AlternativeRecommender(
+    const recommender: AlternativeRecommender = new AlternativeRecommender()
     this.candidates = recommender.recommend(this.foodLabel)
     alternativeFoodRecommender.recommendAlternatives(
       this.foodLabel, this.familyMembers, 5

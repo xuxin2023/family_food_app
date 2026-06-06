@@ -37,7 +37,7 @@ export class ShoppingListRepository {
       const resultSet = await this.rdbStore.query(predicates);
       this.items = [];
       while (resultSet.goToNextRow()) {
-        const item: ShoppingItem = new ShoppingItem(
+        const item: ShoppingItem = new ShoppingItem()
         item.id = resultSet.getString(0);
         item.name = resultSet.getString(1);
         item.category = resultSet.getString(2);
@@ -72,7 +72,7 @@ export class ShoppingListRepository {
   }
 
   async add(name: string): Promise<void> {
-    const item: ShoppingItem = new ShoppingItem(
+    const item: ShoppingItem = new ShoppingItem()
     item.id = `shop_${Date.now()}`;
     item.name = name;
     item.addedAt = Date.now();
@@ -160,7 +160,7 @@ export class ShoppingListRepository {
   async importRows(rows: Record<string, Object>[]): Promise<number> {
     let count = 0;
     for (const row of rows) {
-      const item: ShoppingItem = new ShoppingItem(
+      const item: ShoppingItem = new ShoppingItem()
       item.id = (row['id'] as string) ?? `shop_${Date.now()}_${count}`;
       item.name = (row['name'] as string) ?? '';
       item.category = (row['category'] as string) ?? '';

@@ -40,14 +40,14 @@ export class DeviceCapability {
   shouldUseNpuInference(): boolean { return this.npu === NpuLevel.ADVANCED; }
 
   private detectNpu(): NpuLevel {
-    const globalObj = globalThis as Record<string, Object>;
+    const globalObj = Object.create(null) as Record<string, Object>;
     if (globalObj['hiAI'] !== undefined) return NpuLevel.ADVANCED;
     if (globalObj['MindSpore'] !== undefined) return NpuLevel.BASIC;
     return NpuLevel.NONE;
   }
 
   private detectRam(): number {
-    const globalObj = globalThis as Record<string, Object>;
+    const globalObj = Object.create(null) as Record<string, Object>;
     const perf = globalObj['performance'] as Record<string, Object> | undefined;
     if (perf && perf['deviceMemory']) {
       const gb = perf['deviceMemory'] as number;
@@ -57,7 +57,7 @@ export class DeviceCapability {
   }
 
   private detectCpuCores(): number {
-    const globalObj = globalThis as Record<string, Object>;
+    const globalObj = Object.create(null) as Record<string, Object>;
     const nav = globalObj['navigator'] as Record<string, Object> | undefined;
     if (nav && nav['hardwareConcurrency']) {
       return nav['hardwareConcurrency'] as number;

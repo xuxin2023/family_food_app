@@ -118,11 +118,11 @@ export class AiClient {
     }
 
     try {
-      const systemMsg: ChatMessage = new ChatMessage(
+      const systemMsg: ChatMessage = new ChatMessage()
       systemMsg.role = 'system';
       systemMsg.content = options.systemPrompt;
 
-      const userMsg: ChatMessage = new ChatMessage(
+      const userMsg: ChatMessage = new ChatMessage()
       userMsg.role = 'user';
       userMsg.content = options.userPrompt;
 
@@ -139,7 +139,7 @@ export class AiClient {
       requestHeader.set('Content-Type', API_CONFIG.HEADER_CONTENT_TYPE_JSON);
       requestHeader.set('Authorization', `Bearer ${this.apiKey}`);
 
-      const opts: SecureRequestOptions = new SecureRequestOptions(
+      const opts: SecureRequestOptions = new SecureRequestOptions()
       opts.url = AGENT_ARTS_ENDPOINT;
       opts.method = http.RequestMethod.POST;
       opts.header = requestHeader;
@@ -190,7 +190,7 @@ export class AiClient {
       }
 
       const usage = parsed.usage;
-      const resp: AiCallResponse = new AiCallResponse(
+      const resp: AiCallResponse = new AiCallResponse()
       resp.text = content;
       resp.tokensUsed = (usage !== null && usage !== undefined) ? usage.total_tokens : 0;
       return resp;

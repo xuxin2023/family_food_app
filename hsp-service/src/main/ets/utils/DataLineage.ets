@@ -99,7 +99,7 @@ export class DataLineage {
   static createRecord(foodId: string, source: string, confidence: number,
     transformChain: string[] = [], sourceVersion: string = '',
     parentFoodId: string = ''): LineageRecord {
-    const record: LineageRecord = new LineageRecord(
+    const record: LineageRecord = new LineageRecord()
     record.foodId = foodId;
     record.source = source;
     record.sourceVersion = sourceVersion;
@@ -111,7 +111,7 @@ export class DataLineage {
   }
 
   private static mergeLineage(existing: LineageRecord, incoming: LineageRecord): LineageRecord {
-    const merged: LineageRecord = new LineageRecord(
+    const merged: LineageRecord = new LineageRecord()
     merged.foodId = existing.foodId;
     merged.source = existing.source;
     merged.sourceVersion = incoming.sourceVersion.length > 0 ?

@@ -47,7 +47,7 @@ struct HealthReportPage {
   async loadReport(): Promise<void> {
     this.isLoading = true;
     try {
-      const data: ReportData = new ReportData(
+      const data: ReportData = new ReportData()
       data.period = this.selectedPeriod;
 
       const days = this.selectedPeriod as number;

@@ -18,7 +18,7 @@ export class NutriScoreInput {
   fiber: number = 0;
 
   static fromNutrition(n: NutritionPer100g): NutriScoreInput {
-    const input: NutriScoreInput = new NutriScoreInput(
+    const input: NutriScoreInput = new NutriScoreInput()
     input.calories = n.calories;
     input.sugar = n.sugar;
     input.sodium = n.sodium;
@@ -129,7 +129,7 @@ export class NutriScoreEngine {
     let totalScore = Math.max(0, Math.min(100, Math.round(100 - totalPenalty + totalBonus)));
     const gradeCfg = getGradeConfig(totalScore);
 
-    const breakdown: NutriScoreBreakdown = new NutriScoreBreakdown(
+    const breakdown: NutriScoreBreakdown = new NutriScoreBreakdown()
     breakdown.totalScore = totalScore;
     breakdown.grade = gradeCfg.grade;
     breakdown.colorHex = gradeCfg.color;

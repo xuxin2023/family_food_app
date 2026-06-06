@@ -94,14 +94,14 @@ export class CommunityFoodService {
     const auth2 = this.authService;
     const uid: string = (auth2 !== null && auth2 !== undefined) ? auth2.getUid() : '';
     if (uid.length === 0) {
-      const notLoggedIn: ContributeResult = new ContributeResult(
+      const notLoggedIn: ContributeResult = new ContributeResult()
       notLoggedIn.success = false;
       notLoggedIn.message = '未登录，无法贡献数据';
       notLoggedIn.recordId = '';
       return notLoggedIn;
     }
 
-    const nutrition: ContributeNutrition = new ContributeNutrition(
+    const nutrition: ContributeNutrition = new ContributeNutrition()
     nutrition.sodium = foodLabel.nutrition.sodium;
     nutrition.sugar = foodLabel.nutrition.sugar;
     nutrition.calories = foodLabel.nutrition.calories;
@@ -110,7 +110,7 @@ export class CommunityFoodService {
     nutrition.carbohydrate = foodLabel.nutrition.carbohydrate;
     nutrition.protein = foodLabel.nutrition.protein;
 
-    const payload: ContributePayload = new ContributePayload(
+    const payload: ContributePayload = new ContributePayload()
     payload.uid = uid;
     payload.barcode = foodLabel.barcode;
     payload.foodName = foodLabel.foodName;
@@ -133,21 +133,21 @@ export class CommunityFoodService {
       if (resp !== null && resp !== undefined && (resp.responseCode === 200 || resp.responseCode === 201) && resp.data !== null) {
         const result = resp.data as Object as RecordIdResponse;
         hilog.info(DOMAIN_ZERO, TAG, 'Contribute success: %{public}s', result.recordId);
-        const successResult: ContributeResult = new ContributeResult(
+        const successResult: ContributeResult = new ContributeResult()
         successResult.success = true;
         successResult.message = '感谢贡献，帮助了更多家庭！';
         successResult.recordId = result.recordId;
         return successResult;
       }
 
-      const failResult: ContributeResult = new ContributeResult(
+      const failResult: ContributeResult = new ContributeResult()
       failResult.success = false;
       failResult.message = '贡献失败，请稍后重试';
       failResult.recordId = '';
       return failResult;
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Contribute failed: %{public}s', JSON.stringify(error));
-      const networkResult: ContributeResult = new ContributeResult(
+      const networkResult: ContributeResult = new ContributeResult()
       networkResult.success = false;
       networkResult.message = '网络异常，数据已缓存待稍后上传';
       networkResult.recordId = '';
@@ -156,7 +156,7 @@ export class CommunityFoodService {
   }
 
   mapRecordToFoodLabel(record: CommunityFoodRecord): FoodLabel {
-    const label: FoodLabel = new FoodLabel(
+    const label: FoodLabel = new FoodLabel()
     label.foodId = `community_${record.barcode}`;
     label.barcode = record.barcode;
     label.foodName = record.foodName;

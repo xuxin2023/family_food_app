@@ -311,7 +311,7 @@ export class HistoryRepository {
       if (r.fatIntake > 20) fatDays.add(r.date);
     }
 
-    const result: RiskDaysResult = new RiskDaysResult(
+    const result: RiskDaysResult = new RiskDaysResult()
     result.highSodiumDays = sodiumDays.size;
     result.highSugarDays = sugarDays.size;
     result.highFatDays = fatDays.size;
@@ -345,7 +345,7 @@ export class HistoryRepository {
       hilog.debug(DOMAIN_ZERO, TAG, 'fromScanRecord reasons failed: %{public}s', JSON.stringify(e));
       reasons = [];
     }
-    const record: ScanHistoryRecord = new ScanHistoryRecord(
+    const record: ScanHistoryRecord = new ScanHistoryRecord()
     record.id = resultSet.getLong(resultSet.getColumnIndex(COL_ID));
     record.memberId = resultSet.getString(resultSet.getColumnIndex(COL_MEMBER_ID));
     record.foodId = resultSet.getString(resultSet.getColumnIndex(COL_FOOD_ID));
@@ -358,7 +358,7 @@ export class HistoryRepository {
   }
 
   private dietRecordFromResultSet(resultSet: relationalStore.ResultSet): DietRecord {
-    const record: DietRecord = new DietRecord(
+    const record: DietRecord = new DietRecord()
     record.id = resultSet.getLong(resultSet.getColumnIndex(COL_ID));
     record.memberId = resultSet.getString(resultSet.getColumnIndex(COL_MEMBER_ID));
     record.date = resultSet.getString(resultSet.getColumnIndex(COL_DATE));
@@ -388,7 +388,7 @@ export class HistoryRepository {
     const scanRecords: ScanHistoryRecord[] = await this.getRecentScanHistory(limit);
     const labels: FoodLabel[] = [];
     for (let i = 0; i < scanRecords.length; i++) {
-      const label: FoodLabel = new FoodLabel(
+      const label: FoodLabel = new FoodLabel()
       label.foodName = scanRecords[i].foodName;
       labels.push(label);
     }
@@ -406,7 +406,7 @@ export class HistoryRepository {
       resultSet = await this.rdbStore.query(predicates);
       const snapshots: NutritionSnapshot[] = [];
       while (resultSet.goToNextRow()) {
-        const snap: NutritionSnapshot = new NutritionSnapshot(
+        const snap: NutritionSnapshot = new NutritionSnapshot()
         snap.memberId = memberId;
         snap.date = resultSet.getString(resultSet.getColumnIndex(COL_DATE));
         snap.calories = resultSet.getDouble(resultSet.getColumnIndex(COL_CALORIE_INTAKE));

@@ -58,32 +58,32 @@ export class MilestoneService {
 
     // 定义六个里程碑
     const allMilestones: Milestone[] = []
-      const m1: Milestone = new Milestone(
+      const m1: Milestone = new Milestone()
       m1.name = 'first_scan'; m1.title = '初次探索'; m1.description = '首次扫码，开启饮食新视角'; m1.icon = '🔍'
       m1.progress = Math.min(100, Math.round((countMap.get('scan') || 0) / 1 * 100)); m1.current = Math.min(1, countMap.get('scan') || 0); m1.target = 1
       m1.achieved = (countMap.get('scan') || 0) >= 1; m1.acknowledged = false
       allMilestones.push(m1)
-      const m2: Milestone = new Milestone(
+      const m2: Milestone = new Milestone()
       m2.name = 'family_guardian'; m2.title = '家庭守护者'; m2.description = '为全家人建立独立健康档案'; m2.icon = '👨‍👩‍👧‍👦'
       m2.progress = Math.min(100, Math.round(memberCount / 4 * 100)); m2.current = memberCount; m2.target = 4
       m2.achieved = memberCount >= 4; m2.acknowledged = false
       allMilestones.push(m2)
-      const m3: Milestone = new Milestone(
+      const m3: Milestone = new Milestone()
       m3.name = 'scan_master'; m3.title = '扫码达人'; m3.description = '累计扫描50次，阅食无数'; m3.icon = '📱'
       m3.progress = Math.min(100, Math.round((countMap.get('scan') || 0) / 50 * 100)); m3.current = countMap.get('scan') || 0; m3.target = 50
       m3.achieved = (countMap.get('scan') || 0) >= 50; m3.acknowledged = false
       allMilestones.push(m3)
-      const m4: Milestone = new Milestone(
+      const m4: Milestone = new Milestone()
       m4.name = 'balance_pro'; m4.title = '平衡大师'; m4.description = '美食平衡10次，懂吃更会搭'; m4.icon = '⚖️'
       m4.progress = Math.min(100, Math.round((countMap.get(EventType.MEAL_BALANCE) || 0) / 10 * 100)); m4.current = countMap.get(EventType.MEAL_BALANCE) || 0; m4.target = 10
       m4.achieved = (countMap.get(EventType.MEAL_BALANCE) || 0) >= 10; m4.acknowledged = false
       allMilestones.push(m4)
-      const m5: Milestone = new Milestone(
+      const m5: Milestone = new Milestone()
       m5.name = 'share_leader'; m5.title = '分享先锋'; m5.description = '分享卡片5次，关爱传递'; m5.icon = '📤'
       m5.progress = Math.min(100, Math.round((countMap.get(EventType.SHARE) || 0) / 5 * 100)); m5.current = countMap.get(EventType.SHARE) || 0; m5.target = 5
       m5.achieved = (countMap.get(EventType.SHARE) || 0) >= 5; m5.acknowledged = false
       allMilestones.push(m5)
-      const m6: Milestone = new Milestone(
+      const m6: Milestone = new Milestone()
       m6.name = 'weekly_streak'; m6.title = '连续打卡'; m6.description = '连续7天使用，饮食自律达人'; m6.icon = '🔥'
       m6.progress = Math.min(100, Math.round(streakDays / 7 * 100)); m6.current = streakDays; m6.target = 7
       m6.achieved = streakDays >= 7; m6.acknowledged = false

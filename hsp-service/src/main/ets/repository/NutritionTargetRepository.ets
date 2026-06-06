@@ -37,7 +37,7 @@ export class NutritionTargetRepository {
       const predicates = new relationalStore.RdbPredicates(TABLE_NAME);
       const resultSet = await this.rdbStore.query(predicates);
       while (resultSet.goToNextRow()) {
-        const t: NutritionTarget = new NutritionTarget(
+        const t: NutritionTarget = new NutritionTarget()
         t.memberId = resultSet.getString(0);
         t.sodiumMax_mg = resultSet.getDouble(1);
         t.sugarMax_g = resultSet.getDouble(2);

@@ -98,7 +98,7 @@ export class AiVisionService {
   async recognize(productName: string, barcode?: string): Promise<AiRecognitionResult> {
     try {
       if (!productName || productName.length === 0) {
-        const r: AiRecognitionResult = new AiRecognitionResult(
+        const r: AiRecognitionResult = new AiRecognitionResult()
         r.success = false;
         r.label = null;
         r.confidence = 0;
@@ -112,7 +112,7 @@ export class AiVisionService {
       const confidence = matchedCategory !== null ? 0.7 : 0.3;
 
       // 构造兜底 FoodLabel
-      const label: FoodLabel = new FoodLabel(
+      const label: FoodLabel = new FoodLabel()
       label.foodId = `ai_${Date.now()}`;
       label.foodName = productName;
       label.barcode = barcode || '';
@@ -134,7 +134,7 @@ export class AiVisionService {
 
       const categories = matchedCategory !== null ? [matchedCategory.category] : ['未知'];
 
-      const r: AiRecognitionResult = new AiRecognitionResult(
+      const r: AiRecognitionResult = new AiRecognitionResult()
       r.success = true;
       r.label = label;
       r.confidence = confidence;
@@ -143,7 +143,7 @@ export class AiVisionService {
       return r;
     } catch (err) {
       hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(err));
-      const r: AiRecognitionResult = new AiRecognitionResult(
+      const r: AiRecognitionResult = new AiRecognitionResult()
       r.success = false;
       r.label = null;
       r.confidence = 0;

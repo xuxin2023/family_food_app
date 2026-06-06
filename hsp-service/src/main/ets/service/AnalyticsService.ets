@@ -99,7 +99,7 @@ export class AnalyticsService {
       return;
     }
     this.ensureSession();
-    const event: AnalyticsEvent = new AnalyticsEvent(
+    const event: AnalyticsEvent = new AnalyticsEvent()
     event.eventId = this.generateEventId();
     event.eventType = type;
     event.timestamp = Date.now();
@@ -303,7 +303,7 @@ export class AnalyticsService {
       const events: AnalyticsEvent[] = [];
 
       while (resultSet.goToNextRow()) {
-        const event: AnalyticsEvent = new AnalyticsEvent(
+        const event: AnalyticsEvent = new AnalyticsEvent()
         event.eventId = resultSet.getString(resultSet.getColumnIndex(ANALYTICS_COLUMNS.EVENT_ID));
         event.eventType = resultSet.getString(resultSet.getColumnIndex(ANALYTICS_COLUMNS.EVENT_TYPE));
         event.timestamp = resultSet.getLong(resultSet.getColumnIndex(ANALYTICS_COLUMNS.TIMESTAMP));

@@ -13,17 +13,17 @@ export class NutritionPreset {
 
 export const NUTRITION_PRESETS: NutritionPreset[] = [
   ((): NutritionPreset => {
-    const p: NutritionPreset = new NutritionPreset(
+    const p: NutritionPreset = new NutritionPreset()
     p.id = 'balanced'; p.name = '均衡饮食';
     return p;
   })(),
   ((): NutritionPreset => {
-    const p: NutritionPreset = new NutritionPreset(
+    const p: NutritionPreset = new NutritionPreset()
     p.id = 'low_sodium'; p.name = '低钠控压'; p.sodiumMax_mg = 1500;
     return p;
   })(),
   ((): NutritionPreset => {
-    const p: NutritionPreset = new NutritionPreset(
+    const p: NutritionPreset = new NutritionPreset()
     p.id = 'low_sugar'; p.name = '低糖控糖'; p.sugarMax_g = 25;
     return p;
   })(),
@@ -71,7 +71,7 @@ export class NutritionTarget {
 }
 
 export function createDefaultNutritionTarget(memberId: string): NutritionTarget {
-  const t: NutritionTarget = new NutritionTarget(
+  const t: NutritionTarget = new NutritionTarget()
   t.memberId = memberId;
   return t;
 }

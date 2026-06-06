@@ -5,7 +5,7 @@ import { Driver, ON } from '@kit.TestKit';
 
 export default function reportPageTest() {
   describe('ReportPageTest', () => {
-    let driver: Driver;
+    let driver: Driver = new Driver();
 
     // 正常进入报告页（先执行扫码）
     it('should_navigate_to_report_page', 0, async () => {

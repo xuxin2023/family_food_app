@@ -13,7 +13,7 @@ function makeHotFoodItem(
   foodName: string, category: string, nutrition: NutritionPer100g,
   riskTags: string[], tip: string, emoji: string
 ): HotFoodItem {
-  const item: HotFoodItem = new HotFoodItem(
+  const item: HotFoodItem = new HotFoodItem()
   item.foodName = foodName;
   item.category = category;
   item.nutrition = nutrition;
@@ -37,7 +37,7 @@ export const HOT_FOODS: HotFoodItem[] = [
 ];
 
 export function hotFoodToFoodLabel(item: HotFoodItem): FoodLabel {
-  const label: FoodLabel = new FoodLabel(
+  const label: FoodLabel = new FoodLabel()
   label.foodId = `hot_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
   label.foodName = item.foodName;
   label.nutrition = item.nutrition;
@@ -53,7 +53,7 @@ export class DailyTip {
 }
 
 function makeDailyTip(text: string, emoji: string, scenario: string): DailyTip {
-  const tip: DailyTip = new DailyTip(
+  const tip: DailyTip = new DailyTip()
   tip.text = text;
   tip.emoji = emoji;
   tip.scenario = scenario;

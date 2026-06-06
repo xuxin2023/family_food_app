@@ -322,7 +322,7 @@ export class ShareCardGenerator {
 
     const title = `给全家人查了这款${foodName}`;
 
-    const cardData: ShareCardData = new ShareCardData(
+    const cardData: ShareCardData = new ShareCardData()
     cardData.title = title;
     cardData.memberSummaries = memberSummaries;
     cardData.keyAdvice = keyAdvice;

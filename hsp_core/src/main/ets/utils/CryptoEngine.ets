@@ -157,7 +157,7 @@ export class CryptoEngine {
   private separateIvAndCiphertext(combined: Uint8Array): GcmSeparatedData {
     const ivLen = 12;
     const authTagLen = 16;
-    const result: GcmSeparatedData = new GcmSeparatedData(
+    const result: GcmSeparatedData = new GcmSeparatedData()
     result.iv = combined.slice(0, ivLen);
     result.ciphertext = combined.slice(ivLen, combined.length - authTagLen);
     result.authTag = combined.slice(combined.length - authTagLen);

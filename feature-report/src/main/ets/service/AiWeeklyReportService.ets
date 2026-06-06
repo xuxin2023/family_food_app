@@ -107,7 +107,7 @@ export class AiWeeklyReportService extends AiServiceBase {
       }
       const rawParsed = JSON.parse(jsonMatch[0]) as Record<string, Object>;
       const parsed = JsonHelper.recordToMap(rawParsed);
-      const result: AiWeeklyReportResult = new AiWeeklyReportResult(
+      const result: AiWeeklyReportResult = new AiWeeklyReportResult()
       result.summary = (parsed.get('summary') as string) || fallback.summary;
       result.highlights = (parsed.get('highlights') as string[]) || fallback.highlights;
       result.suggestions = (parsed.get('suggestions') as string[]) || fallback.suggestions;
@@ -121,7 +121,7 @@ export class AiWeeklyReportService extends AiServiceBase {
   }
 
   private buildFallbackResult(report: WeeklyReport): AiWeeklyReportResult {
-    const r: AiWeeklyReportResult = new AiWeeklyReportResult(
+    const r: AiWeeklyReportResult = new AiWeeklyReportResult()
     r.summary = report.summary;
     r.highlights = report.highlights;
     r.suggestions = report.suggestions;

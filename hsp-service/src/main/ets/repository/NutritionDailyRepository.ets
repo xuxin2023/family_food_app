@@ -44,7 +44,7 @@ export class NutritionDailyRepository {
       const predicates = new relationalStore.RdbPredicates(TABLE_NAME);
       const resultSet = await this.rdbStore.query(predicates);
       while (resultSet.goToNextRow()) {
-        const d: NutritionDaily = new NutritionDaily(
+        const d: NutritionDaily = new NutritionDaily()
         d.id = resultSet.getLong(0);
         d.memberId = resultSet.getString(1);
         d.date = resultSet.getString(2);

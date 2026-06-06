@@ -178,7 +178,7 @@ export class OpenFoodFactsService {
     }
 
     // 构建 FoodLabel 对象
-    const foodLabel: FoodLabel = new FoodLabel(
+    const foodLabel: FoodLabel = new FoodLabel()
     foodLabel.foodId = product.code
     foodLabel.foodName = product.productName
     foodLabel.barcode = product.code
@@ -251,7 +251,7 @@ export class OpenFoodFactsService {
       for (const product of products) {
         const p = product as Record<string, Object>;
         if (!p || !p['code']) continue;
-        const foodLabel: FoodLabel = new FoodLabel(
+        const foodLabel: FoodLabel = new FoodLabel()
         foodLabel.foodId = p['code'] as string;
         foodLabel.foodName = (p['product_name'] as string) || '';
         foodLabel.barcode = p['code'] as string;
@@ -515,7 +515,7 @@ export class OpenFoodFactsService {
    */
   private async makeRequest(url: string): Promise<JsonObject | null> {
     try {
-      const opts: SecureRequestOptions = new SecureRequestOptions(
+      const opts: SecureRequestOptions = new SecureRequestOptions()
       opts.url = url;
       opts.method = http.RequestMethod.GET;
       const header = new Map<string, string>();

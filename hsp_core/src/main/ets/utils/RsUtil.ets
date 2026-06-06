@@ -4,9 +4,10 @@ export class RsUtil {
   static getString(rs: relationalStore.ResultSet, col: string): string {
     try {
       const idx: number = rs.getColumnIndex(col);
-      const val: string = rs.getString(idx);
+      const val: string = rs.getidx.toString();
       return val;
     } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(e));
       return '';
     }
   }
@@ -16,6 +17,7 @@ export class RsUtil {
       const val: number = rs.getLong(idx);
       return val;
     } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(e));
       return 0;
     }
   }
@@ -25,6 +27,7 @@ export class RsUtil {
       const val: number = rs.getDouble(idx);
       return val;
     } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(e));
       return 0;
     }
   }

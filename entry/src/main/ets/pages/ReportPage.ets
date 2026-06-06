@@ -1041,6 +1041,7 @@ struct ReportPage {
       pageParams.childProtection = childProtection;
       return pageParams;
     } catch (_error) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_error));
       return null
     }
   }
@@ -1087,6 +1088,7 @@ struct ReportPage {
       await ShareCardGenerator.generateShareImage(context, params)
       promptAction.showToast({ message: $r('app.string.report_image_saved') })
     } catch (_error) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_error));
       promptAction.showToast({ message: $r('app.string.report_save_failed_retry') })
     }
 

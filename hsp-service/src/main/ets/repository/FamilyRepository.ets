@@ -179,7 +179,8 @@ export class FamilyRepository {
       return [];
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe close */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe close */ }
       }
     }
   }

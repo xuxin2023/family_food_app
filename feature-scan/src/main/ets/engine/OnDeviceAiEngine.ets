@@ -348,7 +348,7 @@ export class OnDeviceAiEngine {
   ): Promise<string> {
     // 实际推理调用
     // const outputs = await this.session!.predict({ inputs: prompt })
-    // return String(outputs.result)
+    // return outputs.result.toString()
 
     // 占位模拟
     const ha1: HarmfulAdditive = new HarmfulAdditive(

@@ -178,7 +178,7 @@ export class OnDeviceInferenceEngine {
         };
         const outputs = await this.foodClassifier.session.predict([inputTensor]);
         if (outputs && outputs.length > 0) {
-          const resultData = new Float32Array(outputs[0].data as ArrayBuffer);
+          const resultData: Float32Array = new Float32Array(outputs[0].data as ArrayBuffer);
           const score = Math.round(Math.max(0, Math.min(100, resultData[0] * 100)));
           this.recordInference(startTime);
           return {
@@ -222,7 +222,7 @@ export class OnDeviceInferenceEngine {
         };
         const outputs = await this.ingredientRiskModel.session.predict([inputTensor]);
         if (outputs && outputs.length > 0) {
-          const resultData = new Float32Array(outputs[0].data as ArrayBuffer);
+          const resultData: Float32Array = new Float32Array(outputs[0].data as ArrayBuffer);
           const riskScore = Math.round(resultData[0] * 100);
           return {
             score: riskScore,
@@ -325,7 +325,8 @@ export class OnDeviceInferenceEngine {
       this.foodClassifier.model?.destroy?.();
       this.ingredientRiskModel.session?.destroy?.();
       this.ingredientRiskModel.model?.destroy?.();
-    } catch (_) { /* ignore */ }
+    } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_)); /* ignore */ }
     this.foodClassifier = { model: null, session: null };
     this.ingredientRiskModel = { model: null, session: null };
     this.initialized = false;

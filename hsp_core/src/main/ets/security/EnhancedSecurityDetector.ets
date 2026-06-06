@@ -79,7 +79,8 @@ export class EnhancedSecurityDetector {
         const host = record['httpProxyHost'] as string | undefined;
         return host !== undefined && host !== null && host.length > 0;
       }
-    } catch (_e) { /* ignore */ }
+    } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e)); /* ignore */ }
     return false;
   }
 
@@ -92,7 +93,8 @@ export class EnhancedSecurityDetector {
         const bearerTypes = (capabilities as Record<string, Object>)['bearerTypes'] as number[] | undefined;
         return bearerTypes !== undefined && bearerTypes.includes(6); // BEARER_VPN = 6
       }
-    } catch (_e) { /* ignore */ }
+    } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e)); /* ignore */ }
     return false;
   }
 
@@ -102,6 +104,7 @@ export class EnhancedSecurityDetector {
       const result = await deviceSecurity.integrityCheck({ nonce });
       return result.advice === deviceSecurity.IntegrityAdvice.OK;
     } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
       return true; // offline safe assumption
     }
   }

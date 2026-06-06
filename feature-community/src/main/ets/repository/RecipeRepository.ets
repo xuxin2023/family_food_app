@@ -186,7 +186,8 @@ export class RecipeRepository {
       return null;
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ }
       }
     }
   }
@@ -361,7 +362,8 @@ export class RecipeRepository {
       return [];
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ }
       }
     }
   }
@@ -381,7 +383,8 @@ export class RecipeRepository {
       if (resultSet.goToFirstRow()) {
         // 已点赞，取消
         const likeId = resultSet.getString(resultSet.getColumnIndex('id'));
-        try { resultSet.close(); } catch (closeError) { /* safe */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ }
         resultSet = null;
         const delPredicates = new relationalStore.RdbPredicates(TABLE_LIKE);
         delPredicates.equalTo('id', likeId);
@@ -395,7 +398,8 @@ export class RecipeRepository {
         return false;
       }
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ }
         resultSet = null;
       }
 
@@ -418,7 +422,8 @@ export class RecipeRepository {
       return false;
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ }
       }
     }
   }
@@ -439,7 +444,8 @@ export class RecipeRepository {
       return false;
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ }
       }
     }
   }
@@ -473,7 +479,8 @@ export class RecipeRepository {
       if (resultSet.goToFirstRow()) {
         // 已收藏，取消
         const bookmarkId = resultSet.getString(resultSet.getColumnIndex('id'));
-        try { resultSet.close(); } catch (closeError) { /* safe */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ }
         resultSet = null;
         const delPredicates = new relationalStore.RdbPredicates(TABLE_BOOKMARK);
         delPredicates.equalTo('id', bookmarkId);
@@ -486,7 +493,8 @@ export class RecipeRepository {
         return false;
       }
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ }
         resultSet = null;
       }
 
@@ -508,7 +516,8 @@ export class RecipeRepository {
       return false;
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ }
       }
     }
   }
@@ -533,7 +542,8 @@ export class RecipeRepository {
       return [];
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ }
       }
     }
   }
@@ -554,7 +564,8 @@ export class RecipeRepository {
       return false;
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ }
       }
     }
   }
@@ -637,7 +648,8 @@ export class RecipeRepository {
       return [];
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ }
       }
     }
   }

@@ -88,7 +88,7 @@ export class CryptoEngine {
       const input: cryptoFramework.DataBlob = { data: ciphertext };
       const output = await decipher.doFinal(input);
 
-      return new util.TextDecoder().decodeToString(output.data);
+      return new util.TextDecoder().decodeTooutput.data.toString();
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Decrypt failed: %{public}s', JSON.stringify(error));
       throw new Error(error.toString());
@@ -116,6 +116,7 @@ export class CryptoEngine {
         try {
           result[key] = await this.decrypt(value as string);
         } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_));
           result[key] = '[解密失败]';
         }
       } else {

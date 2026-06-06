@@ -100,7 +100,8 @@ export class SmartMealPlanService {
       if (resp && resp.source !== LlmSource.FALLBACK_TEMPLATE) {
         aiWeeklyAdvice = resp.answer.split('2)')[0]?.replace('1)', '').trim() ?? resp.answer;
       }
-    } catch (_) { /* use local */ }
+    } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_)); /* use local */ }
 
     const weekEnd = new Date(start);
     weekEnd.setDate(start.getDate() + days - 1);

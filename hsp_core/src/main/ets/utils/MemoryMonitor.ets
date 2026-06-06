@@ -76,7 +76,8 @@ export class MemoryMonitor {
           snapshot.jsHeapSizeLimit = (mem['jsHeapSizeLimit'] as number) ?? 0;
         }
       }
-    } catch (_e) {}
+    } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));}
 
     this.snapshots.push(snapshot);
 
@@ -121,6 +122,7 @@ export class MemoryMonitor {
         hilog.info(DOMAIN_ZERO, TAG, 'Manual GC triggered (#%{public}d)', this.gcTriggerCount);
       }
     } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
       // gc不可用
     }
   }

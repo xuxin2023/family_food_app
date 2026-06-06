@@ -487,6 +487,7 @@ struct AiChatPage {
             this.messages.push(switchMsg)
           }
         } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(e));
           const switchMsg: ChatMessage = new ChatMessage(
             generateMessageId(),
             $r('app.string.ai_chat_switched_member', member.nickname) as ResourceStr,

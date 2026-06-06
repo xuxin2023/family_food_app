@@ -78,7 +78,8 @@ export class FoodRepository {
       return null;
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe close */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe close */ }
       }
     }
   }
@@ -108,7 +109,8 @@ export class FoodRepository {
       hilog.error(DOMAIN_ZERO, TAG, 'Batch find by ids failed: %{public}s', JSON.stringify(error));
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe close */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe close */ }
       }
     }
     return resultMap;
@@ -130,7 +132,8 @@ export class FoodRepository {
       return null;
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe close */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe close */ }
       }
     }
   }
@@ -153,7 +156,8 @@ export class FoodRepository {
       return [];
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe close */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe close */ }
       }
     }
   }

@@ -194,14 +194,17 @@ export class DataBackupService {
         for (let i = 0; i < resultSet.columnCount; i++) {
           const colName = resultSet.getColumnName(i);
           try {
-            row[colName] = resultSet.getString(i);
+            row[colName] = resultSet.geti.toString();
           } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
             try {
               row[colName] = resultSet.getLong(i);
             } catch (_e2) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e2));
               try {
                 row[colName] = resultSet.getDouble(i);
               } catch (_e3) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e3));
                 row[colName] = null;
               }
             }
@@ -244,11 +247,13 @@ export class DataBackupService {
         for (let i = 0; i < resultSet.columnCount; i++) {
           const colName = resultSet.getColumnName(i);
           try {
-            row[colName] = resultSet.getString(i);
+            row[colName] = resultSet.geti.toString();
           } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
             try {
               row[colName] = resultSet.getLong(i);
             } catch (_e2) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e2));
               row[colName] = null;
             }
           }
@@ -272,7 +277,8 @@ export class DataBackupService {
         const placeholders = cols.map(() => '?').join(', ');
         await store.executeSql(`INSERT OR REPLACE INTO ${table} (${cols.join(', ')}) VALUES (${placeholders})`, vals);
         count++;
-      } catch (_e) {}
+      } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));}
     }
     return count;
   }

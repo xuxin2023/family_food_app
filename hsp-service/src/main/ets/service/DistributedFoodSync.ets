@@ -122,6 +122,7 @@ export class DistributedFoodSync {
             records.push(record);
           }
         } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
           continue;
         }
       }
@@ -186,6 +187,7 @@ export class DistributedFoodSync {
             const record = JSON.parse(entry.value.value as string) as SyncedScanRecord;
             records.push(record);
           } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
             continue;
           }
         }
@@ -216,6 +218,7 @@ export class DistributedFoodSync {
       const localInfo = dm.getLocalDeviceNetworkId();
       return localInfo || 'unknown';
     } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
       return 'unknown';
     }
   }

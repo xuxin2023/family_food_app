@@ -122,6 +122,7 @@ export class OnDeviceLlmBridge {
       hilog.info(HILOG_DOMAIN_DEFAULT, TAG, 'Hardware detection: NPU=%{public}s, CPU=%{public}s',
         this.npuAvailable.toString(), this.cpuModelLoaded.toString());
     } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
       this.npuAvailable = false;
       this.cpuModelLoaded = true;
     }
@@ -180,6 +181,7 @@ export class OnDeviceLlmBridge {
       const gradeText = grade ? `，营养评级${grade}` : '';
       return `${name}${gradeText}。建议结合家庭成员健康状况，关注钠、糖、脂肪三项核心指标后决定食用量。`;
     } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
       return '建议查看食品完整配料表和营养成分表后，根据家庭成员健康目标决定是否购买。';
     }
   }

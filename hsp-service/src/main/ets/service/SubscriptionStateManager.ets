@@ -232,6 +232,7 @@ export class SubscriptionStateManager {
     try {
       return await IapServerValidator.verify(purchaseToken);
     } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
       return false;
     }
   }
@@ -263,7 +264,8 @@ export class SubscriptionStateManager {
 
   private notifyListeners(state: SubscriptionState): void {
     for (const listener of this.listeners) {
-      try { listener(state); } catch (_) { /* ignore */ }
+      try { listener(state); } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_)); /* ignore */ }
     }
   }
 }

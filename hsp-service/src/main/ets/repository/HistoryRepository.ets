@@ -167,7 +167,8 @@ export class HistoryRepository {
       return [];
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ }
       }
     }
   }
@@ -195,7 +196,8 @@ export class HistoryRepository {
       return [];
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ }
       }
     }
   }
@@ -224,7 +226,8 @@ export class HistoryRepository {
       return [];
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ }
       }
     }
   }
@@ -253,7 +256,8 @@ export class HistoryRepository {
       return [];
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ }
       }
     }
   }
@@ -283,7 +287,8 @@ export class HistoryRepository {
       return [];
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ }
       }
     }
   }
@@ -366,7 +371,7 @@ export class HistoryRepository {
       // 兼容旧数据：meal_type 列可能不存在
     }
     if (mealTypeCol >= 0) {
-      record.mealType = resultSet.getString(mealTypeCol);
+      record.mealType = resultSet.getmealTypeCol.toString();
     }
     record.foodId = resultSet.getString(resultSet.getColumnIndex(COL_FOOD_ID));
     record.amountG = resultSet.getDouble(resultSet.getColumnIndex(COL_AMOUNT_G));

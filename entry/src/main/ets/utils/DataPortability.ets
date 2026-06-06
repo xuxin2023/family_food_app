@@ -176,7 +176,7 @@ export class DataPortability {
         for (let i = 0; i < colCount; i++) {
           const colName = resultSet.getColumnName(i);
           // getString returns string; as Object needed for Map<string, Object>
-          row.set(colName, resultSet.getString(i) as Object);
+          row.set(colName, resultSet.geti.toString() as Object);
         }
         rows.push(row);
       }

@@ -61,7 +61,8 @@ export class DistributedSyncHelper {
   private updateStatus(status: SyncStatus): void {
     this.syncStatus = status;
     for (const listener of this.statusListeners) {
-      try { listener(status); } catch (_e) {}
+      try { listener(status); } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));}
     }
   }
 
@@ -76,7 +77,8 @@ export class DistributedSyncHelper {
         const remoteData = this.distributedObj?.['family_member_sync'] as DistributedMemberData[] | undefined;
         if (remoteData) {
           for (const listener of this.dataListeners) {
-            try { listener(remoteData); } catch (_e) {}
+            try { listener(remoteData); } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));}
           }
         }
       });
@@ -123,7 +125,8 @@ export class DistributedSyncHelper {
     try {
       this.distributedObj?.['recovery_data'] = JSON.stringify(data);
       hilog.info(DOMAIN_ZERO, TAG, 'Recovery data saved');
-    } catch (_e) {}
+    } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));}
   }
 
   destroy(): void {
@@ -131,7 +134,8 @@ export class DistributedSyncHelper {
       try {
         this.distributedObj.off('change');
         this.distributedObj.off('progressChanged');
-      } catch (_e) {}
+      } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));}
       this.distributedObj = null;
     }
     this.statusListeners = [];

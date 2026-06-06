@@ -60,6 +60,7 @@ export struct PrivacyConsentDialog {
         this.onAgreed?.();
       }
     } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_));
       this.isVisible = true;
     }
   }
@@ -178,6 +179,7 @@ export struct PrivacyConsentDialog {
       const ctx = getContext(this) as common.UIAbilityContext;
       ctx.openLink(url);
     } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_));
     }
   }
 
@@ -188,6 +190,7 @@ export struct PrivacyConsentDialog {
       await prefs.put(PREF_KEY_PRIVACY_AGREED, true);
       await prefs.flush();
     } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_));
     }
   }
 
@@ -196,6 +199,7 @@ export struct PrivacyConsentDialog {
       const prefs = await preferences.getPreferences(context, 'app_settings');
       return await prefs.get(PREF_KEY_PRIVACY_AGREED, false) as boolean;
     } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_));
       return false;
     }
   }

@@ -48,10 +48,12 @@ export class PageResourceTracker {
 
   onDisappear(): void {
     this.timers.forEach((id: number) => {
-      try { clearTimeout(id); } catch (_) { /* ignore */ }
+      try { clearTimeout(id); } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_)); /* ignore */ }
     });
     this.intervals.forEach((id: number) => {
-      try { clearInterval(id); } catch (_) { /* ignore */ }
+      try { clearInterval(id); } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_)); /* ignore */ }
     });
     this.listeners.forEach((l: { obj: object; event: string; callback: Function }) => {
       try {
@@ -59,10 +61,12 @@ export class PageResourceTracker {
         if (typeof obj['off'] === 'function') {
           obj['off'](l.event, l.callback);
         }
-      } catch (_) { /* ignore */ }
+      } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_)); /* ignore */ }
     });
     this.disposables.forEach((d: TrackedDisposable) => {
-      try { d.dispose(); } catch (_) { /* ignore */ }
+      try { d.dispose(); } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_)); /* ignore */ }
     });
 
     this.timers.length = 0;

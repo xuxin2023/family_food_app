@@ -55,6 +55,7 @@ export class HealthRefreshScheduler {
     try {
       return workScheduler.isWorkRunning(WORK_ID_HEALTH_REFRESH);
     } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_));
       return false;
     }
   }

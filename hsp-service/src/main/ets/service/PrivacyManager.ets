@@ -154,10 +154,12 @@ export class PrivacyManager {
           PrivacyManager.remoteManifestFetchedAt = cachedTime;
           return PrivacyManager.remoteManifest;
         } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
           // fall through to fetch online
         }
       }
     } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
       // fall through
     }
 
@@ -184,7 +186,8 @@ export class PrivacyManager {
               pref.putSync(PrivacyManager.KEY_REMOTE_VERSION_CACHE, JSON.stringify(manifest));
               pref.putSync(PrivacyManager.KEY_REMOTE_VERSION_CACHE_TIME, now);
               await pref.flush();
-            } catch (_e) { /* cache save failure non-critical */ }
+            } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e)); /* cache save failure non-critical */ }
 
             hilog.info(DOMAIN_ZERO, TAG, 'Remote manifest fetched: v%{public}s', manifest.latestVersion);
             return manifest;

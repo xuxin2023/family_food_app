@@ -74,6 +74,7 @@ export class AntiCaptureDetector {
         return proxyHost !== undefined && proxyHost !== null && proxyHost.length > 0;
       }
     } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
       // 检测失败默认为安全
     }
     return false;
@@ -84,6 +85,7 @@ export class AntiCaptureDetector {
       const capabilities = connection.getAppNet();
       return capabilities !== null;
     } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
       return false;
     }
   }

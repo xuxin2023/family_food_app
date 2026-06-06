@@ -84,6 +84,7 @@ export class CommunityImageService {
         const result = await this.uploadImage(path, category);
         results.push(result);
       } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_));
         continue;
       }
     }
@@ -96,6 +97,7 @@ export class CommunityImageService {
     try {
       await fileIo.access(filesDir);
     } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_));
       await fileIo.mkdir(filesDir);
     }
     const destPath = filesDir + '/' + fileName;

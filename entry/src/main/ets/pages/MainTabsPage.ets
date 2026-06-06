@@ -529,4 +529,3 @@ struct MainTabsPage {
   aboutToDisappear(): void {
     this.tracker.onDisappear()
   }
-}

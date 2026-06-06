@@ -188,6 +188,7 @@ export class PerformanceMonitor {
         this.memorySamples.splice(0, this.memorySamples.length - 200);
       }
     } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
       // process.memoryUsage 不可用时静默
     }
   }

@@ -65,7 +65,8 @@ export class SmartBasketService {
       let ingredientRisk: IngredientAnalysisResult | null = null;
       try {
         ingredientRisk = await this.ingredientService.analyze(food);
-      } catch (_) { /* fallback */ }
+      } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_)); /* fallback */ }
 
       let level: SmartBasketItem['level'] = 'safe';
       if (ingredientRisk) {
@@ -108,7 +109,8 @@ export class SmartBasketService {
       if (resp && resp.source !== LlmSource.FALLBACK_TEMPLATE) {
         aiAdvice = resp.answer;
       }
-    } catch (_) { /* use local */ }
+    } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_)); /* use local */ }
 
     return {
       items: smartItems, totalItems: items.length,

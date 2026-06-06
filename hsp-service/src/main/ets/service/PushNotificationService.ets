@@ -211,6 +211,7 @@ export class PushNotificationService {
       try {
         await reminderAgentManager.cancelReminder(id);
       } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_));
         // ignore individual cancel errors
       }
     }

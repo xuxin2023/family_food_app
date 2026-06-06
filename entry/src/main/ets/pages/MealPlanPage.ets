@@ -83,6 +83,7 @@ struct MealPlanPage {
       this.weeklyPlan = await this.smartService.generateWeeklyPlan(
         member.memberId, member.nickname, member, availableFoods, today, 7)
     } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_));
       this.weeklyPlan = null
     }
     this.isLoadingAi = false

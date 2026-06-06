@@ -35,6 +35,7 @@ export class DeviceAdapter {
         DeviceAdapter.cachedType = DeviceType.PHONE;
       }
     } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
       DeviceAdapter.cachedType = DeviceType.PHONE;
     }
     return DeviceAdapter.cachedType;
@@ -59,6 +60,7 @@ export class DeviceAdapter {
       const density: number = disp.densityDPI / 160;
       DeviceAdapter.cachedWidthVp = disp.width / density;
     } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
       DeviceAdapter.cachedWidthVp = 360;
     }
     return DeviceAdapter.cachedWidthVp;

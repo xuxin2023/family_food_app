@@ -35,6 +35,7 @@ export class DomainEventBus {
         try {
           handler(data);
         } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
           // handler error, continue
         }
       }

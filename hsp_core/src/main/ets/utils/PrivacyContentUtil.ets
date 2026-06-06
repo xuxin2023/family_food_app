@@ -15,6 +15,7 @@ async function readRawHtml(context: common.Context, fileName: string): Promise<s
     const textDecoder = util.TextDecoder.create('utf-8');
     return textDecoder.decodeWithStream(content, { stream: false });
   } catch (error) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(error));
     return `<p>加载内容失败: ${JSON.stringify(error)}</p>`;
   }
 }

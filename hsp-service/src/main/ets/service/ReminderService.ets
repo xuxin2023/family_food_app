@@ -71,7 +71,8 @@ export class ReminderService {
       };
       events.push(event);
       for (const listener of this.listeners) {
-        try { listener(event); } catch (_) {}
+        try { listener(event); } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_));}
       }
     }
     return events;

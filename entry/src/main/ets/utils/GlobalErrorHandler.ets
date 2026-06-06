@@ -130,6 +130,7 @@ export class GlobalErrorHandler {
       AppStorage.setOrCreate('globalErrorMessage', errorMsg);
       AppStorage.setOrCreate('globalErrorTimestamp', Date.now());
     } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
       // AppStorage不可用时静默
     }
   }
@@ -141,6 +142,7 @@ export class GlobalErrorHandler {
       props.set('message', error.message.substring(0, 200));
       AnalyticsService.getInstance().trackEvent('error', props);
     } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
       // Analytics不可用时静默
     }
   }

@@ -67,7 +67,8 @@ export class LlmChatProxy {
         if (onDeviceReply) {
           return { answer: onDeviceReply, source: LlmSource.ON_DEVICE, latencyMs: Date.now() - startTime, tokensUsed: 0 };
         }
-      } catch (_e) { /* 降级 */ }
+      } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e)); /* 降级 */ }
     }
 
     try {
@@ -75,7 +76,8 @@ export class LlmChatProxy {
       if (cloudReply) {
         return { answer: cloudReply, source: LlmSource.CLOUD_PANGU, latencyMs: Date.now() - startTime, tokensUsed: 0 };
       }
-    } catch (_e) { /* 降级 */ }
+    } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e)); /* 降级 */ }
 
     const fallback = this.generateFallbackReply(request.question);
     AuditLogger.log(AuditAction.DATA_ACCESS, 'success', request.memberId, 'llm_fallback');
@@ -86,6 +88,7 @@ export class LlmChatProxy {
     try {
       return await this.aiChatService.askOffline(question, context);
     } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
       hilog.warn(DOMAIN, TAG, 'OnDevice LLM unavailable');
       return null;
     }
@@ -107,6 +110,7 @@ export class LlmChatProxy {
         }) as Record<string, Object>;
         return (result['answer'] as string) ?? null;
       } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
         if (attempt === maxRetries - 1) {
           hilog.warn(DOMAIN, TAG, 'Cloud LLM failed after %{public}d retries', maxRetries);
           return null;

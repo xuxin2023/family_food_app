@@ -141,6 +141,7 @@ export class ModelDownloadService {
       const stat = fileIo.statSync(path);
       return stat.size > 0;
     } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_));
       return false;
     }
   }
@@ -234,6 +235,7 @@ export class ModelDownloadService {
       if (!json.version || !json.models) return null;
       return json;
     } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_));
       return null;
     }
   }
@@ -244,6 +246,7 @@ export class ModelDownloadService {
       const localVersion = this.getLocalVersion();
       return cloudVersion > localVersion;
     } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_));
       return true;
     }
   }
@@ -255,6 +258,7 @@ export class ModelDownloadService {
       const manifest = JSON.parse(content) as ModelManifest;
       return manifest.version ?? 0;
     } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_));
       return 0;
     }
   }
@@ -284,6 +288,7 @@ export class ModelDownloadService {
       const bearerTypes = capabilities.bearerTypes as number[] | undefined;
       return bearerTypes !== undefined && bearerTypes.includes(1);
     } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_));
       return false;
     }
   }
@@ -304,13 +309,15 @@ export class ModelDownloadService {
     this.downloadState.set(modelName, state);
     try {
       this.callback?.onProgress(state);
-    } catch (_) { /* ignore */ }
+    } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_)); /* ignore */ }
   }
 
   private ensureModelsDir(): void {
     try {
       fileIo.mkdirSync(this.modelsDir, true);
     } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_));
       // 目录已存在
     }
   }

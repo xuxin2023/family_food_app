@@ -51,6 +51,7 @@ struct BasketCheckPage {
         this.topSwaps = result.topSwaps
       }
     } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_));
       this.checkResult = null
     } finally {
       this.isLoading = false

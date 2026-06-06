@@ -165,6 +165,7 @@ export class ModelManager {
     try {
       return fileIo.accessSync(path);
     } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
       return false;
     }
   }

@@ -20,9 +20,12 @@ export class DeviceCapability {
 
   async init(): Promise<void> {
     if (this.cached) return;
-    try { this.npu = this.detectNpu(); } catch (_e) { this.npu = NpuLevel.NONE; }
-    try { this.ramMB = this.detectRam(); } catch (_e) { this.ramMB = 4096; }
-    try { this.cpuCores = this.detectCpuCores(); } catch (_e) { this.cpuCores = 4; }
+    try { this.npu = this.detectNpu(); } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e)); this.npu = NpuLevel.NONE; }
+    try { this.ramMB = this.detectRam(); } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e)); this.ramMB = 4096; }
+    try { this.cpuCores = this.detectCpuCores(); } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e)); this.cpuCores = 4; }
     this.cached = true;
     hilog.info(DOMAIN_ZERO, TAG, 'Device: NPU=%{public}s RAM=%{public}dMB CPU=%{public}dC', this.npu, this.ramMB, this.cpuCores);
   }

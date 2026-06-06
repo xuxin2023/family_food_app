@@ -110,6 +110,7 @@ export class HealthReportExportService {
     try {
       fileIo.mkdirSync(dir, true);
     } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
       // 目录可能已存在
     }
     const fileName = `report_${memberId}_${Date.now()}.txt`;

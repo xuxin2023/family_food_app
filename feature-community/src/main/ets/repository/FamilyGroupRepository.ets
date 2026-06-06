@@ -141,7 +141,8 @@ export class FamilyGroupRepository {
       return null;
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ }
       }
     }
   }
@@ -162,7 +163,8 @@ export class FamilyGroupRepository {
       return null;
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ }
       }
     }
   }
@@ -253,7 +255,8 @@ export class FamilyGroupRepository {
       return null;
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ }
       }
     }
   }
@@ -367,7 +370,8 @@ export class FamilyGroupRepository {
       return [];
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ }
       }
     }
   }
@@ -468,7 +472,8 @@ export class FamilyGroupRepository {
       hilog.error(DOMAIN_ZERO, TAG, 'getFeedById failed: %{public}s', JSON.stringify(error));
       return null;
     } finally {
-      if (resultSet) { try { resultSet.close(); } catch (closeError) { /* safe */ } }
+      if (resultSet) { try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ } }
     }
   }
 
@@ -506,7 +511,8 @@ export class FamilyGroupRepository {
       return [];
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ }
       }
     }
   }
@@ -541,7 +547,8 @@ export class FamilyGroupRepository {
       return [];
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ }
       }
     }
   }
@@ -575,7 +582,8 @@ export class FamilyGroupRepository {
       return [];
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) { /* safe */ }
+        try { resultSet.close(); } catch (closeError) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe */ }
       }
     }
   }

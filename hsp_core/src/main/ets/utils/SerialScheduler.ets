@@ -10,6 +10,7 @@ export class SerialScheduler {
           const result = await task();
           resolve(result);
         } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(e));
           reject(e);
         }
       });

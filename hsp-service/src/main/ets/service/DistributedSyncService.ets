@@ -54,7 +54,8 @@ export class DistributedSyncService {
   private updateStatus(status: DistributedSyncStatus): void {
     this.syncStatus = status;
     for (const listener of this.statusListeners) {
-      try { listener(status); } catch (_e) {}
+      try { listener(status); } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));}
     }
   }
 
@@ -118,7 +119,8 @@ export class DistributedSyncService {
 
   destroy(): void {
     if (this.kvStore) {
-      try { this.kvStore.off('dataChange'); } catch (_e) {}
+      try { this.kvStore.off('dataChange'); } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));}
       this.kvStore = null;
     }
     this.changeListeners = [];

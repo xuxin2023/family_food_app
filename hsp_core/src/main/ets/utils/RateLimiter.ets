@@ -197,7 +197,8 @@ export class RateLimiter {
       data.day = this.dailyResetDay.get(endpoint) ?? 0;
       await this.prefs.put(USAGE_KEY_PREFIX + endpoint, JSON.stringify(data));
       await this.prefs.flush();
-    } catch (_e) {}
+    } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));}
   }
 
   private async loadPersistedUsage(): Promise<void> {
@@ -221,7 +222,8 @@ export class RateLimiter {
           this.dailyTokens.set(endpoint, (data['daily'] as number) ?? 0);
           this.dailyResetDay.set(endpoint, (data['day'] as number) ?? 0);
         }
-      } catch (_e) {}
+      } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));}
     }
   }
 }

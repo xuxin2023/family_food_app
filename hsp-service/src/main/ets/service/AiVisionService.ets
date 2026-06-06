@@ -34,7 +34,7 @@ const CATEGORY_NUTRITIONS: CategoryNutrition[] = buildCategoryNutritions();
 function buildCategoryNutritions(): CategoryNutrition[] {
   const list: CategoryNutrition[] = [];
 
-  let c = new CategoryNutrition();
+  let c: CategoryNutrition = new CategoryNutrition();
   c.category = '膨化食品';
   c.keywords = ['薯片', '膨化', '虾条', '爆米花', '浪味仙', '奇多'];
   c.sodium_mg = 400; c.sugar_g = 5; c.calories = 520; c.fat_g = 30; c.saturatedFat_g = 8;
@@ -142,6 +142,7 @@ export class AiVisionService {
       r.errorMessage = '';
       return r;
     } catch (err) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(err));
       const r: AiRecognitionResult = new AiRecognitionResult(
       r.success = false;
       r.label = null;

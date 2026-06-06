@@ -132,10 +132,12 @@ const MIGRATIONS: Map<number, (store: relationalStore.RdbStore) => Promise<void>
 
     try {
       await store.executeSql(`ALTER TABLE scan_history ADD COLUMN scan_type TEXT DEFAULT 'BARCODE'`);
-    } catch (_) {}
+    } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_));}
     try {
       await store.executeSql(`ALTER TABLE scan_history ADD COLUMN alert_details TEXT DEFAULT ''`);
-    } catch(_) {}
+    } catch(_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_));}
 
     await store.executeSql(
       `CREATE TABLE IF NOT EXISTS schema_meta (`
@@ -214,7 +216,8 @@ async function rollbackMigration(store: relationalStore.RdbStore, targetVersion:
   for (const table of tablesToDrop) {
     try {
       await store.executeSql(`DROP TABLE IF EXISTS ${table}`);
-    } catch (_) {}
+    } catch (_) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_));}
   }
   hilog.info(DOMAIN_ZERO, TAG, 'Rollback completed');
 }

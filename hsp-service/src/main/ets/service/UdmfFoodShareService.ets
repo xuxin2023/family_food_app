@@ -158,6 +158,7 @@ export class UdmfFoodShareService {
                     foodData.sharedBy = parsed.sharedBy ?? '';
                     foodData.timestamp = parsed.timestamp ?? 0;
                   } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
                     // 非本应用格式数据，跳过
                   }
                 }

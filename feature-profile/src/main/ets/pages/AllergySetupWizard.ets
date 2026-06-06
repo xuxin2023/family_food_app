@@ -48,6 +48,7 @@ struct AllergySetupWizard {
         this.selectedMemberName = params['memberName'] as string;
       }
     } catch (_e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
       // 从AppState获取
     }
   }

@@ -505,6 +505,7 @@ export class SyncService {
                     localItem.syncStatus = SyncStatus.SYNCED;
                   }
                 } catch (_crdtErr) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_crdtErr));
                   if (localUpdated >= remoteUpdated) {
                     localItem.syncStatus = SyncStatus.PENDING;
                   } else {

@@ -37,18 +37,21 @@ export class UserDataDeletionService {
     try {
       result.deletedLocal = await this.deleteLocalData(context);
     } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(e));
       result.errors.push(`Local deletion failed: ${JSON.stringify(e)}`);
     }
 
     try {
       result.deletedCloud = await this.deleteCloudData(userId);
     } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(e));
       result.errors.push(`Cloud deletion failed: ${JSON.stringify(e)}`);
     }
 
     try {
       await SecureKeyStore.clearAll();
     } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(e));
       result.errors.push(`SecureKeyStore clear failed: ${JSON.stringify(e)}`);
     }
 
@@ -74,6 +77,7 @@ export class UserDataDeletionService {
       }
       return true;
     } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(e));
       hilog.error(DOMAIN_ZERO, TAG, 'deleteLocalData failed: %{public}s', JSON.stringify(e));
       return false;
     }
@@ -85,6 +89,7 @@ export class UserDataDeletionService {
       const result = await backend.callFunction('user-data-deletion', { userId, scope: 'full' });
       return result !== null;
     } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(e));
       hilog.error(DOMAIN_ZERO, TAG, 'deleteCloudData failed: %{public}s', JSON.stringify(e));
       return false;
     }
@@ -96,6 +101,7 @@ export class UserDataDeletionService {
       const result = await backend.callFunction('user-profile', { userId, action: 'export' });
       return result !== null ? JSON.stringify(result) : null;
     } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(e));
       hilog.error(DOMAIN_ZERO, TAG, 'exportUserData failed: %{public}s', JSON.stringify(e));
       return null;
     }

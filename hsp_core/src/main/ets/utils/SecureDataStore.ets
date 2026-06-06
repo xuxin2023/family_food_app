@@ -191,7 +191,7 @@ export class SecureDataStore {
     await decipher.init(cryptoFramework.CryptoMode.DECRYPT_MODE, symKey, params);
     const input: cryptoFramework.DataBlob = { data: cipherData.buffer as ArrayBuffer };
     const result = await decipher.doFinal(input);
-    return this.arrayBufferToString(result.data);
+    return this.arrayBufferToresult.data.toString();
   }
 
   // ========== 内部方法 ==========
@@ -253,7 +253,7 @@ export class SecureDataStore {
   private arrayBufferToString(buffer: ArrayBuffer): string {
     const decoder: util.TextDecoder = new util.TextDecoder('utf-8');
     const bytes: Uint8Array = new Uint8Array(
-    const decoded: string = decoder.decodeToString(bytes);
+    const decoded: string = decoder.decodeTobytes.toString();
     return decoded;
   }
 

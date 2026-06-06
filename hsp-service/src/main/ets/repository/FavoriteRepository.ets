@@ -63,7 +63,7 @@ export class FavoriteRepository {
       const resultSet = await this.rdbStore.query(predicates);
       this.items = [];
       while (resultSet.goToNextRow()) {
-        const item = new FavoriteItem();
+        const item: FavoriteItem = new FavoriteItem(
         item.id = resultSet.getString(0);
         item.foodId = resultSet.getString(1);
         item.foodName = resultSet.getString(2);
@@ -134,7 +134,7 @@ export class FavoriteRepository {
     _foodId: string, _foodName: string, _barcode: string,
     _brand: string, _imageUrl: string, _nutriGrade: string, _source: string
   ): Promise<boolean> {
-    const item = new FavoriteItem()
+    const item: FavoriteItem = new FavoriteItem(
     item.id = `fav_${Date.now()}`
     item.foodId = _foodId
     item.foodName = _foodName

@@ -47,7 +47,7 @@ export class ImageCache {
       const path = ImageCache.diskPath(url);
       if (fs.accessSync(path)) {
         const stat = fs.statSync(path);
-        const buf = new ArrayBuffer(stat.size);
+        const buf: ArrayBuffer = new ArrayBuffer(
         const fd = fs.openSync(path, fs.OpenMode.READ_ONLY);
         fs.readSync(fd, buf);
         fs.closeSync(fd);

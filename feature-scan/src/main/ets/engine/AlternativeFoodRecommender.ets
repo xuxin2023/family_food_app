@@ -377,7 +377,7 @@ export class AlternativeFoodRecommender implements IAlternativeRecommender {
   ): Promise<AlternativeFood[]> {
     if (this.offlineFoodDB.length === 0 || topN <= 0) return [];
 
-    const currentNutrition = new NutritionVector(currentFood.nutrition);
+    const currentNutrition: NutritionVector = new NutritionVector(
     const candidates: { candidate: OfflineFoodCandidate; score: number; reason: string }[] = [];
 
     for (const candidate of this.offlineFoodDB) {
@@ -387,7 +387,7 @@ export class AlternativeFoodRecommender implements IAlternativeRecommender {
       const allergenConflict = candidate.allergenHints.some((a: string) => memberAllergens.has(a));
       if (allergenConflict) continue;
 
-      const candidateNutrition = new NutritionVector(candidate.nutrition);
+      const candidateNutrition: NutritionVector = new NutritionVector(
       const nutritionSimilarity = currentNutrition.cosineSimilarity(candidateNutrition);
       if (nutritionSimilarity < 0.5) continue;
 
@@ -615,7 +615,7 @@ export class AlternativeFoodRecommender implements IAlternativeRecommender {
     nutrition: NutritionPer100g,
     members: FamilyProfile[]
   ): Promise<AlternativeFood[]> {
-    const foodLabel = new FoodLabel();
+    const foodLabel: FoodLabel = new FoodLabel(
     foodLabel.foodName = '扫描食品';
     foodLabel.nutrition = nutrition;
     foodLabel.ingredients = [];

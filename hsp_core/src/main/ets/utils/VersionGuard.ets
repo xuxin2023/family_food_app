@@ -51,7 +51,7 @@ export class VersionGuard {
       const sdkApiVersion = deviceInfo.sdkApiVersion;
       _currentApiLevel = typeof sdkApiVersion === 'number'
         ? sdkApiVersion
-        : parseInt(String(sdkApiVersion), 10);
+        : parseInt(sdkApiVersion.toString(), 10);
       hilog.info(HILOG_DOMAIN_DEFAULT, TAG, 'Device API Level: %{public}d', _currentApiLevel);
     } catch (e) {
       hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'Failed to detect API level: %{public}s', JSON.stringify(e));

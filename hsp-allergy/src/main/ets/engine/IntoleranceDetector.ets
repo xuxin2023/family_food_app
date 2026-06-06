@@ -113,7 +113,7 @@ export class IntoleranceDetector {
         const normalized = ingredient.trim().toLowerCase();
         const matchedKw = keywords.find(k => normalized.includes(k.toLowerCase()));
         if (matchedKw) {
-          const hint = new AllergyHint();
+          const hint: AllergyHint = new AllergyHint(
           hint.allergen = `${typeLabel}不耐受`;
           hint.ingredient = ingredient;
           hint.severity = severity;

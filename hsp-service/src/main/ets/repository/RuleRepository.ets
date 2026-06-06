@@ -122,7 +122,7 @@ export class RuleRepository {
    */
   async loadAllergenKeywords(): Promise<AllergenKeywordMap> {
     const data = await this.loadJsonFile('allergen_keywords.json');
-    const result = new AllergenKeywordMap();
+    const result: AllergenKeywordMap = new AllergenKeywordMap(
     if (data) {
       const a2k = data.allergenToKeywords as Record<string, string[]>;
       const ca = data.commonAllergens as string[];

@@ -132,13 +132,13 @@ export class SecureDataStore {
   async encrypt(plainText: string): Promise<ArrayBuffer> {
     await this.ensureKey();
     const symKeyGenerator = cryptoFramework.createSymKeyGenerator('AES256');
-    const keyData = new Uint8Array(this.keyMaterial!.outData!);
+    const keyData: Uint8Array = new Uint8Array(
     const symKey = await symKeyGenerator.convertKey({ data: keyData.buffer as ArrayBuffer });
 
     const cipher = cryptoFramework.createCipher('AES256|GCM|NONE');
     const random = cryptoFramework.createRandom();
     const randomBlob = await random.generateRandom(IV_LENGTH);
-    const ivBytes = new Uint8Array(randomBlob.data);
+    const ivBytes: Uint8Array = new Uint8Array(
     const aadArr: Uint8Array = new Uint8Array(0);
     const tagArr: Uint8Array = new Uint8Array(TAG_LENGTH);
     const params: cryptoFramework.GcmParamsSpec = {
@@ -168,17 +168,17 @@ export class SecureDataStore {
   async decrypt(encryptedData: ArrayBuffer): Promise<string> {
     await this.ensureKey();
     const symKeyGenerator = cryptoFramework.createSymKeyGenerator('AES256');
-    const keyData = new Uint8Array(this.keyMaterial!.outData!);
+    const keyData: Uint8Array = new Uint8Array(
     const symKey = await symKeyGenerator.convertKey({ data: keyData.buffer as ArrayBuffer });
 
     if (encryptedData.byteLength < IV_LENGTH + TAG_LENGTH) {
       throw new Error('Invalid encrypted data length');
     }
 
-    const fullData = new Uint8Array(encryptedData);
-    const iv = new Uint8Array(fullData.slice(0, IV_LENGTH));
-    const tag = new Uint8Array(fullData.slice(encryptedData.byteLength - TAG_LENGTH));
-    const cipherData = new Uint8Array(fullData.slice(IV_LENGTH, encryptedData.byteLength - TAG_LENGTH));
+    const fullData: Uint8Array = new Uint8Array(
+    const iv: Uint8Array = new Uint8Array(
+    const tag: Uint8Array = new Uint8Array(
+    const cipherData: Uint8Array = new Uint8Array(
 
     const aadArr2: Uint8Array = new Uint8Array(0);
     const decipher = cryptoFramework.createCipher('AES256|GCM|NONE');
@@ -252,13 +252,13 @@ export class SecureDataStore {
 
   private arrayBufferToString(buffer: ArrayBuffer): string {
     const decoder: util.TextDecoder = new util.TextDecoder('utf-8');
-    const bytes = new Uint8Array(buffer);
+    const bytes: Uint8Array = new Uint8Array(
     const decoded: string = decoder.decodeToString(bytes);
     return decoded;
   }
 
   private arrayBufferToHex(buffer: ArrayBuffer): string {
-    const bytes = new Uint8Array(buffer);
+    const bytes: Uint8Array = new Uint8Array(
     let hex = '';
     for (let i = 0; i < bytes.length; i++) {
       hex += bytes[i].toString(16).padStart(2, '0');
@@ -267,7 +267,7 @@ export class SecureDataStore {
   }
 
   private hexToArrayBuffer(hex: string): ArrayBuffer {
-    const bytes = new Uint8Array(hex.length / 2);
+    const bytes: Uint8Array = new Uint8Array(
     for (let i = 0; i < hex.length; i += 2) {
       bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16);
     }
@@ -275,7 +275,7 @@ export class SecureDataStore {
   }
 
   private concatBuffers(a: ArrayBuffer, b: ArrayBuffer): ArrayBuffer {
-    const result = new Uint8Array(a.byteLength + b.byteLength);
+    const result: Uint8Array = new Uint8Array(
     result.set(new Uint8Array(a), 0);
     result.set(new Uint8Array(b), a.byteLength);
     return result.buffer as ArrayBuffer;

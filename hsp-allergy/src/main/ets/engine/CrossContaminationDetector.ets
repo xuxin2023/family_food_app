@@ -82,7 +82,7 @@ export class CrossContaminationDetector {
         // 检查配料是否含交叉反应目标
         const matched = allIngredients.filter(i => i.includes(pair.crossReactive));
         for (const ingredient of matched) {
-          const hint = new AllergyHint();
+          const hint: AllergyHint = new AllergyHint(
           hint.allergen = pair.crossReactive;
           hint.ingredient = ingredient;
           hint.severity = pair.riskLevel;

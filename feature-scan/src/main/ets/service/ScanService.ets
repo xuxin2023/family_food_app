@@ -115,7 +115,7 @@ export class ScanService {
 
   async lookupByBarcodeChain(barcode: string): Promise<ScanLookupResult> {
     if (barcode.length === 0) {
-      const result = new ScanLookupResult();
+      const result: ScanLookupResult = new ScanLookupResult(
       result.foodLabel = null;
       result.barcode = '';
       return result;
@@ -126,7 +126,7 @@ export class ScanService {
     const cached = await this.lookupLocalCache(barcode);
     if (cached) {
       hilog.info(DOMAIN_ZERO, TAG, 'Level1 LOCAL_CACHE hit for: %{public}s', barcode);
-      const result = new ScanLookupResult();
+      const result: ScanLookupResult = new ScanLookupResult(
       result.foodLabel = cached;
       result.barcode = barcode;
       result.source = FoodSource.LOCAL_CACHE;
@@ -140,7 +140,7 @@ export class ScanService {
     if (offlineEntry) {
       const offlineLabel = convertToFoodLabel(offlineEntry);
       hilog.info(DOMAIN_ZERO, TAG, 'Level2 OFFLINE hit for: %{public}s', barcode);
-      const result = new ScanLookupResult();
+      const result: ScanLookupResult = new ScanLookupResult(
       result.foodLabel = offlineLabel;
       result.barcode = barcode;
       result.source = FoodSource.OFFLINE;
@@ -155,7 +155,7 @@ export class ScanService {
         const remote = await this.remoteProvider.lookupByBarcode(barcode);
         if (remote && remote.found && remote.foodLabel) {
           hilog.info(DOMAIN_ZERO, TAG, 'Level3 OFF API hit for: %{public}s', barcode);
-          const result = new ScanLookupResult();
+          const result: ScanLookupResult = new ScanLookupResult(
           result.foodLabel = remote.foodLabel;
           result.barcode = barcode;
           result.source = FoodSource.BARCODE_HIT;
@@ -173,7 +173,7 @@ export class ScanService {
     }
 
     hilog.info(DOMAIN_ZERO, TAG, 'All 4 levels exhausted, barcode: %{public}s not found', barcode);
-    const result = new ScanLookupResult();
+    const result: ScanLookupResult = new ScanLookupResult(
     result.foodLabel = null;
     result.barcode = barcode;
     result.source = FoodSource.BARCODE_SCAN;
@@ -196,11 +196,11 @@ export class ScanService {
       if (result && result.originalValue) {
         const content = result.originalValue;
         const isFoodRelated = await this.checkFoodUrl(content);
-        const qrResult = new QrScanResult();
+        const qrResult: QrScanResult = new QrScanResult(
         qrResult.content = content;
         qrResult.isFoodRelated = isFoodRelated;
         qrResult.scanType = isFoodRelated ? 'FOOD_QR' : 'GENERAL_QR';
-        hilog.info(DOMAIN_ZERO, TAG, 'QR scan: foodRelated=%{public}s', String(isFoodRelated));
+        hilog.info(DOMAIN_ZERO, TAG, 'QR scan: foodRelated=%{public}s', isFoodRelated.toString());
         return qrResult;
       }
       return new QrScanResult();

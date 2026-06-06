@@ -54,7 +54,7 @@ export class OnDeviceLlmBridge {
   /** 执行端侧推理，自动选择最佳后端 */
   async infer(input: LlmInferenceInput): Promise<LlmInferenceResult> {
     const startTime = Date.now();
-    const result = new LlmInferenceResult();
+    const result: LlmInferenceResult = new LlmInferenceResult(
 
     try {
       // Step 1: 尝试 NPU 推理
@@ -100,7 +100,7 @@ export class OnDeviceLlmBridge {
 
   /** 简易文本推理（兼容旧接口） */
   async inferText(prompt: string): Promise<string> {
-    const input = new LlmInferenceInput();
+    const input: LlmInferenceInput = new LlmInferenceInput(
     input.prompt = prompt;
     input.taskType = LlmTaskType.FOOD_ANALYSIS;
     const result = await this.infer(input);
@@ -120,7 +120,7 @@ export class OnDeviceLlmBridge {
       this.npuAvailable = aiFoundationAvailable;
       this.cpuModelLoaded = true; // 规则引擎始终可用
       hilog.info(HILOG_DOMAIN_DEFAULT, TAG, 'Hardware detection: NPU=%{public}s, CPU=%{public}s',
-        String(this.npuAvailable), String(this.cpuModelLoaded));
+        this.npuAvailable.toString(), this.cpuModelLoaded.toString());
     } catch (_e) {
       this.npuAvailable = false;
       this.cpuModelLoaded = true;

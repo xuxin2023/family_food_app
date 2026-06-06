@@ -10,7 +10,7 @@ export class KnowledgeArticle {
 function makeArticle(
   id: string, category: string, title: string, summary: string, content: string, tags: string[]
 ): KnowledgeArticle {
-  const a = new KnowledgeArticle();
+  const a: KnowledgeArticle = new KnowledgeArticle(
   a.id = id;
   a.category = category;
   a.title = title;

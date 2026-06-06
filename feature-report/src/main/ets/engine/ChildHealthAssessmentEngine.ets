@@ -82,7 +82,7 @@ export class ChildHealthAssessmentEngine {
     todaySnackCalories: number,
     todaySugarGrams: number
   ): ChildHealthAssessment {
-    const result = new ChildHealthAssessment();
+    const result: ChildHealthAssessment = new ChildHealthAssessment(
     result.memberId = profile.memberId;
     result.foodId = food.foodId;
     result.foodName = food.foodName;
@@ -108,7 +108,7 @@ export class ChildHealthAssessmentEngine {
     todaySnackCalories: number,
     todaySugarGrams: number
   ): SnackImpactAssessment {
-    const impact = new SnackImpactAssessment();
+    const impact: SnackImpactAssessment = new SnackImpactAssessment(
     const foodCalories = food.nutrition.calories;
     const foodSugar = food.nutrition.sugar;
 
@@ -163,21 +163,21 @@ export class ChildHealthAssessmentEngine {
       const trimmed = ingredient.trim();
 
       if (avoidForAge[trimmed]) {
-        const r = new AdditiveSafetyResult();
+        const r: AdditiveSafetyResult = new AdditiveSafetyResult(
         r.name = trimmed;
         r.additiveName = trimmed;
         r.safetyLevel = AdditiveSafetyLevel.AVOID_FOR_CHILD;
         r.description = avoidForAge[trimmed];
         results.push(r);
       } else if (cautionForAge[trimmed]) {
-        const r = new AdditiveSafetyResult();
+        const r: AdditiveSafetyResult = new AdditiveSafetyResult(
         r.name = trimmed;
         r.additiveName = trimmed;
         r.safetyLevel = AdditiveSafetyLevel.CAUTION;
         r.description = cautionForAge[trimmed];
         results.push(r);
       } else if (SAFE_ADDITIVES[trimmed]) {
-        const r = new AdditiveSafetyResult();
+        const r: AdditiveSafetyResult = new AdditiveSafetyResult(
         r.name = trimmed;
         r.additiveName = trimmed;
         r.safetyLevel = AdditiveSafetyLevel.SAFE;

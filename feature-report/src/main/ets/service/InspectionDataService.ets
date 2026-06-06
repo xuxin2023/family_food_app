@@ -160,7 +160,7 @@ export class InspectionDataService {
   }
 
   private buildSummary(records: InspectionRecord[]): InspectionSummary {
-    const summary = new InspectionSummary();
+    const summary: InspectionSummary = new InspectionSummary(
     summary.totalChecks = records.length;
     summary.failCount = records.filter(r => r.result === 'fail').length;
 
@@ -185,7 +185,7 @@ export class InspectionDataService {
   }
 
   private emptySummary(): InspectionSummary {
-    const summary = new InspectionSummary();
+    const summary: InspectionSummary = new InspectionSummary(
     summary.totalChecks = 0;
     summary.failCount = 0;
     summary.recentFailDate = '';

@@ -118,7 +118,7 @@ export class HwHealthSignalProvider extends HealthSignalProvider {
    * 从华为 Health Store 读取真实穿戴设备数据（失败时降级为模拟数据）
    */
   async getTodayHealthData(memberId: string): Promise<HealthSignal> {
-    const signal = new HealthSignal();
+    const signal: HealthSignal = new HealthSignal(
     signal.memberId = memberId;
     signal.date = this.getTodayDate();
     signal.source = DataSource.HUAWEI_HEALTH;
@@ -350,7 +350,7 @@ export class HwHealthSignalProvider extends HealthSignalProvider {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
 
@@ -360,7 +360,7 @@ export class HwHealthSignalProvider extends HealthSignalProvider {
   private getTodayLocalDate(): string {
     const now = new Date();
     const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
     const year = now.getFullYear();
     return `${month}/${day}/${year}`;
   }

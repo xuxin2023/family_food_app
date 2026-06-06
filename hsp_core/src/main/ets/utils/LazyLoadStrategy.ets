@@ -40,7 +40,7 @@ export class LazyLoadStrategy<T> {
     loadCallback: (start: number, count: number) => Promise<T[]>,
     config?: Partial<LazyLoadConfig>
   ) {
-    const merged = new LazyLoadConfigImpl();
+    const merged: LazyLoadConfigImpl = new LazyLoadConfigImpl(
     merged.pageSize = config?.pageSize ?? DEFAULT_CONFIG.pageSize;
     merged.preloadThreshold = config?.preloadThreshold ?? DEFAULT_CONFIG.preloadThreshold;
     merged.maxCacheSize = config?.maxCacheSize ?? DEFAULT_CONFIG.maxCacheSize;

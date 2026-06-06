@@ -4,9 +4,9 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'SecureStorageUtil';
 const DOMAIN_ZERO = 0x0001;
-const FIXED_IV = new Uint8Array([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c]);
-const FIXED_TAG_PLACEHOLDER = new Uint8Array(16);
-const FIXED_AAD = new Uint8Array(0);
+const FIXED_IV: Uint8Array = new Uint8Array(
+const FIXED_TAG_PLACEHOLDER: Uint8Array = new Uint8Array(
+const FIXED_AAD: Uint8Array = new Uint8Array(
 const B64_TABLE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 function makeGcmParams(iv: Uint8Array, aad: Uint8Array, authTag: Uint8Array): cryptoFramework.GcmParamsSpec {
@@ -41,7 +41,7 @@ function base64ToUint8Array(str: string): Uint8Array {
   if (len > 0 && str.charAt(len - 1) === '=') { padCount++; }
   if (len > 1 && str.charAt(len - 2) === '=') { padCount++; }
   const byteLen = (len * 3) / 4 - padCount;
-  const result = new Uint8Array(byteLen);
+  const result: Uint8Array = new Uint8Array(
   let p = 0;
   for (let i = 0; i < len; i += 4) {
     const n = (lookup[str.charCodeAt(i)] << 18) | (lookup[str.charCodeAt(i + 1)] << 12) |

@@ -137,7 +137,7 @@ export abstract class AiServiceBase {
       this.client.setApiKey(this.apiKey);
     }
 
-    const options = new AiRequestOptions();
+    const options: AiRequestOptions = new AiRequestOptions(
     options.systemPrompt = this.getSystemPrompt();
     options.userPrompt = userPrompt;
     options.temperature = this.getDefaultTemperature();

@@ -49,7 +49,7 @@ export struct NutrientRadarPanel {
     const result: ScoreDataItem[] = []
     for (let i = 0; i < keys.length; i++) {
       const score = this.getScore(keys[i])
-      const item = new ScoreDataItem()
+      const item: ScoreDataItem = new ScoreDataItem(
       item.label = this.labels[i]
       item.value = score / 100
       item.score = score

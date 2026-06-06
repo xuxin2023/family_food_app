@@ -36,9 +36,9 @@ export class SecureHttpHelper {
     body: string | Object = '',
     timeoutMs: number = 10000
   ): Promise<SecureJsonResponse> {
-    const result = new SecureJsonResponse();
+    const result: SecureJsonResponse = new SecureJsonResponse(
     try {
-      const opts = new SecureRequestOptions();
+      const opts: SecureRequestOptions = new SecureRequestOptions(
       opts.url = url;
       opts.method = method;
       opts.header = header ?? new Map<string, string>();
@@ -77,14 +77,14 @@ export class SecureHttpHelper {
       }
     } catch (e) {
       result.error = (e as Error).message;
-      hilog.warn(DOMAIN_ZERO, TAG, 'Request error: %{private}s -> %{private}s', url, String(result.error));
+      hilog.warn(DOMAIN_ZERO, TAG, 'Request error: %{private}s -> %{private}s', url, result.error.toString());
     }
     return result;
   }
 
   static async downloadBuffer(url: string, header?: Map<string, string>, timeoutMs: number = 30000): Promise<ArrayBuffer | null> {
     try {
-      const opts = new SecureRequestOptions();
+      const opts: SecureRequestOptions = new SecureRequestOptions(
       opts.url = url;
       opts.method = http.RequestMethod.GET;
       opts.header = header ?? new Map<string, string>();

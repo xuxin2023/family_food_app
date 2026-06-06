@@ -150,7 +150,7 @@ export class CloudBackendService {
   ): Promise<CloudProductResponse> {
     return ServiceGateway.callWithFallback(
       async () => {
-        const body = new SearchBarcodeBody()
+        const body: SearchBarcodeBody = new SearchBarcodeBody(
         body.barcode = barcode
         body.uid = uid ?? ''
         body.memberId = memberId ?? ''
@@ -158,7 +158,7 @@ export class CloudBackendService {
         if (response.code === 200 && response.data) {
           return response.data as CloudProductResponse
         }
-        const notFound = new CloudProductResponse()
+        const notFound: CloudProductResponse = new CloudProductResponse(
         notFound.found = false
         notFound.similarProducts = []
         return notFound
@@ -166,7 +166,7 @@ export class CloudBackendService {
       async () => {
         // 离线降级：返回空结果
         hilog.info(DOMAIN_ZERO, TAG, 'Offline mode: using local cache only')
-        const offlineResult = new CloudProductResponse()
+        const offlineResult: CloudProductResponse = new CloudProductResponse(
         offlineResult.found = false
         offlineResult.similarProducts = []
         return offlineResult
@@ -181,7 +181,7 @@ export class CloudBackendService {
    */
   async submitFoodLabel(submission: FoodSubmissionRequest, uid: string): Promise<boolean> {
     try {
-      const body = new SubmitFoodBody()
+      const body: SubmitFoodBody = new SubmitFoodBody(
       body.barcode = submission.barcode
       body.product_name = submission.product_name
       body.ingredients_text = submission.ingredients_text
@@ -236,10 +236,10 @@ export class CloudBackendService {
     uid: string,
     members: SyncMemberParam[]
   ): Promise<SyncAllResult> {
-    const result = new SyncAllResult()
+    const result: SyncAllResult = new SyncAllResult(
 
     for (const member of members) {
-      const req = new SyncMemberDataRequest()
+      const req: SyncMemberDataRequest = new SyncMemberDataRequest(
       req.uid = uid
       req.memberId = member.memberId
       req.nickname = member.nickname
@@ -264,7 +264,7 @@ export class CloudBackendService {
     const url = `${API_CONFIG.HUAWEI_CLOUD_BASE_URL}${path}`
 
     try {
-      const opts = new SecureRequestOptions();
+      const opts: SecureRequestOptions = new SecureRequestOptions(
       opts.url = url;
       opts.method = http.RequestMethod.POST;
       const header = new Map<string, string>();

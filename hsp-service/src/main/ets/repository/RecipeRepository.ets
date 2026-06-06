@@ -342,7 +342,7 @@ export class RecipeRepository {
       resultSet = await this.rdbStore.query(predicates);
       const comments: RecipeComment[] = [];
       while (resultSet.goToNextRow()) {
-        const c = new RecipeComment();
+        const c: RecipeComment = new RecipeComment(
         c.commentId = resultSet.getString(resultSet.getColumnIndex('comment_id'));
         c.recipeId = resultSet.getString(resultSet.getColumnIndex('recipe_id'));
         c.authorUid = resultSet.getString(resultSet.getColumnIndex('author_uid'));
@@ -389,7 +389,7 @@ export class RecipeRepository {
         // 减少点赞数
         const recipe = await this.getRecipe(recipeId);
         if (recipe) {
-          const updateLike = new RecipeUpdate(); updateLike.likeCount = Math.max(0, recipe.likeCount - 1);
+          const updateLike: RecipeUpdate = new RecipeUpdate(
           await this.updateRecipe(recipeId, updateLike);
         }
         return false;
@@ -409,7 +409,7 @@ export class RecipeRepository {
       // 增加点赞数
       const recipe = await this.getRecipe(recipeId);
       if (recipe) {
-        const updateLike2 = new RecipeUpdate(); updateLike2.likeCount = recipe.likeCount + 1;
+        const updateLike2: RecipeUpdate = new RecipeUpdate(
         await this.updateRecipe(recipeId, updateLike);
       }
       return true;
@@ -480,7 +480,7 @@ export class RecipeRepository {
         await this.rdbStore.delete(delPredicates);
         const recipe = await this.getRecipe(recipeId);
         if (recipe) {
-          const updateBm = new RecipeUpdate(); updateBm.bookmarkCount = Math.max(0, recipe.bookmarkCount - 1);
+          const updateBm: RecipeUpdate = new RecipeUpdate(
           await this.updateRecipe(recipeId, updateBm);
         }
         return false;
@@ -499,7 +499,7 @@ export class RecipeRepository {
       await this.rdbStore.insert(TABLE_BOOKMARK, bmBucket);
       const recipe = await this.getRecipe(recipeId);
       if (recipe) {
-        const updateBm2 = new RecipeUpdate(); updateBm2.bookmarkCount = recipe.bookmarkCount + 1;
+        const updateBm2: RecipeUpdate = new RecipeUpdate(
         await this.updateRecipe(recipeId, updateBm2);
       }
       return true;
@@ -562,7 +562,7 @@ export class RecipeRepository {
   // ========== 内部方法 ==========
 
   private parseRecipe(resultSet: relationalStore.ResultSet): Recipe {
-    const recipe = new Recipe();
+    const recipe: Recipe = new Recipe(
     recipe.recipeId = resultSet.getString(resultSet.getColumnIndex('recipe_id'));
     recipe.title = resultSet.getString(resultSet.getColumnIndex('title'));
     recipe.description = resultSet.getString(resultSet.getColumnIndex('description')) || '';
@@ -645,7 +645,7 @@ export class RecipeRepository {
   // ========== AppState 兼容桥 ==========
 
   async createRecipe(params: CreateRecipeParams): Promise<Recipe | null> {
-    const recipe = new Recipe();
+    const recipe: Recipe = new Recipe(
     recipe.recipeId = 'r_' + Date.now().toString(36);
     recipe.title = params.title || '';
     recipe.description = params.description || '';
@@ -677,7 +677,7 @@ export class RecipeRepository {
   }
 
   async addComment(recipeId: string, text: string, authorName: string): Promise<RecipeComment | null> {
-    const comment = new RecipeComment();
+    const comment: RecipeComment = new RecipeComment(
     comment.commentId = 'c_' + Date.now().toString(36);
     comment.recipeId = recipeId;
     comment.authorUid = 'self';

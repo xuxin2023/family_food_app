@@ -49,7 +49,7 @@ export class CrdtSyncResolver {
   }
 
   private static fieldLevelMerge<T extends ConflictRecord>(local: T, remote: T, base: T): T {
-    const merged = { ...local } as Record<string, Object>;
+    const merged = Object.assign({},local) as Record<string, Object>;
     const localObj = local as unknown as Record<string, Object>;
     const remoteObj = remote as unknown as Record<string, Object>;
     const baseObj = base as unknown as Record<string, Object>;

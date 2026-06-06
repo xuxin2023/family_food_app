@@ -3,6 +3,6 @@ export function resourceToStr(r: ResourceStr): string {
   try {
     return getContext().resourceManager.getStringSync(r.id);
   } catch (_e) {
-    return String(r.id);
+    return r.id.toString();
   }
 }

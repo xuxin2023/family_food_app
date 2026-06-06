@@ -13,7 +13,7 @@ export class RecommendationEngine {
     foodLabel: FoodLabel,
     dailyBudget: DailyBudget
   ): Recommendation {
-    const params = new RuleEngineParams(profile, healthSignal, foodLabel, dailyBudget);
+    const params: RuleEngineParams = new RuleEngineParams(
     return this.ruleEngine.calculate(params);
   }
 
@@ -26,7 +26,7 @@ export class RecommendationEngine {
   ): Recommendation[] {
     const results: Recommendation[] = [];
     for (let i = 0; i < profiles.length; i++) {
-      const params = new RuleEngineParams(profiles[i], healthSignals[i], foodLabel, dailyBudgets[i]);
+      const params: RuleEngineParams = new RuleEngineParams(
       results.push(this.ruleEngine.calculate(params));
     }
     return results;

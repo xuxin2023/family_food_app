@@ -128,7 +128,7 @@ export class FamilyRepository {
       const members: FamilyProfile[] = [];
 
       while (resultSet.goToNextRow()) {
-        const profile = new FamilyProfile();
+        const profile: FamilyProfile = new FamilyProfile(
         profile.memberId = this.safeGetString(resultSet, COL_MEMBER_ID);
         profile.nickname = this.safeGetString(resultSet, COL_NICKNAME);
         profile.ageGroup = this.safeGetString(resultSet, COL_AGE_GROUP) as string as AgeGroup;

@@ -114,7 +114,7 @@ export class PrivacyManager {
   }
 
   static async getDocumentUrls(context: common.Context): Promise<PrivacyDocumentUrls> {
-    const result = new PrivacyDocumentUrls();
+    const result: PrivacyDocumentUrls = new PrivacyDocumentUrls(
     result.version = PrivacyManager.CURRENT_PRIVACY_VERSION;
 
     const manifest = await PrivacyManager.fetchRemoteManifest(context);
@@ -166,7 +166,7 @@ export class PrivacyManager {
       const manifestUrl = ossBase + VERSION_MANIFEST_PATH;
 
       try {
-        const opts = new SecureRequestOptions();
+        const opts: SecureRequestOptions = new SecureRequestOptions(
         opts.url = manifestUrl;
         opts.method = http.RequestMethod.GET;
         opts.connectTimeout = 5000;

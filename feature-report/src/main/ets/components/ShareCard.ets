@@ -61,7 +61,7 @@ export class ShareCardGenerator {
       // 1. 创建离屏 Canvas（1080x1080px）
       const canvasWidth = 1080;
       const canvasHeight = 1080;
-      const offCanvas = new OffscreenCanvas(canvasWidth, canvasHeight);
+      const offCanvas: OffscreenCanvas = new OffscreenCanvas(
       const ctx = offCanvas.getContext("2d");
 
       // 2. 绘制整个画布白色背景
@@ -247,18 +247,18 @@ export class ShareCardGenerator {
   private static getTopGradientColor(levelColor: string): GradientColorPair {
     const color = levelColor.toLowerCase();
     if (color === '#4caf50' || color === '#66bb6a') {
-      const cp = new GradientColorPair(); cp.start = '#66BB6A'; cp.end = '#4CAF50'; return cp;
+      const cp: GradientColorPair = new GradientColorPair(
     }
     if (color === '#ff9800' || color === '#ffa726') {
-      const cp = new GradientColorPair(); cp.start = '#FFA726'; cp.end = '#FF9800'; return cp;
+      const cp: GradientColorPair = new GradientColorPair(
     }
     if (color === '#ff5722' || color === '#ff7043') {
-      const cp = new GradientColorPair(); cp.start = '#FF7043'; cp.end = '#FF5722'; return cp;
+      const cp: GradientColorPair = new GradientColorPair(
     }
     if (color === '#f44336' || color === '#e53935') {
-      const cp = new GradientColorPair(); cp.start = '#F44336'; cp.end = '#D32F2F'; return cp;
+      const cp: GradientColorPair = new GradientColorPair(
     }
-    const cp = new GradientColorPair(); cp.start = COLORS.PRIMARY_LIGHT; cp.end = COLORS.PRIMARY; return cp;
+    const cp: GradientColorPair = new GradientColorPair(
   }
 
   /**
@@ -322,7 +322,7 @@ export class ShareCardGenerator {
 
     const title = `给全家人查了这款${foodName}`;
 
-    const cardData = new ShareCardData();
+    const cardData: ShareCardData = new ShareCardData(
     cardData.title = title;
     cardData.memberSummaries = memberSummaries;
     cardData.keyAdvice = keyAdvice;

@@ -39,7 +39,7 @@ export function getParamString(params: Map<string, Object> | undefined, key: str
   const val = params.get(key);
   if (val === undefined || val === null) return defaultValue;
   if (typeof val === 'string') return val;
-  return String(val);
+  return val.toString();
 }
 
 export function getParamNumber(params: Map<string, Object> | undefined, key: string, defaultValue: number = 0): number {

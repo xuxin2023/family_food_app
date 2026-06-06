@@ -94,7 +94,7 @@ export class LocaleManager {
       return fmt.format(value);
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'formatNumber failed: %{public}s', JSON.stringify(e));
-      return String(value);
+      return value.toString();
     }
   }
 

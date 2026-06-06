@@ -242,7 +242,7 @@ export class OnDeviceAiEngine {
     const prompt = this.buildIngredientPrompt(ingredients)
 
     try {
-      const opts = new InferenceOptions()
+      const opts: InferenceOptions = new InferenceOptions(
       opts.outputType = 'ingredient_analysis'
       const result = await this.runInference(prompt, opts)
 
@@ -273,7 +273,7 @@ export class OnDeviceAiEngine {
     const prompt = this.buildAdvicePrompt(member, foodLabel)
 
     try {
-      const opts = new InferenceOptions()
+      const opts: InferenceOptions = new InferenceOptions(
       opts.outputType = 'personalized_advice'
       const result = await this.runInference(prompt, opts)
 
@@ -288,7 +288,7 @@ export class OnDeviceAiEngine {
    * 检查引擎状态
    */
   getStatus(): NpuStatus {
-    const status = new NpuStatus();
+    const status: NpuStatus = new NpuStatus(
     status.available = this.npuAvailable;
     status.modelLoaded = this.modelLoaded;
     status.memoryUsageMB = this.modelLoaded ? 120 : 0;
@@ -351,15 +351,15 @@ export class OnDeviceAiEngine {
     // return String(outputs.result)
 
     // 占位模拟
-    const ha1 = new HarmfulAdditive()
+    const ha1: HarmfulAdditive = new HarmfulAdditive(
     ha1.name = '亚硝酸钠'; ha1.code = 'E250'; ha1.risk = '高'
-    const ha2 = new HarmfulAdditive()
+    const ha2: HarmfulAdditive = new HarmfulAdditive(
     ha2.name = '阿斯巴甜'; ha2.code = 'E951'; ha2.risk = '中'
-    const ar1 = new AllergenRisk()
+    const ar1: AllergenRisk = new AllergenRisk(
     ar1.allergen = '谷蛋白'; ar1.confidence = 0.85
-    const ar2 = new AllergenRisk()
+    const ar2: AllergenRisk = new AllergenRisk(
     ar2.allergen = '乳制品'; ar2.confidence = 0.42
-    const mockResult = new IngredientAnalysis()
+    const mockResult: IngredientAnalysis = new IngredientAnalysis(
     mockResult.harmfulAdditives = [ha1, ha2]
     mockResult.nutritionScore = 65
     mockResult.novaGroup = 3
@@ -390,7 +390,7 @@ export class OnDeviceAiEngine {
   private parseIngredientResult(result: string): IngredientAnalysis {
     try {
       const parsed = JSON.parse(result) as Record<string, Object>
-      const analysis = new IngredientAnalysis();
+      const analysis: IngredientAnalysis = new IngredientAnalysis(
       analysis.harmfulAdditives = Array.isArray(parsed.harmfulAdditives)
         ? (parsed.harmfulAdditives as HarmfulAdditive[])
         : [];
@@ -410,7 +410,7 @@ export class OnDeviceAiEngine {
   private parseAdviceResult(result: string): PersonalizedAdviceOutput {
     try {
       const parsed = JSON.parse(result) as Record<string, Object>
-      const output = new PersonalizedAdviceOutput();
+      const output: PersonalizedAdviceOutput = new PersonalizedAdviceOutput(
       output.recommendation = typeof parsed.recommendation === 'string' ? parsed.recommendation as string : '';
       output.alternatives = Array.isArray(parsed.alternatives) ? parsed.alternatives as string[] : [];
       output.warnings = Array.isArray(parsed.warnings) ? parsed.warnings as string[] : [];
@@ -423,7 +423,7 @@ export class OnDeviceAiEngine {
   }
 
   private fallbackIngredientAnalysis(ingredients: string[]): IngredientAnalysis {
-    const analysis = new IngredientAnalysis();
+    const analysis: IngredientAnalysis = new IngredientAnalysis(
     analysis.harmfulAdditives = [];
     analysis.nutritionScore = 50;
     analysis.novaGroup = 2;
@@ -436,7 +436,7 @@ export class OnDeviceAiEngine {
   }
 
   private fallbackAdvice(): PersonalizedAdviceOutput {
-    const output = new PersonalizedAdviceOutput();
+    const output: PersonalizedAdviceOutput = new PersonalizedAdviceOutput(
     output.recommendation = '基于规则引擎的分析已生成';
     output.alternatives = [];
     output.warnings = [];

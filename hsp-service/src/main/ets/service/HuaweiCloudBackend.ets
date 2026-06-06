@@ -64,7 +64,7 @@ export class CloudStorageConfig {
 
 function createCloudFunctionConfig(name: string, path: string, method: http.RequestMethod,
   timeout: number, description: string): CloudFunctionConfig {
-  const config = new CloudFunctionConfig();
+  const config: CloudFunctionConfig = new CloudFunctionConfig(
   config.name = name;
   config.path = path;
   config.method = method;
@@ -74,7 +74,7 @@ function createCloudFunctionConfig(name: string, path: string, method: http.Requ
 }
 
 function createCloudDatabaseConfig(name: string, collection: string, schema: string, description: string): CloudDatabaseConfig {
-  const config = new CloudDatabaseConfig();
+  const config: CloudDatabaseConfig = new CloudDatabaseConfig(
   config.name = name;
   config.collection = collection;
   config.schema = schema;
@@ -83,7 +83,7 @@ function createCloudDatabaseConfig(name: string, collection: string, schema: str
 }
 
 function createCloudStorageConfig(name: string, bucket: string, path: string, description: string): CloudStorageConfig {
-  const config = new CloudStorageConfig();
+  const config: CloudStorageConfig = new CloudStorageConfig(
   config.name = name;
   config.bucket = bucket;
   config.path = path;
@@ -207,7 +207,7 @@ export class HuaweiCloudBackend {
         header.set('Authorization', `Bearer ${token}`);
       }
 
-      const opts = new SecureRequestOptions();
+      const opts: SecureRequestOptions = new SecureRequestOptions(
       opts.url = url;
       opts.method = config.method;
       opts.header = header;
@@ -223,7 +223,7 @@ export class HuaweiCloudBackend {
         } else if (response.result instanceof ArrayBuffer) {
           bodyStr = String.fromCharCode(...new Uint8Array(response.result));
         } else {
-          bodyStr = String(response.result);
+          bodyStr = response.result.toString();
         }
         return JSON.parse(bodyStr) as Object;
       }

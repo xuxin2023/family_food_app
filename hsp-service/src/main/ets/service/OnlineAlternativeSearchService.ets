@@ -70,7 +70,7 @@ export class OnlineAlternativeSearchService {
         if (item.foodLabel && item.foodLabel.foodId !== currentFood.foodId) {
           const score = this.computeSimilarity(currentFood, item.foodLabel);
           if (score > 0.3) {
-            const result = new OnlineSearchResult();
+            const result: OnlineSearchResult = new OnlineSearchResult(
             result.foodLabel = item.foodLabel;
             result.similarityScore = score;
             candidates.push(result);
@@ -93,10 +93,10 @@ export class OnlineAlternativeSearchService {
     maxResults: number = 10
   ): Promise<OnlineSearchResult[]> {
     try {
-      const payload = new SearchAltPayload();
+      const payload: SearchAltPayload = new SearchAltPayload(
       payload.barcode = currentFood.barcode || '';
       payload.categories = category || '';
-      payload.nutritionGrade = currentFood.nutriScore !== undefined ? String(currentFood.nutriScore) : '';
+      payload.nutritionGrade = currentFood.nutriScore !== undefined ? currentFood.nutriScore.toString() : '';
       payload.novaGroup = currentFood.novaGroup ?? 0;
       payload.maxResults = maxResults;
 
@@ -121,7 +121,7 @@ export class OnlineAlternativeSearchService {
         const score = Number(item['score'] ?? 0);
         if (!product) continue;
 
-        const result = new OnlineSearchResult();
+        const result: OnlineSearchResult = new OnlineSearchResult(
         result.foodLabel = this.mapCloudProductToFoodLabel(product);
         result.similarityScore = score;
         result.source = 'cloud';
@@ -138,14 +138,14 @@ export class OnlineAlternativeSearchService {
   }
 
   private mapCloudProductToFoodLabel(product: Record<string, Object>): FoodLabel {
-    const label = new FoodLabel();
+    const label: FoodLabel = new FoodLabel(
     label.foodId = String(product['barcode'] || '');
     label.foodName = String(product['product_name_zh'] || product['product_name'] || '');
     label.barcode = String(product['barcode'] || '');
     label.manufacturer = String(product['brands'] || '');
     const nutrition = product['nutrition'] as Record<string, Object> | undefined;
     if (nutrition) {
-      const n = new NutritionPer100g();
+      const n: NutritionPer100g = new NutritionPer100g(
       n.calories = Number(nutrition['energy_kj'] || 0);
       n.fat = Number(nutrition['fat'] || 0);
       n.saturatedFat = Number(nutrition['saturated_fat'] || 0);

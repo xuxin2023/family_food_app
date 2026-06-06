@@ -96,7 +96,7 @@ export class Recommendation {
   }
 
   toJson(): RecommendationJson {
-    const json = new RecommendationJson();
+    const json: RecommendationJson = new RecommendationJson(
     json.memberId = this.memberId;
     json.foodId = this.foodId;
     json.level = this.level;
@@ -111,7 +111,7 @@ export class Recommendation {
   }
 
   static fromJson(json: Record<string, Object>): Recommendation {
-    const rec = new Recommendation();
+    const rec: Recommendation = new Recommendation(
     rec.memberId = (json.memberId as string) ?? '';
     rec.foodId = (json.foodId as string) ?? '';
     rec.level = (json.level as RecommendLevel) ?? RecommendLevel.SMALL_OK;
@@ -126,7 +126,7 @@ export class Recommendation {
   }
 
   static getDefault(memberId: string, foodId: string): Recommendation {
-    const rec = new Recommendation();
+    const rec: Recommendation = new Recommendation(
     rec.memberId = memberId;
     rec.foodId = foodId;
     rec.level = RecommendLevel.SUITABLE;

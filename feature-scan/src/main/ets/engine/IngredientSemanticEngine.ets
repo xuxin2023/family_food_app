@@ -10,7 +10,7 @@ class AllergenSynonym {
 }
 
 function mkSynonym(c: string, s: string[]): AllergenSynonym {
-  const item = new AllergenSynonym();
+  const item: AllergenSynonym = new AllergenSynonym(
   item.canonical = c;
   item.synonyms = s;
   return item;
@@ -71,7 +71,7 @@ export class IngredientSemanticEngine {
   static analyzeIngredients(ingredientsText: string, userAllergens: string[]): AllergenMatchResult {
     IngredientSemanticEngine.initialize();
 
-    const result = new AllergenMatchResult();
+    const result: AllergenMatchResult = new AllergenMatchResult(
 
     if (!ingredientsText || ingredientsText.length === 0) return result;
 
@@ -93,7 +93,7 @@ export class IngredientSemanticEngine {
         if (!result.directAllergens.includes(matched)) {
           result.directAllergens.push(matched);
         }
-        const detail = new AllergenMatchDetail();
+        const detail: AllergenMatchDetail = new AllergenMatchDetail(
         detail.ingredient = line;
         detail.canonical = matched;
         detail.isTrace = false;
@@ -109,13 +109,13 @@ export class IngredientSemanticEngine {
         if (!result.traceAllergens.includes(matched)) {
           result.traceAllergens.push(matched);
         }
-        const detail = new AllergenMatchDetail();
+        const detail: AllergenMatchDetail = new AllergenMatchDetail(
         detail.ingredient = traceText;
         detail.canonical = matched;
         detail.isTrace = true;
         result.matchedDetails.push(detail);
       }
-      const td = new TraceDeclaration();
+      const td: TraceDeclaration = new TraceDeclaration(
       td.allergens = traceAllergens;
       td.rawText = traceText;
       result.traceDeclarations.push(td);

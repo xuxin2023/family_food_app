@@ -53,7 +53,7 @@ export class ScanDirectService {
    */
   async startScanFromControlCenter(context: common.Context): Promise<ScanDirectResult> {
     const startMs = Date.now();
-    const result = new ScanDirectResult();
+    const result: ScanDirectResult = new ScanDirectResult(
 
     try {
       // HarmonyOS 6.1 Scan Kit 增强配置
@@ -110,7 +110,7 @@ export class ScanDirectService {
       const scanPromise = this.startScanFromControlCenter(context);
       const timeoutPromise = new Promise<ScanDirectResult>((resolve) => {
         setTimeout(() => {
-          const timeoutResult = new ScanDirectResult();
+          const timeoutResult: ScanDirectResult = new ScanDirectResult(
           timeoutResult.scanDuration = timeoutMs;
           resolve(timeoutResult);
         }, timeoutMs);
@@ -125,7 +125,7 @@ export class ScanDirectService {
   // ========== 内部方法 ==========
 
   private buildEnvironmentConfig(): ScanEnvironmentConfig {
-    const config = new ScanEnvironmentConfig();
+    const config: ScanEnvironmentConfig = new ScanEnvironmentConfig(
     config.enableLowLightEnhancement = true;
     config.enableDistortionCorrection = true;
     config.enableMultiAngleRecognition = true;

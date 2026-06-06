@@ -67,7 +67,7 @@ export class PushNotificationService {
     try {
       const rdbConfig: relationalStore.StoreConfig = { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 };
       const rdbStore = await relationalStore.getRdbStore(this.context, rdbConfig);
-      const ruleRepo = new ReminderRuleRepository();
+      const ruleRepo: ReminderRuleRepository = new ReminderRuleRepository(
       await ruleRepo.init(rdbStore);
       const enabledRules = await ruleRepo.getEnabledRules();
 
@@ -222,7 +222,7 @@ export class PushNotificationService {
   }
 
   async updateConfig(config: NotificationConfigUpdate): Promise<void> {
-    const merged = new NotificationConfig();
+    const merged: NotificationConfig = new NotificationConfig(
     merged.dietReminderEnabled = config.dietReminderEnabled;
     merged.dietReminderHour = config.dietReminderHour;
     merged.dietReminderMinute = config.dietReminderMinute;

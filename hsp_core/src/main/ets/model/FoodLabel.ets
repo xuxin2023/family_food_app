@@ -155,7 +155,7 @@ export class FoodLabel {
   }
 
   toJson(): FoodLabelJson {
-    const json = new FoodLabelJson();
+    const json: FoodLabelJson = new FoodLabelJson(
     json.foodId = this.foodId;
     json.foodName = this.foodName;
     json.barcode = this.barcode;
@@ -173,7 +173,7 @@ export class FoodLabel {
   }
 
   static fromJson(json: Record<string, Object>): FoodLabel {
-    const label = new FoodLabel();
+    const label: FoodLabel = new FoodLabel(
     label.foodId = SafeJsonParse.getStringField(json, 'foodId', '');
     label.foodName = SafeJsonParse.getStringField(json, 'foodName', '');
     label.barcode = SafeJsonParse.getStringField(json, 'barcode', '');

@@ -98,7 +98,7 @@ export class AiVisionService {
   async recognize(productName: string, barcode?: string): Promise<AiRecognitionResult> {
     try {
       if (!productName || productName.length === 0) {
-        const r = new AiRecognitionResult();
+        const r: AiRecognitionResult = new AiRecognitionResult(
         r.success = false;
         r.label = null;
         r.confidence = 0;
@@ -112,7 +112,7 @@ export class AiVisionService {
       const confidence = matchedCategory !== null ? 0.7 : 0.3;
 
       // 构造兜底 FoodLabel
-      const label = new FoodLabel();
+      const label: FoodLabel = new FoodLabel(
       label.foodId = `ai_${Date.now()}`;
       label.foodName = productName;
       label.barcode = barcode || '';
@@ -122,7 +122,7 @@ export class AiVisionService {
       label.source = FoodSource.OCR_RECOGNIZE;
       label.identifiedAt = Date.now();
 
-      const nutrition = new NutritionPer100g();
+      const nutrition: NutritionPer100g = new NutritionPer100g(
       if (matchedCategory !== null) {
         nutrition.sodium = matchedCategory.sodium_mg;
         nutrition.sugar = matchedCategory.sugar_g;
@@ -134,7 +134,7 @@ export class AiVisionService {
 
       const categories = matchedCategory !== null ? [matchedCategory.category] : ['未知'];
 
-      const r = new AiRecognitionResult();
+      const r: AiRecognitionResult = new AiRecognitionResult(
       r.success = true;
       r.label = label;
       r.confidence = confidence;
@@ -142,7 +142,7 @@ export class AiVisionService {
       r.errorMessage = '';
       return r;
     } catch (err) {
-      const r = new AiRecognitionResult();
+      const r: AiRecognitionResult = new AiRecognitionResult(
       r.success = false;
       r.label = null;
       r.confidence = 0;

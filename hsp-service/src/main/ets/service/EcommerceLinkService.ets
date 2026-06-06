@@ -70,7 +70,7 @@ export class EcommerceLinkService {
 
     for (const platform of Object.values(EcommercePlatform)) {
       const cfg = this.PLATFORM_CONFIG[platform];
-      const link = new PurchaseLink();
+      const link: PurchaseLink = new PurchaseLink(
       link.platform = platform;
       link.platformName = cfg.name;
       link.icon = cfg.icon;
@@ -100,7 +100,7 @@ export class EcommerceLinkService {
       : productName;
     const encoded = encodeURIComponent(searchQuery);
 
-    const link = new PurchaseLink();
+    const link: PurchaseLink = new PurchaseLink(
     link.platform = platform;
     link.platformName = cfg.name;
     link.icon = cfg.icon;

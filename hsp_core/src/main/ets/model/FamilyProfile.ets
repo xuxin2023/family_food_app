@@ -159,7 +159,7 @@ export class FamilyProfile {
   }
 
   toJson(): FamilyProfileJson {
-    const json = new FamilyProfileJson();
+    const json: FamilyProfileJson = new FamilyProfileJson(
     json.memberId = this.memberId;
     json.nickname = this.nickname;
     json.ageGroup = this.ageGroup;
@@ -174,7 +174,7 @@ export class FamilyProfile {
   }
 
   static fromJson(json: FamilyProfileJson): FamilyProfile {
-    const profile = new FamilyProfile();
+    const profile: FamilyProfile = new FamilyProfile(
     profile.memberId = json.memberId;
     profile.nickname = json.nickname;
     profile.ageGroup = EnumSafeParse.parse<AgeGroup>(AgeGroup, json.ageGroup, AgeGroup.ADULT);
@@ -211,7 +211,7 @@ export class DailyBudgetConfig {
   @Trace fatBudget: number = 65;
 
   toJson(): DailyBudgetConfigJson {
-    const json = new DailyBudgetConfigJson();
+    const json: DailyBudgetConfigJson = new DailyBudgetConfigJson(
     json.sodiumBudget = this.sodiumBudget;
     json.sugarBudget = this.sugarBudget;
     json.calorieBudget = this.calorieBudget;
@@ -220,7 +220,7 @@ export class DailyBudgetConfig {
   }
 
   static fromJson(json: DailyBudgetConfigJson): DailyBudgetConfig {
-    const config = new DailyBudgetConfig();
+    const config: DailyBudgetConfig = new DailyBudgetConfig(
     config.sodiumBudget = json.sodiumBudget;
     config.sugarBudget = json.sugarBudget;
     config.calorieBudget = json.calorieBudget;
@@ -241,7 +241,7 @@ export class DailyBudgetConfig {
 
 export function createDefaultMembers(): FamilyProfile[] {
   const defaultMembers: FamilyProfile[] = [];
-  const adult = new FamilyProfile();
+  const adult: FamilyProfile = new FamilyProfile(
   adult.memberId = 'default_adult';
   adult.nickname = '我';
   adult.ageGroup = AgeGroup.ADULT;

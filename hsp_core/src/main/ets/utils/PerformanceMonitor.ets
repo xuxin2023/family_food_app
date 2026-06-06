@@ -76,7 +76,7 @@ export class PerformanceMonitor {
     this.activeSpans.delete(key);
 
     const duration = Date.now() - startTime;
-    const metric = new PerfMetric();
+    const metric: PerfMetric = new PerfMetric(
     metric.key = key;
     metric.durationMs = duration;
     metric.timestamp = Date.now();
@@ -103,7 +103,7 @@ export class PerformanceMonitor {
 
   trackOperation(opName: string, startTime: number, metadata?: Map<string, string>): number {
     const duration = Date.now() - startTime;
-    const metric = new PerfMetric();
+    const metric: PerfMetric = new PerfMetric(
     metric.key = opName;
     metric.durationMs = duration;
     metric.timestamp = Date.now();
@@ -117,7 +117,7 @@ export class PerformanceMonitor {
   }
 
   getPercentiles(key: string): PerfPercentiles {
-    const result = new PerfPercentiles();
+    const result: PerfPercentiles = new PerfPercentiles(
     const list = this.metrics.get(key);
     if (list === undefined || list.length === 0) return result;
 
@@ -167,7 +167,7 @@ export class PerformanceMonitor {
     }
 
     if (threshold > 0 && duration > threshold) {
-      const alert = new PerfAlert();
+      const alert: PerfAlert = new PerfAlert(
       alert.key = key;
       alert.durationMs = duration;
       alert.thresholdMs = threshold;

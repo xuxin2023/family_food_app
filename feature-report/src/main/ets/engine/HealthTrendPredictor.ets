@@ -45,7 +45,7 @@ export class HealthTrendPredictor {
     targetValue: number,
     isUpperLimit: boolean
   ): TrendPrediction {
-    const p = new TrendPrediction();
+    const p: TrendPrediction = new TrendPrediction(
     p.nutrient = name;
     p.unit = unit;
 

@@ -175,7 +175,7 @@ export class SmartMealPlanService {
   }
 
   private buildBudgetForDay(profile: FamilyProfile, dayIndex: number): DailyBudget {
-    const budget = new DailyBudget();
+    const budget: DailyBudget = new DailyBudget(
     const baseCal = profile.isChild() ? 1800 : 2200;
     budget.calorieBudget = baseCal;
     budget.sodiumBudget = profile.isControlBp() ? 1500 : 2000;
@@ -188,7 +188,7 @@ export class SmartMealPlanService {
   private formatDate(date: Date): string {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
+    const d = date.getDate().toString().padStart(2, '0');
     return `${y}-${m}-${d}`;
   }
 }

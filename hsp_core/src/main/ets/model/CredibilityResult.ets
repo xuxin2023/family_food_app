@@ -80,7 +80,7 @@ export class CredibilityResult {
   }
 
   toJson(): CredibilityResultJson {
-    const json = new CredibilityResultJson();
+    const json: CredibilityResultJson = new CredibilityResultJson(
     json.score = this.score;
     json.manufacturerClear = this.manufacturerClear;
     json.scNumberClear = this.scNumberClear;
@@ -96,7 +96,7 @@ export class CredibilityResult {
   }
 
   static getDefault(): CredibilityResult {
-    const cr = new CredibilityResult();
+    const cr: CredibilityResult = new CredibilityResult(
     cr.score = 0;
     cr.tips = ['可信度数据不足'];
     cr.overallGrade = DataGrade.D;

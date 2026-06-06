@@ -213,12 +213,12 @@ export class AdditiveSafetyEngine {
 
     const ingredientText = typeof ingredients === 'string' ? ingredients : ingredients.join(', ');
 
-    const execE = new RegExp(ePattern.source, ePattern.flags);
+    const execE: RegExp = new RegExp(
     while ((match = execE.exec(ingredientText)) !== null) {
       foundENumbers.add(match[1].toUpperCase());
     }
 
-    const execCns = new RegExp(cnsPattern.source, cnsPattern.flags);
+    const execCns: RegExp = new RegExp(
     while ((match = execCns.exec(ingredientText)) !== null) {
       foundCnsCodes.add(match[1]);
     }

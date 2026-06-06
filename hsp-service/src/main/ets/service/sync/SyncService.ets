@@ -214,7 +214,7 @@ export class SyncService {
       (r.syncStatus === SyncStatus.PENDING || r.syncStatus === SyncStatus.FAILED)
     );
 
-    const record = new SyncChangeRecord();
+    const record: SyncChangeRecord = new SyncChangeRecord(
     record.recordId = `sync_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
     record.changeType = changeType;
     record.entityType = entityType;
@@ -384,7 +384,7 @@ export class SyncService {
 
   private async executeSync(): Promise<SyncResult> {
     const startTime = Date.now();
-    const result = new SyncResult();
+    const result: SyncResult = new SyncResult(
     result.success = true;
     result.errorMessage = '';
     result.syncedIds = [];
@@ -723,7 +723,7 @@ export class SyncService {
   }
 
   private cloneConfig(config: CloudSyncConfig): CloudSyncConfig {
-    const cloned = new CloudSyncConfig();
+    const cloned: CloudSyncConfig = new CloudSyncConfig(
     cloned.enabled = config.enabled;
     cloned.strategy = config.strategy;
     cloned.conflictResolution = config.conflictResolution;
@@ -737,7 +737,7 @@ export class SyncService {
   }
 
   private makeBatchItem(r: SyncChangeRecord): SyncBatchItem {
-    const item = new SyncBatchItem();
+    const item: SyncBatchItem = new SyncBatchItem(
     item.entityType = r.entityType;
     item.entityId = r.entityId;
     item.changeType = r.changeType;
@@ -748,7 +748,7 @@ export class SyncService {
   }
 
   private makeBatchRequest(token: string, deviceId: string, lastSyncAt: number, uploads: SyncBatchItem[]): SyncBatchRequest {
-    const req = new SyncBatchRequest();
+    const req: SyncBatchRequest = new SyncBatchRequest(
     req.token = token;
     req.deviceId = deviceId;
     req.lastSyncAt = lastSyncAt;

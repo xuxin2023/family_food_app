@@ -45,7 +45,7 @@ export class HspModuleConfig {
 }
 
 function makeHspModuleConfig(name: string, type: string, dependencies: string[], description: string): HspModuleConfig {
-  const cfg = new HspModuleConfig();
+  const cfg: HspModuleConfig = new HspModuleConfig(
   cfg.name = name;
   cfg.type = type;
   cfg.dependencies = dependencies;

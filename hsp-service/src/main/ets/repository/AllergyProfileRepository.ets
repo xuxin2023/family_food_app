@@ -43,7 +43,7 @@ export class AllergyProfileRepository {
       const predicates = new relationalStore.RdbPredicates(TABLE_NAME);
       const resultSet = await this.rdbStore.query(predicates);
       while (resultSet.goToNextRow()) {
-        const profile = new AllergyProfile();
+        const profile: AllergyProfile = new AllergyProfile(
         profile.memberId = resultSet.getString(0);
 
         const allergiesRaw = resultSet.getString(1);

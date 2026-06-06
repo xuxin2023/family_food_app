@@ -38,7 +38,7 @@ export class RateLimitResult {
 }
 
 function createConfig(endpoint: string, maxRequests: number, windowMs: number, maxTokensPerMinute?: number, maxTokensPerDay?: number): RateLimitConfig {
-  const c = new RateLimitConfig();
+  const c: RateLimitConfig = new RateLimitConfig(
   c.endpoint = endpoint;
   c.maxRequests = maxRequests;
   c.windowMs = windowMs;
@@ -86,7 +86,7 @@ export class RateLimiter {
   }
 
   checkLimit(endpoint: string, tokens: number = 0): RateLimitResult {
-    const result = new RateLimitResult();
+    const result: RateLimitResult = new RateLimitResult(
     result.endpoint = endpoint;
     const cfg = this.configs.get(endpoint);
     if (!cfg) {
@@ -135,7 +135,7 @@ export class RateLimiter {
       }
     }
 
-    const entry = new WindowEntry();
+    const entry: WindowEntry = new WindowEntry(
     entry.timestamp = now;
     entry.tokensUsed = tokens;
     entries.push(entry);
@@ -191,7 +191,7 @@ export class RateLimiter {
     if (!this.prefs) return;
     try {
       const entries = this.windows.get(endpoint) ?? [];
-      const data = new PersistedUsage();
+      const data: PersistedUsage = new PersistedUsage(
       data.entries = entries.map((e: WindowEntry) => ({ t: e.timestamp, tk: e.tokensUsed }));
       data.daily = this.dailyTokens.get(endpoint) ?? 0;
       data.day = this.dailyResetDay.get(endpoint) ?? 0;
@@ -211,7 +211,7 @@ export class RateLimiter {
           const entries: WindowEntry[] = [];
           if (entriesArr) {
             for (const item of entriesArr) {
-              const e = new WindowEntry();
+              const e: WindowEntry = new WindowEntry(
               e.timestamp = item['t'] ?? 0;
               e.tokensUsed = item['tk'] ?? 0;
               entries.push(e);

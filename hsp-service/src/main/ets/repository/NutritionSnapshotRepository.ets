@@ -40,7 +40,7 @@ export class NutritionSnapshotRepository {
       const resultSet = await this.rdbStore.query(predicates);
       this.snapshots = [];
       while (resultSet.goToNextRow()) {
-        const s = new NutritionSnapshot();
+        const s: NutritionSnapshot = new NutritionSnapshot(
         s.id = resultSet.getString(0);
         s.memberId = resultSet.getString(1);
         s.date = resultSet.getString(2);

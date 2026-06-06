@@ -64,7 +64,7 @@ export class EnhancedSecurityDetector {
 
     hilog.info(DOMAIN_ZERO, TAG,
       'Security check: safe=%{public}s, level=%{public}s, risks=%{public}d',
-      String(result.isSafe), result.riskLevel, result.risks.length);
+      result.isSafe.toString(), result.riskLevel, result.risks.length);
 
     return result;
   }

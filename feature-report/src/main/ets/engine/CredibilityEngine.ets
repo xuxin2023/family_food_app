@@ -10,7 +10,7 @@ const BASE_CREDIBILITY_SCORE = 55;
 
 export class CredibilityEngine {
   calculate(foodLabel: FoodLabel, crossVerified: boolean = false): CredibilityResult {
-    const result = new CredibilityResult();
+    const result: CredibilityResult = new CredibilityResult(
     let score: number = BASE_CREDIBILITY_SCORE;
 
     // === 雷达维度1：身份清晰度 ===
@@ -145,7 +145,7 @@ export class CredibilityEngine {
   }
 
   private evaluateSourceCredibility(source: FoodSource): SourceCredibilityResult {
-    const r = new SourceCredibilityResult();
+    const r: SourceCredibilityResult = new SourceCredibilityResult(
     switch (source) {
       case FoodSource.BARCODE_HIT:
         r.bonus = 15;
@@ -181,7 +181,7 @@ export class CredibilityEngine {
     if (nutrition.fiber > 0) filled++;
     if (nutrition.carbohydrate > 0) filled++;
 
-    const r = new CompletenessResult();
+    const r: CompletenessResult = new CompletenessResult(
     r.filledFields = filled;
     r.coverage = filled / CORE_NUTRIENT_FIELDS;
     r.bonus = Math.round(r.coverage * 10);
@@ -190,7 +190,7 @@ export class CredibilityEngine {
   }
 
   private evaluateFreshness(identifiedAt: number): FreshnessResult {
-    const r = new FreshnessResult();
+    const r: FreshnessResult = new FreshnessResult(
     r.bonus = 0;
     r.tip = '';
     if (identifiedAt === 0) {

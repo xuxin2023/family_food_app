@@ -58,8 +58,8 @@ export class CloudFunctionClient {
       hilog.warn(DOMAIN_ZERO, TAG, 'CloudFunction %{public}s returned %{public}d', endpoint, response.responseCode);
       return { error: `HTTP ${response.responseCode}`, statusCode: response.responseCode };
     } catch (err) {
-      hilog.error(DOMAIN_ZERO, TAG, 'CloudFunction %{public}s failed: %{public}s', endpoint, String(err));
-      return { error: String(err), statusCode: 500 };
+      hilog.error(DOMAIN_ZERO, TAG, 'CloudFunction %{public}s failed: %{public}s', endpoint, err.toString());
+      return { error: err.toString(), statusCode: 500 };
     }
   }
 
@@ -82,8 +82,8 @@ export class CloudFunctionClient {
       hilog.warn(DOMAIN_ZERO, TAG, 'CloudFunction GET %{public}s returned %{public}d', endpoint, response.responseCode);
       return { error: `HTTP ${response.responseCode}`, statusCode: response.responseCode };
     } catch (err) {
-      hilog.error(DOMAIN_ZERO, TAG, 'CloudFunction GET %{public}s failed: %{public}s', endpoint, String(err));
-      return { error: String(err), statusCode: 500 };
+      hilog.error(DOMAIN_ZERO, TAG, 'CloudFunction GET %{public}s failed: %{public}s', endpoint, err.toString());
+      return { error: err.toString(), statusCode: 500 };
     }
   }
 

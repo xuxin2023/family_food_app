@@ -97,7 +97,7 @@ export class CrossRiskAssessor {
     targets: NutritionTarget[],
     dailyIntake: DailyIntakeSnapshot
   ): CrossRiskResult {
-    const result = new CrossRiskResult();
+    const result: CrossRiskResult = new CrossRiskResult(
     result.riskFactors = [];
     const factors: RiskFactor[] = [];
 
@@ -139,7 +139,7 @@ export class CrossRiskAssessor {
         return targets[i];
       }
     }
-    const t = new NutritionTarget();
+    const t: NutritionTarget = new NutritionTarget(
     t.memberId = memberId;
     return t;
   }
@@ -154,7 +154,7 @@ export class CrossRiskAssessor {
     const nutrition = foodLabel.nutrition;
 
     if (member.isControlBp() && nutrition.sodium >= CrossRiskAssessor.HIGH_SODIUM_MG) {
-      const f = new RiskFactor();
+      const f: RiskFactor = new RiskFactor(
       f.category = '钠过量';
       f.severity = 'high';
       f.description = `${member.nickname}（控压目标）本食品钠${nutrition.sodium}mg/100g，属于高钠食品`;
@@ -163,7 +163,7 @@ export class CrossRiskAssessor {
     }
 
     if (member.isControlSugar() && nutrition.sugar >= NUTRIENT_LIMITS_V2.SUGAR_HIGH_THRESHOLD_G) {
-      const f = new RiskFactor();
+      const f: RiskFactor = new RiskFactor(
       f.category = '糖过量';
       f.severity = 'high';
       f.description = `${member.nickname}（控糖目标）本食品糖${nutrition.sugar}g/100g，属于高糖食品`;
@@ -172,7 +172,7 @@ export class CrossRiskAssessor {
     }
 
     if (member.isLoseFat() && nutrition.calories >= CrossRiskAssessor.HIGH_CALORIE_KCAL) {
-      const f = new RiskFactor();
+      const f: RiskFactor = new RiskFactor(
       f.category = '高热量';
       f.severity = 'medium';
       f.description = `${member.nickname}（减脂目标）本食品热量${nutrition.calories}kcal/100g，属于高热量食品`;
@@ -181,7 +181,7 @@ export class CrossRiskAssessor {
     }
 
     if (member.isControlFat() && nutrition.fat >= CrossRiskAssessor.HIGH_FAT_G) {
-      const f = new RiskFactor();
+      const f: RiskFactor = new RiskFactor(
       f.category = '高脂肪';
       f.severity = 'medium';
       f.description = `${member.nickname}（控脂目标）本食品脂肪${nutrition.fat}g/100g，属于高脂食品`;
@@ -206,7 +206,7 @@ export class CrossRiskAssessor {
     }
 
     if (matched.length > 0) {
-      const f = new RiskFactor();
+      const f: RiskFactor = new RiskFactor(
       f.category = '过敏原';
       f.severity = 'critical';
       f.description = `${member.nickname}对${matched.join('、')}过敏，本食品含相关成分`;
@@ -227,7 +227,7 @@ export class CrossRiskAssessor {
     const ingredientsText = foodLabel.ingredients.join(',');
     for (let i = 0; i < PREGNANCY_AVOID_KEYWORDS.length; i++) {
       if (ingredientsText.includes(PREGNANCY_AVOID_KEYWORDS[i])) {
-        const w = new PregnancyWarning();
+        const w: PregnancyWarning = new PregnancyWarning(
         w.ingredient = PREGNANCY_AVOID_KEYWORDS[i];
         w.matchedRule.severity = 'AVOID';
         warnings.push(w);
@@ -235,7 +235,7 @@ export class CrossRiskAssessor {
     }
     for (let i = 0; i < PREGNANCY_CAUTION_KEYWORDS.length; i++) {
       if (ingredientsText.includes(PREGNANCY_CAUTION_KEYWORDS[i])) {
-        const w = new PregnancyWarning();
+        const w: PregnancyWarning = new PregnancyWarning(
         w.ingredient = PREGNANCY_CAUTION_KEYWORDS[i];
         w.matchedRule.severity = 'CAUTION';
         warnings.push(w);
@@ -246,7 +246,7 @@ export class CrossRiskAssessor {
     const cautionCount = warnings.filter((w: PregnancyWarning) => w.matchedRule.severity === 'CAUTION').length;
 
     if (avoidCount > 0 || cautionCount > 0) {
-      const f = new RiskFactor();
+      const f: RiskFactor = new RiskFactor(
       f.category = '孕期不安全';
       f.severity = avoidCount > 0 ? 'high' : 'medium';
       const statusLabel = member.pregnancyStatus === PregnancyStatus.PREGNANT ? '孕期' : '哺乳期';
@@ -279,7 +279,7 @@ export class CrossRiskAssessor {
     }
 
     if (risks.length > 0) {
-      const f = new RiskFactor();
+      const f: RiskFactor = new RiskFactor(
       f.category = '儿童不适宜';
       f.severity = 'medium';
       f.description = `${member.nickname}（儿童）：本食品${risks.join('、')}，不适宜儿童食用`;
@@ -303,7 +303,7 @@ export class CrossRiskAssessor {
 
     const projectedSodium = dailyIntake.sodium + nutrition.sodium;
     if (projectedSodium > primaryTarget.sodiumMax_mg && dailyIntake.sodium <= primaryTarget.sodiumMax_mg) {
-      const f = new RiskFactor();
+      const f: RiskFactor = new RiskFactor(
       f.category = '钠超标预警';
       f.severity = 'medium';
       f.description = `今日钠已摄入${Math.round(dailyIntake.sodium)}mg + 本次${nutrition.sodium}mg = ${Math.round(projectedSodium)}mg，将超过目标${primaryTarget.sodiumMax_mg}mg`;
@@ -313,7 +313,7 @@ export class CrossRiskAssessor {
 
     const projectedSugar = dailyIntake.sugar + nutrition.sugar;
     if (projectedSugar > primaryTarget.sugarMax_g && dailyIntake.sugar <= primaryTarget.sugarMax_g) {
-      const f = new RiskFactor();
+      const f: RiskFactor = new RiskFactor(
       f.category = '糖超标预警';
       f.severity = 'medium';
       f.description = `今日糖已摄入${dailyIntake.sugar.toFixed(1)}g + 本次${nutrition.sugar}g = ${projectedSugar.toFixed(1)}g，将超过目标${primaryTarget.sugarMax_g}g`;
@@ -323,7 +323,7 @@ export class CrossRiskAssessor {
 
     const projectedCalorie = dailyIntake.calorie + nutrition.calories;
     if (projectedCalorie > primaryTarget.caloriesTarget * CrossRiskAssessor.CALORIE_EXCEED_RATIO && dailyIntake.calorie <= primaryTarget.caloriesTarget) {
-      const f = new RiskFactor();
+      const f: RiskFactor = new RiskFactor(
       f.category = '热量超标预警';
       f.severity = 'low';
       f.description = `今日热量已摄入${Math.round(dailyIntake.calorie)}kcal + 本次${nutrition.calories}kcal = ${Math.round(projectedCalorie)}kcal，将超过目标${primaryTarget.caloriesTarget}kcal`;

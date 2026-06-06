@@ -95,7 +95,7 @@ export class AllergyEngine {
         for (const ingredient of food.ingredients) {
           for (const alias of aliases) {
             if (ingredient.includes(alias)) {
-              const hint = new AllergyHint();
+              const hint: AllergyHint = new AllergyHint(
               hint.memberId = member.memberId;
               hint.memberNickname = member.nickname;
               hint.allergen = userAllergen;
@@ -112,7 +112,7 @@ export class AllergyEngine {
         for (const hintTag of food.allergenHints) {
           for (const alias of aliases) {
             if (hintTag.includes(alias)) {
-              const hint = new AllergyHint();
+              const hint: AllergyHint = new AllergyHint(
               hint.memberId = member.memberId;
               hint.memberNickname = member.nickname;
               hint.allergen = userAllergen;
@@ -132,7 +132,7 @@ export class AllergyEngine {
             const crossAliases = ALLERGEN_ALIASES.get(cross.crossReactive) ?? [cross.crossReactive];
             const matched = food.ingredients.find(i => crossAliases.some(a => i.includes(a)));
             if (matched) {
-              const hint = new AllergyHint();
+              const hint: AllergyHint = new AllergyHint(
               hint.memberId = member.memberId;
               hint.memberNickname = member.nickname;
               hint.allergen = cross.crossReactive;

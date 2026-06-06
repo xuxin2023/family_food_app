@@ -58,7 +58,7 @@ export class SharePosterGenerator {
 
   private async renderPosterToPixelMap(data: PosterData): Promise<image.PixelMap> {
     const bufferSize = POSTER_WIDTH * POSTER_HEIGHT * 4;
-    const buffer = new ArrayBuffer(bufferSize);
+    const buffer: ArrayBuffer = new ArrayBuffer(
 
     const opts: image.InitializationOptions = {
       size: { width: POSTER_WIDTH, height: POSTER_HEIGHT },
@@ -67,7 +67,7 @@ export class SharePosterGenerator {
     };
     const pixelMap = await image.createPixelMap(buffer, opts);
 
-    const canvas = new CanvasRenderingContext2D(new RenderingContextSettings(true));
+    const canvas: CanvasRenderingContext2D = new CanvasRenderingContext2D(
     canvas.width = POSTER_WIDTH;
     canvas.height = POSTER_HEIGHT;
 

@@ -170,7 +170,7 @@ export class NovaGroupEngine {
 
     if (ingredientCount > 10) {
       return this.buildResult(NovaGroup.GROUP_4,
-        ['配料数量' + String(ingredientCount) + '种'], ingredientCount, 0.65);
+        ['配料数量' + ingredientCount.toString() + '种'], ingredientCount, 0.65);
     }
 
     if (hasAddedSugar || hasAddedSalt || hasAddedOil) {
@@ -201,7 +201,7 @@ export class NovaGroupEngine {
     const summary = matchedMarkers.length > 0
       ? `检出${matchedMarkers.length}项加工标记: ${matchedMarkers.slice(0, 3).join('、')}${matchedMarkers.length > 3 ? '等' : ''}`
       : this.getDescription(group);
-    const result = new NovaEvaluationResult();
+    const result: NovaEvaluationResult = new NovaEvaluationResult(
     result.group = group;
     result.label = this.getLabel(group);
     result.color = this.getColor(group);

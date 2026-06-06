@@ -103,7 +103,7 @@ export class OnDeviceInferenceEngine {
         return false;
       }
 
-      const buffer = new ArrayBuffer(stat.size);
+      const buffer: ArrayBuffer = new ArrayBuffer(
       const file = fileIo.openSync(filePath, fileIo.OpenMode.READ_ONLY);
       fileIo.readSync(file.fd, buffer);
       fileIo.closeSync(file);
@@ -141,7 +141,7 @@ export class OnDeviceInferenceEngine {
         return false;
       }
 
-      const buffer = new ArrayBuffer(rawFd.length);
+      const buffer: ArrayBuffer = new ArrayBuffer(
       const file = fileIo.openSync(rawFd.path, fileIo.OpenMode.READ_ONLY);
       fileIo.readSync(file.fd, buffer);
       fileIo.closeSync(file);

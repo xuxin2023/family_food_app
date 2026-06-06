@@ -67,7 +67,7 @@ export class OcrService {
       return result;
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'OCR recognize failed: %{public}s', JSON.stringify(error));
-      const emptyResult = new OcrResult();
+      const emptyResult: OcrResult = new OcrResult(
       emptyResult.text = '';
       emptyResult.confidence = 0;
       emptyResult.blocks = [];
@@ -104,7 +104,7 @@ export class OcrService {
       return this.parseOcrResult(textResult);
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'OCR recognize from PixelMap failed: %{public}s', JSON.stringify(error));
-      const emptyResult = new OcrResult();
+      const emptyResult: OcrResult = new OcrResult(
       emptyResult.text = '';
       emptyResult.confidence = 0;
       emptyResult.blocks = [];
@@ -118,7 +118,7 @@ export class OcrService {
    * @returns 结构化的FoodLabel
    */
   extractFoodLabel(ocrText: string): FoodLabel {
-    const label = new FoodLabel();
+    const label: FoodLabel = new FoodLabel(
     label.foodId = `food_${Date.now()}`;
     label.source = FoodSource.USER_UPLOAD;
     label.identifiedAt = Date.now();
@@ -161,7 +161,7 @@ export class OcrService {
     const ocrResult = await this.recognizeText(imageUri);
     if (ocrResult.text.length === 0) {
       // OCR失败，返回空标签
-      const label = new FoodLabel();
+      const label: FoodLabel = new FoodLabel(
       label.foodId = `food_${Date.now()}`;
       label.foodName = StringRes.OCR_FAILED_FOOD;
       label.source = FoodSource.USER_UPLOAD;
@@ -203,7 +203,7 @@ export class OcrService {
         continue;
       }
 
-      const ocrBlock = new OcrBlock();
+      const ocrBlock: OcrBlock = new OcrBlock(
       ocrBlock.text = blockText;
       ocrBlock.confidence = 0;
       ocrBlock.bounds = this.buildBounds(this.resolveCornerPoints(block))
@@ -214,7 +214,7 @@ export class OcrService {
       fullText = blocks.map((block) => block.text).join('\n').trim();
     }
 
-    const result = new OcrResult();
+    const result: OcrResult = new OcrResult(
     result.text = fullText;
     result.confidence = 0;
     result.blocks = blocks;
@@ -234,7 +234,7 @@ export class OcrService {
   }
 
   private buildBounds(cornerPoints: Array<textRecognition.PixelPoint>): OcrBounds {
-    const bounds = new OcrBounds();
+    const bounds: OcrBounds = new OcrBounds(
     if (cornerPoints.length === 0) {
       return bounds;
     }
@@ -271,7 +271,7 @@ export class OcrService {
 
   // 提取营养成分
   private extractNutrition(text: string): NutritionPer100g {
-    const nutrition = new NutritionPer100g();
+    const nutrition: NutritionPer100g = new NutritionPer100g(
 
     // 钠（支持"钠"和"钠/Na"两种写法）
     const sodiumMatch = text.match(/(?:钠|Na)[^\d]*(\d+\.?\d*)\s*mg/);
@@ -329,7 +329,7 @@ export class OcrService {
 
   // 提取委托方/受托方
   private extractOemInfo(text: string): OemInfo {
-    const result = new OemInfo();
+    const result: OemInfo = new OemInfo(
     const principalMatch = text.match(/(?:委托方|委托生产企业|委托单位)[：:]\s*(.*?)(?:\n|$)/);
     const trusteeMatch = text.match(/(?:受托方|受托生产企业|受托单位|实际生产企业)[：:]\s*(.*?)(?:\n|$)/);
     result.principal = principalMatch ? principalMatch[1].trim() : '';

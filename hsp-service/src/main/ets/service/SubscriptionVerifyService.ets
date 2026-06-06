@@ -50,7 +50,7 @@ export class SubscriptionVerifyService {
       const verifyHeader = new Map<string, string>();
       verifyHeader.set('Content-Type', API_CONFIG.HEADER_CONTENT_TYPE_JSON);
 
-      const opts = new SecureRequestOptions();
+      const opts: SecureRequestOptions = new SecureRequestOptions(
       opts.url = verifyEndpoint;
       opts.method = http.RequestMethod.POST;
       opts.header = verifyHeader;
@@ -72,7 +72,7 @@ export class SubscriptionVerifyService {
       return this.invalidResult(`服务端返回${response.responseCode}`);
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Verify failed: %{public}s', JSON.stringify(error));
-      GlobalErrorHandler.getInstance().handleError(error instanceof Error ? error : new Error(String(error)), 'SubscriptionVerifyService');
+      GlobalErrorHandler.getInstance().handleError(error instanceof Error ? error : new Error(error.toString()), 'SubscriptionVerifyService');
       return this.invalidResult('网络异常，使用本地缓存');
     }
   }
@@ -123,7 +123,7 @@ export class SubscriptionVerifyService {
       await prefs.flush();
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Persist verify result failed: %{public}s', JSON.stringify(error));
-      GlobalErrorHandler.getInstance().handleError(error instanceof Error ? error : new Error(String(error)), 'SubscriptionVerifyService');
+      GlobalErrorHandler.getInstance().handleError(error instanceof Error ? error : new Error(error.toString()), 'SubscriptionVerifyService');
     }
   }
 
@@ -143,7 +143,7 @@ export class SubscriptionVerifyService {
   }
 
   private invalidResult(reason: string): SubscriptionVerifyResult {
-    const result = new SubscriptionVerifyResult();
+    const result: SubscriptionVerifyResult = new SubscriptionVerifyResult(
     result.valid = false;
     result.tier = MemberTier.FREE;
     result.expiresAt = 0;

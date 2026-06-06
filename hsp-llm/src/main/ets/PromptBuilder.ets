@@ -30,7 +30,7 @@ export class PromptBuilder {
   private static SYSTEM_REPORT = '你是健康数据分析师。请基于用户的饮食记录数据，生成结构化的营养趋势报告和改进建议。';
 
   buildIngredientPrompt(context: PromptContext): PromptTemplate {
-    const template = new PromptTemplate();
+    const template: PromptTemplate = new PromptTemplate(
     template.task = 'ingredient_analysis';
     template.systemPrompt = PromptBuilder.SYSTEM_INGREDIENT;
     template.maxTokens = 512;
@@ -50,7 +50,7 @@ export class PromptBuilder {
   }
 
   buildDietAdvicePrompt(context: PromptContext): PromptTemplate {
-    const template = new PromptTemplate();
+    const template: PromptTemplate = new PromptTemplate(
     template.task = 'diet_advice';
     template.systemPrompt = PromptBuilder.SYSTEM_DIET;
     template.maxTokens = 384;
@@ -69,7 +69,7 @@ export class PromptBuilder {
   }
 
   buildAllergenPrompt(context: PromptContext): PromptTemplate {
-    const template = new PromptTemplate();
+    const template: PromptTemplate = new PromptTemplate(
     template.task = 'allergen_risk';
     template.systemPrompt = PromptBuilder.SYSTEM_ALLERGEN;
     template.maxTokens = 384;
@@ -91,7 +91,7 @@ export class PromptBuilder {
   }
 
   buildRecommendPrompt(context: PromptContext): PromptTemplate {
-    const template = new PromptTemplate();
+    const template: PromptTemplate = new PromptTemplate(
     template.task = 'alternative_recommend';
     template.systemPrompt = PromptBuilder.SYSTEM_RECOMMEND;
     template.maxTokens = 512;
@@ -107,7 +107,7 @@ export class PromptBuilder {
   }
 
   buildReportPrompt(context: PromptContext): PromptTemplate {
-    const template = new PromptTemplate();
+    const template: PromptTemplate = new PromptTemplate(
     template.task = 'health_report';
     template.systemPrompt = PromptBuilder.SYSTEM_REPORT;
     template.maxTokens = 640;

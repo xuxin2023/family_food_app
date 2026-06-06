@@ -38,10 +38,10 @@ export class AiChatServiceImpl extends AiServiceBase implements IAiChatService {
   clearHistory(): void { this.conversationHistory = []; }
 
   async sendMessage(message: string): Promise<ChatMessage> {
-    const userMsg = new ChatMessage(generateMessageId(), message, ChatRole.USER, Date.now());
+    const userMsg: ChatMessage = new ChatMessage(
     this.addToHistory(userMsg);
     const aiText = await this.callAiWithHistory(message);
-    const aiMsg = new ChatMessage(generateMessageId(), aiText, ChatRole.ASSISTANT, Date.now());
+    const aiMsg: ChatMessage = new ChatMessage(
     this.addToHistory(aiMsg);
     return aiMsg;
   }
@@ -89,7 +89,7 @@ export class AiChatServiceImpl extends AiServiceBase implements IAiChatService {
     for (let i = startIndex; i < this.conversationHistory.length; i++) {
       const msg = this.conversationHistory[i];
       if (msg.role === ChatRole.ASSISTANT || msg.role === ChatRole.USER) {
-        const item = new ChatHistoryItem();
+        const item: ChatHistoryItem = new ChatHistoryItem(
         item.role = msg.role === ChatRole.USER ? 'user' : 'assistant';
         item.content = msg.content as string;
         items.push(item);

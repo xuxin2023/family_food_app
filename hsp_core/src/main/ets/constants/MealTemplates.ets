@@ -17,7 +17,7 @@ function makeMealTemplate(
   avoidStacking: string[], hydrationReminder: boolean, morningAdvice: string,
   nextMealNutrients: string[], goalAdvice: Map<string, string>
 ): MealTemplate {
-  const t = new MealTemplate();
+  const t: MealTemplate = new MealTemplate(
   t.scenario = scenario;
   t.riskTags = riskTags;
   t.nextMealAdvice = nextMealAdvice;

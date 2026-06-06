@@ -55,7 +55,7 @@ export class ModelManager {
 
   private constructor() {
     MODEL_REGISTRY.forEach((m: ModelInfo) => {
-      this.models.set(m.name, { ...m });
+      this.models.set(m.name, Object.assign({},m));
     });
   }
 
@@ -171,7 +171,7 @@ export class ModelManager {
 
   private async downloadModel(info: ModelInfo): Promise<boolean> {
     try {
-      const request = new XMLHttpRequest();
+      const request: XMLHttpRequest = new XMLHttpRequest(
       const baseUrl = 'https://familyfood-api.cn-north-4.myhuaweicloud.com/models/';
       const modelUrl = baseUrl + info.name + '_v' + info.version + '.om';
 

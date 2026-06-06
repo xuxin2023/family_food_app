@@ -71,7 +71,7 @@ export class DailyBudget {
   }
 
   toJson(): DailyBudgetJson {
-    const json = new DailyBudgetJson();
+    const json: DailyBudgetJson = new DailyBudgetJson(
     json.memberId = this.memberId;
     json.date = this.date;
     json.sodiumBudget = this.sodiumBudget;
@@ -86,7 +86,7 @@ export class DailyBudget {
   }
 
   static fromJson(json: DailyBudgetJson): DailyBudget {
-    const budget = new DailyBudget();
+    const budget: DailyBudget = new DailyBudget(
     budget.memberId = json.memberId;
     budget.date = json.date;
     budget.sodiumBudget = json.sodiumBudget;

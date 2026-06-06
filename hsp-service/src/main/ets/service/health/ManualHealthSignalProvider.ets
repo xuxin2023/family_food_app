@@ -18,7 +18,7 @@ export class ManualHealthSignalProvider extends HealthSignalProvider {
   }
 
   async getTodayHealthData(memberId: string): Promise<HealthSignal> {
-    const signal = new HealthSignal();
+    const signal: HealthSignal = new HealthSignal(
     signal.memberId = memberId;
     signal.date = this.getTodayDate();
     signal.stepLevel = StepLevel.NORMAL;
@@ -37,7 +37,7 @@ export class ManualHealthSignalProvider extends HealthSignalProvider {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
 }

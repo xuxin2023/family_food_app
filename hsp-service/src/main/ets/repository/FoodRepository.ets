@@ -202,7 +202,7 @@ export class FoodRepository {
   }
 
   private fromResultSet(resultSet: relationalStore.ResultSet): FoodLabel {
-    const label = new FoodLabel();
+    const label: FoodLabel = new FoodLabel(
     label.foodId = this.safeGetString(resultSet, COL_FOOD_ID);
     label.foodName = this.safeGetString(resultSet, COL_FOOD_NAME);
     label.barcode = this.safeGetString(resultSet, COL_BARCODE);

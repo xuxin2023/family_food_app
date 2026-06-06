@@ -58,7 +58,7 @@ export class MealBalance {
   memberSpecificAdvice: string = '';
 
   toJson(): MealBalanceJson {
-    const json = new MealBalanceJson();
+    const json: MealBalanceJson = new MealBalanceJson(
     json.memberId = this.memberId;
     json.scenario = this.scenario;
     json.riskTags = this.riskTags;
@@ -70,7 +70,7 @@ export class MealBalance {
   }
 
   static getDefault(): MealBalance {
-    const mb = new MealBalance();
+    const mb: MealBalance = new MealBalance(
     mb.scenario = MealScenario.OTHER;
     mb.riskTags = [];
     mb.nextMealAdvice = '';

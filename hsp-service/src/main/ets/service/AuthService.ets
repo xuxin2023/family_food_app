@@ -31,7 +31,7 @@ export class AuthService {
       await this.secureStore.init(context);
       const savedUid = await this.secureStore.loadAndDecrypt(SECURE_KEY_UID);
       if (savedUid !== null && savedUid.length > 0) {
-        const user = new AuthUser();
+        const user: AuthUser = new AuthUser(
         user.uid = savedUid;
         const createdAtStr = await this.secureStore.loadAndDecrypt(SECURE_KEY_CREATED_AT);
         user.createdAt = createdAtStr !== null ? parseInt(createdAtStr, 10) : 0;
@@ -114,7 +114,7 @@ export class AuthService {
       randomPart = Date.now().toString(36);
     }
     const uid = `local_${Date.now()}_${randomPart}`;
-    const user = new AuthUser();
+    const user: AuthUser = new AuthUser(
     user.uid = uid;
     user.isAnonymous = true;
     user.createdAt = Date.now();

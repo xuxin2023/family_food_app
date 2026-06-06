@@ -35,7 +35,7 @@ class BudgetStatus {
 }
 
 function createEmptyRecipe(): Recipe {
-  const r = new Recipe();
+  const r: Recipe = new Recipe(
   r.recipeId = '';
   r.authorUid = '';
   r.authorName = '';
@@ -438,7 +438,7 @@ ${request.preference !== undefined ? `额外偏好：${request.preference}` : ''
         const sr = scoredRecipes[idx];
         const member = this.findMemberById(sr.bestMemberId);
 
-        const rec = new AiRecipeRecommendation();
+        const rec: AiRecipeRecommendation = new AiRecipeRecommendation(
         rec.recipe = sr.recipe;
         rec.matchScore = sr.score;
         rec.reason = aiItem.reason.length > 0 ? aiItem.reason : this.getFallbackReason(sr.recipe, member);
@@ -458,7 +458,7 @@ ${request.preference !== undefined ? `额外偏好：${request.preference}` : ''
         }
         if (!recommendations.find(r => r.recipe.recipeId === sr.recipe.recipeId)) {
           const member = this.findMemberById(sr.bestMemberId);
-          const rec = new AiRecipeRecommendation();
+          const rec: AiRecipeRecommendation = new AiRecipeRecommendation(
           rec.recipe = sr.recipe;
           rec.matchScore = sr.score;
           rec.reason = this.getFallbackReason(sr.recipe, member);
@@ -471,7 +471,7 @@ ${request.preference !== undefined ? `额外偏好：${request.preference}` : ''
       }
     }
 
-    const r = new AiRecipeRecommendationResult();
+    const r: AiRecipeRecommendationResult = new AiRecipeRecommendationResult(
     r.recommendations = recommendations.slice(0, request.limit);
     r.overallSummary = aiResult.overallSummary.length > 0 ? aiResult.overallSummary : '根据家庭成员健康情况推荐以上食谱';
     r.isAiGenerated = true;
@@ -535,7 +535,7 @@ ${request.preference !== undefined ? `额外偏好：${request.preference}` : ''
 
     for (let i = 0; i < takeCount; i++) {
       const sr = scoredRecipes[i];
-      const rec = new AiRecipeRecommendation();
+      const rec: AiRecipeRecommendation = new AiRecipeRecommendation(
       rec.recipe = sr.recipe;
       rec.matchScore = sr.score;
       rec.reason = this.getFallbackReason(sr.recipe);
@@ -546,7 +546,7 @@ ${request.preference !== undefined ? `额外偏好：${request.preference}` : ''
       recommendations.push(rec);
     }
 
-    const r = new AiRecipeRecommendationResult();
+    const r: AiRecipeRecommendationResult = new AiRecipeRecommendationResult(
     r.recommendations = recommendations;
     r.overallSummary = '基于家庭成员健康画像的规则匹配结果';
     r.isAiGenerated = false;
@@ -554,7 +554,7 @@ ${request.preference !== undefined ? `额外偏好：${request.preference}` : ''
   }
 
   private buildEmptyResult(): AiRecipeRecommendationResult {
-    const r = new AiRecipeRecommendationResult();
+    const r: AiRecipeRecommendationResult = new AiRecipeRecommendationResult(
     r.recommendations = [];
     r.overallSummary = '暂无符合条件的食谱推荐';
     r.isAiGenerated = false;
@@ -562,7 +562,7 @@ ${request.preference !== undefined ? `额外偏好：${request.preference}` : ''
   }
 
   private makeScoredRecipe(recipe: Recipe, score: number, bestMemberId: string, matchedGoals: string[]): ScoredRecipe {
-    const sr = new ScoredRecipe();
+    const sr: ScoredRecipe = new ScoredRecipe(
     sr.recipe = recipe;
     sr.score = score;
     sr.bestMemberId = bestMemberId;
@@ -571,7 +571,7 @@ ${request.preference !== undefined ? `额外偏好：${request.preference}` : ''
   }
 
   private makeBudgetStatus(budget: DailyBudget): BudgetStatus {
-    const s = new BudgetStatus();
+    const s: BudgetStatus = new BudgetStatus(
     s.sodiumPct = Math.round(((budget.sodiumBudget - budget.sodiumRemaining) / budget.sodiumBudget) * 100);
     s.sugarPct = Math.round(((budget.sugarBudget - budget.sugarRemaining) / budget.sugarBudget) * 100);
     return s;

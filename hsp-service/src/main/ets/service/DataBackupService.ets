@@ -71,10 +71,10 @@ export class DataBackupService {
   }
 
   async exportBackup(context: common.Context, incremental: boolean = false): Promise<BackupResult> {
-    const result = new BackupResult();
+    const result: BackupResult = new BackupResult(
     try {
       const rdbStore = await this.getRdbStore(context);
-      const manifest = new BackupManifest();
+      const manifest: BackupManifest = new BackupManifest(
       manifest.schemaVersion = DB_SCHEMA_VERSION;
       manifest.exportedAt = Date.now();
       manifest.isIncremental = incremental;
@@ -102,7 +102,7 @@ export class DataBackupService {
       const filePath = `${docsDir}/${fileName}`;
 
       const encrypted = await this.secureStore.encrypt(jsonStr);
-      const bytes = new Uint8Array(encrypted);
+      const bytes: Uint8Array = new Uint8Array(
       const hexStr = DataBackupService.arrayBufferToHex(encrypted);
       const file = fileIo.openSync(filePath, fileIo.OpenMode.CREATE | fileIo.OpenMode.TRUNC | fileIo.OpenMode.WRITE_ONLY);
       fileIo.writeSync(file.fd, hexStr);
@@ -131,10 +131,10 @@ export class DataBackupService {
   }
 
   async importBackup(filePath: string, context: common.Context): Promise<RestoreResult> {
-    const result = new RestoreResult();
+    const result: RestoreResult = new RestoreResult(
     try {
       const stat = fileIo.statSync(filePath);
-      const buffer = new ArrayBuffer(stat.size);
+      const buffer: ArrayBuffer = new ArrayBuffer(
       const file = fileIo.openSync(filePath, fileIo.OpenMode.READ_ONLY);
       fileIo.readSync(file.fd, buffer);
       fileIo.closeSync(file);
@@ -278,7 +278,7 @@ export class DataBackupService {
   }
 
   private static arrayBufferToHex(buffer: ArrayBuffer): string {
-    const bytes = new Uint8Array(buffer);
+    const bytes: Uint8Array = new Uint8Array(
     let hex = '';
     for (let i = 0; i < bytes.length; i++) {
       hex += bytes[i].toString(16).padStart(2, '0');
@@ -287,7 +287,7 @@ export class DataBackupService {
   }
 
   private static hexToArrayBuffer(hex: string): ArrayBuffer {
-    const bytes = new Uint8Array(hex.length / 2);
+    const bytes: Uint8Array = new Uint8Array(
     for (let i = 0; i < hex.length; i += 2) {
       bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16);
     }

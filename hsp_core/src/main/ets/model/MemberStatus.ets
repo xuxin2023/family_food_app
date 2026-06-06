@@ -201,7 +201,7 @@ export function createMemberStatusForTier(tier: MemberTier, expiryDays: number):
     expiryDate = Date.now() + expiryDays * 24 * 60 * 60 * 1000;
   }
 
-  const status = new MemberStatus();
+  const status: MemberStatus = new MemberStatus(
   status.tier = tier;
   status.scansRemainingToday = scanLimit;
   status.familyMembersRemaining = memberLimit;
@@ -227,7 +227,7 @@ function createPaywallConfig(
   featureName: string, title: string, message: string,
   requiredTier: MemberTier, cta: string, isSoftLimit: boolean
 ): PaywallConfig {
-  const cfg = new PaywallConfig();
+  const cfg: PaywallConfig = new PaywallConfig(
   cfg.featureName = featureName;
   cfg.title = title;
   cfg.message = message;
@@ -267,7 +267,7 @@ export function getPaywallTriggerForFeature(feature: string, currentTier: Member
     return null;
   }
 
-  const trigger = new PaywallTrigger();
+  const trigger: PaywallTrigger = new PaywallTrigger(
   trigger.title = config.title;
   trigger.message = config.message;
   trigger.featureName = config.featureName;

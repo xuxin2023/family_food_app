@@ -22,7 +22,7 @@ export const REMINDER_TYPE_SHOPPING: string = 'shopping_hint';
 export const PRESET_REMINDER_RULES: ReminderRule[] = (() => {
   const rules: ReminderRule[] = [];
 
-  const breakfast = new ReminderRule();
+  const breakfast: ReminderRule = new ReminderRule(
   breakfast.id = 'preset_breakfast';
   breakfast.type = REMINDER_TYPE_MEAL;
   breakfast.enabled = true;
@@ -33,7 +33,7 @@ export const PRESET_REMINDER_RULES: ReminderRule[] = (() => {
   breakfast.priority = 'normal';
   rules.push(breakfast);
 
-  const lunch = new ReminderRule();
+  const lunch: ReminderRule = new ReminderRule(
   lunch.id = 'preset_lunch';
   lunch.type = REMINDER_TYPE_MEAL;
   lunch.enabled = true;
@@ -44,7 +44,7 @@ export const PRESET_REMINDER_RULES: ReminderRule[] = (() => {
   lunch.priority = 'normal';
   rules.push(lunch);
 
-  const dinner = new ReminderRule();
+  const dinner: ReminderRule = new ReminderRule(
   dinner.id = 'preset_dinner';
   dinner.type = REMINDER_TYPE_MEAL;
   dinner.enabled = true;
@@ -55,7 +55,7 @@ export const PRESET_REMINDER_RULES: ReminderRule[] = (() => {
   dinner.priority = 'normal';
   rules.push(dinner);
 
-  const sodiumWarning = new ReminderRule();
+  const sodiumWarning: ReminderRule = new ReminderRule(
   sodiumWarning.id = 'preset_sodium_warning';
   sodiumWarning.type = REMINDER_TYPE_BUDGET;
   sodiumWarning.enabled = true;
@@ -66,7 +66,7 @@ export const PRESET_REMINDER_RULES: ReminderRule[] = (() => {
   sodiumWarning.priority = 'important';
   rules.push(sodiumWarning);
 
-  const shopping = new ReminderRule();
+  const shopping: ReminderRule = new ReminderRule(
   shopping.id = 'preset_shopping';
   shopping.type = REMINDER_TYPE_SHOPPING;
   shopping.enabled = true;

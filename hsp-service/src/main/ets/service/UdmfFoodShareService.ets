@@ -136,7 +136,7 @@ export class UdmfFoodShareService {
 
           for (let i = 0; i < data.length; i++) {
             const records = data[i].getRecords();
-            const foodData = new FoodShareData();
+            const foodData: FoodShareData = new FoodShareData(
 
             for (let j = 0; j < records.length; j++) {
               const recordType = records[j].getType();

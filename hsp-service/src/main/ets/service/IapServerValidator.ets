@@ -54,7 +54,7 @@ export class IapServerValidator {
   }
 
   async verifyPurchaseToken(purchaseToken: string, productId: string): Promise<IapVerifyResult> {
-    const result = new IapVerifyResult();
+    const result: IapVerifyResult = new IapVerifyResult(
     result.purchaseToken = purchaseToken;
     result.productId = productId;
     result.isValid = false;
@@ -64,7 +64,7 @@ export class IapServerValidator {
 
     const secureClient = SecureHttpClient.getInstance();
     try {
-      const opts = new SecureRequestOptions();
+      const opts: SecureRequestOptions = new SecureRequestOptions(
       opts.url = VERIFY_API_URL;
       opts.method = http.RequestMethod.POST;
       opts.header = new Map([
@@ -81,7 +81,7 @@ export class IapServerValidator {
         const purchaseStatus = body['purchaseStatus'];
         result.isValid = typeof purchaseStatus === 'number' && purchaseStatus === 0;
         result.verifiedAt = Date.now();
-        hilog.info(DOMAIN_ZERO, TAG, 'Purchase verified: %{public}s, valid=%{public}s', productId, String(result.isValid));
+        hilog.info(DOMAIN_ZERO, TAG, 'Purchase verified: %{public}s, valid=%{public}s', productId, result.isValid.toString());
       } else {
         result.isPending = true;
         result.errorMessage = `HTTP ${response.responseCode}`;

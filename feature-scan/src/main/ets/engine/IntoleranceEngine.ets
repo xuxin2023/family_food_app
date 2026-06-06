@@ -193,7 +193,7 @@ export class IntoleranceEngine {
   ]);
 
   check(intolerances: IntoleranceType[], ingredients: string[]): IntoleranceCheckResult {
-    const emptyResult = new IntoleranceCheckResult();
+    const emptyResult: IntoleranceCheckResult = new IntoleranceCheckResult(
     if (intolerances.length === 0 || ingredients.length === 0) {
       return emptyResult;
     }
@@ -224,7 +224,7 @@ export class IntoleranceEngine {
         const severityStr = IntoleranceEngine.SEVERITY_MAP.get(t) ?? 'CAUTION';
         const severity = severityStr === 'AVOID' ? IntoleranceSeverity.AVOID : IntoleranceSeverity.CAUTION;
         for (const m of matched) {
-          const w = new IntoleranceWarning();
+          const w: IntoleranceWarning = new IntoleranceWarning(
           w.type = t; w.ingredient = m; w.severity = severity; w.reason = reason;
           warnings.push(w);
         }
@@ -240,7 +240,7 @@ export class IntoleranceEngine {
       hilog.info(DOMAIN_ZERO, TAG, 'Intolerance check: %{public}d warnings', warnings.length);
     }
 
-    const result = new IntoleranceCheckResult();
+    const result: IntoleranceCheckResult = new IntoleranceCheckResult(
     result.hasWarnings = hasWarnings; result.warnings = warnings; result.summary = summary;
     return result;
   }
@@ -258,7 +258,7 @@ export class IntoleranceEngine {
         }
       });
       if (matched) {
-        const w = new IntoleranceWarning();
+        const w: IntoleranceWarning = new IntoleranceWarning(
         w.type = IntoleranceType.HISTAMINE;
         w.ingredient = ingredient;
         w.severity = IntoleranceSeverity.AVOID;
@@ -285,7 +285,7 @@ export class IntoleranceEngine {
         }
       });
       if (matched) {
-        const w = new IntoleranceWarning();
+        const w: IntoleranceWarning = new IntoleranceWarning(
         w.type = IntoleranceType.SALICYLATE;
         w.ingredient = ingredient;
         w.severity = IntoleranceSeverity.CAUTION;
@@ -324,7 +324,7 @@ export class IntoleranceEngine {
       const fallbackKeywords = ['小麦', '大蒜', '洋葱', '苹果', '梨', '牛奶', '酸奶', '蜂蜜', '豆类', '蘑菇'];
       const matched = ingredients.filter(i => fallbackKeywords.some(k => i.includes(k)));
       for (const m of matched) {
-        const w = new IntoleranceWarning();
+        const w: IntoleranceWarning = new IntoleranceWarning(
         w.type = IntoleranceType.FODMAP; w.ingredient = m;
         w.severity = IntoleranceSeverity.CAUTION;
         w.reason = IntoleranceEngine.REASON_MAP.get(IntoleranceType.FODMAP) ?? '';
@@ -337,7 +337,7 @@ export class IntoleranceEngine {
     for (const ingredient of ingredients) {
       for (const food of highFoods) {
         if (ingredient.includes(food.name)) {
-          const w = new IntoleranceWarning();
+          const w: IntoleranceWarning = new IntoleranceWarning(
           w.type = IntoleranceType.FODMAP;
           w.ingredient = ingredient;
           w.severity = IntoleranceSeverity.CAUTION;

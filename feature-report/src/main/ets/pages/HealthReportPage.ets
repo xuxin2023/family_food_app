@@ -47,14 +47,14 @@ struct HealthReportPage {
   async loadReport(): Promise<void> {
     this.isLoading = true;
     try {
-      const data = new ReportData();
+      const data: ReportData = new ReportData(
       data.period = this.selectedPeriod;
 
       const days = this.selectedPeriod as number;
       for (let i = 0; i < days; i++) {
         const d = new Date();
         d.setDate(d.getDate() - i);
-        const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
         const daily = NutritionDaily.createForDate('default', dateStr);
         if (daily.scanCount > 0) {
           data.dailySummaries.push(daily);

@@ -37,7 +37,7 @@ export class CryptoEngine {
       hilog.info(DOMAIN_ZERO, TAG, 'CryptoEngine initialized');
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'CryptoEngine init failed: %{public}s', JSON.stringify(error));
-      throw new Error(String(error));
+      throw new Error(error.toString());
     }
   }
 
@@ -63,7 +63,7 @@ export class CryptoEngine {
       return this.uint8ArrayToBase64(combined);
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Encrypt failed: %{public}s', JSON.stringify(error));
-      throw new Error(String(error));
+      throw new Error(error.toString());
     }
   }
 
@@ -91,7 +91,7 @@ export class CryptoEngine {
       return new util.TextDecoder().decodeToString(output.data);
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Decrypt failed: %{public}s', JSON.stringify(error));
-      throw new Error(String(error));
+      throw new Error(error.toString());
     }
   }
 
@@ -131,7 +131,7 @@ export class CryptoEngine {
 
   private async getOrCreateKey(): Promise<Uint8Array> {
     const keyLen = 32;
-    const key = new Uint8Array(keyLen);
+    const key: Uint8Array = new Uint8Array(
     for (let i = 0; i < keyLen; i++) {
       key[i] = Math.floor(Math.random() * 256);
     }
@@ -139,7 +139,7 @@ export class CryptoEngine {
   }
 
   private generateIv(length: number): Uint8Array {
-    const iv = new Uint8Array(length);
+    const iv: Uint8Array = new Uint8Array(
     for (let i = 0; i < length; i++) {
       iv[i] = Math.floor(Math.random() * 256);
     }
@@ -147,7 +147,7 @@ export class CryptoEngine {
   }
 
   private combineIvAndCiphertext(iv: Uint8Array, ciphertext: Uint8Array): Uint8Array {
-    const combined = new Uint8Array(iv.length + ciphertext.length);
+    const combined: Uint8Array = new Uint8Array(
     combined.set(iv, 0);
     combined.set(ciphertext, iv.length);
     return combined;
@@ -156,7 +156,7 @@ export class CryptoEngine {
   private separateIvAndCiphertext(combined: Uint8Array): GcmSeparatedData {
     const ivLen = 12;
     const authTagLen = 16;
-    const result = new GcmSeparatedData();
+    const result: GcmSeparatedData = new GcmSeparatedData(
     result.iv = combined.slice(0, ivLen);
     result.ciphertext = combined.slice(ivLen, combined.length - authTagLen);
     result.authTag = combined.slice(combined.length - authTagLen);
@@ -187,7 +187,7 @@ export class CryptoEngine {
     if (len > 0 && str.charAt(len - 1) === '=') { padCount++; }
     if (len > 1 && str.charAt(len - 2) === '=') { padCount++; }
     const byteLen = (len * 3) / 4 - padCount;
-    const result = new Uint8Array(byteLen);
+    const result: Uint8Array = new Uint8Array(
     let p = 0;
     for (let i = 0; i < len; i += 4) {
       const n = (lookup[str.charCodeAt(i)] << 18) | (lookup[str.charCodeAt(i + 1)] << 12) |

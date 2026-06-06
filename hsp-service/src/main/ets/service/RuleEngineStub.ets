@@ -16,7 +16,7 @@ export class RuleEngineParams implements IRuleEngineParams {
 
 export class RuleEngine implements IRuleCalculator {
   calculate(params: IRuleEngineParams): Recommendation {
-    const rec = new Recommendation();
+    const rec: Recommendation = new Recommendation(
     rec.level = RecommendLevel.SUITABLE;
     rec.levelColor = LevelColor.GREEN;
     return rec;

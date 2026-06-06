@@ -4,7 +4,7 @@ export function getJsonString(obj: Object, key: string, defaultValue: string = '
     if (entry[0] === key) {
       const val = entry[1];
       if (val !== undefined && val !== null) {
-        return String(val);
+        return val.toString();
       }
     }
   }
@@ -63,7 +63,7 @@ export function getJsonStringArray(obj: Object, key: string): string[] {
         if (Array.isArray(val)) {
           const arr: string[] = val as string[];
           for (const item of arr) {
-            result.push(String(item));
+            result.push(item.toString());
           }
         }
         return result;
@@ -122,7 +122,7 @@ export function safeString(value: Object | null | undefined, defaultValue: strin
   if (value === undefined || value === null) {
     return defaultValue;
   }
-  return String(value);
+  return value.toString();
 }
 
 export function safeNumber(value: Object | null | undefined): number {
@@ -146,7 +146,7 @@ export function safeInt(value: Object | null | undefined): number {
   if (typeof value === 'number') {
     return Math.round(value);
   }
-  const parsed = parseInt(String(value), 10);
+  const parsed = parseInt(value.toString(), 10);
   if (isNaN(parsed)) {
     return 0;
   }

@@ -49,8 +49,8 @@ export class DataService {
 
   static getInstance(): DataService {
     if (dataServiceInstance === null) {
-      const ruleEngine = new RuleEngine();
-      const altRecommender = new AlternativeFoodRecommender();
+      const ruleEngine: RuleEngine = new RuleEngine(
+      const altRecommender: AlternativeFoodRecommender = new AlternativeFoodRecommender(
       dataServiceInstance = new DataService(ruleEngine, altRecommender);
     }
     return dataServiceInstance;
@@ -175,7 +175,7 @@ export class DataService {
 
   private parseOpenFoodFactsResponse(product: Map<string, Object>, barcode: string): FoodLabel | null {
     try {
-      const label = new FoodLabel();
+      const label: FoodLabel = new FoodLabel(
       label.foodId = `remote_${barcode}_${Date.now()}`;
       label.foodName = MapUtil.safeGetString(product, 'product_name') || MapUtil.safeGetString(product, 'product_name_zh') || '未知食品';
       label.barcode = barcode;
@@ -191,7 +191,7 @@ export class DataService {
       // 营养数据
       const nutriments = product.get('nutriments') as Map<string, Object> | undefined;
       if (nutriments) {
-        const nutrition = new NutritionPer100g();
+        const nutrition: NutritionPer100g = new NutritionPer100g(
         const sodiumG = JsonHelper.safeParseFloat(nutriments.get('sodium_100g'));
         const saltG = JsonHelper.safeParseFloat(nutriments.get('salt_100g'));
         if (sodiumG > 0) {
@@ -229,7 +229,7 @@ export class DataService {
    */
   async recognizeFromCamera(_imageUri: string): Promise<FoodLabel | null> {
     // 简易实现：从图片 URI 构造一个基础 FoodLabel
-    const label = new FoodLabel();
+    const label: FoodLabel = new FoodLabel(
     label.foodId = `ocr_${Date.now()}`;
     label.foodName = StringRes.OCR_FOOD;
     label.source = FoodSource.OCR_RECOGNIZE;
@@ -243,7 +243,7 @@ export class DataService {
    */
   async recognizeWithAiFallback(barcode?: string, _imageUri?: string): Promise<FoodLabel | null> {
     // 简易实现：返回基于条码或图片的兜底数据
-    const label = new FoodLabel();
+    const label: FoodLabel = new FoodLabel(
     label.foodId = `ai_${Date.now()}`;
     label.foodName = 'AI识别的食品';
     label.source = FoodSource.OCR_RECOGNIZE;
@@ -268,7 +268,7 @@ export class DataService {
 
     if (membersList.length === 0) {
       // 无成员时生成通用推荐
-      const rec = new Recommendation();
+      const rec: Recommendation = new Recommendation(
       rec.memberId = '';
       rec.foodId = label.foodId;
       rec.level = RecommendLevel.SUITABLE;
@@ -285,14 +285,14 @@ export class DataService {
           const signal = healthSignals?.get(member.memberId) || new HealthSignal();
           const budget = dailyBudgets?.get(member.memberId) || this.createDefaultBudget(member);
 
-          const params = new RuleEngineParams(member, signal, label, budget);
+          const params: RuleEngineParams = new RuleEngineParams(
           const rec = this.ruleEngine.calculate(params);
           recommendations.push(rec);
         } catch (error) {
           // RuleEngine 计算失败时提供安全兜底
           hilog.warn(DOMAIN_ZERO, TAG, 'RuleEngine calculate failed for member %{public}s: %{public}s',
             member.memberId, JSON.stringify(error));
-          const fallbackRec = new Recommendation();
+          const fallbackRec: Recommendation = new Recommendation(
           fallbackRec.memberId = member.memberId;
           fallbackRec.foodId = label.foodId;
           fallbackRec.level = RecommendLevel.SUITABLE;

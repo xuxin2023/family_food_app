@@ -79,7 +79,7 @@ export class ExerciseNutritionEngine {
     signal: HealthSignal,
     _target: NutritionTarget
   ): ExerciseNutritionRecommendation {
-    const result = new ExerciseNutritionRecommendation();
+    const result: ExerciseNutritionRecommendation = new ExerciseNutritionRecommendation(
     result.exerciseType = session.type;
     result.recoveryPhase = determineRecoveryPhase(session.durationMinutes, session.estimatedCalorieBurn);
 
@@ -111,7 +111,7 @@ export class ExerciseNutritionEngine {
     const supplements: NutrientSupplement[] = [];
 
     // 补水
-    const hyd = new NutrientSupplement();
+    const hyd: NutrientSupplement = new NutrientSupplement(
     hyd.name = '水/电解质';
     hyd.amount = `${session.durationMinutes}分钟`;
     hyd.priority = 100;
@@ -119,7 +119,7 @@ export class ExerciseNutritionEngine {
 
     // 高强度力量训练 → 蛋白质
     if (session.type === ExerciseType.STRENGTH || session.type === ExerciseType.HIIT) {
-      const pro = new NutrientSupplement();
+      const pro: NutrientSupplement = new NutrientSupplement(
       pro.name = '蛋白质';
       pro.amount = `${Math.round(session.durationMinutes * 0.4)}g`;
       pro.priority = 90;
@@ -127,7 +127,7 @@ export class ExerciseNutritionEngine {
     }
     // 长时间有氧 → 碳水
     if (session.durationMinutes >= NutritionThreshold.LONG_EXERCISE_MINUTES && (session.type === ExerciseType.RUN || session.type === ExerciseType.CYCLE)) {
-      const carb = new NutrientSupplement();
+      const carb: NutrientSupplement = new NutrientSupplement(
       carb.name = '碳水化合物';
       carb.amount = `${Math.round(session.estimatedCalorieBurn * 0.15)}g`;
       carb.priority = 80;

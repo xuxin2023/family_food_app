@@ -118,11 +118,11 @@ export class AiClient {
     }
 
     try {
-      const systemMsg = new ChatMessage();
+      const systemMsg: ChatMessage = new ChatMessage(
       systemMsg.role = 'system';
       systemMsg.content = options.systemPrompt;
 
-      const userMsg = new ChatMessage();
+      const userMsg: ChatMessage = new ChatMessage(
       userMsg.role = 'user';
       userMsg.content = options.userPrompt;
 
@@ -139,7 +139,7 @@ export class AiClient {
       requestHeader.set('Content-Type', API_CONFIG.HEADER_CONTENT_TYPE_JSON);
       requestHeader.set('Authorization', `Bearer ${this.apiKey}`);
 
-      const opts = new SecureRequestOptions();
+      const opts: SecureRequestOptions = new SecureRequestOptions(
       opts.url = AGENT_ARTS_ENDPOINT;
       opts.method = http.RequestMethod.POST;
       opts.header = requestHeader;
@@ -163,7 +163,7 @@ export class AiClient {
       return null;
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'AgentArts call failed: %{public}s', JSON.stringify(error));
-      GlobalErrorHandler.getInstance().handleError(error instanceof Error ? error : new Error(String(error)), 'AiClient');
+      GlobalErrorHandler.getInstance().handleError(error instanceof Error ? error : new Error(error.toString()), 'AiClient');
       return null;
     }
   }
@@ -190,13 +190,13 @@ export class AiClient {
       }
 
       const usage = parsed.usage;
-      const resp = new AiCallResponse();
+      const resp: AiCallResponse = new AiCallResponse(
       resp.text = content;
       resp.tokensUsed = (usage !== null && usage !== undefined) ? usage.total_tokens : 0;
       return resp;
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'parse AgentArts response failed: %{public}s', JSON.stringify(error));
-      GlobalErrorHandler.getInstance().handleError(error instanceof Error ? error : new Error(String(error)), 'AiClient');
+      GlobalErrorHandler.getInstance().handleError(error instanceof Error ? error : new Error(error.toString()), 'AiClient');
       return null;
     }
   }

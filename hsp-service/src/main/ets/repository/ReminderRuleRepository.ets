@@ -39,7 +39,7 @@ export class ReminderRuleRepository {
       const resultSet = await this.rdbStore.query(predicates);
       this.rules = [];
       while (resultSet.goToNextRow()) {
-        const rule = new ReminderRule();
+        const rule: ReminderRule = new ReminderRule(
         rule.id = resultSet.getString(0);
         rule.type = resultSet.getString(1);
         rule.enabled = resultSet.getLong(2) === 1;
@@ -150,7 +150,7 @@ export class ReminderRuleRepository {
   async importRows(rows: Record<string, Object>[]): Promise<number> {
     let count = 0;
     for (const row of rows) {
-      const rule = new ReminderRule();
+      const rule: ReminderRule = new ReminderRule(
       rule.id = (row['id'] as string) ?? `rule_${Date.now()}_${count}`;
       rule.type = (row['rule_type'] as string) ?? '';
       rule.enabled = (row['enabled'] as number) !== 0;

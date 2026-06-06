@@ -34,7 +34,7 @@ export class CommunityImageService {
   }
 
   async uploadImage(localPath: string, category: string = 'recipe'): Promise<ImageUploadResult> {
-    const result = new ImageUploadResult();
+    const result: ImageUploadResult = new ImageUploadResult(
 
     try {
       const stat = await fileIo.stat(localPath);

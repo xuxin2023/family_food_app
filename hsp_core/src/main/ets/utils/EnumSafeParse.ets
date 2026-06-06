@@ -34,7 +34,7 @@ class EnumValidator {
   }
 }
 
-const validator = new EnumValidator();
+const validator: EnumValidator = new EnumValidator(
 
 const STEP_LEVEL_VALUES: string[] = [StepLevel.LOW, StepLevel.NORMAL, StepLevel.HIGH];
 const SLEEP_STATUS_VALUES: string[] = [SleepStatus.GOOD, SleepStatus.FAIR, SleepStatus.POOR];
@@ -167,7 +167,7 @@ const JOIN_REQUEST_STATUS_VALUES: string[] = [JoinRequestStatus.PENDING, JoinReq
 const FEED_TYPE_VALUES: string[] = [FeedType.RECIPE_SHARE, FeedType.FOOD_SCAN_SHARE, FeedType.WEEKLY_REPORT, FeedType.SYSTEM];
 
 export function safeParseNovaGroup(value: string | number): NovaGroup {
-  const str = String(value);
+  const str = value.toString();
   return validator.parse(NOVA_GROUP_VALUES, str, NovaGroup.GROUP_1);
 }
 

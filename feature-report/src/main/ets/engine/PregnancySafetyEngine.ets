@@ -27,7 +27,7 @@ export class PregnancySafetyResult {
 }
 
 function makeRule(name: string, severity: string, reason: string, maxDailyMg: number = 0): PregnancyIngredientRule {
-  const r = new PregnancyIngredientRule();
+  const r: PregnancyIngredientRule = new PregnancyIngredientRule(
   r.name = name; r.severity = severity; r.reason = reason;
   if (maxDailyMg > 0) { r.maxDailyMg = maxDailyMg; r.hasMaxDaily = true; }
   return r;
@@ -107,7 +107,7 @@ export class PregnancySafetyEngine {
       const matchedIngredients = ingredients.filter(i => keywords.some(k => i.includes(k)));
       if (matchedIngredients.length > 0) {
         for (const ing of matchedIngredients) {
-          const w = new PregnancyWarning();
+          const w: PregnancyWarning = new PregnancyWarning(
           w.ingredient = ing; w.matchedRule = rule;
           warnings.push(w);
         }
@@ -122,10 +122,10 @@ export class PregnancySafetyEngine {
     if (warnings.length > 0) {
       const statusLabel = status === PregnancyStatus.PREGNANT ? '孕期' : '哺乳期';
       summary = `${statusLabel}安全提示：发现${avoidCount > 0 ? `${avoidCount}项应避免` : ''}${avoidCount > 0 && cautionCount > 0 ? '、' : ''}${cautionCount > 0 ? `${cautionCount}项需谨慎` : ''}的成分`;
-      hilog.info(DOMAIN_ZERO, TAG, 'Pregnancy check: %{public}d warnings, safe=%{public}s', warnings.length, String(safe));
+      hilog.info(DOMAIN_ZERO, TAG, 'Pregnancy check: %{public}d warnings, safe=%{public}s', warnings.length, safe.toString());
     }
 
-    const result = new PregnancySafetyResult();
+    const result: PregnancySafetyResult = new PregnancySafetyResult(
     result.safe = safe; result.warnings = warnings; result.summary = summary;
     return result;
   }

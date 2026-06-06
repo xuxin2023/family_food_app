@@ -8,7 +8,7 @@ export class ScoreWeightProfile {
   }
 
   static forChild(): ScoreWeightProfile {
-    const p = new ScoreWeightProfile();
+    const p: ScoreWeightProfile = new ScoreWeightProfile(
     p.nutriWeight = 0.7;
     p.ecoWeight = 0.1;
     p.novaWeight = 0.2;
@@ -16,7 +16,7 @@ export class ScoreWeightProfile {
   }
 
   static forTeen(): ScoreWeightProfile {
-    const p = new ScoreWeightProfile();
+    const p: ScoreWeightProfile = new ScoreWeightProfile(
     p.nutriWeight = 0.6;
     p.ecoWeight = 0.15;
     p.novaWeight = 0.25;
@@ -24,7 +24,7 @@ export class ScoreWeightProfile {
   }
 
   static forPregnant(): ScoreWeightProfile {
-    const p = new ScoreWeightProfile();
+    const p: ScoreWeightProfile = new ScoreWeightProfile(
     p.nutriWeight = 0.8;
     p.ecoWeight = 0.05;
     p.novaWeight = 0.15;
@@ -32,7 +32,7 @@ export class ScoreWeightProfile {
   }
 
   static forElder(): ScoreWeightProfile {
-    const p = new ScoreWeightProfile();
+    const p: ScoreWeightProfile = new ScoreWeightProfile(
     p.nutriWeight = 0.65;
     p.ecoWeight = 0.1;
     p.novaWeight = 0.25;
@@ -40,7 +40,7 @@ export class ScoreWeightProfile {
   }
 
   static forEcoConscious(): ScoreWeightProfile {
-    const p = new ScoreWeightProfile();
+    const p: ScoreWeightProfile = new ScoreWeightProfile(
     p.nutriWeight = 0.35;
     p.ecoWeight = 0.4;
     p.novaWeight = 0.25;

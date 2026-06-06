@@ -154,7 +154,7 @@ export class OnlineShoppingParser {
     const parsed = await this.parseUrl(url);
 
     if (!parsed.parseSuccess) {
-      const result = new ParseResult();
+      const result: ParseResult = new ParseResult(
       result.success = false;
       result.label = null;
       result.source = parsed.platform;
@@ -164,7 +164,7 @@ export class OnlineShoppingParser {
     }
 
     // 构造基础FoodLabel
-    const label = new FoodLabel();
+    const label: FoodLabel = new FoodLabel(
     label.foodId = `online_${Date.now()}`;
     label.foodName = parsed.productName;
     label.barcode = '';
@@ -175,7 +175,7 @@ export class OnlineShoppingParser {
     label.identifiedAt = Date.now();
     label.nutrition = new NutritionPer100g();
 
-    const result = new ParseResult();
+    const result: ParseResult = new ParseResult(
     result.success = true;
     result.label = label;
     result.source = parsed.platform;
@@ -324,7 +324,7 @@ export class OnlineShoppingParser {
   private async fetchJdProduct(skuId: string): Promise<GoodsDetail> {
     const method = 'jd.union.open.goods.detail.query';
     const timestamp = this.getTimestamp();
-    const jdQueryParam = new JdGoodsReq();
+    const jdQueryParam: JdGoodsReq = new JdGoodsReq(
     jdQueryParam.skuIds = [Number(skuId)];
     const paramJson = JSON.stringify(jdQueryParam);
 
@@ -345,7 +345,7 @@ export class OnlineShoppingParser {
       parsed = JSON.parse(result) as Record<string, Object>;
     } catch (e) {
       hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'parseJdGoodsDetail JSON.parse failed: %{public}s', JSON.stringify(e));
-      const emptyDetail = new GoodsDetail();
+      const emptyDetail: GoodsDetail = new GoodsDetail(
       emptyDetail.productName = '京东商品';
       emptyDetail.price = 0;
       return emptyDetail;
@@ -353,7 +353,7 @@ export class OnlineShoppingParser {
 
     const responseWrapper = parsed['jd_union_open_goods_detail_query_response'] as Record<string, Object>;
     if (responseWrapper === undefined) {
-      const emptyDetail = new GoodsDetail();
+      const emptyDetail: GoodsDetail = new GoodsDetail(
       emptyDetail.productName = '京东商品';
       emptyDetail.price = 0;
       emptyDetail.imageUrl = '';
@@ -362,7 +362,7 @@ export class OnlineShoppingParser {
 
     const queryResultStr = responseWrapper['queryResult'] as string;
     if (queryResultStr === undefined) {
-      const emptyDetail = new GoodsDetail();
+      const emptyDetail: GoodsDetail = new GoodsDetail(
       emptyDetail.productName = '京东商品';
       emptyDetail.price = 0;
       emptyDetail.imageUrl = '';
@@ -374,14 +374,14 @@ export class OnlineShoppingParser {
       queryResult = JSON.parse(queryResultStr) as Array<Record<string, Object>>;
     } catch (e) {
       hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'parseJdQueryResult JSON.parse failed: %{public}s', JSON.stringify(e));
-      const emptyDetail = new GoodsDetail();
+      const emptyDetail: GoodsDetail = new GoodsDetail(
       emptyDetail.productName = '京东商品';
       emptyDetail.price = 0;
       return emptyDetail;
     }
 
     if (queryResult.length === 0) {
-      const emptyDetail = new GoodsDetail();
+      const emptyDetail: GoodsDetail = new GoodsDetail(
       emptyDetail.productName = '京东商品';
       emptyDetail.price = 0;
       emptyDetail.imageUrl = '';
@@ -393,7 +393,7 @@ export class OnlineShoppingParser {
     const priceStr = (goodsInfo['price'] as string) || '0';
     const imgUrl = (goodsInfo['imgUrl'] as string) || '';
 
-    const detail = new GoodsDetail();
+    const detail: GoodsDetail = new GoodsDetail(
     detail.productName = goodsName;
     detail.price = parseFloat(priceStr) || 0;
     detail.imageUrl = imgUrl;
@@ -457,7 +457,7 @@ export class OnlineShoppingParser {
       parsed = JSON.parse(result) as Record<string, Object>;
     } catch (e) {
       hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'parseTaobaoGoodsDetail JSON.parse failed: %{public}s', JSON.stringify(e));
-      const emptyDetail = new GoodsDetail();
+      const emptyDetail: GoodsDetail = new GoodsDetail(
       emptyDetail.productName = '淘宝商品';
       emptyDetail.price = 0;
       return emptyDetail;
@@ -466,7 +466,7 @@ export class OnlineShoppingParser {
     // 淘宝API返回格式：{ "item_get_response": { "item": { ... } } }
     const responseObj = parsed['item_get_response'] as Record<string, Object>;
     if (responseObj === undefined) {
-      const emptyDetail = new GoodsDetail();
+      const emptyDetail: GoodsDetail = new GoodsDetail(
       emptyDetail.productName = '淘宝商品';
       emptyDetail.price = 0;
       emptyDetail.imageUrl = '';
@@ -475,7 +475,7 @@ export class OnlineShoppingParser {
 
     const item = responseObj['item'] as Record<string, Object>;
     if (item === undefined) {
-      const emptyDetail = new GoodsDetail();
+      const emptyDetail: GoodsDetail = new GoodsDetail(
       emptyDetail.productName = '淘宝商品';
       emptyDetail.price = 0;
       emptyDetail.imageUrl = '';
@@ -486,7 +486,7 @@ export class OnlineShoppingParser {
     const priceStr = (item['price'] as string) || '0';
     const picUrl = (item['pic_url'] as string) || '';
 
-    const detail = new GoodsDetail();
+    const detail: GoodsDetail = new GoodsDetail(
     detail.productName = title;
     detail.price = parseFloat(priceStr) || 0;
     detail.imageUrl = picUrl;
@@ -517,7 +517,7 @@ export class OnlineShoppingParser {
       if (typeof raw === 'object' && raw !== null) {
         return JSON.stringify(raw);
       }
-      return String(raw);
+      return raw.toString();
     }
     throw new Error('HTTP ' + resp.responseCode + ': ' + resp.error);
   }
@@ -529,7 +529,7 @@ export class OnlineShoppingParser {
     productId: string,
     data: GoodsDetail
   ): ParsedLink {
-    const result = new ParsedLink();
+    const result: ParsedLink = new ParsedLink(
     result.platform = platform;
     result.productId = productId;
     result.productName = data.productName;
@@ -542,7 +542,7 @@ export class OnlineShoppingParser {
   }
 
   private buildError(platform: string, productId: string, errorMessage: string): ParsedLink {
-    const result = new ParsedLink();
+    const result: ParsedLink = new ParsedLink(
     result.platform = platform === 'unknown' ? 'unknown' : platform;
     result.productId = productId;
     result.productName = '';
@@ -559,7 +559,7 @@ export class OnlineShoppingParser {
    */
   private getTimestamp(): string {
     const now = new Date();
-    const pad = (n: number): string => n < 10 ? '0' + n : String(n);
+    const pad = (n: number): string => n < 10 ? '0' + n : n.toString();
     const ts = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()) +
       ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
     return ts;
@@ -575,7 +575,7 @@ export class OnlineShoppingParser {
    */
   async parseWithOcr(imageUri: string): Promise<ParsedLink> {
     try {
-      const ocrService = new OcrService();
+      const ocrService: OcrService = new OcrService(
       await ocrService.init();
       const ocrResult = await ocrService.recognizeText(imageUri);
 
@@ -587,7 +587,7 @@ export class OnlineShoppingParser {
       const productName = this.extractNameFromOcr(ocrResult.text);
       const price = this.extractPriceFromOcr(ocrResult.text);
 
-      const result = new ParsedLink();
+      const result: ParsedLink = new ParsedLink(
       result.platform = 'unknown';
       result.productId = '';
       result.productName = productName;

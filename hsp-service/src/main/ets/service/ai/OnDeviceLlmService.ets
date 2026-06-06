@@ -112,7 +112,7 @@ export class OnDeviceLlmService {
 
   async chat(prompt: string, context?: string, options?: OnDeviceLlmChatOptions): Promise<OnDeviceLlmResponse> {
     const startTime = Date.now();
-    const response = new OnDeviceLlmResponse();
+    const response: OnDeviceLlmResponse = new OnDeviceLlmResponse(
 
     if (this.isOnDeviceLlmAvailable()) {
       try {
@@ -173,7 +173,7 @@ export class OnDeviceLlmService {
       const fullPrompt = context ? `[上下文]\n${context}\n\n[问题]\n${prompt}` : prompt;
       const result = await (this.fallbackService as AiServiceBase).callAi(fullPrompt);
       if (result !== null) {
-        const resp = new AiCallResponse();
+        const resp: AiCallResponse = new AiCallResponse(
         resp.text = result;
         return resp;
       }
@@ -190,7 +190,7 @@ export class OnDeviceLlmService {
       this.fallbackClient.setApiKey(this.apiKey);
     }
 
-    const reqOpts = new AiRequestOptions();
+    const reqOpts: AiRequestOptions = new AiRequestOptions(
     reqOpts.systemPrompt = options?.systemPrompt ?? SYSTEM_PROMPTS.get('CHAT') ?? '';
     reqOpts.userPrompt = context ? `[上下文]\n${context}\n\n[问题]\n${prompt}` : prompt;
     reqOpts.temperature = options?.temperature ?? 0.6;

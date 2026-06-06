@@ -100,7 +100,7 @@ export class ChildProtectionEngine {
     currentTime: Date,
     nextMealTime: Date
   ): ChildMealAdvice {
-    const result = new ChildMealAdvice();
+    const result: ChildMealAdvice = new ChildMealAdvice(
 
     if (member.healthGoal !== 'children') {
       result.advice = '非儿童成员，无需儿童保护建议';
@@ -194,7 +194,7 @@ export class ChildProtectionEngine {
     mealTimes: MealTimeParams,
     bedtime: string
   ): ChildProtection {
-    const result = new ChildProtection();
+    const result: ChildProtection = new ChildProtection(
     result.memberId = profile.memberId;
 
     if (!profile.isChild()) {
@@ -318,7 +318,7 @@ export class ChildProtectionEngine {
       educationalTip = '青春期的营养很重要，均衡搭配才是王道！';
     }
 
-    const result = new AgeSpecificAdviceResult();
+    const result: AgeSpecificAdviceResult = new AgeSpecificAdviceResult(
     result.ageGroup = ageGroup;
     result.maxPortion = maxPortion;
     result.adviceText = adviceText;
@@ -342,15 +342,15 @@ export class ChildProtectionEngine {
 
     const currentMinutes = currentHour * 60 + currentMin;
     const meals: MealInfo[] = [];
-    const breakfastMeal = new MealInfo();
+    const breakfastMeal: MealInfo = new MealInfo(
     breakfastMeal.name = '早餐';
     breakfastMeal.time = mealTimes.breakfast;
     meals.push(breakfastMeal);
-    const lunchMeal = new MealInfo();
+    const lunchMeal: MealInfo = new MealInfo(
     lunchMeal.name = '午餐';
     lunchMeal.time = mealTimes.lunch;
     meals.push(lunchMeal);
-    const dinnerMeal = new MealInfo();
+    const dinnerMeal: MealInfo = new MealInfo(
     dinnerMeal.name = '晚餐';
     dinnerMeal.time = mealTimes.dinner;
     meals.push(dinnerMeal);

@@ -40,7 +40,7 @@ export class UpdateChecker {
         return null;
       }
 
-      const info = new UpdateInfo();
+      const info: UpdateInfo = new UpdateInfo(
       const latestVersion = result.data.get('latestVersion');
       const minVersion = result.data.get('minVersion');
       const releaseNotes = result.data.get('releaseNotes');

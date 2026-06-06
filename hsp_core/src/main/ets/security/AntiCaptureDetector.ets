@@ -53,7 +53,7 @@ export class AntiCaptureDetector {
       }
 
       hilog.info(DOMAIN_ZERO, TAG, 'Capture detection result: secure=%{public}s, proxy=%{public}s, vpn=%{public}s',
-        String(result.isSecure), String(result.hasProxy), String(result.hasVpn));
+        result.isSecure.toString(), result.hasProxy.toString(), result.hasVpn.toString());
 
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Detection failed, assuming secure: %{public}s', JSON.stringify(e));

@@ -62,7 +62,7 @@ export class MemoryMonitor {
   }
 
   captureSnapshot(): MemorySnapshot {
-    const snapshot = new MemorySnapshot();
+    const snapshot: MemorySnapshot = new MemorySnapshot(
     snapshot.timestamp = Date.now();
     snapshot.imageCacheSize = 0;
     snapshot.gcCount = this.gcTriggerCount;
@@ -131,7 +131,7 @@ export class MemoryMonitor {
 
   getMemoryHealth(): MemoryHealth {
     const usage = this.getMemoryUsage();
-    const result = new MemoryHealth();
+    const result: MemoryHealth = new MemoryHealth(
     if (usage >= this.criticalThreshold) {
       result.status = 'critical';
       result.percentage = Math.round(usage / this.criticalThreshold * 100);

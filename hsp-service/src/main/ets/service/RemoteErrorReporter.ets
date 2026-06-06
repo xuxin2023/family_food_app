@@ -39,7 +39,7 @@ class RemoteErrorReporter {
     }
     this.lastReported.set(dedupKey, now);
 
-    const payload = new ErrorReportPayload();
+    const payload: ErrorReportPayload = new ErrorReportPayload(
     payload.errorType = errorType;
     payload.message = typeof error === 'string' ? error : error.message;
     payload.stackSnippet = this.sanitizeStack(error);
@@ -81,7 +81,7 @@ class RemoteErrorReporter {
         header.set('Authorization', `Bearer ${apiKey}`);
       }
 
-      const opts = new SecureRequestOptions();
+      const opts: SecureRequestOptions = new SecureRequestOptions(
       opts.url = url;
       opts.method = http.RequestMethod.POST;
       opts.header = header;
@@ -93,7 +93,7 @@ class RemoteErrorReporter {
       hilog.info(DOMAIN_ZERO, TAG, 'Reported %{public}d errors', batch.length);
     } catch (err) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Error report failed: %{public}s', JSON.stringify(err));
-      GlobalErrorHandler.getInstance().handleError(err instanceof Error ? err : new Error(String(err)), 'RemoteErrorReporter');
+      GlobalErrorHandler.getInstance().handleError(err instanceof Error ? err : new Error(err.toString()), 'RemoteErrorReporter');
     } finally {
       this.isFlushing = false;
       if (this.queue.length > 0) {

@@ -55,7 +55,7 @@ export class AccessibilityUtil {
 
   /** 食品评级可访问性描述 */
   static getLevelBadge(level: string): LevelAccessibility {
-    const result = new LevelAccessibility()
+    const result: LevelAccessibility = new LevelAccessibility(
     if (level === RecommendLevel.SUITABLE) {
       result.text = '绿色：适合食用，无过敏原风险'; result.level = 'yes'; result.description = '查看适合食用的详细分析'
       return result

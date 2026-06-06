@@ -49,13 +49,13 @@ export class FoodWidgetManager {
       const recentScan = await this.getRecentScanSummary(context);
       const memberCount = await this.getMemberCount(context);
 
-      const smallData = new SmallWidgetData();
+      const smallData: SmallWidgetData = new SmallWidgetData(
       smallData.foodName = recentScan.foodName;
       smallData.level = recentScan.level;
       smallData.levelEmoji = recentScan.levelEmoji;
       smallData.lastScanTime = recentScan.timeText;
 
-      const mediumData = new MediumWidgetData();
+      const mediumData: MediumWidgetData = new MediumWidgetData(
       mediumData.foodName = recentScan.foodName;
       mediumData.level = recentScan.level;
       mediumData.levelEmoji = recentScan.levelEmoji;
@@ -66,7 +66,7 @@ export class FoodWidgetManager {
       mediumData.sodiumPercent = recentScan.sodiumPercent;
       mediumData.sugarPercent = recentScan.sugarPercent;
 
-      const largeData = new LargeWidgetData();
+      const largeData: LargeWidgetData = new LargeWidgetData(
       largeData.foodName = recentScan.foodName;
       largeData.level = recentScan.level;
       largeData.levelEmoji = recentScan.levelEmoji;
@@ -81,7 +81,7 @@ export class FoodWidgetManager {
       largeData.summary = recentScan.summary;
       largeData.memberResults = recentScan.memberResults;
 
-      const formData = new WidgetFormData();
+      const formData: WidgetFormData = new WidgetFormData(
       formData.small = smallData;
       formData.medium = mediumData;
       formData.large = largeData;
@@ -91,22 +91,22 @@ export class FoodWidgetManager {
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Update form failed: %{public}s', JSON.stringify(error));
 
-      const fallbackSmall = new SmallWidgetData();
+      const fallbackSmall: SmallWidgetData = new SmallWidgetData(
       fallbackSmall.foodName = '暂无扫描';
       fallbackSmall.levelEmoji = '📱';
       fallbackSmall.lastScanTime = '';
 
-      const fallbackMedium = new MediumWidgetData();
+      const fallbackMedium: MediumWidgetData = new MediumWidgetData(
       fallbackMedium.foodName = '暂无扫描';
       fallbackMedium.levelEmoji = '📱';
       fallbackMedium.lastScanTime = '';
 
-      const fallbackLarge = new LargeWidgetData();
+      const fallbackLarge: LargeWidgetData = new LargeWidgetData(
       fallbackLarge.foodName = '暂无扫描';
       fallbackLarge.levelEmoji = '📱';
       fallbackLarge.lastScanTime = '';
 
-      const fallbackData = new WidgetFormData();
+      const fallbackData: WidgetFormData = new WidgetFormData(
       fallbackData.small = fallbackSmall;
       fallbackData.medium = fallbackMedium;
       fallbackData.large = fallbackLarge;
@@ -117,7 +117,7 @@ export class FoodWidgetManager {
   }
 
   private async getRecentScanSummary(context: Context): Promise<ScanSummary> {
-    const summary = new ScanSummary();
+    const summary: ScanSummary = new ScanSummary(
     try {
       const rdbConfig: relationalStore.StoreConfig = { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 };
       const store = await relationalStore.getRdbStore(context, rdbConfig);
@@ -144,7 +144,7 @@ export class FoodWidgetManager {
     }
 
     const now = new Date();
-    summary.timeText = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+    summary.timeText = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
     summary.remainingScans = Math.max(0, 3 - summary.todayCount);
     return summary;
   }

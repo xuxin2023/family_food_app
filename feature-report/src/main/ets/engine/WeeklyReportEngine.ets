@@ -9,7 +9,7 @@ export class WeeklyReportEngine {
    * 生成周报
    */
   generate(data: WeeklyDietData, profile: FamilyProfile): WeeklyReport {
-    const report = new WeeklyReport();
+    const report: WeeklyReport = new WeeklyReport(
     report.memberId = data.memberId;
     report.memberName = profile.nickname;
     report.weekRange = `${data.weekStart} ~ ${data.weekEnd}`;
@@ -124,7 +124,7 @@ export class WeeklyReportEngine {
   }
 
   private generatePurchaseAdvice(data: WeeklyDietData, profile: FamilyProfile): PurchaseAdvice {
-    const advice = new PurchaseAdvice();
+    const advice: PurchaseAdvice = new PurchaseAdvice(
 
     if (data.highSodiumDays >= 2) {
       advice.buyLess.push('高盐调味品、方便面、卤味、加工肉');

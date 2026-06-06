@@ -54,6 +54,6 @@ export struct CommunityFeedCard {
 
   private formatTime(ts: number): string {
     const d = new Date(ts);
-    return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+    return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${d.getMinutes().toString().padStart(2, '0')}`;
   }
 }

@@ -199,16 +199,14 @@ export class EngineManager {
 
   /** 获取 NutriScore 评分 — 委托 NutriScoreEngine 完整算法 */
   getNutriScore(foodLabel: FoodLabel): string {
-    const result = NutriScoreEngine.calculateFromNutrition(foodLabel.nutrition);
+    const result: NutriScoreBreakdown = NutriScoreEngine.calculateScore(NutriScoreInput.fromNutrition(foodLabel.nutrition));
+    return result.grade;
+  }
+  getShanghaiGrade(foodLabel: FoodLabel): string {
+    const result: ShanghaiGrade = ShanghaiGradeEngine.evaluate(foodLabel);
     return result.grade;
   }
 
-  /** 获取上海 A/B/C/D 等级 — 委托 ShanghaiGradeEngine */
-  getShanghaiGrade(foodLabel: FoodLabel): string {
-    const result = ShanghaiGradeEngine.evaluate(foodLabel.nutrition);
-    return result.grade;
-  }
-8
   /** 获取替代食品推荐 — 委托 AlternativeFoodRecommender */
   async getAlternativeFoods(foodLabel: FoodLabel, members: FamilyProfile[] = []): Promise<EnhancedFoodRecommendation[]> {
     try {
@@ -291,7 +289,7 @@ export class EngineManager {
 
   getNutriScoreSafe(foodLabel: FoodLabel): string {
     try {
-      const result = NutriScoreEngine.calculateFromNutrition(foodLabel.nutrition);
+      const result: NutriScoreBreakdown = NutriScoreEngine.calculateScore(NutriScoreInput.fromNutrition(foodLabel.nutrition));
       return NullGuard.safeString(result?.grade, 'unknown');
     } catch (e) {
       hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'getNutriScoreSafe fallback: %{public}s', JSON.stringify(e));

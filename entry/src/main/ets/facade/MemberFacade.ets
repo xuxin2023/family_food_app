@@ -162,7 +162,7 @@ export class MemberFacade {
     if (cached) return cached;
     this.nutriTargetLoading = true;
     try {
-      const target = await this.nutriTargetRepo.getForMember(memberId);
+      const target: NutritionTarget | null = await this.nutriTargetRepo.getForMember(memberId);
       if (target) {
         this._nutriTargetCache.set(memberId, target);
         return target;

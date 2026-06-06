@@ -67,31 +67,13 @@ export class AppState {
 
   constructor() {
     const self = this;
-    const cacheProvider: ILocalCacheProvider = {
-      findFoodByBarcode: (barcode: string) => self.findFoodByBarcode(barcode)
-    };
+    const cacheProvider: ILocalCacheProvider = { findFoodByBarcode: (barcode: string) => self.findFoodByBarcode(barcode) } as ILocalCacheProvider;
     this.scanService.setCacheProvider(cacheProvider);
 
-    const remoteProvider: IRemoteLookupProvider = {
-      lookupByBarcode: async (barcode: string) => {
-        const result = await OpenFoodFactsService.getInstance().lookupByBarcode(barcode);
-        if (result && result.found && result.foodLabel) {
-          const r = new RemoteLookupResult();
-          r.found = true;
-          r.foodLabel = result.foodLabel;
-          r.confidence = result.confidence;
-          return r;
-        }
-        return null;
-      }
-    };
+    const remoteProvider: IRemoteLookupProvider = new RemoteProviderImpl();
     this.scanService.setRemoteProvider(remoteProvider);
 
-    const lineageRecorder: IDataLineageRecorder = {
-      recordLineage: (foodId: string, source: string, confidence: number, transforms: string[]) => {
-        DataLineage.record(DataLineage.createRecord(foodId, source, confidence, transforms, '', ''));
-      }
-    };
+    const lineageRecorder: IDataLineageRecorder = new LineageRecorderImpl();
     this.scanService.setLineageRecorder(lineageRecorder);
   }
 
@@ -153,7 +135,7 @@ export class AppState {
 
     let store = rdbStore;
     if (!store) {
-      const rdbConfig = new relationalStore.StoreConfig();
+      const rdbConfig: relationalStore.StoreConfig = new relationalStore.StoreConfig();
       rdbConfig.name = DB_NAME;
       rdbConfig.securityLevel = relationalStore.SecurityLevel.S3;
       rdbConfig.encrypt = true;
@@ -508,5 +490,25 @@ export class AppState {
     this.initPhase = 'none';
     appStateInstance = null;
     hilog.info(DOMAIN_ZERO, TAG, 'AppState destroyed');
+  }
+}
+
+class RemoteProviderImpl implements IRemoteLookupProvider {
+  async lookupByBarcode(barcode: string): Promise<RemoteLookupResult | null> {
+    const result = await OpenFoodFactsService.getInstance().lookupByBarcode(barcode);
+    if (result && result.found && result.foodLabel) {
+      const r: RemoteLookupResult = new RemoteLookupResult();
+      r.found = true;
+      r.foodLabel = result.foodLabel;
+      r.confidence = result.confidence;
+      return r;
+    }
+    return null;
+  }
+}
+
+class LineageRecorderImpl implements IDataLineageRecorder {
+  recordLineage(foodId: string, source: string, confidence: number, transforms: string[]): void {
+    DataLineage.record(DataLineage.createRecord(foodId, source, confidence, transforms, '', ''));
   }
 }

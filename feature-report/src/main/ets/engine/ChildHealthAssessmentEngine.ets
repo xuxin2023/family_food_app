@@ -145,8 +145,8 @@ export class ChildHealthAssessmentEngine {
   private assessAdditivesForAge(food: FoodLabel, ageGroup: AgeGroup): AdditiveSafetyResult[] {
     const results: AdditiveSafetyResult[] = [];
 
-    const avoidForAge: Record<string, string> = { ...AVOID_ADDITIVES };
-    const cautionForAge: Record<string, string> = { ...CAUTION_ADDITIVES };
+    const avoidForAge: Record<string, string> = Object.assign({}, AVOID_ADDITIVES) as Record<string, string>;
+    const cautionForAge: Record<string, string> = Object.assign({}, CAUTION_ADDITIVES) as Record<string, string>;
 
     if (ageGroup === AgeGroup.INFANT || ageGroup === AgeGroup.TODDLER) {
       avoidForAge['山梨酸钾'] = '婴幼儿禁用此防腐剂';

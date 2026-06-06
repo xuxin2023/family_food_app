@@ -3,13 +3,13 @@ import { FamilyMemberSimpleInput, FoodNutritionInput, HealthSignalInput, DailyBu
 
 export class ModelConverter {
   static toMemberInput(member: FamilyProfile): FamilyMemberSimpleInput {
-    const input = new FamilyMemberSimpleInput();
+    const input: FamilyMemberSimpleInput = new FamilyMemberSimpleInput();
     input.id = member.memberId;
     input.name = member.nickname;
     input.role = member.ageGroup as string;
     input.age = DailyBudgetConfig.estimateAgeFromGroup(member.ageGroup);
     input.healthGoal = member.healthGoals.length > 0 ? member.healthGoals[0] : '无特殊';
-    const mb = new DailyBudgetInput();
+    const mb: DailyBudgetInput = new DailyBudgetInput();
     mb.sodium_mg = member.dailyBudget.sodiumBudget;
     mb.sugar_g = member.dailyBudget.sugarBudget;
     mb.energy_kcal = member.dailyBudget.calorieBudget;
@@ -22,7 +22,7 @@ export class ModelConverter {
   }
 
   static toFoodInput(food: FoodLabel): FoodNutritionInput {
-    const input = new FoodNutritionInput();
+    const input: FoodNutritionInput = new FoodNutritionInput();
     input.productName = food.foodName;
     input.brand = food.manufacturer;
     input.sodium_mg = food.nutrition.sodium;
@@ -39,7 +39,7 @@ export class ModelConverter {
   }
 
   static toHealthInput(signal: HealthSignal): HealthSignalInput {
-    const input = new HealthSignalInput();
+    const input: HealthSignalInput = new HealthSignalInput();
     input.steps = signal.stepLevel;
     input.sleep = signal.sleepStatus;
     input.weightTrend = signal.weightTrend;

@@ -75,11 +75,11 @@ export class AiWeeklyReportService extends AiServiceBase {
 成员：${profile.nickname}（${profile.ageGroup}）
 健康目标：${profile.healthGoals.join('、')}
 本周数据：
-- 扫描次数：${data.totalScans}
-- 高盐天数：${data.highSodiumDays}/7
-- 高糖天数：${data.highSugarDays}/7
-- 高脂天数：${data.highFatDays}/7
-- 甜食近正餐：${data.sweetNearMealCount}次
+扫描次数：${data.totalScans}
+高盐天数：${data.highSodiumDays}/7
+高糖天数：${data.highSugarDays}/7
+高脂天数：${data.highFatDays}/7
+甜食近正餐：${data.sweetNearMealCount}次
 - 夜宵：${data.lateNightSnackCount}次
 - 重口味：${data.heavyFlavorCount}次
 
@@ -91,11 +91,11 @@ export class AiWeeklyReportService extends AiServiceBase {
 
 请输出JSON格式：
 {
-  "summary": "个性化一句话总结",
-  "highlights": ["重点1", "重点2"],
-  "suggestions": ["建议1", "建议2"],
-  "personalizedTip": "针对该成员的个性化提醒",
-  "motivationalMessage": "鼓励语"
+"summary": "个性化一句话总结"
+"highlights": "重点内容"
+"suggestions": "改进建议"
+"personalizedTip": "针对该成员的个性化提醒"
+"motivationalMessage": "鼓励语"
 }`;`
   }
 

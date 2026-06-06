@@ -4,17 +4,19 @@ import { HILOG_DOMAIN_DEFAULT, FoodLabel, NutritionPer100g } from 'hsp_core';
 const TAG = 'AlternativeComparePanel';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
+export interface NutritionDelta {
+  calories: number;
+  sugar: number;
+  sodium: number;
+  fat: number;
+  protein: number;
+  fiber: number;
+}
+
 export interface AlternativeCompareItem {
   original: FoodLabel;
   alternative: FoodLabel;
-  nutritionDelta: {
-    calories: number;
-    sugar: number;
-    sodium: number;
-    fat: number;
-    protein: number;
-    fiber: number;
-  };
+  nutritionDelta: NutritionDelta;
   verdict: 'better' | 'worse' | 'mixed';
   scoreDelta: number;
 }
@@ -144,8 +146,7 @@ export struct AlternativeComparePanel {
   }
 }
 
-export function computeNutritionDelta(original: NutritionPer100g, alternative: NutritionPer100g):
-  AlternativeCompareItem['nutritionDelta'] {
+export function computeNutritionDelta(original: NutritionPer100g, alternative: NutritionPer100g): NutritionDelta {
   return {
     calories: alternative.calories - original.calories,
     sugar: alternative.sugar - original.sugar,

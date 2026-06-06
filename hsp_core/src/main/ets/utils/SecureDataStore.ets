@@ -275,7 +275,8 @@ export class SecureDataStore {
   }
 
   private concatBuffers(a: ArrayBuffer, b: ArrayBuffer): ArrayBuffer {
-    const result: Uint8Array = new Uint8Array(
+    const len = a.byteLength + b.byteLength;
+    const result: Uint8Array = new Uint8Array(len);
     result.set(new Uint8Array(a), 0);
     result.set(new Uint8Array(b), a.byteLength);
     return result.buffer as ArrayBuffer;

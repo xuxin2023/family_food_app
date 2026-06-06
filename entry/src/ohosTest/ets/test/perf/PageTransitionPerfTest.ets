@@ -58,7 +58,9 @@ export class PageTransitionPerfTest {
   }
 
   testPageTransitionFps(pageName: string): PerfResult {
-    const { fps, droppedFrames, totalFrames } = this.calculateFpsFromTimestamps();
+    const fps = this.calculateFpsFromTimestamps().fps;
+    const droppedFrames = this.calculateFpsFromTimestamps().droppedFrames;
+    const totalFrames = this.calculateFpsFromTimestamps().totalFrames;
     const passed = fps >= (PAGE_TRANSITION_BASELINE_FPS - PAGE_TRANSITION_TOLERANCE_FPS);
     const result: PerfResult = {
       testName: `page_transition_${pageName}`,

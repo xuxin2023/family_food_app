@@ -4,7 +4,7 @@ import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { util } from '@kit.ArkTS';
 
 const TAG = 'CryptoEngine';
-const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
+const DOMAIN_ZERO: number = HILOG_DOMAIN_DEFAULT as number;
 const AES_KEY_ALIAS = 'family_food_aes256_key';
 const B64_TABLE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
@@ -97,8 +97,10 @@ export class CryptoEngine {
 
   async encryptField(obj: Object, fields: string[]): Promise<Object> {
     const result: Record<string, Object> = {};
-    const entries = Object.entries(obj);
-    for (const [key, value] of entries) {
+    const keys = Object.keys(obj);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      const value = (obj as Record<string, Object>)[key];
       if (fields.includes(key) && typeof value === 'string') {
         result[key] = await this.encrypt(value as string);
       } else {
@@ -110,8 +112,10 @@ export class CryptoEngine {
 
   async decryptField(obj: Object, fields: string[]): Promise<Object> {
     const result: Record<string, Object> = {};
-    const entries = Object.entries(obj);
-    for (const [key, value] of entries) {
+    const keys = Object.keys(obj);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      const value = (obj as Record<string, Object>)[key];
       if (fields.includes(key) && typeof value === 'string') {
         try {
           result[key] = await this.decrypt(value as string);

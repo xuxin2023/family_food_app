@@ -86,12 +86,13 @@ export class ImageCacheManager {
   }
 
   getStats(): Record<string, string | number> {
-    return {
-      entryCount: this.memoryCache.size,
-      maxEntries: MAX_MEMORY_ENTRIES,
-      memoryUsageMB: Math.round(this.currentMemorySize / 1024 / 1024 * 100) / 100,
-      maxMemoryMB: Math.round(MAX_MEMORY_SIZE / 1024 / 1024 * 100) / 100,
-      hitRate: 'N/A'
+    const stats: Record<string, string | number> = {};
+    stats['entryCount'] = this.memoryCache.size;
+    stats['maxEntries'] = MAX_MEMORY_ENTRIES;
+    stats['memoryUsageMB'] = Math.round(this.currentMemorySize / 1024 / 1024 * 100) / 100;
+    stats['maxMemoryMB'] = Math.round(MAX_MEMORY_SIZE / 1024 / 1024 * 100) / 100;
+    stats['hitRate'] = 'N/A';
+    return stats;
     };
   }
 

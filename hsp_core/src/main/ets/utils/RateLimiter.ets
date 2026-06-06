@@ -24,8 +24,13 @@ class WindowEntry {
   tokensUsed: number = 0;
 }
 
+interface PersistedEntry {
+  t: number;
+  tk: number;
+}
+
 class PersistedUsage {
-  entries: Array<{ t: number; tk: number }> = [];
+  entries: Array<PersistedEntry> = [];
   daily: number = 0;
   day: number = 0;
 }
@@ -165,7 +170,13 @@ export class RateLimiter {
     return false;
   }
 
-  getUsage(endpoint: string): { requests: number; remaining: number; dailyTokens: number } {
+interface UsageInfo {
+  requests: number;
+  remaining: number;
+  dailyTokens: number;
+}
+
+  getUsage(endpoint: string): UsageInfo {
     const cfg = this.configs.get(endpoint);
     const entries = this.windows.get(endpoint) ?? [];
     const now = Date.now();

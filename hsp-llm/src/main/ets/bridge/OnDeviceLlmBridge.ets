@@ -116,7 +116,7 @@ export class OnDeviceLlmBridge {
   private detectHardware(): void {
     try {
       // HiAI Foundation API 可用性检测
-      const aiFoundationAvailable = typeof (Object.create(null) as Record<string, Object>)['AI'] !== 'undefined';
+      const aiFoundationAvailable = typeof ({} as Record<string, Object>)['AI'] !== 'undefined';
       this.npuAvailable = aiFoundationAvailable;
       this.cpuModelLoaded = true; // 规则引擎始终可用
       hilog.info(HILOG_DOMAIN_DEFAULT, TAG, 'Hardware detection: NPU=%{public}s, CPU=%{public}s',

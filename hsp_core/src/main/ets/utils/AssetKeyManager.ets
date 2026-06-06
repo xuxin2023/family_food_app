@@ -109,7 +109,7 @@ export class AssetKeyManager {
       const res: Array<asset.AssetMap> = await asset.query(query);
       if (res && res.length > 0) {
         const secretArr = res[0].get(asset.Tag.SECRET) as Uint8Array;
-        const secret = arrayTosecretArr.toString();
+        const secret = arrayToString(secretArr);
         if (secret.length > 0) {
           this.keyCache.set(alias, secret);
           return secret;

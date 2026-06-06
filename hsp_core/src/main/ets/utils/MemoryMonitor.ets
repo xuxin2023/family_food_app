@@ -67,7 +67,7 @@ export class MemoryMonitor {
     snapshot.imageCacheSize = 0;
     snapshot.gcCount = this.gcTriggerCount;
     try {
-      const perf = (Object.create(null) as Record<string, Object>)['performance'] as Record<string, Object> | undefined;
+      const perf = ({} as Record<string, Object>)['performance'] as Record<string, Object> | undefined;
       if (perf) {
         const mem = perf['memory'] as Record<string, Object> | undefined;
         if (mem) {

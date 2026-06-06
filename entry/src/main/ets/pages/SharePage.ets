@@ -491,7 +491,7 @@ struct SharePage {
 
       const generator: SharePosterGenerator = new SharePosterGenerator()
       this.posterUri = await generator.generatePoster(posterData);
-      ToastHelper.show(this.getUIContext(), '海报已生成);
+      ToastHelper.show(this.getUIContext(), '海报已生成');
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'generatePoster failed: %{public}s', JSON.stringify(e));
       ToastHelper.show(this.getUIContext(), '娴锋姤鐢熸垚澶辫触');

@@ -560,7 +560,22 @@ struct ScanPage {
           // ---- 扫描历史快捷入口 ----
           if (this.vm.foodLabel.foodId.length === 0 && this.vm.recentScans.length > 0 &&
               this.vm.scanPhase !== ScanPhase.RECOGNIZING && !this.isRecognizing()) {
-            this.RecentScanBar()
+            Column() {
+              Text($r('app.string.scan_recent_scans')).fontSize(FONT_SIZE.SMALL).fontColor(COLORS.TEXT_SECONDARY).margin({ bottom: SPACING.SM })
+              Scroll() {
+                Row() {
+                  ForEach(this.vm.recentScans, (item: FoodLabel) => {
+                    Column() {
+                      Text(item.foodName).fontSize(FONT_SIZE.TINY).fontColor(COLORS.TEXT_PRIMARY)
+                        .maxLines(1).textOverflow({ overflow: TextOverflow.Ellipsis }).lineHeight(14).textAlign(TextAlign.Center)
+                    }
+                    .width(72).height(BUTTON.HEIGHT_MD).padding(SPACING.XS).backgroundColor(COLORS.BG_CARD_HIGHLIGHT)
+                    .borderRadius(RADIUS.SM).margin({ right: SPACING.SM })
+                    .onClick(() => { this.vm.foodLabel = item; this.calculateScoreForCurrentLabel() })
+                  }, (item: FoodLabel) => item.foodId)
+                }
+              }.scrollBar(BarState.Off).margin({ bottom: SPACING.MD })
+            }.width('92%')
           }
 
           if (this.vm.showEditPanel) {
@@ -721,45 +736,7 @@ struct ScanPage {
 
 
 
-  // ==================== 最近扫描快捷入口 ====================
 
-  @Builder
-  RecentScanBar() {
-    Column() {
-      Text($r('app.string.scan_recent_scans'))
-        .fontSize(FONT_SIZE.SMALL)
-        .fontColor(COLORS.TEXT_SECONDARY)
-        .margin({ bottom: SPACING.SM })
-      Scroll() {
-        Row() {
-          ForEach(this.vm.recentScans, (item: FoodLabel) => {
-            Column() {
-              Text(item.foodName)
-                .fontSize(FONT_SIZE.TINY)
-                .fontColor(COLORS.TEXT_PRIMARY)
-                .maxLines(1)
-                .textOverflow({ overflow: TextOverflow.Ellipsis })
-                .lineHeight(14)
-                .textAlign(TextAlign.Center)
-            }
-            .width(72)
-            .height(BUTTON.HEIGHT_MD)
-            .padding(SPACING.XS)
-            .backgroundColor(COLORS.BG_CARD_HIGHLIGHT)
-            .borderRadius(RADIUS.SM)
-            .margin({ right: SPACING.SM })
-            .onClick(() => {
-              this.vm.foodLabel = item
-              this.calculateScoreForCurrentLabel()
-            })
-          }, (item: FoodLabel) => item.foodId)
-        }
-      }
-      .scrollBar(BarState.Off)
-      .margin({ bottom: SPACING.MD })
-    }
-    .width('92%')
-  }
 
   // ==================== 评分计算 ====================
 

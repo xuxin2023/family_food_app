@@ -250,12 +250,12 @@ export class HuaweiCloudBackend {
   }
 
   getArchitectureSummary(): string {
-    return [
-      `华为云 Serverless 架构:`,
-      `  云函数: ${CLOUD_FUNCTIONS.length}个 — ${CLOUD_FUNCTIONS.map(f => f.name).join(', ')}`,
-      `  云数据库: ${CLOUD_DATABASES.length}个 — ${CLOUD_DATABASES.map(d => d.name).join(', ')}`,
-      `  云存储: ${CLOUD_STORAGES.length}个 — ${CLOUD_STORAGES.map(s => s.name).join(', ')}`,
-      `  API版本: ${this.apiVersion}`
-    ].join('\n');
+    const summary: string[] = []
+    summary.push(`华为云 Serverless 架构:`)
+    summary.push(`  云函数: ${CLOUD_FUNCTIONS.length}个 — ${CLOUD_FUNCTIONS.map(f => f.name).join(', ')}`)
+    summary.push(`  云数据库: ${CLOUD_DATABASES.length}个 — ${CLOUD_DATABASES.map(d => d.name).join(', ')}`)
+    summary.push(`  云存储: ${CLOUD_STORAGES.length}个 — ${CLOUD_STORAGES.map(s => s.name).join(', ')}`)
+    summary.push(`  API版本: ${this.apiVersion}`)
+    return summary.join('\n');
   }
 }

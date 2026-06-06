@@ -88,17 +88,17 @@ export class HealthReportExportService {
     allergenData: string;
     riskData: string;
   }): string {
-    return [
-      '=== 健康档案报告 ===',
-      data.summary,
-      '---',
-      data.nutritionData,
-      data.allergenData,
-      data.riskData,
-      '---',
-      `生成时间: ${new Date().toISOString()}`,
-      '本报告由家庭食品适配助手自动生成，仅供健康参考，不作为医学诊断依据。'
-    ].join('\n');
+    const lines: string[] = []
+    lines.push('=== 健康档案报告 ===')
+    lines.push(data.summary)
+    lines.push('---')
+    lines.push(data.nutritionData)
+    lines.push(data.allergenData)
+    lines.push(data.riskData)
+    lines.push('---')
+    lines.push(`生成时间: ${new Date().toISOString()}`)
+    lines.push('本报告由家庭食品适配助手自动生成，仅供健康参考，不作为医学诊断依据。')
+    return lines.join('\n');
   }
 
   private async saveToLocal(

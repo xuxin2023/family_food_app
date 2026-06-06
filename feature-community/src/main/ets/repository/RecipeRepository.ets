@@ -136,7 +136,7 @@ export class RecipeRepository {
       return;
     }
     try {
-      const bucket = new relationalStore.ValuesBucket();
+      const bucket: relationalStore.ValuesBucket = new relationalStore.ValuesBucket();
       bucket.put('recipe_id', recipe.recipeId);
       bucket.put('title', recipe.title);
       bucket.put('description', recipe.description);
@@ -246,7 +246,7 @@ export class RecipeRepository {
       return;
     }
     try {
-      const bucket = new relationalStore.ValuesBucket();
+      const bucket: relationalStore.ValuesBucket = new relationalStore.ValuesBucket();
       if (updates.title !== undefined) {
         bucket.put('title', updates.title);
       }
@@ -313,7 +313,7 @@ export class RecipeRepository {
       return;
     }
     try {
-      const bucket = new relationalStore.ValuesBucket();
+      const bucket: relationalStore.ValuesBucket = new relationalStore.ValuesBucket();
       bucket.put('comment_id', comment.commentId);
       bucket.put('recipe_id', comment.recipeId);
       bucket.put('author_uid', comment.authorUid);
@@ -400,7 +400,7 @@ export class RecipeRepository {
       }
 
       // 未点赞，添加
-      const likeBucket = new relationalStore.ValuesBucket();
+      const likeBucket: relationalStore.ValuesBucket = new relationalStore.ValuesBucket();
       likeBucket.put('id', `like_${recipeId}_${uid}_${Date.now()}`);
       likeBucket.put('recipe_id', recipeId);
       likeBucket.put('uid', uid);
@@ -490,7 +490,7 @@ export class RecipeRepository {
         resultSet = null;
       }
 
-      const bmBucket = new relationalStore.ValuesBucket();
+      const bmBucket: relationalStore.ValuesBucket = new relationalStore.ValuesBucket();
       bmBucket.put('id', `bm_${recipeId}_${uid}_${Date.now()}`);
       bmBucket.put('recipe_id', recipeId);
       bmBucket.put('uid', uid);

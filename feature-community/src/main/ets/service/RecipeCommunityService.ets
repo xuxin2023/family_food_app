@@ -8,6 +8,12 @@ import {
 } from 'hsp_core';
 import { AuthService } from 'hsp_service';
 
+export interface RecipeValidationResult {
+  valid: boolean;
+  missingFields: string[];
+  sensitiveHit: boolean;
+}
+
 
 const TAG = 'RecipeCommunityService';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -29,7 +35,7 @@ export class RecipeCommunityService {
     '广告', '代购', '加微信', '转账', '赌博', '色情', '暴力'
   ];
 
-  validateRecipe(params: CreateRecipeParams): { valid: boolean; missingFields: string[]; sensitiveHit: boolean } {
+  validateRecipe(params: CreateRecipeParams): RecipeValidationResult {
     const missingFields: string[] = [];
     if (!params.title || params.title.trim().length === 0) missingFields.push('标题');
     if (!params.ingredients || params.ingredients.length === 0) missingFields.push('食材');

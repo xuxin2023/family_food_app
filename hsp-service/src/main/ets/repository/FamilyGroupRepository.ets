@@ -35,61 +35,61 @@ export class FamilyGroupRepository {
     try {
       if (!this.rdbStore) return;
 
-      const groupSql = `CREATE TABLE IF NOT EXISTS ${TABLE_GROUP} (`
-        group_id TEXT PRIMARY KEY,
-        group_name TEXT NOT NULL,
-        group_avatar TEXT DEFAULT '',
-        description TEXT DEFAULT '',
-        owner_uid TEXT NOT NULL,
-        owner_name TEXT DEFAULT '',
-        invite_code TEXT NOT NULL,
-        max_members INTEGER DEFAULT 10,
-        member_count INTEGER DEFAULT 0,
-        created_at INTEGER NOT NULL,
-        updated_at INTEGER NOT NULL,
-        is_archived INTEGER DEFAULT 0
-      )`;`
-      await this.rdbStore.executeSql(groupSql);
+      const groupDef = [
+        'group_id TEXT PRIMARY KEY',
+        'group_name TEXT NOT NULL',
+        'group_avatar TEXT DEFAULT \'\'',
+        'description TEXT DEFAULT \'\'',
+        'owner_uid TEXT NOT NULL',
+        'owner_name TEXT DEFAULT \'\'',
+        'invite_code TEXT NOT NULL',
+        'max_members INTEGER DEFAULT 10',
+        'member_count INTEGER DEFAULT 0',
+        'created_at INTEGER NOT NULL',
+        'updated_at INTEGER NOT NULL',
+        'is_archived INTEGER DEFAULT 0'
+      ].join(', ');
+      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_GROUP} (${groupDef})`);
 
-      const memberSql = `CREATE TABLE IF NOT EXISTS ${TABLE_GROUP_MEMBER} (`
-        id TEXT PRIMARY KEY,
-        group_id TEXT NOT NULL,
-        uid TEXT NOT NULL,
-        display_name TEXT DEFAULT '',
-        role TEXT NOT NULL DEFAULT 'member',
-        join_method TEXT DEFAULT 'manual',
-        joined_at INTEGER NOT NULL,
-        last_active_at INTEGER NOT NULL,
-        is_left INTEGER DEFAULT 0,
-        local_member_id TEXT DEFAULT ''
-      )`;`
-      await this.rdbStore.executeSql(memberSql);
+      const memberDef = [
+        'id TEXT PRIMARY KEY',
+        'group_id TEXT NOT NULL',
+        'uid TEXT NOT NULL',
+        'display_name TEXT DEFAULT \'\'',
+        'role TEXT NOT NULL DEFAULT \'member\'',
+        'join_method TEXT DEFAULT \'manual\'',
+        'joined_at INTEGER NOT NULL',
+        'last_active_at INTEGER NOT NULL',
+        'is_left INTEGER DEFAULT 0',
+        'local_member_id TEXT DEFAULT \'\''
+      ].join(', ');
+      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_GROUP_MEMBER} (${memberDef})`);
 
-      const requestSql = `CREATE TABLE IF NOT EXISTS ${TABLE_JOIN_REQUEST} (`
-        request_id TEXT PRIMARY KEY,
-        group_id TEXT NOT NULL,
-        requester_uid TEXT NOT NULL,
-        requester_name TEXT DEFAULT '',
-        message TEXT DEFAULT '',
-        status TEXT DEFAULT 'pending',
-        requested_at INTEGER NOT NULL,
-        reviewed_at INTEGER DEFAULT 0,
-        reviewer_uid TEXT DEFAULT ''
-      )`;`
-      await this.rdbStore.executeSql(requestSql);
+      const requestDef = [
+        'request_id TEXT PRIMARY KEY',
+        'group_id TEXT NOT NULL',
+        'requester_uid TEXT NOT NULL',
+        'requester_name TEXT DEFAULT \'\'',
+        'message TEXT DEFAULT \'\'',
+        'status TEXT DEFAULT \'pending\'',
+        'requested_at INTEGER NOT NULL',
+        'reviewed_at INTEGER DEFAULT 0',
+        'reviewer_uid TEXT DEFAULT \'\''
+      ].join(', ');
+      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_JOIN_REQUEST} (${requestDef})`);
 
-      const feedSql = `CREATE TABLE IF NOT EXISTS ${TABLE_GROUP_FEED} (`
-        feed_id TEXT PRIMARY KEY,
-        group_id TEXT NOT NULL,
-        feed_type TEXT NOT NULL,
-        sender_uid TEXT NOT NULL,
-        sender_name TEXT DEFAULT '',
-        content TEXT DEFAULT '',
-        created_at INTEGER NOT NULL,
-        comment_count INTEGER DEFAULT 0,
-        like_count INTEGER DEFAULT 0
-      )`;`
-      await this.rdbStore.executeSql(feedSql);
+      const feedDef = [
+        'feed_id TEXT PRIMARY KEY',
+        'group_id TEXT NOT NULL',
+        'feed_type TEXT NOT NULL',
+        'sender_uid TEXT NOT NULL',
+        'sender_name TEXT DEFAULT \'\'',
+        'content TEXT DEFAULT \'\'',
+        'created_at INTEGER NOT NULL',
+        'comment_count INTEGER DEFAULT 0',
+        'like_count INTEGER DEFAULT 0'
+      ].join(', ');
+      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_GROUP_FEED} (${feedDef})`);
 
       // 创建索引
       await this.rdbStore.executeSql(

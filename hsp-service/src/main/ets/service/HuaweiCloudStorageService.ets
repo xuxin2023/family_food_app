@@ -112,12 +112,12 @@ export class HuaweiCloudStorageService {
 
   async uploadBackup(data: CloudBackupData): Promise<UploadResult> {
     if (!this.config) {
-      return { success: false, error: 'Config not initialized' }
+      return { success: false, error: 'Config not initialized' } as Record<string, Object>;
     }
 
     const authenticated = await this.authenticate()
     if (!authenticated) {
-      return { success: false, error: 'Authentication failed' }
+      return { success: false, error: 'Authentication failed' } as Record<string, Object>;
     }
 
     const objectKey = `backups/${data.userId}/${data.timestamp}.json`
@@ -140,25 +140,25 @@ export class HuaweiCloudStorageService {
       if (response.responseCode === 200 || response.responseCode === 201) {
         const url = `https://${this.config.bucketName}.obs.${this.config.region}.myhuaweicloud.com/${objectKey}`
         hilog.info(DOMAIN, TAG, 'Upload successful: %{public}s', objectKey)
-        return { success: true, objectKey, url }
+        return { success: true, objectKey, url } as Record<string, Object>;
       } else {
         hilog.error(DOMAIN, TAG, 'Upload failed: %{public}d', response.responseCode)
-        return { success: false, error: `Upload failed: ${response.responseCode}` }
+        return { success: false, error: `Upload failed: ${response.responseCode}` } as Record<string, Object>;
       }
     } catch (err) {
       hilog.error(DOMAIN, TAG, 'Upload error: %{public}s', JSON.stringify(err))
-      return { success: false, error: JSON.stringify(err) }
+      return { success: false, error: JSON.stringify(err) } as Record<string, Object>;
     }
   }
 
   async downloadBackup(userId: string, timestamp?: number): Promise<DownloadResult> {
     if (!this.config) {
-      return { success: false, error: 'Config not initialized' }
+      return { success: false, error: 'Config not initialized' } as Record<string, Object>;
     }
 
     const authenticated = await this.authenticate()
     if (!authenticated) {
-      return { success: false, error: 'Authentication failed' }
+      return { success: false, error: 'Authentication failed' } as Record<string, Object>;
     }
 
     const objectKey = timestamp 
@@ -180,14 +180,14 @@ export class HuaweiCloudStorageService {
       if (response.responseCode === 200) {
         const data = JSON.parse(response.result as string) as CloudBackupData
         hilog.info(DOMAIN, TAG, 'Download successful: %{public}s', objectKey)
-        return { success: true, data }
+        return { success: true, data } as Record<string, Object>;
       } else {
         hilog.error(DOMAIN, TAG, 'Download failed: %{public}d', response.responseCode)
-        return { success: false, error: `Download failed: ${response.responseCode}` }
+        return { success: false, error: `Download failed: ${response.responseCode}` } as Record<string, Object>;
       }
     } catch (err) {
       hilog.error(DOMAIN, TAG, 'Download error: %{public}s', JSON.stringify(err))
-      return { success: false, error: JSON.stringify(err) }
+      return { success: false, error: JSON.stringify(err) } as Record<string, Object>;
     }
   }
 

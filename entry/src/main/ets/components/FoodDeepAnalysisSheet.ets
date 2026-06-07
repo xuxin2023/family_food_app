@@ -6,6 +6,12 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 const TAG = 'FoodDeepAnalysisSheet';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
+interface NutritionGridItem {
+  label: string;
+  value: number;
+  unit: string;
+}
+
 @ComponentV2
 export struct FoodDeepAnalysisSheet {
   @Param foodLabel: FoodLabel = new FoodLabel()
@@ -197,6 +203,7 @@ export struct FoodDeepAnalysisSheet {
 
   @Builder
   NutritionTab() {
+  private buildNutritionGrid(): void {
     Column() {
       Text('营养成分 (/100g)')
         .fontSize(14)
@@ -204,7 +211,7 @@ export struct FoodDeepAnalysisSheet {
         .margin({ bottom: 8 })
 
       const n = this.foodLabel.nutrition;
-      ForEach([
+      const items: NutritionGridItem[] = [
         { label: '热量', value: n.calories, unit: 'kcal' },
         { label: '蛋白质', value: n.protein, unit: 'g' },
         { label: '脂肪', value: n.fat, unit: 'g' },
@@ -212,17 +219,19 @@ export struct FoodDeepAnalysisSheet {
         { label: '糖', value: n.sugar, unit: 'g' },
         { label: '钠', value: n.sodium, unit: 'mg' },
         { label: '膳食纤维', value: n.fiber, unit: 'g' },
-      ], (item: Record<string, Object>, index: number) => {
+      ];
+      ForEach(items, (item: NutritionGridItem, index: number) => {
         Row() {
           Text(item.label).fontSize(13).fontColor(COLORS.TEXT_SECONDARY).layoutWeight(1)
           Text(`${item.value.toFixed(1)} ${item.unit}`).fontSize(13).fontColor(COLORS.TEXT_PRIMARY).fontWeight(FontWeight.Medium)
         }
         .width('100%')
         .padding({ top: 4, bottom: 4 })
-      }, (item: Record<string, Object>, index: number) => `${index}`)
+      }, (item: NutritionGridItem, index: number) => `${index}`)
     }
     .width('100%')
     .alignItems(HorizontalAlign.Start)
+  }
   }
 
   private riskLabel(level: AdditiveSafetyRiskLevel): string {

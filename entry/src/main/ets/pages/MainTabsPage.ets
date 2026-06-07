@@ -323,7 +323,7 @@ export struct MainTabsPage {
 
       Button() {
         Row({ space: 6 }) {
-          Text('📷).fontSize(18)
+          Text('📷').fontSize(18)
           Text($r('app.string.main_tabs_enter_home')).fontSize(16).fontColor(COLORS.PRIMARY)
         }
       }

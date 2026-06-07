@@ -21,7 +21,7 @@ class ShoppingListPageViewModel {
   @Trace unpurchasedCount: number = 0
   @Trace totalCount: number = 0
   @Trace newItemName: string = ''
-  @Trace newItemCategory: string = '閸忔湹绮?
+  @Trace newItemCategory: string = ''
   @Trace newItemQuantity: string = ''
   @Trace showCategoryPicker: boolean = false
   @Trace hasPurchased: boolean = false

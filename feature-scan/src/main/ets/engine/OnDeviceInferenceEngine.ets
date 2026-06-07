@@ -103,12 +103,12 @@ export class OnDeviceInferenceEngine {
         return false;
       }
 
-      const buffer: ArrayBuffer = new ArrayBuffer(
-      const file = fileIo.openSync(filePath, fileIo.OpenMode.READ_ONLY);
+      const buffer: ArrayBuffer = new ArrayBuffer(rawFd.length);stat.size);
+      const file: fileIo.File = fileIo.openSync(filePath, fileIo.OpenMode.READ_ONLY);
       fileIo.readSync(file.fd, buffer);
       fileIo.closeSync(file);
 
-      const ctx = { priority: mindSporeLite.Priority.PRIORITY_MIDDLE };
+      const ctx: mindSporeLite.Context = { priority: mindSporeLite.Priority.PRIORITY_MIDDLE } as mindSporeLite.Context;
       const model = await mindSporeLite.loadModelFromBuffer(buffer, ctx);
       const session = await mindSporeLite.createSession(model, ctx);
 
@@ -123,9 +123,9 @@ export class OnDeviceInferenceEngine {
 
   private assignModel(modelName: string, model: mindSporeLite.Model, session: mindSporeLite.Session): void {
     if (modelName.includes('food_classifier')) {
-      this.foodClassifier = { model, session };
+      this.foodClassifier = { model: model, session: session } as MsModelContext;
     } else if (modelName.includes('ingredient_risk')) {
-      this.ingredientRiskModel = { model, session };
+      this.ingredientRiskModel = { model: model, session: session } as MsModelContext;
     }
   }
 
@@ -141,19 +141,19 @@ export class OnDeviceInferenceEngine {
         return false;
       }
 
-      const buffer: ArrayBuffer = new ArrayBuffer(
+      const buffer: ArrayBuffer = new ArrayBuffer(rawFd.length);
       const file = fileIo.openSync(rawFd.path, fileIo.OpenMode.READ_ONLY);
       fileIo.readSync(file.fd, buffer);
       fileIo.closeSync(file);
 
-      const context = { priority: mindSporeLite.Priority.PRIORITY_MIDDLE };
+      const context: mindSporeLite.Context = { priority: mindSporeLite.Priority.PRIORITY_MIDDLE } as mindSporeLite.Context;
       const model = await mindSporeLite.loadModelFromBuffer(buffer, context);
       const session = await mindSporeLite.createSession(model, context);
 
       if (modelName.includes('food_classifier')) {
-        this.foodClassifier = { model, session };
+        this.foodClassifier = { model: model, session: session } as MsModelContext;
       } else if (modelName.includes('ingredient_risk')) {
-        this.ingredientRiskModel = { model, session };
+        this.ingredientRiskModel = { model: model, session: session } as MsModelContext;
       }
 
       return true;

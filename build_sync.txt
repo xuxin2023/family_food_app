@@ -1,0 +1,16 @@
+﻿> hvigor [32mhvigor client: Starting hvigor daemon.[39m
+> hvigor [32mHvigor Daemon started in 891 ms[39m
+> hvigor [32mTYPE CHECK SUCCESSFUL in 1 s 169 ms [39m
+> hvigor [32mFinished :entry:init... after 1 ms [39m
+> hvigor [32mFinished :hsp_core:init... after 1 ms [39m
+> hvigor [32mFinished :hsp_service:init... after 1 ms [39m
+> hvigor [32mFinished :feature_scan:init... after 1 ms [39m
+> hvigor [32mFinished :feature_report:init... after 1 ms [39m
+> hvigor [32mFinished :feature_community:init... after 1 ms [39m
+> hvigor [32mFinished :hsp_allergy:init... after 1 ms [39m
+> hvigor [32mFinished :hsp_rating:init... after 1 ms [39m
+> hvigor [32mFinished :hsp_llm:init... after 1 ms [39m
+> hvigor [32mFinished :hsp_cloud:init... after 1 ms [39m
+> hvigor [32mFinished :feature_profile:init... after 1 ms [39m
+> hvigor [32mFinished :hsp_core_cj:init... after 1 ms [39m
+> hvigor [32mFinished ::init... after 1 ms [39m

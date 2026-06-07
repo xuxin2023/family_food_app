@@ -50,9 +50,9 @@ export class CrdtSyncResolver {
 
   private static fieldLevelMerge<T extends ConflictRecord>(local: T, remote: T, base: T): T {
     const merged = Object.assign({},local) as Record<string, Object>;
-    const localObj = local as unknown as Record<string, Object>;
-    const remoteObj = remote as unknown as Record<string, Object>;
-    const baseObj = base as unknown as Record<string, Object>;
+    const localObj = local as Object as Record<string, Object>;
+    const remoteObj = remote as Object as Record<string, Object>;
+    const baseObj = base as Object as Record<string, Object>;
     const skipKeys = new Set(['_vectorClock', 'updatedAt', 'createdAt']);
 
     for (const key of Object.keys(localObj)) {

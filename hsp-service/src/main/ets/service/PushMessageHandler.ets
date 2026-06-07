@@ -85,7 +85,7 @@ function isProductUpdateData(raw: Record<string, string> | undefined): raw is Re
 }
 
 function parsePayloadData<T>(raw: Record<string, string> | undefined): T {
-  return raw as unknown as T;
+  return raw as Object as T;
 }
 
 export class PushMessageHandler {

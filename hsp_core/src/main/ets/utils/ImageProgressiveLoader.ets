@@ -202,9 +202,9 @@ export function lazyForEachKey<T>(item: T, index: number, keyFn?: (item: T) => s
   if (keyFn) return keyFn(item);
   // 尝试常见 id 字段
   const obj = item as Record<string, Object>;
-  if (obj.foodId) return String(obj.foodId);
-  if (obj.memberId) return String(obj.memberId);
-  if (obj.id) return String(obj.id);
-  if (obj.barcode) return String(obj.barcode);
+  if (obj.foodId) return obj.foodId.toString();
+  if (obj.memberId) return obj.memberId.toString();
+  if (obj.id) return obj.id.toString();
+  if (obj.barcode) return obj.barcode.toString();
   return `item_${index}`;
 }

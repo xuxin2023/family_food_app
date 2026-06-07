@@ -83,7 +83,7 @@ export class BatchScanService {
     return this.results;
   }
 
-  getSummary(): { total: number; hit: number; miss: number; avgTimeMs: number } {
+  getSummary(): Record<string, Object> {
     const total = this.results.length;
     const hit = this.results.filter(r => r.foodLabel !== null).length;
     const totalTime = this.results.reduce((s, r) => s + r.scanTimeMs, 0);

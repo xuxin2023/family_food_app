@@ -281,7 +281,7 @@ export struct SkeletonScreen {
 
   build() {
     Column() {
-      ForEach(Array.from({ length: this.rows }), (_: unknown, index: number) => {
+      ForEach(Array.from({ length: this.rows }), (_: Object, index: number) => {
         Row() {
           if (this.showAvatar) {
             Column()
@@ -312,7 +312,7 @@ export struct SkeletonScreen {
         .width('100%')
         .padding(SPACING.MD)
         .margin({ bottom: SPACING.SM })
-      }, (_: unknown, index: number) => index.toString())
+      }, (_: Object, index: number) => index.toString())
     }
     .width('100%')
     .padding(SPACING.MD)

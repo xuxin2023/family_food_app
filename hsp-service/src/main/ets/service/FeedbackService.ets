@@ -56,10 +56,10 @@ export class FeedbackService {
         };
       }
       hilog.warn(DOMAIN_ZERO, TAG, 'Feedback submit failed: %{public}d', response.responseCode);
-      return { success: false, ticketId: '', message: '提交失败，请稍后重试' };
+      return { success: false, ticketId: '', message: '提交失败，请稍后重试' } as Record<string, Object>;
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'Feedback error: %{public}s', JSON.stringify(e));
-      return { success: false, ticketId: '', message: '网络异常，请检查网络后重试' };
+      return { success: false, ticketId: '', message: '网络异常，请检查网络后重试' } as Record<string, Object>;
     }
   }
 }

@@ -23,7 +23,7 @@ export interface AdverseReactionRecord {
 export interface AllergenCheckResult {
   hasAlert: boolean;
   matchedAllergens: string[];
-  details: { allergen: string; ingredient: string; position: number }[];
+  details: Record<string, Object>[];
 }
 
 /**
@@ -246,7 +246,7 @@ export class AllergenAutoDetector {
   analyzeCrossReactivity(
     knownAllergens: string[],
     foodIngredients: string[]
-  ): { ingredient: string; relatedAllergen: string; riskLevel: number }[] {
+  ): Record<string, Object>[] {
     const crossReactivityMap: Record<string, string[]> = {
       '花生': ['大豆', '豌豆', '扁豆', '树坚果'],
       '牛奶': ['山羊奶', '绵羊奶', '乳清', '牛肉'],
@@ -264,7 +264,7 @@ export class AllergenAutoDetector {
       '芹菜': ['芥末', '胡萝卜', '茴香'],
     };
 
-    const warnings: { ingredient: string; relatedAllergen: string; riskLevel: number }[] = [];
+    const warnings: Record<string, Object>[] = [];
     for (const allergen of knownAllergens) {
       const crossReactive = crossReactivityMap[allergen] ?? [];
       for (const ingredient of foodIngredients) {

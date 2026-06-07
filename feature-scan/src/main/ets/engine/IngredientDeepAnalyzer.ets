@@ -15,7 +15,7 @@ export interface IngredientAnalysis {
   isHighSalicylate: boolean;
   healthRiskDescription: string;
   regulatoryStatus: 'APPROVED' | 'RESTRICTED' | 'BANNED' | 'UNDER_REVIEW' | 'UNKNOWN';
-  researchReferences: { title: string; year: number }[];
+  researchReferences: Record<string, Object>[];
   adi?: number;
   alternativeName?: string;
 }
@@ -31,7 +31,7 @@ interface IngredientKbEntry {
   healthRiskDesc: string;
   regulatoryStatus: string;
   adi?: number;
-  references: { title: string; year: number }[];
+  references: Record<string, Object>[];
 }
 
 export class IngredientDeepAnalyzer {

@@ -192,15 +192,15 @@ export class RecipeCommunityService {
     return vote;
   }
 
-  getRecipeVoteStats(recipeId: string): { upCount: number; downCount: number; score: number } {
+  getRecipeVoteStats(recipeId: string): Record<string, Object> {
     const recipeVotes = this.votes.get(recipeId) ?? [];
     const upCount = recipeVotes.filter(v => v.voteType === 'up').length;
     const downCount = recipeVotes.filter(v => v.voteType === 'down').length;
     return { upCount, downCount, score: upCount - downCount };
   }
 
-  getTopRecipes(limit: number = 10): { recipeId: string; score: number }[] {
-    const scores: { recipeId: string; score: number }[] = [];
+  getTopRecipes(limit: number = 10): Record<string, Object>[] {
+    const scores: Record<string, Object>[] = [];
     this.votes.forEach((votes, recipeId) => {
       const up = votes.filter(v => v.voteType === 'up').length;
       const down = votes.filter(v => v.voteType === 'down').length;
@@ -242,7 +242,7 @@ export class RecipeCommunityService {
   getParticipantRank(
     challengeId: string,
     memberId: string
-  ): { rank: number; totalParticipants: number; percentile: number } | null {
+  ): Record<string, Object> | null {
     const participants = this.challengeParticipants.get(challengeId);
     if (!participants || participants.length === 0) return null;
 

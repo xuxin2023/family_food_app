@@ -18,7 +18,7 @@ export interface TrackedDisposable {
 export class PageResourceTracker {
   private timers: number[] = [];
   private intervals: number[] = [];
-  private listeners: Array<{ obj: object; event: string; callback: Function }> = [];
+  private listeners: Array<{ obj: Record<string, Object>; event: string; callback: Function }> = [];
   private disposables: TrackedDisposable[] = [];
   private pageName: string = '';
   private leakGuard: MemoryLeakGuard;
@@ -38,7 +38,7 @@ export class PageResourceTracker {
     this.leakGuard.registerInterval(intervalId);
   }
 
-  registerListener(obj: object, event: string, callback: Function): void {
+  registerListener(obj: Record<string, Object>, event: string, callback: Function): void {
     this.listeners.push({ obj, event, callback });
   }
 
@@ -60,7 +60,7 @@ export class PageResourceTracker {
       try { clearInterval(id); } catch (_) {
       hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_)); /* ignore */ }
     });
-    this.listeners.forEach((l: { obj: object; event: string; callback: Function }) => {
+    this.listeners.forEach((l: { obj: Record<string, Object>; event: string; callback: Function }) => {
       try {
         const obj = l.obj as Record<string, Function>;
         if (typeof obj.off === 'function') {

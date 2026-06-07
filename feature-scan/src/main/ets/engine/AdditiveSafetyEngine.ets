@@ -329,7 +329,7 @@ export class AdditiveSafetyEngine {
       summary = `检测到${safeCount}种安全添加剂`;
     }
 
-    return { foodName: foodLabel.foodName, assessments, overallRisk, avoidCount, cautionCount, safeCount, summary, standardUsed };
+    return { foodName: foodLabel.foodName, assessments, overallRisk, avoidCount, cautionCount, safeCount, summary, standardUsed } as Record<string, Object>;
   }
 
   /**

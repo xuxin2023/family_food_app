@@ -44,7 +44,7 @@ export class RecipeCommunityService {
     const allText = `${params.title ?? ''} ${params.description ?? ''}`;
     const sensitiveHit = RecipeCommunityService.SENSITIVE_WORDS.some(w => allText.includes(w));
 
-    return { valid: missingFields.length === 0 && !sensitiveHit, missingFields, sensitiveHit };
+    return { valid: missingFields.length === 0 && !sensitiveHit, missingFields, sensitiveHit } as Record<string, Object>;
   }
 
   /**

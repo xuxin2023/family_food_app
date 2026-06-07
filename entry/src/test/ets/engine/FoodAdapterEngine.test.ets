@@ -53,7 +53,7 @@ export default function foodAdapterEngineTest() {
     }
 
     function createTodayIntake(): TodayIntakeInput {
-      return { sodium_mg: 500, sugar_g: 10, energy_kcal: 500, fat_g: 15 };
+      return { sodium_mg: 500, sugar_g: 10, energy_kcal: 500, fat_g: 15 } as Record<string, Object>;
     }
 
     it('should calculate intake for normal food', () => {

@@ -32,7 +32,7 @@ export default function v2StateDemoTest(): TestSuite {
 
   // ===== DailyDietRecord 添加餐次 =====
   suite.addTest(new TestCase('DailyDietRecord_addMeal', () => {
-    const record: DailyDietRecord = new DailyDietRecord(
+    const record: DailyDietRecord = new DailyDietRecord()
     record.addMeal(new MealNutrition('早餐', 300, 150, 10, 5));
     record.addMeal(new MealNutrition('午餐', 500, 400, 12, 15));
     expect(record.meals.length).assertEqual(2);
@@ -42,7 +42,7 @@ export default function v2StateDemoTest(): TestSuite {
 
   // ===== MemberNutritionProfile 重置 =====
   suite.addTest(new TestCase('MemberNutritionProfile_resetToday', () => {
-    const profile: MemberNutritionProfile = new MemberNutritionProfile(
+    const profile: MemberNutritionProfile = new MemberNutritionProfile()
     profile.today.addMeal(new MealNutrition('早餐', 300, 100, 8, 5));
     expect(profile.today.meals.length).assertEqual(1);
     profile.resetToday();

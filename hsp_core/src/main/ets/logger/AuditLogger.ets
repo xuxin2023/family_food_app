@@ -131,7 +131,7 @@ export class AuditLogger {
     return [...DATA_INVENTORY];
   }
 
-  static getPIALevelSummary(): { level: string; count: number }[] {
+  static getPIALevelSummary(): Record<string, Object>[] {
     const summary = new Map<string, number>();
     for (const item of DATA_INVENTORY) {
       summary.set(item.piaLevel, (summary.get(item.piaLevel) ?? 0) + 1);

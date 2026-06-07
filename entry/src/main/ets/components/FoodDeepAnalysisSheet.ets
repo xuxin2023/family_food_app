@@ -212,14 +212,14 @@ export struct FoodDeepAnalysisSheet {
         { label: '糖', value: n.sugar, unit: 'g' },
         { label: '钠', value: n.sodium, unit: 'mg' },
         { label: '膳食纤维', value: n.fiber, unit: 'g' },
-      ], (item: { label: string; value: number; unit: string }, index: number) => {
+      ], (item: Record<string, Object>, index: number) => {
         Row() {
           Text(item.label).fontSize(13).fontColor(COLORS.TEXT_SECONDARY).layoutWeight(1)
           Text(`${item.value.toFixed(1)} ${item.unit}`).fontSize(13).fontColor(COLORS.TEXT_PRIMARY).fontWeight(FontWeight.Medium)
         }
         .width('100%')
         .padding({ top: 4, bottom: 4 })
-      }, (item: { label: string; value: number; unit: string }, index: number) => `${index}`)
+      }, (item: Record<string, Object>, index: number) => `${index}`)
     }
     .width('100%')
     .alignItems(HorizontalAlign.Start)

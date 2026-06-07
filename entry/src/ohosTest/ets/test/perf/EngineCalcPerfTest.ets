@@ -54,7 +54,7 @@ function measureIteration(fn: () => void): number {
   return Date.now() - start;
 }
 
-function computeStats(samples: number[]): { avg: number; min: number; max: number; p95: number } {
+function computeStats(samples: number[]): Record<string, Object> {
   const sorted = [...samples].sort((a, b) => a - b);
   const sum = sorted.reduce((acc, v) => acc + v, 0);
   const p95Idx = Math.floor(sorted.length * 0.95);

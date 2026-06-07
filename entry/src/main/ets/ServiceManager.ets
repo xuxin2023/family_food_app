@@ -206,7 +206,7 @@ export class ServiceManager {
    */
   async switchToHwHealthKit(context: common.Context): Promise<boolean> {
     try {
-      const hwProvider: HwHealthSignalProvider = new HwHealthSignalProvider(
+      const hwProvider: HwHealthSignalProvider = new HwHealthSignalProvider()
       this.healthService.setProvider(hwProvider);
       this.useHwHealthKit = true;
       hilog.info(DOMAIN_ZERO, TAG, 'Switched to HwHealthKit');

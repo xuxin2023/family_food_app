@@ -307,8 +307,8 @@ export class OnDeviceInferenceEngine {
     this.lastInferenceTime = Date.now() - startTime;
   }
 
-  getInferenceStats(): { count: number; lastLatencyMs: number } {
-    return { count: this.inferenceCount, lastLatencyMs: this.lastInferenceTime };
+  getInferenceStats(): Record<string, Object> {
+    return { count: this.inferenceCount, lastLatencyMs: this.lastInferenceTime } as Record<string, Object>;
   }
 
   isReady(): boolean {

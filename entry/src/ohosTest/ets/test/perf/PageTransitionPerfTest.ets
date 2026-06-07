@@ -37,7 +37,7 @@ export class PageTransitionPerfTest {
     hilog.info(DOMAIN_ZERO, TAG, 'Frame tracking ended: %{public}d frames recorded', this.frameTimestamps.length);
   }
 
-  private calculateFpsFromTimestamps(): { fps: number; droppedFrames: number; totalFrames: number } {
+  private calculateFpsFromTimestamps(): Record<string, Object> {
     if (this.frameTimestamps.length < 2) {
       return { fps: 0, droppedFrames: 0, totalFrames: this.frameTimestamps.length };
     }

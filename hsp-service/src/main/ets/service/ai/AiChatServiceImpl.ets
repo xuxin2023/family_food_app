@@ -38,10 +38,10 @@ export class AiChatServiceImpl extends AiServiceBase implements IAiChatService {
   clearHistory(): void { this.conversationHistory = []; }
 
   async sendMessage(message: string): Promise<ChatMessage> {
-    const userMsg: ChatMessage = new ChatMessage(
+    const userMsg: ChatMessage = new ChatMessage()
     this.addToHistory(userMsg);
     const aiText = await this.callAiWithHistory(message);
-    const aiMsg: ChatMessage = new ChatMessage(
+    const aiMsg: ChatMessage = new ChatMessage()
     this.addToHistory(aiMsg);
     return aiMsg;
   }

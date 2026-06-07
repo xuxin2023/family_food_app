@@ -93,13 +93,13 @@ export class AppState {
   private syncEventHandler: ((event: SyncEvent) => void) | null = null;
 
   // ===== 领域门面（init 后可用） =====
-  readonly food: FoodFacade = new FoodFacade(
+  readonly food: FoodFacade = new FoodFacade()
     this.foodRepo, this.historyRepo, this.favoriteRepo, this.engines, this.cache
   );
-  readonly memberFacade: MemberFacade = new MemberFacade(
+  readonly memberFacade: MemberFacade = new MemberFacade()
     this.familyRepo, this.member, this.cache
   );
-  readonly health: HealthFacade = new HealthFacade(
+  readonly health: HealthFacade = new HealthFacade()
     this.historyRepo, this.engines, this.services
   );
   readonly sync: SyncFacade = new SyncFacade(this.services);

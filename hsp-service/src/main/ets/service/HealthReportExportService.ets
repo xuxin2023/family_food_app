@@ -10,7 +10,7 @@ const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 export interface HealthReportRequest {
   memberId: string;
   memberName: string;
-  dateRange: { start: string; end: string };
+  dateRange: Record<string, Object>;
   includeNutritionTrend: boolean;
   includeAllergenHistory: boolean;
   includeRiskPrediction: boolean;

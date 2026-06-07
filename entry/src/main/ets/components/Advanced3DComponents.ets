@@ -295,7 +295,7 @@ export struct LiquidSwipeIndicator {
 
   build() {
     Row() {
-      ForEach(Array.from({ length: this.totalItems }), (_: unknown, index: number) => {
+      ForEach(Array.from({ length: this.totalItems }), (_: Object, index: number) => {
         Stack() {
           Circle()
             .width(this.indicatorSize)
@@ -327,7 +327,7 @@ export struct LiquidSwipeIndicator {
         .height(this.indicatorSize * 2)
         .justifyContent(FlexAlign.Center)
         .alignItems(HorizontalAlign.Center)
-      }, (_: unknown, index: number) => index.toString())
+      }, (_: Object, index: number) => index.toString())
     }
     .justifyContent(FlexAlign.Center)
   }

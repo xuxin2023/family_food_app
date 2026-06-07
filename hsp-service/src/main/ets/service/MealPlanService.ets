@@ -34,7 +34,7 @@ export class MealPlanService {
     budget: DailyBudget,
     profile: FamilyProfile
   ): MealPlan {
-    const mealSlots: { type: string; time: string; ratio: number }[] = [
+    const mealSlots: Record<string, Object>[] = [
       { type: '早餐', time: '07:00', ratio: 0.3 },
       { type: '午餐', time: '12:00', ratio: 0.4 },
       { type: '晚餐', time: '18:00', ratio: 0.25 },

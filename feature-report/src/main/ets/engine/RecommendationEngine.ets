@@ -26,7 +26,7 @@ export class RecommendationEngine {
   ): Recommendation[] {
     const results: Recommendation[] = [];
     for (let i = 0; i < profiles.length; i++) {
-      const params: RuleEngineParams = new RuleEngineParams(
+      const params: RuleEngineParams = new RuleEngineParams()
       results.push(this.ruleEngine.calculate(params));
     }
     return results;

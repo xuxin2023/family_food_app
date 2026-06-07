@@ -118,17 +118,17 @@ export class TeenModeManager {
     return hour >= 22 || hour < 6;
   }
 
-  canUseAtCurrentTime(): { allowed: boolean; reason: string } {
+  canUseAtCurrentTime(): Record<string, Object> {
     if (!this.isTeenModeEnabled) {
-      return { allowed: true, reason: '' };
+      return { allowed: true, reason: '' } as Record<string, Object>;
     }
     if (this.isNightTimeRestricted()) {
-      return { allowed: false, reason: '青少年模式：22:00-06:00期间禁止使用' };
+      return { allowed: false, reason: '青少年模式：22:00-06:00期间禁止使用' } as Record<string, Object>;
     }
     if (this.isUsageTimeExceeded()) {
-      return { allowed: false, reason: `青少年模式：今日使用已满${this.getMaxDailyUsageMinutes()}分钟` };
+      return { allowed: false, reason: `青少年模式：今日使用已满${this.getMaxDailyUsageMinutes()}分钟` } as Record<string, Object>;
     }
-    return { allowed: true, reason: '' };
+    return { allowed: true, reason: '' } as Record<string, Object>;
   }
 
   private dailyUsageMinutes: number = 0;

@@ -54,7 +54,7 @@ struct HealthReportPage {
       for (let i = 0; i < days; i++) {
         const d = new Date();
         d.setDate(d.getDate() - i);
-        const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+        const dateStr = `${d.getFullYear()}-${().toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
         const daily = NutritionDaily.createForDate('default', dateStr);
         if (daily.scanCount > 0) {
           data.dailySummaries.push(daily);

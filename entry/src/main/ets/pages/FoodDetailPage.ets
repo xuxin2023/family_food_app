@@ -319,14 +319,11 @@ struct FoodDetailPage {
         .fontColor(COLORS.TEXT_PRIMARY)
         .fontWeight(FONT_WEIGHT.BOLD)
 
-      this.nutritionRow('热量', ` + '`${this.foodLabel.nutrition.calories}kcal`' + `, '2000kcal/日')
-`
+      this.nutritionRow('热量', `${this.foodLabel.nutrition.calories}kcal`, '2000kcal/日')
       this.nutritionRow('蛋白质', `${this.foodLabel.nutrition.protein}g`, '60g/日')
       this.nutritionRow('脂肪', `${this.foodLabel.nutrition.fat}g`, '65g/日')
-`
       this.nutritionRow('钠', `${this.foodLabel.nutrition.sodium}mg`, '2000mg/日')
       this.nutritionRow('糖', `${this.foodLabel.nutrition.sugar}g`, '50g/日')
-`
     }
     .width('100%')
     .padding(SPACING.MEDIUM)

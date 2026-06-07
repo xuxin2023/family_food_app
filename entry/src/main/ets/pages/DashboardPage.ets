@@ -112,7 +112,7 @@ class DashboardViewModel {
 
 @Entry
 @ComponentV2
-struct DashboardPage {
+export struct DashboardPage {
   @Local vm: DashboardViewModel = new DashboardViewModel()
   private componentActive: boolean = true
   private chartDelayTimer: number = -1

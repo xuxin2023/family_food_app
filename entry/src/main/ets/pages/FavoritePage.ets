@@ -1,7 +1,10 @@
 ﻿// FavoritePage.ets
 // 鎴戠殑鏀惰棌椤甸潰 - 灞曠ず鐢ㄦ埛鏀惰棌鐨勯鍝佸垪琛?
 import {
-// 我的收藏页面 - 展示用户收藏的食品列表
+  COLORS, FONT_SIZE, FONT_WEIGHT, SPACING, RADIUS, BUTTON,
+  ImageCache, ToastHelper, safeBack, safePushUrl,
+  PageResourceTracker, createPageTracker,
+  HILOG_DOMAIN_DEFAULT, FEATURE_LIMITS
 } from 'hsp_core';
 import { AppState } from '../AppState';
 import { FavoriteItem } from '../repository/FavoriteRepository';
@@ -148,7 +151,7 @@ export struct FavoriteItemRow {
 
 @Entry
 @ComponentV2
-struct FavoritePage {
+export struct FavoritePage {
   @Local vm: FavoritePageViewModel = new FavoritePageViewModel()
 
   private componentActive: boolean = true
@@ -255,7 +258,7 @@ struct FavoritePage {
     Column() {
       Row() {
         Row() {
-          Text('展开)
+          Text('←')
             .fontSize(FONT_SIZE.LARGE)
             .fontColor(COLORS.TEXT_PRIMARY)
         }

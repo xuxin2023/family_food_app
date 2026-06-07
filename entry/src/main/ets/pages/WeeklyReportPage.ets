@@ -34,7 +34,7 @@ class WeeklyReportViewModel {
 
 @Entry
 @ComponentV2
-struct WeeklyReportPage {
+export struct WeeklyReportPage {
   @Local vm: WeeklyReportViewModel = new WeeklyReportViewModel()
 
   private appState: AppState = AppState.getInstance()

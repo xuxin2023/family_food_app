@@ -78,7 +78,7 @@ export class IapServerValidator {
 
       if (response.responseCode === 200) {
         const body = JSON.parse(response.result as string) as Record<string, Object>;
-        const purchaseStatus = body['purchaseStatus'];
+        const purchaseStatus = body.purchaseStatus;
         result.isValid = typeof purchaseStatus === 'number' && purchaseStatus === 0;
         result.verifiedAt = Date.now();
         hilog.info(DOMAIN_ZERO, TAG, 'Purchase verified: %{public}s, valid=%{public}s', productId, result.isValid.toString());

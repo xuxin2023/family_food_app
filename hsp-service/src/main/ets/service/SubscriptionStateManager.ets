@@ -9,7 +9,8 @@ import { IapProductManager, IapProductDefinition } from './IapProductManager';
 import { IapServerValidator } from './IapServerValidator';
 
 const TAG = 'SubscriptionState';
-const DOMAIN = HILOG_DOMAIN_DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
+const DOMAIN = DOMAIN_ZERO;
 const PREF_NAME = 'subscription_state';
 const KEY_ACTIVE_TIER = 'active_tier';
 const KEY_EXPIRY_TS = 'expiry_timestamp';

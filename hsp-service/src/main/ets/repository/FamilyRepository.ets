@@ -46,7 +46,7 @@ export class FamilyRepository {
       ${COL_BEDTIME} TEXT,
       ${COL_CREATED_AT} INTEGER NOT NULL,
       ${COL_UPDATED_AT} INTEGER NOT NULL
-    )`;`
+    )`;
 
     try {
       await this.rdbStore.executeSql(sql);

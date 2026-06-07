@@ -28,7 +28,7 @@ const HEALTH_GOAL_OPTIONS: string[] = [
 
 @Entry
 @ComponentV2
-struct AllergenSetupWizard {
+export struct AllergenSetupWizard {
   @Local currentStep: number = 0
   @Local selectedAgeGroup: string = ''
   @Local selectedGoals: string[] = []
@@ -253,7 +253,7 @@ struct AllergenSetupWizard {
           (allergen: string) => {
             Row() {
               Text(allergen).fontSize(14).layoutWeight(1)
-              Text('×).fontSize(16).fontColor('#FF4444')
+              Text('✕').fontSize(16).fontColor('#FF4444')
                 .onClick(() => { this.toggleAllergen(allergen) })
             }
             .width('100%')
@@ -290,7 +290,7 @@ struct AllergenSetupWizard {
     .margin({ bottom: 16 })
 
     Row() {
-      TextInput({ placeholder: '添加自定义不耐受 })
+      TextInput({ placeholder: '添加自定义不耐受' })
         .width('65%')
         .height(40)
         .onChange((value: string) => { this.customIntolerance = value })
@@ -310,7 +310,7 @@ struct AllergenSetupWizard {
   @Builder
   buildCompleteStep() {
     Column() {
-      Text('×)
+      Text('✓')
         .fontSize(48)
         .fontColor(COLORS.PRIMARY)
         .margin({ bottom: 16 })
@@ -377,7 +377,8 @@ struct AllergenSetupWizard {
       '不同年龄段的安全阈值不同，如儿童钠摄入上限更低',
       '选择您关注的健康方向，系统将优化推荐策略',
       '选中的过敏原将在扫描时触发红色警报',
-      '不耐受不同于过敏，但同样需要控制摄入'\n    ];
+      '不耐受不同于过敏，但同样需要控制摄入'
+    ];
     return descs[this.currentStep] || '';
   }
 

@@ -132,13 +132,13 @@ export class SecureDataStore {
   async encrypt(plainText: string): Promise<ArrayBuffer> {
     await this.ensureKey();
     const symKeyGenerator = cryptoFramework.createSymKeyGenerator('AES256');
-    const keyData: Uint8Array = new Uint8Array(
+    const keyData: Uint8Array = new Uint8Array(this.keyMaterial!.outData);
     const symKey = await symKeyGenerator.convertKey({ data: keyData.buffer as ArrayBuffer });
 
     const cipher = cryptoFramework.createCipher('AES256|GCM|NONE');
     const random = cryptoFramework.createRandom();
     const randomBlob = await random.generateRandom(IV_LENGTH);
-    const ivBytes: Uint8Array = new Uint8Array(
+    const ivBytes: Uint8Array = new Uint8Array(randomBlob.data);
     const aadArr: Uint8Array = new Uint8Array(0);
     const tagArr: Uint8Array = new Uint8Array(TAG_LENGTH);
     const params: cryptoFramework.GcmParamsSpec = {
@@ -153,7 +153,7 @@ export class SecureDataStore {
     };
     const result = await cipher.doFinal(input);
     // 返回 IV + 密文 + AuthTag 的拼接
-    return this.concatBuffers(ivBytes.buffer as ArrayBuffer, result.data);
+    return this.concatBuffers(ivBytes.buffer as ArrayBuffer, result.data.buffer as ArrayBuffer);
   }
 
   /**
@@ -168,17 +168,17 @@ export class SecureDataStore {
   async decrypt(encryptedData: ArrayBuffer): Promise<string> {
     await this.ensureKey();
     const symKeyGenerator = cryptoFramework.createSymKeyGenerator('AES256');
-    const keyData: Uint8Array = new Uint8Array(
+    const keyData: Uint8Array = new Uint8Array(this.keyMaterial!.outData);
     const symKey = await symKeyGenerator.convertKey({ data: keyData.buffer as ArrayBuffer });
 
     if (encryptedData.byteLength < IV_LENGTH + TAG_LENGTH) {
       throw new Error('Invalid encrypted data length');
     }
 
-    const fullData: Uint8Array = new Uint8Array(
-    const iv: Uint8Array = new Uint8Array(
-    const tag: Uint8Array = new Uint8Array(
-    const cipherData: Uint8Array = new Uint8Array(
+    const fullData: Uint8Array = new Uint8Array(encryptedData);
+    const iv: Uint8Array = fullData.slice(0, IV_LENGTH);
+    const tag: Uint8Array = fullData.slice(fullData.length - TAG_LENGTH);
+    const cipherData: Uint8Array = fullData.slice(IV_LENGTH, fullData.length - TAG_LENGTH);
 
     const aadArr2: Uint8Array = new Uint8Array(0);
     const decipher = cryptoFramework.createCipher('AES256|GCM|NONE');
@@ -188,10 +188,10 @@ export class SecureDataStore {
       authTag: { data: tag.buffer as ArrayBuffer }
     } as cryptoFramework.GcmParamsSpec;
 
-    await decipher.init(cryptoFramework.CryptoMode.DECRYPT_MODE, symKey, params);
+    await decipher.init(cryptoFramework.CryptoMode.DECRYPT_MODE, symKey, gcmParams2);
     const input: cryptoFramework.DataBlob = { data: cipherData.buffer as ArrayBuffer };
     const result = await decipher.doFinal(input);
-    return this.arrayBufferToresult.data.toString();
+    return this.arrayBufferToString(result.data);
   }
 
   // ========== 内部方法 ==========
@@ -252,13 +252,13 @@ export class SecureDataStore {
 
   private arrayBufferToString(buffer: ArrayBuffer): string {
     const decoder: util.TextDecoder = new util.TextDecoder('utf-8');
-    const bytes: Uint8Array = new Uint8Array(
-    const decoded: string = decoder.decodeTobytes.toString();
+    const bytes: Uint8Array = new Uint8Array(buffer);
+    const decoded: string = decoder.decodeWithStream(bytes);
     return decoded;
   }
 
   private arrayBufferToHex(buffer: ArrayBuffer): string {
-    const bytes: Uint8Array = new Uint8Array(
+    const bytes: Uint8Array = new Uint8Array(buffer);
     let hex = '';
     for (let i = 0; i < bytes.length; i++) {
       hex += bytes[i].toString(16).padStart(2, '0');
@@ -267,7 +267,7 @@ export class SecureDataStore {
   }
 
   private hexToArrayBuffer(hex: string): ArrayBuffer {
-    const bytes: Uint8Array = new Uint8Array(
+    const bytes: Uint8Array = new Uint8Array(hex.length / 2);
     for (let i = 0; i < hex.length; i += 2) {
       bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16);
     }

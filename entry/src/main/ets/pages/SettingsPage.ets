@@ -47,7 +47,7 @@ class SettingsViewModel {
 
 @Entry
 @ComponentV2
-struct SettingsPage {
+export struct SettingsPage {
   @Local vm: SettingsViewModel = new SettingsViewModel()
 
   private componentActive: boolean = true
@@ -749,7 +749,8 @@ struct SettingsPage {
   }
 
   private buildCollectionListHtml(): string {
-    return `<h3>个人信息收集清单</h3>`
+    return `<h3>个人信息收集清单</h3>
+`
 <p>根据《个人信息保护法》及华为应用商店审核要求，本应用收集的个人信息如下：</p>
 <table border="1" cellpadding="6" style="border-collapse:collapse;width:100%;font-size:12px;">
 <tr style="background:#f0f0f0;"><th>信息类型</th><th>收集目的</th><th>存储方式</th><th>是否出境</th></tr>
@@ -762,7 +763,8 @@ struct SettingsPage {
 <tr><td>设备唯一标识(UID)</td><td>匿名身份识别</td><td>本地偏好存储</td><td>否</td></tr>
 <tr><td>崩溃日志</td><td>应用稳定性监控</td><td>本地临时存储</td><td>否</td></tr>
 </table>
-<p style="margin-top:8px;font-size:11px;color:#666;">所有数据均存储在用户设备本地，不主动上传至任何服务器。云同步功能需用户手动开启，且数据仅传输至华为云（中国大陆区域），不涉及跨境传输。</p>``
+<p style="margin-top:8px;font-size:11px;color:#666;">所有数据均存储在用户设备本地，不主动上传至任何服务器。云同步功能需用户手动开启，且数据仅传输至华为云（中国大陆区域），不涉及跨境传输。</p>`
+`
   }
 
   /**

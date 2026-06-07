@@ -9,7 +9,8 @@ import { createAiChatService } from './ai/AiServiceFactory';
 import { CloudFunctionClient } from 'hsp_cloud';
 
 const TAG = 'LlmChatProxy';
-const DOMAIN = HILOG_DOMAIN_DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
+const DOMAIN = DOMAIN_ZERO;
 
 export enum LlmSource {
   ON_DEVICE = 'on_device',
@@ -108,7 +109,7 @@ export class LlmChatProxy {
             memberProfile: healthCtx,
           },
         }) as Record<string, Object>;
-        return (result['answer'] as string) ?? null;
+        return (result.answer as string) ?? null;
       } catch (_e) {
       hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
         if (attempt === maxRetries - 1) {

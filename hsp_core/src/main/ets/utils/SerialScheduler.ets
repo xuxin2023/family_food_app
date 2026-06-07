@@ -1,3 +1,9 @@
+import { hilog } from '@kit.PerformanceAnalysisKit';
+import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
+
+const TAG = 'SerialScheduler';
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
+
 export class SerialScheduler {
   private queues: Map<string, Promise<void>> = new Map();
 

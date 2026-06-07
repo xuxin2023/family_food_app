@@ -69,7 +69,7 @@ export class RecipeRepository {
       bookmark_count INTEGER DEFAULT 0,
       is_approved INTEGER DEFAULT 0,
       is_draft INTEGER DEFAULT 1
-    )`;`
+    )`;
       await this.rdbStore.executeSql(recipeSql);
 
       const commentSql = `CREATE TABLE IF NOT EXISTS ${TABLE_COMMENT} (`
@@ -83,7 +83,7 @@ export class RecipeRepository {
       created_at INTEGER NOT NULL,
       like_count INTEGER DEFAULT 0,
       is_edited INTEGER DEFAULT 0
-    )`;`
+    )`;
       await this.rdbStore.executeSql(commentSql);
 
       const likeSql = `CREATE TABLE IF NOT EXISTS ${TABLE_LIKE} (`
@@ -91,7 +91,7 @@ export class RecipeRepository {
       recipe_id TEXT NOT NULL,
       uid TEXT NOT NULL,
       created_at INTEGER NOT NULL
-    )`;`
+    )`;
       await this.rdbStore.executeSql(likeSql);
 
       const bookmarkSql = `CREATE TABLE IF NOT EXISTS ${TABLE_BOOKMARK} (`
@@ -100,7 +100,7 @@ export class RecipeRepository {
       uid TEXT NOT NULL,
       created_at INTEGER NOT NULL,
       note TEXT DEFAULT ''
-    )`;`
+    )`;
       await this.rdbStore.executeSql(bookmarkSql);
 
       // 索引

@@ -15,7 +15,7 @@ const AGE_GROUP_VALUES: AgeGroup[] = [AgeGroup.CHILD, AgeGroup.TEEN, AgeGroup.AD
 
 @Entry
 @ComponentV2
-struct MemberEditPage {
+export struct MemberEditPage {
   @Local nickname: string = ''
   @Local selectedAgeGroup: number = 2
   @Local selectedGoals: boolean[] = [false, false, false, false, false, false]

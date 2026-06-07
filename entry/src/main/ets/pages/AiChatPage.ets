@@ -29,7 +29,7 @@ const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @Entry
 @ComponentV2
-struct AiChatPage {
+export struct AiChatPage {
   @Local messages: ChatMessage[] = [];
   @Local inputText: string = '';
   @Local isLoading: boolean = false;
@@ -165,7 +165,8 @@ struct AiChatPage {
       // ===== 娑堟伅鍒楄〃 =====
       Scroll(this.scrollController) {
         Column() {
-          // 蹇嵎鎻愰棶锛堜粎棣栨鏄剧ず锛?          if (this.showQuickQuestions && this.messages.length <= 2) {
+          // 快捷提问(仅首次显示)
+          if (this.showQuickQuestions && this.messages.length <= 2) {
             this.QuickQuestionsPanel()
           }
 
@@ -271,7 +272,8 @@ struct AiChatPage {
   MessageBubble(msg: ChatMessage) {
     Row() {
       if (msg.role === ChatRole.USER) {
-        // 右侧：用户消息       Blank()
+        // 右侧：用户消息
+        Blank()
           .layoutWeight(1)
 
         Column() {
@@ -463,7 +465,8 @@ struct AiChatPage {
       if (index >= 0 && index < this.familyMembers.length) {
         const member = this.familyMembers[index]
 
-        // 淇濆瓨褰撳墠鎴愬憳鐨勫璇?        await this.saveCurrentMessages()
+        // 保存当前成员的对话
+        await this.saveCurrentMessages()
 
         this.selectedMemberId = member.memberId
         this.selectedMemberName = member.nickname

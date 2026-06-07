@@ -1,4 +1,4 @@
-// MainTabsPage.ets
+﻿// MainTabsPage.ets
 // HarmonyOS 6.1 悬浮页签 + 沉浸光感 集成主页面
 // barOverlap + barFloatingStyle 实现毛玻璃悬浮栏，内容区延伸至导航栏背后
 // systemMaterialEffect 自适应沉浸光感材质，系统自动根据设备算力调节渲染精度
@@ -44,7 +44,7 @@ const TAG = 'MainTabsPage';
 
 @Entry
 @ComponentV2
-struct MainTabsPage {
+export struct MainTabsPage {
   private tabsController: HdsTabsController = new HdsTabsController();
   private tracker: PageResourceTracker = createPageTracker('MainTabsPage')
   @Local currentIndex: number = 0;
@@ -218,11 +218,6 @@ struct MainTabsPage {
     .onChange((index: number) => {
       this.currentIndex = index;
     })
-    .width('100%')
-    .height('100%')
-        }
-      }
-    }
     .width('100%')
     .height('100%')
   }
@@ -510,7 +505,7 @@ struct MainTabsPage {
       }
       .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)
-      Text('更多)
+      Text('更多')
         .fontSize(22)
         .fontColor(COLORS.TEXT_GRAY_BDBD)
     }
@@ -518,9 +513,6 @@ struct MainTabsPage {
     .padding({ left: 16, right: 14, top: 14, bottom: 14 })
     .backgroundColor(COLORS.BG_CARD)
     .borderRadius(12)
-    .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
-    .accessibilityText('')
-    .accessibilityLevel('yes')
     .onClick(() => {
       safePushUrl(targetUrl, extraParams)
     })
@@ -529,3 +521,4 @@ struct MainTabsPage {
   aboutToDisappear(): void {
     this.tracker.onDisappear()
   }
+}

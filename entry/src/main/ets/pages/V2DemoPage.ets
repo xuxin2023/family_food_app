@@ -1,4 +1,4 @@
-// V2DemoPage.ets
+﻿// V2DemoPage.ets
 // V2 状态管理演示页面 - @ComponentV2 + @ObservedV2 + @Trace 新一代状态管理测试
 // 涵盖以下特性:
 // 3. @Monitor - 监听属性变化自动回调
@@ -17,7 +17,7 @@ const DOMAIN_ZERO = 0x0000;
 // ==================== 濡炪倗鏁诲鐗堢▔閼姐倗鐭嬪ù?====================
 @Entry
 @ComponentV2
-struct V2DemoPage {
+export struct V2DemoPage {
   @Local manager: FamilyNutritionManager = createDemoFamilyManager();
   @Local newMemberName: string = '';
   private tracker: PageResourceTracker = createPageTracker('V2DemoPage')
@@ -61,7 +61,7 @@ struct V2DemoPage {
           .borderRadius(16)
           .backgroundColor('#E8E8E8')
           .onClick(() => {
-            this.newMemberName = '成员? + (this.manager.members.length + 1);
+            this.newMemberName = '成员' + (this.manager.members.length + 1);
             this.manager.addMember(this.newMemberName);
           })
           .accessibilityText('添加成员')
@@ -83,15 +83,15 @@ struct V2DemoPage {
       // 添加餐食按钮区
         Row({ space: 8 }) {
           Button($r('app.string.v2_demo_add_breakfast')).fontSize(13)
-            .onClick(() => this.addMeal('早餐?, 350, 200, 10, 8))
+            .onClick(() => this.addMeal('早餐', 350, 200, 10, 8))
             .accessibilityText('添加早餐')
             .accessibilityLevel('yes')
           Button($r('app.string.v2_demo_add_lunch')).fontSize(13)
-            .onClick(() => this.addMeal('闁告鐗撻ˇ?, 650, 500, 12, 18))
+            .onClick(() => this.addMeal('午餐', 650, 500, 12, 18))
             .accessibilityText('婵烇綀顕ф慨鐐哄础閸儺妯€')
             .accessibilityLevel('yes')
           Button($r('app.string.v2_demo_add_dinner')).fontSize(13)
-            .onClick(() => this.addMeal('晚餐?, 500, 400, 10, 15))
+            .onClick(() => this.addMeal('晚餐', 500, 400, 10, 15))
             .accessibilityText('婵烇綀顕ф慨鐐哄疾濮橀妯€')
             .accessibilityLevel('yes')
         }

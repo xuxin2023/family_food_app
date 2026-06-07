@@ -4,8 +4,11 @@
 
 import { common } from '@kit.AbilityKit';
 import { util } from '@kit.ArkTS';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
 
 const TAG = 'PrivacyContentUtil';
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 /** 读取 rawfile 目录下的 HTML 文件为字符串 */
 async function readRawHtml(context: common.Context, fileName: string): Promise<string> {

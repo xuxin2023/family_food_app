@@ -1,4 +1,9 @@
 import { BusinessError } from './BusinessError';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
+
+const TAG = 'NullGuard';
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export class NullGuard {
   static safeGet<T>(value: T | null | undefined, defaultValue: T): T {

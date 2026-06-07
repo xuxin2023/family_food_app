@@ -105,15 +105,15 @@ export class AiPolishService extends AiServiceBase {
   }
 
   private buildPrompt(input: PolishInput): string {
-    return `请将以下规则引擎输出润色为用户友好的建议文本。`
-要求：语气温和、生活化，不使用恐吓式表达，不使用绝对化表述。
+    return `Polish the following rule engine output into a user-friendly suggestion.
+Requirements: Warm tone, conversational, no fear-based wording, no absolute statements.
 
-健康目标：${input.healthGoal}
-适配等级：${input.level}
-${input.maxAmount > 0 ? `建议量：不超过${input.maxAmount}g` : ''}
-${input.reasons.length > 0 ? `原因：${input.reasons.join('；')}` : ''}
-${input.reminders.length > 0 ? `提醒：${input.reminders.join('；')}` : ''}
+Health Goal: ${input.healthGoal}
+Level: ${input.level}
+${input.maxAmount > 0 ? `Suggested amount: no more than ${input.maxAmount}g` : ''}
+${input.reasons.length > 0 ? `Reasons: ${input.reasons.join('; ')}` : ''}
+${input.reminders.length > 0 ? `Reminders: ${input.reminders.join('; ')}` : ''}
 
-请输出润色后的建议（不超过100字）：`;`
+Output the polished suggestion (no more than 100 characters):`;
   }
 }

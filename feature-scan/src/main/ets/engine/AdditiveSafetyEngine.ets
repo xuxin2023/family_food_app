@@ -409,7 +409,7 @@ export class AdditiveSafetyEngine {
    */
   searchByRiskLevel(level: AdditiveRiskLevel): AdditiveAssessment[] {
     const results: AdditiveAssessment[] = [];
-    for (const [eNum, info] of Object.entries(ADDITIVE_DB)) {
+    for (const [eNum, info] of Object.keys(ADDITIVE_DB)) {
       if (info.risk === level) {
         results.push({
           eNumber: eNum, name: info.name, riskLevel: info.risk,

@@ -3,7 +3,7 @@
 // 基于 MemberTier + ProductPlan 体系
 
 import {
-  ToastHelper, safeBack, MemberTier, PurchaseResult, ProductPlan, getProductPlanForTier, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, HILOG_DOMAIN_DEFAULT
+  ToastHelper, safeBack, MemberTier, PurchaseResult, ProductPlan, getProductPlanForTier, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, HILOG_DOMAIN_DEFAULT,
   PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { AppState } from '../AppState';
@@ -29,7 +29,7 @@ export class PlanDisplay {
 
 @Entry
 @ComponentV2
-struct SubscriptionPage {
+export struct SubscriptionPage {
   @Local currentTier: MemberTier = MemberTier.FREE
   @Local plans: PlanDisplay[] = []
   @Local isPurchasing: boolean = false

@@ -60,28 +60,28 @@ export interface ProductUpdateData {
 
 function isFoodSafetyAlertData(raw: Record<string, string> | undefined): raw is Record<string, string> & FoodSafetyAlertData {
   return raw !== undefined
-    && typeof raw['alertId'] === 'string'
-    && typeof raw['productName'] === 'string'
-    && typeof raw['reason'] === 'string';
+    && typeof raw.alertId === 'string'
+    && typeof raw.productName === 'string'
+    && typeof raw.reason === 'string';
 }
 
 function isAdditiveRiskData(raw: Record<string, string> | undefined): raw is Record<string, string> & AdditiveRiskData {
   return raw !== undefined
-    && typeof raw['additiveName'] === 'string'
-    && typeof raw['riskLevel'] === 'string';
+    && typeof raw.additiveName === 'string'
+    && typeof raw.riskLevel === 'string';
 }
 
 function isNutritionTipData(raw: Record<string, string> | undefined): raw is Record<string, string> & NutritionTipData {
   return raw !== undefined
-    && typeof raw['tipId'] === 'string'
-    && typeof raw['summary'] === 'string';
+    && typeof raw.tipId === 'string'
+    && typeof raw.summary === 'string';
 }
 
 function isProductUpdateData(raw: Record<string, string> | undefined): raw is Record<string, string> & ProductUpdateData {
   return raw !== undefined
-    && typeof raw['productId'] === 'string'
-    && typeof raw['productName'] === 'string'
-    && typeof raw['updateType'] === 'string';
+    && typeof raw.productId === 'string'
+    && typeof raw.productName === 'string'
+    && typeof raw.updateType === 'string';
 }
 
 function parsePayloadData<T>(raw: Record<string, string> | undefined): T {

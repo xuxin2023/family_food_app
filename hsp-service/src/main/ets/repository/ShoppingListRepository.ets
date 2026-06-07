@@ -56,14 +56,14 @@ export class ShoppingListRepository {
 
   private toValuesBucket(item: ShoppingItem): relationalStore.ValuesBucket {
     const bucket: relationalStore.ValuesBucket = {};
-    bucket['id'] = item.id;
-    bucket['name'] = item.name;
-    bucket['category'] = item.category;
-    bucket['quantity'] = item.quantity;
-    bucket['is_purchased'] = item.isPurchased ? 1 : 0;
-    bucket['added_by'] = item.addedBy;
-    bucket['added_at'] = item.addedAt;
-    bucket['related_barcode'] = item.relatedFoodBarcode;
+    bucket.id = item.id;
+    bucket.name = item.name;
+    bucket.category = item.category;
+    bucket.quantity = item.quantity;
+    bucket.is_purchased = item.isPurchased ? 1 : 0;
+    bucket.added_by = item.addedBy;
+    bucket.added_at = item.addedAt;
+    bucket.related_barcode = item.relatedFoodBarcode;
     return bucket;
   }
 
@@ -161,14 +161,14 @@ export class ShoppingListRepository {
     let count = 0;
     for (const row of rows) {
       const item: ShoppingItem = new ShoppingItem()
-      item.id = (row['id'] as string) ?? `shop_${Date.now()}_${count}`;
-      item.name = (row['name'] as string) ?? '';
-      item.category = (row['category'] as string) ?? '';
-      item.quantity = (row['quantity'] as string) ?? '1';
-      item.isPurchased = (row['is_purchased'] as number) === 1;
-      item.addedBy = (row['added_by'] as string) ?? '';
-      item.addedAt = (row['added_at'] as number) ?? Date.now();
-      item.relatedFoodBarcode = (row['related_barcode'] as string) ?? '';
+      item.id = (row.id as string) ?? `shop_${Date.now()}_${count}`;
+      item.name = (row.name as string) ?? '';
+      item.category = (row.category as string) ?? '';
+      item.quantity = (row.quantity as string) ?? '1';
+      item.isPurchased = (row.is_purchased as number) === 1;
+      item.addedBy = (row.added_by as string) ?? '';
+      item.addedAt = (row.added_at as number) ?? Date.now();
+      item.relatedFoodBarcode = (row.related_barcode as string) ?? '';
       this.items.push(item);
       count++;
     }

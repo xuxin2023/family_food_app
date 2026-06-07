@@ -70,7 +70,7 @@ export class AntiCaptureDetector {
       const allProperties = await connection.getProperties(netHandle);
       if (allProperties) {
         const propRecord = allProperties as Record<string, Object>;
-        const proxyHost = propRecord['httpProxyHost'] as string | undefined;
+        const proxyHost = propRecord.httpProxyHost as string | undefined;
         return proxyHost !== undefined && proxyHost !== null && proxyHost.length > 0;
       }
     } catch (_e) {

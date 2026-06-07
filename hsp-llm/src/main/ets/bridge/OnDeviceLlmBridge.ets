@@ -176,8 +176,8 @@ export class OnDeviceLlmBridge {
     if (!context) return '该食品总体营养指标适中，可根据个人健康目标适量食用。';
     try {
       const ctx = JSON.parse(context) as Record<string, string>;
-      const name = ctx['foodName'] ?? '该食品';
-      const grade = ctx['nutriScore'] ?? '';
+      const name = ctx.foodName ?? '该食品';
+      const grade = ctx.nutriScore ?? '';
       const gradeText = grade ? `，营养评级${grade}` : '';
       return `${name}${gradeText}。建议结合家庭成员健康状况，关注钠、糖、脂肪三项核心指标后决定食用量。`;
     } catch (_e) {

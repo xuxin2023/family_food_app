@@ -1,7 +1,7 @@
 // hsp-core: 家庭群组端到端加密共享 (E2E)
 // 使用 AES-256-GCM + Diffie-Hellman 密钥交换
 
-import { CryptoEngine } from './CryptoEngine';
+import { CryptoEngine } from '../utils/CryptoEngine';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
 

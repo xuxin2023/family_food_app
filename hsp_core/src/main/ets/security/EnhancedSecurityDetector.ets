@@ -6,7 +6,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { connection } from '@kit.NetworkKit';
 import { deviceSecurity } from '@kit.DeviceSecurityKit';
 import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
-import { CryptoEngine } from './CryptoEngine';
+import { CryptoEngine } from '../utils/CryptoEngine';
 
 const TAG = 'EnhancedSecurityDetector';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -76,7 +76,7 @@ export class EnhancedSecurityDetector {
       const props = await connection.getProperties(netHandle);
       if (props) {
         const record = props as Record<string, Object>;
-        const host = record['httpProxyHost'] as string | undefined;
+        const host = record.httpProxyHost as string | undefined;
         return host !== undefined && host !== null && host.length > 0;
       }
     } catch (_e) {

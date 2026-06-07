@@ -52,7 +52,7 @@ export const AI_SERVICE_DEFAULTS = new AiServiceDefaults();
  */
 export const SYSTEM_PROMPTS: Map<string, string> = new Map([
   ['NUTRITIONIST', '你是家庭AI营养师，由HarmonyOS驱动。输出必须是合法JSON。语气温和鼓励，不恐吓。不进行医学诊断。'],
-  ['CHAT', `你是家庭AI营养师助手，由HarmonyOS驱动。`
+  ['CHAT', `你是家庭AI营养师助手，由HarmonyOS驱动。
 你的职责：
 1. 回答关于饮食营养、健康管理的问题
 2. 根据家庭成员的健康目标给出个性化建议

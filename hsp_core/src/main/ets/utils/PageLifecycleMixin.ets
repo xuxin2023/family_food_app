@@ -5,6 +5,11 @@
 import { MemoryLeakGuard } from './MemoryLeakGuard';
 import { PerformanceMonitor } from './PerformanceMonitor';
 import { NullGuard } from './NullGuard';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
+
+const TAG = 'PageLifecycleMixin';
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export interface TrackedDisposable {
   dispose(): void;
@@ -58,8 +63,8 @@ export class PageResourceTracker {
     this.listeners.forEach((l: { obj: object; event: string; callback: Function }) => {
       try {
         const obj = l.obj as Record<string, Function>;
-        if (typeof obj['off'] === 'function') {
-          obj['off'](l.event, l.callback);
+        if (typeof obj.off === 'function') {
+          obj.off(l.event, l.callback);
         }
       } catch (_) {
       hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_)); /* ignore */ }

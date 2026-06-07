@@ -53,13 +53,13 @@ export class JsonHelper {
    * 类型安全 JSON 反序列化 —— 使用 class-transformer + 运行时校验
    * 替代原始 `JSON.parse() as T` 的类型断言模式
    */
-  static safeParse<T extends object>(json: string, cls: { new(...args: Object[]): T }, label: string): T | null {
+  static safeParse<T extends object>(json: string, cls: Object, label: string): T | null {
     try {
       const raw: Record<string, Object> = JSON.parse(json) as Record<string, Object>;
-      const instance = plainToInstance(cls, raw, {
+      const instance: T = plainToInstance(cls as Object, raw as Object, {
         enableImplicitConversion: true,
         excludeExtraneousValues: false,
-      });
+      } as Object) as T;
       hilog.debug(DOMAIN_ZERO, TAG, 'safeParse %{public}s OK', label);
       return instance;
     } catch (err) {
@@ -74,7 +74,7 @@ export class JsonHelper {
    */
   static safeParseArray<T extends object>(
     json: string,
-    cls: { new(...args: Object[]): T },
+    cls: Object,
     label: string
   ): T[] {
     try {

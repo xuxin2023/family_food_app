@@ -10,7 +10,7 @@ const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @Entry
 @ComponentV2
-struct ChildHealthPage {
+export struct ChildHealthPage {
   @Local isLoading: boolean = true
   @Local foodName: string = ''
   @Local todaySnackCalories: string = '0'

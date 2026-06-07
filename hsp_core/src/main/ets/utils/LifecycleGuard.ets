@@ -1,5 +1,5 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
 
 const TAG = 'LifecycleGuard';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;

@@ -170,23 +170,18 @@ export class RateLimiter {
     return false;
   }
 
-interface UsageInfo {
-  requests: number;
-  remaining: number;
-  dailyTokens: number;
-}
-
   getUsage(endpoint: string): UsageInfo {
     const cfg = this.configs.get(endpoint);
     const entries = this.windows.get(endpoint) ?? [];
     const now = Date.now();
     const windowStart = cfg ? now - cfg.windowMs : now - 60000;
     const active = entries.filter(e => e.timestamp > windowStart);
-    return {
+    const info: UsageInfo = {
       requests: active.length,
       remaining: cfg ? cfg.maxRequests - active.length : Number.MAX_SAFE_INTEGER,
       dailyTokens: this.dailyTokens.get(endpoint) ?? 0
     };
+    return info;
   }
 
   private resetDailyIfNeeded(endpoint: string, now: number): void {
@@ -203,13 +198,14 @@ interface UsageInfo {
     try {
       const entries = this.windows.get(endpoint) ?? [];
       const data: PersistedUsage = new PersistedUsage()
-      data.entries = entries.map((e: WindowEntry) => ({ t: e.timestamp, tk: e.tokensUsed }));
+      data.entries = entries.map((e: WindowEntry): PersistedEntry => ({ t: e.timestamp, tk: e.tokensUsed }));
       data.daily = this.dailyTokens.get(endpoint) ?? 0;
       data.day = this.dailyResetDay.get(endpoint) ?? 0;
       await this.prefs.put(USAGE_KEY_PREFIX + endpoint, JSON.stringify(data));
       await this.prefs.flush();
     } catch (_e) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));}
+      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
+    }
   }
 
   private async loadPersistedUsage(): Promise<void> {
@@ -219,13 +215,13 @@ interface UsageInfo {
         const raw = await this.prefs.get(USAGE_KEY_PREFIX + endpoint, '') as string;
         if (raw.length > 0) {
           const data = JSON.parse(raw) as Record<string, Object>;
-          const entriesArr = data['entries'] as Array<Record<string, number>>;
+          const entriesArr: Array<Record<string, number>> = data['entries'] as Array<Record<string, number>>;
           const entries: WindowEntry[] = [];
           if (entriesArr) {
             for (const item of entriesArr) {
               const e: WindowEntry = new WindowEntry()
-              e.timestamp = item['t'] ?? 0;
-              e.tokensUsed = item['tk'] ?? 0;
+              e.timestamp = (item.t as number) ?? 0;
+              e.tokensUsed = (item.tk as number) ?? 0;
               entries.push(e);
             }
           }
@@ -234,7 +230,14 @@ interface UsageInfo {
           this.dailyResetDay.set(endpoint, (data['day'] as number) ?? 0);
         }
       } catch (_e) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));}
+        hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
+      }
     }
   }
+}
+
+interface UsageInfo {
+  requests: number;
+  remaining: number;
+  dailyTokens: number;
 }

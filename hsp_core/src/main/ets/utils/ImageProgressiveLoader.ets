@@ -178,7 +178,7 @@ export class ImageProgressiveLoader {
   }
 
   private arrayBufferToBase64(buffer: ArrayBuffer): string {
-    const data: Uint8Array = new Uint8Array(
+    const data: Uint8Array = new Uint8Array(buffer);
     let result = '';
     for (let i = 0; i < data.length; i += 3) {
       const b1 = data[i];
@@ -202,9 +202,9 @@ export function lazyForEachKey<T>(item: T, index: number, keyFn?: (item: T) => s
   if (keyFn) return keyFn(item);
   // 尝试常见 id 字段
   const obj = item as Record<string, Object>;
-  if (obj['foodId']) return String(obj['foodId']);
-  if (obj['memberId']) return String(obj['memberId']);
-  if (obj['id']) return String(obj['id']);
-  if (obj['barcode']) return String(obj['barcode']);
+  if (obj.foodId) return String(obj.foodId);
+  if (obj.memberId) return String(obj.memberId);
+  if (obj.id) return String(obj.id);
+  if (obj.barcode) return String(obj.barcode);
   return `item_${index}`;
 }

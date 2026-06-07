@@ -385,35 +385,35 @@ export class AiRecipeRecommenderService extends AiServiceBase {
       recipeList += `[${idx + 1}] ${sr.recipe.title}（分类：${sr.recipe.category}，标签：${sr.recipe.dietTags.join(',')}，评分：${sr.score}）\n`;
     }
 
-    return `你是一个家庭健康食谱推荐助手。请根据以下家庭成员的健康信息和候选食谱，输出推荐排序和理由。`
+    return `You are a family health recipe recommendation assistant. Based on the following family members' health info and candidate recipes, output a ranked recommendation with reasons.
 
-要求：
-1. 输出必须是合法JSON格式
-2. 推荐理由要具体，结合成员的健康目标
-3. 语气温暖鼓励，不使用恐吓式表达
-4. 对每个推荐给出营养提示
-5. 只推荐最适合的3-5个食谱
-6. 总结不超过60字
+Requirements:
+1. Output must be valid JSON
+2. Recommendations must be specific, aligned with member health goals
+3. Warm, encouraging tone, no fear-based wording
+4. Include nutrition tip for each recommendation
+5. Only recommend the top 3-5 recipes
+6. Summary no more than 60 characters
 
-家庭成员信息（脱敏）：
+Family Member Info (anonymized):
 ${memberProfiles}
 
-候选食谱（含规则评分）：
+Candidate Recipes (with rule scores):
 ${recipeList}
 
-${request.preference !== undefined ? `额外偏好：${request.preference}` : ''}
+${request.preference !== undefined ? `Additional preference: ${request.preference}` : ''}
 
-请输出JSON格式：
+Output JSON format:
 {
   "recommendations": [
     {
       "recipeIndex": 1,
-      "reason": "推荐理由",
-      "bestForMember": "适合的成员年龄段+目标",
-      "nutritionTip": "营养提示"
+      "reason": "recommendation reason",
+      "bestForMember": "best fit age group + goal",
+      "nutritionTip": "nutrition tip"
     }
   ],
-  "overallSummary": "总评（不超过60字）"
+  "overallSummary": "summary (no more than 60 characters)"
 }`;`
   }
 
@@ -518,8 +518,8 @@ ${request.preference !== undefined ? `额外偏好：${request.preference}` : ''
     }).join('、');
 
     return member !== undefined
-      ? `适合${member.nickname}的健康需求（${tags}）`
-      : `标签：${tags}`;
+      ? `Suitable for ${member.nickname}'s health needs (${tags})`
+      : `Tags: ${tags}`;
   }
 
   private findMemberById(memberId: string): FamilyProfile | undefined {

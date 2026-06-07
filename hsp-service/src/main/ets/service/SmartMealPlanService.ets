@@ -7,7 +7,7 @@ import { MealPlanService, MealPlan, MealPlanItem } from './MealPlanService';
 import { LlmChatProxy, LlmSource } from './ai/LlmChatProxy';
 
 const TAG = 'SmartMealPlanService';
-const DOMAIN = HILOG_DOMAIN_DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export interface WeeklyMealPlan {
   memberId: string;
@@ -116,7 +116,7 @@ export class SmartMealPlanService {
 
   private buildAiContext(
     name: string, profile: FamilyProfile,
-    summary: WeeklyMealPlan['weeklySummary'],
+    summary: WeeklyMealPlan.weeklySummary,
     goal: GoalProgress
   ): string {
     const goals = profile.healthGoals?.join('、') ?? '维持体重';
@@ -145,7 +145,7 @@ export class SmartMealPlanService {
     };
   }
 
-  private localWeeklyAdvice(profile: FamilyProfile, summary: WeeklyMealPlan['weeklySummary']): string {
+  private localWeeklyAdvice(profile: FamilyProfile, summary: WeeklyMealPlan.weeklySummary): string {
     const limits = profile.getDailyLimits?.() ?? { sodium: 2000, sugar: 25, fat: 65 };
     const parts: string[] = [];
     if (summary.avgSodium > limits.sodium) parts.push('钠摄入偏高');

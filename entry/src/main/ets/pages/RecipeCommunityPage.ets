@@ -2,7 +2,7 @@
 // 食谱社区页面 — 浏览热门/最新食谱、分类筛选
 
 import {
-  safeBack, safePushUrl, getPageParams, Recipe, RecipeCategory, DietTag, RecipeQueryParams, safeParseRecipeCategory, COLORS, RADIUS, BUTTON, BasicDataSource, PAGE_SIZE_CONFIG, HILOG_DOMAIN_DEFAULT, AiRecipeRecommendation, AiRecipeRecommendationResult, AiRecipeRequest, getCategoryLabel, getCategoryEmoji, getDietTagLabel, ImageCache
+  safeBack, safePushUrl, getPageParams, Recipe, RecipeCategory, DietTag, RecipeQueryParams, safeParseRecipeCategory, COLORS, RADIUS, BUTTON, BasicDataSource, PAGE_SIZE_CONFIG, HILOG_DOMAIN_DEFAULT, AiRecipeRecommendation, AiRecipeRecommendationResult, AiRecipeRequest, getCategoryLabel, getCategoryEmoji, getDietTagLabel, ImageCache,
   PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
@@ -18,7 +18,7 @@ const PAGE_SIZE = PAGE_SIZE_CONFIG.RECIPE_COMMUNITY_PAGE_SIZE;
 
 @Entry
 @ComponentV2
-struct RecipeCommunityPage {
+export struct RecipeCommunityPage {
   @Local isLoading: boolean = true
   @Local selectedCategory: string = ''
   @Local sortBy: string = 'latest'

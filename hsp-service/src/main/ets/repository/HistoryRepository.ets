@@ -72,7 +72,7 @@ export class HistoryRepository {
         ${COL_MAX_AMOUNT} REAL NOT NULL,
         ${COL_REASONS} TEXT NOT NULL,
         ${COL_SCANNED_AT} INTEGER NOT NULL
-      )`);`
+      )`);
 
       // 饮食记录表
       await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_DIET_RECORD} (`
@@ -88,7 +88,7 @@ export class HistoryRepository {
         ${COL_CALORIE_INTAKE} REAL,
         ${COL_FAT_INTAKE} REAL,
         ${COL_RECORDED_AT} INTEGER NOT NULL
-      )`);`
+      )`);
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Init tables failed: %{public}s', JSON.stringify(error));
     }

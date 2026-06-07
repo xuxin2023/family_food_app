@@ -132,14 +132,14 @@ export class IngredientDeepAnalyzer {
   private kbEntryToAnalysis(entry: IngredientKbEntry): IngredientAnalysis {
     return {
       name: entry.name,
-      safetyLevel: entry.safetyLevel as IngredientAnalysis['safetyLevel'],
-      trafficLight: entry.trafficLight as IngredientAnalysis['trafficLight'],
+      safetyLevel: entry.safetyLevel as IngredientAnalysis.safetyLevel,
+      trafficLight: entry.trafficLight as IngredientAnalysis.trafficLight,
       isAllergen: entry.isAllergen,
       isHighFodmap: entry.isHighFodmap,
       isHighHistamine: entry.isHighHistamine,
       isHighSalicylate: entry.isHighSalicylate,
       healthRiskDescription: entry.healthRiskDesc,
-      regulatoryStatus: entry.regulatoryStatus as IngredientAnalysis['regulatoryStatus'],
+      regulatoryStatus: entry.regulatoryStatus as IngredientAnalysis.regulatoryStatus,
       researchReferences: entry.references,
       adi: entry.adi
     };

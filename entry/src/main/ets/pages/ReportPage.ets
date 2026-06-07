@@ -3,11 +3,10 @@
 // 三段式布局：顶部评测区 | 家庭矩阵区 | 辅助信息区
 
 import {
-  safeBack, safePushUrl, FamilyProfile, FoodLabel, Recommendation, RecommendLevel, LevelColor, getLevelColorValue, AlternativeFood, ChildProtection, CredibilityResult, PaywallTrigger, MemberTier, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON, AccessibilityUtil, NavigationManager, PageResourceTracker, createPageTracker
+  safeBack, safePushUrl, FamilyProfile, FoodLabel, Recommendation, RecommendLevel, LevelColor, getLevelColorValue, AlternativeFood, ChildProtection, CredibilityResult, PaywallTrigger, MemberTier, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON, AccessibilityUtil, NavigationManager, PageResourceTracker, createPageTracker, HILOG_DOMAIN_DEFAULT
 } from 'hsp_core';
 import { promptAction, curves } from '@kit.ArkUI';
 import { BackButton } from '../components/BackButton';
-
 import { AppState } from '../AppState';
 import { NutriScoreBadge, AllergenHighlightList, PaywallDialog, AdditiveTrafficLightList, AdditiveClassifier } from 'feature_scan';
 import { NovaGroupBadge, EcoScoreBadge, EcoScore, RiskAssessmentPanel, ShareCardGenerator, MemberShareInfo, ShareImageParams, ComprehensiveRatingPanel } from 'feature_report';
@@ -15,6 +14,10 @@ import { NutriScore } from 'hsp_core';
 import { InteractionAssessmentResult, NovaGroup } from 'feature_scan';
 import { AdditiveInteractionCard } from '../components/AdditiveInteractionCard';
 import { NutrientTag } from '../components/NutrientTag';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+
+const TAG = 'ReportPage';
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 // ===== 页面级别类型 =====
 
@@ -31,7 +34,7 @@ export class ReportPageParams {
 
 @Entry
 @ComponentV2
-struct ReportPage {
+export struct ReportPage {
   @Local foodLabel: FoodLabel = new FoodLabel()
   @Local recommendations: Recommendation[] = []
   @Local familyMembers: FamilyProfile[] = []

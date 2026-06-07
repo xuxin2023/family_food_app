@@ -10,7 +10,8 @@ import { common } from '@kit.AbilityKit';
 import { notificationManager } from '@kit.NotificationKit';
 
 const TAG = 'ModelDownloadService';
-const DOMAIN = HILOG_DOMAIN_DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
+const DOMAIN = DOMAIN_ZERO;
 
 export interface ModelManifest {
   version: number;

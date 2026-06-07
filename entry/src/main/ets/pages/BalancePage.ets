@@ -17,7 +17,7 @@ class ScenarioOption {
 
 @Entry
 @ComponentV2
-struct BalancePage {
+export struct BalancePage {
   @Local familyMembers: FamilyProfile[] = []
   @Local selectedMemberId: string = ''
   @Local currentBudget: DailyBudget = new DailyBudget()

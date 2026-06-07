@@ -8,11 +8,14 @@ import { OfflineFoodProvider } from 'hsp_core';
 import { EmptyState } from '../components/EmptyState';
 import { OnlineAlternativeSearchService } from 'hsp_service';
 import { AlternativeComparePanel } from 'feature_report';
+
+const TAG = 'AlternativeFoodPage';
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 @Entry
 @ComponentV2
-struct AlternativeFoodPage {
+export struct AlternativeFoodPage {
   @Local foodLabel: FoodLabel = new FoodLabel()
   @Local candidates: AlternativeCandidate[] = []
   @Local legacyAlternatives: AlternativeFood[] = []
@@ -278,7 +281,7 @@ struct AlternativeFoodPage {
           .backgroundColor(AlternativeFoodPage.gradeBgColor(item.nutriGrade))
       }
 
-      Text('更多)
+      Text('更多')
         .fontSize(20)
         .fontColor(COLORS.TEXT_TERTIARY)
         .margin({ left: 8 })
@@ -330,7 +333,7 @@ struct AlternativeFoodPage {
           .backgroundColor(AlternativeFoodPage.gradeBgColor(item.nutriGrade))
       }
 
-      Text('更多)
+      Text('→')
         .fontSize(20)
         .fontColor(COLORS.TEXT_TERTIARY)
         .margin({ left: 8 })

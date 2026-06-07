@@ -245,47 +245,47 @@ export class OpenFoodFactsService {
 
     try {
       const json: Record<string, Object> = typeof searchResponse === 'string' ? JSON.parse(searchResponse) as Record<string, Object> : searchResponse as Record<string, Object>;
-      const products: Object[] = (json['products'] as Object[]) || [];
+      const products: Object[] = (json.products as Object[]) || [];
       const results: OnlineLookupResult[] = [];
 
       for (const product of products) {
         const p = product as Record<string, Object>;
-        if (!p || !p['code']) continue;
+        if (!p || !p.code) continue;
         const foodLabel: FoodLabel = new FoodLabel()
-        foodLabel.foodId = p['code'] as string;
-        foodLabel.foodName = (p['product_name'] as string) || '';
-        foodLabel.barcode = p['code'] as string;
-        foodLabel.manufacturer = ((p['manufacturing_places'] as string) || (p['brands'] as string)) || '';
+        foodLabel.foodId = p.code as string;
+        foodLabel.foodName = (p.product_name as string) || '';
+        foodLabel.barcode = p.code as string;
+        foodLabel.manufacturer = ((p.manufacturing_places as string) || (p.brands as string)) || '';
         foodLabel.source = FoodSource.BARCODE_HIT;
         foodLabel.identifiedAt = Date.now();
 
-        const n = (p['nutriments'] as Record<string, Object>) || {};
+        const n = (p.nutriments as Record<string, Object>) || {};
         foodLabel.nutrition = new NutritionPer100g();
-        foodLabel.nutrition.calories = Math.round((n['energy-kcal_100g'] as number) || (n['energyKcal'] as number) || 0);
-        foodLabel.nutrition.protein = (n['proteins_100g'] as number) || 0;
-        foodLabel.nutrition.fat = (n['fat_100g'] as number) || 0;
+        foodLabel.nutrition.calories = Math.round((n['energy-kcal_100g'] as number) || (n.energyKcal as number) || 0);
+        foodLabel.nutrition.protein = (n.proteins_100g as number) || 0;
+        foodLabel.nutrition.fat = (n.fat_100g as number) || 0;
         foodLabel.nutrition.saturatedFat = (n['saturated-fat_100g'] as number) || 0;
-        foodLabel.nutrition.carbohydrate = (n['carbohydrates_100g'] as number) || 0;
-        foodLabel.nutrition.sugar = (n['sugars_100g'] as number) || 0;
-        foodLabel.nutrition.fiber = (n['fiber_100g'] as number) || 0;
-        if ((n['sodium_100g'] as number) > 0) {
-          foodLabel.nutrition.sodium = n['sodium_100g'] as number;
-        } else if ((n['salt_100g'] as number) > 0) {
-          foodLabel.nutrition.sodium = Math.round((n['salt_100g'] as number) * 393);
+        foodLabel.nutrition.carbohydrate = (n.carbohydrates_100g as number) || 0;
+        foodLabel.nutrition.sugar = (n.sugars_100g as number) || 0;
+        foodLabel.nutrition.fiber = (n.fiber_100g as number) || 0;
+        if ((n.sodium_100g as number) > 0) {
+          foodLabel.nutrition.sodium = n.sodium_100g as number;
+        } else if ((n.salt_100g as number) > 0) {
+          foodLabel.nutrition.sodium = Math.round((n.salt_100g as number) * 393);
         }
 
-        const ingredientsText = p['ingredients_text'] as string;
+        const ingredientsText = p.ingredients_text as string;
         if (ingredientsText && ingredientsText.length > 0) {
           foodLabel.ingredients = ingredientsText.split(',').map((s: string) => s.trim());
         }
-        const allergenTags = (p['allergens_tags'] as string[]) || [];
+        const allergenTags = (p.allergens_tags as string[]) || [];
         foodLabel.allergenHints = allergenTags.map((tag: string) => {
           const parts = tag.split(':');
           return parts.length > 1 ? parts[1] : tag;
         });
 
-        foodLabel.ecoScoreGrade = (p['ecoscore_grade'] as string) || '';
-        foodLabel.novaGroup = (p['nova_group'] as number) || 0;
+        foodLabel.ecoScoreGrade = (p.ecoscore_grade as string) || '';
+        foodLabel.novaGroup = (p.nova_group as number) || 0;
 
         results.push({
           found: true,
@@ -545,7 +545,7 @@ export class OpenFoodFactsService {
    * 安全获取 Record 中的值（通过 Object.entries 遍历，兼容含连字符的 key）
    */
   private getRecordValue(rec: Record<string, Object>, key: string): Object | undefined {
-    const entries = Object.entries(rec);
+    const entries = Object.keys(rec);
     for (const entry of entries) {
       if (entry[0] === key) {
         return entry[1];

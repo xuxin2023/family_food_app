@@ -1,4 +1,4 @@
-// FoodComparePage.ets
+﻿// FoodComparePage.ets
 // 食品对比页面 - V5: 营养对比
 import { FoodLabel, NutritionPer100g, COLORS, RADIUS, HILOG_DOMAIN_DEFAULT, ToastHelper, NutritionSnapshot, resourceToStr, PageResourceTracker, createPageTracker, LazyDataSource } from 'hsp_core';
 import { FoodCompareService, FoodCompareResult, NutritionDelta } from 'hsp_service';
@@ -22,7 +22,7 @@ class NutrientDiff {
 
 @Entry
 @ComponentV2
-struct FoodComparePage {
+export struct FoodComparePage {
   @Local food1: FoodLabel | null = null
   @Local food2: FoodLabel | null = null
   @Local isLoading: boolean = false
@@ -147,7 +147,7 @@ struct FoodComparePage {
           .backgroundColor(COLORS.PRIMARY)
           .fontColor(COLORS.WHITE)
           .borderRadius(RADIUS.LG)
-          .accessibilityText('开始对比
+          .accessibilityText('开始对比')
           .accessibilityLevel('yes')
       }
     }

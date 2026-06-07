@@ -10,6 +10,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { NutritionPer100g, FoodLabel } from 'hsp_core';
 
 const TAG = 'UdmfFoodShare';
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 /** 食品共享数据结构 */
 export class FoodShareData {
@@ -146,7 +147,7 @@ export class UdmfFoodShareService {
 
                 // 仅解析我们的食品数据（检查 details.type）
                 const details = plainRecord.details as Record<string, string>;
-                if (details && details['type'] === 'family_food_scan') {
+                if (details && details.type === 'family_food_scan') {
                   try {
                     const parsed = JSON.parse(plainRecord.textContent);
                     foodData.productName = parsed.name ?? '';

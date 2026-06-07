@@ -107,16 +107,16 @@ export class EcoScoreEngine {
         const body = typeof response.result === 'string'
           ? JSON.parse(response.result as string) as Record<string, Object>
           : response.result as Record<string, Object>;
-        const products = (body['products'] as Object[]) ?? [];
+        const products = (body.products as Object[]) ?? [];
         if (products.length > 0) {
           const product = products[0] as Record<string, Object>;
           return this.evaluate(
-            product['ecoscore_grade'] as string | undefined,
-            product['ecoscore_score'] as number | undefined,
-            (product['labels_tags'] as string[])?.join(',') ?? undefined,
-            (product['categories_tags'] as string[])?.join(',') ?? undefined,
-            product['origins'] as string | undefined,
-            product['manufacturing_places'] as string | undefined
+            product.ecoscore_grade as string | undefined,
+            product.ecoscore_score as number | undefined,
+            (product.labels_tags as string[])?.join(',') ?? undefined,
+            (product.categories_tags as string[])?.join(',') ?? undefined,
+            product.origins as string | undefined,
+            product.manufacturing_places as string | undefined
           );
         }
       }

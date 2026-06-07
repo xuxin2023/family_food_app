@@ -2,7 +2,7 @@
 // 创建食谱页面 — 发布新食谱到社区
 
 import {
-  ToastHelper, safeBack, getPageParams, RecipeCategory, RecipeDifficulty, DietTag, RecipeIngredient, RecipeStep, COLORS, RADIUS, safeParseDietTag
+  ToastHelper, safeBack, getPageParams, RecipeCategory, RecipeDifficulty, DietTag, RecipeIngredient, RecipeStep, COLORS, RADIUS, safeParseDietTag,
   PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
@@ -44,7 +44,7 @@ const DIET_TAG_OPTIONS: OptionItem[] = [
 
 @Entry
 @ComponentV2
-struct RecipeCreatePage {
+export struct RecipeCreatePage {
   @Local title: string = ''
   @Local description: string = ''
   @Local category: RecipeCategory = RecipeCategory.SNACK

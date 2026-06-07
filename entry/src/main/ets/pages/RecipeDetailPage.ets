@@ -2,7 +2,7 @@
 // 食谱详情页面 — 详情、评论、点赞
 
 import {
-  ToastHelper, getPageParams, Recipe, RecipeComment, DietTag, RecipeIngredient, RecipeStep, COLORS, RADIUS, BasicDataSource, HILOG_DOMAIN_DEFAULT, getCategoryLabel, getCategoryEmoji, getDifficultyLabel, getDietTagLabel, formatTime
+  ToastHelper, getPageParams, Recipe, RecipeComment, DietTag, RecipeIngredient, RecipeStep, COLORS, RADIUS, BasicDataSource, HILOG_DOMAIN_DEFAULT, getCategoryLabel, getCategoryEmoji, getDifficultyLabel, getDietTagLabel, formatTime,
   PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
@@ -16,7 +16,7 @@ const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @Entry
 @ComponentV2
-struct RecipeDetailPage {
+export struct RecipeDetailPage {
   @Local recipe: Recipe | null = null
   @Local hasLiked: boolean = false
   @Local hasBookmarked: boolean = false

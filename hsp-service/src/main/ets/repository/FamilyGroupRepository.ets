@@ -192,12 +192,12 @@ export class FamilyGroupRepository {
     try {
       if (!this.rdbStore) return;
       const bucket: relationalStore.ValuesBucket = {};
-      if (updates['groupName'] !== undefined) bucket['group_name'] = updates['groupName'] as relationalStore.ValueType;
-      if (updates['description'] !== undefined) bucket['description'] = updates['description'] as relationalStore.ValueType;
-      if (updates['groupAvatar'] !== undefined) bucket['group_avatar'] = updates['groupAvatar'] as relationalStore.ValueType;
-      if (updates['memberCount'] !== undefined) bucket['member_count'] = updates['memberCount'] as relationalStore.ValueType;
-      if (updates['isArchived'] !== undefined) bucket['is_archived'] = (updates['isArchived'] as boolean) ? 1 : 0;
-      bucket['updated_at'] = Date.now();
+      if (updates.groupName !== undefined) bucket.group_name = updates.groupName as relationalStore.ValueType;
+      if (updates.description !== undefined) bucket.description = updates.description as relationalStore.ValueType;
+      if (updates.groupAvatar !== undefined) bucket.group_avatar = updates.groupAvatar as relationalStore.ValueType;
+      if (updates.memberCount !== undefined) bucket.member_count = updates.memberCount as relationalStore.ValueType;
+      if (updates.isArchived !== undefined) bucket.is_archived = (updates.isArchived as boolean) ? 1 : 0;
+      bucket.updated_at = Date.now();
 
       const predicates = new relationalStore.RdbPredicates(TABLE_GROUP);
       predicates.equalTo('group_id', groupId);

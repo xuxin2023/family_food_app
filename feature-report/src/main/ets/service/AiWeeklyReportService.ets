@@ -62,41 +62,28 @@ export class AiWeeklyReportService extends AiServiceBase {
     data: WeeklyDietData,
     profile: FamilyProfile
   ): string {
-    return `你是一个家庭饮食健康周报润色助手。请根据以下规则引擎生成的周报数据，生成个性化的周报文案。`
+    return `You are a family diet health weekly report assistant. Generate personalized report text from rule engine data.
 
-要求：
-1. 语气温暖、鼓励为主，不使用恐吓式表达
-2. 不使用绝对化表述（如"一定有害""完全不能吃"）
-3. 每个成员的建议要具体，不要泛泛而谈
-4. 采购建议要实用，能在超市直接找到
-5. 总结不超过80字，每条建议不超过40字
-6. 加一句鼓励语（如"坚持记录，全家更安心"）
+Requirements:
+1. Warm, encouraging tone, no fear-based wording
+2. No absolute statements
+3. Member suggestions must be specific, not generic
+4. Shopping tips practical, available in local stores
+5. Summary <=80 chars, each tip <=40 chars
+6. Add encouraging closing message
 
-成员：${profile.nickname}（${profile.ageGroup}）
-健康目标：${profile.healthGoals.join('、')}
-本周数据：
-扫描次数：${data.totalScans}
-高盐天数：${data.highSodiumDays}/7
-高糖天数：${data.highSugarDays}/7
-高脂天数：${data.highFatDays}/7
-甜食近正餐：${data.sweetNearMealCount}次
-- 夜宵：${data.lateNightSnackCount}次
-- 重口味：${data.heavyFlavorCount}次
+Member: ${profile.nickname} (${profile.ageGroup})
+Health Goal: ${profile.healthGoals.join(', ')}
+Data: Scans ${data.totalScans}, Na+ high ${data.highSodiumDays}/7d, Sugar high ${data.highSugarDays}/7d, Fat high ${data.highFatDays}/7d
+Sweets near meals: ${data.sweetNearMealCount}, Late snacks: ${data.lateNightSnackCount}, Heavy flavor: ${data.heavyFlavorCount}
 
-规则引擎总结：${report.summary}
-规则引擎重点：${report.highlights.join('；')}
-规则引擎建议：${report.suggestions.join('；')}
-少买：${report.buyLess.join('、')}
-建议备：${report.buyMore.join('、')}
+Engine Summary: ${report.summary}
+Highlights: ${report.highlights.join('; ')}
+Suggestions: ${report.suggestions.join('; ')}
+Buy less: ${report.buyLess.join(', ')}
+Buy more: ${report.buyMore.join(', ')}
 
-请输出JSON格式：
-{
-"summary": "个性化一句话总结"
-"highlights": "重点内容"
-"suggestions": "改进建议"
-"personalizedTip": "针对该成员的个性化提醒"
-"motivationalMessage": "鼓励语"
-}`;`
+Output JSON: {"summary":"...","highlights":"...","suggestions":"...","personalizedTip":"...","motivationalMessage":"..."}`;`
   }
 
   private parseAiResponse(text: string, fallback: WeeklyReport): AiWeeklyReportResult {

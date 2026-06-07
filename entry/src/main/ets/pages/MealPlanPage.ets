@@ -2,8 +2,9 @@ import {
   ToastHelper, safeBack, FamilyProfile, HealthGoal, COLORS, FONT_SIZE, RADIUS, SPACING,
   MealPlanDay, MealPlanItem, MealPlanTemplate, createDefaultMealPlan,
   createLowSodiumMealPlan, createLowSugarMealPlan, DailyBudget,
-  PageResourceTracker, createPageTracker, FoodLabel
+  PageResourceTracker, createPageTracker, FoodLabel, HILOG_DOMAIN_DEFAULT
 } from 'hsp_core';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 import {
   MealPlanService, MealPlan, MealPlanItem as SmartMealPlanItem,
   SmartMealPlanService, WeeklyMealPlan, GoalProgress
@@ -12,9 +13,12 @@ import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { EmptyState } from '../components/EmptyState';
 
+const TAG = 'MealPlanPage';
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
+
 @Entry
 @ComponentV2
-struct MealPlanPage {
+export struct MealPlanPage {
   @Local currentPlan: MealPlanTemplate = new MealPlanTemplate()
   @Local selectedDayIndex: number = 0
   @Local familyMembers: FamilyProfile[] = []

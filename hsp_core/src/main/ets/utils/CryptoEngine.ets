@@ -1,6 +1,6 @@
 import { cryptoFramework } from '@kit.CryptoArchitectureKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
 import { util } from '@kit.ArkTS';
 
 const TAG = 'CryptoEngine';
@@ -136,7 +136,7 @@ export class CryptoEngine {
 
   private async getOrCreateKey(): Promise<Uint8Array> {
     const keyLen = 32;
-    const key: Uint8Array = new Uint8Array(
+    const key: Uint8Array = new Uint8Array(keyLen);
     for (let i = 0; i < keyLen; i++) {
       key[i] = Math.floor(Math.random() * 256);
     }
@@ -144,7 +144,7 @@ export class CryptoEngine {
   }
 
   private generateIv(length: number): Uint8Array {
-    const iv: Uint8Array = new Uint8Array(
+    const iv: Uint8Array = new Uint8Array(length);
     for (let i = 0; i < length; i++) {
       iv[i] = Math.floor(Math.random() * 256);
     }
@@ -152,7 +152,7 @@ export class CryptoEngine {
   }
 
   private combineIvAndCiphertext(iv: Uint8Array, ciphertext: Uint8Array): Uint8Array {
-    const combined: Uint8Array = new Uint8Array(
+    const combined: Uint8Array = new Uint8Array(iv.length + ciphertext.length);
     combined.set(iv, 0);
     combined.set(ciphertext, iv.length);
     return combined;
@@ -192,7 +192,7 @@ export class CryptoEngine {
     if (len > 0 && str.charAt(len - 1) === '=') { padCount++; }
     if (len > 1 && str.charAt(len - 2) === '=') { padCount++; }
     const byteLen = (len * 3) / 4 - padCount;
-    const result: Uint8Array = new Uint8Array(
+    const result: Uint8Array = new Uint8Array(byteLen);
     let p = 0;
     for (let i = 0; i < len; i += 4) {
       const n = (lookup[str.charCodeAt(i)] << 18) | (lookup[str.charCodeAt(i + 1)] << 12) |

@@ -1,3 +1,9 @@
+import { hilog } from '@kit.PerformanceAnalysisKit';
+import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
+
+const TAG = 'DomainEventBus';
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
+
 type DomainEventHandler = (data: Object) => void;
 
 export class CacheInvalidationData {

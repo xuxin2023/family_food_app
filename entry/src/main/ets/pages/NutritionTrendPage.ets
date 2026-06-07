@@ -30,7 +30,7 @@ const PERIOD_OPTIONS: PeriodOption[] = [
 
 @Entry
 @ComponentV2
-struct NutritionTrendPage {
+export struct NutritionTrendPage {
   @Local selectedPeriodIndex: number = 0
   @Local selectedMemberId: string = ''
   @Local trends: NutrientTrendData[] = []

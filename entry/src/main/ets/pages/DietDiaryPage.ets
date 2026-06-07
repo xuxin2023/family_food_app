@@ -2,7 +2,7 @@
 // 膳食日记页面 - 按餐次查看每日摄入，查看趋势图表入口
 
 import {
-  ToastHelper, FamilyProfile, DailyBudget, DateUtil, safeBack, safePushUrl, getPageParams, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, AiNutritionAdvice, NutrientStatusLevel, FoodLabel, HealthSignal, HILOG_DOMAIN_DEFAULT, StringRes, MealScenario, safeParseMealScenario, DietRecord, MealGroup
+  ToastHelper, FamilyProfile, DailyBudget, DateUtil, safeBack, safePushUrl, getPageParams, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, AiNutritionAdvice, NutrientStatusLevel, FoodLabel, HealthSignal, HILOG_DOMAIN_DEFAULT, StringRes, MealScenario, safeParseMealScenario, DietRecord, MealGroup,
   PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
@@ -60,7 +60,7 @@ class NutrientAnalysisItem {
 
 @Entry
 @ComponentV2
-struct DietDiaryPage {
+export struct DietDiaryPage {
   @Local familyMembers: FamilyProfile[] = []
   @Local selectedMemberId: string = ''
   @Local currentDate: string = ''

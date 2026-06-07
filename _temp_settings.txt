@@ -1,0 +1,5 @@
+﻿  private buildCollectionListHtml(): string {
+    return `<h3>个人信息收集清单</h3>
+`
+<p>根据《个人信息保护法》及华为应用商店审核要求，本应用收集的个人信息如下：</p>
+<table border="1" cellpadding="6" style="border-collapse:collapse;width:100%;font-size:12px;">

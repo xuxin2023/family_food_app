@@ -29,7 +29,7 @@ class ShoppingListPageViewModel {
 
 @Entry
 @ComponentV2
-struct ShoppingListPage {
+export struct ShoppingListPage {
   @Local vm: ShoppingListPageViewModel = new ShoppingListPageViewModel()
 
   private dataSource: ShoppingListDataSource = new ShoppingListDataSource()
@@ -268,7 +268,7 @@ struct ShoppingListPage {
       .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)
 
-      Text('×)
+      Text('✕')
         .fontSize(16)
         .fontColor(COLORS.TEXT_GRAY_BDBD)
         .onClick(() => { this.removeItem(item.id) })

@@ -118,7 +118,7 @@ class ScanViewModel {
 
 @Entry
 @ComponentV2
-struct ScanPage {
+export struct ScanPage {
   @Local vm: ScanViewModel = new ScanViewModel()
   @Local showDeepAnalysis: boolean = false
   @Local showBatchScan: boolean = false

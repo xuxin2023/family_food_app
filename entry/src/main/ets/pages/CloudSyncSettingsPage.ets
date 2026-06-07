@@ -407,7 +407,7 @@ struct CloudSyncSettingsPage {
           Row() {
             this.StatusItem(this.isConnected ? '馃煝' : '馃敶', $r('app.string.cloud_sync_status_network'),
               this.isConnected ? $r('app.string.cloud_sync_status_connected') : $r('app.string.cloud_sync_status_offline'))
-            this.StatusItem(this.isBound ? '鉁? : '鉂?, $r('app.string.cloud_sync_status_account'),
+            this.StatusItem(this.isBound ? '✓' : '✗', $r('app.string.cloud_sync_status_account'),
               this.isBound ? $r('app.string.cloud_sync_status_bound') : $r('app.string.cloud_sync_status_unbound'))
             this.StatusItem(this.syncConfig.enabled ? '馃煝' : '鈴革笍', $r('app.string.cloud_sync_status_sync'),
               this.syncConfig.enabled ? $r('app.string.cloud_sync_status_enabled') : $r('app.string.cloud_sync_status_paused'))

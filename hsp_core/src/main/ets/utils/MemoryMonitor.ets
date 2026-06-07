@@ -69,11 +69,11 @@ export class MemoryMonitor {
     try {
       const perf = ({} as Record<string, Object>)['performance'] as Record<string, Object> | undefined;
       if (perf) {
-        const mem = perf['memory'] as Record<string, Object> | undefined;
+        const mem = perf.memory as Record<string, Object> | undefined;
         if (mem) {
-          snapshot.totalJSHeapSize = (mem['totalJSHeapSize'] as number) ?? 0;
-          snapshot.usedJSHeapSize = (mem['usedJSHeapSize'] as number) ?? 0;
-          snapshot.jsHeapSizeLimit = (mem['jsHeapSizeLimit'] as number) ?? 0;
+          snapshot.totalJSHeapSize = (mem.totalJSHeapSize as number) ?? 0;
+          snapshot.usedJSHeapSize = (mem.usedJSHeapSize as number) ?? 0;
+          snapshot.jsHeapSizeLimit = (mem.jsHeapSizeLimit as number) ?? 0;
         }
       }
     } catch (_e) {

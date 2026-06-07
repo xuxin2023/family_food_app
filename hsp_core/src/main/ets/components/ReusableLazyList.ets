@@ -1,7 +1,7 @@
 // hsp-core: 通用 LazyList 组件 — 内置 LazyForEach + @Reusable 复用池
 // 替代手写 ForEach 的列表密集型场景(替代食品/历史/社区/食谱)
 
-import { LazyDataSource } from './LazyDataSource';
+import { LazyDataSource } from '../utils/LazyDataSource';
 
 @Component
 export struct LazyListItem<T> {

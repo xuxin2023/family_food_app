@@ -148,14 +148,14 @@ export class HuaweiCloudService {
 
       if (response.responseCode === 200) {
         const raw = SafeJsonParse.parseRecord(response.result);
-        const rawRecordsVal = raw['records'];
+        const rawRecordsVal = raw.records;
         const rawRecords = Array.isArray(rawRecordsVal) ? rawRecordsVal as Record<string, Object>[] : [];
         const records: Map<string, Object>[] = [];
         for (const rec of rawRecords) {
           const m = JsonHelper.recordToMap(rec);
           records.push(m);
         }
-        const totalCount = typeof raw['totalCount'] === 'number' ? raw['totalCount'] as number : records.length;
+        const totalCount = typeof raw.totalCount === 'number' ? raw.totalCount as number : records.length;
         const r: CloudDbResult = new CloudDbResult()
         r.success = true;
         r.records = records;

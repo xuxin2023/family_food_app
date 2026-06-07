@@ -181,12 +181,12 @@ export class FamilyGroupRepository {
   async updateGroup(groupId: string, updates: Record<string, Object>): Promise<void> {
     if (!this.rdbStore) return;
     const bucket: relationalStore.ValuesBucket = {};
-    if (updates['groupName'] !== undefined) bucket['group_name'] = updates['groupName'] as (string | number | boolean | null);
-    if (updates['description'] !== undefined) bucket['description'] = updates['description'] as (string | number | boolean | null);
-    if (updates['groupAvatar'] !== undefined) bucket['group_avatar'] = updates['groupAvatar'] as (string | number | boolean | null);
-    if (updates['memberCount'] !== undefined) bucket['member_count'] = updates['memberCount'] as (string | number | boolean | null);
-    if (updates['isArchived'] !== undefined) bucket['is_archived'] = (updates['isArchived'] as boolean) ? 1 : 0;
-    bucket['updated_at'] = Date.now();
+    if (updates.groupName !== undefined) bucket.group_name = updates.groupName as (string | number | boolean | null);
+    if (updates.description !== undefined) bucket.description = updates.description as (string | number | boolean | null);
+    if (updates.groupAvatar !== undefined) bucket.group_avatar = updates.groupAvatar as (string | number | boolean | null);
+    if (updates.memberCount !== undefined) bucket.member_count = updates.memberCount as (string | number | boolean | null);
+    if (updates.isArchived !== undefined) bucket.is_archived = (updates.isArchived as boolean) ? 1 : 0;
+    bucket.updated_at = Date.now();
 
     const predicates = new relationalStore.RdbPredicates(TABLE_GROUP);
     predicates.equalTo('group_id', groupId);

@@ -1,3 +1,9 @@
+import { hilog } from '@kit.PerformanceAnalysisKit';
+import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
+
+const TAG = 'ResourceUtil';
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
+
 export function resourceToStr(r: ResourceStr): string {
   if (typeof r === 'string') return r;
   try {

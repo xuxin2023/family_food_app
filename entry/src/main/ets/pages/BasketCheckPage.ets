@@ -3,18 +3,22 @@
 
 import {
   safeBack, safePushUrl, FoodLabel, FamilyProfile, PaywallTrigger, BUTTON, COLORS,
-  FONT_SIZE, RADIUS, SPACING, PageResourceTracker, createPageTracker
+  FONT_SIZE, RADIUS, SPACING, PageResourceTracker, createPageTracker, HILOG_DOMAIN_DEFAULT
 } from 'hsp_core';
 import { BasketCheckResult } from 'hsp_service';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 import {
   SmartBasketService, SmartBasketResult, SmartBasketItem, SwapSuggestion
 } from 'hsp_service';
+
+const TAG = 'BasketCheckPage';
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 import { AppState } from '../AppState';
 import { PaywallDialog } from 'feature_scan';
 
 @Entry
 @ComponentV2
-struct BasketCheckPage {
+export struct BasketCheckPage {
   @Local basketItems: FoodLabel[] = []
   @Local checkResult: BasketCheckResult | null = null
   @Local smartResult: SmartBasketResult | null = null

@@ -20,7 +20,7 @@ class HistoryPageViewModel {
 
 @Entry
 @ComponentV2
-struct HistoryPage {
+export struct HistoryPage {
   @Local vm: HistoryPageViewModel = new HistoryPageViewModel()
 
   private componentActive: boolean = true

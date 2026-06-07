@@ -4,7 +4,7 @@
  *
  * ArkTS 限制：
  * - 不支持索引签名 [key: string]
- * - 不支持 obj['field'] 索引访问（但 JSON.parse 后的 (as object)?.["field"] 可以）
+ * - 不支持 obj.field 索引访问（但 JSON.parse 后的 (as object)?.["field"] 可以）
  * - 不支持 unknown / any
  *
  * 使用方式：

@@ -110,18 +110,18 @@ export class RecipeCommunityService {
     if (recipe.authorUid !== uid) throw new Error('仅作者可以编辑食谱');
 
     const updates: Record<string, Object> = {};
-    if (params['title'] !== undefined) updates['title'] = params['title'];
-    if (params['description'] !== undefined) updates['description'] = params['description'];
-    if (params['coverImageUrl'] !== undefined) updates['coverImageUrl'] = params['coverImageUrl'];
-    if (params['category'] !== undefined) updates['category'] = params['category'];
-    if (params['difficulty'] !== undefined) updates['difficulty'] = params['difficulty'];
-    if (params['totalMinutes'] !== undefined) updates['totalMinutes'] = params['totalMinutes'];
-    if (params['servings'] !== undefined) updates['servings'] = params['servings'];
-    if (params['ingredients'] !== undefined) updates['ingredients'] = params['ingredients'];
-    if (params['steps'] !== undefined) updates['steps'] = params['steps'];
-    if (params['nutrition'] !== undefined) updates['nutrition'] = params['nutrition'];
-    if (params['dietTags'] !== undefined) updates['dietTags'] = params['dietTags'];
-    if (params['isDraft'] !== undefined) updates['isDraft'] = params['isDraft'];
+    if (params['title'] !== undefined) updates.title = params['title'];
+    if (params['description'] !== undefined) updates.description = params['description'];
+    if (params['coverImageUrl'] !== undefined) updates.coverImageUrl = params['coverImageUrl'];
+    if (params['category'] !== undefined) updates.category = params['category'];
+    if (params['difficulty'] !== undefined) updates.difficulty = params['difficulty'];
+    if (params['totalMinutes'] !== undefined) updates.totalMinutes = params['totalMinutes'];
+    if (params['servings'] !== undefined) updates.servings = params['servings'];
+    if (params['ingredients'] !== undefined) updates.ingredients = params['ingredients'];
+    if (params['steps'] !== undefined) updates.steps = params['steps'];
+    if (params['nutrition'] !== undefined) updates.nutrition = params['nutrition'];
+    if (params['dietTags'] !== undefined) updates.dietTags = params['dietTags'];
+    if (params['isDraft'] !== undefined) updates.isDraft = params['isDraft'];
 
     await this.recipeRepo.updateRecipe(recipeId, updates);
   }

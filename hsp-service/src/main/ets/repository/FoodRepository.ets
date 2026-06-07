@@ -29,7 +29,8 @@ export class FoodRepository {
       ${COL_TRACE_CODE} TEXT,
       ${COL_SOURCE} TEXT NOT NULL,
       ${COL_IDENTIFIED_AT} INTEGER NOT NULL
-    )`;`
+    )`;
+
     try {
       await this.rdbStore.executeSql(sql);
     } catch (error) {

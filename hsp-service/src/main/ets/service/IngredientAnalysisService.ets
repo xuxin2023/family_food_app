@@ -7,7 +7,8 @@ import { CloudFunctionClient } from 'hsp_cloud';
 
 
 const TAG = 'IngredientAnalysisService';
-const DOMAIN = HILOG_DOMAIN_DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
+const DOMAIN = DOMAIN_ZERO;
 
 export interface HazardItem {
   code: string;
@@ -109,26 +110,26 @@ export class IngredientAnalysisService {
         data: { ingredients },
       }) as Record<string, Object>;
 
-      if (!response || !response['assessments']) return null;
+      if (!response || !response.assessments) return null;
 
-      const rawAssessments = response['assessments'] as Array<Record<string, Object>>;
+      const rawAssessments = response.assessments as Array<Record<string, Object>>;
       const assessments: HazardItem[] = rawAssessments.map(a => ({
-        code: (a['code'] as string) ?? '',
-        name: (a['name'] as string) ?? '',
-        hazardScore: (a['hazardScore'] as number) ?? 0,
-        hazardLevel: (a['hazardLevel'] as HazardItem['hazardLevel']) ?? 'attention',
-        category: (a['category'] as string) ?? '',
-        description: (a['description'] as string) ?? '',
-        longTermEffects: (a['longTermEffects'] as string[]) ?? [],
-        populationWarnings: (a['specialPopulationWarnings'] as string[]) ?? [],
+        code: (a.code as string) ?? '',
+        name: (a.name as string) ?? '',
+        hazardScore: (a.hazardScore as number) ?? 0,
+        hazardLevel: (a.hazardLevel as HazardItem.hazardLevel) ?? 'attention',
+        category: (a.category as string) ?? '',
+        description: (a.description as string) ?? '',
+        longTermEffects: (a.longTermEffects as string[]) ?? [],
+        populationWarnings: (a.specialPopulationWarnings as string[]) ?? [],
       }));
 
       const result = this.buildResult(assessments, ['cloud_db']);
-      if (response['allergenWarnings']) {
-        result.allergenWarnings = response['allergenWarnings'] as string[];
+      if (response.allergenWarnings) {
+        result.allergenWarnings = response.allergenWarnings as string[];
       }
-      if (response['specialWarnings']) {
-        result.specialWarnings = response['specialWarnings'] as string[];
+      if (response.specialWarnings) {
+        result.specialWarnings = response.specialWarnings as string[];
       }
 
       return result;
@@ -148,7 +149,7 @@ export class IngredientAnalysisService {
     const overallScore = Math.max(0, Math.min(100,
       100 - (high * 25 + moderate * 10)));
 
-    let overallRisk: IngredientAnalysisResult['overallRisk'] = 'low';
+    let overallRisk: IngredientAnalysisResult.overallRisk = 'low';
     if (high >= 3) overallRisk = 'critical';
     else if (high >= 1) overallRisk = 'high';
     else if (moderate >= 3) overallRisk = 'medium';

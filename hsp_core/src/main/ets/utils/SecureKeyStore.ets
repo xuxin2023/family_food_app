@@ -65,7 +65,7 @@ export class SecureKeyStore {
     // 通过 CryptoFramework 生成 32 字节安全随机密钥（AES-256）
     const random = cryptoFramework.createRandom();
     const randomData: cryptoFramework.DataBlob = await random.generateRandom(32);
-    const bytes: Uint8Array = new Uint8Array(
+    const bytes: Uint8Array = new Uint8Array(randomData.data);
     let hexKey: string = '';
     for (let i = 0; i < bytes.length; i++) {
       hexKey += bytes[i].toString(16).padStart(2, '0');

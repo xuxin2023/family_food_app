@@ -13,7 +13,7 @@ const PRESET_ALLERGENS: string[] = [
 
 @Entry
 @ComponentV2
-struct AllergenConfigPage {
+export struct AllergenConfigPage {
   @Local customAllergens: string[] = []
   @Local newAllergen: string = ''
   @Local isLoading: boolean = true
@@ -113,7 +113,7 @@ struct AllergenConfigPage {
                       .fontSize(14)
                       .layoutWeight(1)
 
-                    Text('âœ?)
+                    Text('âœ•')
                       .fontSize(16)
                       .fontColor(COLORS.TEXT_GRAY_BDBD)
                       .onClick(() => { this.toggleAllergen(allergen) })

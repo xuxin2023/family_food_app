@@ -4,7 +4,7 @@ import { promptAction } from '@kit.ArkUI';
 
 @Entry
 @ComponentV2
-struct TeenModePage {
+export struct TeenModePage {
   @Local isTeenModeEnabled: boolean = false
   @Local isLoading: boolean = true
 
@@ -108,7 +108,7 @@ struct TeenModePage {
   @Builder
   RestrictionItem(title: ResourceStr, desc: ResourceStr) {
     Row() {
-      Text('×).fontSize(14).fontColor(COLORS.PRIMARY).margin({ right: 8 })
+      Text('✕').fontSize(14).fontColor(COLORS.PRIMARY).margin({ right: 8 })
       Column() {
         Text(title).fontSize(14).fontWeight(FontWeight.Medium).fontColor(COLORS.TEXT_GRAY_2121)
         Text(desc).fontSize(12).fontColor(COLORS.TEXT_GRAY_7575).margin({ top: 2 })

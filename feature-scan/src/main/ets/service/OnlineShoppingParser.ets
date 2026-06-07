@@ -360,7 +360,7 @@ export class OnlineShoppingParser {
       return emptyDetail;
     }
 
-    const queryResultStr = responseWrapper['queryResult'] as string;
+    const queryResultStr = responseWrapper.queryResult as string;
     if (queryResultStr === undefined) {
       const emptyDetail: GoodsDetail = new GoodsDetail()
       emptyDetail.productName = '京东商品';
@@ -389,9 +389,9 @@ export class OnlineShoppingParser {
     }
 
     const goodsInfo = queryResult[0];
-    const goodsName = (goodsInfo['goodsName'] as string) || (goodsInfo['skuName'] as string) || '京东商品';
-    const priceStr = (goodsInfo['price'] as string) || '0';
-    const imgUrl = (goodsInfo['imgUrl'] as string) || '';
+    const goodsName = (goodsInfo.goodsName as string) || (goodsInfo.skuName as string) || '京东商品';
+    const priceStr = (goodsInfo.price as string) || '0';
+    const imgUrl = (goodsInfo.imgUrl as string) || '';
 
     const detail: GoodsDetail = new GoodsDetail()
     detail.productName = goodsName;
@@ -473,7 +473,7 @@ export class OnlineShoppingParser {
       return emptyDetail;
     }
 
-    const item = responseObj['item'] as Record<string, Object>;
+    const item = responseObj.item as Record<string, Object>;
     if (item === undefined) {
       const emptyDetail: GoodsDetail = new GoodsDetail()
       emptyDetail.productName = '淘宝商品';
@@ -482,9 +482,9 @@ export class OnlineShoppingParser {
       return emptyDetail;
     }
 
-    const title = (item['title'] as string) || '淘宝商品';
-    const priceStr = (item['price'] as string) || '0';
-    const picUrl = (item['pic_url'] as string) || '';
+    const title = (item.title as string) || '淘宝商品';
+    const priceStr = (item.price as string) || '0';
+    const picUrl = (item.pic_url as string) || '';
 
     const detail: GoodsDetail = new GoodsDetail()
     detail.productName = title;

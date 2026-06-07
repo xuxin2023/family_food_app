@@ -1,9 +1,11 @@
 // AiVisionService.ets
 // AI视觉识别兜底服务 - 当常规识别失败时，调用AI模型进行视觉分类
 
-import { FoodLabel, NutritionPer100g, FoodSource } from 'hsp_core';
+import { FoodLabel, NutritionPer100g, FoodSource, HILOG_DOMAIN_DEFAULT } from 'hsp_core';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'AiVisionService';
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 /**
  * AI识别结果

@@ -8,7 +8,7 @@ const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @Entry
 @ComponentV2
-struct HomePage {
+export struct HomePage {
   @Local members: FamilyProfile[] = []
   @Local selectedMemberId: string = ''
   @Local isLoading: boolean = true

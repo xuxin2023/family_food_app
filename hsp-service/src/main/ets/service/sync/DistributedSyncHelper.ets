@@ -101,7 +101,7 @@ export class DistributedSyncHelper {
     }
     this.updateStatus(SyncStatus.SYNCING);
     try {
-      this.distributedObj['family_member_sync'] = data;
+      this.distributedObj.family_member_sync = data;
       this.retryCount = 0;
       this.updateStatus(SyncStatus.COMPLETED);
       hilog.info(DOMAIN_ZERO, TAG, 'Distributed sync to remote success');

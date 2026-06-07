@@ -1,4 +1,4 @@
-import {
+﻿import {
   ToastHelper, safeBack, safePushUrl, getPageParams, Recommendation, FamilyProfile, GroupSummary, FeedType, BUTTON, COLORS, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
@@ -48,7 +48,7 @@ struct ShareChannelButtonCmp {
 
 @Entry
 @ComponentV2
-struct SharePage {
+export struct SharePage {
   @Local isLoading: boolean = true
   @Local foodName: string = ''
   @Local recommendations: Recommendation[] = []
@@ -513,7 +513,7 @@ struct SharePage {
       const srcFile = fileIo.openSync(this.posterUri, fileIo.OpenMode.READ_ONLY);
       const dstFile = fileIo.openSync(uri, fileIo.OpenMode.WRITE_ONLY);
       const bufferSize = 4096;
-      const buf: ArrayBuffer = new ArrayBuffer(
+      const buf: ArrayBuffer = new ArrayBuffer(bufferSize);
       let readLen = fileIo.readSync(srcFile.fd, buf);
       while (readLen > 0) {
         fileIo.writeSync(dstFile.fd, buf, { length: readLen });
@@ -524,7 +524,7 @@ struct SharePage {
       ToastHelper.show(this.getUIContext(), '宸蹭繚瀛樺埌鐩稿唽');
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'savePosterToAlbum failed: %{public}s', JSON.stringify(e));
-      ToastHelper.show(this.getUIContext(), '保存到相册失败);
+      ToastHelper.show(this.getUIContext(), '保存到相册失败');
     }
   }
 

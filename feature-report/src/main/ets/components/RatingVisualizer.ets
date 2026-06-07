@@ -133,7 +133,7 @@ export struct RatingVisualizer {
         isReverseScale: false },
       { label: '脂肪', value: fat, unit: 'g', rda: 65, rdaLabel: '65g/日',
         isReverseScale: true },
-      { label: '碳水', value: nutrition['carbohydrate'] ?? 0, unit: 'g', rda: 300,
+      { label: '碳水', value: nutrition.carbohydrate ?? 0, unit: 'g', rda: 300,
         rdaLabel: '300g/日', isReverseScale: false },
       { label: '纤维素', value: fiber, unit: 'g', rda: 25, rdaLabel: '25g/日',
         isReverseScale: false },

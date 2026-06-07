@@ -1,4 +1,9 @@
 import { display } from '@kit.ArkUI';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
+
+const TAG = 'DeviceAdapter';
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export enum DeviceType {
   PHONE = 'phone',

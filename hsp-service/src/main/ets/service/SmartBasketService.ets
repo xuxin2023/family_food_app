@@ -9,7 +9,7 @@ import { IngredientAnalysisService, IngredientAnalysisResult, HazardItem } from 
 import { LlmChatProxy, LlmSource } from './ai/LlmChatProxy';
 
 const TAG = 'SmartBasketService';
-const DOMAIN = HILOG_DOMAIN_DEFAULT;
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 export interface SmartBasketItem {
   food: FoodLabel;
@@ -68,7 +68,7 @@ export class SmartBasketService {
       } catch (_) {
       hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_)); /* fallback */ }
 
-      let level: SmartBasketItem['level'] = 'safe';
+      let level: SmartBasketItem.level = 'safe';
       if (ingredientRisk) {
         const risk = ingredientRisk.overallRisk;
         if (risk === 'critical' || risk === 'high') { level = 'avoid'; avoidCount++; }

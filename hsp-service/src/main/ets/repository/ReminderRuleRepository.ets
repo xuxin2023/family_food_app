@@ -65,16 +65,16 @@ export class ReminderRuleRepository {
 
   private toValuesBucket(rule: ReminderRule): relationalStore.ValuesBucket {
     const bucket: relationalStore.ValuesBucket = {};
-    bucket['id'] = rule.id;
-    bucket['rule_type'] = rule.type;
-    bucket['enabled'] = rule.enabled ? 1 : 0;
-    bucket['condition_desc'] = rule.condition;
-    bucket['rule_time'] = rule.time;
-    bucket['repeat_days'] = rule.repeatDays.join(',');
-    bucket['rule_message'] = rule.message;
-    bucket['priority'] = rule.priority;
-    bucket['member_id'] = rule.memberId;
-    bucket['created_at'] = Date.now();
+    bucket.id = rule.id;
+    bucket.rule_type = rule.type;
+    bucket.enabled = rule.enabled ? 1 : 0;
+    bucket.condition_desc = rule.condition;
+    bucket.rule_time = rule.time;
+    bucket.repeat_days = rule.repeatDays.join(',');
+    bucket.rule_message = rule.message;
+    bucket.priority = rule.priority;
+    bucket.member_id = rule.memberId;
+    bucket.created_at = Date.now();
     return bucket;
   }
 
@@ -151,21 +151,21 @@ export class ReminderRuleRepository {
     let count = 0;
     for (const row of rows) {
       const rule: ReminderRule = new ReminderRule()
-      rule.id = (row['id'] as string) ?? `rule_${Date.now()}_${count}`;
-      rule.type = (row['rule_type'] as string) ?? '';
-      rule.enabled = (row['enabled'] as number) !== 0;
-      rule.condition = (row['condition_desc'] as string) ?? '';
-      rule.time = (row['rule_time'] as string) ?? '';
-      const repeatDaysRaw: string = ((row['repeat_days'] as string) ?? '');
+      rule.id = (row.id as string) ?? `rule_${Date.now()}_${count}`;
+      rule.type = (row.rule_type as string) ?? '';
+      rule.enabled = (row.enabled as number) !== 0;
+      rule.condition = (row.condition_desc as string) ?? '';
+      rule.time = (row.rule_time as string) ?? '';
+      const repeatDaysRaw: string = ((row.repeat_days as string) ?? '');
       const dayParts: string[] = repeatDaysRaw.split(',');
       const days: number[] = [];
       for (let i = 0; i < dayParts.length; i++) {
         days.push(Number(dayParts[i]));
       }
       rule.repeatDays = days;
-      rule.message = (row['rule_message'] as string) ?? '';
-      rule.priority = (row['priority'] as string) ?? 'normal';
-      rule.memberId = (row['member_id'] as string) ?? '';
+      rule.message = (row.rule_message as string) ?? '';
+      rule.priority = (row.priority as string) ?? 'normal';
+      rule.memberId = (row.member_id as string) ?? '';
       this.rules.push(rule);
       count++;
     }

@@ -107,8 +107,8 @@ export class OnlineAlternativeSearchService {
       }
 
       const resp = response as Record<string, Object>;
-      const code = resp['code'] as number;
-      const data = resp['data'];
+      const code = resp.code as number;
+      const data = resp.data;
 
       if (code !== 200 || !Array.isArray(data)) {
         hilog.info(DOMAIN_ZERO, TAG, 'Cloud alt-recommend no data (code=%{public}d)', code);
@@ -117,8 +117,8 @@ export class OnlineAlternativeSearchService {
 
       const candidates: OnlineSearchResult[] = [];
       for (const item of (data as Record<string, Object>[])) {
-        const product = item['product'] as Record<string, Object> | undefined;
-        const score = Number(item['score'] ?? 0);
+        const product = item.product as Record<string, Object> | undefined;
+        const score = Number(item.score ?? 0);
         if (!product) continue;
 
         const result: OnlineSearchResult = new OnlineSearchResult()
@@ -139,31 +139,31 @@ export class OnlineAlternativeSearchService {
 
   private mapCloudProductToFoodLabel(product: Record<string, Object>): FoodLabel {
     const label: FoodLabel = new FoodLabel()
-    label.foodId = String(product['barcode'] || '');
-    label.foodName = String(product['product_name_zh'] || product['product_name'] || '');
-    label.barcode = String(product['barcode'] || '');
-    label.manufacturer = String(product['brands'] || '');
-    const nutrition = product['nutrition'] as Record<string, Object> | undefined;
+    label.foodId = String(product.barcode || '');
+    label.foodName = String(product.product_name_zh || product.product_name || '');
+    label.barcode = String(product.barcode || '');
+    label.manufacturer = String(product.brands || '');
+    const nutrition = product.nutrition as Record<string, Object> | undefined;
     if (nutrition) {
       const n: NutritionPer100g = new NutritionPer100g()
-      n.calories = Number(nutrition['energy_kj'] || 0);
-      n.fat = Number(nutrition['fat'] || 0);
-      n.saturatedFat = Number(nutrition['saturated_fat'] || 0);
-      n.carbohydrate = Number(nutrition['carbohydrates'] || 0);
-      n.sugar = Number(nutrition['sugars'] || 0);
-      n.fiber = Number(nutrition['fiber'] || 0);
-      n.protein = Number(nutrition['proteins'] || 0);
-      n.sodium = Number(nutrition['sodium'] || 0);
+      n.calories = Number(nutrition.energy_kj || 0);
+      n.fat = Number(nutrition.fat || 0);
+      n.saturatedFat = Number(nutrition.saturated_fat || 0);
+      n.carbohydrate = Number(nutrition.carbohydrates || 0);
+      n.sugar = Number(nutrition.sugars || 0);
+      n.fiber = Number(nutrition.fiber || 0);
+      n.protein = Number(nutrition.proteins || 0);
+      n.sodium = Number(nutrition.sodium || 0);
       label.nutrition = n;
     }
-    const gradeStr = String(product['nutrition_grade'] || '');
+    const gradeStr = String(product.nutrition_grade || '');
     if (gradeStr.length > 0) {
       const gradeMap: Record<string, number> = { 'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5 };
       label.nutriScore = gradeMap[gradeStr.toLowerCase()] ?? 0;
     }
-    label.novaGroup = Number(product['nova_group'] ?? 0);
-    label.allergenHints = String(product['allergens_text'] || '').split(',').filter((s: string) => s.length > 0);
-    label.imageUrl = String(product['image_url'] || '');
+    label.novaGroup = Number(product.nova_group ?? 0);
+    label.allergenHints = String(product.allergens_text || '').split(',').filter((s: string) => s.length > 0);
+    label.imageUrl = String(product.image_url || '');
     label.source = FoodSource.CLOUD;
     return label;
   }

@@ -284,7 +284,7 @@ export class DataBackupService {
   }
 
   private static arrayBufferToHex(buffer: ArrayBuffer): string {
-    const bytes: Uint8Array = new Uint8Array(
+    const bytes: Uint8Array = new Uint8Array(buffer);
     let hex = '';
     for (let i = 0; i < bytes.length; i++) {
       hex += bytes[i].toString(16).padStart(2, '0');
@@ -293,7 +293,7 @@ export class DataBackupService {
   }
 
   private static hexToArrayBuffer(hex: string): ArrayBuffer {
-    const bytes: Uint8Array = new Uint8Array(
+    const bytes: Uint8Array = new Uint8Array(hex.length / 2);
     for (let i = 0; i < hex.length; i += 2) {
       bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16);
     }

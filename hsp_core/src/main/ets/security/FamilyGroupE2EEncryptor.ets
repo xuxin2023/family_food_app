@@ -96,7 +96,7 @@ export class FamilyGroupE2EEncryptor {
    */
   static wrapForCloud<T extends object>(record: T, groupKey: string): { e2e: EncryptedPayload } {
     const raw = JSON.stringify(record);
-    return { e2e: FamilyGroupE2EEncryptor.encrypt(raw, groupKey) };
+    return { e2e: FamilyGroupE2EEncryptor.encrypt(raw, groupKey) } as Record<string, Object>;
   }
 
   /**

@@ -52,7 +52,7 @@ export class DistributedSyncEnhancerImpl {
       return payload;
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'serializeForSync failed: %{public}s', JSON.stringify(e));
-      return { currentMemberId: '', members: '[]', healthSignals: '{}', dailyBudgets: '{}', recentScanFoodId: '', timestamp: Date.now(), deviceId: this.deviceId, version: 0 };
+      return { currentMemberId: '', members: '[]', healthSignals: '{}', dailyBudgets: '{}', recentScanFoodId: '', timestamp: Date.now(), deviceId: this.deviceId, version: 0 } as Record<string, Object>;
     }
   }
 

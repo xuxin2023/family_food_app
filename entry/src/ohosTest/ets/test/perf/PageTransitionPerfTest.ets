@@ -39,7 +39,7 @@ export class PageTransitionPerfTest {
 
   private calculateFpsFromTimestamps(): Record<string, Object> {
     if (this.frameTimestamps.length < 2) {
-      return { fps: 0, droppedFrames: 0, totalFrames: this.frameTimestamps.length };
+      return { fps: 0, droppedFrames: 0, totalFrames: this.frameTimestamps.length } as Record<string, Object>;
     }
 
     const totalMs = this.frameTimestamps[this.frameTimestamps.length - 1] - this.frameTimestamps[0];
@@ -54,7 +54,7 @@ export class PageTransitionPerfTest {
       }
     }
 
-    return { fps: Math.round(fps * 100) / 100, droppedFrames, totalFrames };
+    return { fps: Math.round(fps * 100) / 100, droppedFrames, totalFrames } as Record<string, Object>;
   }
 
   testPageTransitionFps(pageName: string): PerfResult {

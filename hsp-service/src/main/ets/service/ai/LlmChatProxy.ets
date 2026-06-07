@@ -66,7 +66,7 @@ export class LlmChatProxy {
       try {
         const onDeviceReply = await this.tryOnDeviceLlm(request.question, request.context);
         if (onDeviceReply) {
-          return { answer: onDeviceReply, source: LlmSource.ON_DEVICE, latencyMs: Date.now() - startTime, tokensUsed: 0 };
+          return { answer: onDeviceReply, source: LlmSource.ON_DEVICE, latencyMs: Date.now() - startTime, tokensUsed: 0 } as Record<string, Object>;
         }
       } catch (_e) {
       hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e)); /* 降级 */ }
@@ -75,14 +75,14 @@ export class LlmChatProxy {
     try {
       const cloudReply = await this.tryCloudLlm(request.question, request.context, healthCtx);
       if (cloudReply) {
-        return { answer: cloudReply, source: LlmSource.CLOUD_PANGU, latencyMs: Date.now() - startTime, tokensUsed: 0 };
+        return { answer: cloudReply, source: LlmSource.CLOUD_PANGU, latencyMs: Date.now() - startTime, tokensUsed: 0 } as Record<string, Object>;
       }
     } catch (_e) {
       hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e)); /* 降级 */ }
 
     const fallback = this.generateFallbackReply(request.question);
     AuditLogger.log(AuditAction.DATA_ACCESS, 'success', request.memberId, 'llm_fallback');
-    return { answer: fallback, source: LlmSource.FALLBACK_TEMPLATE, latencyMs: Date.now() - startTime, tokensUsed: 0 };
+    return { answer: fallback, source: LlmSource.FALLBACK_TEMPLATE, latencyMs: Date.now() - startTime, tokensUsed: 0 } as Record<string, Object>;
   }
 
   private async tryOnDeviceLlm(question: string, context: string[]): Promise<string | null> {

@@ -37,7 +37,7 @@ export class ContentSafetyService {
   async reviewContent(content: string): Promise<ContentSafetyResult> {
     if (!this.endpoint) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Content safety endpoint not configured, auto-approving');
-      return { status: ContentSafetyStatus.APPROVED, confidence: 1.0 };
+      return { status: ContentSafetyStatus.APPROVED, confidence: 1.0 } as Record<string, Object>;
     }
     try {
       const httpRequest = http.createHttp();
@@ -49,7 +49,7 @@ export class ContentSafetyService {
       if (response.responseCode === 200) {
         const result = JSON.parse(response.result as string);
         if (result.pass === true) {
-          return { status: ContentSafetyStatus.APPROVED, confidence: result.confidence ?? 0.95 };
+          return { status: ContentSafetyStatus.APPROVED, confidence: result.confidence ?? 0.95 } as Record<string, Object>;
         } else {
           return {
             status: ContentSafetyStatus.REJECTED,
@@ -58,10 +58,10 @@ export class ContentSafetyService {
           };
         }
       }
-      return { status: ContentSafetyStatus.ERROR, confidence: 0 };
+      return { status: ContentSafetyStatus.ERROR, confidence: 0 } as Record<string, Object>;
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'Content safety review failed: %{public}s', JSON.stringify(e));
-      return { status: ContentSafetyStatus.PENDING, confidence: 0 };
+      return { status: ContentSafetyStatus.PENDING, confidence: 0 } as Record<string, Object>;
     }
   }
 }

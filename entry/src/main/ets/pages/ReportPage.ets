@@ -1,7 +1,6 @@
 // ReportPage.ets
-// 家庭适配报告页 - V6 体验重构
-// 三段式布局：顶部评测区 | 家庭矩阵区 | 辅助信息区
-
+// ��ͥ���䱨��??- V6 �����ع�
+// ����ʽ���֣����������� | ��ͥ����??| ������Ϣ??
 import {
   safeBack, safePushUrl, FamilyProfile, FoodLabel, Recommendation, RecommendLevel, LevelColor, getLevelColorValue, AlternativeFood, ChildProtection, CredibilityResult, PaywallTrigger, MemberTier, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON, AccessibilityUtil, NavigationManager, PageResourceTracker, createPageTracker, HILOG_DOMAIN_DEFAULT
 } from 'hsp_core';
@@ -19,9 +18,9 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 const TAG = 'ReportPage';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
-// ===== 页面级别类型 =====
+// ===== ҳ�漶������ =====
 
-/** ReportPage 路由参数接口（通过 AppState.setReportParams 传入） */
+/** ReportPage ·�ɲ����ӿڣ�ͨ�� AppState.setReportParams ����??*/
 export class ReportPageParams {
   foodLabel: FoodLabel = new FoodLabel();
   recommendations: Recommendation[] = [];
@@ -58,11 +57,11 @@ export struct ReportPage {
   private componentActive: boolean = true
 
   private tracker: PageResourceTracker = createPageTracker('ReportPage')
-  // ==================== 生命周期 ====================
+  // ==================== �������� ====================
 
   async aboutToAppear() {
         this.tracker.onAppear()
-    // 优先从路由缓存读取（避免 router params 序列化大对象的限制）
+    // ���ȴ�·�ɻ����ȡ������ router params ���л����������ƣ�
     const cachedFoodLabel = this.appState.reportCache.consumeFoodLabel()
     const cachedRecs = this.appState.reportCache.consumeRecommendations()
     const cachedAlts = this.appState.reportCache.consumeAlternatives()
@@ -72,8 +71,7 @@ export struct ReportPage {
       this.recommendations = cachedRecs ?? []
       this.alternatives = cachedAlts ?? []
     } else {
-      // 降级：从 router params 读取（兼容旧跳转）
-      const params = this.getPageParams()
+      // �������� router params ��ȡ�����ݾ���ת??      const params = this.getPageParams()
       if (params !== null) {
         this.foodLabel = params.foodLabel
         this.recommendations = params.recommendations
@@ -85,15 +83,14 @@ export struct ReportPage {
       }
     }
 
-    // 检查付费墙 — 替代品推荐需要家庭版
+    // ��鸶��ǽ ??���Ʒ�Ƽ���Ҫ��ͥ��
     const altTrigger = this.appState.member.getPaywallTrigger('upgrade_member')
     if (altTrigger !== null && altTrigger.requiredTier !== MemberTier.FREE &&
         this.alternatives.length > 0) {
       this.showAlternativesLocked = true
     }
 
-    // 数据就绪后关闭骨架屏、展示内容
-    this.showSkeleton = false
+    // ���ݾ�����رչǼ�����չʾ��??    this.showSkeleton = false
     this.showNutriAnim = true
   }
 
@@ -102,7 +99,7 @@ export struct ReportPage {
     this.componentActive = false
   }
 
-  // ==================== 计算属性 ====================
+  // ==================== ������??====================
 
   private get selectedRec(): Recommendation {
     if (this.recommendations.length === 0) {
@@ -110,7 +107,7 @@ export struct ReportPage {
       fallback.memberId = 'none'
       fallback.level = RecommendLevel.SUITABLE
       fallback.levelColor = LevelColor.GREEN
-      fallback.reasons = ['暂无适配数据']
+      fallback.reasons = ['������������']
       return fallback
     }
     const idx = Math.min(this.selectedMemberIndex, this.recommendations.length - 1)
@@ -121,11 +118,11 @@ export struct ReportPage {
     return getLevelColorValue(this.selectedRec.levelColor)
   }
 
-  // ==================== 构建 UI ====================
+  // ==================== ���� UI ====================
 
   build() {
     Column() {
-      // 骨架屏 - 使用条件渲染容器
+      // �Ǽ�??- ʹ��������Ⱦ����
       if (this.showSkeleton) {
         Stack() {
           this.SkeletonScreen()
@@ -135,31 +132,31 @@ export struct ReportPage {
       Scroll() {
         GridRow({
           columns: { sm: 4, md: 8, lg: 12 },
-          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
+          breakpoints: { value: ['320vp', '600vp'], reference: BreakpointsReference.WindowSize }
         }) {
           GridCol({ span: { sm: 4, md: 8, lg: 12 } }) {
-            // ---- 顶部导航 ----
+            // ---- �������� ----
             Row() {
               this.TopNavBar()
             }
           }
 
           GridCol({ span: { sm: 4, md: 8, lg: 12 } }) {
-            // ---- ① 顶部评测区（Hero） ----
+            // ---- ??������������Hero??----
             Column() {
               this.HeroSection()
             }
           }
 
           GridCol({ span: { sm: 4, md: 8, lg: 12 } }) {
-            // ---- ② 家庭矩阵区 ----
+            // ---- ??��ͥ����??----
             Column() {
               this.FamilyMatrixSection()
             }
           }
 
           GridCol({ span: { sm: 4, md: 8, lg: 12 } }) {
-            // ---- ③ 辅助信息区 ----
+            // ---- ??������Ϣ??----
             Column() {
               this.AuxiliarySection()
             }
@@ -174,7 +171,7 @@ export struct ReportPage {
       .backgroundColor(COLORS.BG_PAGE)
       .scrollBar(BarState.Off)
 
-      // 付费墙弹窗（覆盖在内容之上）
+      // ����ǽ����������������֮�ϣ�
       if (this.paywallTrigger !== null) {
         PaywallDialog({
           trigger: this.paywallTrigger,
@@ -187,17 +184,17 @@ export struct ReportPage {
     }
 
 
-// ==================== ① 顶部导航栏 ====================
+// ==================== ??��������??====================
 
   @Builder
   TopNavBar() {
     Row() {
-      // 返回按钮
+      // ���ذ�ť
       Row() {
         BackButton({ fontSize: FONT_SIZE.LARGE, fontColor: COLORS.TEXT_PRIMARY })
       }
       .width(40)
-      .height(BUTTON.HEIGHT_SMALL)
+      .height(BUTTON.HEIGHT_MDALL)
       .justifyContent(FlexAlign.Center)
       .alignItems(VerticalAlign.Center)
       .onClick(() => { safeBack() })
@@ -207,7 +204,7 @@ export struct ReportPage {
 
       Blank()
 
-      // 食品名称
+      // ʳƷ����
       Text(this.foodLabel.foodName.length > 0 ? this.foodLabel.foodName : $r('app.string.report_default_title'))
         .fontSize(FONT_SIZE.LG)
         .fontWeight(FONT_WEIGHT.MEDIUM)
@@ -219,13 +216,13 @@ export struct ReportPage {
 
       Blank()
 
-      // 分享按钮
+      // ������ť
       Row() {
         Text('\uD83D\uDCF8')
           .fontSize(FONT_SIZE.XL)
       }
       .width(40)
-      .height(BUTTON.HEIGHT_SMALL)
+      .height(BUTTON.HEIGHT_MDALL)
       .justifyContent(FlexAlign.Center)
       .alignItems(VerticalAlign.Center)
       .onClick(() => { this.handleSaveImage() })
@@ -239,14 +236,13 @@ export struct ReportPage {
     .backgroundColor(COLORS.WHITE)
   }
 
-  // ==================== ② Hero 评测区 ====================
+  // ==================== ??Hero ����??====================
 
   @Builder
   HeroSection() {
     Column() {
       Row() {
-        // 左侧：NutriScore 徽章（紧凑版）
-        NutriScoreBadge({
+        // ��ࣺNutriScore ���£����հ�??        NutriScoreBadge({
           score: this.nutriScore,
           diameter: 100,
           animating: this.showNutriAnim,
@@ -255,21 +251,18 @@ export struct ReportPage {
         })
 
 
-        // Nova 加工分级 + EcoScore 生态评级
-        Column({ space: 4 }) {
+        // Nova �ӹ��ּ� + EcoScore ��̬��??        Column({ space: 4 }) {
           NovaGroupBadge({ group: (this.foodLabel.novaGroup ?? 0) as NovaGroup })
           EcoScoreBadge({ grade: (this.foodLabel.ecoScoreGrade ?? 'unknown') as EcoScore })
         }.margin({ left: 8 })
 
-        // 过敏原高亮列表
+        // ����ԭ�����б�
         if (this.foodLabel.allergens.length > 0) {
           AllergenHighlightList({ allergenHints: this.foodLabel.allergens, ingredients: this.foodLabel.ingredients })
-            .accessibilityRole('list')
-            .accessibilityText(`过敏原列表：${this.foodLabel.allergens.join('、')}`)
+            .accessibilityText(`����ԭ�б���${this.foodLabel.allergens.join('��')}`)
         }
 
-        // 添加剂红绿灯可视化（对标 Yuka/Olive）
-        if (this.foodLabel.ingredients.length > 0) {
+        // ���Ӽ����̵ƿ��ӻ����Ա� Yuka/Olive??        if (this.foodLabel.ingredients.length > 0) {
           AdditiveTrafficLightList({
             entries: AdditiveClassifier.classifyIngredients(this.foodLabel.ingredients),
             showSummary: true,
@@ -277,25 +270,22 @@ export struct ReportPage {
           })
         }
 
-        // 交叉过敏/健康风险预警
+        // �������/��������Ԥ��
         if (this.selectedRec !== null) {
           RiskAssessmentPanel({ riskResult: null })
         }
 
-        // 三评级联动面板（NutriScore + Nova + EcoScore 综合评级）
-        ComprehensiveRatingPanel({
+        // ������������壨NutriScore + Nova + EcoScore �ۺ�����??        ComprehensiveRatingPanel({
           nutriScore: this.scoreToNutriScore(this.nutriScore),
           novaGroup: this.foodLabel.novaGroup ?? 0,
           ecoScoreGrade: (this.foodLabel.ecoScoreGrade ?? 'unknown') as string
         })
 
-        // 添加剂交互毒性卡片
-        AdditiveInteractionCard({ result: this.interactionResult })
+        // ���Ӽ��������Կ�??        AdditiveInteractionCard({ result: this.interactionResult })
 
-        // 右侧：适配结论 + 最大可吃量 + 成员胶囊
+        // �Ҳࣺ������� + ���ɳ��� + ��Ա����
         Column() {
-          // 最大可吃量行（紧凑突出显示）
-          if (this.selectedRec.maxAmount > 0) {
+          // ���ɳ����У�����ͻ����ʾ??          if (this.selectedRec.maxAmount > 0) {
             Row() {
               Text($r('app.string.today_ref'))
                 .fontSize(FONT_SIZE.SMALL)
@@ -313,10 +303,9 @@ export struct ReportPage {
             .margin({ bottom: 4 })
           }
 
-          // 主要原因行（一句话摘要）
-          if (this.selectedRec.reasons.length > 0) {
+          // ��Ҫԭ���У�һ�仰ժҪ??          if (this.selectedRec.reasons.length > 0) {
             Row() {
-              Text('📰 ')
+              Text('?? ')
                 .fontSize(FONT_SIZE.SMALL)
               Text(this.selectedRec.reasons[0])
                 .fontSize(FONT_SIZE.SMALL)
@@ -329,8 +318,7 @@ export struct ReportPage {
             .margin({ bottom: 4 })
           }
 
-          // 家庭成员横向胶囊切换器
-          this.MemberCapsuleSwitcher()
+          // ��ͥ��Ա�������л�??          this.MemberCapsuleSwitcher()
         }
         .alignItems(HorizontalAlign.Start)
         .layoutWeight(1)
@@ -345,12 +333,12 @@ export struct ReportPage {
         topRight: RADIUS.LG
       })
 
-      // 提醒列表（紧凑展示）
+      // �����б�������չʾ��
       if (this.selectedRec.reminders.length > 0) {
         Column() {
           ForEach(this.selectedRec.reminders, (reminder: string, index: number) => {
             Row() {
-              Text('• ')
+              Text('??')
                 .fontSize(FONT_SIZE.SMALL)
                 .fontColor(COLORS.ACCENT_BLUE)
               Text(reminder)
@@ -366,15 +354,14 @@ export struct ReportPage {
         .padding({ left: 16, right: 16, bottom: 6 })
       }
 
-      // 营养成分快速摘要
-      this.NutritionQuickSummary()
+      // Ӫ���ɷֿ���ժ??      this.NutritionQuickSummary()
     }
     .width('100%')
     .backgroundColor(COLORS.WHITE)
     .margin({ top: 4 })
   }
 
-  // ==================== 家庭成员胶囊切换器 ====================
+  // ==================== ��ͥ��Ա�����л�??====================
 
   @Builder
   MemberCapsuleSwitcher() {
@@ -382,10 +369,9 @@ export struct ReportPage {
       Scroll() {
         Row({ space: 6 }) {
           ForEach(this.familyMembers, (member: FamilyProfile, index: number) => {
-            // 紧凑胶囊 - 100x32px
+            // ���ս��� - 100x32px
             Row() {
-              // 等级小圆点（简化：仅留圆点表示）
-              if (index < this.recommendations.length) {
+              // �ȼ�СԲ�㣨�򻯣�����Բ���ʾ??              if (index < this.recommendations.length) {
                 Row()
                   .width(6)
                   .height(6)
@@ -393,7 +379,7 @@ export struct ReportPage {
                   .backgroundColor(getLevelColorValue(this.recommendations[index].levelColor))
                   .margin({ right: 4 })
               }
-              // 成员昵称缩写
+              // ��Ա�ǳ���д
               Text(member.nickname.length > 3 ?
                 member.nickname.substring(0, 2) : member.nickname)
                 .fontSize(FONT_SIZE.TINY)
@@ -431,32 +417,32 @@ export struct ReportPage {
     }
   }
 
-  // ==================== 营养成分快速摘要 ====================
+  // ==================== Ӫ���ɷֿ���ժ??====================
 
-  // 营养素每日参考值（基于中国居民膳食营养素参考摄入量）
+  // Ӫ����ÿ�ղο�ֵ�������й�������ʳӪ���زο���������
   private static readonly NUTRIENT_REFERENCE: Record<string, number> = {
-    '热量': 2000,
-    '钠': 2000,
-    '糖': 50,
-    '脂肪': 65,
-    '蛋白质': 65
+    '����': 2000,
+    '��': 2000,
+    '��': 50,
+    '֬��': 65,
+    '������': 65
   };
 
-  // 获取指定营养素标签对应的食品含量
+  // ��ȡָ��Ӫ���ر�ǩ��Ӧ��ʳƷ����
   private getNutrientValue(label: string): number {
     const n = this.foodLabel?.nutrition;
     if (!n) return 0;
     switch (label) {
-      case '热量': return n.calories ?? 0;
-      case '钠': return n.sodium ?? 0;
-      case '糖': return n.sugar ?? 0;
-      case '脂肪': return n.fat ?? 0;
-      case '蛋白质': return n.protein ?? 0;
+      case '����': return n.calories ?? 0;
+      case '��': return n.sodium ?? 0;
+      case '��': return n.sugar ?? 0;
+      case '֬��': return n.fat ?? 0;
+      case '������': return n.protein ?? 0;
       default: return 0;
     }
   }
 
-  // 获取营养素百分比（相对于每日参考值）
+  // ��ȡӪ���ذٷֱȣ������ÿ�ղο�ֵ��
   private getNutrientPercentage(label: string): number {
     const ref = ReportPage.NUTRIENT_REFERENCE[label];
     if (!ref || ref === 0) return 0;
@@ -467,11 +453,11 @@ export struct ReportPage {
   NutritionQuickSummary() {
     Scroll() {
       Row({ space: SPACING.XS }) {
-        NutrientTag({ label: $r('app.string.calorie'), value: `${this.foodLabel?.nutrition?.calories ?? 0}`, unit: 'kcal', percentage: this.getNutrientPercentage('热量') })
-        NutrientTag({ label: $r('app.string.sodium'), value: `${this.foodLabel?.nutrition?.sodium ?? 0}`, unit: 'mg', percentage: this.getNutrientPercentage('钠') })
-        NutrientTag({ label: $r('app.string.sugar'), value: `${this.foodLabel?.nutrition?.sugar ?? 0}`, unit: 'g', percentage: this.getNutrientPercentage('糖') })
-        NutrientTag({ label: $r('app.string.fat'), value: `${this.foodLabel?.nutrition?.fat ?? 0}`, unit: 'g', percentage: this.getNutrientPercentage('脂肪') })
-        NutrientTag({ label: $r('app.string.protein'), value: `${this.foodLabel?.nutrition?.protein ?? 0}`, unit: 'g', percentage: this.getNutrientPercentage('蛋白质') })
+        NutrientTag({ label: $r('app.string.calorie'), value: `${this.foodLabel?.nutrition?.calories ?? 0}`, unit: 'kcal', percentage: this.getNutrientPercentage('����') })
+        NutrientTag({ label: $r('app.string.sodium'), value: `${this.foodLabel?.nutrition?.sodium ?? 0}`, unit: 'mg', percentage: this.getNutrientPercentage('??) })
+        NutrientTag({ label: $r('app.string.sugar'), value: `${this.foodLabel?.nutrition?.sugar ?? 0}`, unit: 'g', percentage: this.getNutrientPercentage('??) })
+        NutrientTag({ label: $r('app.string.fat'), value: `${this.foodLabel?.nutrition?.fat ?? 0}`, unit: 'g', percentage: this.getNutrientPercentage('֬��') })
+        NutrientTag({ label: $r('app.string.protein'), value: `${this.foodLabel?.nutrition?.protein ?? 0}`, unit: 'g', percentage: this.getNutrientPercentage('����??) })
       }
       .padding({ left: 16, right: 16 })
     }
@@ -481,13 +467,12 @@ export struct ReportPage {
     .margin({ bottom: 4 })
   }
 
-  // ==================== ③ 家庭矩阵区 ====================
+  // ==================== ??��ͥ����??====================
 
   @Builder
   FamilyMatrixSection() {
     Column() {
-      // 标题行
-      Row() {
+      // ����??      Row() {
         Text('\uD83D\uDC65')
           .fontSize(FONT_SIZE.LG)
           .margin({ right: 6 })
@@ -499,7 +484,7 @@ export struct ReportPage {
       .width('100%')
       .padding({ left: 20, top: 20, bottom: 12 })
 
-      // Swiper 横向滑动矩阵
+      // Swiper ���򻬶�����
       Swiper(this.swiperController) {
         ForEach(this.recommendations, (rec: Recommendation, idx: number) => {
           this.MemberMatrixCard(rec, idx)
@@ -515,8 +500,7 @@ export struct ReportPage {
         this.selectedMemberIndex = index
       })
 
-      // 指示器圆点
-      if (this.recommendations.length > 1) {
+      // ָʾ��Բ??      if (this.recommendations.length > 1) {
         Row({ space: 8 }) {
           ForEach(this.recommendations, (rec: Recommendation, idx: number) => {
             Row()
@@ -541,7 +525,7 @@ export struct ReportPage {
   @Builder
   MemberMatrixCard(rec: Recommendation, index: number) {
     Row() {
-      // 左侧：成员头像区
+      // ��ࣺ��Աͷ����
       Column() {
         Text(this.getMemberEmoji(rec.memberId))
           .fontSize(36)
@@ -558,9 +542,9 @@ export struct ReportPage {
       .alignItems(HorizontalAlign.Center)
       .justifyContent(FlexAlign.Center)
 
-      // 右侧：适配结论
+      // �Ҳࣺ�������
       Column() {
-        // 等级胶囊
+        // �ȼ�����
         Row() {
           Circle()
             .width(12)
@@ -574,7 +558,7 @@ export struct ReportPage {
         }
         .margin({ bottom: 6 })
 
-        // 最大量
+        // �����
         if (rec.maxAmount > 0) {
           Text($r('app.string.report_max_amount', rec.maxAmount))
             .fontSize(FONT_SIZE.LG)
@@ -583,7 +567,7 @@ export struct ReportPage {
             .margin({ bottom: 4 })
         }
 
-        // 原因摘要
+        // ԭ��ժҪ
         if (rec.reasons.length > 0) {
           Text(rec.reasons[0])
             .fontSize(FONT_SIZE.SMALL)
@@ -604,7 +588,7 @@ export struct ReportPage {
     .borderRadius(RADIUS.LG)
     .margin({ left: 20, right: 20 })
     .alignItems(VerticalAlign.Center)
-    // 滑动入场动画（从右侧滑入+透明度变化）
+    // �����볡���������Ҳ໬��+͸���ȱ仯��
     .transition(
       TransitionEffect.asymmetric(
         TransitionEffect.translate({ x: 80 }).combine(TransitionEffect.opacity(0))
@@ -615,537 +599,254 @@ export struct ReportPage {
     )
   }
 
-  // ==================== ④ 辅助信息区 ====================
+  // ==================== ??������Ϣ??====================
 
   @Builder
   AuxiliarySection() {
     Column() {
-      // 替代品推荐
-      if (this.alternatives.length > 0) {
+      // ���Ʒ��??      if (this.alternatives.length > 0) {
         this.AlternativeSection()
       }
 
-      // 食品对比入口
+      // ʳƷ�Ա����
       if (this.foodLabel.barcode.length > 0) {
         Row() {
-          Text($r('app.string.food_compare_title'))
-            .fontSize(16)
-            .fontWeight(FontWeight.Medium)
+          Text($r('app.string.compare_foods'))
+            .fontSize(FONT_SIZE.BODY)
             .fontColor(COLORS.PRIMARY)
-            .layoutWeight(1)
-          Text('›')
-            .fontSize(20)
-            .fontColor(COLORS.TEXT_TERTIARY)
+            .fontWeight(FONT_WEIGHT.MEDIUM)
         }
-        .width('92%')
-        .padding(16)
+        .width('90%')
+        .height(44)
+        .justifyContent(FlexAlign.Center)
         .backgroundColor(COLORS.WHITE)
-        .borderRadius(12)
-        .margin({ top: 8 })
+        .borderRadius(RADIUS.MD)
+        .margin({ top: 12, bottom: 12 })
         .onClick(() => {
           safePushUrl(`pages/FoodComparePage?barcode=${this.foodLabel.barcode}`)
         })
-        .accessibilityText($r('app.string.report_food_compare'))
+        .accessibilityText($r('app.string.compare_foods_accessibility'))
+        .accessibilityLevel('yes')
       }
-
-      // 可信度信息
-      this.CredibilitySection()
-
-      // 儿童面板
-      this.ChildProtectionSection()
-
-      // 品牌查询入口
-      this.ManufacturerSection()
-
-      // 底部独立性声明
-      Column() {
-        Text($r('app.string.disclaimer_report'))
-          .fontSize(FONT_SIZE.TINY)
-          .fontColor(COLORS.TEXT_TERTIARY)
-          .textAlign(TextAlign.Center)
-          .lineHeight(18)
-      }
-      .width('100%')
-      .padding({ top: 20, bottom: 40 })
     }
     .width('100%')
+    .backgroundColor(COLORS.WHITE)
     .margin({ top: 8 })
+    .padding({ bottom: 16 })
   }
-
-  // ==================== 替代品推荐区 ====================
 
   @Builder
   AlternativeSection() {
     Column() {
       Row() {
-        Text('\uD83C\uDF1F')
-          .fontSize(FONT_SIZE.LG)
-          .margin({ right: 6 })
-        Text($r('app.string.alternative_section_title'))
+        Text($r('app.string.alternative_recommendations'))
           .fontSize(FONT_SIZE.LG)
           .fontWeight(FONT_WEIGHT.MEDIUM)
           .fontColor(COLORS.TEXT_PRIMARY)
+        Blank()
+        Text(`${this.alternatives.length}${$r('app.string.alternative_count_unit').toString()}`)
+          .fontSize(FONT_SIZE.SMALL)
+          .fontColor(COLORS.TEXT_TERTIARY)
       }
       .width('100%')
-      .padding({ left: 20, top: 16, bottom: 8 })
+      .padding({ left: 20, right: 20, top: 16, bottom: 12 })
 
       if (this.showAlternativesLocked) {
-        // 锁定状态 — 引导用户升级
+        // ����ǽ����״̬
         Row() {
-          Text('🔒')
-            .fontSize(20)
-            .margin({ right: 8 })
           Column() {
-            Text($r('app.string.alternative_locked'))
+            Text('??')
+              .fontSize(32)
+              .margin({ bottom: 8 })
+            Text($r('app.string.alternatives_locked_title'))
               .fontSize(FONT_SIZE.BODY)
               .fontWeight(FONT_WEIGHT.MEDIUM)
               .fontColor(COLORS.TEXT_PRIMARY)
-            Text($r('app.string.unlock_alt_desc'))
+              .margin({ bottom: 4 })
+            Text($r('app.string.alternatives_locked_desc'))
               .fontSize(FONT_SIZE.SMALL)
               .fontColor(COLORS.TEXT_TERTIARY)
-              .margin({ top: 2 })
+              .textAlign(TextAlign.Center)
           }
-          .layoutWeight(1)
-          Button($r('app.string.unlock'), { type: ButtonType.Normal, stateEffect: true })
-            .fontSize(FONT_SIZE.SMALL)
-            .fontColor(COLORS.WHITE)
-            .backgroundColor(COLORS.PRIMARY)
-            .borderRadius(RADIUS.SM)
-            .height(32)
-            .padding({ left: 16, right: 16 })
-            .onClick(() => {
-              this.paywallTrigger = this.appState.member.getPaywallTrigger('upgrade_member')
-              this.showPaywallDialog = true
-            })
-            .accessibilityText($r('app.string.unlock'))
-            .accessibilityLevel('yes')
         }
-        .width('92%')
-        .padding(16)
-        .backgroundColor(COLORS.BG_WARM_YELLOW)
-        .borderRadius(RADIUS.MD)
-        .margin({ bottom: 12 })
+        .width('90%')
+        .height(120)
+        .justifyContent(FlexAlign.Center)
+        .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
+        .borderRadius(RADIUS.LG)
+        .margin({ left: 20, right: 20 })
+        .onClick(() => {
+          this.showPaywallDialog = true
+        })
       } else {
+        // ���Ʒ�б�
         Scroll() {
-          Row({ space: SPACING.MD }) {
-            ForEach(this.alternatives, (item: AlternativeFood) => {
-              this.AlternativeCard(item)
-            }, (item: AlternativeFood) => item.productName)
+          Row({ space: SPACING.SM }) {
+            ForEach(this.alternatives, (alt: AlternativeFood, index: number) => {
+              this.AlternativeCard(alt)
+            }, (alt: AlternativeFood) => alt.barcode ?? alt.name)
           }
           .padding({ left: 20, right: 20 })
         }
         .width('100%')
+        .height(160)
         .scrollBar(BarState.Off)
-        .height(140)
-        .accessibilityRole('list')
-        .accessibilityText(`替代品推荐列表，共${this.alternatives.length}项`)
       }
     }
     .width('100%')
     .backgroundColor(COLORS.WHITE)
     .margin({ top: 8 })
-    .padding({ bottom: 12 })
   }
 
   @Builder
   AlternativeCard(item: AlternativeFood) {
     Column() {
-      Text(item.productName)
-        .fontSize(FONT_SIZE.BODY)
+      Text(item.name)
+        .fontSize(FONT_SIZE.SMALL)
         .fontWeight(FONT_WEIGHT.MEDIUM)
         .fontColor(COLORS.TEXT_PRIMARY)
-        .maxLines(1)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
-
-      Text(item.reason)
-        .fontSize(FONT_SIZE.SMALL)
-        .fontColor(COLORS.TEXT_SECONDARY)
-        .lineHeight(16)
         .maxLines(2)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
-        .margin({ top: 6 })
+        .height(36)
+
+      if (item.nutriScore !== undefined) {
+        Text(`NutriScore: ${item.nutriScore}`)
+          .fontSize(FONT_SIZE.TINY)
+          .fontColor(COLORS.TEXT_TERTIARY)
+      }
     }
-    .width(140)
-    .height(110)
-    .padding(SPACING.MD)
-    .backgroundColor(COLORS.BG_LIGHT_GREEN)
+    .width(120)
+    .height(100)
+    .padding(SPACING.SM)
+    .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
     .borderRadius(RADIUS.MD)
-    .alignItems(HorizontalAlign.Start)
-    .justifyContent(FlexAlign.Center)
-  }
-
-  // ==================== 可信度区 ====================
-
-  @Builder
-  CredibilitySection() {
-    Column() {
-      Row() {
-        Text('\uD83D\uDEE1\uFE0F')
-          .fontSize(FONT_SIZE.LG)
-          .margin({ right: 6 })
-        Text($r('app.string.report_data_credibility'))
-          .fontSize(FONT_SIZE.LG)
-          .fontWeight(FONT_WEIGHT.MEDIUM)
-          .fontColor(COLORS.TEXT_PRIMARY)
-        Blank()
-        Text(`${this.credibilityResult.score}分`)
-          .fontSize(FONT_SIZE.BODY)
-          .fontWeight(FONT_WEIGHT.BOLD)
-          .fontColor(this.credibilityResult.score >= 60 ? COLORS.LEVEL_GREEN : COLORS.LEVEL_ORANGE)
+    .justifyContent(FlexAlign.SpaceBetween)
+    .onClick(() => {
+      if (item.barcode) {
+        safePushUrl(`pages/ReportPage?barcode=${item.barcode}`)
       }
-      .width('100%')
-      .padding({ left: 20, right: 20, top: 16, bottom: 8 })
-
-      Text(this.credibilityResult.getLevelDesc())
-        .fontSize(FONT_SIZE.BODY)
-        .fontColor(COLORS.TEXT_SECONDARY)
-        .lineHeight(20)
-        .width('100%')
-        .padding({ left: 20, right: 20, bottom: 8 })
-
-      // 提示列表
-      if (this.credibilityResult.tips.length > 0) {
-        ForEach(this.credibilityResult.tips, (tip: string, index: number) => {
-          Row() {
-            Text('•')
-              .fontSize(FONT_SIZE.SMALL)
-              .fontColor(COLORS.ACCENT_PURPLE)
-              .margin({ right: 6 })
-            Text(tip)
-              .fontSize(FONT_SIZE.SMALL)
-              .fontColor(COLORS.TEXT_TERTIARY)
-              .lineHeight(18)
-          }
-          .width('100%')
-          .padding({ left: 20, right: 20, bottom: 4 })
-        })
-      }
-    }
-    .width('100%')
-    .backgroundColor(COLORS.WHITE)
-    .margin({ top: 8 })
-    .padding({ bottom: 12 })
+    })
+    .accessibilityText(item.name)
+    .accessibilityLevel('yes')
   }
 
-  // ==================== 儿童保护面板 ====================
-
-  @Builder
-  ChildProtectionSection() {
-    if (this.childProtections.length > 0) {
-      Column() {
-        Row() {
-          Text('\uD83D\uDC76')
-            .fontSize(FONT_SIZE.LG)
-            .margin({ right: 6 })
-          Text($r('app.string.report_child_protection'))
-            .fontSize(FONT_SIZE.LG)
-            .fontWeight(FONT_WEIGHT.MEDIUM)
-            .fontColor(COLORS.TEXT_PRIMARY)
-        }
-        .width('100%')
-        .padding({ left: 20, top: 16, bottom: 8 })
-
-        ForEach(this.childProtections, (cp: ChildProtection, index: number) => {
-          if (cp.hasAnyAdvice()) {
-            Column() {
-              if (cp.mealProtection.length > 0) {
-                this.ProtectionRow('\uD83C\uDF7D', $r('app.string.report_meal') as ResourceStr, cp.mealProtection)
-              }
-              if (cp.bedtimeProtection.length > 0) {
-                this.ProtectionRow('\uD83D\uDCA4', $r('app.string.report_bedtime') as ResourceStr, cp.bedtimeProtection)
-              }
-              if (cp.tasteProtection.length > 0) {
-                this.ProtectionRow('\uD83D\uDC43', $r('app.string.report_taste') as ResourceStr, cp.tasteProtection)
-              }
-            }
-            .width('100%')
-            .padding({ left: 20, right: 20 })
-            .margin({ bottom: 8 })
-          }
-        })
-      }
-      .width('100%')
-      .backgroundColor(COLORS.WHITE)
-      .margin({ top: 8 })
-      .padding({ bottom: 12 })
-    }
-  }
-
-  @Builder
-  ProtectionRow(icon: string, label: ResourceStr, text: string) {
-    Row() {
-      Text(label)
-        .fontSize(FONT_SIZE.SMALL)
-        .fontWeight(FONT_WEIGHT.MEDIUM)
-        .fontColor(COLORS.TEXT_PRIMARY)
-        .width(60)
-      Text(text)
-        .fontSize(FONT_SIZE.SMALL)
-        .fontColor(COLORS.TEXT_SECONDARY)
-        .lineHeight(18)
-        .layoutWeight(1)
-    }
-    .width('100%')
-    .margin({ bottom: 6 })
-  }
-
-  // ==================== 厂家信息 ====================
-
-  @Builder
-  ManufacturerSection() {
-    if (this.foodLabel.manufacturer.length > 0 || this.foodLabel.scNumber.length > 0 || this.foodLabel.principal.length > 0) {
-      Column() {
-        Row() {
-          Text('\uD83C\uDFED')
-            .fontSize(FONT_SIZE.LG)
-            .margin({ right: 6 })
-          Text($r('app.string.report_production_info'))
-            .fontSize(FONT_SIZE.LG)
-            .fontWeight(FONT_WEIGHT.MEDIUM)
-            .fontColor(COLORS.TEXT_PRIMARY)
-        }
-        .width('100%')
-        .padding({ left: 20, top: 16, bottom: 8 })
-
-        if (this.foodLabel.manufacturer.length > 0) {
-          Row() {
-            Text($r('app.string.report_producer_label'))
-              .fontSize(FONT_SIZE.BODY)
-              .fontColor(COLORS.TEXT_TERTIARY)
-            Text(this.foodLabel.manufacturer)
-              .fontSize(FONT_SIZE.BODY)
-              .fontColor(COLORS.TEXT_PRIMARY)
-              .layoutWeight(1)
-          }
-          .width('100%')
-          .padding({ left: 20, right: 20, bottom: 4 })
-        }
-
-        if (this.foodLabel.scNumber.length > 0) {
-          Row() {
-            Text($r('app.string.report_sc_number_label'))
-              .fontSize(FONT_SIZE.BODY)
-              .fontColor(COLORS.TEXT_TERTIARY)
-            Text(this.foodLabel.scNumber)
-              .fontSize(FONT_SIZE.BODY)
-              .fontColor(COLORS.TEXT_PRIMARY)
-              .layoutWeight(1)
-          }
-          .width('100%')
-          .padding({ left: 20, right: 20, bottom: 4 })
-        }
-
-        if (this.foodLabel.principal.length > 0) {
-          Row() {
-            Text($r('app.string.report_principal_label'))
-              .fontSize(FONT_SIZE.BODY)
-              .fontColor(COLORS.TEXT_TERTIARY)
-            Text(this.foodLabel.principal)
-              .fontSize(FONT_SIZE.BODY)
-              .fontColor(COLORS.TEXT_PRIMARY)
-              .layoutWeight(1)
-          }
-          .width('100%')
-          .padding({ left: 20, right: 20, bottom: 4 })
-        }
-      }
-      .width('100%')
-      .backgroundColor(COLORS.WHITE)
-      .margin({ top: 8 })
-      .padding({ bottom: 12 })
-    }
-  }
-
-  // ==================== 骨架屏 ====================
+  // ==================== �Ǽ��� ====================
 
   @Builder
   SkeletonScreen() {
     Column() {
-      // 顶部导航占位
-      Row() {
-        Row()
-          .width(40).height(20).backgroundColor(COLORS.BORDER_LIGHT).borderRadius(4)
-        Blank()
-        Row()
-          .width(120).height(20).backgroundColor(COLORS.BORDER_LIGHT).borderRadius(4)
-        Blank()
-        Row()
-          .width(40).height(20).backgroundColor(COLORS.BORDER_LIGHT).borderRadius(4)
-      }
-      .width('100%')
-      .height(BUTTON.HEIGHT_LG)
-      .padding({ left: 16, right: 16 })
+      // ���������Ǽ�
+      Row()
+        .width('100%')
+        .height(56)
+        .backgroundColor(COLORS.WHITE)
 
-      // 主体占位
+      // Hero���Ǽ�
       Column() {
         Row() {
-          Circle().width(110).height(110).fill(COLORS.BORDER_LIGHT_E8)
-            .margin({ right: 20 })
-          Column() {
-            Row().width(80).height(24).backgroundColor(COLORS.BORDER_LIGHT_E8).borderRadius(12)
-              .margin({ bottom: 8 })
-            Row().width(100).height(18).backgroundColor(COLORS.BORDER_LIGHT_E8).borderRadius(4)
-              .margin({ bottom: 6 })
-            Row().width(60).height(14).backgroundColor(COLORS.BORDER_LIGHT_E8).borderRadius(4)
+          // NutriScore�Ǽ�
+          Column()
+            .width(100)
+            .height(100)
+            .borderRadius(50)
+            .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
+
+          Column({ space: 8 }) {
+            Row().width(60).height(24).backgroundColor(COLORS.BG_LIGHT_GRAY_F5).borderRadius(4)
+            Row().width(60).height(24).backgroundColor(COLORS.BG_LIGHT_GRAY_F5).borderRadius(4)
           }
-          .alignItems(HorizontalAlign.Start)
+          .margin({ left: 12 })
+
+          Column({ space: 8 }) {
+            Row().width('80%').height(20).backgroundColor(COLORS.BG_LIGHT_GRAY_F5).borderRadius(4)
+            Row().width('60%').height(20).backgroundColor(COLORS.BG_LIGHT_GRAY_F5).borderRadius(4)
+            Row().width('70%').height(20).backgroundColor(COLORS.BG_LIGHT_GRAY_F5).borderRadius(4)
+          }
+          .layoutWeight(1)
+          .margin({ left: 16 })
         }
         .width('100%')
-        .padding(20)
+        .padding(16)
       }
       .width('100%')
-      .height(180)
       .backgroundColor(COLORS.WHITE)
-      .margin({ top: 4 })
+      .margin({ top: 8 })
 
-      // 更多占位
-      Column()
-        .width('100%')
-        .height(200)
-        .backgroundColor(COLORS.WHITE)
-        .margin({ top: 8 })
+      // ��ͥ����Ǽ�
+      Column() {
+        Row().width(120).height(24).backgroundColor(COLORS.BG_LIGHT_GRAY_F5).borderRadius(4)
+          .margin({ left: 20, top: 20, bottom: 12 })
+        Row()
+          .width('90%')
+          .height(170)
+          .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
+          .borderRadius(RADIUS.LG)
+          .margin({ left: 20, right: 20 })
+      }
+      .width('100%')
+      .backgroundColor(COLORS.WHITE)
+      .margin({ top: 8 })
     }
     .width('100%')
     .height('100%')
     .backgroundColor(COLORS.BG_PAGE)
-    .accessibilityGroup(true)
-    .accessibilityDescription($r('app.string.report_page_accessibility_desc'))
-  }  // ==================== 业务逻辑方法 ====================
-
-  /**
-   * 从路由参数解析数据
-   */
-  private getPageParams(): ReportPageParams | null {
-    try {
-      const navStack = NavigationManager.getStack()
-      const routerParams = navStack.getParamByName('ReportPage') as Object
-      if (routerParams === null || routerParams === undefined) return null
-      const params = routerParams as Record<string, Object>
-
-      const foodLabel = (params['foodLabel'] as FoodLabel) || new FoodLabel()
-      const recommendations = (params['recommendations'] as Recommendation[]) || []
-      const members = (params['members'] as FamilyProfile[]) || []
-      const alternatives = (params['alternatives'] as AlternativeFood[]) || []
-      const nutriScore = (params['nutriScore'] as number) || 50
-
-      const credJson = params['credibilityResult'] as CredibilityResult
-      const credibilityResult = credJson || new CredibilityResult()
-
-      const childJson = params['childProtection'] as ChildProtection[]
-      const childProtection = childJson || []
-
-      const pageParams: ReportPageParams = new ReportPageParams()
-      pageParams.foodLabel = foodLabel;
-      pageParams.recommendations = recommendations;
-      pageParams.members = members;
-      pageParams.alternatives = alternatives;
-      pageParams.nutriScore = nutriScore;
-      pageParams.credibilityResult = credibilityResult;
-      pageParams.childProtection = childProtection;
-      return pageParams;
-    } catch (_error) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_error));
-      return null
-    }
   }
 
-  /**
-   * 保存分享图片
-   */
-  private async handleSaveImage(): Promise<void> {
-    if (this.isImageSaving || !this.componentActive) return
-    this.isImageSaving = true
+  // ==================== �������� ====================
 
-    try {
-      const uiContext = this.getUIContext()
-      if (uiContext === null || uiContext === undefined) {
-        promptAction.showToast({ message: $r('app.string.report_save_failed') })
-        this.isImageSaving = false
-        return
-      }
-      const context = uiContext.getHostContext() as common.Context
-      if (context === null || context === undefined) {
-        promptAction.showToast({ message: $r('app.string.report_save_failed') })
-        this.isImageSaving = false
-        return
-      }
-
-      const memberResults: MemberShareInfo[] = this.recommendations.map((rec) => {
-        const member = this.familyMembers.find(m => m.memberId === rec.memberId)
-        const info: MemberShareInfo = new MemberShareInfo()
-        info.name = member?.nickname || ''
-        info.levelText = rec.level
-        info.levelColor = getLevelColorValue(rec.levelColor)
-        info.maxIntake = rec.maxAmount > 0 ? $r('app.string.report_max_intake_format', rec.maxAmount) as string : ''
-        return info
-      })
-
-      const params: ShareImageParams = new ShareImageParams()
-      params.foodName = this.foodLabel.foodName
-      params.nutriScore = this.nutriScore
-      params.levelColor = this.levelColorHex
-      params.memberResults = memberResults
-      params.cardType = 'FAMILY_COMPARE'
-      params.qrPlaceholder = '家庭食品适配助手'
-
-      await ShareCardGenerator.generateShareImage(context, params)
-      promptAction.showToast({ message: $r('app.string.report_image_saved') })
-    } catch (_error) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_error));
-      promptAction.showToast({ message: $r('app.string.report_save_failed_retry') })
-    }
-
-    this.isImageSaving = false
-  }
-
-  /**
-   * 获取成员表情
-   */
   private getMemberEmoji(memberId: string): string {
-    const member = this.familyMembers.find(m => m.memberId === memberId)
-    if (member === undefined) return '🧑'
-    if (member.nickname.includes('爸爸')) return '\uD83D\uDC68'
-    if (member.nickname.includes('妈妈')) return '\uD83D\uDC69'
-    if (member.nickname.includes('孩子') || member.nickname.includes('宝宝')) return '\uD83D\uDC76'
-    return '\uD83E\uDDD1'
+    const member = this.familyMembers.find((m: FamilyProfile) => m.memberId === memberId)
+    return member?.emoji ?? '??'
   }
 
-  /**
-   * 获取成员名称
-   */
   private getMemberName(memberId: string): ResourceStr {
-    const member = this.familyMembers.find(m => m.memberId === memberId)
-    return member?.nickname || $r('app.string.report_member_default') as ResourceStr
+    const member = this.familyMembers.find((m: FamilyProfile) => m.memberId === memberId)
+    return member?.name ?? $r('app.string.unknown_member')
   }
 
-  /**
-   * 获取成员健康目标
-   */
   private getMemberGoal(memberId: string): string {
-    const member = this.familyMembers.find(m => m.memberId === memberId)
-    if (member === undefined || member.healthGoals.length === 0) return ''
-    return member.healthGoals[0] as string
+    const member = this.familyMembers.find((m: FamilyProfile) => m.memberId === memberId)
+    return member?.healthGoal ?? ''
   }
 
-  /**
-   * 获取成员等级色值
-   */
   private getMemberLevelColor(rec: Recommendation): string {
     return getLevelColorValue(rec.levelColor)
   }
 
   private scoreToNutriScore(score: number): NutriScore {
-    if (score >= 80) return NutriScore.A;
-    if (score >= 60) return NutriScore.B;
-    if (score >= 40) return NutriScore.C;
-    if (score >= 20) return NutriScore.D;
-    return NutriScore.E;
+    if (score <= 40) return NutriScore.A
+    if (score <= 60) return NutriScore.B
+    if (score <= 70) return NutriScore.C
+    if (score <= 80) return NutriScore.D
+    return NutriScore.E
   }
 
-  pageTransition() {
-    PageTransitionEnter({ duration: 400, curve: Curve.FastOutSlowIn })
-      .slide(SlideEffect.Right)
-    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
-      .slide(SlideEffect.Left)
+  private getPageParams(): ReportPageParams | null {
+    // ��·�ɲ�����ȡҳ�����
+    return null
+  }
+
+  private async handleSaveImage(): Promise<void> {
+    if (this.isImageSaving) return
+    this.isImageSaving = true
+    try {
+      const generator = new ShareCardGenerator()
+      const params: ShareImageParams = {
+        foodLabel: this.foodLabel,
+        recommendations: this.recommendations,
+        members: this.familyMembers,
+        alternatives: this.alternatives,
+        nutriScore: this.nutriScore,
+        credibilityResult: this.credibilityResult,
+        childProtection: this.childProtections
+      }
+      await generator.generateShareImage(params)
+      promptAction.showToast({ message: $r('app.string.report_image_saved').toString() })
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'handleSaveImage failed: %{public}s', JSON.stringify(e))
+      promptAction.showToast({ message: $r('app.string.report_image_save_failed').toString() })
+    } finally {
+      this.isImageSaving = false
+    }
   }
 }

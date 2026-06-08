@@ -1,5 +1,5 @@
 ﻿import {
-  ToastHelper, safeBack, safePushUrl, safeReplaceUrl, FamilyProfile, DateUtil, COLORS, RADIUS, ThemeColors, ThemeMode, getPrivacyPolicyHtml, getUserAgreementHtml, HILOG_DOMAIN_DEFAULT, ROUTE_NUTRITION_TARGET_PAGE, ROUTE_NUTRITION_KNOWLEDGE_PAGE, ROUTE_MEAL_PLAN_PAGE, ROUTE_SHOPPING_LIST_PAGE, ROUTE_REMINDER_RULE_PAGE, ROUTE_FEEDBACK_PAGE, LocaleManager, SUPPORTED_LOCALES, LOCALE_DISPLAY_NAMES, DATA_VERSION, DB_NAME, HealthSignal, StepLevel, SleepStatus, BpStatus, BsStatus, DataSource, LEGAL_CONFIG
+  ToastHelper, safeBack, safePushUrl, safeReplaceUrl, FamilyProfile, DateUtil, COLORS, RADIUS, ThemeColors, ThemeMode, getPrivacyPolicyHtml, getUserAgreementHtml, HILOG_DOMAIN_DEFAULT, ROUTE_NUTRITION_TARGET_PAGE, ROUTE_NUTRITION_KNOWLEDGE_PAGE, ROUTE_MEAL_PLAN_PAGE, ROUTE_SHOPPING_LIST_PAGE, ROUTE_REMINDER_RULE_PAGE, ROUTE_FEEDBACK_PAGE, LocaleManager, SUPPORTED_LOCALES, LOCALE_DISPLAY_NAMES, DATA_VERSION, DB_NAME, HealthSignal, StepLevel, SleepStatus, BpStatus, BsStatus, DataSource, LEGAL_CONFIG,
   PageResourceTracker, createPageTracker
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
@@ -52,9 +52,8 @@ export struct SettingsPage {
 
   private componentActive: boolean = true
   private appState: AppState = AppState.getInstance()
-  private restartTimer: number = -1  // 重启定时器ID，用于防止内存泄漏
+  private restartTimer: number = -1
   private tracker: PageResourceTracker = createPageTracker('SettingsPage')
-
   async aboutToAppear() {
     this.tracker.onAppear()
     this.componentActive = true
@@ -129,7 +128,7 @@ export struct SettingsPage {
             .accessibilityText($r('app.string.settings_save_today_status_accessibility'))
             .accessibilityLevel('yes')
 
-            // ---- 隐私与合规区域 ----
+            // ---- 闅愮涓庡悎瑙勫尯锟?----
             Column() {
               Text($r('app.string.privacy_and_compliance'))
                 .fontSize(17)
@@ -182,8 +181,7 @@ export struct SettingsPage {
                 this.vm.showLocalePicker = true
               }})
 
-              // 暗黑模式开关
-              Row() {
+              // 鏆楅粦妯″紡寮€锟?              Row() {
                 Text(this.vm.currentThemeMode === ThemeMode.DARK ? $r('app.string.settings_dark_mode') : $r('app.string.settings_light_mode'))
                   .fontSize(15)
                   .fontColor(COLORS.TEXT_PRIMARY)
@@ -193,8 +191,6 @@ export struct SettingsPage {
                     const newMode: ThemeMode = checked ? ThemeMode.DARK : ThemeMode.LIGHT;
                     ThemeColors.setTheme(newMode);
                   })
-                  .accessibilityRole('switch')
-                  .accessibilityValue({ checked: this.vm.currentThemeMode === 'dark' })
                   .accessibilityText($r('app.string.settings_dark_mode_toggle_accessibility'))
                   .accessibilityLevel('yes')
               }
@@ -202,7 +198,7 @@ export struct SettingsPage {
               .padding({ top: 12, bottom: 12 })
               .border({ width: { bottom: 0.5 }, color: COLORS.DIVIDER })
 
-              // 语言选择弹窗
+              // 璇█閫夋嫨寮圭獥
               if (this.vm.showLocalePicker) {
                 Column() {
                   Text($r('app.string.settings_locale'))
@@ -216,7 +212,7 @@ export struct SettingsPage {
                         .fontColor(COLORS.TEXT_PRIMARY)
                         .layoutWeight(1)
                       if (LocaleManager.getInstance().getCurrentLocale() === localeCode) {
-                        Text('✓').fontSize(15).fontColor(COLORS.PRIMARY)
+                        Text('鉁?).fontSize(15).fontColor(COLORS.PRIMARY)
                       }
                     }
                     .width('100%')
@@ -238,7 +234,7 @@ export struct SettingsPage {
                     .onClick(() => { this.vm.showLocalePicker = false })
                     .accessibilityText($r('app.string.settings_cancel_accessibility'))
                     .accessibilityLevel('yes')
-                  }
+
                 }
                 .width('100%')
                 .padding(16)
@@ -247,7 +243,7 @@ export struct SettingsPage {
                 .margin({ top: 8, bottom: 8 })
               }
 
-              // 隐私政策详细内容
+              // 闅愮鏀跨瓥璇︾粏鍐呭
               if (this.vm.showPrivacyDetail) {
                 Column() {
                   Row() {
@@ -297,7 +293,7 @@ export struct SettingsPage {
                 })
               }
 
-              // 用户协议详细内容
+              // 鐢ㄦ埛鍗忚璇︾粏鍐呭
               if (this.vm.showAgreementDetail) {
                 Column() {
                   Row() {
@@ -361,7 +357,7 @@ export struct SettingsPage {
             .alignItems(HorizontalAlign.Start)
             .margin({ bottom: 14 })
 
-            // ---- 数据管理区域 ----
+            // ---- 鏁版嵁绠＄悊鍖哄煙 ----
             Column() {
               Text($r('app.string.settings_data_management'))
                 .fontSize(17)
@@ -452,20 +448,17 @@ export struct SettingsPage {
                   RichText(this.vm.collectionHtml)
                     .width('100%')
                     .height(300)
+                    .onAppear(() => {
+                      if (this.vm.collectionHtml.length === 0) {
+                        this.vm.collectionHtml = this.buildCollectionHtml()
+                      }
+                    })
                 }
                 .width('100%')
-                .padding(8)
-                .backgroundColor(COLORS.BG_LIGHT_GRAY_F9)
+                .padding(12)
+                .backgroundColor('#FFF3F3')
                 .borderRadius(8)
                 .margin({ top: 8 })
-                .onAppear(() => {
-                  if (this.vm.collectionHtml.length === 0) {
-                    const ctx = AppStorage.get<common.Context>('appContext')
-                    if (ctx) {
-                      this.vm.collectionHtml = this.buildCollectionListHtml()
-                    }
-                  }
-                })
               }
             }
             .width('92%')
@@ -473,315 +466,288 @@ export struct SettingsPage {
             .backgroundColor(COLORS.WHITE)
             .borderRadius(16)
             .alignItems(HorizontalAlign.Start)
-            .margin({ bottom: 24 })
-
-
+            .margin({ bottom: 14 })
+        }
+        .width('92%')
       }
+      .width('100%')
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(COLORS.BG_PAGE)
+    .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
   }
+
+  // ==================== @Builder 鏂规硶 ====================
 
   @Builder
   MemberSelector() {
     Column() {
-      Text($r('app.string.save_today_status'))
-        .fontSize(14)
-        .fontColor(COLORS.TEXT_GRAY_7575)
+      Text($r('app.string.select_family_member'))
+        .fontSize(15)
+        .fontWeight(FontWeight.Bold)
         .margin({ bottom: 8 })
-      Row() {
-        ForEach(this.vm.familyMembers, (member: FamilyProfile) => {
-          Text(member.nickname)
-            .fontSize(13)
-            .padding({ left: 12, right: 12, top: 6, bottom: 6 })
-            .borderRadius(16)
-            .backgroundColor(this.vm.selectedMemberId === member.memberId ? COLORS.PRIMARY : COLORS.WHITE)
-            .fontColor(this.vm.selectedMemberId === member.memberId ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
-            .margin({ right: 8 })
-            .onClick(() => {
-              this.vm.selectedMemberId = member.memberId
-              this.loadMemberSignal(member.memberId)
-            })
-            .accessibilityText(member.nickname)
-            .accessibilityLevel('yes')
-        }, (member: FamilyProfile) => member.memberId)
+
+      if (this.vm.familyMembers.length === 0) {
+        Text($r('app.string.no_family_members'))
+          .fontSize(13)
+          .fontColor(COLORS.TEXT_GRAY_9E9E)
+      } else {
+        Scroll() {
+          Row({ space: 8 }) {
+            ForEach(this.vm.familyMembers, (member: FamilyProfile) => {
+              OptionChip({
+                text: member.name,
+                selected: this.vm.selectedMemberId === member.memberId,
+                onTap: () => {
+                  this.vm.selectedMemberId = member.memberId
+                  this.loadMemberSignal(member.memberId)
+                }
+              })
+            }, (member: FamilyProfile) => member.memberId)
+          }
+        }
+        .scrollable(ScrollDirection.Horizontal)
+        .scrollBar(BarState.Off)
       }
     }
-    .width('92%')
+    .width('100%')
     .padding(16)
     .backgroundColor(COLORS.WHITE)
-    .borderRadius(16)
-    .alignItems(HorizontalAlign.Start)
-    .margin({ bottom: 14 })
+    .borderRadius(RADIUS.LG)
+    .margin({ bottom: 12 })
   }
 
   @Builder
   ManualHealthPanel() {
     Column() {
-      Text($r('app.string.today_status'))
-        .fontSize(17)
+      Text($r('app.string.manual_health_status'))
+        .fontSize(15)
         .fontWeight(FontWeight.Bold)
         .margin({ bottom: 12 })
 
-      Text($r('app.string.activity'))
-        .fontSize(13)
-        .fontColor(COLORS.TEXT_GRAY_7575)
-        .margin({ bottom: 8 })
+      // 姝ユ暟绛夌骇
       Row() {
-        OptionChip({ label: $r('app.string.settings_activity_low'), active: this.vm.stepLevel === StepLevel.LOW, onTap: () => { this.vm.stepLevel = StepLevel.LOW } })
-        OptionChip({ label: $r('app.string.settings_activity_normal'), active: this.vm.stepLevel === StepLevel.NORMAL, onTap: () => { this.vm.stepLevel = StepLevel.NORMAL } })
-        OptionChip({ label: $r('app.string.settings_activity_high'), active: this.vm.stepLevel === StepLevel.HIGH, onTap: () => { this.vm.stepLevel = StepLevel.HIGH } })
+        Text($r('app.string.step_level'))
+          .fontSize(14)
+          .layoutWeight(1)
+        Row({ space: 8 }) {
+          ForEach([StepLevel.LOW, StepLevel.NORMAL, StepLevel.HIGH], (level: StepLevel) => {
+            OptionChip({
+              text: this.getStepLevelText(level),
+              selected: this.vm.stepLevel === level,
+              onTap: () => { this.vm.stepLevel = level }
+            })
+          }, (level: StepLevel) => level)
+        }
       }
-      .margin({ bottom: 14 })
+      .width('100%')
+      .margin({ bottom: 12 })
 
-      Text($r('app.string.health_signal_fair'))
-        .fontSize(13)
-        .fontColor(COLORS.TEXT_GRAY_7575)
-        .margin({ bottom: 8 })
+      // 鐫＄湢鐘舵€?      Row() {
+        Text($r('app.string.sleep_status'))
+          .fontSize(14)
+          .layoutWeight(1)
+        Row({ space: 8 }) {
+          ForEach([SleepStatus.GOOD, SleepStatus.BAD], (status: SleepStatus) => {
+            OptionChip({
+              text: this.getSleepStatusText(status),
+              selected: this.vm.sleepStatus === status,
+              onTap: () => { this.vm.sleepStatus = status }
+            })
+          }, (status: SleepStatus) => status)
+        }
+      }
+      .width('100%')
+      .margin({ bottom: 12 })
+
+      // 楂橀挔鎽勫叆
       Row() {
-        OptionChip({ label: $r('app.string.settings_sleep_good'), active: this.vm.sleepStatus === SleepStatus.GOOD, onTap: () => { this.vm.sleepStatus = SleepStatus.GOOD } })
-        OptionChip({ label: $r('app.string.settings_sleep_fair'), active: this.vm.sleepStatus === SleepStatus.FAIR, onTap: () => { this.vm.sleepStatus = SleepStatus.FAIR } })
-        OptionChip({ label: $r('app.string.settings_sleep_poor'), active: this.vm.sleepStatus === SleepStatus.POOR, onTap: () => { this.vm.sleepStatus = SleepStatus.POOR } })
+        Text($r('app.string.high_sodium_today'))
+          .fontSize(14)
+          .layoutWeight(1)
+        Toggle({ type: ToggleType.Switch, isOn: this.vm.hadHighSodiumToday })
+          .onChange((isOn: boolean) => {
+            this.vm.hadHighSodiumToday = isOn
+          })
       }
-      .margin({ bottom: 14 })
+      .width('100%')
+      .margin({ bottom: 12 })
 
-      Text($r('app.string.today_tags_label'))
-        .fontSize(13)
-        .fontColor(COLORS.TEXT_GRAY_7575)
-        .margin({ bottom: 8 })
+      // 楂樼硸鎽勫叆
       Row() {
-        OptionChip({ label: $r('app.string.settings_high_sodium'), active: this.vm.hadHighSodiumToday, onTap: () => { this.vm.hadHighSodiumToday = !this.vm.hadHighSodiumToday } })
-        OptionChip({ label: $r('app.string.settings_high_sugar'), active: this.vm.hadHighSugarToday, onTap: () => { this.vm.hadHighSugarToday = !this.vm.hadHighSugarToday } })
+        Text($r('app.string.high_sugar_today'))
+          .fontSize(14)
+          .layoutWeight(1)
+        Toggle({ type: ToggleType.Switch, isOn: this.vm.hadHighSugarToday })
+          .onChange((isOn: boolean) => {
+            this.vm.hadHighSugarToday = isOn
+          })
       }
-
-      Text($r('app.string.status_affect_hint'))
-        .fontSize(12)
-        .fontColor(COLORS.TEXT_GRAY_9E9E)
-        .margin({ top: 12 })
+      .width('100%')
     }
-    .width('92%')
+    .width('100%')
     .padding(16)
     .backgroundColor(COLORS.WHITE)
-    .borderRadius(16)
+    .borderRadius(RADIUS.LG)
+    .margin({ bottom: 12 })
     .alignItems(HorizontalAlign.Start)
   }
 
-  private loadMemberSignal(memberId: string) {
-    const signal = this.appState.getHealthSignal(memberId)
-    if (signal) {
+  // ==================== 绉佹湁鏂规硶 ====================
+
+  private getStepLevelText(level: StepLevel): string {
+    switch (level) {
+      case StepLevel.LOW:
+        return $r('app.string.step_level_low').toString()
+      case StepLevel.NORMAL:
+        return $r('app.string.step_level_normal').toString()
+      case StepLevel.HIGH:
+        return $r('app.string.step_level_high').toString()
+      default:
+        return ''
+    }
+  }
+
+  private getSleepStatusText(status: SleepStatus): string {
+    return status === SleepStatus.GOOD
+      ? $r('app.string.sleep_good').toString()
+      : $r('app.string.sleep_bad').toString()
+  }
+
+  private async loadMemberSignal(memberId: string): Promise<void> {
+    try {
+      const signal: HealthSignal = await this.appState.getHealthSignal(memberId)
       this.vm.stepLevel = signal.stepLevel
       this.vm.sleepStatus = signal.sleepStatus
       this.vm.hadHighSodiumToday = signal.hadHighSodiumToday
       this.vm.hadHighSugarToday = signal.hadHighSugarToday
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'loadMemberSignal failed: %{public}s', JSON.stringify(e))
     }
   }
 
-  private saveManualStatus() {
+  private async saveManualStatus(): Promise<void> {
     if (this.vm.selectedMemberId.length === 0) {
+      ToastHelper.show($r('app.string.please_select_member').toString())
       return
     }
-
-    const signal: HealthSignal = new HealthSignal()
-    signal.memberId = this.vm.selectedMemberId
-    signal.date = DateUtil.getToday()
-    signal.stepLevel = this.vm.stepLevel
-    signal.activityCaloriesLevel = this.vm.stepLevel
-    signal.sleepStatus = this.vm.sleepStatus
-    signal.manualBpStatus = this.vm.hadHighSodiumToday ? BpStatus.ELEVATED : BpStatus.NORMAL
-    signal.manualBsStatus = this.vm.hadHighSugarToday ? BsStatus.ELEVATED : BsStatus.NORMAL
-    signal.hadHighSodiumToday = this.vm.hadHighSodiumToday
-    signal.hadHighSugarToday = this.vm.hadHighSugarToday
-    signal.source = DataSource.MANUAL
-
-    this.appState.updateHealthSignal(signal)
-    ToastHelper.show(this.getUIContext(), $r('app.string.settings_status_saved'))
+    try {
+      const signal: HealthSignal = {
+        memberId: this.vm.selectedMemberId,
+        date: DateUtil.today(),
+        stepLevel: this.vm.stepLevel,
+        sleepStatus: this.vm.sleepStatus,
+        hadHighSodiumToday: this.vm.hadHighSodiumToday,
+        hadHighSugarToday: this.vm.hadHighSugarToday,
+        dataSource: DataSource.MANUAL
+      }
+      await this.appState.saveHealthSignal(signal)
+      ToastHelper.show($r('app.string.save_success').toString())
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'saveManualStatus failed: %{public}s', JSON.stringify(e))
+      ToastHelper.show($r('app.string.save_failed').toString())
+    }
   }
 
-  // ==================== 数据备份/恢复 ====================
+  private async checkForUpdate(): Promise<void> {
+    if (this.vm.isCheckingUpdate) return
+    this.vm.isCheckingUpdate = true
+    try {
+      const checker = new UpdateChecker()
+      const info: UpdateInfo = await checker.check()
+      if (info.hasUpdate) {
+        ToastHelper.show($r('app.string.update_available', info.latestVersion).toString())
+      } else {
+        ToastHelper.show($r('app.string.already_latest_version').toString())
+      }
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'checkForUpdate failed: %{public}s', JSON.stringify(e))
+      ToastHelper.show($r('app.string.check_update_failed').toString())
+    } finally {
+      this.vm.isCheckingUpdate = false
+    }
+  }
+
+  private async exportData(): Promise<void> {
+    if (this.vm.isExporting) return
+    this.vm.isExporting = true
+    try {
+      const portability = new DataPortability()
+      const result = await portability.exportData()
+      if (result.success) {
+        ToastHelper.show($r('app.string.export_success').toString())
+      } else {
+        ToastHelper.show(result.message ?? $r('app.string.export_failed').toString())
+      }
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'exportData failed: %{public}s', JSON.stringify(e))
+      ToastHelper.show($r('app.string.export_failed').toString())
+    } finally {
+      this.vm.isExporting = false
+    }
+  }
+
+  private async importData(): Promise<void> {
+    if (this.vm.isImporting) return
+    this.vm.isImporting = true
+    try {
+      const portability = new DataPortability()
+      const result: ImportResult = await portability.importData()
+      if (result.success) {
+        ToastHelper.show($r('app.string.import_success', result.importedCount).toString())
+        this.vm.familyMembers = await this.appState.getAllMembers()
+      } else {
+        ToastHelper.show(result.message ?? $r('app.string.import_failed').toString())
+      }
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'importData failed: %{public}s', JSON.stringify(e))
+      ToastHelper.show($r('app.string.import_failed').toString())
+    } finally {
+      this.vm.isImporting = false
+    }
+  }
 
   private async backupData(): Promise<void> {
     try {
-      const ctx = AppStorage.get<common.Context>('appContext');
-      if (!ctx) {
-        ToastHelper.show(this.getUIContext(), $r('app.string.settings_backup_failed_no_ctx'));
-        return;
-      }
-      const backupService = DataBackupService.getInstance();
-      await backupService.init(ctx);
-      const result: BackupResult = await backupService.exportBackup(ctx);
+      const service = new DataBackupService()
+      const result: BackupResult = await service.backup()
       if (result.success) {
-        ToastHelper.show(this.getUIContext(), $r('app.string.settings_backup_success', result.recordCount));
+        ToastHelper.show($r('app.string.backup_success').toString())
       } else {
-        ToastHelper.show(this.getUIContext(), $r('app.string.settings_backup_failed_with_error', result.error));
+        ToastHelper.show(result.message ?? $r('app.string.backup_failed').toString())
       }
-    } catch (error) {
-      hilog.warn(DOMAIN_ZERO, 'SettingsPage', 'Backup failed: ' + JSON.stringify(error));
-      ToastHelper.show(this.getUIContext(), $r('app.string.settings_backup_failed_retry'));
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'backupData failed: %{public}s', JSON.stringify(e))
+      ToastHelper.show($r('app.string.backup_failed').toString())
     }
   }
 
   private async restoreData(): Promise<void> {
     try {
-      const ctx = AppStorage.get<common.Context>('appContext');
-      if (!ctx) {
-        ToastHelper.show(this.getUIContext(), $r('app.string.settings_restore_failed_no_ctx'));
-        return;
-      }
-      const documentSelectOptions: picker.DocumentSelectOptions = new picker.DocumentSelectOptions()
-      const documentViewPicker: picker.DocumentViewPicker = new picker.DocumentViewPicker()
-      const uris = await documentViewPicker.select(documentSelectOptions);
-      if (!uris || uris.length === 0) {
-        return;
-      }
-      const uri = uris[0];
-      const backupService = DataBackupService.getInstance();
-      await backupService.init(ctx);
-      const result: RestoreResult = await backupService.importBackup(uri, ctx);
+      const service = new DataBackupService()
+      const result: RestoreResult = await service.restore()
       if (result.success) {
-        ToastHelper.show(this.getUIContext(), $r('app.string.settings_restore_success'));
-        this.appState.cache.clearAll();
+        ToastHelper.show($r('app.string.restore_success').toString())
+        this.vm.familyMembers = await this.appState.getAllMembers()
       } else {
-        ToastHelper.show(this.getUIContext(), $r('app.string.settings_restore_failed_with_error', result.error));
-      }
-    } catch (error) {
-      hilog.warn(DOMAIN_ZERO, 'SettingsPage', 'Restore failed: ' + JSON.stringify(error));
-      ToastHelper.show(this.getUIContext(), $r('app.string.settings_restore_failed_retry'));
-    }
-  }
-
-  private async checkForUpdate(): Promise<void> {
-    if (this.vm.isCheckingUpdate) {
-      return;
-    }
-    this.vm.isCheckingUpdate = true;
-    try {
-      const ctx = AppStorage.get<common.Context>('appContext');
-      if (!ctx) {
-        ToastHelper.show(this.getUIContext(), $r('app.string.settings_update_failed_no_ctx'));
-        return;
-      }
-      const info: UpdateInfo | null = await UpdateChecker.checkUpdate(ctx);
-      if (info === null) {
-        ToastHelper.show(this.getUIContext(), $r('app.string.settings_already_latest'));
-        return;
-      }
-      if (info.isForceUpdate) {
-        AlertDialog.show({
-          title: $r('app.string.settings_update_required') as ResourceStr,
-          message: $r('app.string.settings_force_update_msg', info.latestVersion, info.releaseNotes) as ResourceStr,
-          primaryButton: {
-            value: $r('app.string.settings_update_now') as ResourceStr,
-            action: () => {
-              this.downloadUpdate(info);
-            }
-          }
-        });
-      } else {
-        AlertDialog.show({
-          title: $r('app.string.settings_new_version_found') as ResourceStr,
-          message: $r('app.string.settings_new_version_msg', info.latestVersion, info.releaseNotes) as ResourceStr,
-          primaryButton: {
-            value: $r('app.string.settings_later') as ResourceStr,
-            action: () => {}
-          },
-          secondaryButton: {
-            value: $r('app.string.settings_update_now') as ResourceStr,
-            action: () => {
-              this.downloadUpdate(info);
-            }
-          }
-        });
+        ToastHelper.show(result.message ?? $r('app.string.restore_failed').toString())
       }
     } catch (e) {
-      hilog.warn(DOMAIN_ZERO, 'SettingsPage', 'checkForUpdate failed: ' + JSON.stringify(e));
-      ToastHelper.show(this.getUIContext(), $r('app.string.settings_update_failed_retry'));
-    } finally {
-      this.vm.isCheckingUpdate = false;
+      hilog.error(DOMAIN_ZERO, TAG, 'restoreData failed: %{public}s', JSON.stringify(e))
+      ToastHelper.show($r('app.string.restore_failed').toString())
     }
   }
 
-  private downloadUpdate(info: UpdateInfo): void {
-    if (info.downloadUrl.length > 0) {
-      ToastHelper.show(this.getUIContext(), $r('app.string.settings_downloading_update'));
-      try {
-        const ctx = AppStorage.get<common.Context>('appContext');
-        if (ctx) {
-          const want: Want = {
-            action: 'action.system.download',
-            uri: info.downloadUrl
-          };
-          (ctx as common.UIAbilityContext).startAbility(want);
-        }
-      } catch (e) {
-        hilog.warn(DOMAIN_ZERO, 'SettingsPage', 'Download update failed: ' + JSON.stringify(e));
-        ToastHelper.show(this.getUIContext(), $r('app.string.settings_download_failed'));
-      }
-    } else {
-      ToastHelper.show(this.getUIContext(), $r('app.string.settings_no_download_url'));
-    }
-  }
-
-  private async executeDeleteAccount(): Promise<void> {
-    this.vm.showDeleteConfirm = false
-    try {
-      const authService: AuthService = new AuthService()
-      const ctx = AppStorage.get<common.Context>('appContext')
-      if (ctx) {
-        await authService.init(ctx)
-      }
-      const success = await authService.deleteAccount()
-      if (success) {
-        const deletionService = UserDataDeletionService.getInstance()
-        const ctx = AppStorage.get<common.Context>('appContext')
-        if (ctx) {
-          await deletionService.deleteAllUserData('current_user', ctx)
-        }
-        await this.executeClearData()
-        ToastHelper.show(this.getUIContext(), $r('app.string.settings_account_deleted'))
-      } else {
-        ToastHelper.show(this.getUIContext(), $r('app.string.settings_delete_failed_retry'))
-      }
-    } catch (e) {
-      hilog.warn(DOMAIN_ZERO, 'SettingsPage', 'deleteAccount failed: ' + JSON.stringify(e))
-      ToastHelper.show(this.getUIContext(), $r('app.string.settings_delete_failed_retry'))
-    }
-  }
-
-  private buildCollectionListHtml(): string {
-    return `<h3>个人信息收集清单</h3>
-`
-<p>根据《个人信息保护法》及华为应用商店审核要求，本应用收集的个人信息如下：</p>
-<table border="1" cellpadding="6" style="border-collapse:collapse;width:100%;font-size:12px;">
-<tr style="background:#f0f0f0;"><th>信息类型</th><th>收集目的</th><th>存储方式</th><th>是否出境</th></tr>
-<tr><td>家庭成员昵称、年龄、性别</td><td>个性化营养推荐</td><td>本地数据库</td><td>否</td></tr>
-<tr><td>健康状态（步数、睡眠、心率）</td><td>健康适配计算</td><td>本地数据库</td><td>否</td></tr>
-<tr><td>过敏原与饮食偏好</td><td>过敏预警与食品推荐</td><td>本地数据库</td><td>否</td></tr>
-<tr><td>食品扫描记录与营养数据</td><td>历史记录与统计分析</td><td>本地数据库</td><td>否</td></tr>
-<tr><td>相机/相册图片</td><td>食品标签OCR识别</td><td>内存中临时处理，不存储</td><td>否</td></tr>
-<tr><td>条码扫描数据</td><td>食品信息查询</td><td>内存中临时处理，不存储</td><td>否</td></tr>
-<tr><td>设备唯一标识(UID)</td><td>匿名身份识别</td><td>本地偏好存储</td><td>否</td></tr>
-<tr><td>崩溃日志</td><td>应用稳定性监控</td><td>本地临时存储</td><td>否</td></tr>
-</table>
-<p style="margin-top:8px;font-size:11px;color:#666;">所有数据均存储在用户设备本地，不主动上传至任何服务器。云同步功能需用户手动开启，且数据仅传输至华为云（中国大陆区域），不涉及跨境传输。</p>`
-`
-  }
-
-  /**
-   * 确认清除本地数据
-   */
   private confirmClearData(): void {
     AlertDialog.show({
-      title: $r('app.string.settings_confirm_clear_title') as ResourceStr,
-      message: $r('app.string.settings_confirm_clear_msg') as ResourceStr,
+      title: $r('app.string.clear_data_confirm_title'),
+      message: $r('app.string.clear_data_confirm_message'),
       primaryButton: {
-        value: $r('app.string.settings_cancel') as ResourceStr,
-        action: () => {
-          // 不执行任何操作
-        }
+        value: $r('app.string.settings_cancel'),
+        action: () => {}
       },
       secondaryButton: {
-        value: $r('app.string.settings_confirm_clear') as ResourceStr,
+        value: $r('app.string.settings_confirm'),
         action: () => {
           this.executeClearData()
         }
@@ -789,53 +755,55 @@ export struct SettingsPage {
     })
   }
 
-  /**
-   * 执行清除本地数据
-   * 删除数据库文件、偏好设置，并重置应用状态
-   */
   private async executeClearData(): Promise<void> {
     try {
-      const context = AppStorage.get<common.Context>('appContext')
-      if (!context) {
-        ToastHelper.show(this.getUIContext(), $r('app.string.settings_clear_failed_no_ctx'))
-        return
-      }
-
-      // 1. 删除关系型数据库（food_helper.db 及相关表）
-      try {
-        await relationalStore.deleteRdbStore(context, DB_NAME)
-      } catch (_dbErr) {
-        // 如果数据库不存在或已删除，忽略错误
-        hilog.warn(DOMAIN_ZERO, 'SettingsPage', 'deleteRdbStore ignore: ' + JSON.stringify(_dbErr))
-      }
-
-      // 2. 清除隐私设置（重置首次启动标记）
-      try {
-        const pref = await preferences.getPreferences(context, 'privacy_settings')
-        await pref.put('privacy_agreed', false)
-        await pref.flush()
-      } catch (_prefErr) {
-        hilog.warn(DOMAIN_ZERO, 'SettingsPage', 'clear preferences failed: ' + JSON.stringify(_prefErr))
-      }
-
-      // 3. 重置 AppState 单例（释放已关闭的 rdbStore 引用）
-      this.appState.destroy()
-
-      // 4. 重置页面状态
+      await this.appState.clearAllData()
+      ToastHelper.show($r('app.string.clear_data_success').toString())
       this.vm.familyMembers = []
       this.vm.selectedMemberId = ''
-
-      ToastHelper.show(this.getUIContext(), $r('app.string.settings_data_cleared_restart'))
-
-      // 5. 延迟重启应用以重新初始化数据库
-      // 注意：router 没有 clear() API，使用 replaceUrl 跳到首页
-      this.restartTimer = setTimeout(() => {
-        safeReplaceUrl('pages/Index')
-      }, 500)
-    } catch (_e) {
-      hilog.warn(DOMAIN_ZERO, 'SettingsPage', 'clearData failed: ' + JSON.stringify(_e))
-      ToastHelper.show(this.getUIContext(), $r('app.string.settings_clear_failed_retry'))
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'executeClearData failed: %{public}s', JSON.stringify(e))
+      ToastHelper.show($r('app.string.clear_data_failed').toString())
     }
   }
 
+  private async executeDeleteAccount(): Promise<void> {
+    try {
+      const service = new UserDataDeletionService()
+      await service.deleteAllUserData()
+      ToastHelper.show($r('app.string.account_deleted').toString())
+      this.restartApp()
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'executeDeleteAccount failed: %{public}s', JSON.stringify(e))
+      ToastHelper.show($r('app.string.delete_account_failed').toString())
+    }
+  }
+
+  private buildCollectionHtml(): string {
+    return `
+      <html>
+      <head><meta charset="UTF-8"></head>
+      <body style="font-family: sans-serif; padding: 10px;">
+        <h3>${$r('app.string.collection_info_title').toString()}</h3>
+        <p>${$r('app.string.collection_info_desc').toString()}</p>
+        <ul>
+          <li>${$r('app.string.collection_item_1').toString()}</li>
+          <li>${$r('app.string.collection_item_2').toString()}</li>
+          <li>${$r('app.string.collection_item_3').toString()}</li>
+        </ul>
+      </body>
+      </html>
+    `
+  }
+
+  private restartApp(): void {
+    const ctx = AppStorage.get<common.Context>('appContext')
+    if (ctx) {
+      const context = ctx as common.UIAbilityContext
+      this.restartTimer = setTimeout(() => {
+        context.terminateSelf()
+      }, 1000)
+    }
+  }
 }
+

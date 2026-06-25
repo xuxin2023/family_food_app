@@ -75,11 +75,6 @@ export struct AlternativeComparePanel {
 
   @Builder
   CompareRow(label: string, originalVal: number, altVal: number, lowerIsBetter: boolean) {
-    const delta = altVal - originalVal;
-    const isImprovement = lowerIsBetter ? delta < 0 : delta > 0;
-    const deltaColor = delta === 0 ? '#999999' : isImprovement ? '#1B8A3E' : '#E53935';
-    const deltaText = delta > 0 ? `+${delta.toFixed(1)}` : delta.toFixed(1);
-
     Row() {
       Text(label)
         .fontSize(13)
@@ -94,10 +89,10 @@ export struct AlternativeComparePanel {
         .fontWeight(FontWeight.Medium)
         .textAlign(TextAlign.Center)
         .width('25%')
-      Text(deltaText)
+      Text(this.getDeltaText(altVal, originalVal))
         .fontSize(13)
         .fontWeight(FontWeight.Bold)
-        .fontColor(deltaColor)
+        .fontColor(this.getDeltaColor(altVal, originalVal, lowerIsBetter))
         .textAlign(TextAlign.Center)
         .width('25%')
     }
@@ -106,17 +101,16 @@ export struct AlternativeComparePanel {
 
   @Builder
   VerdictSection() {
-    const verdict = this.computeVerdict();
     Column() {
       Row({ space: 8 }) {
-        Text(verdict === 'better' ? '✅' : verdict === 'worse' ? '⚠️' : '⚖️')
+        Text(this.computeVerdict() === 'better' ? '✅' : this.computeVerdict() === 'worse' ? '⚠️' : '⚖️')
           .fontSize(20)
-        Text(verdict === 'better' ? '替代品更优' :
-          verdict === 'worse' ? '原选更优' : '各有优劣')
+        Text(this.computeVerdict() === 'better' ? '替代品更优' :
+          this.computeVerdict() === 'worse' ? '原选更优' : '各有优劣')
           .fontSize(14)
           .fontWeight(FontWeight.Medium)
       }
-      if (verdict === 'mixed') {
+      if (this.computeVerdict() === 'mixed') {
         Text('替代品在某些营养素上更优，但其他方面原选更好，请根据健康目标选择')
           .fontSize(12)
           .fontColor('#999999')
@@ -126,6 +120,18 @@ export struct AlternativeComparePanel {
     .width('100%')
     .alignItems(HorizontalAlign.Center)
     .padding({ top: 8, bottom: 8 })
+  }
+
+  private getDeltaText(altVal: number, originalVal: number): string {
+    const delta = altVal - originalVal;
+    return delta > 0 ? `+${delta.toFixed(1)}` : delta.toFixed(1);
+  }
+
+  private getDeltaColor(altVal: number, originalVal: number, lowerIsBetter: boolean): string {
+    const delta = altVal - originalVal;
+    if (delta === 0) return '#999999';
+    const isImprovement = lowerIsBetter ? delta < 0 : delta > 0;
+    return isImprovement ? '#1B8A3E' : '#E53935';
   }
 
   private computeVerdict(): 'better' | 'worse' | 'mixed' {

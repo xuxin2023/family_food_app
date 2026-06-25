@@ -10,11 +10,11 @@ NOVA_COLOR_MAP.set(2, '#FFC107');
 NOVA_COLOR_MAP.set(3, '#FF9800');
 NOVA_COLOR_MAP.set(4, '#F44336');
 
-const NOVA_DESCRIPTION_MAP: Map<number, ResourceStr> = new Map();
-NOVA_DESCRIPTION_MAP.set(1, $r('app.string.nova_display_group_1') as ResourceStr);
-NOVA_DESCRIPTION_MAP.set(2, $r('app.string.nova_display_group_2') as ResourceStr);
-NOVA_DESCRIPTION_MAP.set(3, $r('app.string.nova_display_group_3') as ResourceStr);
-NOVA_DESCRIPTION_MAP.set(4, $r('app.string.nova_display_group_4') as ResourceStr);
+const NOVA_DESCRIPTION_MAP: Map<number, string> = new Map();
+NOVA_DESCRIPTION_MAP.set(1, '未加工或极简加工');
+NOVA_DESCRIPTION_MAP.set(2, '加工烹饪原料');
+NOVA_DESCRIPTION_MAP.set(3, '加工食品');
+NOVA_DESCRIPTION_MAP.set(4, '超加工食品');
 
 const NOVA_ICON_MAP: Map<number, string> = new Map();
 NOVA_ICON_MAP.set(1, '🌿');
@@ -26,8 +26,8 @@ function getNovaColor(group: NovaGroup): string {
   return NOVA_COLOR_MAP.get(group) ?? '#9E9E9E';
 }
 
-function getNovaDescription(group: NovaGroup): ResourceStr {
-  return NOVA_DESCRIPTION_MAP.get(group) ?? $r('app.string.nova_display_unknown') as ResourceStr;
+function getNovaDescription(group: NovaGroup): string {
+  return NOVA_DESCRIPTION_MAP.get(group) ?? '未知';
 }
 
 function getNovaIcon(group: NovaGroup): string {
@@ -53,7 +53,7 @@ export struct NovaGroupDisplay {
   build() {
     Column() {
       Row() {
-        Text($r('app.string.nova_display_title'))
+        Text('Nova 加工程度')
           .fontSize(FONT_SIZE.BODY)
           .fontWeight(FONT_WEIGHT.MEDIUM)
           .fontColor(COLORS.TEXT_PRIMARY)
@@ -81,10 +81,9 @@ export struct NovaGroupDisplay {
       .width('100%')
       .padding({ left: SPACING.LG, right: SPACING.LG, top: SPACING.SM, bottom: SPACING.XS })
 
-      const nova = this.novaResult
-      if (nova !== null && nova.summary.length > 0) {
+      if (this.novaResult !== null && this.novaResult.summary.length > 0) {
         Row() {
-          Text(nova.summary)
+          Text(this.novaResult.summary)
             .fontSize(FONT_SIZE.SMALL)
             .fontColor(COLORS.TEXT_TERTIARY)
             .lineHeight(18)
@@ -95,7 +94,7 @@ export struct NovaGroupDisplay {
       }
 
       Row() {
-        Text(this.showDescription ? $r('app.string.nova_display_collapse') : $r('app.string.nova_display_expand'))
+        Text(this.showDescription ? '收起' : '展开详情')
           .fontSize(FONT_SIZE.SMALL)
           .fontColor(COLORS.PRIMARY)
           .fontWeight(FONT_WEIGHT.MEDIUM)
@@ -105,7 +104,7 @@ export struct NovaGroupDisplay {
       .onClick(() => {
         this.showDescription = !this.showDescription;
       })
-      .accessibilityText($r('app.string.nova_display_detail_acc'))
+      .accessibilityText('展开或收起Nova详情')
       .accessibilityLevel('yes')
 
       if (this.showDescription) {
@@ -114,7 +113,7 @@ export struct NovaGroupDisplay {
             Text('• ')
               .fontSize(FONT_SIZE.SMALL)
               .fontColor(getNovaColor(this.getResolvedGroup()))
-            Text($r('app.string.nova_display_detail_1'))
+            Text('天然食材，无添加或仅经物理加工')
               .fontSize(FONT_SIZE.TINY)
               .fontColor(COLORS.TEXT_TERTIARY)
               .lineHeight(16)
@@ -125,7 +124,7 @@ export struct NovaGroupDisplay {
             Text('• ')
               .fontSize(FONT_SIZE.SMALL)
               .fontColor(getNovaColor(NovaGroup.GROUP_2))
-            Text($r('app.string.nova_display_detail_2'))
+            Text('家庭烹饪常用原料，如油、糖、盐')
               .fontSize(FONT_SIZE.TINY)
               .fontColor(COLORS.TEXT_TERTIARY)
               .lineHeight(16)
@@ -136,7 +135,7 @@ export struct NovaGroupDisplay {
             Text('• ')
               .fontSize(FONT_SIZE.SMALL)
               .fontColor(getNovaColor(NovaGroup.GROUP_3))
-            Text($r('app.string.nova_display_detail_3'))
+            Text('经工业加工，含多种添加剂')
               .fontSize(FONT_SIZE.TINY)
               .fontColor(COLORS.TEXT_TERTIARY)
               .lineHeight(16)
@@ -147,7 +146,7 @@ export struct NovaGroupDisplay {
             Text('• ')
               .fontSize(FONT_SIZE.SMALL)
               .fontColor(getNovaColor(NovaGroup.GROUP_4))
-            Text($r('app.string.nova_display_detail_4'))
+            Text('高度工业化，添加剂多，建议少食')
               .fontSize(FONT_SIZE.TINY)
               .fontColor(COLORS.TEXT_TERTIARY)
               .lineHeight(16)

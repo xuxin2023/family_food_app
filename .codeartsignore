@@ -1,0 +1,7 @@
+# CodeArts 工具链内部目录
+.codeartsdoer/
+
+# 其他不需要检查的目录
+node_modules/
+.ohos/
+build/

@@ -7,6 +7,162 @@
     {
       "name": "hsp_service_desc",
       "value": "家庭食品适配助手业务服务层"
+    },
+    {
+      "name": "iap_purchase_success",
+      "value": "购买成功"
+    },
+    {
+      "name": "iap_service_not_init",
+      "value": "IAP服务未初始化"
+    },
+    {
+      "name": "iap_order_revoked",
+      "value": "订单已被撤销"
+    },
+    {
+      "name": "iap_payment_processing",
+      "value": "支付处理中，请稍后重试"
+    },
+    {
+      "name": "iap_err_product_owned",
+      "value": "您已拥有此商品"
+    },
+    {
+      "name": "iap_err_system_busy",
+      "value": "系统繁忙，请稍后重试"
+    },
+    {
+      "name": "iap_err_user_canceled",
+      "value": "用户取消支付"
+    },
+    {
+      "name": "iap_err_no_record",
+      "value": "无购买记录"
+    },
+    {
+      "name": "iap_err_frequent",
+      "value": "操作过于频繁"
+    },
+    {
+      "name": "iap_err_network_unstable",
+      "value": "网络不稳定"
+    },
+    {
+      "name": "iap_err_not_test_account",
+      "value": "非沙箱测试账号"
+    },
+    {
+      "name": "iap_err_not_debug",
+      "value": "非调试模式签名"
+    },
+    {
+      "name": "iap_err_internal",
+      "value": "内部错误"
+    },
+    {
+      "name": "iap_err_network_error",
+      "value": "网络异常"
+    },
+    {
+      "name": "iap_err_sandbox_config",
+      "value": "沙箱环境配置错误"
+    },
+    {
+      "name": "iap_err_huawei_not_ready",
+      "value": "华为账号未就绪"
+    },
+    {
+      "name": "iap_err_api_incompatible",
+      "value": "API版本不兼容"
+    },
+    {
+      "name": "iap_err_service_exception",
+      "value": "IAP服务异常"
+    },
+    {
+      "name": "iap_err_param_invalid",
+      "value": "参数无效"
+    },
+    {
+      "name": "iap_err_product_invalid",
+      "value": "商品无效"
+    },
+    {
+      "name": "iap_err_order_failed",
+      "value": "下单失败"
+    },
+    {
+      "name": "iap_err_purchase_canceled",
+      "value": "购买已取消"
+    },
+    {
+      "name": "iap_err_password_failed",
+      "value": "密码验证失败"
+    },
+    {
+      "name": "iap_err_insufficient_balance",
+      "value": "余额不足"
+    },
+    {
+      "name": "iap_err_daily_limit",
+      "value": "当日消费限额"
+    },
+    {
+      "name": "iap_err_sandbox_anomaly",
+      "value": "沙箱环境异常(%s)"
+    },
+    {
+      "name": "iap_err_payment_failed",
+      "value": "支付失败(%s)"
+    },
+    {
+      "name": "iap_err_pay_canceled",
+      "value": "支付已取消"
+    },
+    {
+      "name": "iap_err_network_retry",
+      "value": "网络异常，请重试"
+    },
+    {
+      "name": "iap_err_pay_fail_retry",
+      "value": "支付失败，请重试"
+    },
+    {
+      "name": "iap_err_already_subscribed",
+      "value": "已订阅该服务"
+    },
+    {
+      "name": "iap_err_product_not_exist",
+      "value": "商品不存在"
+    },
+    {
+      "name": "iap_err_login_first",
+      "value": "请先登录华为账号"
+    },
+    {
+      "name": "iap_err_system_busy_retry",
+      "value": "系统繁忙，请稍后重试"
+    },
+    {
+      "name": "iap_err_no_repeat_purchase",
+      "value": "请勿重复购买"
+    },
+    {
+      "name": "iap_err_too_frequent",
+      "value": "操作频繁，请稍后再试"
+    },
+    {
+      "name": "iap_err_already_delivered",
+      "value": "商品已发货"
+    },
+    {
+      "name": "iap_err_anomaly",
+      "value": "支付异常(%s)"
+    },
+    {
+      "name": "error_operation_failed",
+      "value": "操作失败，请稍后重试"
     }
   ]
 }

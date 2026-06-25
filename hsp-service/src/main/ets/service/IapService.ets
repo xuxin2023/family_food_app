@@ -12,7 +12,7 @@ import { common } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { util } from '@kit.ArkTS';
 import { IapErrorUtil } from './IapErrorUtil';
-import { IapProductManager, PRODUCT_IDS as IAP_PRODUCT_IDS } from './IapProductManager';
+import { IapProductManager, PRODUCT_IDS as IAP_PRODUCT_IDS, toIapKitProductType } from './IapProductManager';
 
 // ==================== 沙箱测试报告类型 ====================
 
@@ -45,12 +45,6 @@ const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 // ==================== 商品ID（兼容旧版引用，正向 IapProductManager 迁移） ====================
 /** @deprecated v10 使用 IapProductManager 替代。保留以兼容旧版调用方 */
 export const PRODUCT_IDS = IAP_PRODUCT_IDS;
-
-const ALL_PRODUCT_IDS: string[] = [
-  PRODUCT_IDS.PERSONAL_MONTHLY, PRODUCT_IDS.PERSONAL_YEARLY,
-  PRODUCT_IDS.FAMILY_YEARLY, PRODUCT_IDS.PREMIUM_YEARLY,
-  PRODUCT_IDS.TRANSPARENCY_REPORT, PRODUCT_IDS.BRAND_TRACE
-];
 
 // ==================== 外部接口 ====================
 
@@ -91,10 +85,23 @@ function base64UrlDecode(input: string): string {
     if (padding > 0) {
       base64 += '='.repeat(4 - padding);
     }
-    const helper = new util.Base64Helper();
-    const decoded: Uint8Array = helper.decodeSync(base64);
-    const textDecoder: util.TextDecoder = util.TextDecoder.create('utf-8');
-    return textDecoder.decodeWithStream(decoded, { stream: false });
+    let decoded: Uint8Array;
+    try {
+      const helper = new util.Base64Helper();
+      decoded = helper.decodeSync(base64);
+    } catch (decodeErr) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Base64 decodeSync failed: %{public}s', JSON.stringify(decodeErr));
+      return '';
+    }
+    let result: string;
+    try {
+      const textDecoder: util.TextDecoder = util.TextDecoder.create('utf-8');
+      result = textDecoder.decodeWithStream(decoded, { stream: false });
+    } catch (textErr) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'TextDecoder failed: %{public}s', JSON.stringify(textErr));
+      return '';
+    }
+    return result;
   } catch (e) {
     hilog.warn(DOMAIN_ZERO, TAG, 'Base64 decode failed: %{public}s', JSON.stringify(e));
     return '';
@@ -293,7 +300,7 @@ export class IapService {
           hilog.warn(DOMAIN_ZERO, TAG, 'clearTimeout failed: %{public}s', JSON.stringify(e));
         }
         resolve(result);
-      }).catch((err) => {
+      }).catch((err: Error) => {
         try {
           clearTimeout(timer);
         } catch (e) {
@@ -454,7 +461,7 @@ export class IapService {
       const uiContext = this.context as common.UIAbilityContext;
       const purchaseParam: iap.PurchaseParameter = {
         productId: productId,
-        productType: def.iapProductType
+        productType: toIapKitProductType(def.iapProductType)
       };
 
       // 包装超时控制
@@ -509,7 +516,7 @@ export class IapService {
       await this.savePurchaseRecord(productId, orderId);
 
       // 消耗型商品自动确认发货
-      if (def.iapProductType === iap.ProductType.CONSUMABLE &&
+      if (def.iapProductType === 'CONSUMABLE' &&
           (payload.finishStatus === undefined || payload.finishStatus === '2')) {
         await this.consumePurchase(productId);
       }

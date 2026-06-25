@@ -1,8 +1,13 @@
 import { describe, it, expect } from '@ohos/hypium';
 import { FoodFacade } from '../../../../../src/main/ets/facade/FoodFacade';
-import { FoodLabel, NutritionPer100g, FamilyProfile, HealthSignal, DailyBudget, Recommendation } from 'hsp_core';
+import { FoodLabel, NutritionPer100g, FamilyProfile, HealthSignal, DailyBudget, Recommendation, EnhancedFoodRecommendation, MealBalance, ChildProtection, NutritionSnapshot, DietRecord, CacheManager, NutritionTarget } from 'hsp_core';
+import { FoodRepository } from '../../../../../src/main/ets/repository/FoodRepository';
+import { HistoryRepository, ScanHistoryRecord, DietRecordInput } from '../../../../../src/main/ets/repository/HistoryRepository';
+import { FavoriteRepository, FavoriteItem } from '../../../../../src/main/ets/repository/FavoriteRepository';
+import { EngineManager } from '../../../../../src/main/ets/EngineManager';
+import { PositiveAdvice } from 'feature_report';
 
-class MockFoodRepository {
+class MockFoodRepository extends FoodRepository {
   private store: Map<string, FoodLabel> = new Map();
 
   async saveFoodLabel(label: FoodLabel): Promise<void> {
@@ -28,38 +33,38 @@ class MockFoodRepository {
   }
 }
 
-class MockHistoryRepository {
-  async getRecentScanHistory(limit: number): Promise<Object[]> { return []; }
-  async getDietRecordsByDateRange(mid: string, s: string, e: string): Promise<Object[]> { return []; }
-  async getNutritionSnapshots(mid: string, limit: number): Promise<Object[]> { return []; }
-  async saveDietRecord(record: Object): Promise<void> {}
+class MockHistoryRepository extends HistoryRepository {
+  async getRecentScanHistory(_limit: number): Promise<ScanHistoryRecord[]> { return []; }
+  async getDietRecordsByDateRange(_mid: string, _s: string, _e: string): Promise<DietRecord[]> { return []; }
+  async getNutritionSnapshots(_mid: string, _limit: number): Promise<NutritionSnapshot[]> { return []; }
+  async saveDietRecord(_record: DietRecordInput): Promise<void> {}
 }
 
-class MockFavoriteRepository {
-  async getAll(): Promise<Object[]> { return []; }
-  async removeFavorite(foodId: string): Promise<void> {}
-  async storeNutritionTarget(target: Object): Promise<void> {}
+class MockFavoriteRepository extends FavoriteRepository {
+  async getAll(): Promise<FavoriteItem[]> { return []; }
+  async removeFavorite(_foodId: string): Promise<boolean> { return true; }
+  async storeNutritionTarget(_target: NutritionTarget): Promise<void> {}
 }
 
-class MockEngineManager {
-  calculateRecommendation(member: Object, signal: Object, foodLabel: Object, budget: Object): Recommendation {
+class MockEngineManager extends EngineManager {
+  calculateRecommendation(_member: FamilyProfile, _signal: HealthSignal, _foodLabel: FoodLabel, _budget: DailyBudget): Recommendation {
     return new Recommendation();
   }
-  calculateEnhancedAdaptation(member: Object, foodLabel: Object, signal: Object, intake: Object, count: number): Object {
-    return {};
+  calculateEnhancedAdaptation(_member: FamilyProfile, _foodLabel: FoodLabel, _signal: HealthSignal, _intake: Object, _count: number): EnhancedFoodRecommendation {
+    return new EnhancedFoodRecommendation();
   }
-  getMealBalance(member: Object, budget: Object, scenario: string, count: number): Object {
-    return {};
+  getMealBalance(_member: FamilyProfile, _budget: DailyBudget, _scenario: string, _count: number): MealBalance {
+    return new MealBalance();
   }
-  getPositiveAdvice(foodLabel: Object, rec: Object): Object[] { return []; }
-  getChildProtection(member: Object, foodLabel: Object, rec: Object): Object {
-    return {};
+  getPositiveAdvice(_foodLabel: FoodLabel, _rec: Recommendation): PositiveAdvice[] { return []; }
+  getChildProtection(_member: FamilyProfile, _foodLabel: FoodLabel, _rec: Recommendation): ChildProtection {
+    return new ChildProtection();
   }
 }
 
-class MockCacheManager {
-  getHealthSignalFromCache(mid: string): Object | null { return null; }
-  setHealthSignalToCache(mid: string, signal: Object): void {}
+class MockCacheManager extends CacheManager {
+  getHealthSignalFromCache(_mid: string): HealthSignal | undefined { return undefined; }
+  setHealthSignalToCache(_mid: string, _signal: HealthSignal): void {}
 }
 
 export default function foodFacadeTest() {
@@ -67,11 +72,11 @@ export default function foodFacadeTest() {
     it('saveFoodLabel_and_findById_should_work', 0, async () => {
       const foodRepo: MockFoodRepository = new MockFoodRepository()
       const facade: FoodFacade = new FoodFacade(
-        foodRepo as Object,
-        new MockHistoryRepository() as Object,
-        new MockFavoriteRepository() as Object,
-        new MockEngineManager() as Object,
-        new MockCacheManager() as Object
+        foodRepo,
+        new MockHistoryRepository(),
+        new MockFavoriteRepository(),
+        new MockEngineManager(),
+        new MockCacheManager()
       );
 
       const label: FoodLabel = new FoodLabel()
@@ -81,7 +86,7 @@ export default function foodFacadeTest() {
 
       await facade.saveFoodLabel(label);
       const found = await facade.findFoodById('test-001');
-      expect(found).assertNotBeNull();
+      expect(found !== null).assertTrue();
       if (found) {
         expect(found.foodName).assertEqual('测试牛奶');
       }
@@ -90,11 +95,11 @@ export default function foodFacadeTest() {
     it('saveFoodLabel_and_findByBarcode_should_work', 0, async () => {
       const foodRepo: MockFoodRepository = new MockFoodRepository()
       const facade: FoodFacade = new FoodFacade(
-        foodRepo as Object,
-        new MockHistoryRepository() as Object,
-        new MockFavoriteRepository() as Object,
-        new MockEngineManager() as Object,
-        new MockCacheManager() as Object
+        foodRepo,
+        new MockHistoryRepository(),
+        new MockFavoriteRepository(),
+        new MockEngineManager(),
+        new MockCacheManager()
       );
 
       const label: FoodLabel = new FoodLabel()
@@ -104,7 +109,7 @@ export default function foodFacadeTest() {
 
       await facade.saveFoodLabel(label);
       const found = await facade.findFoodByBarcode('6909876543210');
-      expect(found).assertNotBeNull();
+      expect(found !== null).assertTrue();
       if (found) {
         expect(found.foodName).assertEqual('测试面包');
       }
@@ -113,15 +118,15 @@ export default function foodFacadeTest() {
     it('findFoodById_should_return_null_for_missing', 0, async () => {
       const foodRepo: MockFoodRepository = new MockFoodRepository()
       const facade: FoodFacade = new FoodFacade(
-        foodRepo as Object,
-        new MockHistoryRepository() as Object,
-        new MockFavoriteRepository() as Object,
-        new MockEngineManager() as Object,
-        new MockCacheManager() as Object
+        foodRepo,
+        new MockHistoryRepository(),
+        new MockFavoriteRepository(),
+        new MockEngineManager(),
+        new MockCacheManager()
       );
 
       const found = await facade.findFoodById('nonexistent');
-      expect(found).assertBeNull();
+      expect(found === null).assertTrue();
     });
   });
 }

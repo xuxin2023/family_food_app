@@ -7,8 +7,8 @@ import {
 } from 'hsp_core';
 import { common } from '@kit.AbilityKit';
 import { FoodRepository } from '../repository/FoodRepository';
-import { RuleEngine, RuleEngineParams } from './RuleEngineStub';
-import { AlternativeFoodRecommender } from './AlternativeRecommenderStub';
+import { RuleEngineAdapter, RuleEngineParams } from './RuleEngineAdapter';
+import { AlternativeRecommenderAdapter } from './AlternativeRecommenderAdapter';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { SecureHttpHelper } from './SecureHttpHelper';
 
@@ -39,21 +39,36 @@ let dataServiceInstance: DataService | null = null;
 
 export class DataService {
   private foodRepo: FoodRepository | null = null;
-  private ruleEngine: IRuleCalculator;
-  private altRecommender: IAlternativeRecommender;
+  private ruleEngineAdapter: RuleEngineAdapter;
+  private altRecommenderAdapter: AlternativeRecommenderAdapter;
 
-  constructor(ruleEngine: IRuleCalculator, altRecommender: IAlternativeRecommender) {
-    this.ruleEngine = ruleEngine;
-    this.altRecommender = altRecommender;
+  constructor() {
+    this.ruleEngineAdapter = new RuleEngineAdapter();
+    this.altRecommenderAdapter = new AlternativeRecommenderAdapter();
   }
 
   static getInstance(): DataService {
     if (dataServiceInstance === null) {
-      const ruleEngine: RuleEngine = new RuleEngine(
-      const altRecommender: AlternativeFoodRecommender = new AlternativeFoodRecommender()
-      dataServiceInstance = new DataService(ruleEngine, altRecommender);
+      dataServiceInstance = new DataService();
     }
     return dataServiceInstance;
+  }
+
+  setRuleEngine(engine: IRuleCalculator): void {
+    this.ruleEngineAdapter.setDelegate(engine);
+  }
+
+  setAltRecommender(recommender: IAlternativeRecommender): void {
+    this.altRecommenderAdapter.setDelegate(recommender);
+  }
+
+  async getAlternatives(foodLabel: FoodLabel, members: FamilyProfile[]): Promise<AlternativeFood[]> {
+    try {
+      return await this.altRecommenderAdapter.recommendAlternatives(foodLabel, members, 5);
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'getAlternatives failed: %{public}s', JSON.stringify(e));
+      return [];
+    }
   }
 
   /**
@@ -157,8 +172,7 @@ export class DataService {
       );
 
       if (resp.responseCode === 200 && resp.data !== null) {
-        const raw = resp.data as Record<string, Object>;
-        const data = JsonHelper.recordToMap(raw);
+        const data = resp.data;
         const product = data.get('product') as Map<string, Object> | undefined;
         const status = data.get('status') as number;
 
@@ -191,7 +205,7 @@ export class DataService {
       // 营养数据
       const nutriments = product.get('nutriments') as Map<string, Object> | undefined;
       if (nutriments) {
-        const nutrition: NutritionPer100g = new NutritionPer100g(
+        const nutrition: NutritionPer100g = new NutritionPer100g();
         const sodiumG = JsonHelper.safeParseFloat(nutriments.get('sodium_100g'));
         const saltG = JsonHelper.safeParseFloat(nutriments.get('salt_100g'));
         if (sodiumG > 0) {
@@ -285,8 +299,8 @@ export class DataService {
           const signal = healthSignals?.get(member.memberId) || new HealthSignal();
           const budget = dailyBudgets?.get(member.memberId) || this.createDefaultBudget(member);
 
-          const params: RuleEngineParams = new RuleEngineParams(
-          const rec = this.ruleEngine.calculate(params);
+          const params: RuleEngineParams = new RuleEngineParams();
+          const rec = this.ruleEngineAdapter.calculate(params);
           recommendations.push(rec);
         } catch (error) {
           // RuleEngine 计算失败时提供安全兜底
@@ -309,7 +323,7 @@ export class DataService {
     // 集成AlternativeFoodRecommender生成替代食品推荐
     let alternatives: AlternativeFood[] = [];
     try {
-      this.altRecommender.recommendAlternatives(label, membersList, 3).then((result: AlternativeFood[]) => {
+      this.altRecommenderAdapter.recommendAlternatives(label, membersList, 3).then((result: AlternativeFood[]) => {
         alternatives = result;
       }).catch(() => {
         alternatives = [];

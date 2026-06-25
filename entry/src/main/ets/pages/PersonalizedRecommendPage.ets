@@ -1,8 +1,11 @@
 import {
-  COLORS, safeBack, FoodLabel, FamilyProfile, HealthSignal, NutritionTarget, createDefaultNutritionTarget, DailyBudget, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker
+  COLORS, SHADOWS, safeBack, FoodLabel, FamilyProfile, HealthSignal, NutritionTarget, createDefaultNutritionTarget, DailyBudget, ToastHelper, HapticHelper, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker, ThemeReactive, themeReactive, ThemeColors, ThemeMode
 } from 'hsp_core';
 import { PersonalizedRecommendation } from 'feature_report';
 import { BackButton } from '../components/BackButton';
+import { GradientHeader } from '../components/GradientHeader';
+import { LoadingSkeleton } from '../components/SkeletonScreen';
+import { MemberSelector } from '../components/MemberSelector';
 import { AppState } from '../AppState';
 import { PersonalizedContext, PersonalizedFactor } from 'feature_report';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -12,7 +15,7 @@ const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @Entry
 @ComponentV2
-struct PersonalizedRecommendPage {
+export struct PersonalizedRecommendPage {
   @Local isLoading: boolean = true
   @Local selectedMemberId: string = ''
   @Local foodName: string = ''
@@ -21,17 +24,32 @@ struct PersonalizedRecommendPage {
   @Local currentSignal: HealthSignal = new HealthSignal()
   @Local currentTarget: NutritionTarget = createDefaultNutritionTarget('')
   @Local currentBudget: DailyBudget = new DailyBudget()
+  @Local allMembers: FamilyProfile[] = []
 
   private appState: AppState = AppState.getInstance()
 
   private tracker: PageResourceTracker = createPageTracker('PersonalizedRecommendPage')
+  private themeRef: ThemeReactive = themeReactive
+
+  private get isDark(): boolean {
+    if (this.themeRef.key >= 0) { /* trigger reactive */ }
+    return ThemeColors.getTheme() === ThemeMode.DARK;
+  }
+
+  private get pageBgGradient(): LinearGradient {
+    if (this.isDark) {
+      return { angle: 180, colors: [['#0D1B0E', 0.0], ['#1A2F1C', 0.5], ['#0A1A0D', 1.0]] };
+    }
+    return { angle: 180, colors: [['#E8EAF6', 0.0], ['#E0F2F1', 0.3], ['#FFF8E1', 0.7], ['#F3E5F5', 1.0]] };
+  }
+
   async aboutToAppear() {
     this.tracker.onAppear()
     this.isLoading = true
     try {
-      const members = await this.appState.getAllMembers()
-      if (members.length > 0) {
-        const firstMember = members[0]
+      this.allMembers = await this.appState.getAllMembers()
+      if (this.allMembers.length > 0) {
+        const firstMember = this.allMembers[0]
         this.currentProfile = firstMember
         this.selectedMemberId = firstMember.memberId
         this.currentSignal = this.appState.getHealthSignal(firstMember.memberId)
@@ -46,82 +64,55 @@ struct PersonalizedRecommendPage {
 
   build() {
     Column() {
-      Row() {
-        BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
-          .onClick(() => { safeBack() })
-          .accessibilityText('返回')
-          .accessibilityLevel('yes')
-        Text($r('app.string.personalized_title'))
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .margin({ left: 16 })
-      }
-      .width('100%')
-      .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+      GradientHeader({ title: $r('app.string.personalized_title') })
 
       if (this.isLoading) {
-        Column() {
-          LoadingProgress()
-            .width(48)
-            .height(48)
-            .color(COLORS.PRIMARY)
-        }
-        .width('100%')
-        .layoutWeight(1)
-        .justifyContent(FlexAlign.Center)
+        LoadingSkeleton({ variant: 'list', rowCount: 4 })
+          .layoutWeight(1)
       } else {
         Scroll() {
           Column() {
-            Column() {
-              Text($r('app.string.personalized_member_select'))
-                .fontSize(16)
-                .fontWeight(FontWeight.Bold)
-                .margin({ bottom: 12 })
-
+            // 成员选择器
+            if (this.allMembers.length > 0) {
               Column() {
-                Text($r('app.string.personalized_member_id'))
-                  .fontSize(13)
+                Text($r('app.string.personalized_member_select'))
+                  .fontSize(14)
                   .fontColor(COLORS.TEXT_GRAY_7575)
-                  .margin({ bottom: 4 })
-                TextInput({ text: this.selectedMemberId, placeholder: $r('app.string.personalized_member_id_placeholder') })
-                  .height(40)
-                  .onChange((value: string) => { this.selectedMemberId = value })
-                  .accessibilityText('成员ID输入')
-                  .accessibilityLevel('yes')
-              }
-              .width('100%')
-              .margin({ bottom: 12 })
-
-              Column() {
-                Text($r('app.string.personalized_food_name'))
-                  .fontSize(13)
-                  .fontColor(COLORS.TEXT_GRAY_7575)
-                  .margin({ bottom: 4 })
-                TextInput({ text: this.foodName, placeholder: $r('app.string.personalized_food_name_placeholder') })
-                  .height(40)
-                  .onChange((value: string) => { this.foodName = value })
-                  .accessibilityText('食品名称输入')
-                  .accessibilityLevel('yes')
+                  .margin({ left: 16, bottom: 8 })
+                MemberSelector({
+                  members: this.allMembers,
+                  selectedMemberId: this.selectedMemberId,
+                  showEmoji: true,
+                  onSelectMember: (memberId: string) => { this.onMemberSelected(memberId) }
+                })
               }
               .width('100%')
               .margin({ bottom: 16 })
+            }
 
-              Button($r('app.string.personalized_get_recommend'))
-                .width('100%')
-                .height(44)
-                .backgroundColor(COLORS.PRIMARY)
-                .fontColor(COLORS.WHITE)
-                .borderRadius(22)
-                .onClick(() => { this.runRecommendation() })
-                .accessibilityText('获取推荐')
+            Column() {
+              Text($r('app.string.personalized_food_name'))
+                .fontSize(13)
+                .fontColor(COLORS.TEXT_GRAY_7575)
+                .margin({ bottom: 4 })
+              TextInput({ text: this.foodName, placeholder: $r('app.string.personalized_food_name_placeholder') })
+                .height(40)
+                .onChange((value: string) => { this.foodName = value })
+                .accessibilityText('食品名称输入')
                 .accessibilityLevel('yes')
             }
             .width('92%')
-            .padding(16)
-            .backgroundColor(COLORS.WHITE)
-            .borderRadius(12)
-            .alignItems(HorizontalAlign.Start)
             .margin({ bottom: 16 })
+
+            Button($r('app.string.personalized_get_recommend'))
+              .width('92%')
+              .height(44)
+              .backgroundColor(COLORS.PRIMARY)
+              .fontColor(COLORS.WHITE)
+              .borderRadius(22)
+              .onClick(() => { this.runRecommendation() })
+              .accessibilityText('获取推荐')
+              .accessibilityLevel('yes')
 
             if (this.result !== null) {
               Column() {
@@ -151,7 +142,7 @@ struct PersonalizedRecommendPage {
                 if (((this.result as PersonalizedRecommendation)?.urgencyNote?.length ?? 0) > 0) {
                   Text() { Span($r('app.string.personalized_urgency_note')); Span(`${(this.result as PersonalizedRecommendation)?.urgencyNote ?? ''}`) }
                     .fontSize(13)
-                    .fontColor('#E53935')
+                    .fontColor(COLORS.ERROR)
                     .margin({ bottom: 6 })
                 }
 
@@ -194,7 +185,7 @@ struct PersonalizedRecommendPage {
               .backgroundColor(COLORS.WHITE)
               .borderRadius(12)
               .alignItems(HorizontalAlign.Start)
-              .margin({ bottom: 16 })
+              .margin({ top: 16, bottom: 16 })
             }
           }
           .width('100%')
@@ -205,21 +196,41 @@ struct PersonalizedRecommendPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(COLORS.BG_PAGE)
+    .linearGradient(this.pageBgGradient)
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
+  }
+
+  private async onMemberSelected(memberId: string): Promise<void> {
+    this.selectedMemberId = memberId
+    const member = this.allMembers.find((m: FamilyProfile) => m.memberId === memberId)
+    if (member) {
+      this.currentProfile = member
+      this.currentSignal = this.appState.getHealthSignal(memberId)
+      this.currentTarget = await this.appState.getNutritionTargetOrDefault(memberId)
+      this.currentBudget = await this.appState.getDailyBudget(memberId)
+    }
   }
 
   private async runRecommendation(): Promise<void> {
     if (this.foodName.length === 0) return;
-    const foodLabel: FoodLabel = new FoodLabel()
-    foodLabel.foodName = this.foodName;
-    this.result = (await this.appState.getPersonalizedRecommendation(this.currentProfile.memberId, foodLabel)) as Object as PersonalizedRecommendation;
+    this.isLoading = true
+    try {
+      const foodLabel: FoodLabel = new FoodLabel()
+      foodLabel.foodName = this.foodName;
+      this.result = (await this.appState.getPersonalizedRecommendation(this.currentProfile.memberId, foodLabel)) as Object as PersonalizedRecommendation;
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'runRecommendation failed: %{public}s', JSON.stringify(e));
+      ToastHelper.show(this.getUIContext(), '推荐生成失败，请重试')
+      HapticHelper.error()
+      this.result = null
+    } finally {
+      this.isLoading = false
+    }
   }
 
   aboutToDisappear(): void {
     this.tracker.onDisappear()
   }
-
-
 
   pageTransition() {
     PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })

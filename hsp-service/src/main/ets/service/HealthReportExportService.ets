@@ -23,6 +23,13 @@ export interface HealthReportResult {
   generatedAt: number;
 }
 
+export interface HealthReportData {
+  summary: string;
+  nutritionData: string;
+  allergenData: string;
+  riskData: string;
+}
+
 export class HealthReportExportService {
   private static instance: HealthReportExportService | null = null;
 
@@ -68,12 +75,7 @@ export class HealthReportExportService {
     }
   }
 
-  private async collectReportData(request: HealthReportRequest): Promise<{
-    summary: string;
-    nutritionData: string;
-    allergenData: string;
-    riskData: string;
-  }> {
+  private async collectReportData(request: HealthReportRequest): Promise<HealthReportData> {
     return {
       summary: `${request.memberName} 健康档案报告 (${request.dateRange.start}~${request.dateRange.end})`,
       nutritionData: request.includeNutritionTrend ? '营养趋势数据' : '',
@@ -82,12 +84,7 @@ export class HealthReportExportService {
     };
   }
 
-  private renderPdfContent(data: {
-    summary: string;
-    nutritionData: string;
-    allergenData: string;
-    riskData: string;
-  }): string {
+  private renderPdfContent(data: HealthReportData): string {
     const lines: string[] = []
     lines.push('=== 健康档案报告 ===')
     lines.push(data.summary)
@@ -124,11 +121,7 @@ export class HealthReportExportService {
   private async uploadToCloud(memberId: string, content: string): Promise<string> {
     try {
       const backend = HuaweiCloudBackend.getInstance();
-      const result = await backend.request({
-        path: `/api/reports/${memberId}`,
-        method: 'POST',
-        extraData: content
-      });
+      const result = await backend.callFunction('health-report-upload', content);
       return (result as Record<string, Object>)?.['url'] as string ?? '';
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Cloud upload failed: %{public}s', JSON.stringify(e));

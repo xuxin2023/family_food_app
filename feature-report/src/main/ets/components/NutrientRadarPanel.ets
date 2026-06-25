@@ -1,6 +1,5 @@
 // NutrientRadarPanel.ets
-// HM 6.1: CanvasRenderingContext2D 已移除，改用 ArkUI 声明式绘图组件
-
+// HM 6.1: CanvasRenderingContext2D 已移除，改用 ArkUI 声明式绘图组�?
 export class NutrientScores {
   protein: number = 0;
   fiber: number = 0;
@@ -21,7 +20,7 @@ export struct NutrientRadarPanel {
   @Param scores: NutrientScores = new NutrientScores()
   @Param showLabels: boolean = true
   @Param chartSize: number = 200
-  @Param onDimensionClick?: (dimensionKey: string) => void
+  @Param onDimensionClick: (dimensionKey: string) => void = (_: string) => {}
 
   private readonly labels: string[] = ['蛋白质', '膳食纤维', '维生素', '矿物质', '健康脂肪']
 
@@ -59,7 +58,7 @@ export struct NutrientRadarPanel {
     return result
   }
 
-  /** 多边形顶点 (预计算) */
+  /** 多边形顶�?(预计�? */
   private polygonVertices(items: ScoreDataItem[], scale: number): number[][] {
     const cx: number = this.chartSize / 2
     const cy: number = this.chartSize / 2
@@ -74,7 +73,7 @@ export struct NutrientRadarPanel {
     return points
   }
 
-  /** 构建多边形 Path 命令字符串 */
+  /** 构建多边�?Path 命令字符�?*/
   private polyPath(points: number[][]): string {
     if (points.length === 0) return ''
     let path: string = `M ${points[0][0]} ${points[0][1]}`
@@ -85,7 +84,7 @@ export struct NutrientRadarPanel {
     return path
   }
 
-  /** 轴线端点 (从中心到多边形的第 i 个顶点, scale=1) */
+  /** 轴线端点 (从中心到多边形的�?i 个顶�? scale=1) */
   private axisEndpoint(items: ScoreDataItem[], index: number): number[] {
     const cx: number = this.chartSize / 2
     const cy: number = this.chartSize / 2
@@ -118,7 +117,6 @@ export struct NutrientRadarPanel {
               .strokeWidth(1)
           }, (_: ScoreDataItem, i: number) => `axis_${i}`)
 
-          // 数据面
           Path()
             .commands(this.polyPath(
               this.polygonVertices(this.buildScoreData(), 1)
@@ -127,7 +125,6 @@ export struct NutrientRadarPanel {
             .stroke('#4CAF50')
             .strokeWidth(2)
 
-          // 数据点
           ForEach(
             this.polygonVertices(this.buildScoreData(), 1),
             (pt: number[], i: number) => {
@@ -167,7 +164,6 @@ export struct NutrientRadarPanel {
     }
     .width('100%')
     .alignItems(HorizontalAlign.Center)
-    .accessibilityRole('image')
     .accessibilityText(this.getAccessibilitySummary())
     .accessibilityLevel('yes')
   }

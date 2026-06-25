@@ -3,7 +3,7 @@
 // AppState 通过此管理器委托所有引擎调用
 
 import {
-  FamilyProfile, AgeGroup, HealthSignal, StepLevel, SleepStatus, FoodLabel, DailyBudget, Recommendation, MealBalance, MealScenario, ChildProtection, CredibilityResult, EnhancedFoodRecommendation, AlternativeFood, DietRecord, NutritionThreshold, NullGuard, RecommendLevel
+  FamilyProfile, AgeGroup, HealthSignal, StepLevel, SleepStatus, FoodLabel, DailyBudget, Recommendation, MealBalance, MealScenario, ChildProtection, CredibilityResult, EnhancedFoodRecommendation, AlternativeFood, DietRecord, NutritionThreshold, NullGuard, RecommendLevel, HILOG_DOMAIN_DEFAULT
 } from 'hsp_core';
 import { HistoryRepository } from './repository/HistoryRepository';
 import { BasketCheckResult, BasketCheckEngine } from 'hsp_service';
@@ -11,7 +11,9 @@ import { RecommendationEngine } from 'feature_report';
 import { MealBalanceEngine } from 'feature_report';
 import { FoodAdapterEngine, FamilyMemberSimpleInput, FoodNutritionInput, DailyBudgetInput,
   HealthSignalInput, TodayIntakeInput } from 'feature_scan';
-import { NutriScoreEngine, NutriScoreBreakdown } from 'feature_scan';
+import { NutriScoreEngine, NutriScoreBreakdown, NutriScoreInput } from 'feature_scan';
+import { NutriScoreV2Engine, NutriScoreV2Input, NutriScoreV2Breakdown, FoodCategory } from 'feature_scan';
+import { NovaGroupEngine, NovaEvaluationResult } from 'hsp_rating';
 import { AlternativeFoodRecommender, alternativeFoodRecommender } from 'feature_scan';
 import { ElderFriendlyReport, ElderFriendlyEngine } from 'feature_report';
 import { PositiveAdvice, PositiveAdviceEngine } from 'feature_report';
@@ -19,7 +21,7 @@ import { RuleEngine } from 'feature_report';
 import { ChildProtectionEngine, MealTimeParams } from 'feature_report';
 import { CredibilityEngine } from 'feature_report';
 import { NutritionTrendEngine, nutritionTrendEngine, DailyNutritionSummary, NutrientTrendData, MealGroup } from 'feature_report';
-import { ShanghaiGradeEngine, ShanghaiGradeResult } from 'feature_report';
+import { ShanghaiGradeEngine, ShanghaiGradeResult, ShanghaiGrade } from 'feature_report';
 import { WeeklyReportEngine, WeeklyReport, WeeklyDietData } from 'feature_report';
 import { ExerciseNutritionEngine, ExerciseSession } from 'feature_report';
 import { CheckupReportEngine, CheckupReport } from 'feature_report';
@@ -30,6 +32,7 @@ import { ModelConverter } from './facade/ModelConverter';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const DOMAIN_ZERO = 0x0001;
+const TAG = 'EngineManager';
 
 export class EngineManager {
   // 规则引擎
@@ -53,6 +56,7 @@ export class EngineManager {
   readonly checkupReportEngine: CheckupReportEngine = new CheckupReportEngine();
   readonly childHealthAssessmentEngine: ChildHealthAssessmentEngine = new ChildHealthAssessmentEngine();
   readonly personalizedRecommendEngine: PersonalizedRecommendEngine = new PersonalizedRecommendEngine();
+  readonly novaGroupEngine: NovaGroupEngine = new NovaGroupEngine();
 
   /**
    * 计算单个成员的食品适配推荐
@@ -197,14 +201,54 @@ export class EngineManager {
     return [this.positiveAdviceEngine.generateForScenario(scenario, profile)];
   }
 
-  /** 获取 NutriScore 评分 — 委托 NutriScoreEngine 完整算法 */
+  /** 获取 NutriScore 评分 — 优先使用V2官方算法，降级到V1 */
   getNutriScore(foodLabel: FoodLabel): string {
-    const result: NutriScoreBreakdown = NutriScoreEngine.calculateScore(NutriScoreInput.fromNutrition(foodLabel.nutrition));
-    return result.grade;
+    try {
+      const category: FoodCategory = NutriScoreV2Engine.detectCategory(foodLabel.foodName);
+      const v2Result: NutriScoreV2Breakdown = NutriScoreV2Engine.calculate(
+        NutriScoreV2Input.fromNutrition(foodLabel.nutrition, category));
+      return v2Result.grade;
+    } catch (e) {
+      hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'NutriScoreV2 failed, fallback to V1: %{public}s', JSON.stringify(e));
+      const result: NutriScoreBreakdown = NutriScoreEngine.calculateScore(NutriScoreInput.fromNutrition(foodLabel.nutrition));
+      return result.grade;
+    }
+  }
+
+  async calculateNutriScore(label: FoodLabel): Promise<number> {
+    try {
+      const category: FoodCategory = NutriScoreV2Engine.detectCategory(label.foodName);
+      const v2Result: NutriScoreV2Breakdown = NutriScoreV2Engine.calculate(
+        NutriScoreV2Input.fromNutrition(label.nutrition, category));
+      return v2Result.totalScore;
+    } catch (e) {
+      hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'NutriScoreV2 failed, fallback to V1: %{public}s', JSON.stringify(e));
+      const result: NutriScoreBreakdown = NutriScoreEngine.calculateScore(NutriScoreInput.fromNutrition(label.nutrition));
+      return result.totalScore;
+    }
   }
   getShanghaiGrade(foodLabel: FoodLabel): string {
-    const result: ShanghaiGrade = ShanghaiGradeEngine.evaluate(foodLabel);
-    return result.grade;
+    const result: ShanghaiGradeResult = ShanghaiGradeEngine.evaluate(foodLabel.nutrition);
+    return result.grade as string;
+  }
+
+  /** 计算 NovaGroup — 当 foodLabel.novaGroup===0 时本地计算 */
+  computeNovaGroup(foodLabel: FoodLabel): NovaEvaluationResult {
+    if (foodLabel.novaGroup > 0 && foodLabel.ingredients.length > 0) {
+      const result: NovaEvaluationResult = new NovaEvaluationResult();
+      result.group = foodLabel.novaGroup as number;
+      result.ingredientCount = foodLabel.ingredients.length;
+      result.confidence = 0.95;
+      return result;
+    }
+    try {
+      return this.novaGroupEngine.compute(foodLabel);
+    } catch (e) {
+      hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'computeNovaGroup failed: %{public}s', JSON.stringify(e));
+      const fallback: NovaEvaluationResult = new NovaEvaluationResult();
+      fallback.ingredientCount = foodLabel.ingredients.length;
+      return fallback;
+    }
   }
 
   /** 获取替代食品推荐 — 委托 AlternativeFoodRecommender */
@@ -289,11 +333,18 @@ export class EngineManager {
 
   getNutriScoreSafe(foodLabel: FoodLabel): string {
     try {
-      const result: NutriScoreBreakdown = NutriScoreEngine.calculateScore(NutriScoreInput.fromNutrition(foodLabel.nutrition));
-      return NullGuard.safeString(result?.grade, 'unknown');
+      const category: FoodCategory = NutriScoreV2Engine.detectCategory(foodLabel.foodName);
+      const v2Result: NutriScoreV2Breakdown = NutriScoreV2Engine.calculate(
+        NutriScoreV2Input.fromNutrition(foodLabel.nutrition, category));
+      return NullGuard.safeString(v2Result?.grade, 'unknown');
     } catch (e) {
-      hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'getNutriScoreSafe fallback: %{public}s', JSON.stringify(e));
-      return 'unknown';
+      hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'getNutriScoreSafe V2 failed, fallback V1: %{public}s', JSON.stringify(e));
+      try {
+        const result: NutriScoreBreakdown = NutriScoreEngine.calculateScore(NutriScoreInput.fromNutrition(foodLabel.nutrition));
+        return NullGuard.safeString(result?.grade, 'unknown');
+      } catch (_e2) {
+        return 'unknown';
+      }
     }
   }
 

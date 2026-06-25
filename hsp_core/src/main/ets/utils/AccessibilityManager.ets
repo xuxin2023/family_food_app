@@ -1,6 +1,6 @@
-import { hilog } from '@kit.PerformanceAnalysisKit';
 import { accessibility } from '@kit.AccessibilityKit';
 import { common } from '@kit.AbilityKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
 
 const TAG = 'AccessibilityManager';
@@ -37,7 +37,7 @@ export class AccessibilityManager {
   private async checkScreenReaderStatus(): Promise<void> {
     if (!this.context) return;
     try {
-      const abilityLists: accessibility.AccessibilityExtensionInfo[] =
+      const abilityLists: accessibility.AccessibilityAbilityInfo[] =
         await accessibility.getAccessibilityExtensionList(
           'spoken',
           'enable'
@@ -51,7 +51,7 @@ export class AccessibilityManager {
 
   private registerStatusListener(): void {
     try {
-      accessibility.on('accessibilityEnableChange', (state: boolean) => {
+      accessibility.on('touchGuideStateChange', (state: boolean) => {
         const prev = this.isScreenReaderActive;
         this.isScreenReaderActive = state;
         if (prev !== state) {
@@ -81,12 +81,13 @@ export class AccessibilityManager {
   announceForAccessibility(message: string): void {
     if (!this.isScreenReaderActive || message.length === 0) return;
     try {
-      accessibility.sendEvent({
-        type: 'announceForAccessibility',
-        bundleName: this.context?.applicationInfo?.bundleName ?? '',
-        eventType: 'touchEnd',
-        text: message
-      });
+      const eventInfo: accessibility.EventInfo = new accessibility.EventInfo(
+        'announceForAccessibility',
+        '',
+        'common'
+      );
+      eventInfo.textAnnouncedForAccessibility = message;
+      accessibility.sendAccessibilityEvent(eventInfo);
       hilog.debug(DOMAIN_ZERO, TAG, 'announceForAccessibility: %{public}s', message);
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'announceForAccessibility failed: %{public}s', JSON.stringify(e));

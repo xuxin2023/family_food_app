@@ -1,6 +1,4 @@
-// repository/AllergyProfileRepository.ets
-// 过敏原档案数据仓库 — 对标Yuka/Olive过敏原预警功能
-
+// AllergyProfileRepository.ets - 过敏原档案数据仓库 (API 23 refined)
 import { relationalStore } from '@kit.ArkData';
 import { HILOG_DOMAIN_DEFAULT, AllergyProfile, AllergyItem, IntoleranceItem, Severity, createDefaultAllergyProfile } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -24,13 +22,14 @@ export class AllergyProfileRepository {
       hilog.warn(DOMAIN_ZERO, TAG, 'Crypto init failed, storing without encryption');
     }
     try {
-      await rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (`
-        member_id TEXT PRIMARY KEY,
-        allergies_json TEXT NOT NULL DEFAULT '[]',
-        intolerances_json TEXT NOT NULL DEFAULT '[]',
-        cross_contamination_sensitive INTEGER DEFAULT 0,
-        updated_at INTEGER NOT NULL
-      )`);`
+      const sql = 'CREATE TABLE IF NOT EXISTS ' + TABLE_NAME + ' (' +
+        'member_id TEXT PRIMARY KEY, ' +
+        "allergies_json TEXT NOT NULL DEFAULT '[]', " +
+        "intolerances_json TEXT NOT NULL DEFAULT '[]', " +
+        'cross_contamination_sensitive INTEGER DEFAULT 0, ' +
+        'updated_at INTEGER NOT NULL' +
+        ')';
+      await rdbStore.executeSql(sql);
       await this.loadFromDb();
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'init failed: %{public}s', JSON.stringify(e));
@@ -38,24 +37,23 @@ export class AllergyProfileRepository {
   }
 
   private async loadFromDb(): Promise<void> {
-    if (!this.rdbStore) return;
+    if (!this.rdbStore) {
+      return;
+    }
     try {
       const predicates = new relationalStore.RdbPredicates(TABLE_NAME);
       const resultSet = await this.rdbStore.query(predicates);
       while (resultSet.goToNextRow()) {
-        const profile: AllergyProfile = new AllergyProfile()
+        const profile: AllergyProfile = new AllergyProfile();
         profile.memberId = resultSet.getString(0);
-
         const allergiesRaw = resultSet.getString(1);
         if (allergiesRaw && allergiesRaw.length > 0) {
           profile.allergies = JSON.parse(allergiesRaw) as AllergyItem[];
         }
-
         const intolerancesRaw = resultSet.getString(2);
         if (intolerancesRaw && intolerancesRaw.length > 0) {
           profile.intolerances = JSON.parse(intolerancesRaw) as IntoleranceItem[];
         }
-
         profile.crossContaminationSensitive = resultSet.getLong(3) === 1;
         profile.updatedAt = resultSet.getLong(4);
         this.profiles.set(profile.memberId, profile);
@@ -67,7 +65,7 @@ export class AllergyProfileRepository {
   }
 
   async getByMemberId(memberId: string): Promise<AllergyProfile> {
-    let p = this.profiles.get(memberId);
+    let p: AllergyProfile | undefined = this.profiles.get(memberId);
     if (!p) {
       p = createDefaultAllergyProfile(memberId);
       this.profiles.set(memberId, p);
@@ -108,6 +106,10 @@ export class AllergyProfileRepository {
   }
 
   async getAll(): Promise<AllergyProfile[]> {
-    return Array.from(this.profiles.values());
+    const values: AllergyProfile[] = [];
+    this.profiles.forEach((profile: AllergyProfile) => {
+      values.push(profile);
+    });
+    return values;
   }
 }

@@ -3,6 +3,7 @@ import { SecureHttpClient, SecureRequestOptions } from './SecureHttpClient';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
 import { ConfigManager } from './ConfigManager';
+import { http } from '@kit.NetworkKit';
 
 const TAG = 'FeedbackService';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -37,29 +38,34 @@ export class FeedbackService {
 
   async submitFeedback(submission: FeedbackSubmission, context: common.Context): Promise<FeedbackResult> {
     try {
+      const header: Map<string, string> = new Map();
+      header.set('Content-Type', 'application/json');
       const options: SecureRequestOptions = {
         url: ConfigManager.getInstance().getFeedbackUrl(),
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(submission),
+        method: http.RequestMethod.POST,
+        header: header,
+        extraData: JSON.stringify(submission),
         connectTimeout: 10000,
         readTimeout: 10000
       };
-      const response = await SecureHttpClient.request(options);
+      const response = await SecureHttpClient.getInstance().request(options);
       if (response.responseCode === 200 || response.responseCode === 201) {
-        const result = typeof response.result === 'string' ? JSON.parse(response.result) : response.result;
-        hilog.info(DOMAIN_ZERO, TAG, 'Feedback submitted, ticket: %{public}s', result.ticketId ?? 'N/A');
-        return {
+        const rawResult: Record<string, Object> = typeof response.result === 'string' ? JSON.parse(response.result) as Record<string, Object> : response.result as Record<string, Object>;
+        hilog.info(DOMAIN_ZERO, TAG, 'Feedback submitted, ticket: %{public}s', rawResult.ticketId ?? 'N/A');
+        const feedbackResult: FeedbackResult = {
           success: true,
-          ticketId: result.ticketId ?? `FB_${Date.now()}`,
+          ticketId: (rawResult.ticketId as string) ?? `FB_${Date.now()}`,
           message: '反馈已提交，感谢您的建议！'
         };
+        return feedbackResult;
       }
       hilog.warn(DOMAIN_ZERO, TAG, 'Feedback submit failed: %{public}d', response.responseCode);
-      return { success: false, ticketId: '', message: '提交失败，请稍后重试' } as Record<string, Object>;
+      const errorResult: FeedbackResult = { success: false, ticketId: '', message: '提交失败，请稍后重试' };
+      return errorResult;
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'Feedback error: %{public}s', JSON.stringify(e));
-      return { success: false, ticketId: '', message: '网络异常，请检查网络后重试' } as Record<string, Object>;
+      const errorResult: FeedbackResult = { success: false, ticketId: '', message: '网络异常，请检查网络后重试' };
+      return errorResult;
     }
   }
 }

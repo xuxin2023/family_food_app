@@ -2,14 +2,16 @@
 // 食谱社区页面 — 浏览热门/最新食谱、分类筛选
 
 import {
-  safeBack, safePushUrl, getPageParams, Recipe, RecipeCategory, DietTag, RecipeQueryParams, safeParseRecipeCategory, COLORS, RADIUS, BUTTON, BasicDataSource, PAGE_SIZE_CONFIG, HILOG_DOMAIN_DEFAULT, AiRecipeRecommendation, AiRecipeRecommendationResult, AiRecipeRequest, getCategoryLabel, getCategoryEmoji, getDietTagLabel, ImageCache,
-  PageResourceTracker, createPageTracker
+  safeBack, safePushUrl, getPageParams, Recipe, RecipeCategory, RecipeDifficulty, DietTag, RecipeQueryParams, safeParseRecipeCategory, COLORS, RADIUS, SPACING, FONT_SIZE, SHADOWS, BUTTON, BLUR, BasicDataSource, PAGE_SIZE_CONFIG, HILOG_DOMAIN_DEFAULT, AiRecipeRecommendation, AiRecipeRecommendationResult, AiRecipeRequest, getCategoryLabel, getCategoryEmoji, getDietTagLabel, getDifficultyLabel, ImageCache,
+  HapticHelper, PageResourceTracker, createPageTracker, ThemeReactive, themeReactive, ThemeColors, ThemeMode, NavigationManager, DeviceAdapter, Breakpoint
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
+import { GradientHeader } from '../components/GradientHeader';
+import { GlassCard, GlassDepth } from '../components/GlassCard';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
 import { ErrorFallback } from '../components/ErrorFallback';
-import { RecipeCard, LikeButton } from 'feature_community';
+import { LoadingSkeleton } from '../components/SkeletonScreen';
 
 
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -27,6 +29,8 @@ export struct RecipeCommunityPage {
   @Local showAiRecommend: boolean = false
   @Local aiSummary: string = ''
   @Local errorMessage: ResourceStr = ''
+  @Local isRefreshing: boolean = false
+  @Local searchText: string = ''
   private componentActive: boolean = true
   private tracker: PageResourceTracker = createPageTracker('RecipeCommunityPage')
 
@@ -34,6 +38,20 @@ export struct RecipeCommunityPage {
   private recipes: Recipe[] = []
   private recipeDS = new BasicDataSource<Recipe>()
   private readonly categoryKeys: string[] = ['breakfast', 'lunch', 'dinner', 'snack', 'beverage', 'dessert', 'soup', 'staple']
+
+  private themeRef: ThemeReactive = themeReactive
+
+  private get isDark(): boolean {
+    if (this.themeRef.key >= 0) { /* trigger reactive */ }
+    return ThemeColors.getTheme() === ThemeMode.DARK
+  }
+
+  private get pageBgGradient(): LinearGradient {
+    if (this.isDark) {
+      return { angle: 180, colors: [['#0D1B0E', 0.0], ['#1A2F1C', 0.5], ['#0A1A0D', 1.0]] }
+    }
+    return { angle: 180, colors: [['#E0F2F1', 0.0], ['#E8EAF6', 0.3], ['#E8F5E9', 0.7], ['#FFF8E1', 1.0]] }
+  }
 
   async aboutToAppear() {
     this.tracker.onAppear()
@@ -72,8 +90,7 @@ export struct RecipeCommunityPage {
     this.isLoadingAi = false
   }
 
-  async loadRecipes(): Promise<void> {
-    this.isLoading = true
+  async loadRecipes(): Promise<void> {    this.isLoading = true
     this.errorMessage = ''
     try {
       const params: RecipeQueryParams = new RecipeQueryParams()
@@ -90,30 +107,55 @@ export struct RecipeCommunityPage {
     this.isLoading = false
   }
 
+  private applySearchFilter(): void {
+    if (this.searchText.length === 0) {
+      this.recipeDS.reload(this.recipes)
+      return
+    }
+    const keyword = this.searchText.toLowerCase()
+    const filtered = this.recipes.filter((r: Recipe) => {
+      return r.title.toLowerCase().includes(keyword) ||
+        r.description.toLowerCase().includes(keyword) ||
+        r.authorName.toLowerCase().includes(keyword)
+    })
+    this.recipeDS.reload(filtered)
+  }
+
   build() {
     Column() {
-      // 顶栏
-      Row() {
-        BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
-          .onClick(() => { safeBack() })
-          .accessibilityText('返回')
-          .accessibilityLevel('yes')
-        Text($r('app.string.recipe_community'))
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .margin({ left: 12 })
-        Blank()
-        Text($r('app.string.share_publish_recipe'))
-          .fontSize(14)
-          .fontColor(COLORS.PRIMARY)
-          .onClick(() => {
-            safePushUrl('pages/RecipeCreatePage')
-          })
-          .accessibilityText('发布食谱')
-          .accessibilityLevel('yes')
+      // 顶栏 — 渐变头部
+      GradientHeader({
+        title: $r('app.string.recipe_community'),
+        showBack: false,
+        rightText: '发布食谱',
+        onRightClick: () => { safePushUrl('pages/RecipeCreatePage') }
+      })
+
+      // 搜索栏
+      GlassCard({
+        depth: GlassDepth.SURFACE,
+        paddingVal: 8,
+        radiusVal: RADIUS.LG,
+        widthVal: '100%',
+        marginVal: { left: 16, right: 16, top: 8, bottom: 4 }
+      }) {
+        Row({ space: 8 }) {
+          Text('\u{1F50D}')
+            .fontSize(16)
+          TextInput({ text: this.searchText, placeholder: '搜索食谱...' })
+            .layoutWeight(1)
+            .height(36)
+            .fontSize(14)
+            .backgroundColor(this.isDark ? '#1FFFFFFF' : '#33FFFFFF')
+            .borderRadius(18)
+            .padding({ left: 12, right: 12 })
+            .onChange((value: string) => {
+              this.searchText = value
+              this.applySearchFilter()
+            })
+        }
+        .width('100%')
       }
-      .width('100%')
-      .padding(16)
 
       // 分类导航
       Scroll() {
@@ -137,54 +179,70 @@ export struct RecipeCommunityPage {
       .width('100%')
       .padding({ left: 16, right: 16, bottom: 8 })
 
-      if (this.sortBy === 'ai') {
-        // AI推荐模式
-        if (this.isLoadingAi) {
-          LoadingProgress()
-            .width(32)
-            .height(32)
-            .margin({ top: 60 })
-        } else if (this.aiRecommendations.length > 0) {
-          this.aiRecommendList()
-        } else {
-          Text($r('app.string.click_refresh_ai'))
-            .fontSize(14)
-            .fontColor(COLORS.TEXT_GRAY_9E9E)
-            .margin({ top: 60 })
-            .width('100%')
-            .textAlign(TextAlign.Center)
+      Refresh({ refreshing: $$this.isRefreshing }) {
+        Column() {
+          if (this.sortBy === 'ai') {
+            if (this.isLoadingAi) {
+              LoadingSkeleton({ variant: 'list' })
+                .margin({ top: 60 })
+            } else if (this.aiRecommendations.length > 0) {
+              this.aiRecommendList()
+            } else {
+              Text($r('app.string.click_refresh_ai'))
+                .fontSize(14)
+                .fontColor(COLORS.TEXT_GRAY_9E9E)
+                .margin({ top: 60 })
+                .width('100%')
+                .textAlign(TextAlign.Center)
+            }
+          } else if (this.errorMessage) {
+            ErrorFallback({
+              message: this.errorMessage,
+              icon: '\u{1F37D}',
+              onRetry: () => this.loadRecipes()
+            })
+          } else if (this.isLoading) {
+            LoadingSkeleton({ variant: 'list' })
+              .margin({ top: 100 })
+          } else if (this.recipeDS.totalCount() === 0) {
+            this.emptyState()
+          } else {
+            this.recipeList()
+          }
         }
-      } else if (this.errorMessage) {
-        ErrorFallback({
-          message: this.errorMessage,
-          icon: '🍽️',
-          onRetry: () => this.loadRecipes()
-        })
-      } else if (this.isLoading) {
-        LoadingProgress()
-          .width(32)
-          .height(32)
-          .margin({ top: 100 })
-      } else if (this.recipeDS.totalCount() === 0) {
-        this.emptyState()
-      } else {
-        this.recipeList()
+        .width('100%')
+        .layoutWeight(1)
       }
+      .onRefreshing(async () => {
+        HapticHelper.light()
+        if (this.sortBy === 'ai') {
+          await this.loadAiRecommendations()
+        } else {
+          await this.loadRecipes()
+        }
+        this.isRefreshing = false
+      })
+      .layoutWeight(1)
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(COLORS.BG_PAGE)
+    .linearGradient(this.pageBgGradient)
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   @Builder
   categoryChip(label: ResourceStr, value: string) {
     Text(label)
-      .fontSize(13)
+      .fontSize(FONT_SIZE.SMALL)
       .fontColor(this.selectedCategory === value ? COLORS.WHITE : COLORS.TEXT_SECONDARY)
-      .backgroundColor(this.selectedCategory === value ? COLORS.PRIMARY : COLORS.BG_DIVIDER)
+      .backgroundColor(Color.Transparent)
+      .linearGradient(this.selectedCategory === value
+        ? { angle: 135, colors: [['#D66B5A', 0.0], ['#E8826C', 0.5], ['#F0A18C', 1.0]] }
+        : { angle: 0, colors: [[this.isDark ? '#1FFFFFFF' : '#33FFFFFF', 0.0], [this.isDark ? '#1FFFFFFF' : '#33FFFFFF', 1.0]] })
       .padding({ left: 14, right: 14, top: 6, bottom: 6 })
-      .borderRadius(16)
+      .borderRadius(RADIUS.LG)
       .onClick(() => {
+        HapticHelper.light()
         this.selectedCategory = value
         this.loadRecipes()
       })
@@ -195,10 +253,11 @@ export struct RecipeCommunityPage {
   @Builder
   sortTab(label: ResourceStr, value: string) {
     Text(label)
-      .fontSize(14)
+      .fontSize(FONT_SIZE.BODY)
       .fontWeight(this.sortBy === value ? FontWeight.Bold : FontWeight.Regular)
       .fontColor(this.sortBy === value ? COLORS.PRIMARY : COLORS.TEXT_GRAY_9E9E)
       .onClick(() => {
+        HapticHelper.light()
         this.sortBy = value
         if (value === 'ai') {
           this.loadAiRecommendations()
@@ -232,6 +291,7 @@ export struct RecipeCommunityPage {
         .fontColor(COLORS.WHITE)
         .fontSize(14)
         .onClick(() => {
+          HapticHelper.light()
           safePushUrl('pages/RecipeCreatePage')
         })
         .accessibilityText('发布第一个食谱')
@@ -244,46 +304,62 @@ export struct RecipeCommunityPage {
 
   @Builder
   recipeList() {
-    List() {
+    WaterFlow() {
       LazyForEach(this.recipeDS, (recipe: Recipe) => {
-        ListItem() {
+        FlowItem() {
           this.recipeCard(recipe)
         }
       }, (recipe: Recipe) => `${recipe.recipeId}`)
     }
+    .columnsTemplate(this.getRecipeColumns())
+    .columnsGap(12)
+    .rowsGap(12)
     .width('100%')
     .layoutWeight(1)
     .padding({ left: 16, right: 16 })
-    .cachedCount(5)
+    .cachedCount(8)
+  }
+
+  private getRecipeColumns(): string {
+    const bp: Breakpoint = DeviceAdapter.getBreakpoint()
+    if (bp === Breakpoint.LG) {
+      return '1fr 1fr 1fr'
+    }
+    return '1fr 1fr'
   }
 
   @Builder
   aiRecommendList() {
     Column() {
       // AI总评卡片
-      Column() {
-        Row({ space: 6 }) {
-          Text('🤖').fontSize(20)
-          Text($r('app.string.ai_recommend')).fontSize(16).fontWeight(FontWeight.Bold).fontColor(COLORS.PRIMARY)
+      GlassCard({
+        depth: GlassDepth.HERO,
+        paddingVal: 16,
+        radiusVal: RADIUS.LG,
+        glowColor: '#3369F0AE',
+        widthVal: '100%',
+        marginVal: { bottom: 12 }
+      }) {
+        Column() {
+          Row({ space: 6 }) {
+            Text('🤖').fontSize(20)
+            Text($r('app.string.ai_recommend')).fontSize(16).fontWeight(FontWeight.Bold).fontColor(COLORS.PRIMARY)
+          }
+          .margin({ bottom: 8 })
+
+          Text(this.aiSummary)
+            .fontSize(13)
+            .fontColor(COLORS.TEXT_GRAY_6161)
+            .textAlign(TextAlign.Start)
+            .width('100%')
+
+          Text($r('app.string.ai_match_desc'))
+            .fontSize(11)
+            .fontColor(COLORS.TEXT_GRAY_9E9E)
+            .margin({ top: 4 })
         }
-        .margin({ bottom: 8 })
-
-        Text(this.aiSummary)
-          .fontSize(13)
-          .fontColor(COLORS.TEXT_GRAY_6161)
-          .textAlign(TextAlign.Start)
-          .width('100%')
-
-        Text($r('app.string.ai_match_desc'))
-          .fontSize(11)
-          .fontColor(COLORS.TEXT_GRAY_9E9E)
-          .margin({ top: 4 })
+        .width('100%')
       }
-      .width('100%')
-      .padding(16)
-      .backgroundColor(COLORS.BG_WARM_PINK)
-      .borderRadius(RADIUS.LG)
-      .margin({ bottom: 12 })
 
       // 推荐列表
       ForEach(this.aiRecommendations, (rec: AiRecipeRecommendation) => {
@@ -314,11 +390,14 @@ export struct RecipeCommunityPage {
           }
         }
         .width('100%')
-        .backgroundColor(COLORS.WHITE)
+        .backgroundColor(COLORS.GLASS_BG_ELEVATED)
+        .backgroundBlurStyle(BLUR.CARD, { adaptiveColor: AdaptiveColor.DEFAULT, scale: 1.0 })
+        .border({ width: 0.5, color: COLORS.GLASS_BORDER })
         .borderRadius(RADIUS.LG)
         .margin({ bottom: 12 })
-        .shadow({ radius: 2, color: COLORS.SHADOW_LIGHT, offsetY: 1 })
+        .shadow(this.isDark ? { radius: 12, color: '#3369F0AE', offsetX: 0, offsetY: 4 } : SHADOWS.MD)
         .onClick(() => {
+          HapticHelper.light()
           const navParams = new Map<string, Object>();
           navParams.set('recipeId', rec.recipe.recipeId);
           safePushUrl('pages/RecipeDetailPage', navParams)
@@ -334,16 +413,30 @@ export struct RecipeCommunityPage {
   @Builder
   recipeCard(recipe: Recipe) {
     Column() {
-      // 封面图占位
+      Row()
+        .width(4)
+        .height('100%')
+        .position({ x: 0, y: 0 })
+        .backgroundColor(this.getCategoryAccentColor(recipe.category))
+        .borderRadius({ topLeft: RADIUS.LG, bottomLeft: RADIUS.LG })
+
       Column() {
         if (recipe.coverImageUrl.length > 0) {
-          Image(ImageCache.has(recipe.coverImageUrl) ? (ImageCache.get(recipe.coverImageUrl) ?? recipe.coverImageUrl) : recipe.coverImageUrl)
-            .width('100%')
-            .height(160)
-            .objectFit(ImageFit.Cover)
-            .autoResize(true)
-            .borderRadius({ topLeft: RADIUS.LG, topRight: RADIUS.LG })
-            .onComplete(() => { ImageCache.set(recipe.coverImageUrl, recipe.coverImageUrl); })
+          Stack({ alignContent: Alignment.BottomStart }) {
+            Image(ImageCache.has(recipe.coverImageUrl) ? (ImageCache.get(recipe.coverImageUrl) ?? recipe.coverImageUrl) : recipe.coverImageUrl)
+              .width('100%')
+              .height(160)
+              .objectFit(ImageFit.Cover)
+              .autoResize(true)
+              .borderRadius({ topLeft: RADIUS.LG, topRight: RADIUS.LG })
+              .geometryTransition('recipe_cover_' + recipe.recipeId)
+              .onComplete(() => { ImageCache.set(recipe.coverImageUrl, recipe.coverImageUrl); })
+            Column()
+              .width('100%')
+              .height(64)
+              .linearGradient({ angle: 180, colors: [['#00000000', 0.0], ['#66000000', 1.0]] })
+          }
+          .width('100%')
         } else {
           Column() {
             Text(getCategoryEmoji(recipe.category))
@@ -351,19 +444,32 @@ export struct RecipeCommunityPage {
           }
           .width('100%')
           .height(140)
-          .backgroundColor(COLORS.BG_WARM_PINK)
+          .linearGradient(this.isDark
+            ? { angle: 135, colors: [['#1B3A1E', 0.0], ['#0D1B0E', 1.0]] }
+            : { angle: 135, colors: [['#E8F5E9', 0.0], ['#C8E6C9', 1.0]] })
           .justifyContent(FlexAlign.Center)
           .alignItems(HorizontalAlign.Center)
         }
       }
 
       Column() {
-        Text(recipe.title)
-          .fontSize(16)
-          .fontWeight(FontWeight.Medium)
-          .maxLines(2)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-          .width('100%')
+        Row() {
+          Text(recipe.title)
+            .fontSize(16)
+            .fontWeight(FontWeight.Medium)
+            .maxLines(2)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+            .layoutWeight(1)
+          Text(getDifficultyLabel(recipe.difficulty))
+            .fontSize(10)
+            .fontColor('#FFFFFF')
+            .fontWeight(FontWeight.Medium)
+            .padding({ left: 8, right: 8, top: 2, bottom: 2 })
+            .borderRadius(10)
+            .linearGradient(this.getDifficultyGradient(recipe.difficulty))
+        }
+        .width('100%')
+        .alignItems(VerticalAlign.Center)
 
         Row({ space: 6 }) {
           if (recipe.dietTags.length > 0) {
@@ -403,16 +509,44 @@ export struct RecipeCommunityPage {
       .padding(14)
     }
     .width('100%')
-    .backgroundColor(COLORS.WHITE)
+    .backgroundColor(COLORS.GLASS_BG_ELEVATED)
+    .backgroundBlurStyle(BLUR.CARD, { adaptiveColor: AdaptiveColor.DEFAULT, scale: 1.0 })
+    .border({ width: 0.5, color: COLORS.GLASS_BORDER })
     .borderRadius(RADIUS.LG)
+    .shadow(this.isDark ? { radius: 12, color: '#3369F0AE', offsetX: 0, offsetY: 4 } : { radius: 16, color: '#20000000', offsetX: 0, offsetY: 6 })
     .margin({ bottom: 14 })
     .onClick(() => {
+      HapticHelper.light()
       const navParams = new Map<string, Object>();
       navParams.set('recipeId', recipe.recipeId);
-      safePushUrl('pages/RecipeDetailPage', navParams)
+      this.getUIContext()?.animateTo({ duration: 350 }, () => {
+        NavigationManager.pushPathForSharedElement('pages/RecipeDetailPage', navParams)
+      })
     })
     .accessibilityText(recipe.title)
     .accessibilityLevel('yes')
+  }
+
+  private getCategoryAccentColor(category: string): string {
+    if (category === 'breakfast') return '#FF9800';
+    if (category === 'lunch') return '#43A047';
+    if (category === 'dinner') return '#1976D2';
+    if (category === 'snack') return '#7B1FA2';
+    if (category === 'beverage') return '#00897B';
+    if (category === 'dessert') return '#E91E63';
+    if (category === 'soup') return '#FF5722';
+    if (category === 'staple') return '#795548';
+    return '#43A047';
+  }
+
+  private getDifficultyGradient(difficulty: string): LinearGradient {
+    if (difficulty === RecipeDifficulty.EASY) {
+      return { angle: 135, colors: [['#E8826C', 0.0], ['#F0A18C', 1.0]] };
+    }
+    if (difficulty === RecipeDifficulty.HARD) {
+      return { angle: 135, colors: [['#D32F2F', 0.0], ['#F44336', 1.0]] };
+    }
+    return { angle: 135, colors: [['#F57C00', 0.0], ['#FF9800', 1.0]] };
   }
 
   // 使用全局函数 getDietTagLabel，避免栈溢出

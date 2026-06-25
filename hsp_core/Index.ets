@@ -22,8 +22,9 @@ export {
 } from './src/main/ets/constants/AppConfig';
 
 export {
-  COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON, SCORE_COLORS,
-  ThemeMode, ThemeColors
+  COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON, SCORE_COLORS, SHADOWS,
+  GRADIENTS, BLUR,
+  ThemeMode, ThemeColors, ThemeReactive, themeReactive
 } from './src/main/ets/constants/AppTheme';
 
 export {
@@ -151,6 +152,8 @@ export { PAGE_ENTER_DURATION, PAGE_EXIT_DURATION, LIST_ENTER_DURATION, DETAIL_EN
 export { safePushUrl, safeBack, clearToHome, getPageParams, getParamString, getParamNumber, getParamObject, safeReplaceUrl } from './src/main/ets/utils/RouterUtil';
 export { AppStorageSync, AppStorageKeys } from './src/main/ets/utils/AppStorageSync';
 export { ToastHelper } from './src/main/ets/utils/ToastHelper';
+export { HapticHelper } from './src/main/ets/utils/HapticHelper';
+export { TaskPoolHelper } from './src/main/ets/utils/TaskPoolHelper';
 export { DeviceAdapter, DeviceType, Breakpoint } from './src/main/ets/utils/DeviceAdapter';
 export { ErrorHandler } from './src/main/ets/utils/ErrorHandler';
 export { BusinessError } from './src/main/ets/utils/BusinessError';
@@ -180,7 +183,7 @@ export { FamilyComparisonItem } from './src/main/ets/model/FamilyComparisonItem'
 export { ScoreWeightProfile } from './src/main/ets/model/ScoreWeightProfile';
 
 // ===== 补全常量导出 =====
-export { HotFoodItem, HOT_FOODS } from './src/main/ets/constants/HotFoods';
+export { HotFoodItem, HOT_FOODS, DAILY_TIPS } from './src/main/ets/constants/HotFoods';
 export { MealTemplate, MEAL_TEMPLATES } from './src/main/ets/constants/MealTemplates';
 export { KnowledgeArticle, getAllKnowledgeArticles, getArticleCategories, getArticlesByCategory } from './src/main/ets/constants/NutritionKnowledge';
 export { PermissionDescriptions } from './src/main/ets/constants/PermissionDescriptions';
@@ -191,6 +194,7 @@ export { JsonObject } from './src/main/ets/model/JsonTypes';
 export { NovaGroup } from './src/main/ets/model/NovaGroupDef';
 export { NutriScore } from './src/main/ets/model/NutriScoreDef';
 export { ExerciseType } from './src/main/ets/model/ExerciseTypeDef';
+export { TcmNature, TcmFlavor, TcmConstitution, TcmFoodEntry, TcmMatchResult, TcmFoodDatabase } from './src/main/ets/model/TcmFoodProperty';
 
 export {
   MealNutrition, DailyDietRecord, MemberNutritionProfile,
@@ -327,6 +331,9 @@ export { ReusableLazyList, ReusableLazyListController } from './src/main/ets/com
 
 // ===== V5 新增: AppTheme 护眼模式 =====
 export { AppThemeState, ColorScheme } from './src/main/ets/constants/AppThemeState';
+
+// ===== 食谱仓库接口 — 跨模块依赖反转 =====
+export { IRecipeRepository } from './src/main/ets/model/IRecipeRepository';
 
 // ===== V5 新增: 审计日志 PIA 增强 =====
 export { AuditLogger, AuditAction, AuditEntry, PIASensitivity } from './src/main/ets/logger/AuditLogger';

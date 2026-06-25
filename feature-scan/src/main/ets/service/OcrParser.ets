@@ -41,7 +41,14 @@ export class OcrParser {
 
   parseOcrText(rawText: string): OcrParseResult {
     if (!rawText || rawText.trim().length === 0) {
-      return { ingredients: [], additives: [], allergenHints: [], confidence: 0, rawText } as Record<string, Object>;
+      const emptyResult: OcrParseResult = {
+        ingredients: [],
+        additives: [],
+        allergenHints: [],
+        confidence: 0,
+        rawText: rawText
+      };
+      return emptyResult;
     }
 
     const cleanedText = this.preprocess(rawText);

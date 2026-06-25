@@ -5,14 +5,15 @@
 // 鸿蒙6.1 ArkTS 约束：
 // - 不使用 undefined 类型，统一使用 null
 
-import { FamilyProfile, FoodLabel, HILOG_DOMAIN_DEFAULT, DietRecord } from 'hsp_core';
+import { FamilyProfile, FoodLabel, HILOG_DOMAIN_DEFAULT, DietRecord, IRecipeRepository } from 'hsp_core';
 import { FamilyRepository } from '../repository/FamilyRepository';
 import { FoodRepository } from '../repository/FoodRepository';
 import { HistoryRepository, ScanHistoryRecord } from '../repository/HistoryRepository';
 
 import { RuleRepository } from '../repository/RuleRepository';
 import { FamilyGroupRepository } from '../repository/FamilyGroupRepository';
-import { RecipeRepository } from '../repository/RecipeRepository';
+// RecipeRepository 已统一至 feature_community，hsp-service 不再持有本地实现
+// RepositoryManager.recipe 改为 IRecipeRepository 类型，由 AppState 注入
 import { common } from '@kit.AbilityKit';
 import { relationalStore } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -26,7 +27,18 @@ export class RepositoryManager {
   readonly history: HistoryRepository = new HistoryRepository();
   readonly rule: RuleRepository = new RuleRepository();
   readonly group: FamilyGroupRepository = new FamilyGroupRepository();
-  readonly recipe: RecipeRepository = new RecipeRepository();
+  // recipe 改为 IRecipeRepository 接口，由 AppState 从 feature_community 注入
+  private recipeRepo: IRecipeRepository | null = null;
+
+  /** 注入 RecipeRepository 实例（由 AppState 调用） */
+  setRecipeRepo(repo: IRecipeRepository): void {
+    this.recipeRepo = repo;
+  }
+
+  /** 获取 RecipeRepository（可能为 null，调用方需检查） */
+  getRecipe(): IRecipeRepository | null {
+    return this.recipeRepo;
+  }
 
   /**
    * 初始化所有仓库
@@ -39,10 +51,10 @@ export class RepositoryManager {
     await this.history.init(rdbStore);
     await this.group.init(rdbStore);
     await this.group.createTables();
-    await this.recipe.init(rdbStore);
-    await this.recipe.createTables();
+    // recipe 仓库由 AppState 从 feature_community 注入后自行 init
+    // 此处不再直接 init recipe
     this.rule.setContext(context);
-    hilog.info(DOMAIN_ZERO, TAG, 'All repositories initialized');
+    hilog.info(DOMAIN_ZERO, TAG, 'All repositories initialized (recipe injected externally)');
   }
 
   // ========== 成员操作 ==========

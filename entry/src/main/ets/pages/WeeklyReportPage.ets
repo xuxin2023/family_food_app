@@ -1,7 +1,8 @@
 import {
-  safeBack, FamilyProfile, MealScenario, DateUtil, PaywallTrigger, MemberTier, COLORS, NUTRIENT_LIMITS_V2, ToastHelper, ShoppingItem, DB_NAME, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker
+  safeBack, FamilyProfile, MealScenario, DateUtil, PaywallTrigger, MemberTier, COLORS, RADIUS, NUTRIENT_LIMITS_V2, ToastHelper, ShoppingItem, DB_NAME, HILOG_DOMAIN_DEFAULT,   PageResourceTracker, createPageTracker, SHADOWS, ThemeReactive, themeReactive, ThemeColors, ThemeMode
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
+import { GradientHeader } from '../components/GradientHeader';
 import { AppState } from '../AppState';
 import { WeeklyDietData, WeeklyReport, WeeklyReportEngine } from 'feature_report';
 import { ScanHistoryRecord } from '../repository/HistoryRepository';
@@ -42,6 +43,20 @@ export struct WeeklyReportPage {
   private exportCancelled: boolean = false
 
   private tracker: PageResourceTracker = createPageTracker('WeeklyReportPage')
+  private themeRef: ThemeReactive = themeReactive
+
+  private get isDark(): boolean {
+    if (this.themeRef.key >= 0) { /* trigger reactive */ }
+    return ThemeColors.getTheme() === ThemeMode.DARK;
+  }
+
+  private get pageBgGradient(): LinearGradient {
+    if (this.isDark) {
+      return { angle: 180, colors: [['#0D1B0E', 0.0], ['#1A2F1C', 0.5], ['#0A1A0D', 1.0]] };
+    }
+    return { angle: 180, colors: [['#E8EAF6', 0.0], ['#E0F2F1', 0.3], ['#FFF8E1', 0.7], ['#F3E5F5', 1.0]] };
+  }
+
   async aboutToAppear() {
         this.tracker.onAppear()
     try {
@@ -90,29 +105,15 @@ export struct WeeklyReportPage {
   build() {
     Stack() {
       Column() {
-        Row() {
-          BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
-            .onClick(() => { safeBack() })
-            .accessibilityText('返回')
-            .accessibilityLevel('yes')
-          Text($r('app.string.weekly_report'))
-            .fontSize(20)
-            .fontWeight(FontWeight.Bold)
-            .margin({ left: 16 })
-          Blank()
-          Text($r('app.string.export_report'))
-            .fontSize(14)
-            .fontColor(COLORS.PRIMARY)
-            .onClick(() => { this.doExportReport(); })
-            .accessibilityText('导出报告')
-            .accessibilityLevel('yes')
-        }
-        .width('100%')
-        .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+        GradientHeader({
+          title: $r('app.string.weekly_report'),
+          rightText: '导出报告',
+          onRightClick: () => { this.doExportReport(); }
+        })
 
         GridRow({
           columns: { sm: 4, md: 8, lg: 12 },
-          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
+          breakpoints: { value: ['320vp', '600vp'], reference: BreakpointsReference.WindowSize }
         }) {
           GridCol({ span: { sm: 4, md: 8, lg: 10 }, offset: { sm: 0, md: 0, lg: 1 } }) {
             Scroll() {
@@ -173,7 +174,7 @@ export struct WeeklyReportPage {
       }
       .width('100%')
       .height('100%')
-      .backgroundColor(COLORS.BG_PAGE)
+      .linearGradient(this.pageBgGradient)
 
       // 付费墙弹窗（覆盖在内容之上）
       if (this.vm.paywallTrigger !== null) {
@@ -186,6 +187,7 @@ export struct WeeklyReportPage {
     }
     .width('100%')
     .height('100%')
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   @Builder
@@ -234,16 +236,16 @@ export struct WeeklyReportPage {
           .margin({ top: 8, bottom: 6 })
 
         if (report.buyLess.length > 0) {
-          Text() { Span($r('app.string.weekly_report_buy_less')); Span(report.buyLess.join('、')) }
+          Text() { Span($r('app.string.weekly_report_buy_less')); Span(report.buyLess.join('，')) }
             .fontSize(12)
-            .fontColor('#D32F2F')
+            .fontColor(COLORS.ERROR)
             .margin({ bottom: 4 })
         }
 
         if (report.buyMore.length > 0) {
-          Text() { Span($r('app.string.weekly_report_buy_more')); Span(report.buyMore.join('、')) }
+          Text() { Span($r('app.string.weekly_report_buy_more')); Span(report.buyMore.join('，')) }
             .fontSize(12)
-            .fontColor('#2E7D32')
+            .fontColor(COLORS.PRIMARY_DARK)
         }
 
         Button($r('app.string.weekly_report_add_to_shopping'))
@@ -251,7 +253,7 @@ export struct WeeklyReportPage {
           .height(32)
           .backgroundColor(COLORS.PRIMARY)
           .fontColor(COLORS.WHITE)
-          .borderRadius(16)
+          .borderRadius(RADIUS.LG)
           .margin({ top: 8 })
           .onClick(() => { this.addPurchaseToShoppingList(report) })
           .accessibilityText('添加到购物清单')
@@ -260,12 +262,12 @@ export struct WeeklyReportPage {
     }
     .width('92%')
     .padding(16)
-    .backgroundColor('#FFFFFF')
-    .borderRadius(16)
+    .backgroundColor(COLORS.BG_CARD)
+    .borderRadius(RADIUS.LG)
     .alignItems(HorizontalAlign.Start)
     .margin({ bottom: 12 })
-    .accessibilityRole('listItem')
-    .accessibilityText(`${report.memberName}周报：${report.summary}`)
+    .shadow(SHADOWS.MD)
+    .accessibilityText(`${report.memberName}周报告：${report.summary}`)
     .accessibilityLevel('yes')
   }
 

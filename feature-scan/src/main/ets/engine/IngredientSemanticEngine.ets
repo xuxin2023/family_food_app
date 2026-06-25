@@ -71,7 +71,7 @@ export class IngredientSemanticEngine {
   static analyzeIngredients(ingredientsText: string, userAllergens: string[]): AllergenMatchResult {
     IngredientSemanticEngine.initialize();
 
-    const result: AllergenMatchResult = new AllergenMatchResult(
+    const result: AllergenMatchResult = new AllergenMatchResult();
 
     if (!ingredientsText || ingredientsText.length === 0) return result;
 

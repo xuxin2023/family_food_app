@@ -11,8 +11,8 @@ export struct TrendChart {
   @Param showSkeleton: boolean = false
 
   build() {
-    if (this.showSkeleton) {
-      Column() {
+    Column() {
+      if (this.showSkeleton) {
         Row() {
           Column().width(80).height(14).backgroundColor('#E0E0E0').borderRadius(4)
           Blank()
@@ -33,28 +33,11 @@ export struct TrendChart {
         .width('100%')
         .height(this.chartHeight)
         .alignItems(VerticalAlign.Bottom)
-      }
-      .width('100%')
-      .padding(12)
-      .backgroundColor(COLORS.WHITE)
-      .borderRadius(RADIUS.MD)
-      .margin({ bottom: SPACING.MD })
-      return
-    }
-    if (this.data === null) {
-      Column() {
+      } else if (this.data === null) {
         Text($r('app.string.no_trend_data'))
           .fontSize(FONT_SIZE.SMALL)
           .fontColor(COLORS.TEXT_GRAY_9E9E)
-      }
-      .width('100%')
-      .height(this.chartHeight)
-      .padding(SPACING.MD)
-      .backgroundColor(COLORS.WHITE)
-      .borderRadius(RADIUS.MD)
-      .accessibilityLevel('no')
-    } else {
-      Column() {
+      } else {
         // 标题行
         Row() {
           Text(this.data.nutrientName)
@@ -128,16 +111,13 @@ export struct TrendChart {
         .width('100%')
         .margin({ top: SPACING.XS })
       }
-      .width('100%')
-      .padding(SPACING.MD)
-      .backgroundColor(COLORS.WHITE)
-      .borderRadius(RADIUS.MD)
-      .margin({ bottom: SPACING.MD })
-      .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
-      .accessibilityLevel('yes')
-      .accessibilityRole('image')
-      .accessibilityText(`${this.data.nutrientName}趋势图，当前${this.data.currentValue.toFixed(1)}${this.data.unit}，目标${this.data.targetValue.toFixed(0)}${this.data.unit}，${this.getTrendText()}`)
     }
+    .width('100%')
+    .padding(this.showSkeleton ? 12 : SPACING.MD)
+    .backgroundColor(COLORS.WHITE)
+    .borderRadius(RADIUS.MD)
+    .margin({ bottom: SPACING.MD })
+    .accessibilityLevel(this.data !== null && !this.showSkeleton ? 'yes' : 'no')
   }
 
   private getBarHeight(value: number): number {

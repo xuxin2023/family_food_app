@@ -131,10 +131,6 @@ export class NetworkMonitorService {
   unregister(): void {
     if (!this.isRegistered || !this.netConnection) return;
     try {
-      this.netConnection.off('netAvailable');
-      this.netConnection.off('netUnavailable');
-      this.netConnection.off('netCapabilitiesChange');
-      this.netConnection.off('netLost');
       this.netConnection.unregister((err: BusinessError) => {
         if (err) {
           hilog.warn(DOMAIN_ZERO, TAG, 'Unregister net conn failed: %{public}s',

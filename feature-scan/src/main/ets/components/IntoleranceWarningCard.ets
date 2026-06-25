@@ -12,34 +12,32 @@ function getSeverityColor(severity: IntoleranceSeverity): string {
   }
 }
 
-function getSeverityLabel(severity: IntoleranceSeverity): ResourceStr {
+function getSeverityLabel(severity: IntoleranceSeverity): string {
   switch (severity) {
-    case IntoleranceSeverity.CAUTION: return $r('app.string.intolerance_caution');
-    case IntoleranceSeverity.AVOID: return $r('app.string.intolerance_avoid');
-    default: return $r('app.string.intolerance_unknown_severity');
+    case IntoleranceSeverity.CAUTION: return '注意';
+    case IntoleranceSeverity.AVOID: return '避免';
+    default: return '未知';
   }
 }
 
-@Reusable
 @ComponentV2
 export struct IntoleranceWarningCard {
   @Param result: IntoleranceCheckResult | null = null;
   @Param expanded: boolean = false;
 
   build() {
-    const res = this.result;
-    if (res !== null && res.warnings.length > 0) {
+    if (this.result !== null && this.result.warnings.length > 0) {
       Column() {
         Row() {
           Text('⚠️')
             .fontSize(18)
-          Text($r('app.string.intolerance_warning'))
+          Text('不耐受预警')
             .fontSize(FONT_SIZE.BODY_MD)
             .fontWeight(FONT_WEIGHT.MEDIUM)
             .fontColor(COLORS.TEXT_PRIMARY)
             .margin({ left: SPACING.XS })
           Blank()
-          Text(`${res.warnings.length}${$r('app.string.intolerance_items_unit')}`)
+          Text(this.result.warnings.length + '项')
             .fontSize(FONT_SIZE.CAPTION)
             .fontColor(COLORS.ERROR)
             .fontWeight(FONT_WEIGHT.MEDIUM)
@@ -49,7 +47,7 @@ export struct IntoleranceWarningCard {
         .alignItems(VerticalAlign.Center)
 
         Column() {
-          ForEach(res.warnings, (w: IntoleranceWarning) => {
+          ForEach(this.result.warnings, (w: IntoleranceWarning) => {
             Row() {
               Text(getSeverityLabel(w.severity))
                 .fontSize(FONT_SIZE.CAPTION)
@@ -75,7 +73,7 @@ export struct IntoleranceWarningCard {
             .width('100%')
             .alignItems(VerticalAlign.Top)
             .margin({ top: SPACING.XS })
-          }, (w: IntoleranceWarning, index: number) => `${w.ingredient}_${index}`)
+          }, (w: IntoleranceWarning, index: number) => w.ingredient + '_' + index)
         }
         .width('100%')
         .margin({ top: SPACING.SM })
@@ -85,7 +83,7 @@ export struct IntoleranceWarningCard {
       .backgroundColor('#FFF8F0')
       .borderRadius(RADIUS.MD)
       .border({ width: 1, color: '#FFE0B2' })
-      .accessibilityText(`${$r('app.string.intolerance_warning')}：${res.warnings.length}${$r('app.string.intolerance_items_unit')}${res.summary}`)
+      .accessibilityText('不耐受预警：' + this.result.warnings.length + '项' + this.result.summary)
       .accessibilityLevel('yes')
     }
   }

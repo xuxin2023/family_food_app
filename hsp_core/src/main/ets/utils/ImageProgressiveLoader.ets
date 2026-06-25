@@ -146,7 +146,15 @@ export class ImageProgressiveLoader {
         format: 'image/jpeg',
         quality: this.config.lowResQuality
       };
-      const packed = await packer.packing(pixelMap, packOpts);
+      let packed: ArrayBuffer;
+      try {
+        packed = await packer.packing(pixelMap, packOpts);
+      } catch (packErr) {
+        hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'Image packing failed: %{public}s', JSON.stringify(packErr));
+        packer.release();
+        pixelMap.release();
+        throw new Error('Image packing failed');
+      }
       packer.release();
       pixelMap.release();
 

@@ -49,23 +49,29 @@ export interface DataInventoryItem {
   dataType: string;
   description: string;
   piaLevel: PIASensitivity;
-  collectionPurpose: string;
-  storageLocation: 'device' | 'cloud' | 'both';
   retentionDays: number;
+  collectionPurpose: string;
+  legalBasis: string;
+  storageLocation: string;
   isMandatory: boolean;
 }
 
+export class PIALevelSummaryItem {
+  level: string = '';
+  count: number = 0;
+}
+
 const DATA_INVENTORY: DataInventoryItem[] = [
-  { dataType: '家庭档案', description: '家庭成员基本信息(年龄/性别/关系)', piaLevel: PIASensitivity.SENSITIVE, collectionPurpose: '个性化食品适配推荐', storageLocation: 'both', retentionDays: 0, isMandatory: true },
-  { dataType: '过敏原档案', description: '过敏原、不耐受类型列表', piaLevel: PIASensitivity.SENSITIVE, collectionPurpose: '过敏原/不耐受预警', storageLocation: 'both', retentionDays: 0, isMandatory: false },
-  { dataType: '健康信号', description: '身高/体重/BMI/步数等健康数据', piaLevel: PIASensitivity.SENSITIVE, collectionPurpose: '营养目标动态调整', storageLocation: 'device', retentionDays: 90, isMandatory: false },
-  { dataType: '扫描历史', description: '食品条码扫描记录', piaLevel: PIASensitivity.CONFIDENTIAL, collectionPurpose: '历史回溯与趋势分析', storageLocation: 'both', retentionDays: 365, isMandatory: false },
-  { dataType: '饮食记录', description: '每日饮食摄入记录', piaLevel: PIASensitivity.CONFIDENTIAL, collectionPurpose: '营养摄入追踪', storageLocation: 'both', retentionDays: 365, isMandatory: false },
-  { dataType: '营养目标', description: '个人营养目标设置', piaLevel: PIASensitivity.INTERNAL, collectionPurpose: '个性化推荐', storageLocation: 'both', retentionDays: 0, isMandatory: false },
-  { dataType: '设备标识', description: '设备型号/系统版本/设备ID', piaLevel: PIASensitivity.INTERNAL, collectionPurpose: '适配与安全验证', storageLocation: 'cloud', retentionDays: 90, isMandatory: true },
-  { dataType: '推送令牌', description: '华为Push Kit令牌', piaLevel: PIASensitivity.INTERNAL, collectionPurpose: '消息推送', storageLocation: 'cloud', retentionDays: 0, isMandatory: false },
-  { dataType: '崩溃日志', description: '应用崩溃堆栈信息', piaLevel: PIASensitivity.INTERNAL, collectionPurpose: '稳定性改进', storageLocation: 'device', retentionDays: 30, isMandatory: true },
-  { dataType: '审计日志', description: '关键操作审计记录', piaLevel: PIASensitivity.INTERNAL, collectionPurpose: '安全审计与合规', storageLocation: 'device', retentionDays: 200, isMandatory: true },
+  { dataType: '家庭档案', description: '家庭成员基本信息(年龄/性别/关系)', piaLevel: PIASensitivity.SENSITIVE, collectionPurpose: '个性化食品适配推荐', legalBasis: '用户同意', storageLocation: 'both', retentionDays: 0, isMandatory: true },
+  { dataType: '过敏原档案', description: '过敏原、不耐受类型列表', piaLevel: PIASensitivity.SENSITIVE, collectionPurpose: '过敏原/不耐受预警', legalBasis: '用户同意', storageLocation: 'both', retentionDays: 0, isMandatory: false },
+  { dataType: '健康信号', description: '身高/体重/BMI/步数等健康数据', piaLevel: PIASensitivity.SENSITIVE, collectionPurpose: '营养目标动态调整', legalBasis: '用户同意', storageLocation: 'device', retentionDays: 90, isMandatory: false },
+  { dataType: '扫描历史', description: '食品条码扫描记录', piaLevel: PIASensitivity.CONFIDENTIAL, collectionPurpose: '历史回溯与趋势分析', legalBasis: '合法利益', storageLocation: 'both', retentionDays: 365, isMandatory: false },
+  { dataType: '饮食记录', description: '每日饮食摄入记录', piaLevel: PIASensitivity.CONFIDENTIAL, collectionPurpose: '营养摄入追踪', legalBasis: '用户同意', storageLocation: 'both', retentionDays: 365, isMandatory: false },
+  { dataType: '营养目标', description: '个人营养目标设置', piaLevel: PIASensitivity.INTERNAL, collectionPurpose: '个性化推荐', legalBasis: '用户同意', storageLocation: 'both', retentionDays: 0, isMandatory: false },
+  { dataType: '设备标识', description: '设备型号/系统版本/设备ID', piaLevel: PIASensitivity.INTERNAL, collectionPurpose: '适配与安全验证', legalBasis: '合法利益', storageLocation: 'cloud', retentionDays: 90, isMandatory: true },
+  { dataType: '推送令牌', description: '华为Push Kit令牌', piaLevel: PIASensitivity.INTERNAL, collectionPurpose: '消息推送', legalBasis: '用户同意', storageLocation: 'cloud', retentionDays: 0, isMandatory: false },
+  { dataType: '崩溃日志', description: '应用崩溃堆栈信息', piaLevel: PIASensitivity.INTERNAL, collectionPurpose: '稳定性改进', legalBasis: '合法利益', storageLocation: 'device', retentionDays: 30, isMandatory: true },
+  { dataType: '审计日志', description: '关键操作审计记录', piaLevel: PIASensitivity.INTERNAL, collectionPurpose: '安全审计与合规', legalBasis: '法定义务', storageLocation: 'device', retentionDays: 200, isMandatory: true },
 ];
 
 const MAX_AUDIT_ENTRIES = 500;
@@ -131,12 +137,20 @@ export class AuditLogger {
     return [...DATA_INVENTORY];
   }
 
-  static getPIALevelSummary(): Record<string, Object>[] {
+  static getPIALevelSummary(): PIALevelSummaryItem[] {
     const summary = new Map<string, number>();
     for (const item of DATA_INVENTORY) {
       summary.set(item.piaLevel, (summary.get(item.piaLevel) ?? 0) + 1);
     }
-    return Array.from(summary.entries()).map(([level, count]) => ({ level, count }));
+    const entries = Array.from(summary.entries());
+    const result: PIALevelSummaryItem[] = [];
+    for (let i = 0; i < entries.length; i++) {
+      const item: PIALevelSummaryItem = new PIALevelSummaryItem();
+      item.level = entries[i][0];
+      item.count = entries[i][1];
+      result.push(item);
+    }
+    return result;
   }
 
   static getRecentEntries(limit: number = 50): AuditEntry[] {

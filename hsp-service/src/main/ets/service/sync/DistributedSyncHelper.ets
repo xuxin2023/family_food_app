@@ -3,6 +3,19 @@ import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 
+// Stub interface for distributed data object (cross-module type bridge)
+interface DistributedSyncDataObject {
+  family_member_sync: DistributedMemberData[];
+  recovery_data: string;
+  on(event: string, callback: Function): void;
+  off(event: string): void;
+}
+
+// Helper to cast DataObject to DistributedSyncDataObject
+function asDistributedSyncDataObject(obj: Object): DistributedSyncDataObject {
+  return obj as DistributedSyncDataObject;
+}
+
 const TAG = 'DistributedSyncHelper';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const MAX_RETRY = 3;
@@ -24,7 +37,7 @@ export enum SyncStatus {
 
 export class DistributedSyncHelper {
   private static instance: DistributedSyncHelper | null = null;
-  private distributedObj: distributedDataObject.DataObject | null = null;
+  private distributedObj: DistributedSyncDataObject | null = null;
   private sessionId: string = '';
   private retryCount: number = 0;
   private syncStatus: SyncStatus = SyncStatus.IDLE;
@@ -68,13 +81,13 @@ export class DistributedSyncHelper {
 
   async init(context: common.Context, data: DistributedMemberData[]): Promise<void> {
     try {
-      this.distributedObj = distributedDataObject.create(context, data);
+      this.distributedObj = asDistributedSyncDataObject(distributedDataObject.create(context, data) as Object);
       this.distributedObj.on('progressChanged', () => {
         hilog.info(DOMAIN_ZERO, TAG, 'Distributed data progress changed');
       });
       this.distributedObj.on('change', () => {
         hilog.info(DOMAIN_ZERO, TAG, 'Distributed data changed from remote');
-        const remoteData = this.distributedObj?.['family_member_sync'] as DistributedMemberData[] | undefined;
+        const remoteData = this.distributedObj?.family_member_sync;
         if (remoteData) {
           for (const listener of this.dataListeners) {
             try { listener(remoteData); } catch (_e) {
@@ -101,7 +114,8 @@ export class DistributedSyncHelper {
     }
     this.updateStatus(SyncStatus.SYNCING);
     try {
-      this.distributedObj.family_member_sync = data;
+      const obj = this.distributedObj as DistributedSyncDataObject;
+      obj.family_member_sync = data;
       this.retryCount = 0;
       this.updateStatus(SyncStatus.COMPLETED);
       hilog.info(DOMAIN_ZERO, TAG, 'Distributed sync to remote success');
@@ -123,7 +137,9 @@ export class DistributedSyncHelper {
 
   async saveRecoveryData(data: DistributedMemberData[]): Promise<void> {
     try {
-      this.distributedObj?.['recovery_data'] = JSON.stringify(data);
+      if (this.distributedObj !== null) {
+        (this.distributedObj as DistributedSyncDataObject).recovery_data = JSON.stringify(data);
+      }
       hilog.info(DOMAIN_ZERO, TAG, 'Recovery data saved');
     } catch (_e) {
       hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));}

@@ -15,7 +15,7 @@ export class PositiveAdviceEngine {
    * V4核心升级：不只说"少吃"，还告诉用户"补什么"
    */
   generateForScenario(scenario: MealScenario, profile: FamilyProfile): PositiveAdvice {
-    const advice: PositiveAdvice = new PositiveAdvice(
+    const advice: PositiveAdvice = new PositiveAdvice();
 
     switch (scenario) {
       case MealScenario.BBQ:
@@ -161,7 +161,7 @@ export class PositiveAdviceEngine {
    * 根据风险标签生成补足建议
    */
   generateForRiskTags(riskTags: RiskTag[]): PositiveAdvice {
-    const advice: PositiveAdvice = new PositiveAdvice(
+    const advice: PositiveAdvice = new PositiveAdvice();
 
     if (riskTags.includes(RiskTag.LOW_VEGGIE)) {
       advice.whatToSupplement.push('深色蔬菜', '菌菇');

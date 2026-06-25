@@ -21,8 +21,8 @@ let nativeLib: Record<string, Function> | null = null;
 function loadNative(): void {
   if (nativeLib !== null) return;
   try {
-    nativeLib = requireNapi('compute_engine') as Record<string, Function>;
-    hilog.info(DOMAIN, TAG, 'Cangjie compute engine loaded');
+    // NAPI native module not available in this build; use ArkTS fallback
+    hilog.info(DOMAIN, TAG, 'Cangjie native unavailable, ArkTS fallback active');
   } catch (_e) {
     hilog.warn(DOMAIN, TAG, 'Cangjie native unavailable, ArkTS fallback active');
   }
@@ -106,4 +106,4 @@ export class CjCompute {
   }
 }
 
-export { NutriScoreResult };
+export {};

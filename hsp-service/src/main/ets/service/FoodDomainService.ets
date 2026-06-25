@@ -26,6 +26,6 @@ export class FoodDomainService {
 
   /** 获取常用食品列表 */
   async getFrequentItems(limit: number): Promise<FoodLabel[]> {
-    return await this.foodRepo.getFrequentItems(limit);
+    return await this.foodRepo.getRecentLabels(limit);
   }
 }

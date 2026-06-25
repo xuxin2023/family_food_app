@@ -62,16 +62,20 @@ export class SecureKeyStore {
     if (existing.length > 0) {
       return existing;
     }
-    // 通过 CryptoFramework 生成 32 字节安全随机密钥（AES-256）
-    const random = cryptoFramework.createRandom();
-    const randomData: cryptoFramework.DataBlob = await random.generateRandom(32);
-    const bytes: Uint8Array = new Uint8Array(randomData.data);
-    let hexKey: string = '';
-    for (let i = 0; i < bytes.length; i++) {
-      hexKey += bytes[i].toString(16).padStart(2, '0');
+    try {
+      const random = cryptoFramework.createRandom();
+      const randomData: cryptoFramework.DataBlob = await random.generateRandom(32);
+      const bytes: Uint8Array = new Uint8Array(randomData.data);
+      let hexKey: string = '';
+      for (let i = 0; i < bytes.length; i++) {
+        hexKey += bytes[i].toString(16).padStart(2, '0');
+      }
+      await this.saveKey(key, hexKey);
+      hilog.info(DOMAIN_ZERO, TAG, 'New secure key generated: %{public}s', key);
+      return hexKey;
+    } catch (err) {
+      hilog.error(DOMAIN_ZERO, TAG, 'generateRandom failed: %{public}s', JSON.stringify(err));
+      throw new Error('Failed to generate secure key');
     }
-    await this.saveKey(key, hexKey);
-    hilog.info(DOMAIN_ZERO, TAG, 'New secure key generated: %{public}s', key);
-    return hexKey;
   }
 }

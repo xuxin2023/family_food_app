@@ -1,13 +1,29 @@
-import { COLORS } from 'hsp_core';
+import { COLORS, RADIUS } from 'hsp_core';
 
 @ComponentV2
 export struct SettingsItemRow {
   @Param title: ResourceStr = '';
   @Param subtitle: ResourceStr = '';
+  @Param emoji: string = '';
+  @Param accentColor: string = '';
   @Event onTap: () => void = () => {};
 
   build() {
     Row() {
+      if (this.emoji.length > 0) {
+        Column() {
+          Text(this.emoji)
+            .fontSize(20)
+        }
+        .width(36)
+        .height(36)
+        .borderRadius(10)
+        .backgroundColor(this.accentColor.length > 0 ? this.accentColor + '18' : COLORS.BG_LIGHT)
+        .justifyContent(FlexAlign.Center)
+        .alignItems(HorizontalAlign.Center)
+        .margin({ right: 12 })
+      }
+
       Column() {
         Text(this.title)
           .fontSize(15)
@@ -22,17 +38,15 @@ export struct SettingsItemRow {
       .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)
 
-      Text('›')
+      Text('\u203A')
         .fontSize(20)
         .fontColor(COLORS.TEXT_GRAY_BDBD)
         .margin({ left: 8 })
     }
     .width('100%')
-    .padding({ top: 12, bottom: 12 })
+    .padding({ top: 10, bottom: 10 })
     .borderRadius(8)
-    .accessibilityRole('listItem')
-    .accessibilityText(`${this.title}，${this.subtitle}`)
-    .accessibilityLevel('yes')
+    .alignItems(VerticalAlign.Center)
     .onClick(() => { this.onTap() })
   }
 }

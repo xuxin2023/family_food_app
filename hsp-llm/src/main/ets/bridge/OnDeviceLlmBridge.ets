@@ -1,12 +1,18 @@
 // hsp-llm: 端侧大模型桥接层
-// 优先使用 HiAI Foundation MindSpore Lite NPU 推理
-// 降级: 规则引擎 → 云端 AiClient → 离线回退
+// 优先使用 MindSpore Lite Kit 端侧推理
+// 降级链路: MindSpore Lite(NPU/CPU) → 规则引擎 → 离线回退
 
 import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { LlmFallbackStrategy, FallbackReason } from './LlmFallbackStrategy';
+import { ModelManager, ModelStatus } from '../ModelManager';
+import { buffer, util } from '@kit.ArkTS';
+
+import { mindSporeLite } from '@kit.MindSporeLiteKit';
+import { common } from '@kit.AbilityKit';
 
 const TAG = 'OnDeviceLlmBridge';
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 /** LLM 推理结果 */
 export class LlmInferenceResult {
@@ -37,8 +43,15 @@ export class LlmInferenceInput {
 export class OnDeviceLlmBridge {
   private static instance: OnDeviceLlmBridge;
   private npuAvailable: boolean = false;
+  private mindSporeAvailable: boolean = false;
   private cpuModelLoaded: boolean = false;
   private fallback: LlmFallbackStrategy = new LlmFallbackStrategy();
+  private modelManager: ModelManager = ModelManager.getInstance();
+
+  // MindSpore Lite 推理会话
+  private msModel: mindSporeLite.Model | null = null;
+  private modelLoaded: boolean = false;
+  private currentModelName: string = 'food_analysis_fp16';
 
   private constructor() {
     this.detectHardware();
@@ -54,16 +67,16 @@ export class OnDeviceLlmBridge {
   /** 执行端侧推理，自动选择最佳后端 */
   async infer(input: LlmInferenceInput): Promise<LlmInferenceResult> {
     const startTime = Date.now();
-    const result: LlmInferenceResult = new LlmInferenceResult(
+    const result: LlmInferenceResult = new LlmInferenceResult();
 
     try {
-      // Step 1: 尝试 NPU 推理
-      if (this.npuAvailable) {
-        const npuResult = await this.tryNpuInference(input);
-        if (npuResult) {
-          result.text = npuResult;
-          result.source = 'npu';
-          result.confidence = 0.85;
+      // Step 1: 尝试 MindSpore Lite 推理 (NPU/CPU)
+      if (this.mindSporeAvailable) {
+        const msResult = await this.tryMindSporeInference(input);
+        if (msResult !== null) {
+          result.text = msResult.text;
+          result.source = msResult.source;
+          result.confidence = msResult.confidence;
           result.latencyMs = Date.now() - startTime;
           return result;
         }
@@ -109,31 +122,156 @@ export class OnDeviceLlmBridge {
 
   /** 检测模型可用性 */
   isModelAvailable(): boolean {
-    return this.npuAvailable || this.cpuModelLoaded;
+    return this.mindSporeAvailable || this.cpuModelLoaded;
   }
 
-  /** 推断 NPU/CPU 可用性 */
+  /** 初始化 MindSpore Lite 模型（应在中后期初始化调用） */
+  async initModel(context?: common.Context): Promise<boolean> {
+    if (this.modelLoaded && this.msModel !== null) {
+      return true;
+    }
+
+    if (!this.mindSporeAvailable) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'MindSpore Lite not available, skip model init');
+      return false;
+    }
+
+    try {
+      // 确保模型已下载
+      await this.modelManager.checkAndDownload();
+      const loadResult = await this.modelManager.loadModelWithMindSpore(this.currentModelName, context);
+      if (loadResult !== null) {
+        this.msModel = loadResult;
+        this.modelLoaded = true;
+        hilog.info(DOMAIN_ZERO, TAG, 'MindSpore Lite model loaded successfully');
+        return true;
+      }
+    } catch (err) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Model init failed: %{public}s', JSON.stringify(err));
+    }
+    return false;
+  }
+
+  /** 释放模型资源 */
+  releaseModel(): void {
+    if (this.msModel !== null) {
+      this.msModel = null;
+      this.modelLoaded = false;
+      this.modelManager.unloadModel(this.currentModelName);
+    }
+  }
+
+  /** 模型是否已就绪 */
+  isModelReady(): boolean {
+    return this.modelLoaded && this.msModel !== null;
+  }
+
+  /** 推断 MindSpore Lite / NPU 可用性 */
   private detectHardware(): void {
     try {
-      // HiAI Foundation API 可用性检测
-      const aiFoundationAvailable = typeof ({} as Record<string, Object>)['AI'] !== 'undefined';
-      this.npuAvailable = aiFoundationAvailable;
+      // 使用 canIUse 检测 MindSpore Lite 系统能力
+      this.mindSporeAvailable = canIUse('SystemCapability.AI.MindSporeLite');
+      this.npuAvailable = this.mindSporeAvailable;
       this.cpuModelLoaded = true; // 规则引擎始终可用
-      hilog.info(HILOG_DOMAIN_DEFAULT, TAG, 'Hardware detection: NPU=%{public}s, CPU=%{public}s',
-        this.npuAvailable.toString(), this.cpuModelLoaded.toString());
+      hilog.info(HILOG_DOMAIN_DEFAULT, TAG, 'Hardware detection: MindSpore=%{public}s, NPU=%{public}s, CPU=always',
+        this.mindSporeAvailable.toString(), this.npuAvailable.toString());
     } catch (_e) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
+      hilog.warn(DOMAIN_ZERO, TAG, "Hardware detect exception: %{public}s", JSON.stringify(_e));
+      this.mindSporeAvailable = false;
       this.npuAvailable = false;
       this.cpuModelLoaded = true;
     }
   }
 
-  /** NPU 推理尝试（占位——实际部署时对接 MindSpore Lite） */
-  private async tryNpuInference(input: LlmInferenceInput): Promise<string> {
-    // TODO: 对接 @kit.AIFoundation 的 mindSporeLite API
-    // 当前阶段返回空表示降级到规则引擎
-    hilog.info(HILOG_DOMAIN_DEFAULT, TAG, 'NPU inference not yet activated, falling back');
-    return '';
+  /** MindSpore Lite 推理 — 加载模型并执行推理 */
+  private async tryMindSporeInference(input: LlmInferenceInput): Promise<LlmInferenceResult | null> {
+    // 确保模型已加载
+    if (!this.modelLoaded || this.msModel === null) {
+      const initOk = await this.initModel();
+      if (!initOk || this.msModel === null) {
+        hilog.info(DOMAIN_ZERO, TAG, 'MindSpore model not ready, falling back');
+        return null;
+      }
+    }
+
+    try {
+      const model: mindSporeLite.Model = this.msModel;
+
+      // 获取输入 Tensor
+      const inputs: mindSporeLite.MSTensor[] = model.getInputs();
+      if (inputs === null || inputs.length === 0) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'Model has no input tensors');
+        return null;
+      }
+
+      // 将 prompt 编码为 UTF-8 字节填充到输入 Tensor
+      const promptBytes: ArrayBuffer = this.encodePrompt(input);
+      inputs[0].setData(promptBytes);
+
+      // 执行推理
+      const outputs: mindSporeLite.MSTensor[] = await model.predict(inputs);
+
+      // 解码输出
+      const outputText: string = this.decodeOutput(outputs);
+
+      if (outputText.length > 0) {
+        const result: LlmInferenceResult = new LlmInferenceResult();
+        result.text = outputText;
+        result.source = this.npuAvailable ? 'npu' : 'cpu';
+        result.confidence = 0.85;
+        return result;
+      }
+
+      hilog.warn(DOMAIN_ZERO, TAG, 'MindSpore inference returned empty output');
+      return null;
+    } catch (err) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'MindSpore inference error: %{public}s', JSON.stringify(err));
+      return null;
+    }
+  }
+
+  /** 将推理输入编码为模型所需的 ArrayBuffer */
+  private encodePrompt(input: LlmInferenceInput): ArrayBuffer {
+    const taskPrefix: string = this.getTaskPrefix(input.taskType);
+    const fullPrompt: string = taskPrefix + input.prompt;
+    const textToEncode: string = (input.context !== undefined && input.context.length > 0)
+      ? fullPrompt + '\n' + input.context
+      : fullPrompt;
+    return new Uint8Array(buffer.from(textToEncode, 'utf-8').buffer).buffer;
+  }
+
+  /** 解码模型输出 Tensor 为文本 */
+  private decodeOutput(outputs: mindSporeLite.MSTensor[]): string {
+    if (outputs === null || outputs.length === 0) {
+      return '';
+    }
+    try {
+      const outputData: ArrayBuffer = outputs[0].getData();
+      const textDecoder = util.TextDecoder.create('utf-8');
+      const decoded: string = textDecoder.decodeToString(new Uint8Array(outputData));
+      return decoded.trim();
+    } catch (err) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'Decode output error: %{public}s', JSON.stringify(err));
+      return '';
+    }
+  }
+
+  /** 获取任务类型的前缀标识 */
+  private getTaskPrefix(taskType: LlmTaskType): string {
+    switch (taskType) {
+      case LlmTaskType.FOOD_ANALYSIS:
+        return '[FOOD_ANALYSIS] ';
+      case LlmTaskType.INGREDIENT_EXPLAIN:
+        return '[INGREDIENT_EXPLAIN] ';
+      case LlmTaskType.DIET_ADVICE:
+        return '[DIET_ADVICE] ';
+      case LlmTaskType.ALLERGEN_RISK:
+        return '[ALLERGEN_RISK] ';
+      case LlmTaskType.RECIPE_SUGGEST:
+        return '[RECIPE_SUGGEST] ';
+      default:
+        return '[GENERAL] ';
+    }
   }
 
   /** 规则引擎推理：基于模板匹配的本地快速回复 */
@@ -165,7 +303,10 @@ export class OnDeviceLlmBridge {
       [/辣|麻辣/, '含辣椒成分，对胃肠敏感人群可能刺激胃黏膜。儿童和胃病患者建议少量。'],
       [/碳酸|气泡|可乐/, '碳酸饮料含糖和磷酸，长期大量饮用可能影响钙吸收。建议以白开水或淡茶替代。'],
     ];
-    for (const [regex, reply] of rules) {
+    for (let i = 0; i < rules.length; i++) {
+      const pair: [RegExp, string] = rules[i];
+      const regex: RegExp = pair[0];
+      const reply: string = pair[1];
       if (regex.test(prompt)) return reply;
     }
     return this.buildFoodSummary(context);
@@ -175,11 +316,11 @@ export class OnDeviceLlmBridge {
   private buildFoodSummary(context?: string): string {
     if (!context) return '该食品总体营养指标适中，可根据个人健康目标适量食用。';
     try {
-      const ctx = JSON.parse(context) as Record<string, string>;
+      const ctx: Record<string, string> = JSON.parse(context) as Record<string, string>;
       const name = ctx.foodName ?? '该食品';
       const grade = ctx.nutriScore ?? '';
-      const gradeText = grade ? `，营养评级${grade}` : '';
-      return `${name}${gradeText}。建议结合家庭成员健康状况，关注钠、糖、脂肪三项核心指标后决定食用量。`;
+      const gradeText = grade.length > 0 ? '，营养评级' + grade : '';
+      return name + gradeText + '。建议结合家庭成员健康状况，关注钠、糖、脂肪三项核心指标后决定食用量。';
     } catch (_e) {
       hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
       return '建议查看食品完整配料表和营养成分表后，根据家庭成员健康目标决定是否购买。';
@@ -195,10 +336,13 @@ export class OnDeviceLlmBridge {
       [/氢化植物油|反式脂肪/, '含部分氢化植物油，可能含反式脂肪酸。反式脂肪会增加心血管疾病风险，建议选择不含氢化油的替代品。'],
       [/焦糖色|柠檬黄|日落黄/, '该色素为合法食品添加剂，在国家标准限量内安全。少数敏感儿童可能对合成色素产生行为影响，建议关注。'],
     ];
-    for (const [regex, reply] of rules) {
+    for (let i = 0; i < rules.length; i++) {
+      const pair: [RegExp, string] = rules[i];
+      const regex: RegExp = pair[0];
+      const reply: string = pair[1];
       if (regex.test(prompt)) return reply;
     }
-    return `"${prompt.substring(0, 20)}"为合法食品添加剂/配料，符合国家标准限量内安全。建议关注配料表排序（越靠前含量越高），综合评估后食用。`;
+    return '"' + prompt.substring(0, 20) + '"为合法食品添加剂/配料，符合国家标准限量内安全。建议关注配料表排序（越靠前含量越高），综合评估后食用。';
   }
 
   private dietAdvice(prompt: string, context?: string): string {
@@ -226,7 +370,10 @@ export class OnDeviceLlmBridge {
       [/大豆/, '含大豆成分。大豆过敏在儿童中相对常见，需注意酱油、豆制品等隐性来源。发酵大豆制品（如纳豆）过敏原性略低。'],
       [/虾|蟹|贝|海鲜/, '含甲壳类/贝类成分。海鲜过敏通常为终身性，交叉反应风险高（虾过敏者可能也对蟹过敏）。必须严格避免。'],
     ];
-    for (const [regex, reply] of rules) {
+    for (let i = 0; i < rules.length; i++) {
+      const pair: [RegExp, string] = rules[i];
+      const regex: RegExp = pair[0];
+      const reply: string = pair[1];
       if (regex.test(prompt)) return reply;
     }
     return '未检测到已知的高风险过敏原提示。但隐性过敏原可能存在，确定过敏者请仔细阅读完整配料表。';
@@ -238,6 +385,6 @@ export class OnDeviceLlmBridge {
 
   private genericReply(prompt: string): string {
     if (prompt.length === 0) return '请提供具体的食品名称或营养问题，我来为您分析。';
-    return `关于"${prompt.substring(0, 30)}"，建议查看食品包装上的完整配料表和营养成分表，结合家庭成员的个性化健康目标综合判断。`;
+    return '关于"' + prompt.substring(0, 30) + '"，建议查看食品包装上的完整配料表和营养成分表，结合家庭成员的个性化健康目标综合判断。';
   }
 }

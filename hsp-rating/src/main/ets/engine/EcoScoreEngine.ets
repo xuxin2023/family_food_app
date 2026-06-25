@@ -62,7 +62,7 @@ class CertKeywords {
   ];
 }
 
-const CERT_KW: CertKeywords = new CertKeywords(
+const CERT_KW: CertKeywords = new CertKeywords();
 
 const GRADE_TO_SCORE: Map<string, number> = new Map([
   [EcoScoreGrade.A, 90], [EcoScoreGrade.B, 70], [EcoScoreGrade.C, 50],
@@ -95,8 +95,14 @@ export class EcoScoreEngine {
 
   private async fetchFromOpenFoodFacts(barcode: string): Promise<EcoScoreResult | null> {
     const url = `${OffApiConfig.BASE_URL}${OFF_SEARCH}?code=${encodeURIComponent(barcode)}&fields=ecoscore_grade,ecoscore_score,labels_tags,categories_tags,origins,manufacturing_places,carbon_footprint_from_known_ingredients`;
-    const request = http.createHttp();
+    let request: http.HttpRequest | null = null;
     try {
+      try {
+        request = http.createHttp();
+      } catch (createErr) {
+        hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'createHttp failed: %{public}s', JSON.stringify(createErr));
+        return null;
+      }
       const response = await request.request(url, {
         method: http.RequestMethod.GET,
         connectTimeout: REQUEST_TIMEOUT,
@@ -123,7 +129,9 @@ export class EcoScoreEngine {
     } catch (_err) {
       hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'OFF request failed');
     } finally {
-      request.destroy();
+      if (request) {
+        request.destroy();
+      }
     }
     return null;
   }
@@ -136,7 +144,7 @@ export class EcoScoreEngine {
     origins: string | undefined,
     manufacturingPlaces: string | undefined
   ): EcoScoreResult {
-    const result: EcoScoreResult = new EcoScoreResult(
+    const result: EcoScoreResult = new EcoScoreResult();
     const factors: EcoScoreFactor[] = [];
 
     if (ecoscoreGrade && ecoscoreGrade.length === 1 && 'abcde'.includes(ecoscoreGrade.toLowerCase())) {
@@ -148,7 +156,7 @@ export class EcoScoreEngine {
       result.score = ecoscoreScore ?? (GRADE_TO_SCORE.get(result.grade) ?? 50);
       result.confidence = 0.95;
       result.dataSource = 'off_api';
-      const f: EcoScoreFactor = new EcoScoreFactor()
+      const f: EcoScoreFactor = new EcoScoreFactor();
       f.name = 'OFF官方评级';
       f.impact = result.score;
       f.description = `Eco-Score ${result.grade} (Open Food Facts 官方)`;
@@ -161,7 +169,7 @@ export class EcoScoreEngine {
   }
 
   private localEstimate(labels: string, categories: string, origins: string, manufacturingPlaces: string): EcoScoreResult {
-    const result: EcoScoreResult = new EcoScoreResult(
+    const result: EcoScoreResult = new EcoScoreResult();
     const factors: EcoScoreFactor[] = [];
     let estimatedScore = 50;
     let confidence = 0.3;
@@ -172,7 +180,7 @@ export class EcoScoreEngine {
       if (keywords.some(k => labelStr.includes(k))) {
         estimatedScore += scoreImpact;
         confidence += 0.06;
-        const f: EcoScoreFactor = new EcoScoreFactor()
+        const f: EcoScoreFactor = new EcoScoreFactor();
         f.name = name;
         f.impact = scoreImpact;
         f.description = desc;
@@ -197,7 +205,7 @@ export class EcoScoreEngine {
     if (isLocal) {
       estimatedScore += 10;
       confidence += 0.05;
-      const f: EcoScoreFactor = new EcoScoreFactor()
+      const f: EcoScoreFactor = new EcoScoreFactor();
       f.name = '本土生产';
       f.impact = 10;
       f.description = '本地生产减少运输碳排放';
@@ -207,7 +215,7 @@ export class EcoScoreEngine {
     if (catStr.includes('plant-based') || catStr.includes('植物基') || catStr.includes('素食') ||
       catStr.includes('vegan') || catStr.includes('vegetarian')) {
       estimatedScore += 5;
-      const f: EcoScoreFactor = new EcoScoreFactor()
+      const f: EcoScoreFactor = new EcoScoreFactor();
       f.name = '植物基加分';
       f.impact = 5;
       f.description = '植物基食品碳足迹和用水量更低';
@@ -216,7 +224,7 @@ export class EcoScoreEngine {
 
     if (catStr.includes('beef') || catStr.includes('牛肉') || catStr.includes('lamb') || catStr.includes('羊肉')) {
       estimatedScore -= 8;
-      const f: EcoScoreFactor = new EcoScoreFactor()
+      const f: EcoScoreFactor = new EcoScoreFactor();
       f.name = '红肉碳足迹';
       f.impact = -8;
       f.description = '反刍动物养殖碳足迹较高';

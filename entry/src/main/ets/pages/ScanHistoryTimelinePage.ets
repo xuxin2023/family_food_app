@@ -1,28 +1,34 @@
-import { ToastHelper, safeBack, FoodLabel, COLORS, RADIUS, HILOG_DOMAIN_DEFAULT, LazyDataSource, PageResourceTracker, createPageTracker } from 'hsp_core';
+import { ToastHelper, safeBack, FoodLabel, COLORS, SHADOWS, RADIUS, HILOG_DOMAIN_DEFAULT, LazyDataSource, PageResourceTracker, createPageTracker, FONT_SIZE, SPACING, ThemeReactive, themeReactive } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
+import { GradientHeader } from '../components/GradientHeader';
 import { AppState } from '../AppState';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { LoadingSkeleton } from '../components/SkeletonScreen';
 
 const TAG = 'ScanHistoryTimelinePage';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
-interface TimelineEntry {
-  date: string;
-  foods: FoodLabel[];
-  totalScans: number;
-  avgScore: number;
+class TimelineEntry {
+  date: string = '';
+  foods: FoodLabel[] = [];
+  totalScans: number = 0;
+  avgScore: number = 0;
 }
 
 @Entry
 @ComponentV2
-struct ScanHistoryTimelinePage {
+export struct ScanHistoryTimelinePage {
   @Local timeline: TimelineEntry[] = []
+  @Local allTimeline: TimelineEntry[] = []
   @Local isLoading: boolean = true
   @Local expandedDate: string = ''
+  @Local showPoorOnly: boolean = false
 
   private appState: AppState = AppState.getInstance()
   private expandedFoodsDs: LazyDataSource<FoodLabel> = new LazyDataSource()
   private tracker: PageResourceTracker = createPageTracker('ScanHistoryTimelinePage')
+
+  private themeRef: ThemeReactive = themeReactive
 
   async aboutToAppear(): Promise<void> {
     this.tracker.onAppear()
@@ -39,7 +45,9 @@ struct ScanHistoryTimelinePage {
         if (foods) { foods.push(food); }
       }
       const entries: TimelineEntry[] = [];
-      for (const [date, foods] of grouped) {
+      for (const entry of grouped) {
+        const date: string = entry[0];
+        const foods: FoodLabel[] = entry[1];
         let scoreSum = 0;
         let scoreCount = 0;
         for (const f of foods) {
@@ -53,32 +61,64 @@ struct ScanHistoryTimelinePage {
         });
       }
       entries.sort((a, b) => b.date.localeCompare(a.date));
-      this.timeline = entries;
+      this.allTimeline = entries;
+      this.applyFilter();
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Load timeline failed: %{public}s', JSON.stringify(e));
     }
     this.isLoading = false;
   }
 
+  private applyFilter(): void {
+    if (this.showPoorOnly) {
+      const filtered: TimelineEntry[] = [];
+      for (const entry of this.allTimeline) {
+        const poorFoods: FoodLabel[] = entry.foods.filter((f: FoodLabel) => f.nutriScore > 0 && f.nutriScore < 60);
+        if (poorFoods.length > 0) {
+          const e: TimelineEntry = new TimelineEntry();
+          e.date = entry.date;
+          e.foods = poorFoods;
+          e.totalScans = poorFoods.length;
+          e.avgScore = entry.avgScore;
+          filtered.push(e);
+        }
+      }
+      this.timeline = filtered;
+    } else {
+      this.timeline = this.allTimeline;
+    }
+  }
+
   build() {
     Column() {
-      Row() {
-        BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
-          .onClick(() => { safeBack() })
-          .accessibilityText('返回')
-          .accessibilityLevel('yes')
-        Text('扫描时间线')
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .margin({ left: 16 })
+      GradientHeader({ title: '扫描时间线' })
+
+      if (this.allTimeline.length > 0) {
+        Row() {
+          Text(this.showPoorOnly ? '⚠️ 仅显示差评 ( < 60分)' : '📋 全部记录')
+            .fontSize(FONT_SIZE.SMALL)
+            .fontColor(this.showPoorOnly ? COLORS.LEVEL_RED : COLORS.TEXT_SECONDARY)
+          Blank()
+          Button(this.showPoorOnly ? '显示全部' : '仅看差评')
+            .fontSize(FONT_SIZE.TINY)
+            .fontColor(this.showPoorOnly ? COLORS.TEXT_SECONDARY : COLORS.LEVEL_RED)
+            .backgroundColor(this.showPoorOnly ? COLORS.BG_LIGHT : '#FFEBEE')
+            .borderRadius(12)
+            .height(28)
+            .padding({ left: 12, right: 12 })
+            .onClick(() => {
+              this.showPoorOnly = !this.showPoorOnly;
+              this.expandedDate = '';
+              this.applyFilter();
+            })
+        }
+        .width('92%')
+        .margin({ bottom: 8 })
       }
-      .width('100%')
-      .padding({ left: 16, right: 16, top: 16, bottom: 16 })
 
       if (this.isLoading) {
         Column() {
-          LoadingProgress().width(32).height(32).color(COLORS.PRIMARY)
-          Text('加载中...').fontSize(14).fontColor(COLORS.TEXT_TERTIARY).margin({ top: 8 })
+          LoadingSkeleton({ variant: 'list' })
         }
         .width('100%')
         .layoutWeight(1)
@@ -107,6 +147,7 @@ struct ScanHistoryTimelinePage {
     .height('100%')
     .backgroundColor(COLORS.BG_PAGE)
     .alignItems(HorizontalAlign.Center)
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   @Builder
@@ -152,6 +193,22 @@ struct ScanHistoryTimelinePage {
         Column() {
           LazyForEach(this.expandedFoodsDs, (food: FoodLabel, index: number) => {
             Row() {
+              if (food.nutriScore > 0) {
+                Column() {
+                  Text(food.nutriScore.toString())
+                    .fontSize(13)
+                    .fontWeight(FontWeight.Bold)
+                    .fontColor('#FFFFFF')
+                }
+                .width(32)
+                .height(32)
+                .borderRadius(RADIUS.LG)
+                .backgroundColor(this.scoreColor(food.nutriScore))
+                .justifyContent(FlexAlign.Center)
+                .alignItems(HorizontalAlign.Center)
+                .margin({ right: 10 })
+              }
+
               Column() {
                 Text(food.foodName)
                   .fontSize(14)
@@ -167,12 +224,6 @@ struct ScanHistoryTimelinePage {
               }
               .alignItems(HorizontalAlign.Start)
               .layoutWeight(1)
-
-              if (food.nutriScore > 0) {
-                Text(`${food.nutriScore}分`)
-                  .fontSize(12)
-                  .fontColor(this.scoreColor(food.nutriScore))
-              }
             }
             .width('100%')
             .padding({ top: 6, bottom: 6 })
@@ -186,6 +237,7 @@ struct ScanHistoryTimelinePage {
     .padding(16)
     .backgroundColor(COLORS.WHITE)
     .borderRadius(RADIUS.LG)
+    .shadow(SHADOWS.MD)
     .margin({ bottom: 10 })
     .alignItems(HorizontalAlign.Start)
   }

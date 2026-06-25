@@ -1,7 +1,9 @@
-import { safeBack, COLORS, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker } from 'hsp_core';
+import { safeBack, COLORS, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker, ThemeReactive, themeReactive } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
+import { GradientHeader } from '../components/GradientHeader';
 import { AppState } from '../AppState';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { LoadingSkeleton } from '../components/SkeletonScreen';
 
 const TAG = 'AllergenConfigPage';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -21,6 +23,8 @@ export struct AllergenConfigPage {
   private appState: AppState = AppState.getInstance()
 
   private tracker: PageResourceTracker = createPageTracker('AllergenConfigPage')
+  private themeRef: ThemeReactive = themeReactive
+
   async aboutToAppear() {
     this.tracker.onAppear()
     const memberId = this.appState.member.getCurrentMemberId();
@@ -34,21 +38,10 @@ export struct AllergenConfigPage {
 
   build() {
     Column() {
-      Row() {
-        BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
-          .onClick(() => { safeBack() })
-          .accessibilityText('返回')
-          .accessibilityLevel('yes')
-        Text($r('app.string.allergen_config_title'))
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .margin({ left: 16 })
-      }
-      .width('100%')
-      .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+      GradientHeader({ title: $r('app.string.allergen_config_title') })
 
       if (this.isLoading) {
-        LoadingProgress().width(48).height(48).color(COLORS.PRIMARY)
+        LoadingSkeleton({ variant: 'list' })
       } else {
         Scroll() {
           Column() {
@@ -145,6 +138,7 @@ export struct AllergenConfigPage {
     .width('100%')
     .height('100%')
     .backgroundColor(COLORS.BG_PAGE)
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   private toggleAllergen(allergen: string): void {

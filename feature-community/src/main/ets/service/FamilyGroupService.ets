@@ -2,7 +2,7 @@
 // 家庭群组服务 - 创建、加入、成员管理、群组动态
 
 import {
-  FamilyProfile, GROUP_CONFIG, HILOG_DOMAIN_DEFAULT, FamilyGroup, GroupMember, JoinRequest, GroupFeed, GroupSummary, GroupRole, JoinMethod, JoinRequestStatus, FeedType, FoodScanFeedContent, FamilyGroupE2EEncryptor, EncryptedPayload, CryptoEngine
+  FamilyProfile, GROUP_CONFIG, HILOG_DOMAIN_DEFAULT, FamilyGroup, GroupMember, JoinRequest, GroupFeed, GroupSummary, GroupRole, JoinMethod, JoinRequestStatus, FeedType, FoodScanFeedContent, FamilyGroupE2EEncryptor, EncryptedPayload, CryptoEngine, SecureKeyStore
 } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FamilyGroupRepository } from '../repository/FamilyGroupRepository';
@@ -11,6 +11,9 @@ import { AuthService } from 'hsp_service';
 
 const TAG = 'FamilyGroupService';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
+
+/** SecureKeyStore 别名前缀，用于持久化各群组的 E2E 密钥 */
+const GROUP_KEY_ALIAS_PREFIX = 'e2e_groupkey_';
 
 /** 邀请码字符集 */
 const INVITE_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -84,7 +87,14 @@ export class FamilyGroupService {
     if (this.e2eEnabled) {
       const keyMaterial = FamilyGroupE2EEncryptor.generateGroupKey();
       this.groupKeyMap.set(groupId, keyMaterial.groupKey);
-      hilog.info(DOMAIN_ZERO, TAG, 'E2E key generated for group: %{public}s', groupId);
+      // 持久化密钥到安全存储，确保应用重启后仍可解密历史动态
+      try {
+        await SecureKeyStore.getInstance().saveKey(GROUP_KEY_ALIAS_PREFIX + groupId, keyMaterial.groupKey);
+        hilog.info(DOMAIN_ZERO, TAG, 'E2E key generated and persisted for group: %{public}s', groupId);
+      } catch (e) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'E2E key persist failed (in-memory only): %{public}s %{public}s',
+          groupId, JSON.stringify(e));
+      }
     }
 
     // 添加创建者为群主
@@ -317,9 +327,9 @@ export class FamilyGroupService {
     feed.senderName = member.displayName;
 
     const rawContent = JSON.stringify(content);
-    const groupKey = this.groupKeyMap.get(groupId);
-    if (groupKey && this.e2eEnabled) {
-      const encrypted = FamilyGroupE2EEncryptor.encrypt(rawContent, groupKey);
+    const groupKey = await this.resolveGroupKey(groupId);
+    if (groupKey.length > 0 && this.e2eEnabled) {
+      const encrypted = await FamilyGroupE2EEncryptor.encrypt(rawContent, groupKey);
       feed.content = JSON.stringify(encrypted);
     } else {
       feed.content = rawContent;
@@ -360,9 +370,56 @@ export class FamilyGroupService {
 
   /**
    * 获取群组动态
+   * 读取时自动解密 E2E 加密的动态内容（检测 EncryptedPayload 格式）
    */
   async getGroupFeeds(groupId: string, offset: number, limit: number): Promise<GroupFeed[]> {
-    return await this.groupRepo.getFeeds(groupId, offset, limit);
+    const feeds = await this.groupRepo.getFeeds(groupId, offset, limit);
+    if (!this.e2eEnabled || feeds.length === 0) {
+      return feeds;
+    }
+
+    // 解析群组密钥：优先持久化存储，其次内存缓存
+    const groupKey = await this.resolveGroupKey(groupId);
+
+    for (const feed of feeds) {
+      // 系统消息为明文，跳过
+      if (feed.feedType === FeedType.SYSTEM) {
+        continue;
+      }
+      if (!this.isEncryptedPayload(feed.content)) {
+        continue;
+      }
+      // 无可用密钥时保留原始内容（优于显示解密异常/崩溃）
+      if (groupKey.length === 0) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'No group key to decrypt feed: %{public}s', feed.feedId);
+        continue;
+      }
+      try {
+        const parsed: Object = JSON.parse(feed.content);
+        const record: Record<string, Object> = parsed as Record<string, Object>;
+        const ct: Object | undefined = record['ciphertext'];
+        if (ct === undefined || ct === null) {
+          continue;
+        }
+        const payload: EncryptedPayload = {
+          ciphertext: String(ct),
+          iv: '',
+          authTag: '',
+          keyVersion: 1,
+          encryptedKey: '',
+          keyEncryptionIv: '',
+        };
+        const decrypted: string | null = await FamilyGroupE2EEncryptor.decrypt(payload, groupKey);
+        if (decrypted !== null) {
+          feed.content = decrypted;
+        }
+      } catch (e) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'Feed decrypt failed for %{public}s: %{public}s',
+          feed.feedId, JSON.stringify(e));
+      }
+    }
+
+    return feeds;
   }
 
   /**
@@ -403,6 +460,51 @@ export class FamilyGroupService {
   }
 
   // ========== 内部方法 ==========
+
+  /**
+   * 解析群组 E2E 密钥
+   * 1. 优先从安全存储读取（应用重启后仍可用）
+   * 2. 回退到内存缓存
+   * 3. 均失败返回空串
+   */
+  private async resolveGroupKey(groupId: string): Promise<string> {
+    try {
+      const alias = GROUP_KEY_ALIAS_PREFIX + groupId;
+      const stored = await SecureKeyStore.getInstance().getKey(alias);
+      if (stored.length > 0) {
+        // 回填内存缓存
+        if (!this.groupKeyMap.has(groupId)) {
+          this.groupKeyMap.set(groupId, stored);
+        }
+        return stored;
+      }
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'resolveGroupKey persistent read failed: %{public}s', JSON.stringify(e));
+    }
+    // 回退：内存缓存
+    const memKey = this.groupKeyMap.get(groupId);
+    if (memKey !== undefined) {
+      return memKey;
+    }
+    return '';
+  }
+
+  /**
+   * 判断动态内容是否为 E2E 加密载荷（含 ciphertext 字段的 JSON 对象）
+   */
+  private isEncryptedPayload(content: string): boolean {
+    if (content.length === 0 || content.charAt(0) !== '{') {
+      return false;
+    }
+    try {
+      const parsed: Object = JSON.parse(content);
+      const record: Record<string, Object> = parsed as Record<string, Object>;
+      const ct: Object | undefined = record['ciphertext'];
+      return ct !== undefined && ct !== null;
+    } catch (e) {
+      return false;
+    }
+  }
 
   private generateInviteCode(): string {
     let code = '';

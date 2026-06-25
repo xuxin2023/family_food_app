@@ -27,7 +27,7 @@ export class DistributedSyncEnhancerImpl {
 
   serializeForSync(): DistributedSyncPayload {
     try {
-      const members = this.stateProvider.getAllMembersSync ? this.stateProvider.getAllMembersSync() : [];
+      const members: FamilyProfile[] = (this.stateProvider.getAllMembers ? this.stateProvider.getAllMembers() : []) as FamilyProfile[];
       const healthSignals: Record<string, HealthSignal> = {};
       const dailyBudgets: Record<string, DailyBudget> = {};
 
@@ -52,7 +52,11 @@ export class DistributedSyncEnhancerImpl {
       return payload;
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'serializeForSync failed: %{public}s', JSON.stringify(e));
-      return { currentMemberId: '', members: '[]', healthSignals: '{}', dailyBudgets: '{}', recentScanFoodId: '', timestamp: Date.now(), deviceId: this.deviceId, version: 0 } as Record<string, Object>;
+      const fallbackPayload: DistributedSyncPayload = {
+        currentMemberId: '', members: '[]', healthSignals: '{}', dailyBudgets: '{}',
+        recentScanFoodId: '', timestamp: Date.now(), deviceId: this.deviceId, version: 0
+      };
+      return fallbackPayload;
     }
   }
 
@@ -75,7 +79,7 @@ export class DistributedSyncEnhancerImpl {
       for (const m of localMembers) { mergedMemberMap.set(m.memberId, m); }
       for (const m of remoteMembers) {
         const existing = mergedMemberMap.get(m.memberId);
-        if (!existing || m.lastModified > existing.lastModified) { mergedMemberMap.set(m.memberId, m); }
+        if (!existing || (m.updatedAt ?? 0) > (existing.updatedAt ?? 0)) { mergedMemberMap.set(m.memberId, m); }
       }
       const mergedMembers = Array.from(mergedMemberMap.values());
       return {

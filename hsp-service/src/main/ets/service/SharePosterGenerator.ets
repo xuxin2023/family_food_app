@@ -2,7 +2,7 @@ import { common } from '@kit.AbilityKit';
 import { image } from '@kit.ImageKit';
 import { fileIo } from '@kit.CoreFileKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN_DEFAULT, COLORS } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 
 const TAG = 'SharePosterGenerator';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -58,18 +58,23 @@ export class SharePosterGenerator {
 
   private async renderPosterToPixelMap(data: PosterData): Promise<image.PixelMap> {
     const bufferSize = POSTER_WIDTH * POSTER_HEIGHT * 4;
-    const buffer: ArrayBuffer = new ArrayBuffer(
+    const buffer: ArrayBuffer = new ArrayBuffer(bufferSize);
 
     const opts: image.InitializationOptions = {
       size: { width: POSTER_WIDTH, height: POSTER_HEIGHT },
-      pixelFormat: image.PixelFormat.RGBA_8888,
+      pixelFormat: image.PixelMapFormat.RGBA_8888,
       editable: true
     };
-    const pixelMap = await image.createPixelMap(buffer, opts);
+    let pixelMap: image.PixelMap;
+    try {
+      pixelMap = await image.createPixelMap(buffer, opts);
+    } catch (err) {
+      hilog.error(DOMAIN_ZERO, TAG, 'createPixelMap failed: %{public}s', JSON.stringify(err));
+      throw new Error('createPixelMap failed');
+    }
 
     const canvas: CanvasRenderingContext2D = new CanvasRenderingContext2D()
-    canvas.width = POSTER_WIDTH;
-    canvas.height = POSTER_HEIGHT;
+    // Canvas size is determined by the pixel map, not settable directly
 
     this.drawBackground(canvas);
     this.drawHeader(canvas, data);
@@ -195,11 +200,24 @@ export class SharePosterGenerator {
 
   private async savePixelMapToFile(pixelMap: image.PixelMap, filePath: string): Promise<void> {
     const packingOpts: image.PackingOption = { format: 'image/png', quality: 95 };
-    const imagePackerApi = image.createImagePacker();
-    const packedData = await imagePackerApi.pack(pixelMap, packingOpts);
+    let imagePackerApi: image.ImagePacker;
+    try {
+      imagePackerApi = image.createImagePacker();
+    } catch (err) {
+      hilog.error(DOMAIN_ZERO, TAG, 'createImagePacker failed: %{public}s', JSON.stringify(err));
+      throw new Error('createImagePacker failed');
+    }
+    let packedData: ArrayBuffer;
+    try {
+      packedData = await imagePackerApi.packing(pixelMap, packingOpts);
+    } catch (err) {
+      hilog.error(DOMAIN_ZERO, TAG, 'packing failed: %{public}s', JSON.stringify(err));
+      try { imagePackerApi.release(); } catch (_) {}
+      throw new Error('Image packing failed');
+    }
     const file = fileIo.openSync(filePath, fileIo.OpenMode.CREATE | fileIo.OpenMode.WRITE_ONLY);
     fileIo.writeSync(file.fd, packedData);
     fileIo.closeSync(file.fd);
-    imagePackerApi.release();
+    try { imagePackerApi.release(); } catch (_) {}
   }
 }

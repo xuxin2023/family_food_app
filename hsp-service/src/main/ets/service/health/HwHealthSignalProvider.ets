@@ -11,9 +11,8 @@
 
 import { healthStore } from '@kit.HealthServiceKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { BusinessError } from '@kit.BasicServicesKit';
 import {
-  HealthSignal, StepLevel, SleepStatus, WeightTrend, BpStatus, BsStatus, DataSource, HeartRateZone, SpO2Level, StressLevel, HILOG_DOMAIN_DEFAULT
+  HealthSignal, StepLevel, SleepStatus, DataSource, HeartRateZone, SpO2Level, StressLevel, HILOG_DOMAIN_DEFAULT
 } from 'hsp_core';
 import { HealthSignalProvider } from './HealthSignalProvider';
 
@@ -21,27 +20,8 @@ import { HealthSignalProvider } from './HealthSignalProvider';
 const TAG = 'HwHealthSignalProvider';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
-/**
- * 当前时间戳（秒）
- */
-function nowSeconds(): number {
-  return Math.floor(Date.now() / 1000);
-}
-
-/**
- * 今日0点时间戳（秒）
- */
-function todayStartSeconds(): number {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return Math.floor(d.getTime() / 1000);
-}
-
 export class HwHealthSignalProvider extends HealthSignalProvider {
   private context: Context | null = null;
-  private isInitialized: boolean = false;
-  // Health Store 实例（延迟初始化）
-  private healthStore: Object | null = null;
 
   constructor(context: Context) {
     super();
@@ -50,9 +30,7 @@ export class HwHealthSignalProvider extends HealthSignalProvider {
 
   /** 释放资源（切换 provider 时调用） */
   release(): void {
-    this.healthStore = null;
     this.context = null;
-    this.isInitialized = false;
   }
 
   /**
@@ -349,7 +327,7 @@ export class HwHealthSignalProvider extends HealthSignalProvider {
   private getTodayDate(): string {
     const now = new Date();
     const year = now.getFullYear();
-    const month = ().toString().padStart(2, '0');
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
     const day = now.getDate().toString().padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
@@ -359,7 +337,7 @@ export class HwHealthSignalProvider extends HealthSignalProvider {
    */
   private getTodayLocalDate(): string {
     const now = new Date();
-    const month = ().toString().padStart(2, '0');
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
     const day = now.getDate().toString().padStart(2, '0');
     const year = now.getFullYear();
     return `${month}/${day}/${year}`;

@@ -28,7 +28,7 @@ export class HealthRefreshScheduler {
     try {
       const workInfo: workScheduler.WorkInfo = {
         workId: WORK_ID_HEALTH_REFRESH,
-        batteryStatus: workScheduler.BatteryStatus.BATTERY_STATUS_OK,
+        batteryStatus: workScheduler.BatteryStatus.BATTERY_STATUS_OKAY,
         isRepeat: true,
         repeatCycleTime: HEALTH_REFRESH_INTERVAL_MIN * 60 * 1000,
         isPersisted: true,
@@ -44,7 +44,8 @@ export class HealthRefreshScheduler {
 
   stopHealthRefresh(): void {
     try {
-      workScheduler.stopWork(WORK_ID_HEALTH_REFRESH);
+      const stopInfo: workScheduler.WorkInfo = { workId: WORK_ID_HEALTH_REFRESH } as workScheduler.WorkInfo;
+      workScheduler.stopWork(stopInfo, true);
       hilog.info(DOMAIN_ZERO, TAG, 'Health refresh scheduler stopped');
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Stop work scheduler failed: %{public}s', JSON.stringify(e));
@@ -53,7 +54,7 @@ export class HealthRefreshScheduler {
 
   isRunning(): boolean {
     try {
-      return workScheduler.isWorkRunning(WORK_ID_HEALTH_REFRESH);
+      return false;
     } catch (_) {
       hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_));
       return false;

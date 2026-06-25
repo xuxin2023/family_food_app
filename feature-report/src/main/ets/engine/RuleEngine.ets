@@ -339,6 +339,6 @@ export class DynamicModifiers {
 }
 
 /** 从 rawfile JSON 加载过敏原关键词（AppState 初始化时调用） */
-export async function loadAllergenKeywordsFromJson(_context: ESObject): Promise<void> {
+export async function loadAllergenKeywordsFromJson(_context: Object): Promise<void> {
   // 由 AppState 在初始化时调用，预留扩展
 }

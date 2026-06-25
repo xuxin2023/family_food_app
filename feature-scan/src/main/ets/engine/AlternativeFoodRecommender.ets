@@ -9,6 +9,12 @@ import { CjCompute } from 'hsp_core_cj';
 const TAG = 'AltFoodRecommender';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
+interface RecommendedCandidate {
+  candidate: OfflineFoodCandidate;
+  score: number;
+  reason: string;
+}
+
 /** 推荐评分权重常量 */
 const SIMILARITY_MIN_THRESHOLD = 0.5;
 const SIMILARITY_WEIGHT = 40;
@@ -377,8 +383,8 @@ export class AlternativeFoodRecommender implements IAlternativeRecommender {
   ): Promise<AlternativeFood[]> {
     if (this.offlineFoodDB.length === 0 || topN <= 0) return [];
 
-    const currentNutrition: NutritionVector = new NutritionVector(
-    const candidates: { candidate: OfflineFoodCandidate; score: number; reason: string }[] = [];
+    const currentNutrition: NutritionVector = new NutritionVector(currentFood.nutrition);
+    const candidates: RecommendedCandidate[] = [];
 
     for (const candidate of this.offlineFoodDB) {
       if (candidate.foodName === currentFood.foodName) continue;
@@ -387,7 +393,7 @@ export class AlternativeFoodRecommender implements IAlternativeRecommender {
       const allergenConflict = candidate.allergenHints.some((a: string) => memberAllergens.has(a));
       if (allergenConflict) continue;
 
-      const candidateNutrition: NutritionVector = new NutritionVector(
+      const candidateNutrition: NutritionVector = new NutritionVector(candidate.nutrition);
       const nutritionSimilarity = currentNutrition.cosineSimilarity(candidateNutrition);
       if (nutritionSimilarity < 0.5) continue;
 
@@ -432,11 +438,12 @@ export class AlternativeFoodRecommender implements IAlternativeRecommender {
       if (candidate.nutrition.sodium < currentFood.nutrition.sodium * 0.7) reasons.push('钠含量大幅降低');
       if (candidate.nutrition.sugar < currentFood.nutrition.sugar * 0.5) reasons.push('糖含量显著降低');
 
-      candidates.push({
+      const alt: RecommendedCandidate = {
         candidate,
         score: Math.min(100, Math.max(0, score)),
         reason: reasons.length > 0 ? reasons.join('；') : '综合营养评估更优'
-      });
+      }
+      candidates.push(alt);
     }
 
     candidates.sort((a, b) => b.score - a.score);

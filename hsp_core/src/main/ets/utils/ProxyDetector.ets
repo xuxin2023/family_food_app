@@ -16,20 +16,20 @@ export class ProxyDetector {
     return ProxyDetector.instance;
   }
 
-  isProxyDetected(): boolean {
+  async isProxyDetected(): Promise<boolean> {
     try {
-      const httpProxy = connection.getDefaultProxy();
+      const httpProxy = await connection.getDefaultHttpProxy();
       if (httpProxy && httpProxy.host && httpProxy.host.length > 0) {
         hilog.warn(DOMAIN_ZERO, TAG, 'HTTP proxy detected: host=%{public}s', httpProxy.host);
         return true;
       }
     } catch (_e) {
-      hilog.info(DOMAIN_ZERO, TAG, 'getDefaultProxy not available, assuming no proxy');
+      hilog.info(DOMAIN_ZERO, TAG, 'getDefaultHttpProxy not available, assuming no proxy');
     }
     return false;
   }
 
-  shouldEnableLimitedMode(): boolean {
-    return this.isProxyDetected();
+  async shouldEnableLimitedMode(): Promise<boolean> {
+    return await this.isProxyDetected();
   }
 }

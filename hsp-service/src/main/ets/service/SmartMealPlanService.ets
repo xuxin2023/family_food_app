@@ -9,16 +9,21 @@ import { LlmChatProxy, LlmSource } from './ai/LlmChatProxy';
 const TAG = 'SmartMealPlanService';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
+export interface WeeklyMealSummary {
+  avgCalories: number;
+  avgSodium: number;
+  avgSugar: number;
+  avgFat: number;
+  avgProtein: number;
+}
+
 export interface WeeklyMealPlan {
   memberId: string;
   memberName: string;
   weekStart: string;
   weekEnd: string;
   dailyPlans: MealPlan[];
-  weeklySummary: {
-    avgCalories: number; avgSodium: number; avgSugar: number;
-    avgFat: number; avgProtein: number;
-  };
+  weeklySummary: WeeklyMealSummary;
   aiWeeklyAdvice: string;
   aiMealTips: string[];
   goalProgress: GoalProgress;
@@ -77,7 +82,7 @@ export class SmartMealPlanService {
       planCount++;
     }
 
-    const weeklySummary = {
+    const weeklySummary: WeeklyMealSummary = {
       avgCalories: Math.round(totalCal / planCount),
       avgSodium: Math.round(totalSodium / planCount),
       avgSugar: Math.round(totalSugar / planCount),
@@ -116,7 +121,7 @@ export class SmartMealPlanService {
 
   private buildAiContext(
     name: string, profile: FamilyProfile,
-    summary: WeeklyMealPlan.weeklySummary,
+    summary: WeeklyMealSummary,
     goal: GoalProgress
   ): string {
     const goals = profile.healthGoals?.join('、') ?? '维持体重';
@@ -134,23 +139,24 @@ export class SmartMealPlanService {
       goal = '减脂'; tip = '控制总热量，增加蛋白质占比至25%，每周运动3次';
     } else if (goals.includes(HealthGoal.CONTROL_SUGAR)) {
       goal = '控糖'; tip = '避免含糖饮料，优选低GI主食(糙米/荞麦)';
-    } else if (goals.includes(HealthGoal.MUSCLE_GAIN)) {
-      goal = '增肌'; tip = '蛋白质目标1.6g/kg体重，搭配力量训练';
     }
 
-    return {
-      goal, currentStatus: '进行中',
-      weeklyTarget: `达成${goal}周目标`,
-      tipOfWeek: tip,
-    };
+    const progress: GoalProgress = new Object() as GoalProgress
+    progress.goal = goal
+    progress.currentStatus = '进行中'
+    progress.weeklyTarget = '达成' + goal + '周目标'
+    progress.tipOfWeek = tip
+    return progress;
   }
 
-  private localWeeklyAdvice(profile: FamilyProfile, summary: WeeklyMealPlan.weeklySummary): string {
-    const limits = profile.getDailyLimits?.() ?? { sodium: 2000, sugar: 25, fat: 65 };
+  private localWeeklyAdvice(profile: FamilyProfile, summary: WeeklyMealSummary): string {
+    const sodiumLimit: number = 2000
+    const sugarLimit: number = 25
+    const fatLimit: number = 65
     const parts: string[] = [];
-    if (summary.avgSodium > limits.sodium) parts.push('钠摄入偏高');
-    if (summary.avgSugar > limits.sugar) parts.push('糖分偏高');
-    if (summary.avgFat > limits.fat) parts.push('脂肪偏高');
+    if (summary.avgSodium > sodiumLimit) parts.push('钠摄入偏高');
+    if (summary.avgSugar > sugarLimit) parts.push('糖分偏高');
+    if (summary.avgFat > fatLimit) parts.push('脂肪偏高');
     if (parts.length > 0) {
       return `本周需关注: ${parts.join('、')}，建议调整食材搭配。`;
     }
@@ -176,19 +182,18 @@ export class SmartMealPlanService {
   }
 
   private buildBudgetForDay(profile: FamilyProfile, dayIndex: number): DailyBudget {
-    const budget: DailyBudget = new DailyBudget(
+    const budget: DailyBudget = new DailyBudget();
     const baseCal = profile.isChild() ? 1800 : 2200;
     budget.calorieBudget = baseCal;
     budget.sodiumBudget = profile.isControlBp() ? 1500 : 2000;
     budget.sugarBudget = profile.isControlSugar() ? 15 : 25;
     budget.fatBudget = profile.isLoseFat() ? 50 : 65;
-    budget.proteinBudget = profile.isMuscleGain() ? 100 : 60;
     return budget;
   }
 
   private formatDate(date: Date): string {
     const y = date.getFullYear();
-    const m = ().toString().padStart(2, '0');
+    const m = (date.getMonth() + 1).toString().padStart(2, '0');
     const d = date.getDate().toString().padStart(2, '0');
     return `${y}-${m}-${d}`;
   }

@@ -1,7 +1,7 @@
 // hsp-core: AppTheme 增强 — 护眼模式(Eye Care)联动
 // 新增 EyeCareMode: 蓝光过滤色温调整 + 系统暗色模式联动
 
-import { configuration, common } from '@kit.AbilityKit';
+import { common } from '@kit.AbilityKit';
 
 export enum ColorScheme {
   LIGHT = 'light',
@@ -16,8 +16,8 @@ export class AppThemeState {
   eyeCareEnabled: boolean = false;
   eyeCareIntensity: number = 0.5;
 
-  applySystemColorMode(mode: configuration.ColorMode): void {
-    if (mode === configuration.ColorMode.COLOR_MODE_DARK) {
+  applySystemColorMode(mode: number): void {
+    if (mode === 1) {
       this.colorScheme = ColorScheme.DARK;
     } else {
       this.colorScheme = this.eyeCareEnabled ? ColorScheme.EYE_CARE : ColorScheme.LIGHT;

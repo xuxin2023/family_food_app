@@ -2,13 +2,19 @@
 // 食谱详情页面 — 详情、评论、点赞
 
 import {
-  ToastHelper, getPageParams, Recipe, RecipeComment, DietTag, RecipeIngredient, RecipeStep, COLORS, RADIUS, BasicDataSource, HILOG_DOMAIN_DEFAULT, getCategoryLabel, getCategoryEmoji, getDifficultyLabel, getDietTagLabel, formatTime,
-  PageResourceTracker, createPageTracker
+  ToastHelper, getPageParams, Recipe, RecipeComment, DietTag, RecipeIngredient, RecipeStep, COLORS, RADIUS, FONT_SIZE, SPACING, SHADOWS, BasicDataSource, HILOG_DOMAIN_DEFAULT, getCategoryLabel, getCategoryEmoji, getDifficultyLabel, getDietTagLabel, formatTime, ShoppingItem,
+  PageResourceTracker, createPageTracker, ThemeReactive, themeReactive, ThemeColors, ThemeMode
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
+import { GradientHeader } from '../components/GradientHeader';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
 import { LikeButton } from 'feature_community';
+import { LoadingSkeleton } from '../components/SkeletonScreen';
+import { ShoppingListRepository } from '../repository/ShoppingListRepository';
+import { relationalStore } from '@kit.ArkData';
+import { common } from '@kit.AbilityKit';
+import { DB_NAME } from 'hsp_core';
 
 
 const TAG = 'RecipeDetailPage';
@@ -26,16 +32,41 @@ export struct RecipeDetailPage {
   @Local currentBreakpoint: string = 'md'
 
   private appState: AppState = AppState.getInstance()
+  private shoppingRepo: ShoppingListRepository = new ShoppingListRepository()
   private comments: RecipeComment[] = []
   private commentDS = new BasicDataSource<RecipeComment>()
   private recipeId: string = ''
   private tracker: PageResourceTracker = createPageTracker('RecipeDetailPage')
+
+  private themeRef: ThemeReactive = themeReactive
+
+  private get isDark(): boolean {
+    if (this.themeRef.key >= 0) { /* trigger reactive */ }
+    return ThemeColors.getTheme() === ThemeMode.DARK;
+  }
+
+  private get pageBgGradient(): LinearGradient {
+    if (this.isDark) {
+      return { angle: 180, colors: [['#0D1B0E', 0.0], ['#1A2F1C', 0.5], ['#0A1A0D', 1.0]] };
+    }
+    return { angle: 180, colors: [['#F3E5F5', 0.0], ['#FFF3E0', 0.3], ['#FFF8E1', 0.7], ['#E8F5E9', 1.0]] };
+  }
 
   async aboutToAppear() {
     this.tracker.onAppear()
     const params = getPageParams()
     const raw = params !== undefined ? params.get('recipeId') : undefined;
     this.recipeId = (typeof raw === 'string' ? raw : '');
+    const ctx = AppStorage.get<common.Context>('appContext')
+    if (ctx) {
+      try {
+        const rdbConfig: relationalStore.StoreConfig = { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 };
+        const rdbStore = await relationalStore.getRdbStore(ctx, rdbConfig);
+        await this.shoppingRepo.init(rdbStore);
+      } catch (e) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'Init shopping repo failed: %{public}s', JSON.stringify(e));
+      }
+    }
     await this.loadRecipe()
   }
 
@@ -61,29 +92,52 @@ export struct RecipeDetailPage {
     this.isLoading = false
   }
 
+  private async generateShoppingList(): Promise<void> {
+    if (!this.recipe || this.recipe.ingredients.length === 0) {
+      ToastHelper.show(this.getUIContext(), '该食谱没有食材信息')
+      return
+    }
+    try {
+      const memberId = this.appState.member.getCurrentMemberId()
+      let addedCount = 0
+      for (const ing of this.recipe.ingredients) {
+        if (ing.name.trim().length === 0) continue
+        const item: ShoppingItem = new ShoppingItem()
+        item.id = 'shop_' + Date.now().toString() + '_' + addedCount.toString()
+        item.name = ing.name.trim()
+        item.category = '其他'
+        item.quantity = ing.amount.trim().length > 0 ? ing.amount.trim() : '1'
+        item.isPurchased = false
+        item.addedBy = memberId
+        item.addedAt = Date.now()
+        item.relatedFoodBarcode = ''
+        await this.shoppingRepo.addItem(item)
+        addedCount++
+      }
+      if (addedCount > 0) {
+        ToastHelper.show(this.getUIContext(), '已添加' + addedCount.toString() + '项到购物清单')
+      } else {
+        ToastHelper.show(this.getUIContext(), '没有有效的食材可添加')
+      }
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'generateShoppingList failed: %{public}s', JSON.stringify(e))
+      ToastHelper.show(this.getUIContext(), '生成购物清单失败')
+    }
+  }
+
   build() {
     Column() {
-      // 顶栏
-      Row() {
-        BackButton()
-        .accessibilityText('返回')
-        .accessibilityLevel('yes')
-        Text($r('app.string.recipe_detail'))
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .margin({ left: 12 })
-      }
-      .width('100%')
-      .padding(16)
+      // 顶栏 — 渐变
+      GradientHeader({ title: $r('app.string.recipe_detail') })
 
       if (this.isLoading) {
-        LoadingProgress().width(32).height(32).margin({ top: 100 })
+        LoadingSkeleton({ variant: 'detail' })
       } else if (!this.recipe) {
         Text($r('app.string.recipe_not_found')).fontSize(16).fontColor(COLORS.TEXT_GRAY_6161).margin({ top: 100 })
       } else {
         GridRow({
           columns: { sm: 4, md: 8, lg: 12 },
-          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
+          breakpoints: { value: ['320vp', '600vp'], reference: BreakpointsReference.WindowSize }
         }) {
           GridCol({ span: { sm: 4, md: 8, lg: 10 }, offset: { sm: 0, md: 0, lg: 1 } }) {
             Scroll() {
@@ -123,30 +177,59 @@ export struct RecipeDetailPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(COLORS.BG_PAGE)
+    .linearGradient(this.pageBgGradient)
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   @Builder
   coverSection() {
-    Column() {
-      Text(getCategoryEmoji(this.recipe?.category ?? 'other'))
-        .fontSize(72)
-      Text(this.recipe?.title ?? '食谱详情')
-        .fontSize(24)
-        .fontWeight(FontWeight.Bold)
-        .fontColor(COLORS.WHITE)
-        .margin({ top: 16 })
-      Text(getCategoryLabel(this.recipe?.category ?? 'other') + ' · ' + getDifficultyLabel(this.recipe?.difficulty ?? 'medium'))
-        .fontSize(14)
-        .fontColor(COLORS.WHITE)
-        .opacity(0.8)
+    Stack() {
+      Column() {
+        Row()
+          .width(180)
+          .height(180)
+          .borderRadius(90)
+          .backgroundColor('rgba(255,255,255,0.06)')
+          .position({ x: '60%', y: '-20%' })
+      }
+      .hitTestBehavior(HitTestMode.None)
+
+      Column() {
+        Text(getCategoryEmoji(this.recipe?.category ?? 'other'))
+          .fontSize(64)
+          .shadow(SHADOWS.MD)
+          .geometryTransition('recipe_cover_' + (this.recipe?.recipeId ?? ''))
+        Text(this.recipe?.title ?? '食谱详情')
+          .fontSize(24)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(COLORS.WHITE)
+          .margin({ top: 12 })
+        Row({ space: 6 }) {
+          Text(getCategoryLabel(this.recipe?.category ?? 'other'))
+            .fontSize(FONT_SIZE.BODY)
+            .fontColor(COLORS.WHITE)
+            .opacity(0.9)
+          Text('·')
+            .fontSize(FONT_SIZE.BODY)
+            .fontColor(COLORS.WHITE)
+            .opacity(0.6)
+          Text(getDifficultyLabel(this.recipe?.difficulty ?? 'medium'))
+            .fontSize(FONT_SIZE.BODY)
+            .fontColor(COLORS.WHITE)
+            .opacity(0.9)
+        }
         .margin({ top: 8 })
+      }
+      .justifyContent(FlexAlign.Center)
+      .alignItems(HorizontalAlign.Center)
     }
     .width('100%')
     .height(240)
-    .backgroundColor(COLORS.PRIMARY)
-    .justifyContent(FlexAlign.Center)
-    .alignItems(HorizontalAlign.Center)
+    .linearGradient({
+      angle: 135,
+      colors: [['#4A148C', 0.0], ['#6A1B9A', 0.3], ['#8E24AA', 0.7], ['#AB47BC', 1.0]]
+    })
+    .borderRadius({ topLeft: 0, topRight: 0, bottomLeft: 24, bottomRight: 24 })
   }
 
   @Builder
@@ -160,6 +243,8 @@ export struct RecipeDetailPage {
       .width('100%')
       .padding(16)
       .backgroundColor(COLORS.WHITE)
+      .borderRadius(RADIUS.LG)
+      .shadow(SHADOWS.SM)
       .margin({ bottom: 8 })
 
       Row({ space: 16 }) {
@@ -199,6 +284,7 @@ export struct RecipeDetailPage {
       .backgroundColor(COLORS.WHITE)
     }
     .width('100%')
+    .padding({ left: SPACING.LG, right: SPACING.LG, top: SPACING.MD, bottom: SPACING.MD })
   }
 
   @Builder
@@ -229,7 +315,7 @@ export struct RecipeDetailPage {
     .layoutWeight(1)
     .alignItems(HorizontalAlign.Center)
     .onClick(() => { this.selectedSection = value })
-    .accessibilityText(label )
+    .accessibilityText(label as string)
     .accessibilityLevel('yes')
   }
 
@@ -333,7 +419,21 @@ export struct RecipeDetailPage {
   @Builder
   ingredientsColumn() {
     Column() {
-      Text($r('app.string.ingredient_list')).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
+      Row() {
+        Text($r('app.string.ingredient_list')).fontSize(16).fontWeight(FontWeight.Bold).layoutWeight(1)
+        Button('🛒 生成购物清单')
+          .fontSize(12)
+          .fontColor(COLORS.WHITE)
+          .backgroundColor(COLORS.PRIMARY)
+          .borderRadius(RADIUS.MD)
+          .height(32)
+          .padding({ left: 12, right: 12 })
+          .onClick(() => { this.generateShoppingList() })
+          .accessibilityText('生成购物清单')
+          .accessibilityLevel('yes')
+      }
+      .width('100%')
+      .margin({ bottom: 12 })
       ForEach(this.recipe?.ingredients ?? [], (ing: RecipeIngredient) => {
         Row() {
           Text('•').fontSize(14).fontColor(COLORS.PRIMARY).margin({ right: 8 })

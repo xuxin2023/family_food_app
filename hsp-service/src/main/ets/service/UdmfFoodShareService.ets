@@ -95,7 +95,7 @@ export class UdmfFoodShareService {
 
         unifiedDataChannel.insertData(options, unifiedData, (err, key) => {
           if (err === undefined) {
-            this.lastInsertKey = key;
+            UdmfFoodShareService.lastInsertKey = key;
             hilog.info(HILOG_DOMAIN_DEFAULT, TAG,
               'Food data shared, key: %{public}s', key);
             resolve(key);
@@ -137,7 +137,7 @@ export class UdmfFoodShareService {
 
           for (let i = 0; i < data.length; i++) {
             const records = data[i].getRecords();
-            const foodData: FoodShareData = new FoodShareData(
+            const foodData: FoodShareData = new FoodShareData();
 
             for (let j = 0; j < records.length; j++) {
               const recordType = records[j].getType();
@@ -149,15 +149,15 @@ export class UdmfFoodShareService {
                 const details = plainRecord.details as Record<string, string>;
                 if (details && details.type === 'family_food_scan') {
                   try {
-                    const parsed = JSON.parse(plainRecord.textContent);
-                    foodData.productName = parsed.name ?? '';
-                    foodData.brand = parsed.brand ?? '';
-                    foodData.barcode = parsed.barcode ?? '';
-                    foodData.nutritionJson = parsed.nutrition ?? '';
-                    foodData.nutriScore = parsed.nutriScore ?? 0;
-                    foodData.allergens = parsed.allergens ?? '';
-                    foodData.sharedBy = parsed.sharedBy ?? '';
-                    foodData.timestamp = parsed.timestamp ?? 0;
+                    const parsed: Record<string, Object> = JSON.parse(plainRecord.textContent) as Record<string, Object>;
+                    foodData.productName = (parsed.name as string) ?? '';
+                    foodData.brand = (parsed.brand as string) ?? '';
+                    foodData.barcode = (parsed.barcode as string) ?? '';
+                    foodData.nutritionJson = (parsed.nutrition as string) ?? '';
+                    foodData.nutriScore = (parsed.nutriScore as number) ?? 0;
+                    foodData.allergens = (parsed.allergens as string) ?? '';
+                    foodData.sharedBy = (parsed.sharedBy as string) ?? '';
+                    foodData.timestamp = (parsed.timestamp as number) ?? 0;
                   } catch (_e) {
       hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
                     // 非本应用格式数据，跳过
@@ -192,11 +192,11 @@ export class UdmfFoodShareService {
    * 更新上次插入的数据
    */
   static async updateLastShared(data: FoodShareData): Promise<void> {
-    if (this.lastInsertKey.length === 0) {
+    if (UdmfFoodShareService.lastInsertKey.length === 0) {
       hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, 'No last insert key for update');
       return;
     }
-    return this.updateSharedData(this.lastInsertKey, data);
+    return UdmfFoodShareService.updateSharedData(UdmfFoodShareService.lastInsertKey, data);
   }
 
   /**
@@ -259,7 +259,7 @@ export class UdmfFoodShareService {
           if (err === undefined) {
             hilog.info(HILOG_DOMAIN_DEFAULT, TAG,
               'Deleted %{public}d data records', data.length);
-            this.lastInsertKey = '';
+            UdmfFoodShareService.lastInsertKey = '';
             resolve(data.length);
           } else {
             reject(err);
@@ -288,6 +288,6 @@ export class UdmfFoodShareService {
    * 获取最后一次插入的 key
    */
   static getLastInsertKey(): string {
-    return this.lastInsertKey;
+    return UdmfFoodShareService.lastInsertKey;
   }
 }

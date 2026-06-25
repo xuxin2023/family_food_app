@@ -1,0 +1,10 @@
+# CodeArts 工具链内部目录
+.codeartsdoer/
+
+# Node modules
+node_modules/
+
+# Build outputs
+.ohos/
+build/
+hvigorw/

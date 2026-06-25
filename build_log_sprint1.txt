@@ -1,0 +1,1261 @@
+=== Build Output ===
+> E:/Program Files/Huawei/DevEco Studio\tools\node\node.exe E:/Program Files/Huawei/DevEco Studio\tools\hvigor\bin\hvigorw.js --mode module -p module=entry@default,feature_community@default,hsp_core@default,hsp_service@default,hsp_cloud@default,feature_profile@default,feature_report@default,feature_scan@default,hsp_core_cj@default,hsp_rating@default,hsp_allergy@default,hsp_llm@default assembleHap assembleHsp -p buildMode=debug --no-daemon
+
+> hvigor TYPE CHECK SUCCESSFUL in 339 ms 
+> hvigor UP-TO-DATE :entry:default@PreBuild...  
+> hvigor UP-TO-DATE :hsp_core:default@PreBuild...  
+> hvigor UP-TO-DATE :hsp_service:default@PreBuild...  
+> hvigor UP-TO-DATE :hsp_cloud:default@PreBuild...  
+> hvigor UP-TO-DATE :feature_scan:default@PreBuild...  
+> hvigor UP-TO-DATE :hsp_rating:default@PreBuild...  
+> hvigor UP-TO-DATE :hsp_core_cj:default@PreBuild...  
+> hvigor UP-TO-DATE :feature_report:default@PreBuild...  
+> hvigor UP-TO-DATE :feature_community:default@PreBuild...  
+> hvigor UP-TO-DATE :hsp_allergy:default@PreBuild...  
+> hvigor UP-TO-DATE :hsp_llm:default@PreBuild...  
+> hvigor UP-TO-DATE :feature_profile:default@PreBuild...  
+> hvigor Finished :entry:default@CreateModuleInfo... after 2 ms 
+> hvigor Finished :entry:default@PreCheckSyscap... after 1 ms 
+> hvigor Finished :entry:default@GeneratePkgContextInfo... after 15 ms 
+> hvigor UP-TO-DATE :entry:default@GeneratePkgSdkInfo...  
+> hvigor Finished :entry:default@ProcessIntegratedHsp... after 1 ms 
+> hvigor Finished :hsp_core:default@CreateModuleInfo... after 1 ms 
+> hvigor UP-TO-DATE :hsp_core:default@GenerateMetadata...  
+> hvigor Finished :hsp_core:default@ConfigureCmake... after 1 ms 
+> hvigor UP-TO-DATE :hsp_core:default@MergeProfile...  
+> hvigor UP-TO-DATE :hsp_core:default@CreateBuildProfile...  
+> hvigor Finished :hsp_core:default@PreCheckSyscap... after 1 ms 
+> hvigor Finished :hsp_core:default@GeneratePkgContextInfo... after 6 ms 
+> hvigor UP-TO-DATE :hsp_core:default@GeneratePkgSdkInfo...  
+> hvigor Finished :hsp_core:default@ProcessIntegratedHsp... after 1 ms 
+> hvigor Finished :hsp_core:default@ProcessModulePrivacyProfile... after 1 ms 
+> hvigor Finished :hsp_service:default@CreateModuleInfo... after 1 ms 
+> hvigor Finished :hsp_service:default@PreCheckSyscap... after 1 ms 
+> hvigor Finished :hsp_service:default@GeneratePkgContextInfo... after 4 ms 
+> hvigor UP-TO-DATE :hsp_service:default@GeneratePkgSdkInfo...  
+> hvigor Finished :hsp_service:default@ProcessIntegratedHsp... after 1 ms 
+> hvigor Finished :hsp_service:default@ProcessModulePrivacyProfile... after 1 ms 
+> hvigor Finished :hsp_cloud:default@CreateModuleInfo... after 1 ms 
+> hvigor Finished :hsp_cloud:default@PreCheckSyscap... after 1 ms 
+> hvigor Finished :hsp_cloud:default@GeneratePkgContextInfo... after 6 ms 
+> hvigor UP-TO-DATE :hsp_cloud:default@GeneratePkgSdkInfo...  
+> hvigor Finished :hsp_cloud:default@ProcessIntegratedHsp... after 1 ms 
+> hvigor Finished :hsp_cloud:default@ProcessModulePrivacyProfile... after 1 ms 
+> hvigor Finished :feature_scan:default@CreateModuleInfo... after 1 ms 
+> hvigor Finished :feature_scan:default@PreCheckSyscap... after 1 ms 
+> hvigor Finished :feature_scan:default@GeneratePkgContextInfo... after 7 ms 
+> hvigor UP-TO-DATE :feature_scan:default@GeneratePkgSdkInfo...  
+> hvigor Finished :feature_scan:default@ProcessIntegratedHsp... after 1 ms 
+> hvigor Finished :feature_scan:default@ProcessModulePrivacyProfile... after 1 ms 
+> hvigor Finished :hsp_rating:default@CreateModuleInfo... after 1 ms 
+> hvigor Finished :hsp_rating:default@PreCheckSyscap... after 1 ms 
+> hvigor Finished :hsp_rating:default@GeneratePkgContextInfo... after 5 ms 
+> hvigor UP-TO-DATE :hsp_rating:default@GeneratePkgSdkInfo...  
+> hvigor Finished :hsp_rating:default@ProcessIntegratedHsp... after 1 ms 
+> hvigor Finished :hsp_rating:default@ProcessModulePrivacyProfile... after 1 ms 
+> hvigor Finished :hsp_core_cj:default@CreateModuleInfo... after 1 ms 
+> hvigor UP-TO-DATE :hsp_core_cj:default@GenerateMetadata...  
+> hvigor Finished :hsp_core_cj:default@ConfigureCmake... after 1 ms 
+> hvigor UP-TO-DATE :hsp_core_cj:default@MergeProfile...  
+> hvigor UP-TO-DATE :hsp_core_cj:default@CreateBuildProfile...  
+> hvigor Finished :hsp_core_cj:default@PreCheckSyscap... after 1 ms 
+> hvigor Finished :hsp_core_cj:default@GeneratePkgContextInfo... after 5 ms 
+> hvigor UP-TO-DATE :hsp_core_cj:default@GeneratePkgSdkInfo...  
+> hvigor Finished :hsp_core_cj:default@ProcessIntegratedHsp... after 1 ms 
+> hvigor Finished :hsp_core_cj:default@ProcessModulePrivacyProfile... after 1 ms 
+> hvigor Finished :feature_report:default@CreateModuleInfo... after 1 ms 
+> hvigor Finished :feature_report:default@PreCheckSyscap... after 1 ms 
+> hvigor Finished :feature_report:default@GeneratePkgContextInfo... after 6 ms 
+> hvigor UP-TO-DATE :feature_report:default@GeneratePkgSdkInfo...  
+> hvigor Finished :feature_report:default@ProcessIntegratedHsp... after 1 ms 
+> hvigor Finished :feature_report:default@ProcessModulePrivacyProfile... after 1 ms 
+> hvigor Finished :feature_community:default@CreateModuleInfo... after 1 ms 
+> hvigor Finished :feature_community:default@PreCheckSyscap... after 1 ms 
+> hvigor Finished :feature_community:default@GeneratePkgContextInfo... after 6 ms 
+> hvigor UP-TO-DATE :feature_community:default@GeneratePkgSdkInfo...  
+> hvigor Finished :feature_community:default@ProcessIntegratedHsp... after 1 ms 
+> hvigor Finished :feature_community:default@ProcessModulePrivacyProfile... after 1 ms 
+> hvigor Finished :hsp_allergy:default@CreateModuleInfo... after 1 ms 
+> hvigor Finished :hsp_allergy:default@PreCheckSyscap... after 1 ms 
+> hvigor Finished :hsp_allergy:default@GeneratePkgContextInfo... after 4 ms 
+> hvigor UP-TO-DATE :hsp_allergy:default@GeneratePkgSdkInfo...  
+> hvigor Finished :hsp_allergy:default@ProcessIntegratedHsp... after 1 ms 
+> hvigor Finished :hsp_allergy:default@ProcessModulePrivacyProfile... after 1 ms 
+> hvigor Finished :hsp_llm:default@CreateModuleInfo... after 1 ms 
+> hvigor Finished :hsp_llm:default@PreCheckSyscap... after 1 ms 
+> hvigor Finished :hsp_llm:default@GeneratePkgContextInfo... after 4 ms 
+> hvigor UP-TO-DATE :hsp_llm:default@GeneratePkgSdkInfo...  
+> hvigor Finished :hsp_llm:default@ProcessIntegratedHsp... after 1 ms 
+> hvigor Finished :hsp_llm:default@ProcessModulePrivacyProfile... after 1 ms 
+> hvigor Finished :feature_profile:default@CreateModuleInfo... after 1 ms 
+> hvigor Finished :feature_profile:default@PreCheckSyscap... after 1 ms 
+> hvigor Finished :feature_profile:default@GeneratePkgContextInfo... after 5 ms 
+> hvigor UP-TO-DATE :feature_profile:default@GeneratePkgSdkInfo...  
+> hvigor Finished :feature_profile:default@ProcessIntegratedHsp... after 1 ms 
+> hvigor Finished :feature_profile:default@ProcessModulePrivacyProfile... after 1 ms 
+> hvigor Finished :entry:default@SyscapTransform... after 11 ms 
+> hvigor UP-TO-DATE :entry:default@ProcessRouterMap...  
+> hvigor UP-TO-DATE :entry:default@ProcessShareConfig...  
+> hvigor Finished :entry:default@ProcessStartupConfig... after 3 ms 
+> hvigor UP-TO-DATE :hsp_allergy:default@GenerateMetadata...  
+> hvigor UP-TO-DATE :hsp_rating:default@GenerateMetadata...  
+> hvigor UP-TO-DATE :hsp_llm:default@GenerateMetadata...  
+> hvigor UP-TO-DATE :hsp_cloud:default@GenerateMetadata...  
+> hvigor Finished :hsp_core:default@BuildNativeWithCmake... after 1 ms 
+> hvigor UP-TO-DATE :hsp_core:default@MakePackInfo...  
+> hvigor UP-TO-DATE :hsp_allergy:default@MergeProfile...  
+> hvigor UP-TO-DATE :hsp_rating:default@MergeProfile...  
+> hvigor UP-TO-DATE :hsp_llm:default@MergeProfile...  
+> hvigor UP-TO-DATE :hsp_cloud:default@MergeProfile...  
+> hvigor UP-TO-DATE :hsp_allergy:default@CreateBuildProfile...  
+> hvigor UP-TO-DATE :hsp_rating:default@CreateBuildProfile...  
+> hvigor UP-TO-DATE :hsp_llm:default@CreateBuildProfile...  
+> hvigor UP-TO-DATE :hsp_cloud:default@CreateBuildProfile...  
+> hvigor Finished :hsp_core:default@SyscapTransform... after 1 ms 
+> hvigor UP-TO-DATE :hsp_core:default@ProcessProfile...  
+> hvigor UP-TO-DATE :hsp_core:default@ProcessRouterMap...  
+> hvigor UP-TO-DATE :hsp_core:default@ProcessShareConfig...  
+> hvigor Finished :hsp_core:default@ProcessStartupConfig... after 1 ms 
+> hvigor Finished :hsp_service:default@SyscapTransform... after 1 ms 
+> hvigor UP-TO-DATE :hsp_service:default@ProcessRouterMap...  
+> hvigor UP-TO-DATE :hsp_service:default@ProcessShareConfig...  
+> hvigor Finished :hsp_service:default@ProcessStartupConfig... after 1 ms 
+> hvigor Finished :hsp_cloud:default@SyscapTransform... after 1 ms 
+> hvigor UP-TO-DATE :hsp_cloud:default@ProcessRouterMap...  
+> hvigor UP-TO-DATE :hsp_cloud:default@ProcessShareConfig...  
+> hvigor Finished :hsp_cloud:default@ProcessStartupConfig... after 1 ms 
+> hvigor Finished :feature_scan:default@SyscapTransform... after 1 ms 
+> hvigor UP-TO-DATE :feature_scan:default@ProcessRouterMap...  
+> hvigor UP-TO-DATE :feature_scan:default@ProcessShareConfig...  
+> hvigor Finished :feature_scan:default@ProcessStartupConfig... after 1 ms 
+> hvigor Finished :hsp_rating:default@SyscapTransform... after 1 ms 
+> hvigor UP-TO-DATE :hsp_rating:default@ProcessRouterMap...  
+> hvigor UP-TO-DATE :hsp_rating:default@ProcessShareConfig...  
+> hvigor Finished :hsp_rating:default@ProcessStartupConfig... after 1 ms 
+> hvigor Finished :hsp_core_cj:default@BuildNativeWithCmake... after 1 ms 
+> hvigor UP-TO-DATE :hsp_core_cj:default@MakePackInfo...  
+> hvigor Finished :hsp_core_cj:default@SyscapTransform... after 1 ms 
+> hvigor UP-TO-DATE :hsp_core_cj:default@ProcessProfile...  
+> hvigor UP-TO-DATE :hsp_core_cj:default@ProcessRouterMap...  
+> hvigor UP-TO-DATE :hsp_core_cj:default@ProcessShareConfig...  
+> hvigor Finished :hsp_core_cj:default@ProcessStartupConfig... after 1 ms 
+> hvigor Finished :feature_report:default@SyscapTransform... after 1 ms 
+> hvigor UP-TO-DATE :feature_report:default@ProcessRouterMap...  
+> hvigor UP-TO-DATE :feature_report:default@ProcessShareConfig...  
+> hvigor Finished :feature_report:default@ProcessStartupConfig... after 1 ms 
+> hvigor Finished :feature_community:default@SyscapTransform... after 1 ms 
+> hvigor UP-TO-DATE :feature_community:default@ProcessRouterMap...  
+> hvigor UP-TO-DATE :feature_community:default@ProcessShareConfig...  
+> hvigor Finished :feature_community:default@ProcessStartupConfig... after 2 ms 
+> hvigor Finished :hsp_allergy:default@SyscapTransform... after 2 ms 
+> hvigor UP-TO-DATE :hsp_allergy:default@ProcessRouterMap...  
+> hvigor UP-TO-DATE :hsp_allergy:default@ProcessShareConfig...  
+> hvigor Finished :hsp_allergy:default@ProcessStartupConfig... after 2 ms 
+> hvigor Finished :hsp_llm:default@SyscapTransform... after 1 ms 
+> hvigor UP-TO-DATE :hsp_llm:default@ProcessRouterMap...  
+> hvigor UP-TO-DATE :hsp_llm:default@ProcessShareConfig...  
+> hvigor Finished :hsp_llm:default@ProcessStartupConfig... after 1 ms 
+> hvigor Finished :feature_profile:default@SyscapTransform... after 1 ms 
+> hvigor UP-TO-DATE :feature_profile:default@ProcessRouterMap...  
+> hvigor UP-TO-DATE :feature_profile:default@ProcessShareConfig...  
+> hvigor Finished :feature_profile:default@ProcessStartupConfig... after 1 ms 
+> hvigor UP-TO-DATE :hsp_service:default@GenerateMetadata...  
+> hvigor Finished :hsp_core:default@BuildNativeWithNinja... after 1 ms 
+> hvigor Finished :hsp_allergy:default@ConfigureCmake... after 1 ms 
+> hvigor Finished :hsp_rating:default@ConfigureCmake... after 1 ms 
+> hvigor Finished :hsp_llm:default@ConfigureCmake... after 1 ms 
+> hvigor Finished :hsp_cloud:default@ConfigureCmake... after 1 ms 
+> hvigor UP-TO-DATE :hsp_allergy:default@MakePackInfo...  
+> hvigor UP-TO-DATE :hsp_allergy:default@ProcessProfile...  
+> hvigor UP-TO-DATE :hsp_rating:default@MakePackInfo...  
+> hvigor UP-TO-DATE :hsp_rating:default@ProcessProfile...  
+> hvigor UP-TO-DATE :hsp_llm:default@MakePackInfo...  
+> hvigor UP-TO-DATE :hsp_llm:default@ProcessProfile...  
+> hvigor UP-TO-DATE :hsp_service:default@MergeProfile...  
+> hvigor UP-TO-DATE :hsp_cloud:default@MakePackInfo...  
+> hvigor UP-TO-DATE :hsp_cloud:default@ProcessProfile...  
+> hvigor UP-TO-DATE :hsp_service:default@CreateBuildProfile...  
+> hvigor UP-TO-DATE :hsp_core:default@ProcessResource...  
+> hvigor UP-TO-DATE :hsp_core:default@GenerateLoaderJson...  
+> hvigor Finished :hsp_core_cj:default@BuildNativeWithNinja... after 1 ms 
+> hvigor UP-TO-DATE :hsp_core_cj:default@ProcessResource...  
+> hvigor UP-TO-DATE :hsp_core_cj:default@GenerateLoaderJson...  
+> hvigor UP-TO-DATE :feature_scan:default@GenerateMetadata...  
+> hvigor UP-TO-DATE :feature_community:default@GenerateMetadata...  
+> hvigor UP-TO-DATE :feature_profile:default@GenerateMetadata...  
+> hvigor UP-TO-DATE :hsp_core:default@ProcessLibs...  
+> hvigor Finished :hsp_allergy:default@BuildNativeWithCmake... after 1 ms 
+> hvigor Finished :hsp_rating:default@BuildNativeWithCmake... after 1 ms 
+> hvigor Finished :hsp_llm:default@BuildNativeWithCmake... after 1 ms 
+> hvigor Finished :hsp_cloud:default@BuildNativeWithCmake... after 1 ms 
+> hvigor UP-TO-DATE :hsp_allergy:default@ProcessResource...  
+> hvigor UP-TO-DATE :hsp_rating:default@ProcessResource...  
+> hvigor UP-TO-DATE :hsp_llm:default@ProcessResource...  
+> hvigor UP-TO-DATE :hsp_service:default@MakePackInfo...  
+> hvigor UP-TO-DATE :hsp_service:default@ProcessProfile...  
+> hvigor UP-TO-DATE :feature_scan:default@MergeProfile...  
+> hvigor UP-TO-DATE :feature_community:default@MergeProfile...  
+> hvigor UP-TO-DATE :feature_profile:default@MergeProfile...  
+> hvigor UP-TO-DATE :hsp_cloud:default@ProcessResource...  
+> hvigor UP-TO-DATE :feature_scan:default@CreateBuildProfile...  
+> hvigor UP-TO-DATE :feature_community:default@CreateBuildProfile...  
+> hvigor UP-TO-DATE :feature_profile:default@CreateBuildProfile...  
+> hvigor UP-TO-DATE :hsp_core:default@CompileResource...  
+> hvigor UP-TO-DATE :hsp_core_cj:default@ProcessLibs...  
+> hvigor UP-TO-DATE :hsp_core_cj:default@CompileResource...  
+> hvigor UP-TO-DATE :feature_report:default@GenerateMetadata...  
+> hvigor UP-TO-DATE :hsp_core:default@DoNativeStrip...  
+> hvigor Finished :hsp_service:default@ConfigureCmake... after 1 ms 
+> hvigor UP-TO-DATE :hsp_allergy:default@CompileResource...  
+> hvigor UP-TO-DATE :hsp_rating:default@CompileResource...  
+> hvigor UP-TO-DATE :hsp_llm:default@CompileResource...  
+> hvigor UP-TO-DATE :hsp_service:default@ProcessResource...  
+> hvigor UP-TO-DATE :feature_scan:default@MakePackInfo...  
+> hvigor UP-TO-DATE :feature_scan:default@ProcessProfile...  
+> hvigor UP-TO-DATE :feature_report:default@MergeProfile...  
+> hvigor UP-TO-DATE :feature_community:default@MakePackInfo...  
+> hvigor UP-TO-DATE :feature_community:default@ProcessProfile...  
+> hvigor UP-TO-DATE :feature_profile:default@MakePackInfo...  
+> hvigor UP-TO-DATE :feature_profile:default@ProcessProfile...  
+> hvigor UP-TO-DATE :hsp_cloud:default@CompileResource...  
+> hvigor UP-TO-DATE :feature_report:default@CreateBuildProfile...  
+> hvigor UP-TO-DATE :hsp_core:default@CompileArkTS...  
+> hvigor Finished :hsp_core:default@BuildJS... after 2 ms 
+> hvigor UP-TO-DATE :hsp_allergy:default@GenerateLoaderJson...  
+> hvigor UP-TO-DATE :hsp_rating:default@GenerateLoaderJson...  
+> hvigor UP-TO-DATE :hsp_llm:default@GenerateLoaderJson...  
+> hvigor UP-TO-DATE :hsp_cloud:default@GenerateLoaderJson...  
+> hvigor UP-TO-DATE :hsp_core_cj:default@DoNativeStrip...  
+> hvigor UP-TO-DATE :hsp_core_cj:default@CompileArkTS...  
+> hvigor Finished :hsp_core_cj:default@BuildJS... after 2 ms 
+> hvigor UP-TO-DATE :entry:default@GenerateMetadata...  
+> hvigor UP-TO-DATE :hsp_core:default@CacheNativeLibs...  
+> hvigor Finished :hsp_allergy:default@BuildNativeWithNinja... after 1 ms 
+> hvigor Finished :hsp_rating:default@BuildNativeWithNinja... after 1 ms 
+> hvigor Finished :hsp_llm:default@BuildNativeWithNinja... after 1 ms 
+> hvigor Finished :hsp_cloud:default@BuildNativeWithNinja... after 1 ms 
+> hvigor Finished :hsp_service:default@BuildNativeWithCmake... after 1 ms 
+> hvigor UP-TO-DATE :hsp_service:default@CompileResource...  
+> hvigor UP-TO-DATE :feature_scan:default@ProcessResource...  
+> hvigor UP-TO-DATE :entry:default@MergeProfile...  
+> hvigor UP-TO-DATE :feature_report:default@MakePackInfo...  
+> hvigor UP-TO-DATE :feature_report:default@ProcessProfile...  
+> hvigor UP-TO-DATE :feature_community:default@ProcessResource...  
+> hvigor UP-TO-DATE :feature_profile:default@ProcessResource...  
+> hvigor UP-TO-DATE :hsp_service:default@GenerateLoaderJson...  
+> hvigor UP-TO-DATE :entry:default@CreateBuildProfile...  
+> hvigor UP-TO-DATE :hsp_core:default@PrepareSharedHarResource...  
+> hvigor UP-TO-DATE :hsp_allergy:default@CompileArkTS...  
+> hvigor Finished :hsp_allergy:default@BuildJS... after 2 ms 
+> hvigor UP-TO-DATE :hsp_rating:default@CompileArkTS...  
+> hvigor Finished :hsp_rating:default@BuildJS... after 2 ms 
+> hvigor UP-TO-DATE :hsp_llm:default@CompileArkTS...  
+> hvigor Finished :hsp_llm:default@BuildJS... after 2 ms 
+> hvigor UP-TO-DATE :hsp_cloud:default@CompileArkTS...  
+> hvigor Finished :hsp_cloud:default@BuildJS... after 2 ms 
+> hvigor UP-TO-DATE :hsp_core_cj:default@CacheNativeLibs...  
+> hvigor UP-TO-DATE :hsp_core_cj:default@PrepareSharedHarResource...  
+> hvigor UP-TO-DATE :hsp_core:default@GeneratePkgModuleJson...  
+> hvigor UP-TO-DATE :hsp_allergy:default@ProcessLibs...  
+> hvigor UP-TO-DATE :hsp_rating:default@ProcessLibs...  
+> hvigor UP-TO-DATE :hsp_llm:default@ProcessLibs...  
+> hvigor UP-TO-DATE :hsp_cloud:default@ProcessLibs...  
+> hvigor Finished :feature_scan:default@ConfigureCmake... after 1 ms 
+> hvigor Finished :feature_community:default@ConfigureCmake... after 1 ms 
+> hvigor Finished :feature_profile:default@ConfigureCmake... after 1 ms 
+> hvigor UP-TO-DATE :feature_scan:default@GenerateLoaderJson...  
+> hvigor UP-TO-DATE :feature_community:default@GenerateLoaderJson...  
+> hvigor UP-TO-DATE :feature_profile:default@GenerateLoaderJson...  
+> hvigor UP-TO-DATE :feature_scan:default@CompileResource...  
+> hvigor UP-TO-DATE :entry:default@MakePackInfo...  
+> hvigor UP-TO-DATE :entry:default@ProcessProfile...  
+> hvigor UP-TO-DATE :feature_report:default@ProcessResource...  
+> hvigor UP-TO-DATE :feature_community:default@CompileResource...  
+> hvigor UP-TO-DATE :feature_profile:default@CompileResource...  
+> hvigor UP-TO-DATE :hsp_service:default@CompileArkTS...  
+> hvigor Finished :hsp_service:default@BuildJS... after 2 ms 
+> hvigor UP-TO-DATE :hsp_core:default@PackageSharedHar...  
+> hvigor UP-TO-DATE :hsp_core_cj:default@GeneratePkgModuleJson...  
+> hvigor UP-TO-DATE :hsp_core_cj:default@PackageSharedHar...  
+> hvigor UP-TO-DATE :hsp_core:default@PackageHsp...  
+> hvigor UP-TO-DATE :hsp_allergy:default@DoNativeStrip...  
+> hvigor UP-TO-DATE :hsp_rating:default@DoNativeStrip...  
+> hvigor UP-TO-DATE :hsp_llm:default@DoNativeStrip...  
+> hvigor UP-TO-DATE :hsp_cloud:default@DoNativeStrip...  
+> hvigor Finished :feature_scan:default@BuildNativeWithCmake... after 1 ms 
+> hvigor Finished :feature_community:default@BuildNativeWithCmake... after 1 ms 
+> hvigor Finished :feature_profile:default@BuildNativeWithCmake... after 1 ms 
+> hvigor UP-TO-DATE :feature_scan:default@CompileArkTS...  
+> hvigor Finished :feature_scan:default@BuildJS... after 2 ms 
+> hvigor UP-TO-DATE :feature_report:default@GenerateLoaderJson...  
+> hvigor UP-TO-DATE :entry:default@ProcessResource...  
+> hvigor UP-TO-DATE :feature_report:default@CompileResource...  
+> hvigor UP-TO-DATE :feature_community:default@CompileArkTS...  
+> hvigor Finished :feature_community:default@BuildJS... after 2 ms 
+> hvigor UP-TO-DATE :feature_profile:default@CompileArkTS...  
+> hvigor Finished :feature_profile:default@BuildJS... after 2 ms 
+> hvigor UP-TO-DATE :hsp_core_cj:default@PackageHsp...  
+> hvigor Finished :hsp_core:default@PackingCheck... after 3 ms 
+> hvigor WARN: Will skip sign 'hos_hap'. No signingConfigs profile is configured in current project.
+             If needed, configure the signingConfigs in E:\APP\family_food_app\build-profile.json5.
+> hvigor UP-TO-DATE :hsp_core:default@SignHsp...  
+> hvigor Finished :hsp_core:default@CollectDebugSymbol... after 1 ms 
+> hvigor WARN: Local dependencies detected during har packing of module hsp_allergy. Declaring local dependencies in har module might cause failing during install har package.
+	 Detail: Check oh-package.json5 file of current shared library module and replace the local dependencies.
+	 at E:\APP\family_food_app\hsp-allergy\oh-package.json5
+> hvigor Finished :hsp_allergy:default@PrepareSharedHarResource... after 49 ms 
+> hvigor UP-TO-DATE :hsp_allergy:default@CacheNativeLibs...  
+> hvigor WARN: Local dependencies detected during har packing of module hsp_rating. Declaring local dependencies in har module might cause failing during install har package.
+	 Detail: Check oh-package.json5 file of current shared library module and replace the local dependencies.
+	 at E:\APP\family_food_app\hsp-rating\oh-package.json5
+> hvigor Finished :hsp_rating:default@PrepareSharedHarResource... after 31 ms 
+> hvigor UP-TO-DATE :hsp_rating:default@CacheNativeLibs...  
+> hvigor WARN: Local dependencies detected during har packing of module hsp_llm. Declaring local dependencies in har module might cause failing during install har package.
+	 Detail: Check oh-package.json5 file of current shared library module and replace the local dependencies.
+	 at E:\APP\family_food_app\hsp-llm\oh-package.json5
+> hvigor Finished :hsp_llm:default@PrepareSharedHarResource... after 27 ms 
+> hvigor UP-TO-DATE :hsp_llm:default@CacheNativeLibs...  
+> hvigor Finished :hsp_service:default@BuildNativeWithNinja... after 1 ms 
+> hvigor WARN: Local dependencies detected during har packing of module hsp_cloud. Declaring local dependencies in har module might cause failing during install har package.
+	 Detail: Check oh-package.json5 file of current shared library module and replace the local dependencies.
+	 at E:\APP\family_food_app\hsp-cloud\oh-package.json5
+> hvigor Finished :hsp_cloud:default@PrepareSharedHarResource... after 30 ms 
+> hvigor UP-TO-DATE :hsp_cloud:default@CacheNativeLibs...  
+> hvigor Finished :feature_report:default@ConfigureCmake... after 1 ms 
+> hvigor UP-TO-DATE :entry:default@CompileResource...  
+> hvigor UP-TO-DATE :entry:default@GenerateLoaderJson...  
+> hvigor UP-TO-DATE :feature_report:default@CompileArkTS...  
+> hvigor Finished :feature_report:default@BuildJS... after 2 ms 
+> hvigor Finished :hsp_core_cj:default@PackingCheck... after 2 ms 
+> hvigor WARN: Will skip sign 'hos_hap'. No signingConfigs profile is configured in current project.
+             If needed, configure the signingConfigs in E:\APP\family_food_app\build-profile.json5.
+> hvigor UP-TO-DATE :hsp_core_cj:default@SignHsp...  
+> hvigor Finished :hsp_core_cj:default@CollectDebugSymbol... after 1 ms 
+> hvigor Finished :hsp_core:default@PackageSharedTgz... after 1 ms 
+> hvigor Finished :hsp_allergy:default@PackageSharedHar... after 60 ms 
+> hvigor UP-TO-DATE :hsp_allergy:default@GeneratePkgModuleJson...  
+> hvigor Finished :hsp_rating:default@PackageSharedHar... after 55 ms 
+> hvigor UP-TO-DATE :hsp_rating:default@GeneratePkgModuleJson...  
+> hvigor Finished :hsp_llm:default@PackageSharedHar... after 45 ms 
+> hvigor UP-TO-DATE :hsp_llm:default@GeneratePkgModuleJson...  
+> hvigor UP-TO-DATE :hsp_service:default@ProcessLibs...  
+> hvigor Finished :hsp_cloud:default@PackageSharedHar... after 49 ms 
+> hvigor UP-TO-DATE :hsp_cloud:default@GeneratePkgModuleJson...  
+> hvigor Finished :feature_report:default@BuildNativeWithCmake... after 1 ms 
+> hvigor Finished :entry:default@BuildJS... after 3 ms 
+> hvigor Finished :hsp_core_cj:default@PackageSharedTgz... after 1 ms 
+> hvigor Finished :hsp_core:assembleHsp... after 1 ms 
+> hvigor UP-TO-DATE :hsp_allergy:default@PackageHsp...  
+> hvigor UP-TO-DATE :hsp_rating:default@PackageHsp...  
+> hvigor UP-TO-DATE :hsp_llm:default@PackageHsp...  
+> hvigor UP-TO-DATE :hsp_service:default@DoNativeStrip...  
+> hvigor UP-TO-DATE :hsp_cloud:default@PackageHsp...  
+> hvigor Finished :entry:default@ConfigureCmake... after 1 ms 
+> hvigor Finished :hsp_core_cj:assembleHsp... after 1 ms 
+> hvigor Finished :hsp_allergy:default@PackingCheck... after 3 ms 
+> hvigor WARN: Will skip sign 'hos_hap'. No signingConfigs profile is configured in current project.
+             If needed, configure the signingConfigs in E:\APP\family_food_app\build-profile.json5.
+> hvigor UP-TO-DATE :hsp_allergy:default@SignHsp...  
+> hvigor Finished :hsp_allergy:default@CollectDebugSymbol... after 1 ms 
+> hvigor Finished :hsp_rating:default@PackingCheck... after 7 ms 
+> hvigor WARN: Will skip sign 'hos_hap'. No signingConfigs profile is configured in current project.
+             If needed, configure the signingConfigs in E:\APP\family_food_app\build-profile.json5.
+> hvigor UP-TO-DATE :hsp_rating:default@SignHsp...  
+> hvigor Finished :hsp_rating:default@CollectDebugSymbol... after 1 ms 
+> hvigor Finished :hsp_llm:default@PackingCheck... after 4 ms 
+> hvigor WARN: Will skip sign 'hos_hap'. No signingConfigs profile is configured in current project.
+             If needed, configure the signingConfigs in E:\APP\family_food_app\build-profile.json5.
+> hvigor UP-TO-DATE :hsp_llm:default@SignHsp...  
+> hvigor Finished :hsp_llm:default@CollectDebugSymbol... after 1 ms 
+> hvigor WARN: Local dependencies detected during har packing of module hsp_service. Declaring local dependencies in har module might cause failing during install har package.
+	 Detail: Check oh-package.json5 file of current shared library module and replace the local dependencies.
+	 at E:\APP\family_food_app\hsp-service\oh-package.json5
+> hvigor Finished :hsp_service:default@PrepareSharedHarResource... after 238 ms 
+> hvigor UP-TO-DATE :hsp_service:default@CacheNativeLibs...  
+> hvigor Finished :feature_scan:default@BuildNativeWithNinja... after 1 ms 
+> hvigor Finished :feature_community:default@BuildNativeWithNinja... after 1 ms 
+> hvigor Finished :feature_profile:default@BuildNativeWithNinja... after 1 ms 
+> hvigor Finished :hsp_cloud:default@PackingCheck... after 2 ms 
+> hvigor WARN: Will skip sign 'hos_hap'. No signingConfigs profile is configured in current project.
+             If needed, configure the signingConfigs in E:\APP\family_food_app\build-profile.json5.
+> hvigor UP-TO-DATE :hsp_cloud:default@SignHsp...  
+> hvigor Finished :hsp_cloud:default@CollectDebugSymbol... after 2 ms 
+> hvigor Finished :entry:default@BuildNativeWithCmake... after 1 ms 
+> hvigor Finished :hsp_allergy:default@PackageSharedTgz... after 1 ms 
+> hvigor Finished :hsp_rating:default@PackageSharedTgz... after 1 ms 
+> hvigor Finished :hsp_llm:default@PackageSharedTgz... after 1 ms 
+> hvigor Finished :hsp_service:default@PackageSharedHar... after 132 ms 
+> hvigor UP-TO-DATE :hsp_service:default@GeneratePkgModuleJson...  
+> hvigor UP-TO-DATE :feature_scan:default@ProcessLibs...  
+> hvigor UP-TO-DATE :feature_community:default@ProcessLibs...  
+> hvigor UP-TO-DATE :feature_profile:default@ProcessLibs...  
+> hvigor Finished :hsp_cloud:default@PackageSharedTgz... after 1 ms 
+> hvigor Finished :hsp_allergy:assembleHsp... after 1 ms 
+> hvigor Finished :hsp_rating:assembleHsp... after 1 ms 
+> hvigor Finished :hsp_llm:assembleHsp... after 1 ms 
+> hvigor UP-TO-DATE :hsp_service:default@PackageHsp...  
+> hvigor UP-TO-DATE :feature_scan:default@DoNativeStrip...  
+> hvigor UP-TO-DATE :feature_community:default@DoNativeStrip...  
+> hvigor UP-TO-DATE :feature_profile:default@DoNativeStrip...  
+> hvigor Finished :hsp_cloud:assembleHsp... after 1 ms 
+> hvigor Finished :hsp_service:default@PackingCheck... after 5 ms 
+> hvigor WARN: Will skip sign 'hos_hap'. No signingConfigs profile is configured in current project.
+             If needed, configure the signingConfigs in E:\APP\family_food_app\build-profile.json5.
+> hvigor UP-TO-DATE :hsp_service:default@SignHsp...  
+> hvigor Finished :hsp_service:default@CollectDebugSymbol... after 1 ms 
+> hvigor WARN: Local dependencies detected during har packing of module feature_scan. Declaring local dependencies in har module might cause failing during install har package.
+	 Detail: Check oh-package.json5 file of current shared library module and replace the local dependencies.
+	 at E:\APP\family_food_app\feature-scan\oh-package.json5
+> hvigor Finished :feature_scan:default@PrepareSharedHarResource... after 78 ms 
+> hvigor UP-TO-DATE :feature_scan:default@CacheNativeLibs...  
+> hvigor Finished :feature_report:default@BuildNativeWithNinja... after 1 ms 
+> hvigor WARN: Local dependencies detected during har packing of module feature_community. Declaring local dependencies in har module might cause failing during install har package.
+	 Detail: Check oh-package.json5 file of current shared library module and replace the local dependencies.
+	 at E:\APP\family_food_app\feature-community\oh-package.json5
+> hvigor Finished :feature_community:default@PrepareSharedHarResource... after 43 ms 
+> hvigor UP-TO-DATE :feature_community:default@CacheNativeLibs...  
+> hvigor WARN: Local dependencies detected during har packing of module feature_profile. Declaring local dependencies in har module might cause failing during install har package.
+	 Detail: Check oh-package.json5 file of current shared library module and replace the local dependencies.
+	 at E:\APP\family_food_app\feature-profile\oh-package.json5
+> hvigor Finished :feature_profile:default@PrepareSharedHarResource... after 37 ms 
+> hvigor UP-TO-DATE :feature_profile:default@CacheNativeLibs...  
+> hvigor Finished :hsp_service:default@PackageSharedTgz... after 1 ms 
+> hvigor Finished :feature_scan:default@PackageSharedHar... after 64 ms 
+> hvigor UP-TO-DATE :feature_scan:default@GeneratePkgModuleJson...  
+> hvigor UP-TO-DATE :feature_report:default@ProcessLibs...  
+> hvigor Finished :feature_community:default@PackageSharedHar... after 57 ms 
+> hvigor UP-TO-DATE :feature_community:default@GeneratePkgModuleJson...  
+> hvigor Finished :feature_profile:default@PackageSharedHar... after 52 ms 
+> hvigor UP-TO-DATE :feature_profile:default@GeneratePkgModuleJson...  
+> hvigor Finished :hsp_service:assembleHsp... after 1 ms 
+> hvigor UP-TO-DATE :feature_scan:default@PackageHsp...  
+> hvigor UP-TO-DATE :feature_report:default@DoNativeStrip...  
+> hvigor UP-TO-DATE :feature_community:default@PackageHsp...  
+> hvigor UP-TO-DATE :feature_profile:default@PackageHsp...  
+> hvigor Finished :feature_scan:default@PackingCheck... after 3 ms 
+> hvigor WARN: Will skip sign 'hos_hap'. No signingConfigs profile is configured in current project.
+             If needed, configure the signingConfigs in E:\APP\family_food_app\build-profile.json5.
+> hvigor UP-TO-DATE :feature_scan:default@SignHsp...  
+> hvigor Finished :feature_scan:default@CollectDebugSymbol... after 1 ms 
+> hvigor Finished :entry:default@BuildNativeWithNinja... after 1 ms 
+> hvigor WARN: Local dependencies detected during har packing of module feature_report. Declaring local dependencies in har module might cause failing during install har package.
+	 Detail: Check oh-package.json5 file of current shared library module and replace the local dependencies.
+	 at E:\APP\family_food_app\feature-report\oh-package.json5
+> hvigor Finished :feature_report:default@PrepareSharedHarResource... after 83 ms 
+> hvigor UP-TO-DATE :feature_report:default@CacheNativeLibs...  
+> hvigor Finished :feature_community:default@PackingCheck... after 5 ms 
+> hvigor WARN: Will skip sign 'hos_hap'. No signingConfigs profile is configured in current project.
+             If needed, configure the signingConfigs in E:\APP\family_food_app\build-profile.json5.
+> hvigor UP-TO-DATE :feature_community:default@SignHsp...  
+> hvigor Finished :feature_community:default@CollectDebugSymbol... after 1 ms 
+> hvigor Finished :feature_profile:default@PackingCheck... after 3 ms 
+> hvigor WARN: Will skip sign 'hos_hap'. No signingConfigs profile is configured in current project.
+             If needed, configure the signingConfigs in E:\APP\family_food_app\build-profile.json5.
+> hvigor UP-TO-DATE :feature_profile:default@SignHsp...  
+> hvigor Finished :feature_profile:default@CollectDebugSymbol... after 1 ms 
+> hvigor Finished :feature_scan:default@PackageSharedTgz... after 1 ms 
+> hvigor UP-TO-DATE :entry:default@ProcessLibs...  
+> hvigor Finished :feature_report:default@PackageSharedHar... after 72 ms 
+> hvigor UP-TO-DATE :feature_report:default@GeneratePkgModuleJson...  
+> hvigor Finished :feature_community:default@PackageSharedTgz... after 1 ms 
+> hvigor Finished :feature_profile:default@PackageSharedTgz... after 1 ms 
+> hvigor Finished :feature_scan:assembleHsp... after 1 ms 
+> hvigor UP-TO-DATE :entry:default@DoNativeStrip...  
+> hvigor UP-TO-DATE :feature_report:default@PackageHsp...  
+> hvigor Finished :feature_community:assembleHsp... after 1 ms 
+> hvigor Finished :feature_profile:assembleHsp... after 1 ms 
+> hvigor UP-TO-DATE :entry:default@CacheNativeLibs...  
+> hvigor Finished :feature_report:default@PackingCheck... after 3 ms 
+> hvigor WARN: Will skip sign 'hos_hap'. No signingConfigs profile is configured in current project.
+             If needed, configure the signingConfigs in E:\APP\family_food_app\build-profile.json5.
+> hvigor UP-TO-DATE :feature_report:default@SignHsp...  
+> hvigor Finished :feature_report:default@CollectDebugSymbol... after 1 ms 
+> hvigor Finished :feature_report:default@PackageSharedTgz... after 1 ms 
+> hvigor Finished :feature_report:assembleHsp... after 1 ms 
+> hvigor WARN: WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp_core/src/main/ets/utils/MemoryMonitor.ets:118:52
+ "globalThis" is not supported (arkts-no-globalthis)
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/IapErrorUtil.ets:37:30
+ Classes cannot be used as objects (arkts-no-classes-as-obj)
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/EcommerceLinkService.ets:74:42
+ Classes cannot be used as objects (arkts-no-classes-as-obj)
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/RecipeCommunityService.ets:324:26
+ Classes cannot be used as objects (arkts-no-classes-as-obj)
+
+WARN: ArkTS:WARN: For details about ArkTS syntax errors, see FAQs
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp_core/src/main/ets/utils/ImageProgressiveLoader.ets:151:31
+ 'packing' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp_core/src/main/ets/utils/SecureDataStore.ets:282:37
+ 'decodeWithStream' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp_core/src/main/ets/utils/AssetKeyManager.ets:19:24
+ 'encode' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp_core/src/main/ets/utils/AssetKeyManager.ets:30:24
+ 'decodeWithStream' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp_core/src/main/ets/utils/ToastHelper.ets:23:20
+ 'showToast' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp_core/src/main/ets/utils/ToastHelper.ets:39:20
+ 'showActionMenu' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp_core/src/main/ets/utils/PrivacyContentUtil.ets:19:24
+ 'decodeWithStream' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp_core/src/main/ets/utils/ResourceUtil.ets:10:12
+ 'getContext' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp_core/src/main/ets/utils/OfflineFoodDatabase.ets:170:27
+ 'decodeWithStream' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/repository/HistoryRepository.ets:435:18
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/repository/RuleRepository.ets:182:32
+ 'decodeWithStream' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/IapService.ets:99:28
+ 'decodeWithStream' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/IapService.ets:391:23
+ 'price' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/IapService.ets:392:46
+ 'price' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/IapService.ets:410:23
+ 'price' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/IapService.ets:411:46
+ 'price' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/DatabaseMigrationService.ets:191:37
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/DatabaseMigrationService.ets:192:17
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/DatabaseMigrationService.ets:193:17
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/SecureHttpClient.ets:290:56
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/SecureHttpClient.ets:407:27
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/SecureHttpClient.ets:408:27
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/ScanDirectService.ets:82:15
+ The system capacity of this api 'scanBarcode' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/ScanDirectService.ets:82:27
+ The system capacity of this api 'startScanForResult' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/ScanDirectService.ets:84:36
+ The system capacity of this api 'originalValue' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/ScanDirectService.ets:85:37
+ The system capacity of this api 'originalValue' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/ScanDirectService.ets:89:65
+ The system capacity of this api 'originalValue' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/HealthReportExportService.ets:115:25
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/HealthReportExportService.ets:116:12
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/HealthReportExportService.ets:117:12
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/ai/OnDeviceLlmService.ets:85:44
+ 'getContext' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/DataBackupService.ets:67:36
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/DataBackupService.ets:140:34
+ 'decodeWithStream' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/DataBackupService.ets:173:23
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/IapServerValidator.ets:155:38
+ 'encode' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/IapServerValidator.ets:156:39
+ 'encode' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/IapServerValidator.ets:191:46
+ 'encode' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/IapServerValidator.ets:197:35
+ 'decodeWithStream' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/OfflineModeManager.ets:60:36
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/OfflineModeManager.ets:146:26
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/OfflineModeManager.ets:147:26
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/SharePosterGenerator.ets:212:41
+ 'packing' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/SharePosterGenerator.ets:218:25
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/SharePosterGenerator.ets:219:12
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/SharePosterGenerator.ets:220:12
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:43:11
+ The system capacity of this api 'healthStore' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:43:23
+ The system capacity of this api 'samplePointHelper' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:43:41
+ The system capacity of this api 'dailyActivities' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:43:57
+ The system capacity of this api 'DATA_TYPE' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:44:11
+ The system capacity of this api 'healthStore' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:44:23
+ The system capacity of this api 'samplePointHelper' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:44:41
+ The system capacity of this api 'heartRate' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:44:51
+ The system capacity of this api 'DATA_TYPE' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:45:11
+ The system capacity of this api 'healthStore' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:45:23
+ The system capacity of this api 'samplePointHelper' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:45:41
+ The system capacity of this api 'bloodOxygenSaturation' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:45:63
+ The system capacity of this api 'DATA_TYPE' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:46:11
+ The system capacity of this api 'healthStore' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:46:23
+ The system capacity of this api 'healthSequenceHelper' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:46:44
+ The system capacity of this api 'sleepRecord' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:46:56
+ The system capacity of this api 'DATA_TYPE' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:47:11
+ The system capacity of this api 'healthStore' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:47:23
+ The system capacity of this api 'samplePointHelper' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:47:41
+ The system capacity of this api 'stress' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:47:48
+ The system capacity of this api 'DATA_TYPE' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:48:11
+ The system capacity of this api 'healthStore' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:48:23
+ The system capacity of this api 'samplePointHelper' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:48:41
+ The system capacity of this api 'bodyTemperature' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:48:57
+ The system capacity of this api 'DATA_TYPE' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:52:30
+ The system capacity of this api 'healthStore' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:52:42
+ The system capacity of this api 'getAuthorizations' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:53:32
+ The system capacity of this api 'readDataTypes' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:74:11
+ The system capacity of this api 'healthStore' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:74:23
+ The system capacity of this api 'samplePointHelper' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:74:41
+ The system capacity of this api 'dailyActivities' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:74:57
+ The system capacity of this api 'DATA_TYPE' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:75:11
+ The system capacity of this api 'healthStore' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:75:23
+ The system capacity of this api 'samplePointHelper' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:75:41
+ The system capacity of this api 'heartRate' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:75:51
+ The system capacity of this api 'DATA_TYPE' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:76:11
+ The system capacity of this api 'healthStore' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:76:23
+ The system capacity of this api 'samplePointHelper' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:76:41
+ The system capacity of this api 'bloodOxygenSaturation' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:76:63
+ The system capacity of this api 'DATA_TYPE' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:77:11
+ The system capacity of this api 'healthStore' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:77:23
+ The system capacity of this api 'healthSequenceHelper' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:77:44
+ The system capacity of this api 'sleepRecord' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:77:56
+ The system capacity of this api 'DATA_TYPE' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:78:11
+ The system capacity of this api 'healthStore' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:78:23
+ The system capacity of this api 'samplePointHelper' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:78:41
+ The system capacity of this api 'stress' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:78:48
+ The system capacity of this api 'DATA_TYPE' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:79:11
+ The system capacity of this api 'healthStore' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:79:23
+ The system capacity of this api 'samplePointHelper' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:79:41
+ The system capacity of this api 'bodyTemperature' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:79:57
+ The system capacity of this api 'DATA_TYPE' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:108:21
+ The system capacity of this api 'healthStore' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:108:33
+ The system capacity of this api 'samplePointHelper' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:108:51
+ The system capacity of this api 'dailyActivities' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:108:67
+ The system capacity of this api 'DATA_TYPE' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:110:32
+ The system capacity of this api 'healthStore' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:110:44
+ The system capacity of this api 'GroupUnitType' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:110:58
+ The system capacity of this api 'DAY' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:114:35
+ The system capacity of this api 'healthStore' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:114:47
+ The system capacity of this api 'aggregateData' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:117:69
+ The system capacity of this api 'fields' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:118:45
+ The system capacity of this api 'fields' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:128:21
+ The system capacity of this api 'healthStore' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:128:33
+ The system capacity of this api 'samplePointHelper' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:128:51
+ The system capacity of this api 'heartRate' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:128:61
+ The system capacity of this api 'DATA_TYPE' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:130:32
+ The system capacity of this api 'healthStore' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:130:44
+ The system capacity of this api 'GroupUnitType' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:130:58
+ The system capacity of this api 'DAY' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:134:33
+ The system capacity of this api 'healthStore' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:134:45
+ The system capacity of this api 'aggregateData' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:137:63
+ The system capacity of this api 'fields' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:138:42
+ The system capacity of this api 'fields' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:150:21
+ The system capacity of this api 'healthStore' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:150:33
+ The system capacity of this api 'samplePointHelper' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:150:51
+ The system capacity of this api 'bloodOxygenSaturation' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:150:73
+ The system capacity of this api 'DATA_TYPE' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:152:32
+ The system capacity of this api 'healthStore' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:152:44
+ The system capacity of this api 'GroupUnitType' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:152:58
+ The system capacity of this api 'DAY' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:156:35
+ The system capacity of this api 'healthStore' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:156:47
+ The system capacity of this api 'aggregateData' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:159:69
+ The system capacity of this api 'fields' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:160:45
+ The system capacity of this api 'fields' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:171:35
+ The system capacity of this api 'healthStore' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:171:47
+ The system capacity of this api 'healthSequenceHelper' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:171:68
+ The system capacity of this api 'sleepRecord' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:171:80
+ The system capacity of this api 'DATA_TYPE' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:176:36
+ The system capacity of this api 'healthStore' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:176:48
+ The system capacity of this api 'readData' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:180:22
+ The system capacity of this api 'summaries' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/hsp-service/src/main/ets/service/health/HwHealthSignalProvider.ets:181:42
+ The system capacity of this api 'summaries' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-scan/src/main/ets/service/ScanService.ets:57:52
+ The system capacity of this api 'scanBarcode' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-scan/src/main/ets/service/ScanService.ets:57:64
+ The system capacity of this api 'startScanForResult' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-scan/src/main/ets/service/ScanService.ets:58:28
+ The system capacity of this api 'originalValue' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-scan/src/main/ets/service/ScanService.ets:59:72
+ The system capacity of this api 'originalValue' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-scan/src/main/ets/service/ScanService.ets:60:23
+ The system capacity of this api 'originalValue' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-scan/src/main/ets/service/ScanService.ets:75:52
+ The system capacity of this api 'scanBarcode' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-scan/src/main/ets/service/ScanService.ets:75:64
+ The system capacity of this api 'startScanForResult' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-scan/src/main/ets/service/ScanService.ets:76:28
+ The system capacity of this api 'originalValue' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-scan/src/main/ets/service/ScanService.ets:77:85
+ The system capacity of this api 'originalValue' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-scan/src/main/ets/service/ScanService.ets:78:23
+ The system capacity of this api 'originalValue' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-scan/src/main/ets/service/ScanService.ets:207:52
+ The system capacity of this api 'scanBarcode' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-scan/src/main/ets/service/ScanService.ets:207:64
+ The system capacity of this api 'startScanForResult' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-scan/src/main/ets/service/ScanService.ets:208:28
+ The system capacity of this api 'originalValue' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-scan/src/main/ets/service/ScanService.ets:209:32
+ The system capacity of this api 'originalValue' is not supported on all devices
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-scan/src/main/ets/components/NutriScoreBadge.ets:63:7
+ 'animateTo' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-scan/src/main/ets/components/NutriScoreBadge.ets:172:9
+ 'animateTo' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-scan/src/main/ets/components/NutriScoreBadge.ets:176:9
+ 'animateTo' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-scan/src/main/ets/components/AdditiveTrafficLight.ets:193:12
+ The 'fill' API is supported since SDK version 26.0.0. However, the current compatible SDK version is 6.1.0(23).
+ It is recommended to use apiAvailable to safeguard API compatibility.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-scan/src/main/ets/engine/OnDeviceAiEngine.ets:127:35
+ 'getContext' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-scan/src/main/ets/engine/OnDeviceAiEngine.ets:182:20
+ 'getContext' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-community/src/main/ets/service/CommunityImageService.ets:101:20
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-community/src/main/ets/service/CommunityImageService.ets:104:18
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-report/src/main/ets/components/ComprehensiveScoreRing.ets:64:7
+ 'animateTo' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-report/src/main/ets/components/ComprehensiveScoreRing.ets:68:9
+ 'animateTo' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-report/src/main/ets/components/NutrientRadarPanel.ets:134:18
+ The 'fill' API is supported since SDK version 26.0.0. However, the current compatible SDK version is 6.1.0(23).
+ It is recommended to use apiAvailable to safeguard API compatibility.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-report/src/main/ets/components/NutrientRadarPanel.ets:150:16
+ The 'fill' API is supported since SDK version 26.0.0. However, the current compatible SDK version is 6.1.0(23).
+ It is recommended to use apiAvailable to safeguard API compatibility.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/feature-report/src/main/ets/components/RatingVisualizer.ets:119:10
+ The 'fill' API is supported since SDK version 26.0.0. However, the current compatible SDK version is 6.1.0(23).
+ It is recommended to use apiAvailable to safeguard API compatibility.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/AppState.ets:142:37
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/AppState.ets:394:22
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/entryability/EntryAbility.ets:281:20
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/Index.ets:86:14
+ The 'fill' API is supported since SDK version 26.0.0. However, the current compatible SDK version is 6.1.0(23).
+ It is recommended to use apiAvailable to safeguard API compatibility.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/Index.ets:89:14
+ The 'fill' API is supported since SDK version 26.0.0. However, the current compatible SDK version is 6.1.0(23).
+ It is recommended to use apiAvailable to safeguard API compatibility.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/Index.ets:92:14
+ The 'fill' API is supported since SDK version 26.0.0. However, the current compatible SDK version is 6.1.0(23).
+ It is recommended to use apiAvailable to safeguard API compatibility.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/PrivacyDialogPage.ets:93:23
+ 'getContext' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/PrivacyDialogPage.ets:112:12
+ 'replaceUrl' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/PrivacyDialogPage.ets:112:12
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/HomePage.ets:40:7
+ 'animateTo' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/ScanPage.ets:246:23
+ 'getContext' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/ReportPage.ets:460:62
+ 'get' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/ReportPage.ets:467:51
+ 'packing' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/ReportPage.ets:470:23
+ 'getContext' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/SharePage.ets:37:12
+ The 'fill' API is supported since SDK version 26.0.0. However, the current compatible SDK version is 6.1.0(23).
+ It is recommended to use apiAvailable to safeguard API compatibility.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/SharePage.ets:174:12
+ The 'fill' API is supported since SDK version 26.0.0. However, the current compatible SDK version is 6.1.0(23).
+ It is recommended to use apiAvailable to safeguard API compatibility.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/WeeklyReportPage.ets:412:23
+ 'getContext' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/SettingsPage.ets:157:64
+ 'decodeWithStream' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/SettingsPage.ets:198:64
+ 'decodeWithStream' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/SettingsPage.ets:213:30
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/SettingsPage.ets:219:20
+ 'showDialog' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/SettingsPage.ets:219:20
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/SubscriptionPage.ets:289:20
+ 'showToast' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/SubscriptionPage.ets:289:20
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/SubscriptionPage.ets:297:20
+ 'showToast' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/SubscriptionPage.ets:300:22
+ 'showToast' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/SubscriptionPage.ets:307:22
+ 'showToast' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/SubscriptionPage.ets:316:22
+ 'showToast' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/SubscriptionPage.ets:318:22
+ 'showToast' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/SubscriptionPage.ets:322:20
+ 'showToast' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/SubscriptionPage.ets:322:20
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/SubscriptionPage.ets:332:18
+ 'showToast' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/SubscriptionPage.ets:332:18
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/SubscriptionPage.ets:346:22
+ 'showToast' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/SubscriptionPage.ets:346:22
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/SubscriptionPage.ets:348:22
+ 'showToast' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/SubscriptionPage.ets:348:22
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/SubscriptionPage.ets:351:20
+ 'showToast' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/Subscri> hvigor Finished :entry:default@CompileArkTS... after 10 s 352 ms 
+ptionPage.ets:351:20
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/FamilyGroupPage.ets:160:14
+ The 'fill' API is supported since SDK version 26.0.0. However, the current compatible SDK version is 6.1.0(23).
+ It is recommended to use apiAvailable to safeguard API compatibility.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/FamilyGroupPage.ets:191:20
+ The 'fill' API is supported since SDK version 26.0.0. However, the current compatible SDK version is 6.1.0(23).
+ It is recommended to use apiAvailable to safeguard API compatibility.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/FamilyGroupPage.ets:257:5
+ 'AlertDialog' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/FamilyGroupPage.ets:257:17
+ 'show' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/FamilyGroupPage.ets:275:5
+ 'AlertDialog' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/FamilyGroupPage.ets:275:17
+ 'show' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/FamilyGroupPage.ets:299:5
+ 'AlertDialog' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/FamilyGroupPage.ets:299:17
+ 'show' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/GroupFeedPage.ets:131:14
+ The 'fill' API is supported since SDK version 26.0.0. However, the current compatible SDK version is 6.1.0(23).
+ It is recommended to use apiAvailable to safeguard API compatibility.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/GroupFeedPage.ets:208:5
+ 'AlertDialog' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/GroupFeedPage.ets:208:17
+ 'show' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/RecipeDetailPage.ets:278:18
+ The 'fill' API is supported since SDK version 26.0.0. However, the current compatible SDK version is 6.1.0(23).
+ It is recommended to use apiAvailable to safeguard API compatibility.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/RecipeDetailPage.ets:451:24
+ The 'fill' API is supported since SDK version 26.0.0. However, the current compatible SDK version is 6.1.0(23).
+ It is recommended to use apiAvailable to safeguard API compatibility.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/RecipeCreatePage.ets:320:18
+ The 'fill' API is supported since SDK version 26.0.0. However, the current compatible SDK version is 6.1.0(23).
+ It is recommended to use apiAvailable to safeguard API compatibility.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/DashboardPage.ets:602:12
+ The 'stroke' API is supported since SDK version 26.0.0. However, the current compatible SDK version is 6.1.0(23).
+ It is recommended to use apiAvailable to safeguard API compatibility.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/DashboardPage.ets:1221:16
+ The 'stroke' API is supported since SDK version 26.0.0. However, the current compatible SDK version is 6.1.0(23).
+ It is recommended to use apiAvailable to safeguard API compatibility.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/DashboardPage.ets:1355:23
+ 'getContext' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/DeviceDashboardPage.ets:160:24
+ 'showToast' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/DeviceDashboardPage.ets:232:10
+ The 'fill' API is supported since SDK version 26.0.0. However, the current compatible SDK version is 6.1.0(23).
+ It is recommended to use apiAvailable to safeguard API compatibility.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/DeviceDashboardPage.ets:539:20
+ 'showToast' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/DeviceDashboardPage.ets:539:20
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/DeviceDashboardPage.ets:544:63
+ 'getContext' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/DeviceDashboardPage.ets:547:22
+ 'showToast' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/DeviceDashboardPage.ets:565:20
+ 'showToast' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/DeviceDashboardPage.ets:565:20
+ Function may throw exceptions. Special handling is required.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/AiChatPage.ets:499:18
+ 'showActionMenu' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/TeenModePage.ets:83:32
+ 'showToast' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/TeenModePage.ets:87:34
+ 'showToast' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/TeenModePage.ets:89:34
+ 'showToast' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/FeedbackPage.ets:257:72
+ 'PhotoSelectOptions' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/FeedbackPage.ets:258:26
+ 'MIMEType' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/FeedbackPage.ets:258:44
+ 'PhotoViewMIMETypes' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/FeedbackPage.ets:258:63
+ 'IMAGE_TYPE' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/FeedbackPage.ets:259:26
+ 'maxSelectNumber' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/FeedbackPage.ets:260:66
+ 'PhotoViewPicker' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/FeedbackPage.ets:261:55
+ 'select' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/FeedbackPage.ets:262:29
+ 'photoUris' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/FeedbackPage.ets:262:60
+ 'photoUris' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/FeedbackPage.ets:263:77
+ 'photoUris' has been deprecated.
+
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/MemberEditPage.ets:16:1
+ It's not a recommended way to export struct with '@Entry' decorator, which may cause ACE Engine error in component preview mode.
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/SettingsPage.ets:47:1
+ It's not a recommended way to export struct with '@Entry' decorator, which may cause ACE Engine error in component preview mode.
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/CloudSyncSettingsPage.ets:58:1
+ It's not a recommended way to export struct with '@Entry' decorator, which may cause ACE Engine error in component preview mode.
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/AiChatPage.ets:30:1
+ It's not a recommended way to export struct with '@Entry' decorator, which may cause ACE Engine error in component preview mode.
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/FavoritePage.ets:152:1
+ It's not a recommended way to export struct with '@Entry' decorator, which may cause ACE Engine error in component preview mode.
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/FoodComparePage.ets:23:1
+ It's not a recommended way to export struct with '@Entry' decorator, which may cause ACE Engine error in component preview mode.
+WARN: ArkTS:WARN File: E:/APP/family_food_app/entry/src/main/ets/pages/OffSearchPage.ets:23:1
+ It's not a recommended way to export struct with '@Entry' decorator, which may cause ACE Engine error in component preview mode.
+
+> hvigor UP-TO-DATE :entry:default@GeneratePkgModuleJson...  
+> hvigor Finished :entry:default@ProcessCompiledResources... after 1 ms 
+> hvigor Finished :entry:default@PackageHap... after 1 s 271 ms 
+> hvigor Finished :entry:default@PackingCheck... after 6 ms 
+> hvigor WARN: Will skip sign 'hos_hap'. No signingConfigs profile is configured in current project.
+             If needed, configure the signingConfigs in E:\APP\family_food_app\build-profile.json5.
+> hvigor Finished :entry:default@SignHap... after 2 ms 
+> hvigor Finished :entry:default@CollectDebugSymbol... after 2 ms 
+> hvigor Finished :entry:assembleHap... after 1 ms 
+> hvigor BUILD SUCCESSFUL in 20 s 867 ms 
+
+
+Process finished with exit code 0
+

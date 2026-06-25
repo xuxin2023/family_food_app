@@ -1,5 +1,5 @@
 import { Recommendation, getLevelColorValue, COLORS, NullGuard } from 'hsp_core';
-// 适配结论卡组件 — @ReusableV2 高频复用
+// 适配结论卡组件 @ReusableV2 高频复用
 
 @ReusableV2
 @ComponentV2
@@ -41,7 +41,7 @@ export struct RecommendationCard {
           .fontColor(COLORS.WHITE)
           .padding({ left: 12, right: 12, top: 4, bottom: 4 })
           .borderRadius(12)
-          .backgroundColor(getLevelColorValue(this.safeLevelColor))
+          .backgroundColor(this.safeLevelColor)
           .margin({ left: 8 })
 
         if (this.safeMaxAmount > 0) {
@@ -80,7 +80,7 @@ export struct RecommendationCard {
         Column() {
           ForEach(this.safeReminders, (reminder: string) => {
             Row() {
-              Text('⚠').fontSize(12).margin({ right: 4 })
+              Text('!').fontSize(12).margin({ right: 4 })
               Text(reminder).fontSize(12).fontColor(COLORS.ACCENT_ORANGE)
             }
             .margin({ top: 4 })
@@ -96,7 +96,6 @@ export struct RecommendationCard {
     .backgroundColor(COLORS.WHITE)
     .borderRadius(12)
     .alignItems(HorizontalAlign.Start)
-    .accessibilityRole('listItem')
     .accessibilityText(`适配建议：${this.memberName}，${this.safeLevel}，${this.safeReasons.join('，')}`)
     .accessibilityLevel('yes')
   }

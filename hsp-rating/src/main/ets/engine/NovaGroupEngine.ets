@@ -9,7 +9,8 @@ const TAG = 'NovaGroupEngine';
 
 export enum NovaGroup {
   UNKNOWN = 0,
-  GROUP_1 = 1, GROUP_2 = 2, GROUP_3 = 3, GROUP_4 = 4
+  GROUP_1 = 1, GROUP_2 = 2, GROUP_3 = 3, GROUP_4 = 4,
+  ONE = 1, TWO = 2, THREE = 3, FOUR = 4
 }
 
 export class NovaEvaluationResult {

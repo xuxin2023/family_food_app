@@ -82,22 +82,22 @@ export class FamilyNutritionManager {
 
 /** 预置演示数据 */
 export function createDemoFamilyManager(): FamilyNutritionManager {
-  const mgr: FamilyNutritionManager = new FamilyNutritionManager(
+  const mgr: FamilyNutritionManager = new FamilyNutritionManager()
 
-  const dad: MemberNutritionProfile = new MemberNutritionProfile()
+  const dad: MemberNutritionProfile = new MemberNutritionProfile('爸爸')
   dad.dailyCalorieGoal = 2400;
   dad.today.addMeal(new MealNutrition('早餐', 550, 300, 8, 18));
   dad.today.addMeal(new MealNutrition('午餐', 850, 800, 12, 28));
   dad.today.addMeal(new MealNutrition('晚餐', 700, 600, 10, 22));
   mgr.members.push(dad);
 
-  const mom: MemberNutritionProfile = new MemberNutritionProfile()
+  const mom: MemberNutritionProfile = new MemberNutritionProfile('妈妈')
   mom.dailyCalorieGoal = 1800;
   mom.today.addMeal(new MealNutrition('早餐', 350, 200, 15, 10));
   mom.today.addMeal(new MealNutrition('午餐', 600, 500, 8, 18));
   mgr.members.push(mom);
 
-  const child: MemberNutritionProfile = new MemberNutritionProfile()
+  const child: MemberNutritionProfile = new MemberNutritionProfile('孩子')
   child.dailyCalorieGoal = 1500;
   child.today.addMeal(new MealNutrition('早餐', 300, 150, 20, 8));
   child.today.addMeal(new MealNutrition('午餐', 450, 350, 15, 12));

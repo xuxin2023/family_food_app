@@ -104,8 +104,20 @@ export class ScanService {
 
   private async isNetworkAvailable(): Promise<boolean> {
     try {
-      const netHandle = await connection.getDefaultNet();
-      const caps = await connection.getNetCapabilities(netHandle);
+      let netHandle: connection.NetHandle;
+      try {
+        netHandle = await connection.getDefaultNet();
+      } catch (err) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'getDefaultNet failed: %{public}s', JSON.stringify(err));
+        return false;
+      }
+      let caps: connection.NetCapabilities;
+      try {
+        caps = await connection.getNetCapabilities(netHandle);
+      } catch (err) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'getNetCapabilities failed: %{public}s', JSON.stringify(err));
+        return false;
+      }
       return caps !== undefined && caps.bearerTypes.length > 0;
     } catch (err) {
       hilog.warn(DOMAIN_ZERO, TAG, 'isNetworkAvailable check failed: %{public}s', JSON.stringify(err));

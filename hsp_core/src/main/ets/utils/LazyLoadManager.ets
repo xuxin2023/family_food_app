@@ -1,9 +1,8 @@
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 
 const TAG = 'LazyLoadManager';
-const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
+const DOMAIN_ZERO = 0x0001;
 
 enum LoadPriority {
   CRITICAL = 0,

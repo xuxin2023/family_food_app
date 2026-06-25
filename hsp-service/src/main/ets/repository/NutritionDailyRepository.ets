@@ -1,6 +1,4 @@
-// repository/NutritionDailyRepository.ets
-// 营养日汇总数据仓库 — 对标Yuka/Olive营养追踪功能
-
+// NutritionDailyRepository.ets - 营养日汇总数据仓库 (API 23 refined)
 import { relationalStore } from '@kit.ArkData';
 import { HILOG_DOMAIN_DEFAULT, NutritionDaily } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -16,22 +14,23 @@ export class NutritionDailyRepository {
   async init(rdbStore: relationalStore.RdbStore): Promise<void> {
     this.rdbStore = rdbStore;
     try {
-      await rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (`
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        member_id TEXT NOT NULL,
-        date TEXT NOT NULL,
-        total_calories REAL DEFAULT 0,
-        total_sodium_mg REAL DEFAULT 0,
-        total_sugar_g REAL DEFAULT 0,
-        total_fat_g REAL DEFAULT 0,
-        total_saturated_fat_g REAL DEFAULT 0,
-        total_protein_g REAL DEFAULT 0,
-        total_carbohydrate_g REAL DEFAULT 0,
-        total_fiber_g REAL DEFAULT 0,
-        scan_count INTEGER DEFAULT 0,
-        score_avg REAL DEFAULT 0,
-        updated_at INTEGER NOT NULL
-      )`);`
+      const sql = 'CREATE TABLE IF NOT EXISTS ' + TABLE_NAME + ' (' +
+        'id INTEGER PRIMARY KEY AUTOINCREMENT, ' +
+        'member_id TEXT NOT NULL, ' +
+        'date TEXT NOT NULL, ' +
+        'total_calories REAL DEFAULT 0, ' +
+        'total_sodium_mg REAL DEFAULT 0, ' +
+        'total_sugar_g REAL DEFAULT 0, ' +
+        'total_fat_g REAL DEFAULT 0, ' +
+        'total_saturated_fat_g REAL DEFAULT 0, ' +
+        'total_protein_g REAL DEFAULT 0, ' +
+        'total_carbohydrate_g REAL DEFAULT 0, ' +
+        'total_fiber_g REAL DEFAULT 0, ' +
+        'scan_count INTEGER DEFAULT 0, ' +
+        'score_avg REAL DEFAULT 0, ' +
+        'updated_at INTEGER NOT NULL' +
+        ')';
+      await rdbStore.executeSql(sql);
       await this.loadFromDb();
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'init failed: %{public}s', JSON.stringify(e));
@@ -39,12 +38,14 @@ export class NutritionDailyRepository {
   }
 
   private async loadFromDb(): Promise<void> {
-    if (!this.rdbStore) return;
+    if (!this.rdbStore) {
+      return;
+    }
     try {
       const predicates = new relationalStore.RdbPredicates(TABLE_NAME);
       const resultSet = await this.rdbStore.query(predicates);
       while (resultSet.goToNextRow()) {
-        const d: NutritionDaily = new NutritionDaily()
+        const d: NutritionDaily = new NutritionDaily();
         d.id = resultSet.getLong(0);
         d.memberId = resultSet.getString(1);
         d.date = resultSet.getString(2);
@@ -59,7 +60,7 @@ export class NutritionDailyRepository {
         d.scanCount = resultSet.getLong(11);
         d.scoreAvg = resultSet.getDouble(12);
         d.updatedAt = resultSet.getLong(13);
-        const key = `${d.memberId}_${d.date}`;
+        const key: string = d.memberId + '_' + d.date;
         this.dailyCache.set(key, d);
       }
       resultSet.close();
@@ -69,8 +70,8 @@ export class NutritionDailyRepository {
   }
 
   async getByMemberDate(memberId: string, date: string): Promise<NutritionDaily> {
-    const key = `${memberId}_${date}`;
-    let d = this.dailyCache.get(key);
+    const key: string = memberId + '_' + date;
+    let d: NutritionDaily | undefined = this.dailyCache.get(key);
     if (!d) {
       d = NutritionDaily.createForDate(memberId, date);
       this.dailyCache.set(key, d);
@@ -79,7 +80,7 @@ export class NutritionDailyRepository {
   }
 
   async save(daily: NutritionDaily): Promise<void> {
-    const key = `${daily.memberId}_${daily.date}`;
+    const key: string = daily.memberId + '_' + daily.date;
     this.dailyCache.set(key, daily);
     if (this.rdbStore) {
       try {

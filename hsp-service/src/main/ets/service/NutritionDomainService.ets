@@ -4,7 +4,21 @@
 
 import { FamilyProfile, DailyBudget, HealthSignal, AiNutritionAdvice, DateUtil, HILOG_DOMAIN_DEFAULT, INutritionTrendCalculator, DailyNutritionSummary, NutrientTrendData, MealGroup, DietRecord } from 'hsp_core';
 import { HistoryRepository } from '../repository/HistoryRepository';
-import { AiNutritionistService } from './AiNutritionistService';
+// import { AiNutritionistService } from './AiNutritionistService';
+
+// Stub interface — AiNutritionistService not yet implemented
+interface AiNutritionistService {
+  getAdvice(
+    member: FamilyProfile,
+    signal: HealthSignal,
+    budget: DailyBudget,
+    records: DietRecord[],
+    days: number,
+    includeMealPlan: boolean,
+    summaries: DailyNutritionSummary[],
+    mealGroups: MealGroup[]
+  ): Promise<AiNutritionAdvice>;
+}
 
 const TAG = 'NutritionDomainService';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;

@@ -14,13 +14,13 @@ export struct CredibilityCard {
   @Param result: CredibilityResult = new CredibilityResult();
 
   // 雷达图5个维度名称
-  private radarLabels: ResourceStr[] = [$r('app.string.credibility_radar_identity'), $r('app.string.credibility_radar_license'), $r('app.string.credibility_radar_trace'), $r('app.string.credibility_radar_public'), $r('app.string.credibility_radar_boundary')];
+  private radarLabels: string[] = ['身份', '许可', '溯源', '公开', '边界'];
 
   build() {
     Column() {
       // 标题行 + 数据等级
       Row() {
-        Text($r('app.string.producer_identity'))
+        Text('生产者身份')
           .fontSize(16)
           .fontWeight(FontWeight.Medium)
           .layoutWeight(1)
@@ -43,7 +43,7 @@ export struct CredibilityCard {
       } else {
         // 降级：旧版进度条
         Row() {
-          Text($r('app.string.transparency')).fontSize(12).fontColor(COLORS.TEXT_GRAY_7575).margin({ right: 4 })
+          Text('透明度').fontSize(12).fontColor(COLORS.TEXT_GRAY_7575).margin({ right: 4 })
           Text(`${this.result.score}`).fontSize(20).fontWeight(FontWeight.Bold)
             .fontColor(this.result.score >= 60 ? COLORS.ACCENT_GREEN_4CAF : COLORS.ACCENT_ORANGE)
         }
@@ -116,7 +116,7 @@ export struct CredibilityCard {
         .fontWeight(FontWeight.Bold)
         .fontColor(this.result.score >= 60 ? COLORS.ACCENT_GREEN_4CAF : COLORS.ACCENT_ORANGE)
 
-      Text($r('app.string.info_transparency'))
+      Text('信息透明度')
         .fontSize(11)
         .fontColor(COLORS.TEXT_GRAY_7575)
         .margin({ top: 2, bottom: 8 })
@@ -175,7 +175,7 @@ export struct CredibilityCard {
   @Builder
   PublicQuerySection() {
     Column() {
-      Text($r('app.string.public_query_entry'))
+      Text('公开查询入口')
         .fontSize(14)
         .fontWeight(FontWeight.Medium)
         .margin({ top: 12, bottom: 8 })
@@ -184,7 +184,7 @@ export struct CredibilityCard {
         Row() {
           Column() {
             Text(entry.name).fontSize(13).fontWeight(FontWeight.Medium)
-            Text(`${$r('app.string.credibility_query_keyword')}${entry.keyword}`)
+            Text('查询关键词：' + entry.keyword)
               .fontSize(11)
               .fontColor(COLORS.TEXT_GRAY_7575)
               .margin({ top: 2 })
@@ -196,7 +196,7 @@ export struct CredibilityCard {
           .alignItems(HorizontalAlign.Start)
           .layoutWeight(1)
 
-          Text($r('app.string.copy_label'))
+          Text('复制')
             .fontSize(12)
             .fontColor(COLORS.PRIMARY)
             .padding({ left: 8, right: 8, top: 4, bottom: 4 })
@@ -205,7 +205,7 @@ export struct CredibilityCard {
             .onClick(() => {
               this.copyToClipboard(entry.keyword);
             })
-            .accessibilityText($r('app.string.credibility_view_detail'))
+            .accessibilityText('查看详情')
             .accessibilityLevel('yes')
         }
         .width('100%')
@@ -253,10 +253,10 @@ export struct CredibilityCard {
       );
       const systemPasteboard: pasteboard.SystemPasteboard = pasteboard.getSystemPasteboard();
       systemPasteboard.setData(pasteData).then(() => {
-        ToastHelper.show(this.getUIContext(), $r('app.string.credibility_copied'), 1500);
+        ToastHelper.show(this.getUIContext(), '已复制到剪贴板', 1500);
       }).catch((err: Error) => {
         hilog.warn(DOMAIN_ZERO, TAG, 'Copy to clipboard failed: %{public}s', err.message);
-        ToastHelper.show(this.getUIContext(), $r('app.string.credibility_copy_fail'), 1500);
+        ToastHelper.show(this.getUIContext(), '复制失败', 1500);
       });
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Copy to clipboard error: %{public}s', JSON.stringify(error));

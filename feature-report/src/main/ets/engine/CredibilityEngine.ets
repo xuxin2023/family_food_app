@@ -10,7 +10,7 @@ const BASE_CREDIBILITY_SCORE = 55;
 
 export class CredibilityEngine {
   calculate(foodLabel: FoodLabel, crossVerified: boolean = false): CredibilityResult {
-    const result: CredibilityResult = new CredibilityResult(
+    const result: CredibilityResult = new CredibilityResult();
     let score: number = BASE_CREDIBILITY_SCORE;
 
     // === 雷达维度1：身份清晰度 ===
@@ -145,7 +145,7 @@ export class CredibilityEngine {
   }
 
   private evaluateSourceCredibility(source: FoodSource): SourceCredibilityResult {
-    const r: SourceCredibilityResult = new SourceCredibilityResult(
+    const r: SourceCredibilityResult = new SourceCredibilityResult();
     switch (source) {
       case FoodSource.BARCODE_HIT:
         r.bonus = 15;

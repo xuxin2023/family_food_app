@@ -2,11 +2,20 @@
 // 创建食谱页面 — 发布新食谱到社区
 
 import {
-  ToastHelper, safeBack, getPageParams, RecipeCategory, RecipeDifficulty, DietTag, RecipeIngredient, RecipeStep, COLORS, RADIUS, safeParseDietTag,
-  PageResourceTracker, createPageTracker
+  ToastHelper, safeBack, getPageParams, RecipeCategory, RecipeDifficulty, DietTag, RecipeIngredient, RecipeStep, COLORS, SHADOWS, RADIUS, safeParseDietTag,
+  HapticHelper, PageResourceTracker, createPageTracker, ThemeReactive, themeReactive, ThemeColors, ThemeMode, HILOG_DOMAIN_DEFAULT
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
+import { GradientHeader } from '../components/GradientHeader';
 import { AppState } from '../AppState';
+import { LoadingSkeleton } from '../components/SkeletonScreen';
+import { picker } from '@kit.CoreFileKit';
+import { common } from '@kit.AbilityKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+import { CommunityImageService, ImageUploadResult } from 'feature_community';
+
+const RCP_TAG = 'RecipeCreatePage';
+const RCP_DOMAIN = HILOG_DOMAIN_DEFAULT;
 
 class OptionItem {
   label: ResourceStr = '';
@@ -33,6 +42,12 @@ DIFFICULTY_LABEL_MAP.set('easy', $r('app.string.recipe_create_diff_easy'));
 DIFFICULTY_LABEL_MAP.set('medium', $r('app.string.recipe_create_diff_medium'));
 DIFFICULTY_LABEL_MAP.set('hard', $r('app.string.recipe_create_diff_hard'));
 
+const DIFFICULTY_OPTIONS: OptionItem[] = [
+  new OptionItem($r('app.string.recipe_create_diff_easy'), 'easy'),
+  new OptionItem($r('app.string.recipe_create_diff_medium'), 'medium'),
+  new OptionItem($r('app.string.recipe_create_diff_hard'), 'hard')
+];
+
 const DIET_TAG_OPTIONS: OptionItem[] = [
   new OptionItem($r('app.string.recipe_create_tag_child_friendly'), DietTag.CHILD_FRIENDLY),
   new OptionItem($r('app.string.recipe_create_tag_elder_friendly'), DietTag.ELDER_FRIENDLY),
@@ -57,10 +72,26 @@ export struct RecipeCreatePage {
   @Local showCategoryPicker: boolean = false
   @Local showDifficultyPicker: boolean = false
   @Local isLoading: boolean = false
+  @Local coverImageUrl: string = ''
+  @Local isUploadingImage: boolean = false
 
   private appState: AppState = AppState.getInstance()
   private relatedFoodId: string = ''
   private tracker: PageResourceTracker = createPageTracker('RecipeCreatePage')
+
+  private themeRef: ThemeReactive = themeReactive
+
+  private get isDark(): boolean {
+    if (this.themeRef.key >= 0) { /* trigger reactive */ }
+    return ThemeColors.getTheme() === ThemeMode.DARK;
+  }
+
+  private get pageBgGradient(): LinearGradient {
+    if (this.isDark) {
+      return { angle: 180, colors: [['#0D1B0E', 0.0], ['#1A2F1C', 0.5], ['#0A1A0D', 1.0]] };
+    }
+    return { angle: 180, colors: [['#F3E5F5', 0.0], ['#FFF3E0', 0.3], ['#FFF8E1', 0.7], ['#E8F5E9', 1.0]] };
+  }
 
   async aboutToAppear() {
     this.tracker.onAppear()
@@ -80,35 +111,21 @@ export struct RecipeCreatePage {
   build() {
     if (this.isLoading) {
       Column() {
-        LoadingProgress().width(48).height(48).color(COLORS.PRIMARY)
+        LoadingSkeleton({ variant: 'card' })
       }
       .width('100%')
       .height('100%')
       .justifyContent(FlexAlign.Center)
       .alignItems(HorizontalAlign.Center)
+      .opacity(this.themeRef.key >= 0 ? 1 : 1)
     } else {
     Column() {
       // 顶栏
-      Row() {
-        BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
-          .onClick(() => { safeBack() })
-          .accessibilityText('返回')
-          .accessibilityLevel('yes')
-        Text($r('app.string.create_recipe'))
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .margin({ left: 12 })
-        Blank()
-        Text($r('app.string.save'))
-          .fontSize(15)
-          .fontColor(COLORS.PRIMARY)
-          .fontWeight(FontWeight.Bold)
-          .onClick(() => { this.handlePublish() })
-          .accessibilityText('保存')
-          .accessibilityLevel('yes')
-      }
-      .width('100%')
-      .padding(16)
+      GradientHeader({
+        title: $r('app.string.create_recipe'),
+        rightText: '保存',
+        onRightClick: () => { this.handlePublish() }
+      })
 
       Scroll() {
         Column() {
@@ -138,7 +155,8 @@ export struct RecipeCreatePage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(COLORS.BG_PAGE)
+    .linearGradient(this.pageBgGradient)
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
     }
   }
 
@@ -154,6 +172,65 @@ export struct RecipeCreatePage {
   @Builder
   formCard() {
     Column() {
+      // 封面图片选择
+      Row({ space: 12 }) {
+        Stack() {
+          if (this.coverImageUrl.length > 0) {
+            Image(this.coverImageUrl)
+              .width(80)
+              .height(80)
+              .borderRadius(12)
+              .objectFit(ImageFit.Cover)
+          } else {
+            Column() {
+              Text('📷')
+                .fontSize(28)
+              Text('添加封面')
+                .fontSize(11)
+                .fontColor(COLORS.TEXT_GRAY_9E9E)
+                .margin({ top: 4 })
+            }
+            .width(80)
+            .height(80)
+            .borderRadius(12)
+            .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
+            .justifyContent(FlexAlign.Center)
+            .alignItems(HorizontalAlign.Center)
+          }
+          if (this.isUploadingImage) {
+            LoadingProgress()
+              .width(24)
+              .height(24)
+              .color(COLORS.PRIMARY)
+          }
+        }
+        .width(80)
+        .height(80)
+        .onClick(() => { this.pickCoverImage() })
+        .accessibilityText('选择封面图片')
+        .accessibilityLevel('yes')
+
+        if (this.coverImageUrl.length > 0) {
+          Text('更换封面')
+            .fontSize(12)
+            .fontColor(COLORS.PRIMARY)
+            .onClick(() => { this.pickCoverImage() })
+            .accessibilityText('更换封面图片')
+            .accessibilityLevel('yes')
+        }
+        Blank()
+        if (this.coverImageUrl.length > 0) {
+          Text('✕')
+            .fontSize(16)
+            .fontColor(COLORS.TEXT_GRAY_9E9E)
+            .onClick(() => { this.coverImageUrl = '' })
+            .accessibilityText('移除封面图片')
+            .accessibilityLevel('yes')
+        }
+      }
+      .width('100%')
+      .margin({ bottom: 12 })
+
       TextInput({ placeholder: $r('app.string.recipe_create_placeholder_recipe_name'), text: this.title })
         .width('100%')
         .height(48)
@@ -188,6 +265,11 @@ export struct RecipeCreatePage {
         .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
         .borderRadius(10)
         .alignItems(HorizontalAlign.Center)
+        .bindSheet($$this.showCategoryPicker, this.categoryPickerContent(), {
+          height: '50%',
+          dragBar: true,
+          backgroundColor: COLORS.BG_CARD
+        })
 
         Column() {
           Text($r('app.string.difficulty_label')).fontSize(12).fontColor(COLORS.TEXT_GRAY_9E9E)
@@ -203,6 +285,11 @@ export struct RecipeCreatePage {
         .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
         .borderRadius(10)
         .alignItems(HorizontalAlign.Center)
+        .bindSheet($$this.showDifficultyPicker, this.difficultyPickerContent(), {
+          height: '35%',
+          dragBar: true,
+          backgroundColor: COLORS.BG_CARD
+        })
 
         Column() {
           Text($r('app.string.cook_time_label')).fontSize(12).fontColor(COLORS.TEXT_GRAY_9E9E)
@@ -251,6 +338,7 @@ export struct RecipeCreatePage {
     .padding(16)
     .backgroundColor(COLORS.WHITE)
     .borderRadius(RADIUS.LG)
+    .shadow(SHADOWS.MD)
   }
 
   @Builder
@@ -305,6 +393,7 @@ export struct RecipeCreatePage {
     .padding(16)
     .backgroundColor(COLORS.WHITE)
     .borderRadius(RADIUS.LG)
+    .shadow(SHADOWS.MD)
   }
 
   @Builder
@@ -400,6 +489,7 @@ export struct RecipeCreatePage {
     .padding(16)
     .backgroundColor(COLORS.WHITE)
     .borderRadius(RADIUS.LG)
+    .shadow(SHADOWS.MD)
   }
 
   @Builder
@@ -412,7 +502,7 @@ export struct RecipeCreatePage {
             .fontColor(this.selectedDietTags.includes(safeParseDietTag(option.value)) ? COLORS.WHITE : COLORS.ACCENT_GREEN_4CAF)
             .backgroundColor(this.selectedDietTags.includes(safeParseDietTag(option.value)) ? COLORS.ACCENT_GREEN : COLORS.BG_LIGHT_GREEN)
             .padding({ left: 12, right: 12, top: 6, bottom: 6 })
-            .borderRadius(16)
+            .borderRadius(RADIUS.LG)
             .onClick(() => {
               const tag = safeParseDietTag(option.value)
               const idx = this.selectedDietTags.indexOf(tag)
@@ -423,7 +513,7 @@ export struct RecipeCreatePage {
               }
               this.selectedDietTags = [...this.selectedDietTags]
             })
-            .accessibilityText(option.label )
+            .accessibilityText(option.label as string)
             .accessibilityLevel('yes')
         }, (option: OptionItem, i: number) => `tag_${i}`)
       }
@@ -433,6 +523,7 @@ export struct RecipeCreatePage {
     .padding(16)
     .backgroundColor(COLORS.WHITE)
     .borderRadius(RADIUS.LG)
+    .shadow(SHADOWS.MD)
   }
 
   private getCategoryLabel(value: RecipeCategory): ResourceStr {
@@ -448,7 +539,117 @@ export struct RecipeCreatePage {
     return DIFFICULTY_LABEL_MAP.get(value) || value
   }
 
+  @Builder
+  categoryPickerContent() {
+    Column() {
+      Text('选择分类')
+        .fontSize(16)
+        .fontWeight(FontWeight.Bold)
+        .fontColor(COLORS.TEXT_PRIMARY)
+        .padding({ top: 16, bottom: 8 })
+
+      ForEach(CATEGORY_OPTIONS, (opt: OptionItem) => {
+        Row() {
+          Text(opt.label)
+            .fontSize(15)
+            .fontColor(this.category === opt.value ? COLORS.PRIMARY : COLORS.TEXT_PRIMARY)
+          Blank()
+          if (this.category === opt.value) {
+            Text('\u2713')
+              .fontSize(16)
+              .fontColor(COLORS.PRIMARY)
+          }
+        }
+        .width('100%')
+        .padding({ left: 24, right: 24, top: 14, bottom: 14 })
+        .onClick(() => {
+          this.category = opt.value as RecipeCategory
+          this.showCategoryPicker = false
+        })
+        .accessibilityText('选择' + (typeof opt.label === 'string' ? opt.label : ''))
+        .accessibilityLevel('yes')
+      }, (opt: OptionItem) => opt.value)
+    }
+    .width('100%')
+    .backgroundColor(COLORS.BG_CARD)
+    .padding({ bottom: 34 })
+  }
+
+  @Builder
+  difficultyPickerContent() {
+    Column() {
+      Text('选择难度')
+        .fontSize(16)
+        .fontWeight(FontWeight.Bold)
+        .fontColor(COLORS.TEXT_PRIMARY)
+        .padding({ top: 16, bottom: 8 })
+
+      ForEach(DIFFICULTY_OPTIONS, (opt: OptionItem) => {
+        Row() {
+          Text(opt.label)
+            .fontSize(15)
+            .fontColor(this.difficulty === opt.value ? COLORS.PRIMARY : COLORS.TEXT_PRIMARY)
+          Blank()
+          if (this.difficulty === opt.value) {
+            Text('\u2713')
+              .fontSize(16)
+              .fontColor(COLORS.PRIMARY)
+          }
+        }
+        .width('100%')
+        .padding({ left: 24, right: 24, top: 14, bottom: 14 })
+        .onClick(() => {
+          this.difficulty = opt.value as RecipeDifficulty
+          this.showDifficultyPicker = false
+        })
+        .accessibilityText('选择' + (typeof opt.label === 'string' ? opt.label : ''))
+        .accessibilityLevel('yes')
+      }, (opt: OptionItem) => opt.value)
+    }
+    .width('100%')
+    .backgroundColor(COLORS.BG_CARD)
+    .padding({ bottom: 34 })
+  }
+
+  private async pickCoverImage(): Promise<void> {
+    if (this.isUploadingImage) return
+    HapticHelper.medium()
+    try {
+      const photoSelectOptions: picker.PhotoSelectOptions = new picker.PhotoSelectOptions()
+      photoSelectOptions.MIMEType = picker.PhotoViewMIMETypes.IMAGE_TYPE
+      photoSelectOptions.maxSelectNumber = 1
+      const photoViewPicker: picker.PhotoViewPicker = new picker.PhotoViewPicker()
+      const photoSelectResult = await photoViewPicker.select(photoSelectOptions)
+      if (!photoSelectResult.photoUris || photoSelectResult.photoUris.length === 0) {
+        return
+      }
+      const localUri = photoSelectResult.photoUris[0]
+      this.isUploadingImage = true
+
+      const ctx = AppStorage.get<common.Context>('appContext')
+      if (ctx) {
+        CommunityImageService.getInstance().init(ctx)
+      }
+
+      try {
+        const uploadResult: ImageUploadResult = await CommunityImageService.getInstance().uploadImage(localUri, 'recipe_cover')
+        if (uploadResult.url.length > 0) {
+          this.coverImageUrl = uploadResult.url
+        } else {
+          this.coverImageUrl = localUri
+        }
+      } catch (uploadErr) {
+        hilog.warn(RCP_DOMAIN, RCP_TAG, 'Cover upload failed, using local URI: %{public}s', JSON.stringify(uploadErr))
+        this.coverImageUrl = localUri
+      }
+    } catch (e) {
+      hilog.warn(RCP_DOMAIN, RCP_TAG, 'pickCoverImage failed: %{public}s', JSON.stringify(e))
+    }
+    this.isUploadingImage = false
+  }
+
   private async handlePublish() {
+    HapticHelper.medium()
     if (this.title.trim().length === 0) {
       ToastHelper.show(this.getUIContext(), $r('app.string.recipe_create_toast_enter_name'))
       return
@@ -478,7 +679,7 @@ export struct RecipeCreatePage {
       await this.appState.publishRecipe({
         title: this.title.trim(),
         description: this.description.trim(),
-        coverImageUrl: '',
+        coverImageUrl: this.coverImageUrl,
         category: this.category,
         difficulty: this.difficulty,
         totalMinutes: this.totalMinutes,

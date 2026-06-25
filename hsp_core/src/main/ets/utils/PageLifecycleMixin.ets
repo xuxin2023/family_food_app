@@ -15,10 +15,16 @@ export interface TrackedDisposable {
   dispose(): void;
 }
 
+export interface TrackedListener {
+  obj: Record<string, Object>;
+  event: string;
+  callback: Function;
+}
+
 export class PageResourceTracker {
   private timers: number[] = [];
   private intervals: number[] = [];
-  private listeners: Array<{ obj: Record<string, Object>; event: string; callback: Function }> = [];
+  private listeners: TrackedListener[] = [];
   private disposables: TrackedDisposable[] = [];
   private pageName: string = '';
   private leakGuard: MemoryLeakGuard;
@@ -39,7 +45,8 @@ export class PageResourceTracker {
   }
 
   registerListener(obj: Record<string, Object>, event: string, callback: Function): void {
-    this.listeners.push({ obj, event, callback });
+    const listener: TrackedListener = { obj: obj, event: event, callback: callback };
+    this.listeners.push(listener);
   }
 
   registerDisposable(disposable: TrackedDisposable): void {
@@ -52,27 +59,38 @@ export class PageResourceTracker {
   }
 
   onDisappear(): void {
-    this.timers.forEach((id: number) => {
-      try { clearTimeout(id); } catch (_) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_)); /* ignore */ }
-    });
-    this.intervals.forEach((id: number) => {
-      try { clearInterval(id); } catch (_) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_)); /* ignore */ }
-    });
-    this.listeners.forEach((l: { obj: Record<string, Object>; event: string; callback: Function }) => {
+    for (let i = 0; i < this.timers.length; i++) {
       try {
-        const obj = l.obj as Record<string, Function>;
-        if (typeof obj.off === 'function') {
-          obj.off(l.event, l.callback);
+        clearTimeout(this.timers[i]);
+      } catch (_err) {
+        hilog.warn(DOMAIN_ZERO, TAG, "Timer clear error: %{public}s", JSON.stringify(_err));
+      }
+    }
+    for (let i = 0; i < this.intervals.length; i++) {
+      try {
+        clearInterval(this.intervals[i]);
+      } catch (_err) {
+        hilog.warn(DOMAIN_ZERO, TAG, "Interval clear error: %{public}s", JSON.stringify(_err));
+      }
+    }
+    for (let i = 0; i < this.listeners.length; i++) {
+      try {
+        const l: TrackedListener = this.listeners[i];
+        const objFn: Record<string, Function> = l.obj as Record<string, Function>;
+        if (typeof objFn['off'] === 'function') {
+          objFn['off'](l.event, l.callback);
         }
-      } catch (_) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_)); /* ignore */ }
-    });
-    this.disposables.forEach((d: TrackedDisposable) => {
-      try { d.dispose(); } catch (_) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_)); /* ignore */ }
-    });
+      } catch (_err) {
+        hilog.warn(DOMAIN_ZERO, TAG, "Listener off error: %{public}s", JSON.stringify(_err));
+      }
+    }
+    for (let i = 0; i < this.disposables.length; i++) {
+      try {
+        this.disposables[i].dispose();
+      } catch (_err) {
+        hilog.warn(DOMAIN_ZERO, TAG, "Dispose error: %{public}s", JSON.stringify(_err));
+      }
+    }
 
     this.timers.length = 0;
     this.intervals.length = 0;

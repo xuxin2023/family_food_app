@@ -3,11 +3,14 @@
 // AppState 通过此管理器委托所有服务调用
 
 import {
-  FEATURE_FLAGS, HILOG_DOMAIN_DEFAULT, FamilyProfile, HealthSignal, DailyBudget, NutritionTarget, AiNutritionAdvice, AiRecipeRecommendationResult, AiRecipeRequest, DietRecord
+  FEATURE_FLAGS, HILOG_DOMAIN_DEFAULT, FamilyProfile, HealthSignal, DailyBudget, NutritionTarget, AiNutritionAdvice, AiRecipeRecommendationResult, AiRecipeRequest, DietRecord,
+  IRecipeRepository, IRuleCalculator, IAlternativeRecommender
 } from 'hsp_core';
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HealthService } from 'feature_report';
+import { RuleEngine } from 'feature_report';
+import { AlternativeFoodRecommender } from 'feature_scan';
 import { AuthService, CloudAuthService } from 'hsp_service';
 import { SyncService, SyncEventCallback, SyncEvent } from 'hsp_service';
 import {
@@ -24,6 +27,7 @@ import { AiChatService } from './service/AiChatService';
 import { AiPolishService } from 'hsp_service';
 import { AiWeeklyReportService } from 'feature_report';
 import { AiServiceBase } from 'hsp_service';
+import { DataService } from 'hsp_service';
 
 const TAG = 'ServiceManager';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -143,6 +147,15 @@ export class ServiceManager {
     }
   }
 
+  initEngines(): void {
+    const dataService: DataService = DataService.getInstance();
+    const ruleEngine: IRuleCalculator = new RuleEngine();
+    const altRecommender: IAlternativeRecommender = new AlternativeFoodRecommender();
+    dataService.setRuleEngine(ruleEngine);
+    dataService.setAltRecommender(altRecommender);
+    hilog.info(DOMAIN_ZERO, TAG, 'Real engines injected into DataService');
+  }
+
   /**
    * 初始化社交服务
    */
@@ -156,12 +169,12 @@ export class ServiceManager {
    * 初始化 AI 服务（异步加载 API Key）
    * 统一管理所有 AI 服务的生命周期和密钥加载
    */
-  async initAiServices(recipeRepo: RecipeRepository): Promise<void> {
+  async initAiServices(recipeRepo: IRecipeRepository): Promise<void> {
     if (FEATURE_FLAGS.ENABLE_AI_NUTRITIONIST) {
       this.aiRecipeRecommender.setRecipeRepo(recipeRepo);
 
       // 统一从 Asset Kit 安全存储加载所有 AI 服务的 API Key
-      const allAiServices: AiServiceBase[] = [
+      const allAiServices: Object[] = [
         this.aiNutritionist,
         this.aiRecipeRecommender,
         this.aiChat,
@@ -169,7 +182,7 @@ export class ServiceManager {
         this.aiWeeklyReport
       ];
 
-      const promises = allAiServices.map(s => s.loadApiKey());
+      const promises = allAiServices.map((s: Object) => (s as AiServiceBase).loadApiKey());
       const results = await Promise.allSettled(promises);
       const loadedCount = results.filter(r => r.status === 'fulfilled' && r.value).length;
 
@@ -206,7 +219,7 @@ export class ServiceManager {
    */
   async switchToHwHealthKit(context: common.Context): Promise<boolean> {
     try {
-      const hwProvider: HwHealthSignalProvider = new HwHealthSignalProvider()
+      const hwProvider: HwHealthSignalProvider = new HwHealthSignalProvider(context)
       this.healthService.setProvider(hwProvider);
       this.useHwHealthKit = true;
       hilog.info(DOMAIN_ZERO, TAG, 'Switched to HwHealthKit');

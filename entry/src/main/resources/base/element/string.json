@@ -1177,6 +1177,102 @@
       "value": "用于读取步数、心率等健康数据以提供个性化食品适配建议"
     },
     {
+      "name": "report_save_image",
+      "value": "保存图片"
+    },
+    {
+      "name": "report_per_100g_unit",
+      "value": "每100g"
+    },
+    {
+      "name": "ai_chat_page_load_failed",
+      "value": "页面加载失败"
+    },
+    {
+      "name": "ai_chat_input_accessibility",
+      "value": "输入框"
+    },
+    {
+      "name": "ai_chat_send_accessibility",
+      "value": "发送按钮"
+    },
+    {
+      "name": "settings_backup_success",
+      "value": "备份成功"
+    },
+    {
+      "name": "settings_restore_success",
+      "value": "恢复成功"
+    },
+    {
+      "name": "settings_collapse_accessibility",
+      "value": "折叠"
+    },
+    {
+      "name": "exercise_nutrition_protein",
+      "value": "蛋白质"
+    },
+    {
+      "name": "home_no_members_hint",
+      "value": "暂无家庭成员"
+    },
+    {
+      "name": "home_page_accessibility_desc",
+      "value": "首页"
+    },
+    {
+      "name": "home_scan_entry_title",
+      "value": "扫描入口"
+    },
+    {
+      "name": "home_scan_entry_subtitle",
+      "value": "扫描食品标签"
+    },
+    {
+      "name": "home_daily_intake",
+      "value": "今日摄入"
+    },
+    {
+      "name": "home_daily_intake_accessibility",
+      "value": "今日摄入详情"
+    },
+    {
+      "name": "home_scan_history",
+      "value": "扫描历史"
+    },
+    {
+      "name": "home_scan_history_accessibility",
+      "value": "扫描历史记录"
+    },
+    {
+      "name": "home_meal_plan",
+      "value": "饮食计划"
+    },
+    {
+      "name": "member_edit_nickname_input_accessibility",
+      "value": "昵称输入框"
+    },
+    {
+      "name": "member_edit_allergen_custom_accessibility",
+      "value": "自定义过敏原"
+    },
+    {
+      "name": "member_edit_save_accessibility",
+      "value": "保存按钮"
+    },
+    {
+      "name": "scan_batch_scan",
+      "value": "批量扫描"
+    },
+    {
+      "name": "health_report_weekly",
+      "value": "周报"
+    },
+    {
+      "name": "health_report_monthly",
+      "value": "月报"
+    },
+    {
       "name": "read_health_data_reason",
       "value": "用于读取步数、心率等健康数据以提供个性化食品适配建议"
     },

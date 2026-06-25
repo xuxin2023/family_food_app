@@ -7,9 +7,10 @@
  * 沉浸式Tab配置
  */
 import { ElderModeManager } from 'hsp_service';
+import { ThemeReactive, themeReactive, ThemeColors, ThemeMode } from 'hsp_core';
 
 export class ImmersiveTabConfig {
-  text: ResourceStr = '';
+  text: Resource = $r('app.string.app_name');
   icon: ResourceStr = '';
   selectedIcon: ResourceStr = '';
   badge?: number;
@@ -25,15 +26,23 @@ export struct ImmersiveTabBar {
   @Local blurRadius: number = 20;
   @Local bgOpacity: number = 0.85;
   private touchTarget: number = ElderModeManager.getInstance().getTouchTarget()
+  private themeRef: ThemeReactive = themeReactive;
+
+  private get isDark(): boolean {
+    if (this.themeRef.key >= 0) {
+      // trigger reactive
+    }
+    return ThemeColors.getTheme() === ThemeMode.DARK;
+  }
 
   aboutToAppear(): void {
     // 默认Tab配置
     this.tabs = [
-      { text: $r('app.string.tab_home') as ResourceStr, icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') },
-      { text: $r('app.string.tab_scan') as ResourceStr, icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') },
-      { text: $r('app.string.tab_recipe') as ResourceStr, icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') },
-      { text: $r('app.string.tab_report') as ResourceStr, icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') },
-      { text: $r('app.string.tab_mine') as ResourceStr, icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') }
+      { text: $r('app.string.tab_home'), icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') },
+      { text: $r('app.string.tab_scan'), icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') },
+      { text: $r('app.string.tab_recipe'), icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') },
+      { text: $r('app.string.tab_report'), icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') },
+      { text: $r('app.string.tab_mine'), icon: $r('app.media.app_icon'), selectedIcon: $r('app.media.app_icon') }
     ];
   }
 
@@ -73,10 +82,11 @@ export struct ImmersiveTabBar {
       }
       .width(this.isMinimized ? '60%' : '92%')
       .height(this.isMinimized ? this.touchTarget : 56)
-      .backgroundColor(`rgba(255,255,255,${this.bgOpacity})`)
+      .backgroundColor(this.isDark ? '#D9121212' : '#E6FFFFFF')
       .borderRadius(28)
-      // 沉浸光感 - 背景模糊效果（HarmonyOS 6.1 特性）
-      .backdropBlur(this.blurRadius)
+      // 沉浸光感 - 玻璃拟态毛玻璃效果
+      .backgroundBlurStyle(BlurStyle.Thin, { adaptiveColor: AdaptiveColor.DEFAULT, scale: 1.0 })
+      .border({ width: 0.5, color: this.isDark ? '#1FFFFFFF' : '#15000000' })
       .shadow({
         radius: this.isMinimized ? 8 : 16,
         color: 'rgba(0,0,0,0.08)',

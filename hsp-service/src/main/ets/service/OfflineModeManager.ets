@@ -1,7 +1,7 @@
 // OfflineModeManager.ets
 // 离线模式管理 — 网络状态监听、功能降级、离线操作队列、恢复后批量同步
 
-import { NetworkMonitorService, NetworkState, NetType } from 'hsp_service';
+import { NetworkMonitorService, NetworkState, NetType } from './NetworkMonitorService';
 import { HILOG_DOMAIN_DEFAULT, DB_SCHEMA_VERSION } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferences } from '@kit.ArkData';

@@ -1,51 +1,62 @@
 import { curves } from '@kit.ArkUI';
 
+interface AnimationConfig {
+  duration: number;
+  curve: ICurve;
+  iterations?: number;
+}
+
+interface ColorsConfig {
+  PRIMARY: string;
+  BG_LIGHT_GRAY_F5: string;
+}
+
 export class AnimationPresets {
-  static readonly FADE_IN = {
+  static readonly FADE_IN: AnimationConfig = {
     duration: 300,
-    curve: curves.easeOut()
+    curve: curves.initCurve(Curve.EaseOut)
   }
 
-  static readonly FADE_OUT = {
+  static readonly FADE_OUT: AnimationConfig = {
     duration: 200,
-    curve: curves.easeIn()
+    curve: curves.initCurve(Curve.EaseIn)
   }
 
-  static readonly SLIDE_UP = {
+  static readonly SLIDE_UP: AnimationConfig = {
     duration: 400,
     curve: curves.springMotion(0.6, 0.8)
   }
 
-  static readonly SLIDE_DOWN = {
+  static readonly SLIDE_DOWN: AnimationConfig = {
     duration: 300,
-    curve: curves.easeOut()
+    curve: curves.initCurve(Curve.EaseOut)
   }
 
-  static readonly SCALE_IN = {
+  static readonly SCALE_IN: AnimationConfig = {
     duration: 350,
     curve: curves.springMotion(0.5, 0.9)
   }
 
-  static readonly SCALE_OUT = {
+  static readonly SCALE_OUT: AnimationConfig = {
     duration: 250,
-    curve: curves.easeIn()
+    curve: curves.initCurve(Curve.EaseIn)
   }
 
-  static readonly BOUNCE = {
+  static readonly BOUNCE: AnimationConfig = {
     duration: 600,
     curve: curves.springMotion(0.4, 0.6)
   }
 
-  static readonly PULSE = {
+  static readonly PULSE: AnimationConfig = {
     duration: 1000,
-    curve: curves.easeInOut(),
+    curve: curves.initCurve(Curve.EaseInOut),
     iterations: -1
   }
 
   static readonly STAGGER_DELAY = 50
 
   static getStaggerDelay(index: number): number {
-    return index * this.STAGGER_DELAY
+    return index * AnimationPresets.STAGGER_DELAY
   }
 }
 
@@ -53,12 +64,12 @@ export class AnimationPresets {
 export struct FadeInView {
   @Param delay: number = 0
   @Param duration: number = 300
-  @Local opacity: number = 0
+  @Local opacityValue: number = 0
   @BuilderParam content: () => void
 
   aboutToAppear(): void {
     setTimeout(() => {
-      this.opacity = 1
+      this.opacityValue = 1
     }, this.delay)
   }
 
@@ -66,10 +77,10 @@ export struct FadeInView {
     Column() {
       this.content()
     }
-    .opacity(this.opacity)
+    .opacity(this.opacityValue)
     .animation({
       duration: this.duration,
-      curve: curves.easeOut()
+      curve: curves.initCurve(Curve.EaseOut)
     })
   }
 }
@@ -80,13 +91,13 @@ export struct SlideUpView {
   @Param duration: number = 400
   @Param distance: number = 30
   @Local translateY: number = this.distance
-  @Local opacity: number = 0
+  @Local opacityValue: number = 0
   @BuilderParam content: () => void
 
   aboutToAppear(): void {
     setTimeout(() => {
       this.translateY = 0
-      this.opacity = 1
+      this.opacityValue = 1
     }, this.delay)
   }
 
@@ -95,7 +106,7 @@ export struct SlideUpView {
       this.content()
     }
     .translate({ y: this.translateY })
-    .opacity(this.opacity)
+    .opacity(this.opacityValue)
     .animation({
       duration: this.duration,
       curve: curves.springMotion(0.6, 0.8)
@@ -107,14 +118,14 @@ export struct SlideUpView {
 export struct ScaleInView {
   @Param delay: number = 0
   @Param duration: number = 350
-  @Local scale: number = 0.8
-  @Local opacity: number = 0
+  @Local scaleValue: number = 0.8
+  @Local opacityValue: number = 0
   @BuilderParam content: () => void
 
   aboutToAppear(): void {
     setTimeout(() => {
-      this.scale = 1
-      this.opacity = 1
+      this.scaleValue = 1
+      this.opacityValue = 1
     }, this.delay)
   }
 
@@ -122,8 +133,8 @@ export struct ScaleInView {
     Column() {
       this.content()
     }
-    .scale({ x: this.scale, y: this.scale })
-    .opacity(this.opacity)
+    .scale({ x: this.scaleValue, y: this.scaleValue })
+    .opacity(this.opacityValue)
     .animation({
       duration: this.duration,
       curve: curves.springMotion(0.5, 0.9)
@@ -133,15 +144,15 @@ export struct ScaleInView {
 
 @ComponentV2
 export struct ShimmerLoading {
-  @Param width: number | string = '100%'
-  @Param height: number = 20
-  @Param borderRadius: number = 8
-  @Local offset: number = 0
+  @Param widthValue: number | string = '100%'
+  @Param heightValue: number = 20
+  @Param borderRadiusValue: number = 8
+  @Local offsetValue: number = 0
   private timer: number = -1
 
   aboutToAppear(): void {
     this.timer = setInterval(() => {
-      this.offset = (this.offset + 2) % 100
+      this.offsetValue = (this.offsetValue + 2) % 100
     }, 50)
   }
 
@@ -155,23 +166,23 @@ export struct ShimmerLoading {
   build() {
     Stack() {
       Row()
-        .width(this.width)
-        .height(this.height)
+        .width(this.widthValue)
+        .height(this.heightValue)
         .backgroundColor('#E0E0E0')
-        .borderRadius(this.borderRadius)
+        .borderRadius(this.borderRadiusValue)
       
       Row()
         .width('30%')
-        .height(this.height)
+        .height(this.heightValue)
         .linearGradient({
           angle: 90,
           colors: [['#E0E0E0', 0], ['#F5F5F5', 0.5], ['#E0E0E0', 1]]
         })
-        .borderRadius(this.borderRadius)
-        .translate({ x: `${this.offset - 30}%` })
+        .borderRadius(this.borderRadiusValue)
+        .translate({ x: `${this.offsetValue - 30}%` })
     }
-    .width(this.width)
-    .height(this.height)
+    .width(this.widthValue)
+    .height(this.heightValue)
     .clip(true)
   }
 }
@@ -180,8 +191,8 @@ export struct ShimmerLoading {
 export struct RippleEffect {
   @Param x: number = 0
   @Param y: number = 0
-  @Local scale: number = 0
-  @Local opacity: number = 1
+  @Local scaleValue: number = 0
+  @Local opacityValue: number = 1
   private timer: number = -1
 
   aboutToAppear(): void {
@@ -196,12 +207,12 @@ export struct RippleEffect {
   }
 
   private startRipple(): void {
-    this.scale = 0
-    this.opacity = 1
+    this.scaleValue = 0
+    this.opacityValue = 1
     
     this.timer = setTimeout(() => {
-      this.scale = 4
-      this.opacity = 0
+      this.scaleValue = 4
+      this.opacityValue = 0
     }, 50)
   }
 
@@ -210,12 +221,12 @@ export struct RippleEffect {
       .width(20)
       .height(20)
       .fill('#1A000000')
-      .scale({ x: this.scale, y: this.scale })
-      .opacity(this.opacity)
+      .scale({ x: this.scaleValue, y: this.scaleValue })
+      .opacity(this.opacityValue)
       .position({ x: this.x - 10, y: this.y - 10 })
       .animation({
         duration: 600,
-        curve: curves.easeOut()
+        curve: curves.initCurve(Curve.EaseOut)
       })
   }
 }
@@ -223,8 +234,8 @@ export struct RippleEffect {
 @ComponentV2
 export struct ProgressIndicator {
   @Param progress: number = 0
-  @Param color: string = COLORS.PRIMARY
-  @Param height: number = 4
+  @Param color: string = ANIMATION_COLORS.PRIMARY
+  @Param heightValue: number = 4
   @Local displayProgress: number = 0
 
   aboutToAppear(): void {
@@ -238,15 +249,15 @@ export struct ProgressIndicator {
     Stack() {
       Row()
         .width('100%')
-        .height(this.height)
-        .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
-        .borderRadius(this.height / 2)
+        .height(this.heightValue)
+        .backgroundColor(ANIMATION_COLORS.BG_LIGHT_GRAY_F5)
+        .borderRadius(this.heightValue / 2)
       
       Row()
         .width(`${this.displayProgress}%`)
-        .height(this.height)
+        .height(this.heightValue)
         .backgroundColor(this.color)
-        .borderRadius(this.height / 2)
+        .borderRadius(this.heightValue / 2)
         .animation({
           duration: 500,
           curve: curves.springMotion(0.6, 0.8)
@@ -256,7 +267,7 @@ export struct ProgressIndicator {
   }
 }
 
-const COLORS = {
+const ANIMATION_COLORS: ColorsConfig = {
   PRIMARY: '#1976D2',
   BG_LIGHT_GRAY_F5: '#F5F5F5'
 }

@@ -66,8 +66,7 @@ export class AppState {
   readonly cache: CacheManager = new CacheManager();
 
   constructor() {
-    const self = this;
-    const cacheProvider: ILocalCacheProvider = { findFoodByBarcode: (barcode: string) => self.findFoodByBarcode(barcode) } as ILocalCacheProvider;
+    const cacheProvider = new LocalCacheProviderImpl(this);
     this.scanService.setCacheProvider(cacheProvider);
 
     const remoteProvider: IRemoteLookupProvider = new RemoteProviderImpl();
@@ -93,13 +92,13 @@ export class AppState {
   private syncEventHandler: ((event: SyncEvent) => void) | null = null;
 
   // ===== 领域门面（init 后可用） =====
-  readonly food: FoodFacade = new FoodFacade()
+  readonly food: FoodFacade = new FoodFacade(
     this.foodRepo, this.historyRepo, this.favoriteRepo, this.engines, this.cache
   );
-  readonly memberFacade: MemberFacade = new MemberFacade()
+  readonly memberFacade: MemberFacade = new MemberFacade(
     this.familyRepo, this.member, this.cache
   );
-  readonly health: HealthFacade = new HealthFacade()
+  readonly health: HealthFacade = new HealthFacade(
     this.historyRepo, this.engines, this.services
   );
   readonly sync: SyncFacade = new SyncFacade(this.services);
@@ -135,51 +134,57 @@ export class AppState {
 
     let store = rdbStore;
     if (!store) {
-      const rdbConfig: relationalStore.StoreConfig = new relationalStore.StoreConfig();
-      rdbConfig.name = DB_NAME;
-      rdbConfig.securityLevel = relationalStore.SecurityLevel.S3;
-      rdbConfig.encrypt = true;
+      const rdbConfig: relationalStore.StoreConfig = {
+        name: DB_NAME,
+        securityLevel: relationalStore.SecurityLevel.S3,
+        encrypt: true
+      } as relationalStore.StoreConfig;
       store = await relationalStore.getRdbStore(context, rdbConfig);
     }
     await migrateDatabase(context, store);
 
-    await this.familyRepo.init(store);
-    await this.foodRepo.init(store);
-    await this.historyRepo.init(store);
-    this.ruleRepo.setContext(context);
-    await this.groupRepo.init(store);
-    await this.recipeRepo.init(store);
-    await this.favoriteRepo.init(store);
+    try { await this.familyRepo.init(store); } catch (e) { hilog.warn(DOMAIN_ZERO, TAG, 'familyRepo init failed: %{public}s', JSON.stringify(e)); }
+    try { await this.foodRepo.init(store); } catch (e) { hilog.warn(DOMAIN_ZERO, TAG, 'foodRepo init failed: %{public}s', JSON.stringify(e)); }
+    try { await this.historyRepo.init(store); } catch (e) { hilog.warn(DOMAIN_ZERO, TAG, 'historyRepo init failed: %{public}s', JSON.stringify(e)); }
+    try { this.ruleRepo.setContext(context); } catch (e) { hilog.warn(DOMAIN_ZERO, TAG, 'ruleRepo init failed: %{public}s', JSON.stringify(e)); }
+    try { await this.groupRepo.init(store); } catch (e) { hilog.warn(DOMAIN_ZERO, TAG, 'groupRepo init failed: %{public}s', JSON.stringify(e)); }
+    try { await this.recipeRepo.init(store); } catch (e) { hilog.warn(DOMAIN_ZERO, TAG, 'recipeRepo init failed: %{public}s', JSON.stringify(e)); }
+    try { await this.favoriteRepo.init(store); } catch (e) { hilog.warn(DOMAIN_ZERO, TAG, 'favoriteRepo init failed: %{public}s', JSON.stringify(e)); }
 
-    await this.services.initAuth(context);
-    this.services.initSocial(this.groupRepo, this.recipeRepo);
-    await this.services.initAiServices(this.recipeRepo);
-    await this.services.initCloudSync(context);
+    try { await this.services.initAuth(context); } catch (e) { hilog.warn(DOMAIN_ZERO, TAG, 'services.initAuth failed: %{public}s', JSON.stringify(e)); }
+    try { this.services.initEngines(); } catch (e) { hilog.warn(DOMAIN_ZERO, TAG, 'services.initEngines failed: %{public}s', JSON.stringify(e)); }
+    try { this.services.initSocial(this.groupRepo, this.recipeRepo); } catch (e) { hilog.warn(DOMAIN_ZERO, TAG, 'services.initSocial failed: %{public}s', JSON.stringify(e)); }
+    try { await this.services.initAiServices(this.recipeRepo); } catch (e) { hilog.warn(DOMAIN_ZERO, TAG, 'services.initAiServices failed: %{public}s', JSON.stringify(e)); }
+    try { await this.services.initCloudSync(context); } catch (e) { hilog.warn(DOMAIN_ZERO, TAG, 'services.initCloudSync failed: %{public}s', JSON.stringify(e)); }
 
-    this.member.setContext(context);
-    this.basket.setContext(context);
-    await this.member.restoreScanQuota(context);
-    await this.basket.restoreFromPrefs(context);
+    try { this.member.setContext(context); } catch (e) { hilog.warn(DOMAIN_ZERO, TAG, 'member.setContext failed: %{public}s', JSON.stringify(e)); }
+    try { this.basket.setContext(context); } catch (e) { hilog.warn(DOMAIN_ZERO, TAG, 'basket.setContext failed: %{public}s', JSON.stringify(e)); }
+    try { await this.member.restoreScanQuota(context); } catch (e) { hilog.warn(DOMAIN_ZERO, TAG, 'member.restoreScanQuota failed: %{public}s', JSON.stringify(e)); }
+    try { await this.basket.restoreFromPrefs(context); } catch (e) { hilog.warn(DOMAIN_ZERO, TAG, 'basket.restoreFromPrefs failed: %{public}s', JSON.stringify(e)); }
 
-    await this.memberFacade.loadCache();
+    try { await this.memberFacade.loadCache(); } catch (e) { hilog.warn(DOMAIN_ZERO, TAG, 'memberFacade.loadCache failed: %{public}s', JSON.stringify(e)); }
 
-    await this.offline.init(context);
+    try { await this.offline.init(context); } catch (e) { hilog.warn(DOMAIN_ZERO, TAG, 'offline.init failed: %{public}s', JSON.stringify(e)); }
 
-    this.health.setMemberResolvers(
-      (memberId: string) => this.memberFacade.membersCache.find(m => m.memberId === memberId),
-      (memberId: string) => this.memberFacade.getHealthSignal(memberId),
-      (memberId: string) => this.memberFacade.getNutritionTargetFromCache(memberId)
-    );
+    try {
+      this.health.setMemberResolvers(
+        (memberId: string) => this.memberFacade.membersCache.find(m => m.memberId === memberId),
+        (memberId: string) => this.memberFacade.getHealthSignal(memberId),
+        (memberId: string) => this.memberFacade.getNutritionTargetFromCache(memberId)
+      );
+    } catch (e) { hilog.warn(DOMAIN_ZERO, TAG, 'health.setMemberResolvers failed: %{public}s', JSON.stringify(e)); }
 
-    this.syncEventHandler = (event: SyncEvent) => {
-      try {
-        hilog.info(DOMAIN_ZERO, TAG, 'sync event received: ' + event.type);
-        this.refreshCache();
-      } catch (_e) {
-        hilog.warn(DOMAIN_ZERO, 'AppState', 'sync event parse failed: %{public}s', JSON.stringify(_e));
-      }
-    };
-    this.services.onSyncEvent(this.syncEventHandler);
+    try {
+      this.syncEventHandler = (event: SyncEvent) => {
+        try {
+          hilog.info(DOMAIN_ZERO, TAG, 'sync event received: ' + event.type);
+          this.refreshCache();
+        } catch (_e) {
+          hilog.warn(DOMAIN_ZERO, 'AppState', 'sync event parse failed: %{public}s', JSON.stringify(_e));
+        }
+      };
+      this.services.onSyncEvent(this.syncEventHandler);
+    } catch (e) { hilog.warn(DOMAIN_ZERO, TAG, 'sync event setup failed: %{public}s', JSON.stringify(e)); }
 
     if (this.initTimeoutId !== -1) {
       clearTimeout(this.initTimeoutId);
@@ -279,6 +284,9 @@ export class AppState {
   // --- Food ---
   async saveFoodLabel(label: FoodLabel): Promise<void> {
     await this.food.saveFoodLabel(label);
+  }
+  async calculateNutriScore(label: FoodLabel): Promise<number> {
+    return this.food.calculateNutriScore(label);
   }
   async findFoodByBarcode(barcode: string): Promise<FoodLabel | null> {
     return this.food.findFoodByBarcode(barcode);
@@ -507,6 +515,18 @@ class RemoteProviderImpl implements IRemoteLookupProvider {
   }
 }
 
+// 内联缓存代理实现
+class LocalCacheProviderImpl implements ILocalCacheProvider {
+  private appState: AppState;
+  constructor(appState: AppState) {
+    this.appState = appState;
+  }
+  findFoodByBarcode(barcode: string): Promise<FoodLabel | null> {
+    return this.appState.findFoodByBarcode(barcode);
+  }
+}
+
+// 数据溯源记录器实现
 class LineageRecorderImpl implements IDataLineageRecorder {
   recordLineage(foodId: string, source: string, confidence: number, transforms: string[]): void {
     DataLineage.record(DataLineage.createRecord(foodId, source, confidence, transforms, '', ''));

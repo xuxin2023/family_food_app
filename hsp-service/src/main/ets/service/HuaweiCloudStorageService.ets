@@ -12,8 +12,8 @@ export interface CloudBackupData {
   userId: string
   foodLabels: FoodLabel[]
   familyProfiles: FamilyProfile[]
-  scanHistory: ESObject[]
-  userSettings: ESObject
+  scanHistory: Object[]
+  userSettings: Object
 }
 
 export interface CloudStorageConfig {
@@ -35,6 +35,17 @@ export interface DownloadResult {
   success: boolean
   data?: CloudBackupData
   error?: string
+}
+
+export interface BackupListItem {
+  timestamp: number
+  size: number
+}
+
+interface ObsListResult {
+  Contents?: Object[]
+  Key?: string
+  Size?: number
 }
 
 export class HuaweiCloudStorageService {
@@ -68,7 +79,13 @@ export class HuaweiCloudStorageService {
     }
 
     try {
-      const httpRequest = http.createHttp()
+      let httpRequest: http.HttpRequest;
+      try {
+        httpRequest = http.createHttp()
+      } catch (createErr) {
+        hilog.error(DOMAIN, TAG, 'createHttp failed: %{public}s', JSON.stringify(createErr))
+        return false
+      }
       const response = await httpRequest.request(
         `https://iam.${this.config.region}.myhuaweicloud.com/v3/auth/tokens`,
         {
@@ -112,18 +129,27 @@ export class HuaweiCloudStorageService {
 
   async uploadBackup(data: CloudBackupData): Promise<UploadResult> {
     if (!this.config) {
-      return { success: false, error: 'Config not initialized' } as Record<string, Object>;
+      const result: UploadResult = { success: false, error: 'Config not initialized' };
+      return result;
     }
 
     const authenticated = await this.authenticate()
     if (!authenticated) {
-      return { success: false, error: 'Authentication failed' } as Record<string, Object>;
+      const result: UploadResult = { success: false, error: 'Authentication failed' };
+      return result;
     }
 
     const objectKey = `backups/${data.userId}/${data.timestamp}.json`
     
     try {
-      const httpRequest = http.createHttp()
+      let httpRequest: http.HttpRequest;
+      try {
+        httpRequest = http.createHttp()
+      } catch (createErr) {
+        hilog.error(DOMAIN, TAG, 'createHttp failed: %{public}s', JSON.stringify(createErr))
+        const result: UploadResult = { success: false, error: 'HTTP client creation failed' };
+        return result;
+      }
       const response = await httpRequest.request(
         `${this.baseUrl}/${this.config.bucketName}/${objectKey}`,
         {
@@ -140,25 +166,30 @@ export class HuaweiCloudStorageService {
       if (response.responseCode === 200 || response.responseCode === 201) {
         const url = `https://${this.config.bucketName}.obs.${this.config.region}.myhuaweicloud.com/${objectKey}`
         hilog.info(DOMAIN, TAG, 'Upload successful: %{public}s', objectKey)
-        return { success: true, objectKey, url } as Record<string, Object>;
+        const result: UploadResult = { success: true, objectKey: objectKey, url: url };
+        return result;
       } else {
         hilog.error(DOMAIN, TAG, 'Upload failed: %{public}d', response.responseCode)
-        return { success: false, error: `Upload failed: ${response.responseCode}` } as Record<string, Object>;
+        const result: UploadResult = { success: false, error: `Upload failed: ${response.responseCode}` };
+        return result;
       }
     } catch (err) {
       hilog.error(DOMAIN, TAG, 'Upload error: %{public}s', JSON.stringify(err))
-      return { success: false, error: JSON.stringify(err) } as Record<string, Object>;
+      const result: UploadResult = { success: false, error: JSON.stringify(err) };
+      return result;
     }
   }
 
   async downloadBackup(userId: string, timestamp?: number): Promise<DownloadResult> {
     if (!this.config) {
-      return { success: false, error: 'Config not initialized' } as Record<string, Object>;
+      const result: DownloadResult = { success: false, error: 'Config not initialized' };
+      return result;
     }
 
     const authenticated = await this.authenticate()
     if (!authenticated) {
-      return { success: false, error: 'Authentication failed' } as Record<string, Object>;
+      const result: DownloadResult = { success: false, error: 'Authentication failed' };
+      return result;
     }
 
     const objectKey = timestamp 
@@ -166,7 +197,14 @@ export class HuaweiCloudStorageService {
       : `backups/${userId}/latest.json`
 
     try {
-      const httpRequest = http.createHttp()
+      let httpRequest: http.HttpRequest;
+      try {
+        httpRequest = http.createHttp()
+      } catch (createErr) {
+        hilog.error(DOMAIN, TAG, 'createHttp failed: %{public}s', JSON.stringify(createErr))
+        const result: DownloadResult = { success: false, error: 'HTTP client creation failed' };
+        return result;
+      }
       const response = await httpRequest.request(
         `${this.baseUrl}/${this.config.bucketName}/${objectKey}`,
         {
@@ -180,18 +218,21 @@ export class HuaweiCloudStorageService {
       if (response.responseCode === 200) {
         const data = JSON.parse(response.result as string) as CloudBackupData
         hilog.info(DOMAIN, TAG, 'Download successful: %{public}s', objectKey)
-        return { success: true, data } as Record<string, Object>;
+        const result: DownloadResult = { success: true, data: data };
+        return result;
       } else {
         hilog.error(DOMAIN, TAG, 'Download failed: %{public}d', response.responseCode)
-        return { success: false, error: `Download failed: ${response.responseCode}` } as Record<string, Object>;
+        const result: DownloadResult = { success: false, error: `Download failed: ${response.responseCode}` };
+        return result;
       }
     } catch (err) {
       hilog.error(DOMAIN, TAG, 'Download error: %{public}s', JSON.stringify(err))
-      return { success: false, error: JSON.stringify(err) } as Record<string, Object>;
+      const result: DownloadResult = { success: false, error: JSON.stringify(err) };
+      return result;
     }
   }
 
-  async listBackups(userId: string): Promise<Array<{ timestamp: number, size: number }>> {
+  async listBackups(userId: string): Promise<BackupListItem[]> {
     if (!this.config) {
       return []
     }
@@ -202,8 +243,14 @@ export class HuaweiCloudStorageService {
     }
 
     try {
-      const httpRequest = http.createHttp()
-      const response = await httpRequest.request(
+      let httpRequest: http.HttpRequest;
+      try {
+        httpRequest = http.createHttp()
+      } catch (createErr) {
+        hilog.error(DOMAIN, TAG, 'createHttp failed: %{public}s', JSON.stringify(createErr))
+        return []
+      }
+      const response: http.HttpResponse = await httpRequest.request(
         `${this.baseUrl}/${this.config.bucketName}?prefix=backups/${userId}/`,
         {
           method: http.RequestMethod.GET,
@@ -214,23 +261,25 @@ export class HuaweiCloudStorageService {
       )
 
       if (response.responseCode === 200) {
-        const result = JSON.parse(response.result as string) as ESObject
-        const contents = (result as Record<string, ESObject>).Contents || []
-        const backups: Array<{ timestamp: number, size: number }> = []
+        const result: ObsListResult = JSON.parse(response.result as string) as ObsListResult
+        const contents: Object[] = result.Contents ?? []
+        const backups: BackupListItem[] = []
         
-        for (const item of contents as ESObject[]) {
-          const key = (item as Record<string, ESObject>).Key as string
-          const size = (item as Record<string, ESObject>).Size as number
-          const match = key.match(/backups\/\w+\/(\d+)\.json/)
+        for (const item of contents) {
+          const obsItem: ObsListResult = item as ObsListResult
+          const key: string = obsItem.Key ?? ''
+          const size: number = obsItem.Size ?? 0
+          const match: RegExpMatchArray | null = key.match(/backups\/\w+\/(\d+)\.json/)
           if (match) {
-            backups.push({
+            const backupItem: BackupListItem = {
               timestamp: parseInt(match[1]),
               size: size
-            })
+            }
+            backups.push(backupItem)
           }
         }
         
-        return backups.sort((a, b) => b.timestamp - a.timestamp)
+        return backups.sort((a: BackupListItem, b: BackupListItem): number => b.timestamp - a.timestamp)
       }
     } catch (err) {
       hilog.error(DOMAIN, TAG, 'List backups error: %{public}s', JSON.stringify(err))
@@ -252,7 +301,13 @@ export class HuaweiCloudStorageService {
     const objectKey = `backups/${userId}/${timestamp}.json`
 
     try {
-      const httpRequest = http.createHttp()
+      let httpRequest: http.HttpRequest;
+      try {
+        httpRequest = http.createHttp()
+      } catch (createErr) {
+        hilog.error(DOMAIN, TAG, 'createHttp failed: %{public}s', JSON.stringify(createErr))
+        return false
+      }
       const response = await httpRequest.request(
         `${this.baseUrl}/${this.config.bucketName}/${objectKey}`,
         {
@@ -279,8 +334,8 @@ export class HuaweiCloudStorageService {
     deviceId: string,
     foodLabels: FoodLabel[],
     familyProfiles: FamilyProfile[],
-    scanHistory: ESObject[],
-    userSettings: ESObject
+    scanHistory: Object[],
+    userSettings: Object
   ): Promise<UploadResult> {
     const backupData: CloudBackupData = {
       version: '1.0.0',

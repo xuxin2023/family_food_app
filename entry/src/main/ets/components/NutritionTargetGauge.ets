@@ -50,7 +50,6 @@ export struct NutritionTargetGauge {
     .backgroundColor(COLORS.WHITE)
     .borderRadius(RADIUS.LG)
     .alignItems(HorizontalAlign.Center)
-    .accessibilityRole('image')
     .accessibilityText(`营养目标进度：热量${this.calories}/${this.caloriesTarget}kcal，蛋白质${this.protein}/${this.proteinTarget}g，钠${this.sodium}/${this.sodiumTarget}mg，糖${this.sugar}/${this.sugarTarget}g，脂肪${this.fat}/${this.fatTarget}g`)
     .accessibilityLevel('yes')
   }
@@ -91,8 +90,6 @@ export struct NutritionTargetGauge {
         .margin({ top: 2 })
     }
     .alignItems(HorizontalAlign.Center)
-    .accessibilityRole('meter')
-    .accessibilityValue({ min: 0, max: target, now: current })
     .accessibilityText(`${label}: ${current.toFixed(0)}${unit}, 目标${target.toFixed(0)}${unit}`)
     .accessibilityLevel('yes')
   }

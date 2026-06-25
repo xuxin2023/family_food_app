@@ -35,6 +35,10 @@ export class ToastHelper {
         hilog.warn(DOMAIN_ZERO, TAG, 'showActionMenu degraded: %{public}s', JSON.stringify(e));
       }
     }
-    promptAction.showActionMenu(options);
+    try {
+      promptAction.showActionMenu(options);
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'promptAction showActionMenu failed: %{public}s', JSON.stringify(e));
+    }
   }
 }

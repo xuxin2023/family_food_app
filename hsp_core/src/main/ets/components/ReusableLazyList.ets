@@ -3,12 +3,21 @@
 
 import { LazyDataSource } from '../utils/LazyDataSource';
 
+@Builder
+function defaultItemBuilder(_item: Object, _index: number): void {
+  // 默认空实现
+}
+
+@Builder
+function defaultEmptyBuilder(): void {
+  // 默认空实现
+}
+
 @Component
-export struct LazyListItem<T> {
+export struct LazyListItem {
   @Prop index: number = 0;
-  @Prop item: T | null = null;
-  @BuilderParam itemBuilder: (item: T, index: number) => void =
-    (_item: T, _index: number) => {};
+  @Prop item: Object | null = null;
+  @BuilderParam itemBuilder: (item: Object, index: number) => void = defaultItemBuilder;
 
   build() {
     if (this.item !== null) {
@@ -17,19 +26,19 @@ export struct LazyListItem<T> {
   }
 }
 
-export class ReusableLazyListController<T> {
-  dataSource: LazyDataSource<T> = new LazyDataSource<T>();
+export class ReusableLazyListController {
+  dataSource: LazyDataSource<Object> = new LazyDataSource<Object>();
   private cachedCountValue: number = 3;
 
-  updateData(data: T[]): void {
+  updateData(data: Object[]): void {
     this.dataSource.reloadData(data);
   }
 
-  appendData(data: T[]): void {
+  appendData(data: Object[]): void {
     this.dataSource.appendData(data);
   }
 
-  getData(): T[] {
+  getData(): Object[] {
     return this.dataSource.getRawData();
   }
 
@@ -49,32 +58,29 @@ export class ReusableLazyListController<T> {
 @Reusable
 @Component
 export struct ListItemReusableWrapper {
-  @State reuseId: string = 'default';
   private itemBuilder: ((index: number) => void) | null = null;
 
   aboutToReuse(params: Record<string, Object>): void {
-    this.reuseId = (params.reuseId as string) ?? 'default';
   }
 
   build() {
     Column() {
     }
-    .reuseId(this.reuseId)
   }
 }
 
 @Component
-export struct ReusableLazyList<T> {
-  @ObjectLink controller: ReusableLazyListController<T>;
-  @BuilderParam itemBuilder: (item: T, index: number) => void =
-    (_item: T, _index: number) => {};
-  @BuilderParam emptyBuilder: () => void = () => {};
-  @Prop keyExtractor: (item: T) => string = (item: T) => JSON.stringify(item);
+export struct ReusableLazyList {
+  @ObjectLink controller: ReusableLazyListController;
+  @BuilderParam itemBuilder: (item: Object, index: number) => void = defaultItemBuilder;
+  @BuilderParam emptyBuilder: () => void = defaultEmptyBuilder;
   @Prop scrollBar: BarState = BarState.Off;
   @Prop divider: boolean = false;
   @Prop enableRefresh: boolean = false;
   @Prop enableLoadMore: boolean = false;
-  @Prop listId: string = 'reusable_list';
+  
+  // 函数类型不能用@Prop装饰，改为普通属性
+  keyExtractor: (item: Object) => string = (item: Object) => JSON.stringify(item);
   onLoadMore: () => void = () => {};
   onRefresh: () => void = () => {};
 
@@ -91,17 +97,16 @@ export struct ReusableLazyList<T> {
       List({ space: this.divider ? 8 : 0 }) {
         LazyForEach(
           this.controller.dataSource,
-          (item: T, index: number) => {
+          (item: Object, index: number) => {
             ListItem() {
               this.itemBuilder(item, index);
             }
           },
-          (item: T) => this.keyExtractor(item)
+          (item: Object) => this.keyExtractor(item)
         )
       }
       .cachedCount(this.controller.cachedCount)
       .scrollBar(this.scrollBar)
-      .listId(this.listId)
       .onScrollIndex((firstIndex: number) => {
         this.scrollIndex = firstIndex;
       })

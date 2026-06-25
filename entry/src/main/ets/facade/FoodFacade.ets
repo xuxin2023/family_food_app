@@ -151,6 +151,10 @@ export class FoodFacade {
     return this.engines.calculateRecommendation(member, signal, foodLabel, budget);
   }
 
+  async calculateNutriScore(label: FoodLabel): Promise<number> {
+    return this.engines.calculateNutriScore(label);
+  }
+
   /**
    * 计算增强推荐（含今日摄入上下文）
    *

@@ -15,7 +15,7 @@ export struct LevelBadge {
       .responseRegion({ x: 0, y: 0, width: ElderModeManager.getInstance().getTouchTarget(), height: ElderModeManager.getInstance().getTouchTarget() })
       .borderRadius(10)
       .backgroundColor(getLevelColorValue(this.levelColor))
-      .accessibilityText(this.level)
+      .accessibilityText(this.level as string)
       .accessibilityLevel('yes')
   }
 }

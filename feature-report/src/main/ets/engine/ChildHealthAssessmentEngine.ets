@@ -108,7 +108,7 @@ export class ChildHealthAssessmentEngine {
     todaySnackCalories: number,
     todaySugarGrams: number
   ): SnackImpactAssessment {
-    const impact: SnackImpactAssessment = new SnackImpactAssessment(
+    const impact: SnackImpactAssessment = new SnackImpactAssessment();
     const foodCalories = food.nutrition.calories;
     const foodSugar = food.nutrition.sugar;
 
@@ -145,8 +145,8 @@ export class ChildHealthAssessmentEngine {
   private assessAdditivesForAge(food: FoodLabel, ageGroup: AgeGroup): AdditiveSafetyResult[] {
     const results: AdditiveSafetyResult[] = [];
 
-    const avoidForAge: Record<string, string> = Object.assign({}, AVOID_ADDITIVES) as Record<string, string>;
-    const cautionForAge: Record<string, string> = Object.assign({}, CAUTION_ADDITIVES) as Record<string, string>;
+    const avoidForAge: Record<string, string> = this.cloneRecord(AVOID_ADDITIVES);
+    const cautionForAge: Record<string, string> = this.cloneRecord(CAUTION_ADDITIVES);
 
     if (ageGroup === AgeGroup.INFANT || ageGroup === AgeGroup.TODDLER) {
       avoidForAge['山梨酸钾'] = '婴幼儿禁用此防腐剂';
@@ -273,5 +273,15 @@ export class ChildHealthAssessmentEngine {
     }
 
     return parts.join('');
+  }
+
+  private cloneRecord(source: Record<string, string>): Record<string, string> {
+    const result: Record<string, string> = {}
+    const keys = Object.keys(source)
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i]
+      result[key] = source[key]
+    }
+    return result
   }
 }

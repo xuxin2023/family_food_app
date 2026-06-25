@@ -1,6 +1,4 @@
-// repository/ParsedIngredientRepository.ets
-// 成分解析数据仓库 — 对标Yuka成分有害性解析功能
-
+// ParsedIngredientRepository.ets - 成分解析数据仓库 (API 23 refined)
 import { relationalStore } from '@kit.ArkData';
 import { HILOG_DOMAIN_DEFAULT, ParsedIngredientList, ParsedIngredient, HazardLevel } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -10,6 +8,27 @@ const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const TABLE_PARSE_RESULT = 'parsed_ingredient_results';
 const TABLE_ADDITIVE_DB = 'additive_hazard_db';
 
+class AdditiveEntry {
+  eNumber: string = '';
+  name: string = '';
+  hazardLevel: HazardLevel = HazardLevel.LOW_RISK;
+  category: string = '';
+  description: string = '';
+  longTermEffect: string = '';
+  coWarning: string = '';
+  regulationStatus: string = '';
+}
+
+class AdditiveInfo {
+  name: string = '';
+  hazardLevel: string = '';
+  category: string = '';
+  description: string = '';
+  longTermEffect: string = '';
+  coWarning: string = '';
+  regulationStatus: string = '';
+}
+
 export class ParsedIngredientRepository {
   private rdbStore: relationalStore.RdbStore | null = null;
   private resultCache: Map<string, ParsedIngredientList> = new Map();
@@ -18,26 +37,28 @@ export class ParsedIngredientRepository {
   async init(rdbStore: relationalStore.RdbStore): Promise<void> {
     this.rdbStore = rdbStore;
     try {
-      await rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_PARSE_RESULT} (`
-        product_barcode TEXT PRIMARY KEY,
-        product_name TEXT DEFAULT '',
-        ingredients_json TEXT NOT NULL DEFAULT '[]',
-        high_risk_count INTEGER DEFAULT 0,
-        moderate_risk_count INTEGER DEFAULT 0,
-        summary TEXT DEFAULT '',
-        additive_interactions TEXT DEFAULT '[]',
-        parsed_at INTEGER NOT NULL
-      )`);`
-      await rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_ADDITIVE_DB} (`
-        e_number TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        hazard_level TEXT DEFAULT 'low_risk',
-        category TEXT DEFAULT '',
-        description TEXT DEFAULT '',
-        long_term_effect TEXT DEFAULT '',
-        co_warning TEXT DEFAULT '',
-        regulation_status TEXT DEFAULT ''
-      )`);`
+      const sql1 = 'CREATE TABLE IF NOT EXISTS ' + TABLE_PARSE_RESULT + ' (' +
+        'product_barcode TEXT PRIMARY KEY, ' +
+        "product_name TEXT DEFAULT '', " +
+        "ingredients_json TEXT NOT NULL DEFAULT '[]', " +
+        'high_risk_count INTEGER DEFAULT 0, ' +
+        'moderate_risk_count INTEGER DEFAULT 0, ' +
+        "summary TEXT DEFAULT '', " +
+        "additive_interactions TEXT DEFAULT '[]', " +
+        'parsed_at INTEGER NOT NULL' +
+        ')';
+      await rdbStore.executeSql(sql1);
+      const sql2 = 'CREATE TABLE IF NOT EXISTS ' + TABLE_ADDITIVE_DB + ' (' +
+        'e_number TEXT PRIMARY KEY, ' +
+        'name TEXT NOT NULL, ' +
+        "hazard_level TEXT DEFAULT 'low_risk', " +
+        "category TEXT DEFAULT '', " +
+        "description TEXT DEFAULT '', " +
+        "long_term_effect TEXT DEFAULT '', " +
+        "co_warning TEXT DEFAULT '', " +
+        "regulation_status TEXT DEFAULT ''" +
+        ')';
+      await rdbStore.executeSql(sql2);
       await this.loadFromDb();
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'init failed: %{public}s', JSON.stringify(e));
@@ -45,12 +66,15 @@ export class ParsedIngredientRepository {
   }
 
   private async loadFromDb(): Promise<void> {
-    if (!this.rdbStore) return;
+    if (!this.rdbStore) {
+      return;
+    }
+    let resultSet: relationalStore.ResultSet | null = null;
     try {
       const predicates = new relationalStore.RdbPredicates(TABLE_PARSE_RESULT);
-      const resultSet = await this.rdbStore.query(predicates);
+      resultSet = await this.rdbStore.query(predicates);
       while (resultSet.goToNextRow()) {
-        const result: ParsedIngredientList = new ParsedIngredientList()
+        const result: ParsedIngredientList = new ParsedIngredientList();
         result.productBarcode = resultSet.getString(0);
         result.productName = resultSet.getString(1);
         const raw = resultSet.getString(2);
@@ -68,15 +92,18 @@ export class ParsedIngredientRepository {
         this.resultCache.set(result.productBarcode, result);
       }
       resultSet.close();
+      resultSet = null;
     } catch (e) {
+      if (resultSet) { try { resultSet.close(); } catch (_) {} }
       hilog.warn(DOMAIN_ZERO, TAG, 'loadResults failed: %{public}s', JSON.stringify(e));
     }
+    let rs2: relationalStore.ResultSet | null = null;
     try {
       const pred2 = new relationalStore.RdbPredicates(TABLE_ADDITIVE_DB);
-      const rs2 = await this.rdbStore.query(pred2);
+      rs2 = await this.rdbStore.query(pred2);
       while (rs2.goToNextRow()) {
         const eNum = rs2.getString(0);
-        const info = JSON.stringify({
+        const info: AdditiveInfo = {
           name: rs2.getString(1),
           hazardLevel: rs2.getString(2),
           category: rs2.getString(3),
@@ -84,11 +111,12 @@ export class ParsedIngredientRepository {
           longTermEffect: rs2.getString(5),
           coWarning: rs2.getString(6),
           regulationStatus: rs2.getString(7)
-        });
-        this.additiveDbCache.set(eNum, info);
+        };
+        this.additiveDbCache.set(eNum, JSON.stringify(info));
       }
       rs2.close();
     } catch (e) {
+      if (rs2) { try { rs2.close(); } catch (_) {} }
       hilog.warn(DOMAIN_ZERO, TAG, 'loadAdditiveDb failed: %{public}s', JSON.stringify(e));
     }
   }
@@ -100,6 +128,7 @@ export class ParsedIngredientRepository {
   async save(result: ParsedIngredientList): Promise<void> {
     this.resultCache.set(result.productBarcode, result);
     if (this.rdbStore) {
+      let existing: relationalStore.ResultSet | null = null;
       try {
         const valueBucket: relationalStore.ValuesBucket = {
           'product_barcode': result.productBarcode,
@@ -113,7 +142,7 @@ export class ParsedIngredientRepository {
         };
         const predicates = new relationalStore.RdbPredicates(TABLE_PARSE_RESULT);
         predicates.equalTo('product_barcode', result.productBarcode);
-        const existing = await this.rdbStore.query(predicates);
+        existing = await this.rdbStore.query(predicates);
         if (existing.rowCount > 0) {
           await this.rdbStore.update(valueBucket, predicates);
         } else {
@@ -121,36 +150,45 @@ export class ParsedIngredientRepository {
         }
         existing.close();
       } catch (e) {
+        if (existing) { try { existing.close(); } catch (_) {} }
         hilog.warn(DOMAIN_ZERO, TAG, 'save failed: %{public}s', JSON.stringify(e));
       }
     }
   }
 
-  async seedAdditiveDatabase(entries: { eNumber: string; name: string; hazardLevel: HazardLevel;
-    category: string; description: string; longTermEffect: string; coWarning: string;
-    regulationStatus: string }[]): Promise<void> {
-    if (!this.rdbStore) return;
-    for (const entry of entries) {
-      const valueBucket: relationalStore.ValuesBucket = {
-        'e_number': entry.eNumber,
-        'name': entry.name,
-        'hazard_level': entry.hazardLevel,
-        'category': entry.category,
-        'description': entry.description,
-        'long_term_effect': entry.longTermEffect,
-        'co_warning': entry.coWarning,
-        'regulation_status': entry.regulationStatus
-      };
-      const predicates = new relationalStore.RdbPredicates(TABLE_ADDITIVE_DB);
-      predicates.equalTo('e_number', entry.eNumber);
-      const existing = await this.rdbStore.query(predicates);
-      if (existing.rowCount > 0) {
-        await this.rdbStore.update(valueBucket, predicates);
-      } else {
-        await this.rdbStore.insert(TABLE_ADDITIVE_DB, valueBucket);
+  async seedAdditiveDatabase(entries: AdditiveEntry[]): Promise<void> {
+    if (!this.rdbStore) {
+      return;
+    }
+    for (let ei = 0; ei < entries.length; ei++) {
+      const entry: AdditiveEntry = entries[ei];
+      let existing: relationalStore.ResultSet | null = null;
+      try {
+        const valueBucket: relationalStore.ValuesBucket = {
+          'e_number': entry.eNumber,
+          'name': entry.name,
+          'hazard_level': entry.hazardLevel,
+          'category': entry.category,
+          'description': entry.description,
+          'long_term_effect': entry.longTermEffect,
+          'co_warning': entry.coWarning,
+          'regulation_status': entry.regulationStatus
+        };
+        const predicates = new relationalStore.RdbPredicates(TABLE_ADDITIVE_DB);
+        predicates.equalTo('e_number', entry.eNumber);
+        existing = await this.rdbStore.query(predicates);
+        if (existing.rowCount > 0) {
+          await this.rdbStore.update(valueBucket, predicates);
+        } else {
+          await this.rdbStore.insert(TABLE_ADDITIVE_DB, valueBucket);
+        }
+        existing.close();
+        existing = null;
+        this.additiveDbCache.set(entry.eNumber, JSON.stringify(entry));
+      } catch (e) {
+        if (existing) { try { existing.close(); } catch (_) {} }
+        hilog.warn(DOMAIN_ZERO, TAG, 'seedAdditive failed for %{public}s: %{public}s', entry.eNumber, JSON.stringify(e));
       }
-      existing.close();
-      this.additiveDbCache.set(entry.eNumber, JSON.stringify(entry));
     }
   }
 

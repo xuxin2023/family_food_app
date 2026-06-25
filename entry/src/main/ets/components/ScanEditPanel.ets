@@ -37,8 +37,8 @@ struct FormInput {
         .backgroundColor(COLORS.BG_PAGE_LIGHT)
         .borderRadius(12)
         .onChange(this.onChange)
-        .accessibilityText(this.title )
-        .accessibilityDescription(this.placeholder )
+        .accessibilityText(this.title as Resource)
+        .accessibilityDescription(this.placeholder as Resource)
     }
     .width('100%')
     .alignItems(HorizontalAlign.Start)

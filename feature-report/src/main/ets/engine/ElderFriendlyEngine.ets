@@ -17,7 +17,7 @@ export class ElderFriendlyEngine {
    * 大字版：一句话结论 + 建议份量 + 今日提醒
    */
   generate(rec: Recommendation, profile: FamilyProfile, food: FoodLabel): ElderFriendlyReport {
-    const report: ElderFriendlyReport = new ElderFriendlyReport(
+    const report: ElderFriendlyReport = new ElderFriendlyReport();
 
     // 一句话结论
     if (rec.level === RecommendLevel.AVOID) {

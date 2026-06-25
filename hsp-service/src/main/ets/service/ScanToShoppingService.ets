@@ -1,5 +1,7 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN_DEFAULT, FoodLabel } from 'hsp_core';
+import { relationalStore } from '@kit.ArkData';
+import { common } from '@kit.AbilityKit';
+import { HILOG_DOMAIN_DEFAULT, FoodLabel, ShoppingItem, DB_NAME } from 'hsp_core';
 import { ShoppingListRepository } from '../repository/ShoppingListRepository';
 
 const TAG = 'ScanToShoppingService';
@@ -15,6 +17,8 @@ export interface ShoppingItemInput {
 
 export class ScanToShoppingService {
   private static instance: ScanToShoppingService | null = null;
+  private repo: ShoppingListRepository = new ShoppingListRepository();
+  private initialized: boolean = false;
 
   static getInstance(): ScanToShoppingService {
     if (!ScanToShoppingService.instance) {
@@ -23,17 +27,40 @@ export class ScanToShoppingService {
     return ScanToShoppingService.instance;
   }
 
+  private async ensureInitialized(): Promise<void> {
+    if (this.initialized) {
+      return;
+    }
+    try {
+      const ctx: common.Context | undefined = AppStorage.get<common.Context>('appContext');
+      if (ctx) {
+        const rdbConfig: relationalStore.StoreConfig = {
+          name: DB_NAME,
+          securityLevel: relationalStore.SecurityLevel.S3
+        };
+        const rdbStore: relationalStore.RdbStore = await relationalStore.getRdbStore(ctx, rdbConfig);
+        await this.repo.init(rdbStore);
+        this.initialized = true;
+      }
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'ensureInitialized failed: %{public}s', JSON.stringify(e));
+    }
+  }
+
   async addScannedFoodToShoppingList(foodLabel: FoodLabel): Promise<boolean> {
     try {
-      const item: ShoppingItemInput = {
-        name: foodLabel.foodName,
-        barcode: foodLabel.barcode,
-        category: this.inferCategory(foodLabel),
-        quantity: 1,
-        source: 'scan'
-      };
+      await this.ensureInitialized();
+      const item: ShoppingItem = new ShoppingItem();
+      item.id = 'scan_' + Date.now().toString();
+      item.name = foodLabel.foodName;
+      item.category = this.inferCategory(foodLabel);
+      item.quantity = '1';
+      item.relatedFoodBarcode = foodLabel.barcode;
+      item.addedAt = Date.now();
+      item.isPurchased = false;
+      const success: boolean = await this.repo.addItem(item);
       hilog.info(DOMAIN_ZERO, TAG, 'Added scanned food to shopping list: %{public}s', item.name);
-      return true;
+      return success;
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'addScannedFoodToShoppingList failed: %{public}s', JSON.stringify(e));
       return false;

@@ -145,6 +145,11 @@ export const CLOUD_STORAGES: CloudStorageConfig[] = [
   createCloudStorageConfig('privacy_docs', 'familyfood-privacy', '/privacy/', '隐私政策与用户协议OBS托管')
 ];
 
+export interface RequestCacheEntry {
+  result: Object | null;
+  timestamp: number;
+}
+
 export class HuaweiCloudBackend {
   private static instance: HuaweiCloudBackend | null = null;
   private baseUrl: string = resolveBaseUrl();
@@ -162,7 +167,7 @@ export class HuaweiCloudBackend {
     hilog.info(DOMAIN_ZERO, TAG, 'HuaweiCloudBackend init: %{public}s', baseUrl);
   }
 
-  private requestCache: Map<string, { result: Object | null; timestamp: number }> = new Map();
+  private requestCache: Map<string, RequestCacheEntry> = new Map();
   private static readonly IDEMPOTENT_TTL_MS = 5000;
 
   async callFunction(functionName: string, payload: Object, token?: string, idempotencyKey?: string): Promise<Object | null> {
@@ -181,8 +186,15 @@ export class HuaweiCloudBackend {
       const result = await this.doCallFunction(functionName, payload, token);
       this.requestCache.set(cacheKey, { result: result, timestamp: Date.now() });
       if (this.requestCache.size > 100) {
-        const oldestKey = this.requestCache.keys().next().value;
-        if (oldestKey !== undefined) this.requestCache.delete(oldestKey);
+        let firstKey: string = '';
+        this.requestCache.forEach((_value: RequestCacheEntry, key: string) => {
+          if (firstKey.length === 0) {
+            firstKey = key;
+          }
+        });
+        if (firstKey.length > 0) {
+          this.requestCache.delete(firstKey);
+        }
       }
       return result;
     });

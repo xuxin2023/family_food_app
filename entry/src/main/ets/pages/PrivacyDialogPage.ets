@@ -2,19 +2,22 @@
 // 隐私政策与用户协议确认页面 - 首次启动时展示
 // 用户同意后方可进入主页面
 
-import { safeReplaceUrl, getPrivacyPolicyHtml, getUserAgreementHtml, COLORS, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker } from 'hsp_core';
+import { getPrivacyPolicyHtml, getUserAgreementHtml, COLORS, SHADOWS, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker, ThemeReactive, themeReactive } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
+import { relationalStore } from '@kit.ArkData';
+import { router } from '@kit.ArkUI';
 import { AppState } from '../AppState';
 import { PrivacyManager, PrivacyDocumentUrls } from 'hsp_service';
+import { DB_NAME } from 'hsp_core';
 
 const TAG = 'PrivacyDialogPage';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @Entry
 @ComponentV2
-struct PrivacyDialogPage {
+export struct PrivacyDialogPage {
   @Local isLoading: boolean = true
   @Local currentTab: number = 0 // 0=隐私政策, 1=用户协议
   @Local agreed: boolean = false
@@ -27,6 +30,8 @@ struct PrivacyDialogPage {
   private appState: AppState = AppState.getInstance()
 
   private tracker: PageResourceTracker = createPageTracker('PrivacyDialogPage')
+  private themeRef: ThemeReactive = themeReactive
+
   async aboutToAppear() {
         this.tracker.onAppear()
     try {
@@ -38,7 +43,7 @@ struct PrivacyDialogPage {
         PrivacyManager.getDocumentUrls(context).then((urls: PrivacyDocumentUrls) => {
           this.onlineDocUrls = urls
           hilog.info(DOMAIN_ZERO, TAG, 'Online doc URLs loaded, isOnline=%{public}s', urls.isOnline ? 'true' : 'false');
-        }).catch((_e) => {
+        }).catch((_e: Object) => {
           hilog.warn(DOMAIN_ZERO, TAG, 'Failed to load online doc URLs');
         })
       }
@@ -80,14 +85,47 @@ struct PrivacyDialogPage {
         await this.appState.agreePrivacy(context)
       }
       this.appState.permission.setPrivacyAgreed()
+
+      // 同意后触发 AppState 初始化（首次启动时 initAsync 跳过了初始化）
+      if (!AppStorage.get<boolean>('appStateReady') || AppStorage.get<boolean>('appStateInitFailed')) {
+        hilog.info(DOMAIN_ZERO, TAG, 'Triggering AppState init after privacy consent');
+        AppStorage.setOrCreate('appStateReady', false);
+        AppStorage.setOrCreate('appStateInitFailed', false);
+        try {
+          const ctx = getContext(this) as common.Context;
+          const rdbStore = await relationalStore.getRdbStore(ctx,
+            { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 });
+          await this.appState.init(ctx, rdbStore);
+          AppStorage.setOrCreate('appStateReady', true);
+          hilog.info(DOMAIN_ZERO, TAG, 'AppState init success after privacy consent');
+        } catch (initErr) {
+          hilog.error(DOMAIN_ZERO, TAG, 'AppState init failed after consent: %{public}s', JSON.stringify(initErr));
+          AppStorage.setOrCreate('appStateInitFailed', true);
+          AppStorage.setOrCreate('appStateReady', true);
+        }
+      }
     } catch (_e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'save privacy agreed failed')
     }
     this.navigateToHome()
   }
 
-  private navigateToHome(): void {
-    safeReplaceUrl('pages/MainTabsPage')
+  private async navigateToHome(): Promise<void> {
+    try {
+      const context = AppStorage.get<common.Context>('appContext')
+      if (context) {
+        const prefs = await preferences.getPreferences(context, 'app_state')
+        const hasCompletedSetup = (await prefs.get('hasCompletedSetup', false)) as boolean
+        if (!hasCompletedSetup) {
+          hilog.info(DOMAIN_ZERO, TAG, 'Allergen setup not completed, navigating to wizard');
+          router.replaceUrl({ url: 'pages/AllergenSetupWizard' });
+          return
+        }
+      }
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'navigateToHome setup check failed: %{public}s', JSON.stringify(e));
+    }
+    router.replaceUrl({ url: 'pages/MainTabsPage' });
   }
 
   build() {
@@ -287,7 +325,7 @@ struct PrivacyDialogPage {
               .accessibilityLevel('yes')
             Text($r('app.string.agree_read'))
               .fontSize(13)
-              .fontColor('#666666')
+              .fontColor(COLORS.TEXT_SECONDARY)
               .margin({ left: 8 })
 
             Text() {
@@ -306,7 +344,7 @@ struct PrivacyDialogPage {
 
             Text($r('app.string.and_conjunction'))
               .fontSize(13)
-              .fontColor('#666666')
+              .fontColor(COLORS.TEXT_SECONDARY)
 
             Text() {
               Span('《')
@@ -329,7 +367,7 @@ struct PrivacyDialogPage {
           Button($r('app.string.agree_continue'))
             .width('100%')
             .height(50)
-            .backgroundColor(this.agreed ? COLORS.PRIMARY : '#BDBDBD')
+            .backgroundColor(this.agreed ? COLORS.PRIMARY : COLORS.TEXT_GRAY_BDBD)
             .borderRadius(25)
             .fontColor(COLORS.WHITE)
             .fontSize(16)
@@ -347,11 +385,12 @@ struct PrivacyDialogPage {
       }
       .width('100%')
       .height('100%')
-      .backgroundColor('#FAFAFA')
+      .backgroundColor(COLORS.BG_PAGE)
       .alignItems(HorizontalAlign.Center)
     }
     .width('100%')
     .height('100%')
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
     aboutToDisappear(): void { this.tracker.onDisappear() }

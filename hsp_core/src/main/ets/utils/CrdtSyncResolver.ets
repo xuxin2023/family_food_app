@@ -11,6 +11,11 @@ export interface ConflictRecord {
   updatedAt: number;
 }
 
+export interface CrdtResult<T extends ConflictRecord> {
+  resolved: T;
+  hadConflict: boolean;
+}
+
 export enum ConflictResolutionStrategy {
   LAST_WRITE_WINS = 'lww',
   THREE_WAY_MERGE = 'three_way',
@@ -23,25 +28,36 @@ export class CrdtSyncResolver {
     remote: T,
     base: T | null,
     strategy: ConflictResolutionStrategy = ConflictResolutionStrategy.FIELD_LEVEL_MERGE
-  ): { resolved: T; hadConflict: boolean } {
+  ): CrdtResult<T> {
     if (!base || strategy === ConflictResolutionStrategy.LAST_WRITE_WINS) {
-      return {
+      const result: CrdtResult<T> = {
         resolved: CrdtSyncResolver.lastWriterWins(local, remote),
         hadConflict: local.updatedAt !== remote.updatedAt,
       };
+      return result;
     }
 
-    const localChanged = local.updatedAt !== base.updatedAt;
-    const remoteChanged = remote.updatedAt !== base.updatedAt;
+    const localChanged: boolean = local.updatedAt !== base.updatedAt;
+    const remoteChanged: boolean = remote.updatedAt !== base.updatedAt;
 
-    if (localChanged && !remoteChanged) return { resolved: local, hadConflict: false };
-    if (!localChanged && remoteChanged) return { resolved: remote, hadConflict: false };
-    if (!localChanged && !remoteChanged) return { resolved: local, hadConflict: false };
+    if (localChanged && !remoteChanged) {
+      const result: CrdtResult<T> = { resolved: local, hadConflict: false };
+      return result;
+    }
+    if (!localChanged && remoteChanged) {
+      const result: CrdtResult<T> = { resolved: remote, hadConflict: false };
+      return result;
+    }
+    if (!localChanged && !remoteChanged) {
+      const result: CrdtResult<T> = { resolved: local, hadConflict: false };
+      return result;
+    }
 
-    return {
+    const result: CrdtResult<T> = {
       resolved: CrdtSyncResolver.fieldLevelMerge(local, remote, base),
       hadConflict: true,
     };
+    return result;
   }
 
   private static lastWriterWins<T extends ConflictRecord>(local: T, remote: T): T {
@@ -49,14 +65,29 @@ export class CrdtSyncResolver {
   }
 
   private static fieldLevelMerge<T extends ConflictRecord>(local: T, remote: T, base: T): T {
-    const merged = Object.assign({},local) as Record<string, Object>;
-    const localObj = local as Object as Record<string, Object>;
-    const remoteObj = remote as Object as Record<string, Object>;
-    const baseObj = base as Object as Record<string, Object>;
-    const skipKeys = new Set(['_vectorClock', 'updatedAt', 'createdAt']);
+    const merged: Record<string, Object> = {};
+    const localObj: Record<string, Object> = local as Object as Record<string, Object>;
+    const remoteObj: Record<string, Object> = remote as Object as Record<string, Object>;
+    const baseObj: Record<string, Object> = base as Object as Record<string, Object>;
 
-    for (const key of Object.keys(localObj)) {
-      if (skipKeys.has(key)) continue;
+    const keys: string[] = Object.keys(localObj);
+    for (let i = 0; i < keys.length; i++) {
+      const key: string = keys[i];
+      merged[key] = localObj[key];
+    }
+
+    const skipSet: string[] = ['_vectorClock', 'updatedAt', 'createdAt'];
+
+    for (let i = 0; i < keys.length; i++) {
+      const key: string = keys[i];
+      let skip: boolean = false;
+      for (let j = 0; j < skipSet.length; j++) {
+        if (key === skipSet[j]) {
+          skip = true;
+          break;
+        }
+      }
+      if (skip) continue;
       if (localObj[key] !== remoteObj[key]) {
         if (remoteObj[key] !== baseObj[key]) {
           merged[key] = remoteObj[key];
@@ -64,27 +95,53 @@ export class CrdtSyncResolver {
       }
     }
 
-    merged._vectorClock = CrdtSyncResolver.mergeVectorClocks(
+    merged['_vectorClock'] = CrdtSyncResolver.mergeVectorClocks(
       local._vectorClock, remote._vectorClock
-    );
-    merged.updatedAt = Math.max(local.updatedAt, remote.updatedAt);
+    ) as Object;
+    merged['updatedAt'] = Math.max(local.updatedAt, remote.updatedAt);
 
-    return merged as T;
+    return merged as Object as T;
   }
 
   static mergeVectorClocks(a: VectorClock[], b: VectorClock[]): VectorClock[] {
-    const map = new Map<string, number>();
-    for (const vc of a) map.set(vc.nodeId, vc.counter);
-    for (const vc of b) {
-      map.set(vc.nodeId, Math.max(vc.counter, map.get(vc.nodeId) ?? 0));
+    const map: Map<string, number> = new Map<string, number>();
+    for (let i = 0; i < a.length; i++) {
+      const vc: VectorClock = a[i];
+      map.set(vc.nodeId, vc.counter);
     }
-    return Array.from(map.entries()).map(([nodeId, counter]) => ({ nodeId, counter }));
+    for (let i = 0; i < b.length; i++) {
+      const vc: VectorClock = b[i];
+      const existing: number = map.get(vc.nodeId) ?? 0;
+      map.set(vc.nodeId, Math.max(vc.counter, existing));
+    }
+    const entries: Array<[string, number]> = Array.from(map.entries());
+    const result: VectorClock[] = [];
+    for (let i = 0; i < entries.length; i++) {
+      const entry: [string, number] = entries[i];
+      const vc: VectorClock = { nodeId: entry[0], counter: entry[1] };
+      result.push(vc);
+    }
+    return result;
   }
 
   static incrementClock(clocks: VectorClock[], nodeId: string): VectorClock[] {
-    const updated = clocks.filter(c => c.nodeId !== nodeId);
-    const existing = clocks.find(c => c.nodeId === nodeId);
-    updated.push({ nodeId, counter: (existing?.counter ?? 0) + 1 });
+    const updated: VectorClock[] = [];
+    for (let i = 0; i < clocks.length; i++) {
+      const c: VectorClock = clocks[i];
+      if (c.nodeId !== nodeId) {
+        updated.push(c);
+      }
+    }
+    let existing: VectorClock | null = null;
+    for (let i = 0; i < clocks.length; i++) {
+      if (clocks[i].nodeId === nodeId) {
+        existing = clocks[i];
+        break;
+      }
+    }
+    const newCounter: number = (existing?.counter ?? 0) + 1;
+    const newClock: VectorClock = { nodeId: nodeId, counter: newCounter };
+    updated.push(newClock);
     return updated;
   }
 }

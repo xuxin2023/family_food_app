@@ -131,29 +131,37 @@ export class SecureDataStore {
    */
   async encrypt(plainText: string): Promise<ArrayBuffer> {
     await this.ensureKey();
-    const symKeyGenerator = cryptoFramework.createSymKeyGenerator('AES256');
-    const keyData: Uint8Array = new Uint8Array(this.keyMaterial!.outData);
-    const symKey = await symKeyGenerator.convertKey({ data: keyData.buffer as ArrayBuffer });
+    if (!this.keyMaterial?.outData) {
+      throw new Error('Key material not available');
+    }
+    try {
+      const symKeyGenerator = cryptoFramework.createSymKeyGenerator('AES256');
+      const keyData: Uint8Array = this.keyMaterial.outData;
+      const symKey = await symKeyGenerator.convertKey({ data: keyData });
 
-    const cipher = cryptoFramework.createCipher('AES256|GCM|NONE');
-    const random = cryptoFramework.createRandom();
-    const randomBlob = await random.generateRandom(IV_LENGTH);
-    const ivBytes: Uint8Array = new Uint8Array(randomBlob.data);
-    const aadArr: Uint8Array = new Uint8Array(0);
-    const tagArr: Uint8Array = new Uint8Array(TAG_LENGTH);
-    const params: cryptoFramework.GcmParamsSpec = {
-      iv: { data: ivBytes.buffer as ArrayBuffer },
-      aad: { data: aadArr.buffer as ArrayBuffer },
-      authTag: { data: tagArr.buffer as ArrayBuffer }
-    } as cryptoFramework.GcmParamsSpec;
+      const cipher = cryptoFramework.createCipher('AES256|GCM|NONE');
+      const random = cryptoFramework.createRandom();
+      const randomBlob = await random.generateRandom(IV_LENGTH);
+      const ivBytes: Uint8Array = randomBlob.data;
+      const aadArr: Uint8Array = new Uint8Array(0);
+      const tagArr: Uint8Array = new Uint8Array(TAG_LENGTH);
+      const params: cryptoFramework.GcmParamsSpec = {
+        iv: { data: ivBytes },
+        aad: { data: aadArr },
+        authTag: { data: tagArr }
+      } as cryptoFramework.GcmParamsSpec;
 
-    await cipher.init(cryptoFramework.CryptoMode.ENCRYPT_MODE, symKey, params);
-    const input: cryptoFramework.DataBlob = {
-      data: this.stringToArrayBuffer(plainText)
-    };
-    const result = await cipher.doFinal(input);
-    // 返回 IV + 密文 + AuthTag 的拼接
-    return this.concatBuffers(ivBytes.buffer as ArrayBuffer, result.data.buffer as ArrayBuffer);
+      await cipher.init(cryptoFramework.CryptoMode.ENCRYPT_MODE, symKey, params);
+      const encoder: util.TextEncoder = new util.TextEncoder();
+      const input: cryptoFramework.DataBlob = {
+        data: encoder.encodeInto(plainText)
+      };
+      const result = await cipher.doFinal(input);
+      return this.concatBuffers(ivBytes.buffer as ArrayBuffer, result.data.buffer as ArrayBuffer);
+    } catch (err) {
+      hilog.error(DOMAIN_ZERO, TAG, 'encrypt failed: %{public}s', JSON.stringify(err));
+      throw new Error('Encryption failed');
+    }
   }
 
   /**
@@ -167,31 +175,39 @@ export class SecureDataStore {
    */
   async decrypt(encryptedData: ArrayBuffer): Promise<string> {
     await this.ensureKey();
-    const symKeyGenerator = cryptoFramework.createSymKeyGenerator('AES256');
-    const keyData: Uint8Array = new Uint8Array(this.keyMaterial!.outData);
-    const symKey = await symKeyGenerator.convertKey({ data: keyData.buffer as ArrayBuffer });
-
-    if (encryptedData.byteLength < IV_LENGTH + TAG_LENGTH) {
-      throw new Error('Invalid encrypted data length');
+    if (!this.keyMaterial?.outData) {
+      throw new Error('Key material not available');
     }
+    try {
+      const symKeyGenerator = cryptoFramework.createSymKeyGenerator('AES256');
+      const keyData: Uint8Array = this.keyMaterial.outData;
+      const symKey = await symKeyGenerator.convertKey({ data: keyData });
 
-    const fullData: Uint8Array = new Uint8Array(encryptedData);
-    const iv: Uint8Array = fullData.slice(0, IV_LENGTH);
-    const tag: Uint8Array = fullData.slice(fullData.length - TAG_LENGTH);
-    const cipherData: Uint8Array = fullData.slice(IV_LENGTH, fullData.length - TAG_LENGTH);
+      if (encryptedData.byteLength < IV_LENGTH + TAG_LENGTH) {
+        throw new Error('Invalid encrypted data length');
+      }
 
-    const aadArr2: Uint8Array = new Uint8Array(0);
-    const decipher = cryptoFramework.createCipher('AES256|GCM|NONE');
-    const gcmParams2: cryptoFramework.GcmParamsSpec = {
-      iv: { data: iv.buffer as ArrayBuffer },
-      aad: { data: aadArr2.buffer as ArrayBuffer },
-      authTag: { data: tag.buffer as ArrayBuffer }
-    } as cryptoFramework.GcmParamsSpec;
+      const fullData: Uint8Array = new Uint8Array(encryptedData);
+      const iv: Uint8Array = fullData.slice(0, IV_LENGTH);
+      const tag: Uint8Array = fullData.slice(fullData.length - TAG_LENGTH);
+      const cipherData: Uint8Array = fullData.slice(IV_LENGTH, fullData.length - TAG_LENGTH);
 
-    await decipher.init(cryptoFramework.CryptoMode.DECRYPT_MODE, symKey, gcmParams2);
-    const input: cryptoFramework.DataBlob = { data: cipherData.buffer as ArrayBuffer };
-    const result = await decipher.doFinal(input);
-    return this.arrayBufferToString(result.data);
+      const aadArr2: Uint8Array = new Uint8Array(0);
+      const decipher = cryptoFramework.createCipher('AES256|GCM|NONE');
+      const gcmParams2: cryptoFramework.GcmParamsSpec = {
+        iv: { data: iv },
+        aad: { data: aadArr2 },
+        authTag: { data: tag }
+      } as cryptoFramework.GcmParamsSpec;
+
+      await decipher.init(cryptoFramework.CryptoMode.DECRYPT_MODE, symKey, gcmParams2);
+      const input: cryptoFramework.DataBlob = { data: cipherData };
+      const result = await decipher.doFinal(input);
+      return this.arrayBufferToString(result.data);
+    } catch (err) {
+      hilog.error(DOMAIN_ZERO, TAG, 'decrypt failed: %{public}s', JSON.stringify(err));
+      throw new Error('Decryption failed');
+    }
   }
 
   // ========== 内部方法 ==========
@@ -223,7 +239,12 @@ export class SecureDataStore {
         { tag: huks.HuksTag.HUKS_TAG_AUTH_STORAGE_LEVEL, value: huks.HuksAuthStorageLevel.HUKS_AUTH_STORAGE_LEVEL_DE } as huks.HuksParam
       ]
     };
-    return await huks.exportKeyItem(KEY_ALIAS, exportOptions);
+    try {
+      return await huks.exportKeyItem(KEY_ALIAS, exportOptions);
+    } catch (err) {
+      hilog.error(DOMAIN_ZERO, TAG, 'exportKeyItem failed: %{public}s', JSON.stringify(err));
+      throw new Error('Export key material failed');
+    }
   }
 
   private async generateKey(): Promise<void> {
@@ -239,7 +260,12 @@ export class SecureDataStore {
     const keyGenOptions: huks.HuksOptions = {
       properties: keyGenProperties
     };
-    await huks.generateKeyItem(KEY_ALIAS, keyGenOptions);
+    try {
+      await huks.generateKeyItem(KEY_ALIAS, keyGenOptions);
+    } catch (err) {
+      hilog.error(DOMAIN_ZERO, TAG, 'generateKeyItem failed: %{public}s', JSON.stringify(err));
+      throw new Error('Key generation failed');
+    }
     this.keyMaterial = await this.exportKeyMaterial();
     this.keyExists = true;
   }

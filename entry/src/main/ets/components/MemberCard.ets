@@ -1,5 +1,5 @@
 import { FamilyProfile, COLORS } from 'hsp_core';
-// 成员选择卡片组件 — @ReusableV2 高频复用优化
+// 成员选择卡片组件 @ReusableV2 高频复用优化
 
 
 @ReusableV2
@@ -51,9 +51,8 @@ export struct MemberCard {
       radius: 16
     })
     .alignItems(HorizontalAlign.Center)
-    .accessibilityRole('listItem')
-    .accessibilityText(`${this.member.nickname}，${this.member.ageGroup}，健康目标${this.member.healthGoals.join('、')}`)
-    .accessibilityDescription(`过敏原: ${this.member.allergens.length > 0 ? this.member.allergens.join('、') : '无'}`)
+    .accessibilityText(`${this.member.nickname}，${this.member.ageGroup}，健康目标：${this.member.healthGoals.join('、')}`)
+    .accessibilityDescription(`过敏原：${this.member.allergens.length > 0 ? this.member.allergens.join('、') : '无'}`)
     .accessibilityLevel('yes')
     .onClick(() => {
       this.onSelect?.(this.member.memberId);

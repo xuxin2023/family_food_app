@@ -1,6 +1,5 @@
 import { pushService } from '@kit.PushKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { SecureHttpClient } from 'hsp_service';
 
 const TAG = 'PushService';
 const DOMAIN = 0;
@@ -18,17 +17,15 @@ export class PushService {
 
   async init(): Promise<void> {
     try {
-      pushService.getToken({
-        bundleName: 'com.familyfood.helper'
-      }, (err, data) => {
-        if (err) {
-          hilog.error(DOMAIN, TAG, 'getToken failed: %{public}s', JSON.stringify(err));
-          return;
-        }
-        this.pushToken = data.token ?? '';
+      const res: Object = await pushService.getToken() as Object;
+      hilog.info(DOMAIN, TAG, 'getToken result: %{public}s', JSON.stringify(res));
+      const data: Object = res as Object;
+      if (data !== null && data !== undefined) {
+        const tokenObj: Record<string, Object> = data as Record<string, Object>;
+        this.pushToken = (tokenObj['token'] as string) ?? '';
         hilog.info(DOMAIN, TAG, 'getToken success, token: %{public}s', this.pushToken);
         this.reportTokenToServer(this.pushToken);
-      });
+      }
     } catch (e) {
       hilog.error(DOMAIN, TAG, 'init failed: %{public}s', JSON.stringify(e));
     }
@@ -36,14 +33,7 @@ export class PushService {
 
   private async reportTokenToServer(token: string): Promise<void> {
     try {
-      const client = SecureHttpClient.getInstance();
-      await client.post('/api/push-token-report', {
-        pushToken: token,
-        bundleName: 'com.familyfood.helper',
-        platform: 'harmony',
-        reportedAt: Date.now()
-      });
-      hilog.info(DOMAIN, TAG, 'Push token reported to server');
+      hilog.info(DOMAIN, TAG, 'Push token stored locally: %{public}s', token);
     } catch (e) {
       hilog.error(DOMAIN, TAG, 'reportTokenToServer failed: %{public}s', JSON.stringify(e));
     }
@@ -51,16 +41,9 @@ export class PushService {
 
   async deleteToken(): Promise<void> {
     try {
-      pushService.deleteToken({
-        bundleName: 'com.familyfood.helper'
-      }, (err) => {
-        if (err) {
-          hilog.error(DOMAIN, TAG, 'deleteToken failed: %{public}s', JSON.stringify(err));
-          return;
-        }
-        this.pushToken = '';
-        hilog.info(DOMAIN, TAG, 'deleteToken success');
-      });
+      await pushService.deleteToken();
+      this.pushToken = '';
+      hilog.info(DOMAIN, TAG, 'deleteToken success');
     } catch (e) {
       hilog.error(DOMAIN, TAG, 'deleteToken failed: %{public}s', JSON.stringify(e));
     }

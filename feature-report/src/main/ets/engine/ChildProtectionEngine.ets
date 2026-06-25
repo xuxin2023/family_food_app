@@ -100,7 +100,7 @@ export class ChildProtectionEngine {
     currentTime: Date,
     nextMealTime: Date
   ): ChildMealAdvice {
-    const result: ChildMealAdvice = new ChildMealAdvice(
+    const result: ChildMealAdvice = new ChildMealAdvice();
 
     if (member.healthGoal !== 'children') {
       result.advice = '非儿童成员，无需儿童保护建议';

@@ -3,7 +3,6 @@
 // 华为应用商店合规要求：检测不安全的网络环境
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { http } from '@kit.NetworkKit';
 import { connection } from '@kit.NetworkKit';
 import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
 
@@ -18,11 +17,6 @@ export interface CaptureDetectionResult {
   details: string[];
 }
 
-const TRUSTED_CERT_PINS: string[] = [
-  'sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
-  'sha256/BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=',
-];
-
 export class AntiCaptureDetector {
 
   async detect(): Promise<CaptureDetectionResult> {
@@ -35,14 +29,14 @@ export class AntiCaptureDetector {
     };
 
     try {
-      const proxyOn = await this.checkProxy();
+      const proxyOn: boolean = await this.checkProxy();
       result.hasProxy = proxyOn;
       if (proxyOn) {
         result.isSecure = false;
         result.details.push('检测到设备开启了HTTP代理');
       }
 
-      const vpnOn = await this.checkVpn();
+      const vpnOn: boolean = await this.checkVpn();
       result.hasVpn = vpnOn;
       if (vpnOn) {
         result.details.push('检测到设备开启了VPN连接');
@@ -64,34 +58,71 @@ export class AntiCaptureDetector {
 
   private async checkProxy(): Promise<boolean> {
     try {
-      const netHandle = await connection.getDefaultNet();
+      let netHandle: connection.NetHandle;
+      try {
+        netHandle = await connection.getDefaultNet();
+      } catch (err) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'getDefaultNet failed: %{public}s', JSON.stringify(err));
+        return false;
+      }
       if (!netHandle) return false;
-
-      const allProperties = await connection.getProperties(netHandle);
-      if (allProperties) {
-        const propRecord = allProperties as Record<string, Object>;
-        const proxyHost = propRecord.httpProxyHost as string | undefined;
-        return proxyHost !== undefined && proxyHost !== null && proxyHost.length > 0;
+      let netCaps: connection.NetCapabilities;
+      try {
+        netCaps = await connection.getNetCapabilities(netHandle);
+      } catch (err) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'getNetCapabilities failed: %{public}s', JSON.stringify(err));
+        return false;
+      }
+      if (netCaps) {
+        const capsRecord: Record<string, Object> = netCaps as Object as Record<string, Object>;
+        const bearerTypes: number[] | undefined = capsRecord['bearerTypes'] as number[] | undefined;
+        if (bearerTypes !== undefined) {
+          for (const bt of bearerTypes) {
+            if (bt === 17) return true;
+          }
+        }
       }
     } catch (_e) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
-      // 检测失败默认为安全
+      hilog.warn(DOMAIN_ZERO, TAG, "Proxy check error: %{public}s", JSON.stringify(_e));
     }
     return false;
   }
 
   private async checkVpn(): Promise<boolean> {
     try {
-      const capabilities = connection.getAppNet();
-      return capabilities !== null;
+      let netHandle: connection.NetHandle;
+      try {
+        netHandle = await connection.getDefaultNet();
+      } catch (err) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'getDefaultNet failed: %{public}s', JSON.stringify(err));
+        return false;
+      }
+      if (!netHandle) return false;
+      let netCaps: connection.NetCapabilities;
+      try {
+        netCaps = await connection.getNetCapabilities(netHandle);
+      } catch (err) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'getNetCapabilities failed: %{public}s', JSON.stringify(err));
+        return false;
+      }
+      if (netCaps) {
+        const capsRecord: Record<string, Object> = netCaps as Object as Record<string, Object>;
+        const bearerTypes: number[] | undefined = capsRecord['bearerTypes'] as number[] | undefined;
+        return bearerTypes !== undefined && bearerTypes.includes(6);
+      }
     } catch (_e) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
-      return false;
+      hilog.warn(DOMAIN_ZERO, TAG, "VPN check error: %{public}s", JSON.stringify(_e));
     }
+    return false;
   }
 
-  isSecureForSensitiveData(): boolean {
-    return this.checkProxy().then((proxyOn: boolean) => !proxyOn).catch(() => true);
+  async isSecureForSensitiveData(): Promise<boolean> {
+    try {
+      const proxyOn: boolean = await this.checkProxy();
+      return !proxyOn;
+    } catch (_e) {
+      return true;
+    }
   }
 
   getWarningMessage(): string {

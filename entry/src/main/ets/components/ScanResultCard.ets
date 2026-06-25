@@ -1,5 +1,5 @@
 import {
-  FoodLabel, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, HILOG_DOMAIN_DEFAULT
+  FoodLabel, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, HILOG_DOMAIN_DEFAULT, SCORE_COLORS
 } from 'hsp_core';
 import { NutriScoreBadge } from 'feature_scan';
 
@@ -55,6 +55,22 @@ export struct ScanResultCard {
       this.scanPhase === ScanPhase.DB_QUERYING ||
       this.scanPhase === ScanPhase.API_QUERYING ||
       this.scanPhase === ScanPhase.SCORING;
+  }
+
+  private getGradeScoreColor(score: number): string {
+    if (score >= 80) return SCORE_COLORS.GRADE_A;
+    if (score >= 60) return SCORE_COLORS.GRADE_B;
+    if (score >= 40) return SCORE_COLORS.GRADE_C;
+    if (score >= 20) return SCORE_COLORS.GRADE_D;
+    return SCORE_COLORS.GRADE_E;
+  }
+
+  private getGradeLabel(score: number): string {
+    if (score >= 80) return 'A 优秀';
+    if (score >= 60) return 'B 良好';
+    if (score >= 40) return 'C 一般';
+    if (score >= 20) return 'D 较差';
+    return 'E 不推荐';
   }
 
   build() {
@@ -156,7 +172,7 @@ export struct ScanResultCard {
                 .borderRadius(RADIUS.SM)
                 .margin({ right: SPACING.SM })
                 .onClick(() => { this.onFrequentItemTap(item) })
-                .accessibilityText(`选择${item.foodName}`)
+                .accessibilityText('选择' + item.foodName)
                 .accessibilityLevel('yes')
               }, (item: FoodLabel) => item.foodId)
             }
@@ -190,9 +206,29 @@ export struct ScanResultCard {
           .margin({ top: SPACING.SM })
       } else {
         if (this.scoreReady) {
+          Row() {
+            Column() {
+              Text(Math.round(this.nutriScore).toString())
+                .fontSize(42)
+                .fontWeight(FontWeight.Bold)
+                .fontColor(this.getGradeScoreColor(this.nutriScore))
+              Text(this.getGradeLabel(this.nutriScore))
+                .fontSize(14)
+                .fontWeight(FontWeight.Medium)
+                .fontColor(this.getGradeScoreColor(this.nutriScore))
+                .opacity(0.85)
+                .margin({ top: 2 })
+            }
+            .justifyContent(FlexAlign.Center)
+            .alignItems(HorizontalAlign.Center)
+          }
+          .width('100%')
+          .padding({ top: 8, bottom: 8 })
+          .margin({ bottom: SPACING.SM })
+
           NutriScoreBadge({
             score: this.nutriScore,
-            diameter: 120,
+            diameter: 100,
             animating: true
           })
           .margin({ bottom: SPACING.MD })
@@ -229,16 +265,16 @@ export struct ScanResultCard {
         }
 
         Row() {
-          NutrientMetricChip({ label: $r('app.string.sodium') as ResourceStr, value: `${this.foodLabel.nutrition.sodium} mg` })
-          NutrientMetricChip({ label: $r('app.string.sugar') as ResourceStr, value: `${this.foodLabel.nutrition.sugar} g` })
-          NutrientMetricChip({ label: $r('app.string.calorie') as ResourceStr, value: `${this.foodLabel.nutrition.calories} kcal` })
+          NutrientMetricChip({ label: $r('app.string.sodium') as ResourceStr, value: this.foodLabel.nutrition.sodium.toString() + ' mg' })
+          NutrientMetricChip({ label: $r('app.string.sugar') as ResourceStr, value: this.foodLabel.nutrition.sugar.toString() + ' g' })
+          NutrientMetricChip({ label: $r('app.string.calorie') as ResourceStr, value: this.foodLabel.nutrition.calories.toString() + ' kcal' })
         }
         .width('100%')
         .justifyContent(FlexAlign.SpaceAround)
         .margin({ bottom: SPACING.SM })
 
         if (this.foodLabel.barcode.length > 0) {
-          Text() { Span($r('app.string.scan_barcode_label')); Span(`：${this.foodLabel.barcode}`) }
+          Text() { Span($r('app.string.scan_barcode_label')); Span('：' + this.foodLabel.barcode) }
             .fontSize(FONT_SIZE.SMALL)
             .fontColor(COLORS.TEXT_SECONDARY)
             .margin({ bottom: 6 })
@@ -255,5 +291,6 @@ export struct ScanResultCard {
     .backgroundColor(COLORS.BG_CARD)
     .borderRadius(RADIUS.LG)
     .alignItems(HorizontalAlign.Center)
+    .border(this.scoreReady ? { width: { left: 4, top: 0, right: 0, bottom: 0 }, color: this.getGradeScoreColor(this.nutriScore) } : { width: 0 })
   }
 }

@@ -1,6 +1,9 @@
-import { COLORS, safeBack, HealthSignal, FamilyProfile, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker } from 'hsp_core';
+import { COLORS, SHADOWS, safeBack, HealthSignal, FamilyProfile, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker, ThemeReactive, themeReactive } from 'hsp_core';
 import { CheckupReport, HealthArchiveUpdate, CheckupItem } from 'feature_report';
 import { BackButton } from '../components/BackButton';
+import { GradientHeader } from '../components/GradientHeader';
+import { LoadingSkeleton } from '../components/SkeletonScreen';
+import { MemberSelector } from '../components/MemberSelector';
 import { AppState } from '../AppState';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
@@ -9,24 +12,28 @@ const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @Entry
 @ComponentV2
-struct CheckupReportPage {
+export struct CheckupReportPage {
   @Local isLoading: boolean = true
   @Local ocrText: string = ''
   @Local memberId: string = ''
   @Local report: CheckupReport | null = null
   @Local archiveUpdate: HealthArchiveUpdate | null = null
   @Local currentSignal: HealthSignal = new HealthSignal()
+  @Local allMembers: FamilyProfile[] = []
 
   private appState: AppState = AppState.getInstance()
 
   private tracker: PageResourceTracker = createPageTracker('CheckupReportPage')
+  private themeRef: ThemeReactive = themeReactive
+
   async aboutToAppear() {
     this.tracker.onAppear()
     this.isLoading = true
     try {
-      const members = await this.appState.getAllMembers()
-      if (members.length > 0) {
-        const firstMemberId = members[0].memberId
+      this.allMembers = await this.appState.getAllMembers()
+      if (this.allMembers.length > 0) {
+        const firstMemberId = this.allMembers[0].memberId
+        this.memberId = firstMemberId
         this.currentSignal = this.appState.getHealthSignal(firstMemberId)
       }
     } catch (e) {
@@ -37,47 +44,37 @@ struct CheckupReportPage {
 
   build() {
     Column() {
-      Row() {
-        BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
-          .onClick(() => { safeBack() })
-        Text($r('app.string.checkup_title'))
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .margin({ left: 16 })
-      }
-      .width('100%')
-      .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+      GradientHeader({ title: $r('app.string.checkup_title') })
 
       if (this.isLoading) {
-        Column() {
-          LoadingProgress()
-            .width(48)
-            .height(48)
-            .color(COLORS.PRIMARY)
-        }
-        .width('100%')
-        .layoutWeight(1)
-        .justifyContent(FlexAlign.Center)
+        LoadingSkeleton({ variant: 'list', rowCount: 4 })
+          .layoutWeight(1)
       } else {
         Scroll() {
           Column() {
+            // 成员选择器
+            if (this.allMembers.length > 0) {
+              Column() {
+                Text('选择成员')
+                  .fontSize(14)
+                  .fontColor(COLORS.TEXT_GRAY_7575)
+                  .margin({ left: 16, bottom: 8 })
+                MemberSelector({
+                  members: this.allMembers,
+                  selectedMemberId: this.memberId,
+                  showEmoji: true,
+                  onSelectMember: (mid: string) => { this.onMemberSelected(mid) }
+                })
+              }
+              .width('100%')
+              .margin({ bottom: 16 })
+            }
+
             Column() {
               Text($r('app.string.checkup_ocr_input'))
                 .fontSize(16)
                 .fontWeight(FontWeight.Bold)
                 .margin({ bottom: 12 })
-
-              Column() {
-                Text($r('app.string.checkup_member_id'))
-                  .fontSize(13)
-                  .fontColor(COLORS.TEXT_GRAY_7575)
-                  .margin({ bottom: 4 })
-                TextInput({ text: this.memberId, placeholder: $r('app.string.checkup_member_id_hint') })
-                  .height(40)
-                  .onChange((value: string) => { this.memberId = value })
-              }
-              .width('100%')
-              .margin({ bottom: 12 })
 
               TextArea({ text: this.ocrText, placeholder: $r('app.string.checkup_ocr_placeholder') })
                 .width('100%')
@@ -100,6 +97,7 @@ struct CheckupReportPage {
             .padding(16)
             .backgroundColor(COLORS.WHITE)
             .borderRadius(12)
+            .shadow(SHADOWS.MD)
             .alignItems(HorizontalAlign.Start)
             .margin({ bottom: 16 })
 
@@ -126,7 +124,7 @@ struct CheckupReportPage {
                     Row() {
                       Text(item.isAbnormal ? '●' : '○')
                         .fontSize(14)
-                        .fontColor(item.isAbnormal ? '#E53935' : '#4CAF50')
+                        .fontColor(item.isAbnormal ? COLORS.ERROR : COLORS.ACCENT_GREEN_4CAF)
                         .margin({ right: 8 })
                       Column() {
                         Text(`${item.name}: ${item.value}${item.unit}`)
@@ -153,7 +151,7 @@ struct CheckupReportPage {
                     if (((this.archiveUpdate as HealthArchiveUpdate)?.newAlerts?.length ?? 0) > 0) {
                       Text() { Span($r('app.string.checkup_new_alert')); Span(`${(this.archiveUpdate as HealthArchiveUpdate)?.newAlerts?.join('、') ?? ''}`) }
                         .fontSize(13)
-                        .fontColor('#E53935')
+                        .fontColor(COLORS.ERROR)
                         .margin({ bottom: 4 })
                     }
                     if (((this.archiveUpdate as HealthArchiveUpdate)?.dietaryAdjustments?.length ?? 0) > 0) {
@@ -173,6 +171,7 @@ struct CheckupReportPage {
               .padding(16)
               .backgroundColor(COLORS.WHITE)
               .borderRadius(12)
+              .shadow(SHADOWS.MD)
               .alignItems(HorizontalAlign.Start)
               .margin({ bottom: 16 })
             }
@@ -186,6 +185,12 @@ struct CheckupReportPage {
     .width('100%')
     .height('100%')
     .backgroundColor(COLORS.BG_PAGE)
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
+  }
+
+  private onMemberSelected(mid: string): void {
+    this.memberId = mid
+    this.currentSignal = this.appState.getHealthSignal(mid)
   }
 
   private async parseReport(): Promise<void> {
@@ -207,8 +212,6 @@ struct CheckupReportPage {
   aboutToDisappear(): void {
     this.tracker.onDisappear()
   }
-
-
 
   pageTransition() {
     PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })

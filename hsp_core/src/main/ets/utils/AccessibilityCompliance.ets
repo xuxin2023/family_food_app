@@ -3,10 +3,11 @@
 
 import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { deviceInfo } from '@kit.BasicServicesKit';
+import { accessibility } from '@kit.AccessibilityKit';
 
 
 const TAG = 'AccessibilityCompliance';
+const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 /** 无障碍属性配置 */
 export class AccessibilityConfig {
@@ -102,7 +103,7 @@ export class AccessibilityCompliance {
   /** 检测系统是否启用了无障碍服务 */
   static isAccessibilityEnabled(): boolean {
     try {
-      return deviceInfo.isAccessibilityEnabled;
+      return accessibility.isOpenAccessibilitySync();
     } catch (_e) {
       hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
       return false;

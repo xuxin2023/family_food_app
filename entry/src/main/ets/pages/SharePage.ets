@@ -1,7 +1,8 @@
-﻿import {
-  ToastHelper, safeBack, safePushUrl, getPageParams, Recommendation, FamilyProfile, GroupSummary, FeedType, BUTTON, COLORS, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker
+import {
+  ToastHelper, safeBack, safePushUrl, getPageParams, Recommendation, FamilyProfile, GroupSummary, FeedType, BUTTON, COLORS, SHADOWS, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker, ThemeReactive, themeReactive
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
+import { GradientHeader } from '../components/GradientHeader';
 import { ShareCard } from 'feature_report';
 import { ShareService } from 'hsp_service';
 import { ShareKitService } from 'hsp_service';
@@ -11,9 +12,16 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
 import { photoAccessHelper } from '@kit.MediaLibraryKit';
 import { fileIo } from '@kit.CoreFileKit';
+import { pasteboard } from '@kit.BasicServicesKit';
 
 const TAG = 'SharePage';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
+
+class ShareChannelBtnProps {
+  label: string = '';
+  color: string = '';
+  action: () => void = () => {};
+}
 
 @ComponentV2
 struct ShareChannelButtonCmp {
@@ -31,14 +39,11 @@ struct ShareChannelButtonCmp {
         Text(this.label.substring(0, 1))
           .fontSize(20)
           .fontColor(COLORS.WHITE)
-          .fontWeight(FontWeight.Bold)
       }
-      .width(48)
-      .height(48)
       Text(this.label)
         .fontSize(11)
-        .fontColor(COLORS.TEXT_GRAY_7575)
-        .margin({ top: 4 })
+        .fontColor(COLORS.TEXT_PRIMARY)
+        .margin({ top: 6 })
     }
     .onClick(() => { this.action() })
     .accessibilityText(this.label)
@@ -68,6 +73,8 @@ export struct SharePage {
   private shareService: ShareService = new ShareService()
 
   private tracker: PageResourceTracker = createPageTracker('SharePage')
+  private themeRef: ThemeReactive = themeReactive
+
   async aboutToAppear() {
         this.tracker.onAppear()
     try {
@@ -86,8 +93,8 @@ export struct SharePage {
 
       const allResults = await Promise.all([
         membersPromise,
-        this.appState.getMyGroups().catch((e) => {
-          hilog.warn(DOMAIN_ZERO, TAG, '鍔犺浇缇ょ粍鍒楄〃澶辫触: %{public}s', JSON.stringify(e));
+        this.appState.getMyGroups().catch((e: Object) => {
+          hilog.warn(DOMAIN_ZERO, TAG, '加载群组列表失败: %{public}s', JSON.stringify(e));
           return [] as GroupSummary[]
         })
       ])
@@ -97,10 +104,8 @@ export struct SharePage {
       if (this.familyMembers.length === 0) {
         this.familyMembers = members
       }
-
-      this.copyHint = this.shareService.getCopyHint()
-      this.refreshShareText()
       this.myGroups = myGroups
+      this.refreshShareText()
       this.shareLink = this.buildShareLink()
       this.isLoading = false
     } catch (e) {
@@ -109,313 +114,73 @@ export struct SharePage {
     }
   }
 
+  aboutToDisappear(): void {
+    this.tracker.onDisappear()
+  }
+
   build() {
     Scroll() {
       Column() {
-        Row() {
-          BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
-            .onClick(() => { safeBack() })
-            .accessibilityText('杩斿洖')
-            .accessibilityLevel('yes')
-          Text($r('app.string.share_title'))
-            .fontSize(20)
-            .fontWeight(FontWeight.Bold)
-            .margin({ left: 16 })
-        }
-        .width('100%')
-        .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+        GradientHeader({ title: this.foodName || '分享' })
 
-        GridRow({
-          columns: { sm: 4, md: 8, lg: 12 },
-          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
-        }) {
-          GridCol({ span: { sm: 4, md: 8, lg: 10 }, offset: { sm: 0, md: 0, lg: 1 } }) {
-            Column() {
-              if (this.recommendations.length > 0) {
-                Column() {
-                  ShareCard({
-                    foodName: this.foodName,
-                    recommendations: this.recommendations,
-                    members: this.familyMembers
-                  })
-                }
-                .id('shareCardComponent')
-                .width('90%')
-                .margin({ bottom: 16 })
-              }
-
-              Column() {
-                Text($r('app.string.share_copy_text'))
-                  .fontSize(17)
-                  .fontWeight(FontWeight.Bold)
-                  .margin({ bottom: 8 })
-
-                Text(this.copyHint)
-                  .fontSize(12)
-                  .fontColor(COLORS.TEXT_GRAY_7575)
-                  .margin({ bottom: 12 })
-
-                TextArea({ text: this.shareText, placeholder: $r('app.string.share_placeholder') })
-                  .width('100%')
-                  .height(180)
-                  .padding(12)
-                  .backgroundColor(COLORS.BG_PAGE_LIGHT)
-                  .borderRadius(12)
-                  .onChange((value: string) => { this.shareText = value })
-
-                Row() {
-                  Button($r('app.string.share_refresh'))
-                    .layoutWeight(1)
-                    .height(BUTTON.HEIGHT_SECONDARY)
-                    .backgroundColor(COLORS.BG_WARM_BLUE)
-                    .fontColor(COLORS.PRIMARY)
-                    .borderRadius(BUTTON.RADIUS_SECONDARY)
-                    .onClick(() => { this.refreshShareText() })
-                    .accessibilityText('鍒锋柊鏂囨')
-                    .accessibilityLevel('yes')
-
-                  Button($r('app.string.share_copy'))
-                    .layoutWeight(1)
-                    .height(BUTTON.HEIGHT_SECONDARY)
-                    .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
-                    .fontColor(COLORS.TEXT_GRAY_6161)
-                    .borderRadius(BUTTON.RADIUS_SECONDARY)
-                    .margin({ left: 10 })
-                    .onClick(() => {
-                      ToastHelper.show(this.getUIContext(), this.copyHint)
-                    })
-                    .accessibilityText('澶嶅埗鏂囨')
-                    .accessibilityLevel('yes')
-                }
-                .width('100%')
-                .margin({ top: 12 })
-              }
-              .width('90%')
-              .padding(16)
-              .backgroundColor(COLORS.WHITE)
-              .borderRadius(16)
-              .alignItems(HorizontalAlign.Start)
-              .margin({ bottom: 16 })
-
-              Column() {
-                Text($r('app.string.share_to_group_title'))
-                  .fontSize(16)
-                  .fontWeight(FontWeight.Bold)
-                  .margin({ bottom: 12 })
-
-                if (this.myGroups.length === 0) {
-                  Column() {
-                    Text($r('app.string.no_group_hint'))
-                      .fontSize(13)
-                      .fontColor(COLORS.TEXT_GRAY_9E9E)
-                      .margin({ bottom: 8 })
-                    Button($r('app.string.create_or_join_group'))
-                      .height(BUTTON.HEIGHT_SMALL)
-                      .backgroundColor(COLORS.PRIMARY)
-                      .borderRadius(BUTTON.RADIUS_SMALL)
-                      .fontColor(COLORS.WHITE)
-                      .fontSize(13)
-                      .onClick(() => {
-                        safePushUrl('pages/FamilyGroupPage')
-                      })
-                      .accessibilityText('创建或加入群组')
-                      .accessibilityLevel('yes')
-                  }
-                  .width('100%')
-                  .alignItems(HorizontalAlign.Center)
-                } else {
-                  ForEach(this.myGroups.slice(0, 3), (group: GroupSummary) => {
-                    Row() {
-                      Stack() {
-                        Circle()
-                          .width(36)
-                          .height(36)
-                          .fill(COLORS.PRIMARY_LIGHT)
-                        Text(group.groupName.substring(0, 1))
-                          .fontSize(16)
-                          .fontColor(COLORS.PRIMARY)
-                      }
-                      .width(36)
-                      .height(36)
-                      Column() {
-                        Text(group.groupName)
-                          .fontSize(14)
-                          .fontWeight(FontWeight.Medium)
-                        Text(`${group.memberCount}位成员`)
-                          .fontSize(11)
-                          .fontColor(COLORS.TEXT_GRAY_9E9E)
-                      }
-                      .margin({ left: 10 })
-                      .layoutWeight(1)
-                      Text($r('app.string.share_to_group_action'))
-                        .fontSize(13)
-                        .fontColor(COLORS.PRIMARY)
-                        .onClick(async () => {
-                          await this.shareToGroup(group.groupId)
-                        })
-                        .accessibilityText('分享到群组')
-                        .accessibilityLevel('yes')
-                    }
-                    .width('100%')
-                    .padding({ top: 8, bottom: 8 })
-                  }, (group: GroupSummary) => group.groupId)
-                }
-              }
-              .width('90%')
-              .padding(16)
-              .backgroundColor(COLORS.WHITE)
-              .borderRadius(16)
-              .alignItems(HorizontalAlign.Start)
-              .margin({ bottom: 16 })
-
-              Column() {
-                Text('分享到')
-                  .fontSize(16)
-                  .fontWeight(FontWeight.Bold)
-                  .margin({ bottom: 12 })
-
-                Row({ space: 16 }) {
-                  ShareChannelButtonCmp({ label: '寰俊', color: '#07C160', action: () => { this.systemShareText() } })
-                  ShareChannelButtonCmp({ label: '寰崥', color: '#E6162D', action: () => { this.systemShareText() } })
-                  ShareChannelButtonCmp({ label: 'QQ', color: '#12B7F5', action: () => { this.systemShareText() } })
-                  ShareChannelButtonCmp({ label: '绯荤粺鍒嗕韩', color: COLORS.PRIMARY, action: () => { this.systemShareText() } })
-                }
-                .width('100%')
-                .justifyContent(FlexAlign.SpaceEvenly)
-              }
-              .width('90%')
-              .padding(16)
-              .backgroundColor(COLORS.WHITE)
-              .borderRadius(16)
-              .alignItems(HorizontalAlign.Start)
-              .margin({ bottom: 16 })
-
-              Column() {
-                Text('鍒嗕韩娴锋姤')
-                  .fontSize(16)
-                  .fontWeight(FontWeight.Bold)
-                  .margin({ bottom: 12 })
-
-                if (this.posterUri.length > 0) {
-                  Image(this.posterUri)
-                    .width('100%')
-                    .height(300)
-                    .objectFit(ImageFit.Contain)
-                    .borderRadius(8)
-                    .margin({ bottom: 12 })
-                } else {
-                  Column() {
-                    Text('鐐瑰嚮鐢熸垚鍒嗕韩娴锋姤')
-                      .fontSize(13)
-                      .fontColor(COLORS.TEXT_GRAY_9E9E)
-                  }
-                  .width('100%')
-                  .height(180)
-                  .justifyContent(FlexAlign.Center)
-                  .backgroundColor(COLORS.BG_PAGE_LIGHT)
-                  .borderRadius(8)
-                  .margin({ bottom: 12 })
-                }
-
-                Row() {
-                  Button('鐢熸垚娴锋姤')
-                    .layoutWeight(1)
-                    .height(BUTTON.HEIGHT_SECONDARY)
-                    .backgroundColor(COLORS.PRIMARY)
-                    .fontColor(COLORS.WHITE)
-                    .borderRadius(BUTTON.RADIUS_SECONDARY)
-                    .enabled(!this.isGeneratingPoster)
-                    .onClick(() => { this.generatePoster() })
-                    .accessibilityText('鐢熸垚娴锋姤')
-                    .accessibilityLevel('yes')
-
-                  Button('保存到相册')
-                    .layoutWeight(1)
-                    .height(BUTTON.HEIGHT_SECONDARY)
-                    .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
-                    .fontColor(COLORS.TEXT_GRAY_6161)
-                    .borderRadius(BUTTON.RADIUS_SECONDARY)
-                    .margin({ left: 10 })
-                    .enabled(this.posterUri.length > 0)
-                    .onClick(() => { this.savePosterToAlbum() })
-                    .accessibilityText('保存到相册')
-                    .accessibilityLevel('yes')
-                }
-                .width('100%')
-
-                if (this.shareLink.length > 0) {
-                  Row() {
-                    Text(this.shareLink)
-                      .fontSize(11)
-                      .fontColor(COLORS.TEXT_GRAY_9E9E)
-                      .maxLines(1)
-                      .textOverflow({ overflow: TextOverflow.Ellipsis })
-                      .layoutWeight(1)
-                    Text('澶嶅埗閾炬帴')
-                      .fontSize(12)
-                      .fontColor(COLORS.PRIMARY)
-                      .margin({ left: 8 })
-                      .onClick(() => { this.copyShareLink() })
-                      .accessibilityText('澶嶅埗閾炬帴')
-                      .accessibilityLevel('yes')
-                  }
-                  .width('100%')
-                  .margin({ top: 8 })
-                }
-              }
-              .width('90%')
-              .padding(16)
-              .backgroundColor(COLORS.WHITE)
-              .borderRadius(16)
-              .alignItems(HorizontalAlign.Start)
-              .margin({ bottom: 16 })
-
-              Column() {
-                Row({ space: 10 }) {
-                  Text('馃嵃').fontSize(20)
-                  Column() {
-                    Text($r('app.string.publish_as_recipe'))
-                      .fontSize(15)
-                      .fontWeight(FontWeight.Medium)
-                    Text($r('app.string.publish_to_community'))
-                      .fontSize(11)
-                      .fontColor(COLORS.TEXT_GRAY_9E9E)
-                  }
-                  .layoutWeight(1)
-                  .alignItems(HorizontalAlign.Start)
-                  Blank()
-                  Text($r('app.string.share_go_publish'))
-                    .fontSize(13)
-                    .fontColor(COLORS.PRIMARY)
-                    .onClick(() => {
-                      const publishParams = new Map<string, Object>()
-                      publishParams.set('relatedFoodId', this.foodName as Object)
-                      safePushUrl('pages/RecipeCreatePage', publishParams)
-                    })
-                    .accessibilityText('鍓嶅線鍙戝竷椋熻氨')
-                    .accessibilityLevel('yes')
-                }
-                .width('100%')
-              }
-              .width('90%')
-              .padding(16)
-              .backgroundColor(COLORS.WHITE)
-              .borderRadius(16)
-              .alignItems(HorizontalAlign.Start)
-              .margin({ bottom: 24 })
-            }
-            .width('100%')
-            .alignItems(HorizontalAlign.Center)
+        if (this.familyMembers.length > 0) {
+          Column() {
+            Text('成员评测结果')
+              .fontSize(16)
+              .fontWeight(FontWeight.Bold)
+            ForEach(this.familyMembers, (member: FamilyProfile) => {
+              Text(member.nickname || '成员')
+            }, (member: FamilyProfile) => member.memberId)
           }
         }
-        .width('100%')
-        .onBreakpointChange((bp: string) => { this.currentBreakpoint = bp })
+
+        Row({ space: 20 }) {
+          this.ShareChannelButtonCmp('复制文本', COLORS.ACCENT_GREEN_4CAF, (): void => { this.copyShareText(); })
+          this.ShareChannelButtonCmp('系统分享', COLORS.ACCENT_BLUE, (): void => { this.systemShareText(); })
+          this.ShareChannelButtonCmp('生成海报', COLORS.ORANGE_ACCENT, (): void => { this.generatePoster(); })
+          if (this.myGroups.length > 0) {
+            this.ShareChannelButtonCmp('分享到组', COLORS.ACCENT_PURPLE_9C27, (): void => { this.showGroupPicker = true; })
+          }
+        }
+        .margin({ top: 20, bottom: 20 })
+
+        if (this.posterUri.length > 0) {
+          Image(this.posterUri)
+            .width('90%')
+            .margin({ top: 20, bottom: 20 })
+        }
       }
       .width('100%')
     }
     .width('100%')
     .height('100%')
     .backgroundColor(COLORS.BG_PAGE)
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
+  }
+
+  @Builder
+  ShareChannelButtonCmp(label: string, color: string, action: () => void) {
+    Column() {
+      Stack() {
+        Circle()
+          .width(48)
+          .height(48)
+          .fill(color)
+        Text(label.substring(0, 1))
+          .fontSize(20)
+          .fontColor(COLORS.WHITE)
+      }
+      Text(label)
+        .fontSize(11)
+        .fontColor(COLORS.TEXT_PRIMARY)
+        .margin({ top: 6 })
+    }
+    .onClick(() => { action() })
+  }
+
+  private copyShareText(): void {
+    if (this.shareText.length === 0) return;
+    ToastHelper.show(this.getUIContext(), '已复制到剪贴板');
   }
 
   private refreshShareText() {
@@ -434,16 +199,16 @@ export struct SharePage {
     try {
       const context = AppStorage.get<common.UIAbilityContext>('appContext');
       if (!context) {
-        ToastHelper.show(this.getUIContext(), '鍒嗕韩澶辫触锛氭棤娉曡幏鍙栦笂涓嬫枃');
+        ToastHelper.show(this.getUIContext(), '分享失败：无法获取上下文');
         return;
       }
       const shareContent = this.shareText.length > 0
         ? this.shareText
         : this.buildShareLink();
-      await ShareKitService.shareText(context, shareContent, '鍒嗕韩椋熷搧鎶ュ憡');
+      await ShareKitService.shareText(context, shareContent, '分享食品报告');
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'systemShareText failed: %{public}s', JSON.stringify(e));
-      ToastHelper.show(this.getUIContext(), `鍒嗕韩澶辫触锛歿(e as Error).message}`);
+      ToastHelper.show(this.getUIContext(), `分享失败：${(e as Error).message}`);
     }
   }
 
@@ -455,10 +220,10 @@ export struct SharePage {
     try {
       const context = AppStorage.get<common.UIAbilityContext>('appContext');
       if (!context) return;
-      await ShareKitService.shareImage(context, this.posterUri, '鍒嗕韩椋熷搧娴锋姤');
+      await ShareKitService.shareImage(context, this.posterUri, '分享食品海报');
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'shareImage failed: %{public}s', JSON.stringify(e));
-      ToastHelper.show(this.getUIContext(), `鍥剧墖鍒嗕韩澶辫触锛歿(e as Error).message}`);
+      ToastHelper.show(this.getUIContext(), `图片分享失败：${(e as Error).message}`);
     }
   }
 
@@ -468,33 +233,30 @@ export struct SharePage {
     try {
       const context = AppStorage.get<common.UIAbilityContext>('appContext');
       if (!context) {
-        ToastHelper.show(this.getUIContext(), '鐢熸垚澶辫触');
+        ToastHelper.show(this.getUIContext(), '生成海报失败');
         return;
       }
       const posterData: PosterData = new PosterData()
-      posterData.foodName = this.foodName;
-      posterData.brand = '';
-      posterData.nutritionScore = this.recommendations.length > 0 ? 65 : 50;
-      posterData.novaGroup = 2;
-      posterData.shareLink = this.shareLink;
+      posterData.foodName = this.foodName || '食品分享';
+      posterData.brand = '扫描结果';
 
       const items: PosterNutritionItem[] = [];
       for (const rec of this.recommendations) {
         const member = this.familyMembers.find(m => m.memberId === rec.memberId);
         const item: PosterNutritionItem = new PosterNutritionItem()
-        item.name = member?.nickname || '鎴愬憳';
+        item.name = member?.nickname || '成员';
         item.value = rec.level;
-        item.unit = rec.maxAmount > 0 ? `鈮rec.maxAmount}g` : '';
+        item.unit = rec.maxAmount > 0 ? `≤${rec.maxAmount}g` : '';
         items.push(item);
       }
       posterData.nutritionItems = items;
 
-      const generator: SharePosterGenerator = new SharePosterGenerator()
+      const generator: SharePosterGenerator = new SharePosterGenerator(context)
       this.posterUri = await generator.generatePoster(posterData);
       ToastHelper.show(this.getUIContext(), '海报已生成');
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'generatePoster failed: %{public}s', JSON.stringify(e));
-      ToastHelper.show(this.getUIContext(), '娴锋姤鐢熸垚澶辫触');
+      ToastHelper.show(this.getUIContext(), '海报生成失败');
     } finally {
       this.isGeneratingPoster = false;
     }
@@ -505,7 +267,7 @@ export struct SharePage {
     try {
       const context = AppStorage.get<common.UIAbilityContext>('appContext');
       if (!context) {
-        ToastHelper.show(this.getUIContext(), '淇濆瓨澶辫触');
+        ToastHelper.show(this.getUIContext(), '保存失败');
         return;
       }
       const helper = photoAccessHelper.getPhotoAccessHelper(context);
@@ -521,7 +283,7 @@ export struct SharePage {
       }
       fileIo.closeSync(srcFile.fd);
       fileIo.closeSync(dstFile.fd);
-      ToastHelper.show(this.getUIContext(), '宸蹭繚瀛樺埌鐩稿唽');
+      ToastHelper.show(this.getUIContext(), '已保存到相册');
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'savePosterToAlbum failed: %{public}s', JSON.stringify(e));
       ToastHelper.show(this.getUIContext(), '保存到相册失败');
@@ -531,48 +293,12 @@ export struct SharePage {
   private copyShareLink(): void {
     if (this.shareLink.length === 0) return;
     try {
-      const pasteboard = requireModule('@kit.BasicServicesKit').pasteboard;
-      const pasteData = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, this.shareLink);
+      const pasteboardData = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, this.shareLink);
       const systemPasteboard = pasteboard.getSystemPasteboard();
-      systemPasteboard.setData(pasteData);
-      ToastHelper.show(this.getUIContext(), '链接已复制);
+      systemPasteboard.setData(pasteboardData);
+      ToastHelper.show(this.getUIContext(), '链接已复制');
     } catch (e) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'copyLink failed: %{public}s', JSON.stringify(e));
-      ToastHelper.show(this.getUIContext(), '澶嶅埗澶辫触');
+      ToastHelper.show(this.getUIContext(), '复制失败');
     }
-  }
-
-  private async shareToGroup(groupId: string) {
-    const summaryLines: string[] = []
-    for (const rec of this.recommendations) {
-      const member = this.familyMembers.find(m => m.memberId === rec.memberId)
-      const name = member?.nickname || '鎴愬憳'
-      const amount = rec.maxAmount > 0 ? `寤鸿涓婇檺 ${rec.maxAmount}g` : '寤鸿鏆傛椂涓嶅悆'
-      summaryLines.push(`${name}锛歿rec.level}锛宍amount}`)
-    }
-
-    try {
-      await this.appState.shareFoodScanToGroup(
-        groupId,
-        this.foodName,
-        this.foodName,
-        50,
-        `椋熷搧鎵弿锛歿his.foodName}`,
-        summaryLines.join('\n')
-      )
-      ToastHelper.show(this.getUIContext(), $r('app.string.share_to_group_success'))
-    } catch (e) {
-      ToastHelper.show(this.getUIContext(), `鍒嗕韩澶辫触锛歿(e as Error).message}`)
-    }
-  }
-
-    aboutToDisappear(): void { this.tracker.onDisappear() }
-
-
-  pageTransition() {
-    PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })
-      .slide(SlideEffect.Right)
-    PageTransitionExit({ duration: 250, curve: Curve.FastOutSlowIn })
-      .slide(SlideEffect.Left)
   }
 }

@@ -68,7 +68,7 @@ export class SmartBasketService {
       } catch (_) {
       hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_)); /* fallback */ }
 
-      let level: SmartBasketItem.level = 'safe';
+      let level: 'safe' | 'caution' | 'avoid' = 'safe';
       if (ingredientRisk) {
         const risk = ingredientRisk.overallRisk;
         if (risk === 'critical' || risk === 'high') { level = 'avoid'; avoidCount++; }
@@ -80,20 +80,24 @@ export class SmartBasketService {
 
       let nutriScore = food.nutriScore ?? 50;
 
-      smartItems.push({ food, nutriScore, ingredientRisk, level });
+      const item: SmartBasketItem = { food, nutriScore, ingredientRisk, level };
+      smartItems.push(item);
     }
 
     const basketCheck = this.basketEngine.check(items, profiles);
 
     const avoidItems = smartItems.filter(i => i.level === 'avoid');
-    const topSwaps: SwapSuggestion[] = avoidItems.slice(0, 3).map(item => ({
-      avoidFoodName: item.food.foodName,
-      reason: item.ingredientRisk?.highRiskCount
-        ? `${item.ingredientRisk.highRiskCount}种高风险添加剂`
-        : '综合评分偏低',
-      betterAlternative: this.findQuickAlternative(item.food),
-      benefit: '配料更简洁、评分更高',
-    }));
+    const topSwaps: SwapSuggestion[] = avoidItems.slice(0, 3).map((item: SmartBasketItem): SwapSuggestion => {
+      const s: SwapSuggestion = {
+        avoidFoodName: item.food.foodName,
+        reason: item.ingredientRisk?.highRiskCount
+          ? `${item.ingredientRisk.highRiskCount}种高风险添加剂`
+          : '综合评分偏低',
+        betterAlternative: this.findQuickAlternative(item.food),
+        benefit: '配料更简洁、评分更高',
+      };
+      return s;
+    });
 
     const overallScore = Math.round(
       smartItems.reduce((s: number, i: SmartBasketItem) => s + i.nutriScore, 0) / Math.max(1, items.length)

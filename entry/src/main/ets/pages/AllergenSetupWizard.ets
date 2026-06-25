@@ -1,7 +1,10 @@
-import { safeBack, COLORS, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker } from 'hsp_core';
+import { safeBack, COLORS, SHADOWS, RADIUS, SPACING, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker, ThemeReactive, themeReactive } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { AppState } from '../AppState';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { router } from '@kit.ArkUI';
+import { preferences } from '@kit.ArkData';
+import { common } from '@kit.AbilityKit';
 
 const TAG = 'AllergenSetupWizard';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -44,6 +47,8 @@ export struct AllergenSetupWizard {
 
   private tracker: PageResourceTracker = createPageTracker('AllergenSetupWizard')
 
+  private themeRef: ThemeReactive = themeReactive
+
   aboutToAppear(): void {
     this.tracker.onAppear()
   }
@@ -51,28 +56,35 @@ export struct AllergenSetupWizard {
 
   build() {
     Column() {
-      Row() {
-        if (this.currentStep > 0 && !this.isComplete) {
-          BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
-            .onClick(() => { this.currentStep-- })
-            .accessibilityText('上一步')
-            .accessibilityLevel('yes')
+      Column() {
+        Row() {
+          if (this.currentStep > 0 && !this.isComplete) {
+            BackButton({ fontColor: COLORS.WHITE })
+              .onClick(() => { this.currentStep-- })
+              .accessibilityText('上一步')
+              .accessibilityLevel('yes')
+          }
+          Blank()
+          Text('健康档案配置')
+            .fontSize(20)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(COLORS.WHITE)
         }
-        Blank()
-        Text('健康档案配置')
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
+        .width('100%')
+        .padding({ left: 16, right: 16, top: 56, bottom: 16 })
       }
       .width('100%')
-      .padding({ left: 16, right: 16, top: 16, bottom: 8 })
+      .linearGradient({ angle: 135, colors: [['#004D40', 0.0], ['#00695C', 0.3], ['#00796B', 0.7], ['#26A69A', 1.0]] })
+      .borderRadius({ topLeft: 0, topRight: 0, bottomLeft: 24, bottomRight: 24 })
+      .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP])
 
       if (!this.isComplete) {
         Row() {
-          ForEach(Array.from({ length: this.TOTAL_STEPS }, (_, i: number) => i), (step: number) => {
+          ForEach(Array.from({ length: this.TOTAL_STEPS }, (_: Object, i: number): number => i), (step: number) => {
             Row()
               .width(step <= this.currentStep ? '25%' : '25%')
               .height(4)
-              .backgroundColor(step <= this.currentStep ? COLORS.PRIMARY : '#E0E0E0')
+              .backgroundColor(step <= this.currentStep ? COLORS.PRIMARY : COLORS.BORDER)
               .borderRadius(2)
           }, (step: number) => `${step}`)
         }
@@ -116,7 +128,7 @@ export struct AllergenSetupWizard {
             Button('上一步')
               .layoutWeight(1)
               .height(44)
-              .backgroundColor('#F0F0F0')
+              .backgroundColor(COLORS.BG_LIGHT)
               .fontColor(COLORS.TEXT_GRAY_3333)
               .borderRadius(22)
               .margin({ right: 8 })
@@ -147,6 +159,7 @@ export struct AllergenSetupWizard {
     .width('100%')
     .height('100%')
     .backgroundColor(COLORS.BG_PAGE)
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   @Builder
@@ -173,13 +186,14 @@ export struct AllergenSetupWizard {
         .width('100%')
         .padding({ top: 12, bottom: 12 })
         .borderWidth({ bottom: 0.5 })
-        .borderColor('#E0E0E0')
+        .borderColor(COLORS.BORDER)
       }, (option: string) => option)
     }
     .width('100%')
     .backgroundColor(COLORS.WHITE)
     .borderRadius(12)
     .padding({ left: 16, right: 16 })
+    .shadow(SHADOWS.SM)
   }
 
   @Builder
@@ -195,7 +209,7 @@ export struct AllergenSetupWizard {
           .fontSize(14)
           .padding({ left: 14, right: 14, top: 10, bottom: 10 })
           .borderRadius(20)
-          .backgroundColor(this.selectedGoals.includes(goal) ? COLORS.PRIMARY : '#F0F0F0')
+          .backgroundColor(this.selectedGoals.includes(goal) ? COLORS.PRIMARY : COLORS.BG_LIGHT)
           .fontColor(this.selectedGoals.includes(goal) ? COLORS.WHITE : COLORS.TEXT_GRAY_3333)
           .margin({ right: 8, bottom: 8 })
           .onClick(() => { this.toggleGoal(goal) })
@@ -219,7 +233,7 @@ export struct AllergenSetupWizard {
           .fontSize(14)
           .padding({ left: 14, right: 14, top: 10, bottom: 10 })
           .borderRadius(20)
-          .backgroundColor(this.selectedAllergens.includes(allergen) ? '#FF4444' : '#F0F0F0')
+          .backgroundColor(this.selectedAllergens.includes(allergen) ? COLORS.LEVEL_RED : COLORS.BG_LIGHT)
           .fontColor(this.selectedAllergens.includes(allergen) ? COLORS.WHITE : COLORS.TEXT_GRAY_3333)
           .margin({ right: 8, bottom: 8 })
           .onClick(() => { this.toggleAllergen(allergen) })
@@ -239,7 +253,7 @@ export struct AllergenSetupWizard {
         .accessibilityLevel('yes')
       Button('添加')
         .height(40)
-        .backgroundColor('#FF4444')
+        .backgroundColor(COLORS.LEVEL_RED)
         .fontColor(COLORS.WHITE)
         .borderRadius(20)
         .margin({ left: 8 })
@@ -253,7 +267,7 @@ export struct AllergenSetupWizard {
           (allergen: string) => {
             Row() {
               Text(allergen).fontSize(14).layoutWeight(1)
-              Text('✕').fontSize(16).fontColor('#FF4444')
+              Text('✕').fontSize(16).fontColor(COLORS.LEVEL_RED)
                 .onClick(() => { this.toggleAllergen(allergen) })
             }
             .width('100%')
@@ -278,7 +292,7 @@ export struct AllergenSetupWizard {
           .fontSize(14)
           .padding({ left: 14, right: 14, top: 10, bottom: 10 })
           .borderRadius(20)
-          .backgroundColor(this.selectedIntolerances.includes(item) ? '#FF8800' : '#F0F0F0')
+          .backgroundColor(this.selectedIntolerances.includes(item) ? COLORS.ORANGE_ACCENT : COLORS.BG_LIGHT)
           .fontColor(this.selectedIntolerances.includes(item) ? COLORS.WHITE : COLORS.TEXT_GRAY_3333)
           .margin({ right: 8, bottom: 8 })
           .onClick(() => { this.toggleIntolerance(item) })
@@ -298,7 +312,7 @@ export struct AllergenSetupWizard {
         .accessibilityLevel('yes')
       Button('添加')
         .height(40)
-        .backgroundColor('#FF8800')
+        .backgroundColor(COLORS.ORANGE_ACCENT)
         .fontColor(COLORS.WHITE)
         .borderRadius(20)
         .margin({ left: 8 })
@@ -340,7 +354,7 @@ export struct AllergenSetupWizard {
         .fontColor(COLORS.WHITE)
         .borderRadius(22)
         .margin({ top: 24 })
-        .onClick(() => { safeBack() })
+        .onClick(() => { router.replaceUrl({ url: 'pages/MainTabsPage' }) })
         .accessibilityText('完成')
         .accessibilityLevel('yes')
     }
@@ -364,7 +378,7 @@ export struct AllergenSetupWizard {
     .width('100%')
     .padding({ top: 8, bottom: 8 })
     .borderWidth({ bottom: 0.5 })
-    .borderColor('#E0E0E0')
+    .borderColor(COLORS.BORDER)
   }
 
   private stepTitle(): string {
@@ -446,6 +460,12 @@ export struct AllergenSetupWizard {
         await this.appState.saveMember(member);
         hilog.info(DOMAIN_ZERO, TAG, 'Wizard complete: %{public}d allergens, %{public}d goals',
           this.selectedAllergens.length, this.selectedGoals.length);
+      }
+      const ctx = AppStorage.get<common.Context>('appContext')
+      if (ctx) {
+        const prefs = await preferences.getPreferences(ctx, 'app_state')
+        await prefs.put('hasCompletedSetup', true)
+        await prefs.flush()
       }
       this.isComplete = true;
     } catch (e) {

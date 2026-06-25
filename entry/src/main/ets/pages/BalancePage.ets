@@ -1,7 +1,8 @@
 import {
-  ToastHelper, safeBack, FamilyProfile, DailyBudget, FoodLabel, FoodSource, MealBalance, MealScenario, ChildProtection, PaywallTrigger, MemberTier, COLORS, DateUtil, PageResourceTracker, createPageTracker
+  ToastHelper, safeBack, FamilyProfile, DailyBudget, FoodLabel, FoodSource, MealBalance, MealScenario, ChildProtection, PaywallTrigger, MemberTier, COLORS, SHADOWS, DateUtil, PageResourceTracker, createPageTracker, ThemeReactive, themeReactive, ThemeColors, ThemeMode
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
+import { GradientHeader } from '../components/GradientHeader';
 import { AppState } from '../AppState';
 import { BalanceAdviceCard } from '../components/BalanceAdviceCard';
 import { ChildProtectionCard, PositiveAdvice } from 'feature_report';
@@ -35,6 +36,20 @@ export struct BalancePage {
   private tracker: PageResourceTracker = createPageTracker('BalancePage')
 
   private scenarios: ScenarioOption[] = []
+
+  private themeRef: ThemeReactive = themeReactive
+
+  private get isDark(): boolean {
+    if (this.themeRef.key >= 0) { /* trigger reactive */ }
+    return ThemeColors.getTheme() === ThemeMode.DARK;
+  }
+
+  private get pageBgGradient(): LinearGradient {
+    if (this.isDark) {
+      return { angle: 180, colors: [['#0D1B0E', 0.0], ['#1A2F1C', 0.5], ['#0A1A0D', 1.0]] };
+    }
+    return { angle: 180, colors: [['#E8EAF6', 0.0], ['#E0F2F1', 0.3], ['#FFF8E1', 0.7], ['#F3E5F5', 1.0]] };
+  }
 
   aboutToAppear() {
     this.tracker.onAppear()
@@ -91,18 +106,7 @@ export struct BalancePage {
     Stack() {
       Scroll() {
         Column() {
-          Row() {
-            BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
-              .onClick(() => { safeBack() })
-              .accessibilityText('返回')
-              .accessibilityLevel('yes')
-            Text($r('app.string.record_meal'))
-              .fontSize(20)
-              .fontWeight(FontWeight.Bold)
-              .margin({ left: 16 })
-          }
-          .width('100%')
-          .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+          GradientHeader({ title: $r('app.string.record_meal') })
 
           // 每日次数提示
           if (!this.isLocked) {
@@ -149,7 +153,7 @@ export struct BalancePage {
               })
               .margin({ right: 8, bottom: 10 })
               .onClick(() => { this.handleScenarioSelection(scenario.value) })
-              .accessibilityText(scenario.label )
+              .accessibilityText(scenario.label as string)
               .accessibilityLevel('yes')
             }, (scenario: ScenarioOption) => scenario.value)
           }
@@ -181,7 +185,7 @@ export struct BalancePage {
       }
       .width('100%')
       .height('100%')
-      .backgroundColor(COLORS.BG_PAGE)
+      .linearGradient(this.pageBgGradient)
 
       // 付费墙弹窗（覆盖在内容之上）
       if (this.paywallTrigger !== null) {
@@ -194,6 +198,7 @@ export struct BalancePage {
     }
     .width('100%')
     .height('100%')
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   @Builder
@@ -225,6 +230,7 @@ export struct BalancePage {
     .padding(16)
     .backgroundColor(COLORS.WHITE)
     .borderRadius(16)
+    .shadow(SHADOWS.MD)
     .alignItems(HorizontalAlign.Start)
     .margin({ bottom: 12 })
   }
@@ -256,6 +262,7 @@ export struct BalancePage {
     .padding(16)
     .backgroundColor(COLORS.WHITE)
     .borderRadius(16)
+    .shadow(SHADOWS.MD)
     .alignItems(HorizontalAlign.Start)
     .margin({ bottom: 16 })
   }
@@ -274,7 +281,7 @@ export struct BalancePage {
     }
     .width('48%')
     .padding(10)
-    .backgroundColor('#F7F8FA')
+    .backgroundColor(COLORS.BG_PAGE_LIGHT)
     .borderRadius(12)
     .alignItems(HorizontalAlign.Start)
   }
@@ -286,7 +293,7 @@ export struct BalancePage {
         Text($r('app.string.advice_for_you'))
           .fontSize(16)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#2E7D32')
+          .fontColor(COLORS.PRIMARY_DARK)
           .margin({ bottom: 8 })
 
         ForEach(advice.whatToSupplement, (item: string) => {
@@ -304,7 +311,7 @@ export struct BalancePage {
           ForEach(advice.howToSupplement, (item: string) => {
             Text(`• ${item}`)
               .fontSize(13)
-              .fontColor('#616161')
+              .fontColor(COLORS.TEXT_GRAY_6161)
               .margin({ bottom: 4 })
           }, (item: string, index: number) => `${index}`)
         }
@@ -313,6 +320,7 @@ export struct BalancePage {
       .padding(16)
       .backgroundColor(COLORS.WHITE)
       .borderRadius(16)
+      .shadow(SHADOWS.MD)
       .alignItems(HorizontalAlign.Start)
       .margin({ bottom: 24 })
     }

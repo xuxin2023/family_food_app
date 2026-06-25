@@ -1,12 +1,12 @@
 // hsp-core: NutritionRadarChart 无障碍适配增强
 // 为雷达图增加 accessibilityText 动态摘要 + voiceOver 区域标记
 
-@Component
+@ComponentV2
 export struct NutritionRadarChartAccessible {
-  @Prop data: RadarChartDataItem[] = [];
-  @Prop chartTitle: string = '营养雷达图';
-  @Prop width: number = 280;
-  @Prop height: number = 240;
+  @Param data: RadarChartDataItem[] = [];
+  @Param chartTitle: string = '营养雷达图';
+  @Param width: number = 280;
+  @Param height: number = 240;
 
   build() {
     Column() {
@@ -30,13 +30,15 @@ export struct NutritionRadarChartAccessible {
   }
 
   private buildAccessibilityDescription(): string {
+    const initMax: RadarChartDataItem = { label: '', value: 0 }
     const maxItem = this.data.reduce(
-      (max, d) => d.value > max.value ? d : max,
-      { label: '', value: 0 } as RadarChartDataItem
+      (max: RadarChartDataItem, d: RadarChartDataItem): RadarChartDataItem => d.value > max.value ? d : max,
+      initMax
     );
+    const initMin: RadarChartDataItem = { label: '', value: 100 }
     const minItem = this.data.reduce(
-      (min, d) => d.value < min.value ? d : min,
-      { label: '', value: 100 } as RadarChartDataItem
+      (min: RadarChartDataItem, d: RadarChartDataItem): RadarChartDataItem => d.value < min.value ? d : min,
+      initMin
     );
     if (maxItem.label) {
       return `最佳指标为${maxItem.label}，${maxItem.value}分；最需改善为${minItem.label}，${minItem.value}分。共${this.data.length}项指标。`;

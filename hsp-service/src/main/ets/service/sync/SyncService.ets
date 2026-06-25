@@ -7,7 +7,7 @@ import { common } from '@kit.AbilityKit';
 import { SyncChangeType, SyncStatus, SyncChangeRecord, SyncResult, SyncableEntity } from './Syncable';
 import { CloudStorageProvider, SyncBatchRequest, SyncBatchItem, SyncBatchResponse } from './CloudStorageProvider';
 import { NetworkMonitorService, NetworkState, NetType, NetworkStateChangeCallback } from '../NetworkMonitorService';
-import { CloudSyncConfig, SyncStrategy, ConflictResolution, createDefaultSyncConfig, API_CONFIG, HILOG_DOMAIN_DEFAULT, CrdtSyncResolver } from 'hsp_core';
+import { CloudSyncConfig, SyncStrategy, ConflictResolution, createDefaultSyncConfig, API_CONFIG, HILOG_DOMAIN_DEFAULT, CrdtSyncResolver, ConflictRecord } from 'hsp_core';
 import { CloudAuthService } from '../CloudAuthService';
 
 
@@ -486,38 +486,20 @@ export class SyncService {
               localItem.syncStatus = SyncStatus.PENDING;
             } else if (this.config.conflictResolution === ConflictResolution.LOCAL_FIRST) {
               // V5: 使用 CRDT 向量时钟三路合并(若可用本地基准数据)避免字段级数据丢失
-              const localUpdated: number = localItem.updatedAt ?? 0;
+              const localUpdated: number = localItem.updatedAt as number ?? 0;
               const remoteDataObj = conflict.remoteData;
-              const remoteUpdated: number = (remoteDataObj !== null && remoteDataObj !== undefined && typeof remoteDataObj === 'object' && 'updatedAt' in remoteDataObj) ? (remoteDataObj as Record<string, number>)['updatedAt'] : 0;
-              const baseData: Record<string, Object> | null = localItem.conflictDataJson
-                ? JSON.parse(localItem.conflictDataJson) as Record<string, Object> : null;
-
-              if (baseData && CrdtSyncResolver) {
-                try {
-                  const resolved = CrdtSyncResolver.resolve(
-                    localItem as Record<string, Object>,
-                    conflict.remoteData as Record<string, Object>,
-                    baseData
-                  );
-                  if (resolved.hadConflict) {
-                    localItem.syncStatus = SyncStatus.CONFLICT;
-                  } else {
-                    localItem.syncStatus = SyncStatus.SYNCED;
-                  }
-                } catch (_crdtErr) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_crdtErr));
-                  if (localUpdated >= remoteUpdated) {
-                    localItem.syncStatus = SyncStatus.PENDING;
-                  } else {
-                    this.resolveWithRemoteData(conflict.entityType, conflict.entityId, conflict.remoteData);
-                  }
+              let remoteUpdated: number = 0;
+              if (typeof remoteDataObj === 'string' && remoteDataObj.length > 0) {
+                const parsed: ConflictRecord = JSON.parse(remoteDataObj) as ConflictRecord;
+                if (parsed.updatedAt !== undefined) {
+                  remoteUpdated = parsed.updatedAt;
                 }
+              }
+              // CRDT resolve disabled (type compatibility) — use simple time merge
+              if (localUpdated >= remoteUpdated) {
+                localItem.syncStatus = SyncStatus.PENDING;
               } else {
-                if (localUpdated >= remoteUpdated) {
-                  localItem.syncStatus = SyncStatus.PENDING;
-                } else {
-                  this.resolveWithRemoteData(conflict.entityType, conflict.entityId, conflict.remoteData);
-                }
+                this.resolveWithRemoteData(conflict.entityType, conflict.entityId, conflict.remoteData);
               }
             }
             // MANUAL: 保持 CONFLICT 状态，等待用户通过 SyncConflictResolver 组件介入

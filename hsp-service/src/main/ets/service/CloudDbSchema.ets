@@ -77,11 +77,13 @@ export class CommunityRecipeCloudObject {
   createdAt: number = 0;
 }
 
-export const CLOUD_DB_INDEXES: Record<string, string[]> = {
-  [CloudDbTableName.FAMILY_MEMBERS]: ['uid', 'ageGroup'],
-  [CloudDbTableName.FOOD_RECORDS]: ['member_id', 'barcode', 'scan_timestamp'],
-  [CloudDbTableName.SCAN_HISTORY]: ['member_id', 'scan_timestamp'],
-  [CloudDbTableName.SUBSCRIPTIONS]: ['uid', 'tier', 'end_date'],
-  [CloudDbTableName.COMMUNITY_RECIPES]: ['author_uid', 'category', 'created_at'],
-  [CloudDbTableName.RECIPE_COMMENTS]: ['recipe_id', 'created_at'],
-};
+export function getCloudDbIndexes(): Map<string, string[]> {
+  const indexes: Map<string, string[]> = new Map<string, string[]>();
+  indexes.set(CloudDbTableName.FAMILY_MEMBERS, ['uid', 'ageGroup']);
+  indexes.set(CloudDbTableName.FOOD_RECORDS, ['member_id', 'barcode', 'scan_timestamp']);
+  indexes.set(CloudDbTableName.SCAN_HISTORY, ['member_id', 'scan_timestamp']);
+  indexes.set(CloudDbTableName.SUBSCRIPTIONS, ['uid', 'tier', 'end_date']);
+  indexes.set(CloudDbTableName.COMMUNITY_RECIPES, ['author_uid', 'category', 'created_at']);
+  indexes.set(CloudDbTableName.RECIPE_COMMENTS, ['recipe_id', 'created_at']);
+  return indexes;
+}

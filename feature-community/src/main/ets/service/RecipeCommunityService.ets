@@ -3,10 +3,12 @@
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { RecipeRepository } from '../repository/RecipeRepository';
+import { RecipeUpdate } from '../repository/RecipeRepository';
 import {
   Recipe, RecipeComment, RecipeIngredient, RecipeStep, RecipeNutrition, RecipeDifficulty, RecipeCategory, DietTag, RecipeQueryParams, CreateRecipeParams, HILOG_DOMAIN_DEFAULT
 } from 'hsp_core';
 import { AuthService } from 'hsp_service';
+import { getRecipeSeedData } from './RecipeSeedData';
 
 export interface RecipeValidationResult {
   valid: boolean;
@@ -23,10 +25,37 @@ export { CreateRecipeParams } from 'hsp_core';
 export class RecipeCommunityService {
   private recipeRepo: RecipeRepository;
   private authService: AuthService;
+  private seedDataChecked: boolean = false;
 
   constructor(recipeRepo: RecipeRepository, authService: AuthService) {
     this.recipeRepo = recipeRepo;
     this.authService = authService;
+  }
+
+  /**
+   * 确保种子数据已写入 — 首次安装时填充示例食谱，避免社区页面空白。
+   * 幂等：使用固定 recipeId（saveRecipe 走 ON_CONFLICT_REPLACE），
+   * 且以 seedDataChecked 标记保证每次启动仅检查一次。
+   */
+  async ensureSeedData(): Promise<void> {
+    if (this.seedDataChecked) {
+      return;
+    }
+    this.seedDataChecked = true;
+    try {
+      const existing = await this.recipeRepo.queryApprovedRecipes(0, 1, '', '');
+      if (existing.length > 0) {
+        return;
+      }
+      const seeds: Recipe[] = getRecipeSeedData();
+      for (let i = 0; i < seeds.length; i++) {
+        await this.recipeRepo.saveRecipe(seeds[i]);
+      }
+      hilog.info(DOMAIN_ZERO, TAG, 'Seed recipes inserted: %{public}d', seeds.length);
+    } catch (error) {
+      this.seedDataChecked = false;
+      hilog.error(DOMAIN_ZERO, TAG, 'ensureSeedData failed: %{public}s', JSON.stringify(error));
+    }
   }
 
   // ========== 食谱发布与管理 ==========
@@ -44,7 +73,8 @@ export class RecipeCommunityService {
     const allText = `${params.title ?? ''} ${params.description ?? ''}`;
     const sensitiveHit = RecipeCommunityService.SENSITIVE_WORDS.some(w => allText.includes(w));
 
-    return { valid: missingFields.length === 0 && !sensitiveHit, missingFields, sensitiveHit } as Record<string, Object>;
+    const result: RecipeValidationResult = { valid: missingFields.length === 0 && !sensitiveHit, missingFields, sensitiveHit };
+    return result;
   }
 
   /**
@@ -109,19 +139,19 @@ export class RecipeCommunityService {
     if (!recipe) throw new Error('食谱不存在');
     if (recipe.authorUid !== uid) throw new Error('仅作者可以编辑食谱');
 
-    const updates: Record<string, Object> = {};
-    if (params['title'] !== undefined) updates.title = params['title'];
-    if (params['description'] !== undefined) updates.description = params['description'];
-    if (params['coverImageUrl'] !== undefined) updates.coverImageUrl = params['coverImageUrl'];
-    if (params['category'] !== undefined) updates.category = params['category'];
-    if (params['difficulty'] !== undefined) updates.difficulty = params['difficulty'];
-    if (params['totalMinutes'] !== undefined) updates.totalMinutes = params['totalMinutes'];
-    if (params['servings'] !== undefined) updates.servings = params['servings'];
-    if (params['ingredients'] !== undefined) updates.ingredients = params['ingredients'];
-    if (params['steps'] !== undefined) updates.steps = params['steps'];
-    if (params['nutrition'] !== undefined) updates.nutrition = params['nutrition'];
-    if (params['dietTags'] !== undefined) updates.dietTags = params['dietTags'];
-    if (params['isDraft'] !== undefined) updates.isDraft = params['isDraft'];
+    const updates: RecipeUpdate = new RecipeUpdate();
+    if (params['title'] !== undefined) updates.title = params['title'] as string;
+    if (params['description'] !== undefined) updates.description = params['description'] as string;
+    if (params['coverImageUrl'] !== undefined) updates.coverImageUrl = params['coverImageUrl'] as string;
+    if (params['category'] !== undefined) updates.category = params['category'] as string;
+    if (params['difficulty'] !== undefined) updates.difficulty = params['difficulty'] as string;
+    if (params['totalMinutes'] !== undefined) updates.totalMinutes = params['totalMinutes'] as number;
+    if (params['servings'] !== undefined) updates.servings = params['servings'] as number;
+    if (params['ingredients'] !== undefined) updates.ingredients = params['ingredients'] as string[];
+    if (params['steps'] !== undefined) updates.steps = params['steps'] as string[];
+    if (params['nutrition'] !== undefined) updates.nutrition = params['nutrition'] as Object;
+    if (params['dietTags'] !== undefined) updates.dietTags = params['dietTags'] as string[];
+    if (params['isDraft'] !== undefined) updates.isDraft = params['isDraft'] as boolean;
 
     await this.recipeRepo.updateRecipe(recipeId, updates);
   }
@@ -143,6 +173,7 @@ export class RecipeCommunityService {
    * 查询社区食谱（分页）
    */
   async queryRecipes(params: RecipeQueryParams): Promise<Recipe[]> {
+    await this.ensureSeedData();
     const category: string = (params.category as string) ?? '';
     const sortBy: string = (params.sortBy as string) ?? '';
     return await this.recipeRepo.queryApprovedRecipes(
@@ -192,7 +223,8 @@ export class RecipeCommunityService {
     // 更新评论数
     const recipe = await this.recipeRepo.getRecipe(recipeId);
     if (recipe) {
-      const updateData: Record<string, Object> = { 'commentCount': recipe.commentCount + 1 };
+      const updateData: RecipeUpdate = new RecipeUpdate();
+      updateData.commentCount = recipe.commentCount + 1;
       await this.recipeRepo.updateRecipe(recipeId, updateData);
     }
 

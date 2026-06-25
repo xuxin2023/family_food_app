@@ -1,8 +1,10 @@
 // 成员编辑页 - 创建/编辑家庭成员画像
 
 import {
-  safeBack, getPageParams, FamilyProfile, AgeGroup, HealthGoal, HealthSignal, StepLevel, SleepStatus, BpStatus, BsStatus, DateUtil, PaywallTrigger, MemberTier, getTierDisplayName, BUTTON, COLORS, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker
+  safeBack, getPageParams, FamilyProfile, AgeGroup, HealthGoal, HealthSignal, StepLevel, SleepStatus, BpStatus, BsStatus, DateUtil, PaywallTrigger, MemberTier, getTierDisplayName, BUTTON, COLORS, SHADOWS, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker, ThemeReactive, themeReactive
 } from 'hsp_core';
+import { BackButton } from '../components/BackButton';
+import { GradientHeader } from '../components/GradientHeader';
 import { AppState } from '../AppState';
 import { PaywallDialog } from 'feature_scan';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -31,14 +33,14 @@ export struct MemberEditPage {
   private appState: AppState = AppState.getInstance()
   private editingMemberId: string = ''  // 空表示新建
 
-  private ageGroups: ResourceStr[] = [$r('app.string.member_edit_age_child'), $r('app.string.member_edit_age_teen'), $r('app.string.member_edit_age_adult'), $r('app.string.member_edit_age_middle_old'), $r('app.string.member_edit_age_old')]
-  private healthGoals: ResourceStr[] = [$r('app.string.member_edit_goal_control_bp'), $r('app.string.member_edit_goal_control_sugar'), $r('app.string.member_edit_goal_control_fat'), $r('app.string.member_edit_goal_lose_fat'), $r('app.string.member_edit_goal_child'), $r('app.string.member_edit_goal_none')]
-  private stepLevels: ResourceStr[] = [$r('app.string.member_edit_step_low'), $r('app.string.member_edit_step_normal'), $r('app.string.member_edit_step_high')]
-  private sleepStatuses: ResourceStr[] = [$r('app.string.member_edit_sleep_good'), $r('app.string.member_edit_sleep_fair'), $r('app.string.member_edit_sleep_poor')]
-  private bpStatuses: ResourceStr[] = [$r('app.string.member_edit_bp_normal'), $r('app.string.member_edit_bp_elevated'), $r('app.string.member_edit_bp_high')]
-  private bsStatuses: ResourceStr[] = [$r('app.string.member_edit_bs_normal'), $r('app.string.member_edit_bs_elevated'), $r('app.string.member_edit_bs_high')]
+  private ageGroups: Resource[] = [$r('app.string.member_edit_age_child'), $r('app.string.member_edit_age_teen'), $r('app.string.member_edit_age_adult'), $r('app.string.member_edit_age_middle_old'), $r('app.string.member_edit_age_old')]
+  private healthGoals: Resource[] = [$r('app.string.member_edit_goal_control_bp'), $r('app.string.member_edit_goal_control_sugar'), $r('app.string.member_edit_goal_control_fat'), $r('app.string.member_edit_goal_lose_fat'), $r('app.string.member_edit_goal_child'), $r('app.string.member_edit_goal_none')]
+  private stepLevels: Resource[] = [$r('app.string.member_edit_step_low'), $r('app.string.member_edit_step_normal'), $r('app.string.member_edit_step_high')]
+  private sleepStatuses: Resource[] = [$r('app.string.member_edit_sleep_good'), $r('app.string.member_edit_sleep_fair'), $r('app.string.member_edit_sleep_poor')]
+  private bpStatuses: Resource[] = [$r('app.string.member_edit_bp_normal'), $r('app.string.member_edit_bp_elevated'), $r('app.string.member_edit_bp_high')]
+  private bsStatuses: Resource[] = [$r('app.string.member_edit_bs_normal'), $r('app.string.member_edit_bs_elevated'), $r('app.string.member_edit_bs_high')]
   private commonAllergens: string[] = ['坚果', '乳制品', '麸质', '鸡蛋', '海鲜', '大豆', '芝麻', '花生']
-  private commonAllergenLabels: ResourceStr[] = [$r('app.string.member_edit_allergen_nuts'), $r('app.string.member_edit_allergen_dairy'), $r('app.string.member_edit_allergen_gluten'), $r('app.string.member_edit_allergen_egg'), $r('app.string.member_edit_allergen_seafood'), $r('app.string.member_edit_allergen_soy'), $r('app.string.member_edit_allergen_sesame'), $r('app.string.member_edit_allergen_peanut')]
+  private commonAllergenLabels: Resource[] = [$r('app.string.member_edit_allergen_nuts'), $r('app.string.member_edit_allergen_dairy'), $r('app.string.member_edit_allergen_gluten'), $r('app.string.member_edit_allergen_egg'), $r('app.string.member_edit_allergen_seafood'), $r('app.string.member_edit_allergen_soy'), $r('app.string.member_edit_allergen_sesame'), $r('app.string.member_edit_allergen_peanut')]
   @Local selectedAllergens: boolean[] = [false, false, false, false, false, false, false, false]
 
   private tracker: PageResourceTracker = createPageTracker('MemberEditPage')
@@ -60,21 +62,13 @@ export struct MemberEditPage {
     return AgeGroup.ADULT; // 默认成人
   }
 
+  private themeRef: ThemeReactive = themeReactive
+
   build() {
     Stack() {
       Scroll() {
         Column() {
-          // 顶部导航
-          Row() {
-            Text($r('app.string.back_arrow')).fontSize(24).fontColor(COLORS.PRIMARY)
-              .onClick(() => { safeBack() })
-              .accessibilityText($r('app.string.back_arrow'))
-              .accessibilityLevel('yes')
-            Text($r('app.string.member_manage'))
-              .margin({ left: 16 })
-          }
-          .width('100%')
-          .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+          GradientHeader({ title: $r('app.string.member_manage') })
 
           // 昵称
           Column() {
@@ -96,7 +90,7 @@ export struct MemberEditPage {
         Column() {
           Text($r('app.string.age_group_label')).fontSize(14).fontColor(COLORS.TEXT_GRAY_7575).margin({ bottom: 8 })
           Flex({ wrap: FlexWrap.Wrap }) {
-            ForEach(this.ageGroups, (group: ResourceStr, index: number) => {
+            ForEach(this.ageGroups, (group: Resource, index: number) => {
               Text(group)
                 .fontSize(14)
                 .padding({ left: 16, right: 16, top: 8, bottom: 8 })
@@ -118,7 +112,7 @@ export struct MemberEditPage {
         Column() {
           Text($r('app.string.health_goal_label')).fontSize(14).fontColor(COLORS.TEXT_GRAY_7575).margin({ bottom: 8 })
           Flex({ wrap: FlexWrap.Wrap }) {
-            ForEach(this.healthGoals, (goal: ResourceStr, index: number) => {
+            ForEach(this.healthGoals, (goal: Resource, index: number) => {
               Text(goal)
                 .fontSize(14)
                 .padding({ left: 16, right: 16, top: 8, bottom: 8 })
@@ -142,7 +136,7 @@ export struct MemberEditPage {
         Column() {
           Text($r('app.string.allergen_nuts')).fontSize(14).fontColor(COLORS.TEXT_GRAY_7575).margin({ bottom: 8 })
           Flex({ wrap: FlexWrap.Wrap }) {
-            ForEach(this.commonAllergenLabels, (label: ResourceStr, index: number) => {
+            ForEach(this.commonAllergenLabels, (label: Resource, index: number) => {
               Text(label)
                 .fontSize(14)
                 .padding({ left: 12, right: 12, top: 6, bottom: 6 })
@@ -155,12 +149,12 @@ export struct MemberEditPage {
                 })
                 .accessibilityText(label )
                 .accessibilityLevel('yes')
-            }, (label: ResourceStr, index: number) => `${index}`)
+            }, (label: Resource, index: number) => `${index}`)
           }
           // 自定义过敏原输入
           TextInput({ placeholder: $r('app.string.member_edit_allergen_custom_placeholder') })
             .width('100%')
-            .height(BUTTON.HEIGHT_SMALL)
+            .height(BUTTON.HEIGHT_MD)
             .borderRadius(8)
             .backgroundColor(COLORS.WHITE)
             .margin({ top: 8 })
@@ -179,7 +173,7 @@ export struct MemberEditPage {
           // 活动量
           Row() {
             Text($r('app.string.activity_label')).fontSize(14).width(70)
-            ForEach(this.stepLevels, (level: ResourceStr, index: number) => {
+            ForEach(this.stepLevels, (level: Resource, index: number) => {
               Text(level)
                 .fontSize(13)
                 .padding({ left: 12, right: 12, top: 6, bottom: 6 })
@@ -190,14 +184,14 @@ export struct MemberEditPage {
                 .onClick(() => { this.stepLevelIndex = index })
                 .accessibilityText(level )
                 .accessibilityLevel('yes')
-            }, (level: ResourceStr, index: number) => `${index}`)
+            }, (level: Resource, index: number) => `${index}`)
           }
           .margin({ bottom: 8 })
 
           // 睡眠
           Row() {
             Text($r('app.string.sleep_label')).fontSize(14).width(70)
-            ForEach(this.sleepStatuses, (status: ResourceStr, index: number) => {
+            ForEach(this.sleepStatuses, (status: Resource, index: number) => {
               Text(status)
                 .fontSize(13)
                 .padding({ left: 12, right: 12, top: 6, bottom: 6 })
@@ -208,14 +202,14 @@ export struct MemberEditPage {
                 .onClick(() => { this.sleepStatusIndex = index })
                 .accessibilityText(status )
                 .accessibilityLevel('yes')
-            }, (status: ResourceStr, index: number) => `${index}`)
+            }, (status: Resource, index: number) => `${index}`)
           }
           .margin({ bottom: 8 })
 
           // 血压状态
           Row() {
             Text($r('app.string.bp_label')).fontSize(14).width(70)
-            ForEach(this.bpStatuses, (status: ResourceStr, index: number) => {
+            ForEach(this.bpStatuses, (status: Resource, index: number) => {
               Text(status)
                 .fontSize(13)
                 .padding({ left: 12, right: 12, top: 6, bottom: 6 })
@@ -226,14 +220,14 @@ export struct MemberEditPage {
                 .onClick(() => { this.bpStatusIndex = index })
                 .accessibilityText(status )
                 .accessibilityLevel('yes')
-            }, (status: ResourceStr, index: number) => `${index}`)
+            }, (status: Resource, index: number) => `${index}`)
           }
           .margin({ bottom: 8 })
 
           // 血糖状态
           Row() {
             Text($r('app.string.bg_label')).fontSize(14).width(70)
-            ForEach(this.bsStatuses, (status: ResourceStr, index: number) => {
+            ForEach(this.bsStatuses, (status: Resource, index: number) => {
               Text(status)
                 .fontSize(13)
                 .padding({ left: 12, right: 12, top: 6, bottom: 6 })
@@ -244,7 +238,7 @@ export struct MemberEditPage {
                 .onClick(() => { this.bsStatusIndex = index })
                 .accessibilityText(status )
                 .accessibilityLevel('yes')
-            }, (status: ResourceStr, index: number) => `${index}`)
+            }, (status: Resource, index: number) => `${index}`)
           }
         }
         .width('100%')
@@ -253,6 +247,7 @@ export struct MemberEditPage {
         .borderRadius(12)
         .margin({ left: 16, right: 16, bottom: 16 })
         .alignItems(HorizontalAlign.Start)
+        .shadow(SHADOWS.SM)
 
         // 保存按钮
         Button($r('app.string.member_edit_save'))
@@ -268,7 +263,7 @@ export struct MemberEditPage {
           .accessibilityLevel('yes')
       }
       .width('100%')
-      .backgroundColor('#FAFAFA')
+      .backgroundColor(COLORS.BG_PAGE)
       }
       .width('100%')
       .height('100%')
@@ -284,6 +279,7 @@ export struct MemberEditPage {
     }
     .width('100%')
     .height('100%')
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   async aboutToAppear() {
@@ -329,7 +325,7 @@ export struct MemberEditPage {
         const tierName = getTierDisplayName(MemberTier.FAMILY)
         const allMembers = await this.appState.getAllMembers()
         const memberCount = allMembers.length
-        trigger.message = $r('app.string.member_edit_paywall_msg', memberCount, tierName) as string
+        trigger.message = `会员上限提醒：当前${memberCount}人（${tierName}）`
         this.paywallTrigger = trigger
         this.showPaywallDialog = true
         return

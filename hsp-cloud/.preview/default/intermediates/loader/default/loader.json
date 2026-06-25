@@ -1,0 +1,44 @@
+{
+  "modulePathMap": {
+    "entry": "E:\\APP\\family_food_app\\entry",
+    "hsp_core": "E:\\APP\\family_food_app\\hsp_core",
+    "hsp_service": "E:\\APP\\family_food_app\\hsp-service",
+    "feature_scan": "E:\\APP\\family_food_app\\feature-scan",
+    "feature_report": "E:\\APP\\family_food_app\\feature-report",
+    "feature_community": "E:\\APP\\family_food_app\\feature-community",
+    "hsp_allergy": "E:\\APP\\family_food_app\\hsp-allergy",
+    "hsp_rating": "E:\\APP\\family_food_app\\hsp-rating",
+    "hsp_llm": "E:\\APP\\family_food_app\\hsp-llm",
+    "hsp_cloud": "E:\\APP\\family_food_app\\hsp-cloud",
+    "feature_profile": "E:\\APP\\family_food_app\\feature-profile",
+    "hsp_core_cj": "E:\\APP\\family_food_app\\hsp-core-cj"
+  },
+  "compileMode": "esmodule",
+  "projectRootPath": "E:\\APP\\family_food_app",
+  "nodeModulesPath": "E:\\APP\\family_food_app\\hsp-cloud\\.preview\\default\\intermediates\\loader_out\\default\\node_modules",
+  "byteCodeHarInfo": {},
+  "declarationEntry": [],
+  "moduleName": "hsp_cloud",
+  "hspNameOhmMap": {
+    "hsp_core": "@bundle:com.familyfood.helper/hsp_core/Index"
+  },
+  "harNameOhmMap": {},
+  "packageManagerType": "ohpm",
+  "compileEntry": [
+    "E:\\APP\\family_food_app\\hsp-cloud\\src\\main\\ets\\Index.ets",
+    "E:\\APP\\family_food_app\\hsp-cloud\\src\\main\\ets\\client\\CloudDbClient.ets",
+    "E:\\APP\\family_food_app\\hsp-cloud\\src\\main\\ets\\client\\CloudFunctionClient.ets",
+    "E:\\APP\\family_food_app\\hsp-cloud\\src\\main\\ets\\client\\CloudStorageClient.ets"
+  ],
+  "otherCompileFiles": [],
+  "dynamicImportLibInfo": {},
+  "routerMap": [],
+  "hspResourcesMap": {
+    "hsp_core": "E:\\APP\\family_food_app\\hsp_core\\.preview\\default\\intermediates\\res\\default\\ResourceTable.txt"
+  },
+  "updateVersionInfo": {},
+  "customizedHar": false,
+  "anBuildOutPut": "E:\\APP\\family_food_app\\hsp-cloud\\.preview\\default\\intermediates\\loader_out\\default\\an\\arm64-v8a",
+  "anBuildMode": "type",
+  "buildConfigPath": ".preview\\config\\buildConfig.json"
+}

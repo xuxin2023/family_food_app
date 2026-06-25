@@ -1,13 +1,13 @@
-﻿// AiChatPage.ets
+// AiChatPage.ets
 // AI 营养师对话页面 - V4: 端侧推理 + 云端增强双通道
 import {
-  safeBack, FamilyProfile, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, HILOG_DOMAIN_DEFAULT, ChatRole, ChatMessage, MessageStatus, QUICK_QUESTIONS, generateDynamicQuickQuestions, generateMessageId, PerformanceMonitor, PageResourceTracker, createPageTracker
+  safeBack, FamilyProfile, AgeGroup, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, SHADOWS, HILOG_DOMAIN_DEFAULT, ChatRole, ChatMessage, MessageStatus, QUICK_QUESTIONS, generateDynamicQuickQuestions, generateMessageId,   PerformanceMonitor, PageResourceTracker, createPageTracker, ThemeReactive, themeReactive, ThemeColors, ThemeMode
 } from 'hsp_core';
 import { promptAction } from '@kit.ArkUI';
 import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
-import { ErrorBoundary } from '../components/ErrorBoundary';
+import { ErrorFallback } from '../components/ErrorFallback';
 import { LlmChatProxy, LlmSource, MemberHealthContext } from 'hsp_service';
 
 import { ChatHistoryPrefsService } from 'hsp_service';
@@ -40,6 +40,8 @@ export struct AiChatPage {
   @Local dynamicQuickQuestions: string[] = [];
   @Local isOfflineMode: boolean = false
   @Local hasPageError: boolean = false;
+  // 当前 AI 对话模式（本地/云端/离线），由最近一次响应更新，用于显示模式徽标
+  @Local activeMode: LlmSource = LlmSource.CLOUD_PANGU;
 
   private appState: AppState = AppState.getInstance();
   private llmProxy: LlmChatProxy = LlmChatProxy.getInstance();
@@ -50,6 +52,20 @@ export struct AiChatPage {
   private chatHistoryService: ChatHistoryPrefsService = ChatHistoryPrefsService.getInstance();
 
   private tracker: PageResourceTracker = createPageTracker('AiChatPage')
+
+  private themeRef: ThemeReactive = themeReactive
+
+  private get isDark(): boolean {
+    if (this.themeRef.key >= 0) { /* trigger reactive */ }
+    return ThemeColors.getTheme() === ThemeMode.DARK;
+  }
+
+  private get pageBgGradient(): LinearGradient {
+    if (this.isDark) {
+      return { angle: 180, colors: [['#1A1410', 0.0], ['#231C16', 0.5], ['#0F0C0A', 1.0]] };
+    }
+    return { angle: 180, colors: [['#FBF9F6', 0.0], ['#F7F4F0', 1.0]] };
+  }
 
   async aboutToAppear() {
     this.tracker.onAppear()
@@ -116,53 +132,73 @@ export struct AiChatPage {
   }
 
   build() {
-    ErrorBoundary({
-      fallbackMessage: $r('app.string.ai_chat_page_load_failed'),
-      onRetry: () => { this.aboutToAppear() },
-      hasError: this.hasPageError,
-      boundaryName: 'AiChatPage'
-    }) {
+    Column() {
+      if (this.hasPageError) {
+        ErrorFallback({
+          message: $r('app.string.ai_chat_page_load_failed'),
+          onRetry: () => { this.aboutToAppear() }
+        })
+      } else {
+        Column() {
+      // ===== 顶部导航栏 — 渐变头部 =====
       Column() {
-      // ===== 椤堕儴瀵艰埅鏍?=====
-      Row() {
-        // 返回按钮
-        BackButton({ fontSize: 28, fontColor: COLORS.TEXT_PRIMARY })
-          .onClick(() => safeBack())
-          .accessibilityText($r('app.string.back_arrow'))
-          .accessibilityLevel('yes')
+        Row() {
+          // AI头像
+          Column() {
+            Text('智能助手')
+              .fontSize(16)
+              .fontWeight(FontWeight.Bold)
+              .fontColor(COLORS.WHITE)
+          }
+          .width(40)
+          .height(40)
+          .borderRadius(12)
+          .backgroundColor('rgba(255,255,255,0.25)')
+          .justifyContent(FlexAlign.Center)
+          .alignItems(HorizontalAlign.Center)
 
-        // 鏍囬 + 褰撳墠鎴愬憳
-        Column({ space: 2 }) {
-          Text($r('app.string.ai_chat_title'))
-            .fontSize(FONT_SIZE.TITLE)
-            .fontWeight(FONT_WEIGHT.BOLD)
-            .fontColor(COLORS.TEXT_PRIMARY)
+          // 标题 + 当前成员
+          Column({ space: 2 }) {
+            Text($r('app.string.ai_chat_title'))
+              .fontSize(18)
+              .fontWeight(FontWeight.Bold)
+              .fontColor(COLORS.WHITE)
 
-          if (this.selectedMemberId.length > 0) {
-            Text(this.selectedMemberName)
-              .fontSize(FONT_SIZE.SMALL)
-              .fontColor(COLORS.TEXT_SECONDARY)
+            if (this.selectedMemberId.length > 0) {
+              Text(this.selectedMemberName)
+                .fontSize(12)
+                .fontColor('rgba(255,255,255,0.8)')
+            }
+          }
+          .layoutWeight(1)
+          .alignItems(HorizontalAlign.Start)
+          .margin({ left: 12 })
+
+          // 切换成员按钮
+          if (this.familyMembers.length > 1) {
+            Row() {
+              Text($r('app.string.ai_chat_switch'))
+                .fontSize(13)
+                .fontColor(COLORS.WHITE)
+            }
+            .padding({ left: 14, right: 14, top: 6, bottom: 6 })
+            .backgroundColor('rgba(255,255,255,0.2)')
+            .borderRadius(20)
+            .onClick(() => this.showMemberPicker())
           }
         }
-        .layoutWeight(1)
-        .alignItems(HorizontalAlign.Center)
-
-        // 切换成员按钮
-        if (this.familyMembers.length > 1) {
-          Text($r('app.string.ai_chat_switch'))
-            .fontSize(FONT_SIZE.BODY)
-            .fontColor(COLORS.ACCENT_BLUE)
-            .onClick(() => this.showMemberPicker())
-            .accessibilityText($r('app.string.ai_chat_switch_member'))
-            .accessibilityLevel('yes')
-        }
+        .width('100%')
+        .padding({ left: 20, right: 20, top: 52, bottom: 16 })
       }
       .width('100%')
-      .padding({ left: SPACING.LG, right: SPACING.LG, top: SPACING.MD, bottom: SPACING.SM })
-      .backgroundColor(COLORS.WHITE)
-      .shadow({ radius: 2, color: COLORS.SHADOW, offsetY: 2 })
+      .linearGradient({
+        angle: 165,
+        colors: [['#C56542', 0.0], ['#E07856', 0.5], ['#F2A78D', 1.0]]
+      })
+      .borderRadius({ topLeft: 0, topRight: 0, bottomLeft: 0, bottomRight: 0 })
+      .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP])
 
-      // ===== 娑堟伅鍒楄〃 =====
+      // ===== 消息列表 =====
       Scroll(this.scrollController) {
         Column() {
           // 快捷提问(仅首次显示)
@@ -182,9 +218,16 @@ export struct AiChatPage {
       .backgroundColor(COLORS.BG_PAGE)
       .scrollBar(BarState.Off)
 
-      // ===== 搴曢儴杈撳叆鍖?=====
+      // ===== 底部输入区=====
+      Column() {
+        this.ModeBadge()
+      }
+      .width('100%')
+      .padding({ left: SPACING.MD, right: SPACING.MD, top: SPACING.XS })
+      .backgroundColor(COLORS.WHITE)
+
       Row() {
-        TextInput({ placeholder: $r('app.string.ai_chat_input_placeholder') as ResourceStr, text: this.inputText })
+        TextInput({ placeholder: $r('app.string.ai_chat_input_placeholder'), text: this.inputText })
           .layoutWeight(1)
           .height(44)
           .backgroundColor(COLORS.BG_LIGHT)
@@ -214,7 +257,7 @@ export struct AiChatPage {
         .width(64)
         .height(44)
         .backgroundColor(this.inputText.length > 0 && !this.isLoading
-          ? COLORS.ACCENT_PURPLE : COLORS.TEXT_TERTIARY)
+          ? '#E07856' : COLORS.TEXT_TERTIARY)
         .borderRadius(RADIUS.FULL)
         .margin({ left: SPACING.SM })
         .enabled(this.inputText.length > 0 && !this.isLoading)
@@ -223,17 +266,19 @@ export struct AiChatPage {
         .accessibilityLevel('yes')
       }
       .width('100%')
-      .padding({ left: SPACING.MD, right: SPACING.MD, top: SPACING.SM, bottom: SPACING.LG })
+      .padding({ left: SPACING.MD, right: SPACING.MD, top: SPACING.SM, bottom: SPACING.LG + 52 })
       .backgroundColor(COLORS.WHITE)
-      .shadow({ radius: 4, color: COLORS.SHADOW, offsetY: -2 })
+      .shadow(SHADOWS.SM)
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(COLORS.BG_PAGE)
+    .linearGradient(this.pageBgGradient)
+      }
     }
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
-  // ========== 蹇嵎鎻愰棶闈㈡澘 ==========
+  // ========== 快捷提问面板 ==========
   @Builder
   QuickQuestionsPanel() {
     Column({ space: SPACING.SM }) {
@@ -244,20 +289,25 @@ export struct AiChatPage {
         .textAlign(TextAlign.Start)
 
       ForEach(this.dynamicQuickQuestions, (question: string) => {
-        Button(question)
-          .width('100%')
-          .height(40)
-          .backgroundColor(COLORS.WHITE)
-          .fontColor(COLORS.ACCENT_PURPLE)
-          .fontSize(FONT_SIZE.BODY)
-          .borderRadius(RADIUS.MD)
-          .border({ width: 1, color: COLORS.BORDER })
-          .onClick(() => {
-            this.inputText = question
-            this.sendMessage()
-          })
-          .accessibilityText(question)
-          .accessibilityLevel('yes')
+        Row() {
+          Text(question)
+            .fontSize(FONT_SIZE.BODY)
+            .fontColor(COLORS.PRIMARY)
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+        }
+        .width('100%')
+        .height(40)
+        .borderRadius(20)
+        .backgroundColor(COLORS.PRIMARY_LIGHT)
+        .padding({ left: SPACING.MD, right: SPACING.MD })
+        .alignItems(VerticalAlign.Center)
+        .onClick(() => {
+          this.inputText = question
+          this.sendMessage()
+        })
+        .accessibilityText(question)
+        .accessibilityLevel('yes')
       }, (question: string) => question)
     }
     .width('100%')
@@ -265,9 +315,53 @@ export struct AiChatPage {
     .backgroundColor(COLORS.BG_CARD_HIGHLIGHT)
     .borderRadius(RADIUS.LG)
     .margin({ bottom: SPACING.MD })
+    .shadow(SHADOWS.SM)
   }
 
-  // ========== 娑堟伅姘旀场 ==========
+  // ========== 模式徽标（本地/云端/离线） ==========
+  @Builder
+  ModeBadge() {
+    Row({ space: 4 }) {
+      Column() {}
+        .width(6)
+        .height(6)
+        .borderRadius(3)
+        .backgroundColor(this.modeBadgeColor())
+      Text(this.modeBadgeLabel())
+        .fontSize(FONT_SIZE.TINY)
+        .fontColor(this.modeBadgeTextColor())
+    }
+    .padding({ left: SPACING.SM, right: SPACING.SM, top: 2, bottom: 2 })
+    .borderRadius(RADIUS.FULL)
+    .backgroundColor(this.modeBadgeBgColor())
+    .margin({ top: SPACING.XS, bottom: 0 })
+  }
+
+  private modeBadgeLabel(): string {
+    if (this.activeMode === LlmSource.ON_DEVICE) return '本地模式';
+    if (this.activeMode === LlmSource.FALLBACK_TEMPLATE) return '离线模式';
+    return '云端模式';
+  }
+
+  private modeBadgeColor(): string {
+    if (this.activeMode === LlmSource.ON_DEVICE) return '#7CB342';
+    if (this.activeMode === LlmSource.FALLBACK_TEMPLATE) return '#F5A623';
+    return '#E07856';
+  }
+
+  private modeBadgeTextColor(): string {
+    if (this.activeMode === LlmSource.ON_DEVICE) return '#558B2F';
+    if (this.activeMode === LlmSource.FALLBACK_TEMPLATE) return '#E8941A';
+    return '#C56542';
+  }
+
+  private modeBadgeBgColor(): string {
+    if (this.activeMode === LlmSource.ON_DEVICE) return '#EFF6E8';
+    if (this.activeMode === LlmSource.FALLBACK_TEMPLATE) return '#FFF5E0';
+    return '#FCF0EB';
+  }
+
+  // ========== 消息气泡 ==========
   @Builder
   MessageBubble(msg: ChatMessage) {
     Row() {
@@ -296,7 +390,7 @@ export struct AiChatPage {
         }
         .constraintSize({ maxWidth: '75%' })
         .padding({ left: SPACING.MD, right: SPACING.MD, top: SPACING.SM, bottom: SPACING.SM })
-        .backgroundColor(COLORS.ACCENT_PURPLE)
+        .linearGradient({ angle: 135, colors: [['#C56542', 0.0], ['#E07856', 1.0]] })
         .borderRadius(RADIUS.LG)
         .borderRadius({
           topLeft: RADIUS.LG,
@@ -307,11 +401,19 @@ export struct AiChatPage {
       } else {
         // 左侧：AI 消息
         // AI 头像
-        Circle()
-          .width(32)
-          .height(32)
-          .fill(COLORS.BG_WARM_PURPLE)
-          .margin({ right: SPACING.SM })
+        Column() {
+          Text('智能助手')
+            .fontSize(FONT_SIZE.CAPTION)
+            .fontWeight(FONT_WEIGHT.BOLD)
+            .fontColor(COLORS.WHITE)
+        }
+        .width(32)
+        .height(32)
+        .borderRadius(RADIUS.LG)
+        .linearGradient({ angle: 135, colors: [['#C56542', 0.0], ['#E07856', 1.0]] })
+        .justifyContent(FlexAlign.Center)
+        .alignItems(HorizontalAlign.Center)
+        .margin({ right: SPACING.SM })
 
         Column() {
           Text(msg.content)
@@ -326,7 +428,7 @@ export struct AiChatPage {
         }
         .constraintSize({ maxWidth: '70%' })
         .padding({ left: SPACING.MD, right: SPACING.MD, top: SPACING.SM, bottom: SPACING.SM })
-        .backgroundColor(COLORS.WHITE)
+        .backgroundColor(this.isDark ? '#1E1E1E' : '#FAFAFA')
         .borderRadius(RADIUS.LG)
         .borderRadius({
           topLeft: RADIUS.SM,
@@ -334,7 +436,8 @@ export struct AiChatPage {
           bottomLeft: RADIUS.LG,
           bottomRight: RADIUS.LG
         })
-        .shadow({ radius: 1, color: COLORS.SHADOW, offsetY: 1 })
+        .border({ width: { left: 3, top: 0, right: 0, bottom: 0 }, color: '#43A047' })
+        .shadow(SHADOWS.XS)
 
         Blank()
           .layoutWeight(1)
@@ -343,9 +446,10 @@ export struct AiChatPage {
     .width('100%')
     .margin({ top: SPACING.SM, bottom: SPACING.SM })
     .alignItems(VerticalAlign.Top)
+    .transition(TransitionEffect.OPACITY.animation({ duration: 300, curve: Curve.FastOutSlowIn }).combine(TransitionEffect.move(TransitionEdge.BOTTOM)))
   }
 
-  // ========== 鍙戦€佹秷鎭?==========
+  // ========== 发送消息==========
 
   private async sendMessage(): Promise<void> {
     const text = this.inputText.trim()
@@ -376,7 +480,7 @@ export struct AiChatPage {
 
     try {
       const context: string[] = this.messages
-        .filter(m => m.role === ChatRole.ASSISTANT && m.content.length > 0)
+        .filter(m => m.role === ChatRole.ASSISTANT && (m.content as string).length > 0)
         .slice(-4)
         .map(m => typeof m.content === 'string' ? m.content : '');
       const healthCtx = this.buildMemberHealthContext();
@@ -392,6 +496,11 @@ export struct AiChatPage {
       if (!this.componentActive) return;
 
       userMsg.status = MessageStatus.SENT;
+      this.activeMode = response.source;
+      const notice: string | undefined = response.degradeNotice;
+      if (notice !== undefined && notice.length > 0) {
+        promptAction.showToast({ message: notice, duration: 2500 });
+      }
       const sourceLabel = response.source === LlmSource.ON_DEVICE
         ? ' [端侧]' : response.source === LlmSource.CLOUD_PANGU
         ? ' [AI]' : '';
@@ -430,17 +539,30 @@ export struct AiChatPage {
 
   private buildMemberHealthContext(): MemberHealthContext {
     const member = this.familyMembers.find(m => m.memberId === this.selectedMemberId);
-    return {
-      age: member?.age ?? 30,
-      gender: member?.gender ?? 'other',
+    const ageGroupToAge = (ag: AgeGroup): number => {
+      switch (ag) {
+        case AgeGroup.INFANT: return 1;
+        case AgeGroup.TODDLER: return 3;
+        case AgeGroup.CHILD: return 8;
+        case AgeGroup.TEEN: return 14;
+        case AgeGroup.ADULT: return 30;
+        case AgeGroup.MIDDLE_OLD: return 55;
+        case AgeGroup.OLD: return 75;
+        default: return 30;
+      }
+    };
+    const ctx: MemberHealthContext = {
+      age: member ? ageGroupToAge(member.ageGroup) : 30,
+      gender: 'other',
       allergens: member?.allergens ?? [],
       healthGoal: (member?.healthGoals?.join(',') ?? '维持体重'),
-      conditions: member?.conditions ?? [],
-      dietPreference: member?.dietPreference ?? '',
+      conditions: [],
+      dietPreference: '',
     };
+    return ctx;
   }
 
-  // ========== 鍒囨崲鎴愬憳 ==========
+  // ========== 切换成员 ==========
   private showMemberPicker(): void {
     const items: string[] = this.familyMembers.map(m => m.nickname)
     const maxButtons = Math.min(items.length, 6)
@@ -453,9 +575,14 @@ export struct AiChatPage {
 
     promptAction.showActionMenu({
       title: $r('app.string.ai_chat_switch_member') as ResourceStr,
-      buttons: [btn0, btn1, btn2, btn3, btn4, btn5].filter(
-        (b: promptAction.Button | undefined): b is promptAction.Button => b !== undefined
-      )
+      buttons: [btn0, btn1, btn2, btn3, btn4, btn5] as [
+        promptAction.Button,
+        promptAction.Button?,
+        promptAction.Button?,
+        promptAction.Button?,
+        promptAction.Button?,
+        promptAction.Button?
+      ]
     }, async (err: Error, data: promptAction.ActionMenuSuccessResponse) => {
       if (err) {
         hilog.warn(0x0000, 'AiChatPage', 'showActionMenu err: %{public}s', JSON.stringify(err));
@@ -503,7 +630,7 @@ export struct AiChatPage {
     })
   }
 
-  // ========== 宸ュ叿鏂规硶 ==========
+  // ========== 工具方法 ==========
   private async saveCurrentMessages(): Promise<void> {
     if (this.selectedMemberId.length > 0 && this.messages.length > 0) {
       await this.chatHistoryService.saveMessages(this.selectedMemberId, JSON.stringify(this.messages));

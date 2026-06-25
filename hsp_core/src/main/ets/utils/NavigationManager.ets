@@ -14,6 +14,10 @@ export class NavigationManager {
     NavigationManager.navPathStack.pushPath({ name: name, param: param });
   }
 
+  static pushPathForSharedElement(name: string, param?: Object): void {
+    NavigationManager.navPathStack.pushPath({ name: name, param: param }, false);
+  }
+
   static replacePath(name: string, param?: Object): void {
     NavigationManager.navPathStack.replacePath({ name: name, param: param });
   }

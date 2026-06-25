@@ -3,7 +3,6 @@
 // 检测非机主注视屏幕时，自动模糊敏感数据（健康档案、过敏原、BMI等）
 // API: https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/devicesecurity-dlpantipeep
 
-import { deviceSecurity } from '@kit.DeviceSecurityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
 import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
@@ -36,7 +35,7 @@ export class AntiPeepConfig {
   /** 蒙层透明度 */
   overlayOpacity: number = 0.6;
   /** 蒙层提示文字 */
-  overlayText: string = $r('app.string.peep_overlay_text') as string;
+  overlayText: ResourceStr = $r('app.string.peep_overlay_text');
 }
 
 @ComponentV2

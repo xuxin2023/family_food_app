@@ -1,7 +1,8 @@
 import {
-  ToastHelper, FamilyProfile, NutritionTarget, NutritionPreset, NUTRITION_PRESETS, applyPresetToTarget, createDefaultNutritionTarget, COLORS, safeBack, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker
+  ToastHelper, FamilyProfile, NutritionTarget, NutritionPreset, NUTRITION_PRESETS, applyPresetToTarget, createDefaultNutritionTarget, COLORS, SHADOWS, safeBack, HILOG_DOMAIN_DEFAULT,   PageResourceTracker, createPageTracker, ThemeReactive, themeReactive, ThemeColors, ThemeMode
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
+import { GradientHeader } from '../components/GradientHeader';
 import { AppState } from '../AppState';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
@@ -10,7 +11,7 @@ const NUTRI_DOMAIN = HILOG_DOMAIN_DEFAULT;
 
 @Entry
 @ComponentV2
-struct NutritionTargetPage {
+export struct NutritionTargetPage {
   @Local familyMembers: FamilyProfile[] = []
   @Local selectedMemberId: string = ''
   @Local target: NutritionTarget = new NutritionTarget()
@@ -22,6 +23,20 @@ struct NutritionTargetPage {
   private appState: AppState = AppState.getInstance()
   private sliderDebounceTimer: number = -1
   private tracker: PageResourceTracker = createPageTracker('NutritionTargetPage')
+
+  private themeRef: ThemeReactive = themeReactive
+
+  private get isDark(): boolean {
+    if (this.themeRef.key >= 0) { /* trigger reactive */ }
+    return ThemeColors.getTheme() === ThemeMode.DARK;
+  }
+
+  private get pageBgGradient(): LinearGradient {
+    if (this.isDark) {
+      return { angle: 180, colors: [['#0D1B0E', 0.0], ['#1A2F1C', 0.5], ['#0A1A0D', 1.0]] };
+    }
+    return { angle: 180, colors: [['#E8EAF6', 0.0], ['#E0F2F1', 0.3], ['#FFF8E1', 0.7], ['#F3E5F5', 1.0]] };
+  }
 
   async aboutToAppear() {
     this.tracker.onAppear()
@@ -93,18 +108,7 @@ struct NutritionTargetPage {
   build() {
     Scroll() {
       Column() {
-        Row() {
-          BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
-            .onClick(() => { safeBack() })
-            .accessibilityText('杩斿洖')
-            .accessibilityLevel('yes')
-          Text($r('app.string.nutrition_target_title'))
-            .fontSize(20)
-            .fontWeight(FontWeight.Bold)
-            .margin({ left: 16 })
-        }
-        .width('100%')
-        .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+        GradientHeader({ title: $r('app.string.nutrition_target_title') })
 
         if (this.familyMembers.length > 1) {
           this.MemberSelector()
@@ -122,7 +126,7 @@ struct NutritionTargetPage {
             .borderRadius(24)
             .enabled(!this.isSaving)
             .onClick(() => { this.onSave() })
-            .accessibilityText('重置为默认')
+            .accessibilityText('返回')
             .accessibilityLevel('yes')
           Button($r('app.string.reset_to_default'))
             .width('45%')
@@ -131,7 +135,7 @@ struct NutritionTargetPage {
             .fontColor(COLORS.WHITE)
             .borderRadius(24)
             .onClick(() => { this.onReset() })
-            .accessibilityText('重置为默认')
+            .accessibilityText('返回')
             .accessibilityLevel('yes')
         }
         .width('92%')
@@ -143,7 +147,8 @@ struct NutritionTargetPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(COLORS.BG_PAGE)
+    .linearGradient(this.pageBgGradient)
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   @Builder
@@ -202,7 +207,7 @@ struct NutritionTargetPage {
             }
             .padding({ left: 16, right: 16, top: 10, bottom: 10 })
             .borderRadius(20)
-            .backgroundColor(this.activePresetIndex === index ? COLORS.PRIMARY : '#F0F0F0')
+            .backgroundColor(this.activePresetIndex === index ? COLORS.PRIMARY : COLORS.BG_LIGHT)
             .margin({ right: 8 })
             .onClick(() => {
               if (index !== undefined) {
@@ -271,7 +276,7 @@ struct NutritionTargetPage {
         style: SliderStyle.InSet
       })
         .width('100%')
-        .trackColor('#E0E0E0')
+        .trackColor(COLORS.BORDER)
         .selectedColor(COLORS.PRIMARY)
         .blockColor(COLORS.PRIMARY)
         .onChange((val: number) => {

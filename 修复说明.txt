@@ -1,0 +1,50 @@
+我将直接为您修复文件。由于命令执行工具存在问题，我将使用文件读写功能来完成修复。
+
+请按照以下步骤操作：
+
+方法1：手动执行修复脚本
+-------------------------------
+在命令行中执行以下命令：
+
+powershell -ExecutionPolicy Bypass -File E:\APP\family_food_app\fix_string_json.ps1
+
+或者：
+
+python E:\APP\family_food_app\fix_string_json_final.py
+
+
+方法2：手动复制文件
+-------------------------------
+1. 备份损坏的文件：
+   将 E:\APP\family_food_app\entry\src\main\resources\zh_CN\element\string.json 
+   重命名为 string.json.backup
+
+2. 复制base文件：
+   将 E:\APP\family_food_app\entry\src\main\resources\base\element\string.json
+   复制到 E:\APP\family_food_app\entry\src\main\resources\zh_CN\element\string.json
+
+3. 打开新复制的文件，修改以下字符串：
+   - disclaimer: "基于标签识别生成，不替代专业建议"
+   - privacy_terms_desc: "使用即表示同意服务条款。我们收集必要数据以提供个性化饮食建议。"
+   - setup_profile_hint: "为每位家庭成员设置健康目标，扫码即可看到个性化建议。"
+   - recipe_community_hint: "扫描后可创建食谱分享到社区，或看看别人怎么搭配"
+   - status_affect_hint: "这些状态会影响今天的适配报告和美食程度判断。"
+
+
+方法3：使用Git恢复
+-------------------------------
+如果文件之前是正常的，可以使用Git恢复：
+
+git checkout -- E:\APP\family_food_app\entry\src\main\resources\zh_CN\element\string.json
+
+
+推荐方法
+-------------------------------
+我推荐使用方法1，执行我创建的修复脚本。这个脚本会：
+1. 读取完整的base文件
+2. 修改需要缩短的字符串
+3. 备份原文件
+4. 写入新的zh_CN文件
+5. 验证文件完整性
+
+请选择一个方法执行，然后告诉我结果。

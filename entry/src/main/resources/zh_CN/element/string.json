@@ -1117,22 +1117,6 @@
       "value": "简介"
     },
     {
-      "name": "alternative_food_title",
-      "value": "替代食品"
-    },
-    {
-      "name": "meal_plan_title",
-      "value": "膳食计划"
-    },
-    {
-      "name": "nutrition_knowledge_title",
-      "value": "营养知识"
-    },
-    {
-      "name": "add_to_diet_record",
-      "value": "添加到饮食记录"
-    },
-    {
       "name": "ingredient_list",
       "value": "食材清单"
     },
@@ -1193,6 +1177,102 @@
       "value": "用于读取步数、心率等健康数据以提供个性化食品适配建议"
     },
     {
+      "name": "report_save_image",
+      "value": "保存图片"
+    },
+    {
+      "name": "report_per_100g_unit",
+      "value": "每100g"
+    },
+    {
+      "name": "ai_chat_page_load_failed",
+      "value": "页面加载失败"
+    },
+    {
+      "name": "ai_chat_input_accessibility",
+      "value": "输入框"
+    },
+    {
+      "name": "ai_chat_send_accessibility",
+      "value": "发送按钮"
+    },
+    {
+      "name": "settings_backup_success",
+      "value": "备份成功"
+    },
+    {
+      "name": "settings_restore_success",
+      "value": "恢复成功"
+    },
+    {
+      "name": "settings_collapse_accessibility",
+      "value": "折叠"
+    },
+    {
+      "name": "exercise_nutrition_protein",
+      "value": "蛋白质"
+    },
+    {
+      "name": "home_no_members_hint",
+      "value": "暂无家庭成员"
+    },
+    {
+      "name": "home_page_accessibility_desc",
+      "value": "首页"
+    },
+    {
+      "name": "home_scan_entry_title",
+      "value": "扫描入口"
+    },
+    {
+      "name": "home_scan_entry_subtitle",
+      "value": "扫描食品标签"
+    },
+    {
+      "name": "home_daily_intake",
+      "value": "今日摄入"
+    },
+    {
+      "name": "home_daily_intake_accessibility",
+      "value": "今日摄入详情"
+    },
+    {
+      "name": "home_scan_history",
+      "value": "扫描历史"
+    },
+    {
+      "name": "home_scan_history_accessibility",
+      "value": "扫描历史记录"
+    },
+    {
+      "name": "home_meal_plan",
+      "value": "饮食计划"
+    },
+    {
+      "name": "member_edit_nickname_input_accessibility",
+      "value": "昵称输入框"
+    },
+    {
+      "name": "member_edit_allergen_custom_accessibility",
+      "value": "自定义过敏原"
+    },
+    {
+      "name": "member_edit_save_accessibility",
+      "value": "保存按钮"
+    },
+    {
+      "name": "scan_batch_scan",
+      "value": "批量扫描"
+    },
+    {
+      "name": "health_report_weekly",
+      "value": "周报"
+    },
+    {
+      "name": "health_report_monthly",
+      "value": "月报"
+    },
+    {
       "name": "read_health_data_reason",
       "value": "用于读取步数、心率等健康数据以提供个性化食品适配建议"
     },
@@ -1207,33 +1287,26 @@
     {
       "name": "media_reason",
       "value": "用于读取和保存食品标签图片"
-    }
-  ]
-}alue": "建议避免食用"
     },
     {
-      "name": "distributed_sync_reason",
-      "value": "用于在多设备间同步数据"
+      "name": "alternative_food_title",
+      "value": "替代食品"
     },
     {
-      "name": "activity_motion_reason",
-      "value": "用于获取活动数据以动态调整营养预算"
+      "name": "meal_plan_title",
+      "value": "膳食计划"
     },
     {
-      "name": "health_data_reason",
-      "value": "用于读取步数、心率等健康数据以提供个性化食品适配建议"
+      "name": "nutrition_knowledge_title",
+      "value": "营养知识"
     },
     {
-      "name": "read_health_data_reason",
-      "value": "用于读取步数、心率等健康数据以提供个性化食品适配建议"
+      "name": "add_to_diet_record",
+      "value": "添加到饮食记录"
     },
     {
       "name": "microphone_reason",
       "value": "用于AI营养师语音对话输入"
-    },
-    {
-      "name": "media_reason",
-      "value": "用于保存食品标签图片到相册"
     },
     {
       "name": "background_run_reason",
@@ -2033,11 +2106,11 @@
     },
     {
       "name": "ai_chat_welcome",
-      "value": "你好！我是你的家庭AI营养师助手。\n\n你可以问我关于饮食营养的任何问题，比如下面这些："
+      "value": "你好！我是你的家庭AI营养师助手。\\n\\n你可以问我关于饮食营养的任何问题，比如下面这些："
     },
     {
       "name": "ai_chat_welcome_with_member",
-      "value": "你好！我是你的家庭AI营养师助手，当前正在为「%s」提供健康建议。\n\n你可以问我关于饮食营养的任何问题，比如下面这些："
+      "value": "你好！我是你的家庭AI营养师助手，当前正在为「%s」提供健康建议。\\n\\n你可以问我关于饮食营养的任何问题，比如下面这些："
     },
     {
       "name": "ai_chat_switched_member",
@@ -2589,7 +2662,7 @@
     },
     {
       "name": "settings_force_update_msg",
-      "value": "发现新版本 %s，当前版本过低，需要更新后才能继续使用。\n\n%s"
+      "value": "发现新版本 %s，当前版本过低，需要更新后才能继续使用。\\n\\n%s"
     },
     {
       "name": "settings_update_now",
@@ -2601,7 +2674,7 @@
     },
     {
       "name": "settings_new_version_msg",
-      "value": "新版本 %s 已发布\n\n%s"
+      "value": "新版本 %s 已发布\\n\\n%s"
     },
     {
       "name": "settings_later",
@@ -5669,7 +5742,7 @@
     },
     {
       "name": "peep_overlay_text",
-      "value": "检测到他人注视\n敏感信息已保护"
+      "value": "检测到他人注视\\n敏感信息已保护"
     },
     {
       "name": "peep_content_area",

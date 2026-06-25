@@ -18,7 +18,7 @@ export struct DonutChart {
   @Param centerText: string = ''
   @Param centerSubText: ResourceStr = ''
   @Param showLegend: boolean = true
-  @Param onSegmentClick?: (index: number) => void
+  @Param onSegmentClick?: (index: number) => void = undefined
   @Local selectedSegmentIndex: number = -1
 
   build() {
@@ -97,7 +97,6 @@ export struct DonutChart {
       .width(this.chartSize)
       .alignItems(HorizontalAlign.Center)
       .accessibilityLevel('yes')
-      .accessibilityRole('image')
       .accessibilityText(this.buildDonutA11yText())
     }
   }

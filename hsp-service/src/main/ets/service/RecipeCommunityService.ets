@@ -60,6 +60,23 @@ export interface LeaderboardEntry {
   highlight: string;
 }
 
+export interface VoteStats {
+  upCount: number;
+  downCount: number;
+  score: number;
+}
+
+export interface RecipeScoreEntry {
+  recipeId: string;
+  score: number;
+}
+
+export interface ParticipantRank {
+  rank: number;
+  totalParticipants: number;
+  percentile: number;
+}
+
 export interface Achievement {
   id: string;
   name: string;
@@ -70,6 +87,15 @@ export interface Achievement {
   currentCount: number;
   unlockedAt: number | null;
   isUnlocked: boolean;
+}
+
+export interface PresetAchievement {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  category: AchievementCategory;
+  requiredCount: number;
 }
 
 export enum AchievementCategory {
@@ -138,7 +164,7 @@ const PRESET_CHALLENGES: ChallengeRule[] = [
   },
 ];
 
-const PRESET_ACHIEVEMENTS: Omit<Achievement, 'currentCount' | 'unlockedAt' | 'isUnlocked'>[] = [
+const PRESET_ACHIEVEMENTS: PresetAchievement[] = [
   { id: 'scan_10', name: '初识食品', description: '扫描10款食品', icon: '🔍', category: AchievementCategory.SCANNING, requiredCount: 10 },
   { id: 'scan_100', name: '食品达人', description: '扫描100款食品', icon: '🏆', category: AchievementCategory.SCANNING, requiredCount: 100 },
   { id: 'scan_500', name: '食品专家', description: '扫描500款食品', icon: '👑', category: AchievementCategory.SCANNING, requiredCount: 500 },
@@ -192,21 +218,23 @@ export class RecipeCommunityService {
     return vote;
   }
 
-  getRecipeVoteStats(recipeId: string): Record<string, Object> {
+  getRecipeVoteStats(recipeId: string): VoteStats {
     const recipeVotes = this.votes.get(recipeId) ?? [];
-    const upCount = recipeVotes.filter(v => v.voteType === 'up').length;
-    const downCount = recipeVotes.filter(v => v.voteType === 'down').length;
-    return { upCount, downCount, score: upCount - downCount };
+    const upCount: number = recipeVotes.filter((v: RecipePkVote): boolean => v.voteType === 'up').length;
+    const downCount: number = recipeVotes.filter((v: RecipePkVote): boolean => v.voteType === 'down').length;
+    const stats: VoteStats = { upCount: upCount, downCount: downCount, score: upCount - downCount };
+    return stats;
   }
 
-  getTopRecipes(limit: number = 10): Record<string, Object>[] {
-    const scores: Record<string, Object>[] = [];
-    this.votes.forEach((votes, recipeId) => {
-      const up = votes.filter(v => v.voteType === 'up').length;
-      const down = votes.filter(v => v.voteType === 'down').length;
-      scores.push({ recipeId, score: up - down });
+  getTopRecipes(limit: number = 10): RecipeScoreEntry[] {
+    const scores: RecipeScoreEntry[] = [];
+    this.votes.forEach((votes: RecipePkVote[], recipeId: string): void => {
+      const up: number = votes.filter((v: RecipePkVote): boolean => v.voteType === 'up').length;
+      const down: number = votes.filter((v: RecipePkVote): boolean => v.voteType === 'down').length;
+      const entry: RecipeScoreEntry = { recipeId: recipeId, score: up - down };
+      scores.push(entry);
     });
-    return scores.sort((a, b) => b.score - a.score).slice(0, limit);
+    return scores.sort((a: RecipeScoreEntry, b: RecipeScoreEntry): number => b.score - a.score).slice(0, limit);
   }
 
   getLeaderboard(
@@ -220,20 +248,27 @@ export class RecipeCommunityService {
     }
 
     const participants = this.challengeParticipants.get(challengeId) ?? [];
-    const sorted = [...participants].sort((a, b) => b.score - a.score);
+    const sorted: ChallengeParticipant[] = [];
+    for (const p of participants) {
+      sorted.push(p);
+    }
+    sorted.sort((a: ChallengeParticipant, b: ChallengeParticipant): number => b.score - a.score);
 
-    const top: LeaderboardEntry[] = sorted.slice(0, 20).map((p, i) => ({
-      memberId: p.memberId,
-      displayName: p.displayName,
-      avatarEmoji: this.getRankEmoji(i),
-      score: p.score,
-      rank: i + 1,
-      trend: i < sorted.length / 2 ? 'up' : 'stable',
-      highlight: `${p.submissions}次提交`,
-    }));
+    const top: LeaderboardEntry[] = sorted.slice(0, 20).map((p: ChallengeParticipant, i: number): LeaderboardEntry => {
+      const entry: LeaderboardEntry = {
+        memberId: p.memberId,
+        displayName: p.displayName,
+        avatarEmoji: this.getRankEmoji(i),
+        score: p.score,
+        rank: i + 1,
+        trend: i < sorted.length / 2 ? 'up' : 'stable',
+        highlight: `${p.submissions}次提交`,
+      };
+      return entry;
+    });
 
     const leaderboard: Leaderboard = {
-      challengeId, period, topParticipants: top, updatedAt: Date.now(),
+      challengeId: challengeId, period: period, topParticipants: top, updatedAt: Date.now(),
     };
     this.leaderboardCache.set(cacheKey, leaderboard);
     return leaderboard;
@@ -242,25 +277,43 @@ export class RecipeCommunityService {
   getParticipantRank(
     challengeId: string,
     memberId: string
-  ): Record<string, Object> | null {
+  ): ParticipantRank | null {
     const participants = this.challengeParticipants.get(challengeId);
     if (!participants || participants.length === 0) return null;
 
-    const sorted = [...participants].sort((a, b) => b.score - a.score);
-    const idx = sorted.findIndex(p => p.memberId === memberId);
+    const sorted: ChallengeParticipant[] = [];
+    for (const p of participants) {
+      sorted.push(p);
+    }
+    sorted.sort((a: ChallengeParticipant, b: ChallengeParticipant): number => b.score - a.score);
+    const idx = sorted.findIndex((p: ChallengeParticipant): boolean => p.memberId === memberId);
     if (idx < 0) return null;
 
-    return {
+    const rank: ParticipantRank = {
       rank: idx + 1,
       totalParticipants: sorted.length,
       percentile: Math.round(((sorted.length - idx - 1) / sorted.length) * 100),
     };
+    return rank;
   }
 
   getAllAchievements(): Achievement[] {
-    return PRESET_ACHIEVEMENTS.map(a => ({
-      ...a, currentCount: 0, unlockedAt: null, isUnlocked: false,
-    }));
+    const achievements: Achievement[] = [];
+    for (const preset of PRESET_ACHIEVEMENTS) {
+      const achievement: Achievement = {
+        id: preset.id,
+        name: preset.name,
+        description: preset.description,
+        icon: preset.icon,
+        category: preset.category,
+        requiredCount: preset.requiredCount,
+        currentCount: 0,
+        unlockedAt: null,
+        isUnlocked: false,
+      };
+      achievements.push(achievement);
+    }
+    return achievements;
   }
 
   getCategoryLabel(category: AchievementCategory): string {

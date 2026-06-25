@@ -24,7 +24,6 @@ function getNovaLabel(group: NovaGroup): string {
   }
 }
 
-@Reusable
 @ComponentV2
 export struct NovaGroupBadge {
   @Param group: NovaGroup = NovaGroup.ONE;
@@ -32,7 +31,7 @@ export struct NovaGroupBadge {
 
   build() {
     Row() {
-      Text(`Nova ${this.group}`)
+      Text('Nova ' + this.group)
         .fontSize(FONT_SIZE.BODY_SM)
         .fontWeight(FONT_WEIGHT.MEDIUM)
         .fontColor(COLORS.WHITE)
@@ -48,7 +47,7 @@ export struct NovaGroupBadge {
       }
     }
     .alignItems(VerticalAlign.Center)
-    .accessibilityText(`Nova ${this.group}，${getNovaLabel(this.group)}`)
+    .accessibilityText('Nova ' + this.group + '，' + getNovaLabel(this.group))
     .accessibilityLevel('yes')
   }
 }

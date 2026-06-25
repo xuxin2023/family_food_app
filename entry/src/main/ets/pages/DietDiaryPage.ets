@@ -2,16 +2,19 @@
 // 膳食日记页面 - 按餐次查看每日摄入，查看趋势图表入口
 
 import {
-  ToastHelper, FamilyProfile, DailyBudget, DateUtil, safeBack, safePushUrl, getPageParams, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, AiNutritionAdvice, NutrientStatusLevel, FoodLabel, HealthSignal, HILOG_DOMAIN_DEFAULT, StringRes, MealScenario, safeParseMealScenario, DietRecord, MealGroup,
-  PageResourceTracker, createPageTracker
+  ToastHelper, FamilyProfile, DailyBudget, DateUtil, safeBack, safePushUrl, getPageParams, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, SHADOWS, AiNutritionAdvice, NutrientStatusLevel, FoodLabel, HealthSignal, HILOG_DOMAIN_DEFAULT, StringRes, MealScenario, safeParseMealScenario, DietRecord, MealGroup,
+  PageResourceTracker, createPageTracker, ThemeReactive, themeReactive, ThemeColors, ThemeMode, HapticHelper
 } from 'hsp_core';
-import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
 import { DietRecordInput } from '../repository/HistoryRepository';
 
 import { ErrorFallback } from '../components/ErrorFallback';
+import { EmptyState } from '../components/EmptyState';
 import { QuickFoodInput, QuickFoodInputResult } from '../components/QuickFoodInput';
+import { GlassCard, GlassDepth } from '../components/GlassCard';
+import { GradientArc } from '../components/GradientArc';
+import { GlassIcon, GlassIconSize, GlassIconGradient } from '../components/GlassIcon';
 import { MealGroupDataSource } from '../utils/MealGroupDataSource';
 
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -19,11 +22,6 @@ const TAG = 'DietDiaryPage';
 
 // 场景emoji映射
 const SCENARIO_EMOJI: Map<string, string> = new Map();
-const MEAL_EMOJI_MAP: Map<string, string> = new Map();
-MEAL_EMOJI_MAP.set('breakfast', '🌅');
-MEAL_EMOJI_MAP.set('lunch', '☀️');
-MEAL_EMOJI_MAP.set('dinner', '🌙');
-MEAL_EMOJI_MAP.set('snack', '🍪');
 
 SCENARIO_EMOJI.set('烧烤', '🔥');
 SCENARIO_EMOJI.set('火锅', '🍲');
@@ -81,6 +79,27 @@ export struct DietDiaryPage {
   private appState: AppState = AppState.getInstance()
   private tracker: PageResourceTracker = createPageTracker('DietDiaryPage')
 
+  private themeRef: ThemeReactive = themeReactive
+
+  private get isDark(): boolean {
+    if (this.themeRef.key >= 0) { /* trigger reactive */ }
+    return ThemeColors.getTheme() === ThemeMode.DARK;
+  }
+
+  private get pageBgGradient(): LinearGradient {
+    if (this.isDark) {
+      return { angle: 180, colors: [['#0D1B0E', 0.0], ['#1A2F1C', 0.5], ['#0A1A0D', 1.0]] };
+    }
+    return { angle: 180, colors: [['#FCE4EC', 0.0], ['#FFF8E1', 0.3], ['#E8F5E9', 0.7], ['#E0F2F1', 1.0]] };
+  }
+
+  private get heroGradient(): LinearGradient {
+    if (this.isDark) {
+      return { angle: 160, colors: [['#0D1B0E', 0.0], ['#1B3A1E', 0.4], ['#0A1A0D', 1.0]] };
+    }
+    return { angle: 135, colors: [['#4A148C', 0.0], ['#7B1FA2', 0.3], ['#9C27B0', 0.7], ['#BA68C8', 1.0]] };
+  }
+
   async aboutToAppear() {
     this.tracker.onAppear()
     try {
@@ -100,8 +119,7 @@ export struct DietDiaryPage {
     }
   }
 
-  async onPageShow() {
-    await this.refreshData()
+  onPageShow() {
   }
 
   private async loadAiAdvice(): Promise<void> {
@@ -175,110 +193,128 @@ export struct DietDiaryPage {
   build() {
     Stack() {
       Column() {
-      // 导航栏
-      Row() {
-        BackButton({ fontSize: 28, fontColor: COLORS.PRIMARY })
-          .onClick(() => { safeBack() })
-          .accessibilityText('返回')
+      // 导航栏 — 渐变头部
+      Column() {
+        Row() {
+          Text($r('app.string.diet_diary'))
+            .fontSize(20)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(COLORS.WHITE)
+            .layoutWeight(1)
+
+          Row() {
+            Text($r('app.string.ai_analysis'))
+              .fontSize(12)
+              .fontColor(COLORS.WHITE)
+              .fontWeight(FontWeight.Medium)
+          }
+          .padding({ left: 14, right: 14, top: 6, bottom: 6 })
+          .backgroundColor(this.isDark ? '#1FFFFFFF' : '#33FFFFFF')
+          .borderRadius(20)
           .accessibilityLevel('yes')
-        Text($r('app.string.diet_diary'))
-          .fontSize(FONT_SIZE.TITLE)
-          .fontWeight(FONT_WEIGHT.BOLD)
-          .fontColor(COLORS.TEXT_PRIMARY)
-          .margin({ left: SPACING.MD })
-        Blank()
-        Text($r('app.string.ai_analysis'))
-          .fontSize(FONT_SIZE.BODY)
-          .fontColor(COLORS.ACCENT_PURPLE)
-          .fontWeight(FONT_WEIGHT.MEDIUM)
+          .accessibilityText('智能营养分析')
           .onClick(() => {
+            HapticHelper.light()
             this.showAiSection = !this.showAiSection
             if (this.showAiSection && this.aiAdvice === null) {
               this.loadAiAdvice()
             }
           })
-          .accessibilityText('AI分析')
-          .accessibilityLevel('yes')
-        Text($r('app.string.trend_tab'))
-          .fontSize(FONT_SIZE.BODY)
-          .fontColor(COLORS.PRIMARY)
-          .fontWeight(FONT_WEIGHT.MEDIUM)
-          .margin({ left: SPACING.MD })
-          .onClick(() => {
-            const navParams = new Map<string, Object>();
-            navParams.set('memberId', this.selectedMemberId);
-            safePushUrl('pages/NutritionTrendPage', navParams)
-          })
-          .accessibilityText('趋势')
-          .accessibilityLevel('yes')
-      }
-      .width('100%')
-      .padding({ left: SPACING.LG, right: SPACING.LG, top: SPACING.LG, bottom: SPACING.MD })
+        }
+        .width('100%')
+        .padding({ left: 20, right: 20, top: 56, bottom: 12 })
 
-      // 成员选择器 (横向滚动)
-      Scroll() {
+        // 成员选择器 (横向滚动)
+        Scroll() {
+          Row() {
+            ForEach(this.familyMembers, (member: FamilyProfile) => {
+              Text(member.nickname)
+                .fontSize(13)
+                .fontWeight(this.selectedMemberId === member.memberId ? FontWeight.Bold : FontWeight.Normal)
+                .fontColor(this.selectedMemberId === member.memberId ? COLORS.PRIMARY_DARK : 'rgba(255,255,255,0.7)')
+                .padding({ left: 16, right: 16, top: 6, bottom: 6 })
+                .borderRadius(20)
+                .backgroundColor(this.selectedMemberId === member.memberId ? COLORS.WHITE : (this.isDark ? '#1FFFFFFF' : '#26FFFFFF'))
+                .margin({ right: 8 })
+                .accessibilityLevel('yes')
+                .accessibilityText('选择家庭成员')
+                .onClick(() => {
+                  HapticHelper.light()
+                  this.selectedMemberId = member.memberId
+                  this.refreshData()
+                })
+            }, (member: FamilyProfile) => member.memberId)
+          }
+          .padding({ left: 20, right: 20 })
+        }
+        .width('100%')
+        .height(40)
+        .scrollBar(BarState.Off)
+
+        // 日期导航
         Row() {
-          ForEach(this.familyMembers, (member: FamilyProfile) => {
-            Text(member.nickname)
-              .fontSize(FONT_SIZE.SMALL)
-              .fontWeight(this.selectedMemberId === member.memberId ? FONT_WEIGHT.BOLD : FONT_WEIGHT.REGULAR)
-              .fontColor(this.selectedMemberId === member.memberId ? COLORS.WHITE : COLORS.TEXT_GRAY_6161)
-              .padding({ left: SPACING.LG, right: SPACING.LG, top: SPACING.SM, bottom: SPACING.SM })
-              .borderRadius(RADIUS.FULL)
-              .backgroundColor(this.selectedMemberId === member.memberId ? COLORS.PRIMARY : COLORS.BG_LIGHT_GRAY_F5)
-              .margin({ right: SPACING.SM })
-              .onClick(() => {
-                this.selectedMemberId = member.memberId
-                this.refreshData()
-              })
-              .accessibilityText(member.nickname)
-              .accessibilityLevel('yes')
-          }, (member: FamilyProfile) => member.memberId)
-        }
-        .padding({ left: SPACING.LG, right: SPACING.LG })
-      }
-      .width('100%')
-      .height(48)
-      .margin({ bottom: SPACING.SM })
-
-      // 日期导航
-      Row() {
-        BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
-          .onClick(() => this.changeDate(-1))
+          Row() {
+            Text('\u2039')
+              .fontSize(24)
+              .fontColor(COLORS.WHITE)
+          }
+          .width(36)
+          .height(36)
+          .borderRadius(18)
+          .backgroundColor(this.isDark ? '#1FFFFFFF' : '#33FFFFFF')
+          .justifyContent(FlexAlign.Center)
+          .alignItems(VerticalAlign.Center)
+          .accessibilityLevel('yes')
           .accessibilityText('前一天')
+          .onClick(() => { HapticHelper.light(); this.changeDate(-1) })
+
+          Column() {
+            Text(this.getDateLabel())
+              .fontSize(16)
+              .fontWeight(FontWeight.Bold)
+              .fontColor(COLORS.WHITE)
+            Text(this.currentDate)
+              .fontSize(11)
+              .fontColor('rgba(255,255,255,0.7)')
+          }
+          .padding({ left: 16, right: 16 })
           .accessibilityLevel('yes')
-        Column() {
-          Text(this.getDateLabel())
-            .fontSize(FONT_SIZE.LG)
-            .fontWeight(FONT_WEIGHT.MEDIUM)
-            .fontColor(COLORS.TEXT_PRIMARY)
-          Text(this.currentDate)
-            .fontSize(FONT_SIZE.TINY)
-            .fontColor(COLORS.TEXT_GRAY_9E9E)
-        }
-        .padding({ left: SPACING.MD, right: SPACING.MD })
-        .onClick(() => {
-          this.showDatePicker = !this.showDatePicker
-        })
-        .accessibilityText('选择日期')
-        .accessibilityLevel('yes')
-        Text('›')
-          .fontSize(24)
-          .fontColor(COLORS.PRIMARY)
-          .onClick(() => this.changeDate(1))
+          .accessibilityText('选择日期')
+          .onClick(() => {
+            HapticHelper.light()
+            this.showDatePicker = !this.showDatePicker
+          })
+
+          Row() {
+            Text('\u203A')
+              .fontSize(24)
+              .fontColor(COLORS.WHITE)
+          }
+          .width(36)
+          .height(36)
+          .borderRadius(18)
+          .backgroundColor(this.isDark ? '#1FFFFFFF' : '#33FFFFFF')
+          .justifyContent(FlexAlign.Center)
+          .alignItems(VerticalAlign.Center)
+          .accessibilityLevel('yes')
           .accessibilityText('后一天')
-          .accessibilityLevel('yes')
+          .onClick(() => { HapticHelper.light(); this.changeDate(1) })
+        }
+        .width('100%')
+        .justifyContent(FlexAlign.Center)
+        .alignItems(VerticalAlign.Center)
+        .height(56)
+        .padding({ bottom: 16 })
       }
       .width('100%')
-      .justifyContent(FlexAlign.Center)
-      .alignItems(VerticalAlign.Center)
-      .height(56)
-      .margin({ bottom: SPACING.SM })
+      .linearGradient(this.heroGradient)
+      .borderRadius({ topLeft: 0, topRight: 0, bottomLeft: 24, bottomRight: 24 })
+      .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP])
 
       // 快速日期跳转输入
       if (this.showDatePicker) {
         Row() {
-          TextInput({ placeholder: $r('app.string.diary_date_placeholder') as ResourceStr, text: this.dateInputText })
+          TextInput({ placeholder: $r('app.string.diary_date_placeholder'), text: this.dateInputText })
             .width(160)
             .height(36)
             .borderRadius(RADIUS.SM)
@@ -296,6 +332,7 @@ export struct DietDiaryPage {
             .backgroundColor(COLORS.PRIMARY)
             .fontColor(COLORS.WHITE)
             .onClick(() => {
+              HapticHelper.light()
               if (this.dateInputText.length === 10) {
                 this.currentDate = this.dateInputText
                 this.showDatePicker = false
@@ -325,7 +362,7 @@ export struct DietDiaryPage {
       // 内容区 - 响应式布局
       GridRow({
         columns: { sm: 4, md: 8, lg: 12 },
-        breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
+        breakpoints: { value: ['320vp', '600vp'], reference: BreakpointsReference.WindowSize }
       }) {
         GridCol({ span: { sm: 4, md: 8, lg: this.currentBreakpoint === 'lg' ? 8 : 12 } }) {
       if (this.errorMessage) {
@@ -342,22 +379,12 @@ export struct DietDiaryPage {
           .color(COLORS.PRIMARY)
           .margin({ top: 80 })
       } else if (this.mealGroupDS.totalCount() === 0) {
-        // 空状态
-        Column() {
-          Text('📝')
-            .fontSize(48)
-          Text($r('app.string.no_content'))
-            .fontSize(FONT_SIZE.LG)
-            .fontColor(COLORS.TEXT_GRAY_9E9E)
-            .margin({ top: SPACING.MD })
-          Text($r('app.string.go_scan_tip'))
-            .fontSize(FONT_SIZE.SMALL)
-            .fontColor(COLORS.TEXT_GRAY_BDBD)
-            .margin({ top: SPACING.SM })
-        }
-        .width('100%')
-        .margin({ top: 60 })
-        .alignItems(HorizontalAlign.Center)
+        EmptyState({
+          icon: '📝',
+          title: '今天还没有饮食记录',
+          subtitle: '点击下方按钮添加记录'
+        })
+          .layoutWeight(1)
       } else {
         // 膳食记录列表 - 按餐次分组
         Scroll() {
@@ -397,7 +424,7 @@ export struct DietDiaryPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(COLORS.BG_PAGE)
+    .linearGradient(this.pageBgGradient)
 
       // 快捷录入弹窗
       QuickFoodInput({
@@ -406,6 +433,7 @@ export struct DietDiaryPage {
         onConfirm: (result: QuickFoodInputResult) => { this.handleQuickInputConfirm(result); }
       })
     }
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   private async handleQuickInputConfirm(result: QuickFoodInputResult): Promise<void> {
@@ -453,9 +481,19 @@ export struct DietDiaryPage {
         .borderRadius(RADIUS.LG)
       } else if (this.aiAdvice !== null) {
         // 总评卡片
+        GlassCard({
+          depth: GlassDepth.ELEVATED,
+          radiusVal: RADIUS.LG,
+          paddingVal: 16,
+          marginVal: { bottom: SPACING.MD }
+        }) {
         Column() {
           Row({ space: 6 }) {
-            Text('🤖').fontSize(22)
+            GlassIcon({
+              icon: 'chat',
+              iconSizeLevel: GlassIconSize.SM,
+              gradient: GlassIconGradient.PURPLE
+            })
             Column() {
               Text($r('app.string.ai_analysis_title'))
                 .fontSize(16)
@@ -516,12 +554,18 @@ export struct DietDiaryPage {
           }
 
           if ((this.aiAdvice?.suggestions?.length ?? 0) > 0) {
-            Row() {
-              Text('💡 ' + this.aiAdvice.suggestions[0])
+            Row({ space: 6 }) {
+              GlassIcon({
+                icon: 'info',
+                iconSizeLevel: GlassIconSize.SM,
+                gradient: GlassIconGradient.PURPLE
+              })
+              Text(this.aiAdvice.suggestions[0])
                 .fontSize(13)
                 .fontColor(COLORS.ACCENT_PURPLE)
                 .maxLines(2)
                 .textOverflow({ overflow: TextOverflow.Ellipsis })
+                .layoutWeight(1)
             }
             .width('100%')
             .padding(10)
@@ -544,21 +588,21 @@ export struct DietDiaryPage {
             .borderRadius(RADIUS.FULL)
             .fontColor(COLORS.WHITE)
             .margin({ top: 8 })
-            .onClick(() => { this.loadAiAdvice() })
+            .onClick(() => { HapticHelper.light(); this.loadAiAdvice() })
             .accessibilityText('刷新分析')
             .accessibilityLevel('yes')
         }
         .width('100%')
-        .padding(16)
-        .backgroundColor(COLORS.WHITE)
-        .borderRadius(RADIUS.LG)
-        .margin({ bottom: SPACING.MD })
-        .shadow({ radius: 2, color: COLORS.SHADOW_LIGHT, offsetY: 1 })
+        }
       } else {
         // 未加载状态
         Button() {
           Row({ space: 6 }) {
-            Text('🤖').fontSize(18)
+            GlassIcon({
+              icon: 'chat',
+              iconSizeLevel: GlassIconSize.SM,
+              gradient: GlassIconGradient.PURPLE
+            })
             Text($r('app.string.ai_analysis'))
           }
         }
@@ -566,8 +610,8 @@ export struct DietDiaryPage {
         .height(44)
         .backgroundColor(COLORS.ACCENT_PURPLE)
         .borderRadius(RADIUS.LG)
-        .onClick(() => { this.loadAiAdvice() })
-        .accessibilityText('加载AI分析')
+        .onClick(() => { HapticHelper.light(); this.loadAiAdvice() })
+        .accessibilityText('加载智能分析')
         .accessibilityLevel('yes')
       }
     }
@@ -587,82 +631,98 @@ export struct DietDiaryPage {
         .fontColor(na.status === NutrientStatusLevel.OVER ? COLORS.ACCENT_RED_F443 :
           na.status === NutrientStatusLevel.WARNING ? COLORS.ORANGE_ACCENT : COLORS.ACCENT_GREEN_4CAF)
       Text('/' + na.target.toString())
-        .fontSize(9)
+        .fontSize(FONT_SIZE.CAPTION)
         .fontColor(COLORS.TEXT_GRAY_9E9E)
     }
     .layoutWeight(1)
     .padding(6)
-    .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
+    .backgroundColor(this.isDark ? '#1FFFFFFF' : COLORS.BG_LIGHT_GRAY_F5)
     .borderRadius(RADIUS.SM)
     .alignItems(HorizontalAlign.Center)
   }
 
   @Builder
   buildBudgetBar() {
-    Row() {
-      // 4 种营养素的进度条
-      this.buildMiniProgress($r('app.string.diary_sodium_label'), this.budget?.sodiumUsagePercent() || 0, COLORS.ACCENT_RED_F443)
-      this.buildMiniProgress($r('app.string.diary_sugar_label'), this.budget?.sugarUsagePercent() || 0, COLORS.ORANGE_ACCENT)
-      this.buildMiniProgress($r('app.string.diary_calorie_label'), this.budget?.calorieUsagePercent() || 0, COLORS.ACCENT_GREEN_4CAF)
-      this.buildMiniProgress($r('app.string.diary_fat_label'), this.budget?.fatUsagePercent() || 0, COLORS.ACCENT_PURPLE_9C27)
+    GlassCard({
+      depth: GlassDepth.SURFACE,
+      radiusVal: RADIUS.LG,
+      paddingVal: 16,
+      marginVal: { bottom: 8 }
+    }) {
+      Row() {
+        this.buildMiniGauge($r('app.string.diary_sodium_label'), this.budget?.sodiumUsagePercent() || 0, COLORS.ACCENT_RED_F443)
+        this.buildMiniGauge($r('app.string.diary_sugar_label'), this.budget?.sugarUsagePercent() || 0, COLORS.ORANGE_ACCENT)
+        this.buildMiniGauge($r('app.string.diary_calorie_label'), this.budget?.calorieUsagePercent() || 0, COLORS.ACCENT_GREEN_4CAF)
+        this.buildMiniGauge($r('app.string.diary_fat_label'), this.budget?.fatUsagePercent() || 0, COLORS.ACCENT_PURPLE_9C27)
+      }
+      .width('100%')
     }
-    .width('100%')
-    .padding({ left: SPACING.LG, right: SPACING.LG, top: SPACING.SM, bottom: SPACING.SM })
-    .backgroundColor(COLORS.WHITE)
-    .margin({ bottom: SPACING.SM })
   }
 
   @Builder
-  buildMiniProgress(label: ResourceStr, percent: number, color: string) {
+  buildMiniGauge(label: ResourceStr, percent: number, color: string) {
     Column() {
+      GradientArc({
+        value: percent,
+        maxValue: 100,
+        sizeVal: 52,
+        lineWidth: 5,
+        suffix: '%',
+        decimals: 0,
+        glowEnabled: false,
+        numberFontSize: 11
+      })
+
       Text(label)
-        .fontSize(9)
+        .fontSize(10)
         .fontColor(COLORS.TEXT_GRAY_6161)
-        .margin({ bottom: 2 })
-      Stack() {
-        Column()
-          .width('100%')
-          .height(4)
-          .borderRadius(2)
-          .backgroundColor(COLORS.BG_DIVIDER)
-        Column()
-          .width((percent > 100 ? 100 : percent).toFixed(0) + '%')
-          .height(4)
-          .borderRadius(2)
-          .backgroundColor(color)
-          .alignSelf(ItemAlign.Start)
-      }
-      .width('100%')
-      .height(4)
-      .borderRadius(2)
-      Text(Math.round(percent) + '%')
-        .fontSize(8)
-        .fontColor(color)
-        .margin({ top: 1 })
+        .margin({ top: 6 })
     }
     .layoutWeight(1)
-    .padding({ right: 4 })
+    .alignItems(HorizontalAlign.Center)
+  }
+
+  private getMealAccentColor(mealType: string): string {
+    if (mealType === 'breakfast') return '#FF9800';
+    if (mealType === 'lunch') return '#43A047';
+    if (mealType === 'dinner') return '#1976D2';
+    return '#7B1FA2';
   }
 
   @Builder
   buildMealGroupCard(group: MealGroup) {
+    GlassCard({
+      depth: GlassDepth.SURFACE,
+      radiusVal: RADIUS.LG,
+      paddingVal: 16,
+      marginVal: { bottom: 12 },
+      accentColor: this.getMealAccentColor(group.mealType)
+    }) {
     Column() {
       // 餐次头
       Row() {
-        Text(this.getMealEmoji(group.mealType))
-          .fontSize(20)
-          .margin({ right: SPACING.SM })
-        Text(group.mealLabel)
-          .fontSize(FONT_SIZE.LG)
-          .fontWeight(FONT_WEIGHT.BOLD)
-          .fontColor(COLORS.TEXT_PRIMARY)
-        Blank()
+        GlassIcon({
+          icon: this.getMealIcon(group.mealType),
+          iconSizeLevel: GlassIconSize.SM,
+          gradient: this.getMealGradient(group.mealType)
+        })
+        .margin({ right: 10 })
+
+        Column() {
+          Text(group.mealLabel)
+            .fontSize(16)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(COLORS.TEXT_PRIMARY)
+        }
+        .layoutWeight(1)
+
         Text($r('app.string.diary_sodium_sugar_info', Math.round(group.sodiumTotal), group.sugarTotal.toFixed(1)))
-          .fontSize(FONT_SIZE.TINY)
+          .fontSize(11)
           .fontColor(COLORS.TEXT_GRAY_9E9E)
       }
       .width('100%')
-      .padding({ bottom: SPACING.SM })
+      .padding({ bottom: 8 })
+      .alignItems(VerticalAlign.Center)
 
       // 记录列表
       ForEach(group.records, (record: DietRecord) => {
@@ -671,39 +731,40 @@ export struct DietDiaryPage {
 
       // 添加食品按钮
       Row() {
-        Text($r('app.string.add_food'))
-          .fontSize(FONT_SIZE.SMALL)
-          .fontColor(COLORS.PRIMARY)
-          .fontWeight(FONT_WEIGHT.MEDIUM)
-        Text(' +')
+        Text('+ ')
           .fontSize(14)
           .fontColor(COLORS.PRIMARY)
-          .fontWeight(FONT_WEIGHT.BOLD)
+          .fontWeight(FontWeight.Bold)
+        Text($r('app.string.add_food'))
+          .fontSize(13)
+          .fontColor(COLORS.PRIMARY)
       }
-      .padding({ top: SPACING.SM, bottom: SPACING.SM })
+      .width('100%')
+      .padding({ top: 10, bottom: 10 })
+      .justifyContent(FlexAlign.Center)
+      .border({ width: 1, color: COLORS.PRIMARY_LIGHT, style: BorderStyle.Dashed })
+      .borderRadius(RADIUS.MD)
+      .margin({ top: 4 })
+      .accessibilityLevel('yes')
+      .accessibilityText('添加饮食记录')
       .onClick(() => {
+        HapticHelper.light()
         this.quickInputMealType = group.mealType;
         this.showQuickInput = true;
       })
-      .accessibilityText('添加食品')
-      .accessibilityLevel('yes')
 
       // 营养素汇总条
-      Row({ space: SPACING.MD }) {
-        this.buildNutriChip('🧂', `${Math.round(group.sodiumTotal)}mg`, COLORS.ACCENT_RED_F443)
-        this.buildNutriChip('🍬', `${group.sugarTotal.toFixed(1)}g`, COLORS.ORANGE_ACCENT)
-        this.buildNutriChip('🔥', `${Math.round(group.calorieTotal)}kcal`, COLORS.ACCENT_GREEN_4CAF)
-        this.buildNutriChip('🥩', `${group.fatTotal.toFixed(1)}g`, COLORS.ACCENT_PURPLE_9C27)
+      Row({ space: 6 }) {
+        this.buildNutriChip('钠', Math.round(group.sodiumTotal) + 'mg', COLORS.ACCENT_RED_F443)
+        this.buildNutriChip('糖', group.sugarTotal.toFixed(1) + 'g', COLORS.ORANGE_ACCENT)
+        this.buildNutriChip('热', Math.round(group.calorieTotal) + 'kcal', COLORS.ACCENT_GREEN_4CAF)
+        this.buildNutriChip('脂', group.fatTotal.toFixed(1) + 'g', COLORS.ACCENT_PURPLE_9C27)
       }
       .width('100%')
-      .padding({ top: SPACING.SM })
+      .padding({ top: 10 })
     }
     .width('100%')
-    .padding(SPACING.MD)
-    .backgroundColor(COLORS.WHITE)
-    .borderRadius(RADIUS.MD)
-    .margin({ bottom: SPACING.MD })
-    .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
+    }
   }
 
   @Builder
@@ -738,22 +799,35 @@ export struct DietDiaryPage {
   }
 
   @Builder
-  buildNutriChip(emoji: string, value: string, color: string) {
-    Row({ space: 2 }) {
-      Text(emoji)
-        .fontSize(10)
+  buildNutriChip(label: string, value: string, color: string) {
+    Row({ space: 3 }) {
+      Row()
+        .width(5)
+        .height(5)
+        .borderRadius(3)
+        .backgroundColor(color)
       Text(value)
-        .fontSize(FONT_SIZE.TINY)
+        .fontSize(10)
         .fontColor(color)
-        .fontWeight(FONT_WEIGHT.MEDIUM)
+        .fontWeight(FontWeight.Medium)
     }
-    .padding({ left: SPACING.SM, right: SPACING.SM, top: 4, bottom: 4 })
+    .padding({ left: 8, right: 8, top: 4, bottom: 4 })
     .backgroundColor(color + '15')
-    .borderRadius(RADIUS.FULL)
+    .borderRadius(10)
   }
 
-  private getMealEmoji(mealType: string): string {
-    return MEAL_EMOJI_MAP.get(mealType) ?? '🍽️'
+  private getMealIcon(mealType: string): string {
+    if (mealType === 'breakfast') return 'fork_knife';
+    if (mealType === 'lunch') return 'flame';
+    if (mealType === 'dinner') return 'star';
+    return 'heart';
+  }
+
+  private getMealGradient(mealType: string): GlassIconGradient {
+    if (mealType === 'breakfast') return GlassIconGradient.ORANGE;
+    if (mealType === 'lunch') return GlassIconGradient.GREEN;
+    if (mealType === 'dinner') return GlassIconGradient.BLUE;
+    return GlassIconGradient.PURPLE;
   }
 
   private getScenarioEmoji(scenario: string): string {

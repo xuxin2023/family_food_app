@@ -25,33 +25,36 @@ export class PurchaseLink {
   icon: string = '';          // 平台图标emoj
 }
 
+/** 平台配置 */
+export interface PlatformConfig {
+  name: string;
+  icon: string;
+  searchBase: string;
+}
+
 /** 电商搜索链接生成器 */
 export class EcommerceLinkService {
-  private static readonly PLATFORM_CONFIG: Record<EcommercePlatform, {
-    name: string;
-    icon: string;
-    searchBase: string;
-  }> = {
+  private static readonly PLATFORM_CONFIG: Record<EcommercePlatform, PlatformConfig> = {
     [EcommercePlatform.TAOBAO]: {
       name: '淘宝',
       icon: '🛒',
       searchBase: 'https://s.taobao.com/search?q=',
-    },
+    } as PlatformConfig,
     [EcommercePlatform.JD]: {
       name: '京东',
       icon: '📦',
       searchBase: 'https://search.jd.com/Search?keyword=',
-    },
+    } as PlatformConfig,
     [EcommercePlatform.PINDUODUO]: {
       name: '拼多多',
       icon: '💡',
       searchBase: 'https://mobile.yangkeduo.com/search_result.html?search_key=',
-    },
+    } as PlatformConfig,
     [EcommercePlatform.MEITUAN]: {
       name: '美团',
       icon: '🛵',
       searchBase: 'https://i.meituan.com/s/',
-    },
+    } as PlatformConfig,
   };
 
   /**
@@ -69,14 +72,14 @@ export class EcommerceLinkService {
     const encoded = encodeURIComponent(searchQuery);
 
     for (const platform of Object.values(EcommercePlatform)) {
-      const cfg = this.PLATFORM_CONFIG[platform];
+      const cfg = EcommerceLinkService.PLATFORM_CONFIG[platform];
       const link: PurchaseLink = new PurchaseLink()
       link.platform = platform;
       link.platformName = cfg.name;
       link.icon = cfg.icon;
       link.url = `${cfg.searchBase}${encoded}`;
       link.productName = productName;
-      link.priceHint = this.getPriceHint(category);
+      link.priceHint = EcommerceLinkService.getPriceHint(category);
       links.push(link);
     }
 
@@ -94,7 +97,7 @@ export class EcommerceLinkService {
     platform: EcommercePlatform,
     category?: string
   ): PurchaseLink {
-    const cfg = this.PLATFORM_CONFIG[platform];
+    const cfg = EcommerceLinkService.PLATFORM_CONFIG[platform];
     const searchQuery = category
       ? `${productName} ${category}`
       : productName;
@@ -106,7 +109,7 @@ export class EcommerceLinkService {
     link.icon = cfg.icon;
     link.url = `${cfg.searchBase}${encoded}`;
     link.productName = productName;
-    link.priceHint = this.getPriceHint(category);
+    link.priceHint = EcommerceLinkService.getPriceHint(category);
 
     return link;
   }
@@ -122,11 +125,8 @@ export class EcommerceLinkService {
   }
 
   /** 获取平台配置信息 */
-  static getPlatformConfig(platform: EcommercePlatform): {
-    name: string;
-    icon: string;
-  } {
-    return this.PLATFORM_CONFIG[platform];
+  static getPlatformConfig(platform: EcommercePlatform): PlatformConfig {
+    return EcommerceLinkService.PLATFORM_CONFIG[platform];
   }
 
   /** 获取所有可用平台 */

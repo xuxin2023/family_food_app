@@ -1,10 +1,12 @@
 // NutritionTrendPage.ets
 // 营养摄入趋势图表页面 - 7天/30天营养素趋势、每日汇总、预算对比
 
-import { safeBack, getPageParams, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, HILOG_DOMAIN_DEFAULT, DateUtil, NutrientTrendData, DailyNutritionSummary, TrendDirection, DailyNutrientPoint, MealGroup, resourceToStr, LazyDataSource, PageResourceTracker, createPageTracker } from 'hsp_core';
+import { safeBack, getPageParams, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, SHADOWS, HILOG_DOMAIN_DEFAULT, DateUtil, NutrientTrendData, DailyNutritionSummary, TrendDirection, DailyNutrientPoint, MealGroup, resourceToStr, LazyDataSource, PageResourceTracker, createPageTracker, ThemeReactive, themeReactive, ThemeColors, ThemeMode } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
+import { LoadingSkeleton } from '../components/SkeletonScreen';
 import { AppState } from '../AppState';
 import { TrendChart } from '../components/TrendChart';
+import { nutritionTrendEngine } from 'feature_report';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -48,6 +50,20 @@ export struct NutritionTrendPage {
   private overviewDayCount: number = 0
   private overviewAvgSodium: number = 0
   private overviewAvgSugar: number = 0
+
+  private themeRef: ThemeReactive = themeReactive
+
+  private get isDark(): boolean {
+    if (this.themeRef.key >= 0) { /* trigger reactive */ }
+    return ThemeColors.getTheme() === ThemeMode.DARK;
+  }
+
+  private get pageBgGradient(): LinearGradient {
+    if (this.isDark) {
+      return { angle: 180, colors: [['#0D1B0E', 0.0], ['#1A2F1C', 0.5], ['#0A1A0D', 1.0]] };
+    }
+    return { angle: 180, colors: [['#E8EAF6', 0.0], ['#E0F2F1', 0.3], ['#FFF8E1', 0.7], ['#F3E5F5', 1.0]] };
+  }
 
   async aboutToAppear() {
     this.tracker.onAppear()
@@ -100,15 +116,14 @@ export struct NutritionTrendPage {
       dailySummaries.push(d);
     }
     // 从 dailySummaries 构建趋势数据
-    const result: NutrientTrendData[] = []
+    const nt = await this.appState.getNutritionTargetOrDefault(this.selectedMemberId)
     if (dailySummaries.length > 0) {
-      const last = dailySummaries[dailySummaries.length - 1]
-      const t1: NutrientTrendData = new NutrientTrendData()
-      const t2: NutrientTrendData = new NutrientTrendData()
-      const t3: NutrientTrendData = new NutrientTrendData()
-      const t4: NutrientTrendData = new NutrientTrendData()
+      this.trends = nutritionTrendEngine.buildNutrientTrends(
+        dailySummaries, nt.sodiumMax_mg, nt.sugarMax_g, nt.caloriesTarget, nt.fatMax_g
+      );
+    } else {
+      this.trends = [];
     }
-    this.trends = result
     this.summaries = dailySummaries
     this.summariesDataSource.reloadData(this.summaries)
 
@@ -139,47 +154,47 @@ export struct NutritionTrendPage {
 
   build() {
     Column() {
-      // 导航栏
-      Row() {
-        BackButton({ fontSize: 28, fontColor: COLORS.PRIMARY })
-          .onClick(() => { safeBack() })
-          .accessibilityText('返回')
-          .accessibilityLevel('yes')
-        Text($r('app.string.nutrition_trend'))
-          .fontSize(FONT_SIZE.TITLE)
-          .fontWeight(FONT_WEIGHT.BOLD)
-          .fontColor(COLORS.TEXT_PRIMARY)
-          .margin({ left: SPACING.MD })
-      }
-      .width('100%')
-      .padding({ left: SPACING.LG, right: SPACING.LG, top: SPACING.LG, bottom: SPACING.MD })
+      // 渐变头部
+      Column() {
+        Row() {
+          BackButton({ fontColor: COLORS.WHITE })
+          Text($r('app.string.nutrition_trend'))
+            .fontSize(20)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(COLORS.WHITE)
+            .margin({ left: 8 })
+        }
+        .width('100%')
+        .padding({ left: 16, right: 16, top: 56, bottom: 12 })
 
-      // 周期切换
-      Row({ space: SPACING.MD }) {
-        ForEach(this.periodOptions, (option: PeriodOption, index: number) => {
-          Text(option.label)
-            .fontSize(FONT_SIZE.BODY)
-            .fontWeight(this.selectedPeriodIndex === index ? FONT_WEIGHT.BOLD : FONT_WEIGHT.REGULAR)
-            .fontColor(this.selectedPeriodIndex === index ? COLORS.WHITE : COLORS.TEXT_GRAY_6161)
-            .padding({ left: SPACING.XL, right: SPACING.XL, top: SPACING.SM, bottom: SPACING.SM })
-            .borderRadius(RADIUS.FULL)
-            .backgroundColor(this.selectedPeriodIndex === index ? COLORS.PRIMARY : COLORS.BG_LIGHT_GRAY_F5)
-            .onClick(() => { this.switchPeriod(index) })
-            .accessibilityText(index.toString())
-            .accessibilityLevel('yes')
-        }, (_option: PeriodOption, index: number) => index.toString())
+        // 周期切换
+        Row({ space: 8 }) {
+          ForEach(this.periodOptions, (option: PeriodOption, index: number) => {
+            Text(option.label)
+              .fontSize(13)
+              .fontWeight(this.selectedPeriodIndex === index ? FontWeight.Bold : FontWeight.Normal)
+              .fontColor(this.selectedPeriodIndex === index ? COLORS.PRIMARY_DARK : 'rgba(255,255,255,0.7)')
+              .padding({ left: 16, right: 16, top: 5, bottom: 5 })
+              .borderRadius(RADIUS.LG)
+              .backgroundColor(this.selectedPeriodIndex === index ? COLORS.WHITE : 'rgba(255,255,255,0.15)')
+              .onClick(() => { this.switchPeriod(index) })
+          }, (option: PeriodOption, index: number) => index.toString())
+        }
+        .width('100%')
+        .padding({ left: 16, right: 16, bottom: 16 })
       }
       .width('100%')
-      .justifyContent(FlexAlign.Center)
-      .margin({ bottom: SPACING.MD })
+      .linearGradient({
+        angle: 135,
+        colors: [['#0D47A1', 0.0], ['#1565C0', 0.3], ['#1976D2', 0.7], ['#42A5F5', 1.0]]
+      })
+      .borderRadius({ topLeft: 0, topRight: 0, bottomLeft: 24, bottomRight: 24 })
+      .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP])
 
       // 内容
       if (this.isLoading) {
-        LoadingProgress()
-          .width(32)
-          .height(32)
-          .color(COLORS.PRIMARY)
-          .margin({ top: 80 })
+        LoadingSkeleton({ variant: 'dashboard' })
+          .layoutWeight(1)
       } else if (this.trends.length === 0) {
         Column() {
           Text('📊')
@@ -239,7 +254,8 @@ export struct NutritionTrendPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(COLORS.BG_PAGE)
+    .linearGradient(this.pageBgGradient)
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   @Builder
@@ -307,11 +323,11 @@ export struct NutritionTrendPage {
       .width('100%')
     }
     .width('100%')
-    .padding(SPACING.MD)
+    .padding(SPACING.LG)
     .backgroundColor(COLORS.WHITE)
-    .borderRadius(RADIUS.MD)
+    .borderRadius(RADIUS.LG)
     .margin({ left: SPACING.LG, right: SPACING.LG, bottom: SPACING.MD })
-    .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
+    .shadow(SHADOWS.MD)
   }
 
   @Builder
@@ -364,7 +380,7 @@ export struct NutritionTrendPage {
     .backgroundColor(COLORS.WHITE)
     .borderRadius(RADIUS.MD)
     .margin({ left: SPACING.LG, right: SPACING.LG, bottom: SPACING.MD })
-    .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
+    .shadow(SHADOWS.XS)
   }
 
   private formatShortDate(date: string): string {

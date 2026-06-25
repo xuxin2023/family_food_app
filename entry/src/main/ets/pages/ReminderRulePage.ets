@@ -1,8 +1,9 @@
 import {
-  ToastHelper, safeBack, COLORS, HILOG_DOMAIN_DEFAULT, DB_NAME, ReminderRule, PRESET_REMINDER_RULES, getReminderTypeLabel, getReminderTypeIcon, FamilyProfile, PageResourceTracker, createPageTracker
+  ToastHelper, safeBack, COLORS, HILOG_DOMAIN_DEFAULT, DB_NAME, ReminderRule, PRESET_REMINDER_RULES, getReminderTypeLabel, getReminderTypeIcon, FamilyProfile, PageResourceTracker, createPageTracker, ThemeReactive, themeReactive
 } from 'hsp_core';
 import { ReminderService, ReminderRule as ServiceReminderRule, ReminderEvent } from 'hsp_service';
 import { BackButton } from '../components/BackButton';
+import { GradientHeader } from '../components/GradientHeader';
 import { AppState } from '../AppState';
 
 import { ReminderRuleRepository } from '../repository/ReminderRuleRepository';
@@ -15,7 +16,7 @@ const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @Entry
 @ComponentV2
-struct ReminderRulePage {
+export struct ReminderRulePage {
   @Local isLoading: boolean = true
   @Local rules: ReminderRule[] = []
   @Local showEditDialog: boolean = false
@@ -34,6 +35,8 @@ struct ReminderRulePage {
   private appState: AppState = AppState.getInstance()
 
   private tracker: PageResourceTracker = createPageTracker('ReminderRulePage')
+  private themeRef: ThemeReactive = themeReactive
+
   async aboutToAppear() {
     this.tracker.onAppear()
     this.isLoading = true
@@ -57,25 +60,11 @@ struct ReminderRulePage {
 
   build() {
     Column() {
-      Row() {
-        BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
-          .onClick(() => { safeBack() })
-          .accessibilityText('返回')
-          .accessibilityLevel('yes')
-        Text($r('app.string.reminder_title'))
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .margin({ left: 16 })
-        Blank()
-        Text($r('app.string.reminder_add'))
-          .fontSize(14)
-          .fontColor(COLORS.PRIMARY)
-          .onClick(() => { this.openAddDialog() })
-          .accessibilityText('添加提醒')
-          .accessibilityLevel('yes')
-      }
-      .width('100%')
-      .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+      GradientHeader({
+        title: $r('app.string.reminder_title'),
+        rightText: '添加提醒',
+        onRightClick: () => { this.openAddDialog() }
+      })
 
       this.PresetSection()
 
@@ -103,6 +92,7 @@ struct ReminderRulePage {
       modalTransition: ModalTransition.DEFAULT,
       onDisappear: () => { this.showEditDialog = false }
     })
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   @Builder

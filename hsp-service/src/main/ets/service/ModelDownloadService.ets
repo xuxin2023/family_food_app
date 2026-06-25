@@ -5,9 +5,8 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { fileIo } from '@kit.CoreFileKit';
-import { connection } from '@kit.NetworkKit';
+import { http, connection } from '@kit.NetworkKit';
 import { common } from '@kit.AbilityKit';
-import { notificationManager } from '@kit.NotificationKit';
 
 const TAG = 'ModelDownloadService';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -192,35 +191,32 @@ export class ModelDownloadService {
 
   private async downloadModelFile(model: ModelDescriptor): Promise<boolean> {
     const filePath = `${this.modelsDir}/${model.name}`;
-
     try {
-      const response = await fetch(model.url);
-      if (!response.ok) return false;
-
-      const totalSize = parseInt(response.headers.get('Content-Length') ?? '0', 10) || model.sizeBytes;
-      const reader = response.body?.getReader();
-      if (!reader) return false;
-
-      const file = fileIo.openSync(filePath, fileIo.OpenMode.CREATE | fileIo.OpenMode.WRITE_ONLY);
-      let downloadedBytes = 0;
-
+      let httpRequest: http.HttpRequest;
       try {
-        let done = false;
-        while (!done) {
-          const result = await reader.read();
-          done = result.done;
-          if (result.value) {
-            fileIo.writeSync(file.fd, result.value.buffer as ArrayBuffer);
-            downloadedBytes += result.value.byteLength;
-            const pct = Math.round((downloadedBytes / totalSize) * 100);
-            this.updateState(model.name, ModelDownloadStatus.DOWNLOADING, pct, totalSize);
-          }
-        }
-      } finally {
-        fileIo.closeSync(file);
+        httpRequest = http.createHttp();
+      } catch (createErr) {
+        hilog.warn(DOMAIN, TAG, 'createHttp failed: %{public}s', JSON.stringify(createErr));
+        return false;
       }
+      const response = await httpRequest.request(model.url, {
+        method: http.RequestMethod.GET,
+        expectDataType: http.HttpDataType.ARRAY_BUFFER,
+        connectTimeout: 30000,
+        readTimeout: 60000
+      });
+      if (response.responseCode !== 200) return false;
 
-      return downloadedBytes > 0;
+      const data = response.result as ArrayBuffer;
+      if (!data || data.byteLength === 0) return false;
+
+      this.updateState(model.name, ModelDownloadStatus.DOWNLOADING, 50, data.byteLength);
+      const file = fileIo.openSync(filePath, fileIo.OpenMode.CREATE | fileIo.OpenMode.WRITE_ONLY);
+      fileIo.writeSync(file.fd, data);
+      fileIo.closeSync(file);
+      this.updateState(model.name, ModelDownloadStatus.DOWNLOADING, 100, data.byteLength);
+
+      return data.byteLength > 0;
     } catch (e) {
       hilog.warn(DOMAIN, TAG, 'Download %{public}s error: %{public}s', model.name, JSON.stringify(e));
       return false;
@@ -230,9 +226,21 @@ export class ModelDownloadService {
   private async fetchManifest(): Promise<ModelManifest | null> {
     try {
       const url = MODELS_BASE_URL + MANIFEST_PATH;
-      const response = await fetch(url);
-      if (!response.ok) return null;
-      const json = await response.json() as ModelManifest;
+      let httpRequest: http.HttpRequest;
+      try {
+        httpRequest = http.createHttp();
+      } catch (createErr) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'createHttp failed: %{public}s', JSON.stringify(createErr));
+        return null;
+      }
+      const response = await httpRequest.request(url, {
+        method: http.RequestMethod.GET,
+        expectDataType: http.HttpDataType.STRING,
+        connectTimeout: 10000,
+        readTimeout: 10000
+      });
+      if (response.responseCode !== 200) return null;
+      const json: ModelManifest = JSON.parse(response.result as string) as ModelManifest;
       if (!json.version || !json.models) return null;
       return json;
     } catch (_) {
@@ -282,9 +290,21 @@ export class ModelDownloadService {
 
   private async isWifiConnected(): Promise<boolean> {
     try {
-      const netHandle = await connection.getDefaultNet();
+      let netHandle: connection.NetHandle;
+      try {
+        netHandle = await connection.getDefaultNet();
+      } catch (err) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'getDefaultNet failed: %{public}s', JSON.stringify(err));
+        return false;
+      }
       if (!netHandle) return false;
-      const capabilities = await connection.getNetCapabilities(netHandle);
+      let capabilities: connection.NetCapabilities;
+      try {
+        capabilities = await connection.getNetCapabilities(netHandle);
+      } catch (err) {
+        hilog.warn(DOMAIN_ZERO, TAG, 'getNetCapabilities failed: %{public}s', JSON.stringify(err));
+        return false;
+      }
       if (!capabilities) return false;
       const bearerTypes = capabilities.bearerTypes as number[] | undefined;
       return bearerTypes !== undefined && bearerTypes.includes(1);

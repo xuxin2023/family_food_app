@@ -10,11 +10,16 @@ export { FoodAdapterEngine, TodayIntakeInput, DailyBudgetInput, FamilyMemberSimp
 export { NutriScoreEngine, NutriScoreBreakdown, NutriScoreInput } from 'hsp_rating';
 export { NovaGroupEngine, NovaGroup, NovaEvaluationResult } from 'hsp_rating';
 export { EcoScoreEngine, EcoScoreGrade, EcoScoreResult, EcoScoreFactor } from 'hsp_rating';
+export { NutriScoreV2Engine, NutriScoreV2Input, NutriScoreV2Breakdown, FoodCategory } from './engine/NutriScoreV2Engine';
+export { AdditiveScoreCalculator, AdditiveScoreResult, AdditiveScoreAssessment, AdditiveRiskLevelV2 } from './engine/AdditiveScoreCalculator';
+export { FoodHealthScoreCalculator, FoodHealthScoreBreakdown } from './engine/FoodHealthScoreCalculator';
 export { AlternativeFoodRecommender, alternativeFoodRecommender } from './engine/AlternativeFoodRecommender';
 export { IntoleranceEngine, IntoleranceType, IntoleranceSeverity, IntoleranceWarning, IntoleranceCheckResult } from './engine/IntoleranceEngine';
 export { IngredientKnowledgeBase, IngredientRiskLevel, IngredientAssessment } from './engine/IngredientKnowledgeBase';
 export { IngredientSemanticEngine, AllergenMatchResult, AllergenMatchDetail, TraceDeclaration } from './engine/IngredientSemanticEngine';
 export { CrossRiskAssessor } from './engine/CrossRiskAssessor';
+export { GbComplianceChecker, GbStandard, GbComplianceResult } from './engine/GbComplianceChecker';
+export { ChildSafetyChecker, ChildSafetyResult, ChildAgeGroup } from './engine/ChildSafetyChecker';
 
 // ===== 扫描相关组件 =====
 export { NutriScoreBadge } from './components/NutriScoreBadge';
@@ -36,7 +41,7 @@ export { OnDeviceAiEngine, IngredientAnalysis as AiIngredientAnalysis, Personali
 
 // ===== T-068 entry瘦身迁移: 扫描服务 =====
 export { OcrService } from './service/OcrService';
-export { OnlineShoppingParser, ParsedShoppingItem } from './service/OnlineShoppingParser';
+export { OnlineShoppingParser, ParsedLink, PlatformType } from './service/OnlineShoppingParser';
 
 // ===== UI组件 =====
 export { AllergyAlertBanner, AllergyAlertData } from './components/AllergyAlertBanner';

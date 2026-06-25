@@ -36,7 +36,7 @@ export class SecureHttpHelper {
     body: string | Object = '',
     timeoutMs: number = 10000
   ): Promise<SecureJsonResponse> {
-    const result: SecureJsonResponse = new SecureJsonResponse(
+    const result: SecureJsonResponse = new SecureJsonResponse();
     try {
       const opts: SecureRequestOptions = new SecureRequestOptions()
       opts.url = url;
@@ -53,12 +53,12 @@ export class SecureHttpHelper {
         const raw = response.result;
         if (typeof raw === 'string' && raw.length > 0) {
           try {
-            const parsed = JSON.parse(raw);
-            const parsedMap = new Map<string, Object>();
+            const parsed: Record<string, Object> = JSON.parse(raw) as Record<string, Object>;
+            const parsedMap: Map<string, Object> = new Map<string, Object>();
             if (typeof parsed === 'object' && parsed !== null) {
-              const keys = Object.keys(parsed);
-              for (const key of keys) {
-                parsedMap.set(key, parsed[key]);
+              const entries: [string, Object][] = Object.entries(parsed) as [string, Object][];
+              for (let i = 0; i < entries.length; i++) {
+                parsedMap.set(entries[i][0], entries[i][1]);
               }
             }
             result.data = parsedMap;

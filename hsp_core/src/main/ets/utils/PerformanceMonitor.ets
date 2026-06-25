@@ -117,7 +117,7 @@ export class PerformanceMonitor {
   }
 
   getPercentiles(key: string): PerfPercentiles {
-    const result: PerfPercentiles = new PerfPercentiles(
+    const result: PerfPercentiles = new PerfPercentiles()
     const list = this.metrics.get(key);
     if (list === undefined || list.length === 0) return result;
 

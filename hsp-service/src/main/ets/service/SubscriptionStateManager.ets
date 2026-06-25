@@ -6,7 +6,7 @@ import { HILOG_DOMAIN_DEFAULT, MemberTier } from 'hsp_core';
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { IapProductManager, IapProductDefinition } from './IapProductManager';
-import { IapServerValidator } from './IapServerValidator';
+import { IapServerValidator, IapVerifyResult } from './IapServerValidator';
 
 const TAG = 'SubscriptionState';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -187,8 +187,8 @@ export class SubscriptionStateManager {
 
     try {
       const prefs = await preferences.getPreferences(this.context, PREF_NAME);
-      const tierVal = prefs.getSync(KEY_ACTIVE_TIER, -1) as number;
-      const tier = tierVal >= 0 ? (tierVal as MemberTier) : MemberTier.FREE;
+      const tierStr: string = prefs.getSync(KEY_ACTIVE_TIER, 'free') as string;
+      const tier: MemberTier = tierStr as MemberTier;
 
       if (tier === MemberTier.FREE) return this.defaultState();
 
@@ -219,7 +219,7 @@ export class SubscriptionStateManager {
     if (!this.context) return;
     try {
       const prefs = await preferences.getPreferences(this.context, PREF_NAME);
-      await prefs.put(KEY_ACTIVE_TIER, state.tier as number);
+      await prefs.put(KEY_ACTIVE_TIER, state.tier as string);
       await prefs.put(KEY_EXPIRY_TS, state.expiryTimestamp);
       await prefs.put(KEY_LAST_VERIFY, state.lastVerified);
       await prefs.put(KEY_PURCHASE_TOKEN, state.purchaseToken);
@@ -231,7 +231,8 @@ export class SubscriptionStateManager {
 
   private async verifyWithCloud(purchaseToken: string): Promise<boolean> {
     try {
-      return await IapServerValidator.verify(purchaseToken);
+      const result: IapVerifyResult = await IapServerValidator.getInstance().verifyPurchaseToken(purchaseToken, '');
+      return result.isValid;
     } catch (_e) {
       hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
       return false;

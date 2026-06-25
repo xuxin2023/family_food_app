@@ -1,7 +1,8 @@
+import { distributedKVStore } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { common } from '@kit.AbilityKit';
-import { distributedKVStore } from '@kit.DistributedDataKit';
+import { BusinessError } from '@kit.BasicServicesKit';
 
 const TAG = 'DistributedSyncService';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -27,7 +28,7 @@ export class DistributedSyncService {
   private changeListeners: ((change: SyncDataChange) => void)[] = [];
   private isInitialized: boolean = false;
   private kvStore: distributedKVStore.SingleKVStore | null = null;
-  private context: common.Context | null = null;
+  private kvManager: distributedKVStore.KVManager | null = null;
   private retryCount: number = 0;
   private syncStatus: DistributedSyncStatus = DistributedSyncStatus.IDLE;
   private statusListeners: ((status: DistributedSyncStatus) => void)[] = [];
@@ -54,34 +55,40 @@ export class DistributedSyncService {
   private updateStatus(status: DistributedSyncStatus): void {
     this.syncStatus = status;
     for (const listener of this.statusListeners) {
-      try { listener(status); } catch (_e) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));}
+      try {
+        listener(status);
+      } catch (_e) {
+        hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
+      }
     }
   }
 
   async init(context: common.Context, sessionId: string): Promise<void> {
     if (this.isInitialized) return;
-    this.context = context;
 
     try {
       const kvManagerConfig: distributedKVStore.KVManagerConfig = {
-        bundleName: context.bundleName,
+        bundleName: 'com.familyfood.helper',
         context: context
       };
-      const kvManager = distributedKVStore.createKVManager(kvManagerConfig);
-      const storeConfig: distributedKVStore.StoreConfig = {
-        accountId: sessionId,
-        storeId: SYNC_STORE_ID,
-        securityLevel: distributedKVStore.SecurityLevel.S3,
+      this.kvManager = distributedKVStore.createKVManager(kvManagerConfig);
+
+      const options: distributedKVStore.Options = {
+        createIfMissing: true,
+        encrypt: false,
+        backup: false,
         autoSync: true,
-        kvStoreType: distributedKVStore.KVStoreType.SINGLE_VERSION
+        kvStoreType: distributedKVStore.KVStoreType.SINGLE_VERSION,
+        securityLevel: distributedKVStore.SecurityLevel.S3
       };
-      this.kvStore = await kvManager.getKVStore(storeConfig);
+
+      this.kvStore = await this.kvManager.getKVStore(SYNC_STORE_ID, options) as distributedKVStore.SingleKVStore;
       this.isInitialized = true;
       hilog.info(DOMAIN_ZERO, TAG, 'DistributedSyncService init with session: %{public}s',
         sessionId.substring(0, 8) + '***');
     } catch (error) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'DistributedSyncService init failed: %{public}s', JSON.stringify(error));
+      const errObj = error as BusinessError;
+      hilog.warn(DOMAIN_ZERO, TAG, 'DistributedSyncService init failed: %{public}s', errObj.message ?? JSON.stringify(error));
       if (this.retryCount < MAX_RETRY) {
         this.retryCount++;
         setTimeout(() => { this.init(context, sessionId); }, RETRY_DELAY_MS * this.retryCount);
@@ -90,23 +97,23 @@ export class DistributedSyncService {
   }
 
   async syncAllergenConfig(memberId: string, allergens: string[]): Promise<boolean> {
-    return this.syncData(`allergen_config_${memberId}`, JSON.stringify(allergens));
+    return this.syncData('allergen_config_' + memberId, JSON.stringify(allergens));
   }
 
   async syncNutritionTarget(memberId: string, target: Object): Promise<boolean> {
-    return this.syncData(`nutrition_target_${memberId}`, JSON.stringify(target));
+    return this.syncData('nutrition_target_' + memberId, JSON.stringify(target));
   }
 
   async syncIntoleranceConfig(memberId: string, config: Object): Promise<boolean> {
-    return this.syncData(`intolerance_config_${memberId}`, JSON.stringify(config));
+    return this.syncData('intolerance_config_' + memberId, JSON.stringify(config));
   }
 
   async syncMemberProfile(memberId: string, profile: Object): Promise<boolean> {
-    return this.syncData(`member_profile_${memberId}`, JSON.stringify(profile));
+    return this.syncData('member_profile_' + memberId, JSON.stringify(profile));
   }
 
   async syncDietRecord(memberId: string, date: string, record: Object): Promise<boolean> {
-    return this.syncData(`diet_record_${memberId}_${date}`, JSON.stringify(record));
+    return this.syncData('diet_record_' + memberId + '_' + date, JSON.stringify(record));
   }
 
   onDataChange(listener: (change: SyncDataChange) => void): void {
@@ -120,7 +127,8 @@ export class DistributedSyncService {
   destroy(): void {
     if (this.kvStore) {
       try { this.kvStore.off('dataChange'); } catch (_e) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));}
+        hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
+      }
       this.kvStore = null;
     }
     this.changeListeners = [];
@@ -142,10 +150,11 @@ export class DistributedSyncService {
       this.retryCount = 0;
       this.updateStatus(DistributedSyncStatus.COMPLETED);
       hilog.info(DOMAIN_ZERO, TAG, 'Sync data success: key=%{public}s', key);
-      this.notifyChange({ key, value, deviceId: '' });
+      this.notifyChange({ key: key, value: value, deviceId: '' });
       return true;
     } catch (error) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'Sync failed for key=%{public}s: %{public}s', key, JSON.stringify(error));
+      const errObj = error as BusinessError;
+      hilog.warn(DOMAIN_ZERO, TAG, 'Sync failed for key=%{public}s: %{public}s', key, errObj.message ?? JSON.stringify(error));
       if (this.retryCount < MAX_RETRY) {
         this.retryCount++;
         const delay = RETRY_DELAY_MS * this.retryCount;

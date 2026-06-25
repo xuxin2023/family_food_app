@@ -3,18 +3,21 @@
 
 import {
   safeBack, safePushUrl, FoodLabel, FamilyProfile, PaywallTrigger, BUTTON, COLORS,
-  FONT_SIZE, RADIUS, SPACING, PageResourceTracker, createPageTracker, HILOG_DOMAIN_DEFAULT
+  FONT_SIZE, RADIUS, SPACING, SHADOWS, PageResourceTracker, createPageTracker, HILOG_DOMAIN_DEFAULT, ThemeReactive, themeReactive
 } from 'hsp_core';
 import { BasketCheckResult } from 'hsp_service';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import {
   SmartBasketService, SmartBasketResult, SmartBasketItem, SwapSuggestion
 } from 'hsp_service';
+import { AppState } from '../AppState';
+import { PaywallDialog } from 'feature_scan';
+import { BackButton } from '../components/BackButton';
+import { GradientHeader } from '../components/GradientHeader';
+import { LoadingSkeleton } from '../components/SkeletonScreen';
 
 const TAG = 'BasketCheckPage';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
-import { AppState } from '../AppState';
-import { PaywallDialog } from 'feature_scan';
 
 @Entry
 @ComponentV2
@@ -32,6 +35,8 @@ export struct BasketCheckPage {
   private appState: AppState = AppState.getInstance()
   private smartService: SmartBasketService = SmartBasketService.getInstance()
   private tracker: PageResourceTracker = createPageTracker('BasketCheckPage')
+
+  private themeRef: ThemeReactive = themeReactive
 
   async aboutToAppear() {
     this.tracker.onAppear()
@@ -66,21 +71,14 @@ export struct BasketCheckPage {
     Stack() {
       if (this.isLoading) {
         Column() {
-          LoadingProgress().width(48).height(48).color(COLORS.PRIMARY)
+          LoadingSkeleton({ variant: 'list' })
         }
         .width('100%').height('100%')
         .justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center)
       } else {
         Scroll() {
           Column() {
-            Row() {
-              Text($r('app.string.back_arrow')).fontSize(24).fontColor(COLORS.PRIMARY)
-                .onClick(() => { safeBack() })
-                .accessibilityText('返回').accessibilityLevel('yes')
-              Text($r('app.string.basket_button')).fontSize(20).fontWeight(FontWeight.Bold)
-                .margin({ left: 16 })
-            }
-            .width('100%').padding({ left: 16, right: 16, top: 16, bottom: 16 })
+            GradientHeader({ title: $r('app.string.basket_button') })
 
             if (this.basketItems.length === 0) {
               Column() {
@@ -115,7 +113,7 @@ export struct BasketCheckPage {
           }
           .width('100%')
         }
-        .width('100%').height('100%').backgroundColor('#FAFAFA')
+        .width('100%').height('100%').backgroundColor(COLORS.BG_PAGE)
       }
 
       if (this.paywallTrigger !== null) {
@@ -126,6 +124,7 @@ export struct BasketCheckPage {
       }
     }
     .width('100%').height('100%')
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   @Builder
@@ -157,8 +156,8 @@ export struct BasketCheckPage {
         Text(this.aiAdvice).fontSize(13).fontColor(COLORS.TEXT_SECONDARY).lineHeight(18)
       }
       .width('100%').padding(14)
-      .backgroundColor('#E3F2FD').borderRadius(12)
-      .margin({ left: 16, right: 16, bottom: 12 })
+      .backgroundColor(COLORS.BG_WARM_BLUE).borderRadius(12)
+      .margin({ left: 16, right: 16, bottom: 12 }).shadow(SHADOWS.MD)
       .alignItems(HorizontalAlign.Start)
     }
   }
@@ -178,7 +177,7 @@ export struct BasketCheckPage {
       }
       .width('100%').padding(14)
       .backgroundColor(COLORS.BG_WARM_ORANGE).borderRadius(12)
-      .margin({ left: 16, right: 16, bottom: 12 }).alignItems(HorizontalAlign.Start)
+      .margin({ left: 16, right: 16, bottom: 12 }).shadow(SHADOWS.MD).alignItems(HorizontalAlign.Start)
     }
   }
 
@@ -187,7 +186,7 @@ export struct BasketCheckPage {
     if (this.topSwaps.length > 0) {
       Column() {
         Text('🔄 更健康的替代品').fontSize(15).fontWeight(FontWeight.Medium)
-          .fontColor('#2E7D32').margin({ bottom: 8 })
+          .fontColor(COLORS.PRIMARY_DARK).margin({ bottom: 8 })
         ForEach(this.topSwaps, (swap: SwapSuggestion) => {
           Row() {
             Column() {
@@ -202,8 +201,8 @@ export struct BasketCheckPage {
         }, (s: SwapSuggestion) => s.avoidFoodName)
       }
       .width('100%').padding(14)
-      .backgroundColor('#E8F5E9').borderRadius(12)
-      .margin({ left: 16, right: 16, bottom: 12 }).alignItems(HorizontalAlign.Start)
+      .backgroundColor(COLORS.BG_LIGHT_GREEN).borderRadius(12)
+      .margin({ left: 16, right: 16, bottom: 12 }).shadow(SHADOWS.MD).alignItems(HorizontalAlign.Start)
     }
   }
 
@@ -222,7 +221,7 @@ export struct BasketCheckPage {
       }
       .width('100%').padding(14)
       .backgroundColor(COLORS.BG_LIGHT_GREEN).borderRadius(12)
-      .margin({ left: 16, right: 16, bottom: 12 }).alignItems(HorizontalAlign.Start)
+      .margin({ left: 16, right: 16, bottom: 12 }).shadow(SHADOWS.MD).alignItems(HorizontalAlign.Start)
     }
   }
 
@@ -238,12 +237,8 @@ export struct BasketCheckPage {
             Row() {
               Text(item.foodName).fontSize(14).fontWeight(FontWeight.Medium)
               if (this.smartResult) {
-                const match = this.smartResult.items.find((si: SmartBasketItem) =>
-                  si.food.barcode === item.barcode)
-                if (match) {
-                  Text(match.level === 'avoid' ? ' 🚫' : match.level === 'caution' ? ' ⚠️' : ' ✅')
-                    .fontSize(13)
-                }
+                Text(this.getSmartEmoji(item.barcode))
+                  .fontSize(13)
               }
             }
             Row() {
@@ -254,12 +249,12 @@ export struct BasketCheckPage {
               }
               if (item.isHighSugar()) {
                 Text($r('app.string.risk_high_sugar')).fontSize(10).fontColor(COLORS.WHITE)
-                  .backgroundColor('#FF9800').padding({ left: 5, right: 5, top: 1, bottom: 1 })
+                  .backgroundColor(COLORS.ORANGE_ACCENT).padding({ left: 5, right: 5, top: 1, bottom: 1 })
                   .borderRadius(8).margin({ right: 4 })
               }
               if (item.isHighFat()) {
                 Text($r('app.string.risk_high_fat')).fontSize(10).fontColor(COLORS.WHITE)
-                  .backgroundColor('#F44336').padding({ left: 5, right: 5, top: 1, bottom: 1 })
+                  .backgroundColor(COLORS.LEVEL_RED).padding({ left: 5, right: 5, top: 1, bottom: 1 })
                   .borderRadius(8)
               }
             }.margin({ top: 4 })
@@ -272,10 +267,18 @@ export struct BasketCheckPage {
           }
         }
         .width('100%').padding(10)
-        .backgroundColor(COLORS.WHITE).borderRadius(8)
-        .margin({ left: 16, right: 16, bottom: 4 })
+        .backgroundColor(COLORS.WHITE).borderRadius(RADIUS.MD)
+        .margin({ left: 16, right: 16, bottom: 6 }).shadow(SHADOWS.XS)
       }, (item: FoodLabel) => item.foodId)
     }.width('100%')
+  }
+
+  private getSmartEmoji(barcode: string): string {
+    if (!this.smartResult) return ''
+    const match = this.smartResult.items.find((si: SmartBasketItem) =>
+      si.food.barcode === barcode)
+    if (!match) return ''
+    return match.level === 'avoid' ? ' 🚫' : match.level === 'caution' ? ' ⚠️' : ' ✅'
   }
 
   aboutToDisappear(): void { this.tracker.onDisappear() }

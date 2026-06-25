@@ -1,8 +1,11 @@
 import {
   ToastHelper, safeBack, getPageParams, GroupFeed, FeedType, COLORS, RADIUS, BasicDataSource, PAGE_SIZE_CONFIG, HILOG_DOMAIN_DEFAULT,
-  PageResourceTracker, createPageTracker
+  HapticHelper, PageResourceTracker, createPageTracker, ThemeReactive, themeReactive, ThemeColors, ThemeMode
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
+import { GradientHeader } from '../components/GradientHeader';
+import { EmptyState } from '../components/EmptyState';
+import { LoadingSkeleton } from '../components/SkeletonScreen';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { pasteboard } from '@kit.BasicServicesKit';
 import { AppState } from '../AppState';
@@ -12,15 +15,30 @@ const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @Entry
 @ComponentV2
-struct GroupFeedPage {
+export struct GroupFeedPage {
   @Local groupId: string = ''
   @Local groupName: string = ''
   @Local isLoading: boolean = true
+  @Local isRefreshing: boolean = false
 
   private appState: AppState = AppState.getInstance()
   private feeds: GroupFeed[] = []
   private feedDS = new BasicDataSource<GroupFeed>()
   private tracker: PageResourceTracker = createPageTracker('GroupFeedPage')
+
+  private themeRef: ThemeReactive = themeReactive
+
+  private get isDark(): boolean {
+    if (this.themeRef.key >= 0) { /* trigger reactive */ }
+    return ThemeColors.getTheme() === ThemeMode.DARK;
+  }
+
+  private get pageBgGradient(): LinearGradient {
+    if (this.isDark) {
+      return { angle: 180, colors: [['#0D1B0E', 0.0], ['#1A2F1C', 0.5], ['#0A1A0D', 1.0]] };
+    }
+    return { angle: 180, colors: [['#FCE4EC', 0.0], ['#FFF8E1', 0.3], ['#E8F5E9', 0.7], ['#E0F2F1', 1.0]] };
+  }
 
   async aboutToAppear() {
     this.tracker.onAppear()
@@ -46,42 +64,30 @@ struct GroupFeedPage {
   build() {
     Column() {
       // 顶栏
-      Row() {
-        BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
-          .onClick(() => { safeBack() })
-          .accessibilityText('返回')
-          .accessibilityLevel('yes')
-        Text(this.groupName)
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .margin({ left: 12 })
-        Blank()
-        Text($r('app.string.group_info'))
-          .fontSize(14)
-          .fontColor(COLORS.PRIMARY)
-          .onClick(() => {
-            this.showGroupInfo()
-          })
-          .accessibilityText('群组信息')
-          .accessibilityLevel('yes')
-      }
-      .width('100%')
-      .padding(16)
+      GradientHeader({
+        title: this.groupName,
+        rightText: '群组信息',
+        onRightClick: () => { this.showGroupInfo() }
+      })
 
       if (this.isLoading) {
-        LoadingProgress()
-          .width(32)
-          .height(32)
-          .margin({ top: 100 })
+        LoadingSkeleton({ variant: 'list', rowCount: 5 })
+          .layoutWeight(1)
       } else if (this.feedDS.totalCount() === 0) {
-        this.emptyFeed()
+        EmptyState({
+          icon: '👥',
+          title: '暂无群组动态',
+          subtitle: '邀请家人加入群组，共享健康数据'
+        })
+          .layoutWeight(1)
       } else {
         this.feedList()
       }
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(COLORS.BG_PAGE)
+    .linearGradient(this.pageBgGradient)
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   @Builder
@@ -106,17 +112,25 @@ struct GroupFeedPage {
 
   @Builder
   feedList() {
-    List() {
-      LazyForEach(this.feedDS, (feed: GroupFeed) => {
-        ListItem() {
-          this.feedItem(feed)
-        }
-      }, (feed: GroupFeed) => `${feed.feedId}`)
+    Refresh({ refreshing: $$this.isRefreshing }) {
+      List() {
+        LazyForEach(this.feedDS, (feed: GroupFeed) => {
+          ListItem() {
+            this.feedItem(feed)
+          }
+        }, (feed: GroupFeed) => `${feed.feedId}`)
+      }
+      .width('100%')
+      .layoutWeight(1)
+      .padding({ left: 16, right: 16 })
+      .cachedCount(5)
     }
-    .width('100%')
+    .onRefreshing(async () => {
+      HapticHelper.light()
+      await this.loadFeeds()
+      this.isRefreshing = false
+    })
     .layoutWeight(1)
-    .padding({ left: 16, right: 16 })
-    .cachedCount(5)
   }
 
   @Builder

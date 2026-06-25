@@ -15,13 +15,25 @@ export interface MealPlanItem {
   totalProtein: number;
 }
 
+export interface MealPlanDailyTotal {
+  calories: number;
+  sodium: number;
+  sugar: number;
+  fat: number;
+  protein: number;
+}
+
+export interface MealSlot {
+  type: string;
+  time: string;
+  ratio: number;
+}
+
 export interface MealPlan {
   memberId: string;
   date: string;
   meals: MealPlanItem[];
-  dailyTotal: {
-    calories: number; sodium: number; sugar: number; fat: number; protein: number;
-  };
+  dailyTotal: MealPlanDailyTotal;
   budgetUtilization: number;
   suggestions: string[];
 }
@@ -34,7 +46,7 @@ export class MealPlanService {
     budget: DailyBudget,
     profile: FamilyProfile
   ): MealPlan {
-    const mealSlots: Record<string, Object>[] = [
+    const mealSlots: MealSlot[] = [
       { type: '早餐', time: '07:00', ratio: 0.3 },
       { type: '午餐', time: '12:00', ratio: 0.4 },
       { type: '晚餐', time: '18:00', ratio: 0.25 },
@@ -60,21 +72,26 @@ export class MealPlanService {
       totalSugar += mealSugar;
       totalFat += mealFat;
       totalProtein += mealProtein;
-      meals.push({
+      const mealItem: MealPlanItem = {
         mealType: slot.type, timeSlot: slot.time, foods: selectedFoods,
         totalCalories: mealCal, totalSodium: mealSodium, totalSugar: mealSugar,
         totalFat: mealFat, totalProtein: mealProtein
-      });
+      };
+      meals.push(mealItem);
     }
 
     const budgetUtil = Math.min(totalCalories / budget.calorieBudget, 1);
     const suggestions = this.generateSuggestions(totalCalories, totalSodium, totalSugar, budget, profile);
 
-    return {
+    const dailyTotal: MealPlanDailyTotal = {
+      calories: totalCalories, sodium: totalSodium, sugar: totalSugar, fat: totalFat, protein: totalProtein
+    };
+    const plan: MealPlan = {
       memberId, date, meals,
-      dailyTotal: { calories: totalCalories, sodium: totalSodium, sugar: totalSugar, fat: totalFat, protein: totalProtein },
+      dailyTotal: dailyTotal,
       budgetUtilization: budgetUtil, suggestions
     };
+    return plan;
   }
 
   private selectFoodsForMeal(foods: FoodLabel[], targetCal: number, profile: FamilyProfile): FoodLabel[] {

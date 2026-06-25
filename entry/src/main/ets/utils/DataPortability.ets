@@ -168,7 +168,7 @@ export class DataPortability {
     const rows: Object[] = [];
     let resultSet: relationalStore.ResultSet | null = null;
     try {
-      const predicates: relationalStore.RdbPredicates = new relationalStore.RdbPredicates(
+      const predicates: relationalStore.RdbPredicates = new relationalStore.RdbPredicates(tableName);
       resultSet = await rdbStore.query(predicates);
       const colCount = resultSet.columnCount;
       while (resultSet.goToNextRow()) {
@@ -176,7 +176,7 @@ export class DataPortability {
         for (let i = 0; i < colCount; i++) {
           const colName = resultSet.getColumnName(i);
           // getString returns string; as Object needed for Map<string, Object>
-          row.set(colName, resultSet.geti.toString() as Object);
+          row.set(colName, resultSet.getString(i) as Object);
         }
         rows.push(row);
       }
@@ -221,19 +221,19 @@ export class DataPortability {
       const rdbConfig: relationalStore.StoreConfig = { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 };
       const rdbStore = await relationalStore.getRdbStore(context, rdbConfig);
 
-      const memberPredicates: relationalStore.RdbPredicates = new relationalStore.RdbPredicates(
+      const memberPredicates: relationalStore.RdbPredicates = new relationalStore.RdbPredicates('MEMBER_TABLE');
       memberPredicates.equalTo('member_id', memberId);
       await rdbStore.delete(memberPredicates);
 
-      const dietPredicates: relationalStore.RdbPredicates = new relationalStore.RdbPredicates(
+      const dietPredicates: relationalStore.RdbPredicates = new relationalStore.RdbPredicates('DIET_TABLE');
       dietPredicates.equalTo('member_id', memberId);
       await rdbStore.delete(dietPredicates);
 
-      const targetPredicates: relationalStore.RdbPredicates = new relationalStore.RdbPredicates(
+      const targetPredicates: relationalStore.RdbPredicates = new relationalStore.RdbPredicates('TARGET_TABLE');
       targetPredicates.equalTo('member_id', memberId);
       await rdbStore.delete(targetPredicates);
 
-      const snapshotPredicates: relationalStore.RdbPredicates = new relationalStore.RdbPredicates(
+      const snapshotPredicates: relationalStore.RdbPredicates = new relationalStore.RdbPredicates('SNAPSHOT_TABLE');
       snapshotPredicates.equalTo('member_id', memberId);
       await rdbStore.delete(snapshotPredicates);
 

@@ -61,9 +61,9 @@ struct NutrientBar {
 struct ScoreRing {
   @Param score: number = 50
   @Param maxValue: number = 100
-  @Param size: number = 120
+  @Param ringSize: number = 120
   @Param strokeWidth: number = 12
-  @Param @Watch('onScoreChange') animating: boolean = false
+  @Param animating: boolean = false
   @Local displayScore: number = 0
 
   private getColor(): string {
@@ -113,7 +113,7 @@ struct ScoreRing {
           .fontColor(this.getColor())
           .animation({
             duration: 300,
-            curve: curves.easeOut()
+            curve: curves.initCurve(Curve.EaseOut)
           })
         
         Text('分')
@@ -121,8 +121,8 @@ struct ScoreRing {
           .fontColor(COLORS.TEXT_SECONDARY)
       }
     }
-    .width(this.size)
-    .height(this.size)
+    .width(this.ringSize)
+    .height(this.ringSize)
   }
 }
 
@@ -249,7 +249,7 @@ export struct EnhancedNutritionDisplay {
       Row() {
         ScoreRing({
           score: this.nutriScore,
-          size: 140,
+          ringSize: 140,
           strokeWidth: 16,
           animating: this.animating
         })

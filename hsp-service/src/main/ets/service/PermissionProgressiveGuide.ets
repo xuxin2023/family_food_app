@@ -1,8 +1,7 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN_DEFAULT, PermissionDescriptions } from 'hsp_core';
 import { PermissionManager } from './PermissionManager';
-import { common } from '@kit.AbilityKit';
-import { abilityAccessCtrl } from '@kit.AbilityKit';
+import { common, abilityAccessCtrl, Permissions, PermissionRequestResult } from '@kit.AbilityKit';
 
 const TAG = 'PermissionProgressiveGuide';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -92,14 +91,14 @@ export class PermissionProgressiveGuide {
     steps: PermissionGuideStep[]
   ): Promise<boolean> {
     const atManager = abilityAccessCtrl.createAtManager();
-    const bundleName = context.abilityInfo.bundleName;
+    const bundleName = (context as common.UIAbilityContext).abilityInfo.bundleName;
     let allGranted = true;
 
     for (const step of steps) {
       try {
         const result = await atManager.checkAccessToken(
           context.applicationInfo.accessTokenId,
-          step.permission
+          step.permission as Permissions
         );
         step.granted = result === abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED;
 
@@ -107,9 +106,9 @@ export class PermissionProgressiveGuide {
           hilog.info(DOMAIN_ZERO, TAG, 'Requesting permission: %{public}s (required=%{public}s)',
             step.permission, step.required.toString());
 
-          const grantResult = await atManager.requestPermissionsFromUser(
+          const grantResult: PermissionRequestResult = await atManager.requestPermissionsFromUser(
             context,
-            [step.permission]
+            [step.permission as Permissions]
           );
 
           step.granted = grantResult.authResults[0] === 0;

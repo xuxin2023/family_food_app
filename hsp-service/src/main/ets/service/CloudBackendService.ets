@@ -236,7 +236,7 @@ export class CloudBackendService {
     uid: string,
     members: SyncMemberParam[]
   ): Promise<SyncAllResult> {
-    const result: SyncAllResult = new SyncAllResult(
+    const result: SyncAllResult = new SyncAllResult();
 
     for (const member of members) {
       const req: SyncMemberDataRequest = new SyncMemberDataRequest()

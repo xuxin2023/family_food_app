@@ -24,8 +24,9 @@ export { CheckupReportEngine, CheckupReport, CheckupItem, HealthArchiveUpdate } 
 export { ChildHealthAssessmentEngine, ChildHealthAssessment, SnackImpactAssessment, AdditiveSafetyResult, AdditiveSafetyLevel } from './engine/ChildHealthAssessmentEngine';
 export { PersonalizedRecommendEngine, PersonalizedRecommendation, RecommendationContext, PersonalizedContext, PersonalizedFactor } from './engine/PersonalizedRecommendEngine';
 export { FoodCompareEngine } from './engine/FoodCompareEngine';
-export { ShanghaiGradeEngine, ShanghaiGradeResult } from './engine/ShanghaiGradeEngine';
+export { ShanghaiGradeEngine, ShanghaiGradeResult, ShanghaiGrade } from './engine/ShanghaiGradeEngine';
 export { RuleEngine } from './engine/RuleEngine';
+export { ScTraceabilityParser, ScParseResult } from './engine/ScTraceabilityParser';
 
 // ===== 报告组件 =====
 export { NovaGroupBadge } from './components/NovaGroupBadge';

@@ -53,24 +53,27 @@ export class IngredientDeepAnalyzer {
       const resMgr = context.resourceManager;
       const raw = resMgr.getRawFileContentSync('cn_additive_database.json');
       const text = String.fromCharCode(...raw);
-      const data = JSON.parse(text);
+      const data: Object = JSON.parse(text);
+      const rawData: Record<string, Object> = data as Record<string, Object>;
+      const additives: Object[] = rawData['additives'] as Object[];
 
-      if (data.additives && Array.isArray(data.additives)) {
-        for (const item of data.additives) {
+      if (additives && Array.isArray(additives)) {
+        for (let idx = 0; idx < additives.length; idx++) {
+          const item: Record<string, Object> = additives[idx] as Record<string, Object>;
           const entry: IngredientKbEntry = {
-            name: item.name ?? item.code ?? '',
-            safetyLevel: item.riskLevel ?? 'UNKNOWN',
-            trafficLight: item.riskLevel === 'SAFE' ? 'GREEN' :
-              item.riskLevel === 'CAUTION' ? 'YELLOW' :
-              item.riskLevel === 'HARMFUL' ? 'RED' : 'GRAY',
+            name: (item['name'] ?? item['code'] ?? '') as string,
+            safetyLevel: (item['riskLevel'] ?? 'UNKNOWN') as string,
+            trafficLight: item['riskLevel'] === 'SAFE' ? 'GREEN' :
+              item['riskLevel'] === 'CAUTION' ? 'YELLOW' :
+              item['riskLevel'] === 'HARMFUL' ? 'RED' : 'GRAY',
             isAllergen: false,
             isHighFodmap: false,
             isHighHistamine: false,
             isHighSalicylate: false,
-            healthRiskDesc: item.description ?? '',
-            regulatoryStatus: item.regulatoryStatus ?? 'UNKNOWN',
-            adi: item.adi,
-            references: item.references ?? []
+            healthRiskDesc: (item['description'] ?? '') as string,
+            regulatoryStatus: (item['regulatoryStatus'] ?? 'UNKNOWN') as string,
+            adi: item['adi'] as number,
+            references: (item['references'] ?? []) as Record<string, Object>[]
           };
           if (entry.name) {
             this.knowledgeBase.set(entry.name.toLowerCase(), entry);
@@ -93,7 +96,10 @@ export class IngredientDeepAnalyzer {
       return this.kbEntryToAnalysis(kbEntry);
     }
 
-    for (const [key, entry] of this.knowledgeBase) {
+    const kbEntries: [string, IngredientKbEntry][] = Array.from(this.knowledgeBase.entries());
+    for (let ki: number = 0; ki < kbEntries.length; ki++) {
+      const key: string = kbEntries[ki][0];
+      const entry: IngredientKbEntry = kbEntries[ki][1];
       if (normalized.includes(key) || key.includes(normalized)) {
         return this.kbEntryToAnalysis(entry);
       }
@@ -132,14 +138,14 @@ export class IngredientDeepAnalyzer {
   private kbEntryToAnalysis(entry: IngredientKbEntry): IngredientAnalysis {
     return {
       name: entry.name,
-      safetyLevel: entry.safetyLevel as IngredientAnalysis.safetyLevel,
-      trafficLight: entry.trafficLight as IngredientAnalysis.trafficLight,
+      safetyLevel: entry.safetyLevel as 'SAFE' | 'CAUTION' | 'HARMFUL' | 'UNKNOWN',
+      trafficLight: entry.trafficLight as 'GREEN' | 'YELLOW' | 'RED' | 'GRAY',
       isAllergen: entry.isAllergen,
       isHighFodmap: entry.isHighFodmap,
       isHighHistamine: entry.isHighHistamine,
       isHighSalicylate: entry.isHighSalicylate,
       healthRiskDescription: entry.healthRiskDesc,
-      regulatoryStatus: entry.regulatoryStatus as IngredientAnalysis.regulatoryStatus,
+      regulatoryStatus: entry.regulatoryStatus as 'APPROVED' | 'RESTRICTED' | 'BANNED' | 'UNDER_REVIEW' | 'UNKNOWN',
       researchReferences: entry.references,
       adi: entry.adi
     };

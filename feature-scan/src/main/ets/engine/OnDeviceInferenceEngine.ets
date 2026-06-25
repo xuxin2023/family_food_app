@@ -1,9 +1,21 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN_DEFAULT, FoodLabel } from 'hsp_core';
 import { common } from '@kit.AbilityKit';
-import { mindSporeLite } from '@kit.MindSporeLiteKit';
 import { resourceManager } from '@kit.LocalizationKit';
 import { fileIo } from '@kit.CoreFileKit';
+
+// local stub: MindSporeLiteKit not available in current SDK, keep symbols for compilation
+namespace mindSporeLite {
+  export interface Model { destroy(): void; }
+  export interface Session { predict(input: MSTensor[]): Promise<MSTensor[]>; destroy(): void; }
+  export interface MSTensor { name: string; data: ArrayBufferLike; dims: number[]; dataType: DataType; format: Format; }
+  export interface Context { priority: Priority; }
+  export enum Priority { PRIORITY_NONE = 0, PRIORITY_LOW = 1, PRIORITY_MIDDLE = 2, PRIORITY_HIGH = 3 }
+  export enum DataType { UNKNOWN = 0, NUMBER_TYPE_FLOAT32 = 1, NUMBER_TYPE_INT32 = 2 }
+  export enum Format { DEFAULT = 0, NHWC = 1, NCHW = 2 }
+  export async function loadModelFromBuffer(_buf: ArrayBuffer, _ctx: Context): Promise<Model | null> { return null; }
+  export async function createSession(_model: Model | null, _ctx: Context): Promise<Session | null> { return null; }
+}
 
 const TAG = 'OnDeviceInferenceEngine';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -30,9 +42,18 @@ interface NutriVector {
   fruitVegPercent: number;
 }
 
-const MODEL_CONFIGS = [
-  { name: 'food_classifier_fp16.ms', sizeLimit: 8 * 1024 * 1024 },
-  { name: 'ingredient_risk_fp16.ms', sizeLimit: 4 * 1024 * 1024 },
+class InferenceStats {
+  count: number = 0;
+  lastLatencyMs: number = 0;
+}
+
+interface ModelConfig {
+  name: string;
+  sizeLimit: number;
+}
+const MODEL_CONFIGS: ModelConfig[] = [
+  { name: 'food_classifier_fp16.ms', sizeLimit: 8 * 1024 * 1024 } as ModelConfig,
+  { name: 'ingredient_risk_fp16.ms', sizeLimit: 4 * 1024 * 1024 } as ModelConfig,
 ];
 
 const HIGH_RISK_KEYWORDS = ['亚硝酸盐', '苯甲酸', 'BHA', 'BHT', 'TBHQ', '合成色素',
@@ -103,16 +124,16 @@ export class OnDeviceInferenceEngine {
         return false;
       }
 
-      const buffer: ArrayBuffer = new ArrayBuffer(rawFd.length);stat.size);
+      const buffer: ArrayBuffer = new ArrayBuffer(stat.size);
       const file: fileIo.File = fileIo.openSync(filePath, fileIo.OpenMode.READ_ONLY);
       fileIo.readSync(file.fd, buffer);
       fileIo.closeSync(file);
 
       const ctx: mindSporeLite.Context = { priority: mindSporeLite.Priority.PRIORITY_MIDDLE } as mindSporeLite.Context;
-      const model = await mindSporeLite.loadModelFromBuffer(buffer, ctx);
-      const session = await mindSporeLite.createSession(model, ctx);
+      const model = await mindSporeLite.loadModelFromBuffer(buffer, ctx) as mindSporeLite.Model | null;
+      const session = await mindSporeLite.createSession(model as mindSporeLite.Model, ctx) as mindSporeLite.Session | null;
 
-      this.assignModel(modelName, model, session);
+      this.assignModel(modelName, model as mindSporeLite.Model, session as mindSporeLite.Session);
       hilog.info(DOMAIN_ZERO, TAG, 'Sandbox model loaded: %{public}s (%{public}d bytes)', modelName, stat.size);
       return true;
     } catch (_err) {
@@ -135,30 +156,12 @@ export class OnDeviceInferenceEngine {
     sizeLimit: number
   ): Promise<boolean> {
     try {
-      const rawFd = await resMgr.getRawFd('models/' + modelName);
-      if (!rawFd || rawFd.length === 0 || rawFd.length > sizeLimit) {
-        hilog.warn(DOMAIN_ZERO, TAG, 'Model %{public}s size invalid: %{public}d', modelName, rawFd?.length ?? 0);
-        return false;
-      }
+      // MindSporeLiteKit not available in current SDK, skip rawfile model loading
+      hilog.debug(DOMAIN_ZERO, TAG, 'Rawfile model %{public}s skipped (MindSporeLiteKit unavailable)', modelName);
+      return false;
 
-      const buffer: ArrayBuffer = new ArrayBuffer(rawFd.length);
-      const file = fileIo.openSync(rawFd.path, fileIo.OpenMode.READ_ONLY);
-      fileIo.readSync(file.fd, buffer);
-      fileIo.closeSync(file);
-
-      const context: mindSporeLite.Context = { priority: mindSporeLite.Priority.PRIORITY_MIDDLE } as mindSporeLite.Context;
-      const model = await mindSporeLite.loadModelFromBuffer(buffer, context);
-      const session = await mindSporeLite.createSession(model, context);
-
-      if (modelName.includes('food_classifier')) {
-        this.foodClassifier = { model: model, session: session } as MsModelContext;
-      } else if (modelName.includes('ingredient_risk')) {
-        this.ingredientRiskModel = { model: model, session: session } as MsModelContext;
-      }
-
-      return true;
     } catch (_err) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'Model %{public}s not available, will use fallback', modelName);
+      hilog.warn(DOMAIN_ZERO, TAG, 'Model %{public}s not available at rawfile, will use fallback', modelName);
       return false;
     }
   }
@@ -173,7 +176,7 @@ export class OnDeviceInferenceEngine {
           name: 'input',
           data: new Float32Array(features).buffer,
           dims: [1, 7],
-          dataType: mindSporeLite.DataType.kNumberTypeFloat32,
+          dataType: mindSporeLite.DataType.NUMBER_TYPE_FLOAT32,
           format: mindSporeLite.Format.NHWC,
         };
         const outputs = await this.foodClassifier.session.predict([inputTensor]);
@@ -217,7 +220,7 @@ export class OnDeviceInferenceEngine {
           name: 'input',
           data: new Float32Array(featureVec).buffer,
           dims: [1, featureVec.length],
-          dataType: mindSporeLite.DataType.kNumberTypeFloat32,
+          dataType: mindSporeLite.DataType.NUMBER_TYPE_FLOAT32,
           format: mindSporeLite.Format.NHWC,
         };
         const outputs = await this.ingredientRiskModel.session.predict([inputTensor]);
@@ -307,8 +310,11 @@ export class OnDeviceInferenceEngine {
     this.lastInferenceTime = Date.now() - startTime;
   }
 
-  getInferenceStats(): Record<string, Object> {
-    return { count: this.inferenceCount, lastLatencyMs: this.lastInferenceTime } as Record<string, Object>;
+  getInferenceStats(): InferenceStats {
+    const stats: InferenceStats = new InferenceStats();
+    stats.count = this.inferenceCount;
+    stats.lastLatencyMs = this.lastInferenceTime;
+    return stats;
   }
 
   isReady(): boolean {

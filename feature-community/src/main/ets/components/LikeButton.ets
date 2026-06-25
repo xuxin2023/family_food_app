@@ -1,5 +1,5 @@
 // LikeButton.ets
-// 点赞按钮组件 — 支持点赞/取消点赞动画
+// 点赞按钮组件 �?支持点赞/取消点赞动画
 
 import { COLORS, FONT_SIZE, SPACING } from 'hsp_core';
 
@@ -12,7 +12,7 @@ export struct LikeButton {
 
   build() {
     Row() {
-      Text(this.isLiked ? '❤' : '♡')
+      Text(this.isLiked ? '❤️' : '🤍')
         .fontSize(this.iconSize)
         .fontColor(this.isLiked ? COLORS.ERROR : COLORS.TEXT_SECONDARY)
         .animation({ duration: 200, curve: Curve.EaseInOut })
@@ -30,8 +30,7 @@ export struct LikeButton {
       TapGesture({ count: 2 })
         .onAction(() => this.onToggle())
     )
-    .accessibilityRole('button')
-    .accessibilityText(`${this.isLiked ? '已赞' : '赞'}，${this.likeCount}次`)
+    .accessibilityText(`${this.isLiked ? '已赞' : '未赞'}，${this.likeCount}次`)
     .accessibilityLevel('yes')
     .focusable(true)
   }

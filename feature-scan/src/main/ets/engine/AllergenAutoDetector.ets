@@ -26,6 +26,12 @@ export interface AllergenCheckResult {
   details: Record<string, Object>[];
 }
 
+interface IngredientStats {
+  count: number;
+  total: number;
+  timestamps: number[];
+}
+
 /**
  * 过敏原自动检测器
  *
@@ -120,11 +126,7 @@ export class AllergenAutoDetector {
           if (!result.matchedAllergens.includes(userAllergen)) {
             result.matchedAllergens.push(userAllergen);
           }
-          result.details.push({
-            allergen: userAllergen,
-            ingredient: ingredient,
-            position: i
-          });
+          result.details.push(this.buildDetail(userAllergen, ingredient, i));
         }
       }
 
@@ -136,11 +138,7 @@ export class AllergenAutoDetector {
           }
           const alreadyAdded = result.details.some(d => d.ingredient === ingredient && d.allergen === kw);
           if (!alreadyAdded) {
-            result.details.push({
-              allergen: kw,
-              ingredient: ingredient,
-              position: i
-            });
+            result.details.push(this.buildDetail(kw, ingredient, i));
           }
         }
       });
@@ -188,7 +186,7 @@ export class AllergenAutoDetector {
     const badReactions = history.filter(h => h.adverseReaction);
     if (badReactions.length < 2) return [];
 
-    const ingredientMap = new Map<string, { count: number; total: number; timestamps: number[] }>();
+    const ingredientMap = new Map<string, IngredientStats>();
     const allFoods = history;
 
     for (const food of allFoods) {
@@ -201,11 +199,12 @@ export class AllergenAutoDetector {
           existing.timestamps.push(food.timestamp);
           if (food.adverseReaction) existing.count++;
         } else {
-          ingredientMap.set(normalized, {
+          const stats: IngredientStats = {
             count: food.adverseReaction ? 1 : 0,
             total: 1,
             timestamps: [food.timestamp]
-          });
+          };
+          ingredientMap.set(normalized, stats);
         }
       }
     }
@@ -271,11 +270,11 @@ export class AllergenAutoDetector {
         const normalized = this.normalizeIngredient(ingredient);
         for (const crossItem of crossReactive) {
           if (normalized.includes(crossItem) || crossItem.includes(normalized)) {
-            warnings.push({
-              ingredient: ingredient,
-              relatedAllergen: allergen,
-              riskLevel: 0.7
-            });
+            const warning: Record<string, Object> = {}
+            warning['ingredient'] = ingredient
+            warning['relatedAllergen'] = allergen
+            warning['riskLevel'] = 0.7
+            warnings.push(warning);
           }
         }
       }
@@ -299,5 +298,13 @@ export class AllergenAutoDetector {
 
   private normalizeIngredient(ingredient: string): string {
     return ingredient.trim().toLowerCase().replace(/[（）()]/g, '');
+  }
+
+  private buildDetail(allergen: string, ingredient: string, position: number): Record<string, Object> {
+    const detail: Record<string, Object> = {}
+    detail['allergen'] = allergen
+    detail['ingredient'] = ingredient
+    detail['position'] = position
+    return detail
   }
 }

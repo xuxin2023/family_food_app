@@ -25,7 +25,6 @@
     "pages/DeviceDashboardPage",
     "pages/CloudSyncSettingsPage",
     "pages/AiChatPage",
-    "pages/V2DemoPage",
     "pages/FavoritePage",
     "pages/NutritionTargetPage",
     "pages/MainTabsPage",
@@ -45,6 +44,7 @@
     "pages/AllergenConfigPage",
     "pages/AllergenSetupWizard",
     "pages/DailyIntakePage",
-    "pages/ScanHistoryTimelinePage"
+    "pages/ScanHistoryTimelinePage",
+    "pages/ProfilePage"
   ]
 }

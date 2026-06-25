@@ -88,19 +88,11 @@ export function safeBackToName(name: string): number {
  */
 export function clearToHome(): void {
   NavigationManager.clear();
-  NavigationManager.pushPath('home');
+  NavigationManager.pushPath('pages/MainTabsPage');
 }
 
 function resolveRouteName(url: string): string {
-  const names: string[] = RouteTable.getAllRouteNames();
-  for (const name of names) {
-    if (RouteTable.getPagePath(name) === url) {
-      return name;
-    }
-  }
-  const lastSlash: number = url.lastIndexOf('/');
-  if (lastSlash >= 0) {
-    return url.substring(lastSlash + 1).replace('Page', '').toLowerCase();
-  }
+  // 直接返回页面路径，确保 buildNavDestination 能正确匹配
+  // buildNavDestination 中的条件基于页面路径（如 'pages/ScanPage'）
   return url;
 }

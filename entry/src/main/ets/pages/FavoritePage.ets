@@ -1,14 +1,15 @@
-﻿// FavoritePage.ets
-// 鎴戠殑鏀惰棌椤甸潰 - 灞曠ず鐢ㄦ埛鏀惰棌鐨勯鍝佸垪琛?
+// FavoritePage.ets
+// 我的收藏页面 - 展示用户收藏的食品列表
 import {
   COLORS, FONT_SIZE, FONT_WEIGHT, SPACING, RADIUS, BUTTON,
-  ImageCache, ToastHelper, safeBack, safePushUrl,
+  ImageCache, ToastHelper, HapticHelper, safeBack, safePushUrl,
   PageResourceTracker, createPageTracker,
-  HILOG_DOMAIN_DEFAULT, FEATURE_LIMITS
+  HILOG_DOMAIN_DEFAULT, FEATURE_LIMITS, ThemeReactive, themeReactive, ThemeColors, ThemeMode
 } from 'hsp_core';
 import { AppState } from '../AppState';
 import { FavoriteItem } from '../repository/FavoriteRepository';
 import { EmptyState } from '../components/EmptyState';
+import { ConfirmDialog, ConfirmDialogState, ConfirmDialogOptions } from '../components/ConfirmDialog';
 import { FoodTagFilter, FilterTag, createAllFilterTags } from '../components/FoodTagFilter';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { FavoriteDataSource } from '../utils/FavoriteDataSource';
@@ -74,7 +75,7 @@ export struct FavoriteItemRow {
             })
         } else {
           Column() {
-            Text('馃カ').fontSize(20)
+            Text('📦').fontSize(20)
           }
           .width(40)
           .height(40)
@@ -144,7 +145,7 @@ export struct FavoriteItemRow {
         this.onRemove(this.item.foodId);
       }
     })
-    .accessibilityText('鍒犻櫎鏀惰棌')
+    .accessibilityText('删除收藏')
     .accessibilityLevel('yes')
   }
 }
@@ -153,11 +154,26 @@ export struct FavoriteItemRow {
 @ComponentV2
 export struct FavoritePage {
   @Local vm: FavoritePageViewModel = new FavoritePageViewModel()
+  @Local confirmDialog: ConfirmDialogState = new ConfirmDialogState()
 
   private componentActive: boolean = true
   private appState: AppState = AppState.getInstance()
   private favoriteDS: FavoriteDataSource = new FavoriteDataSource()
   private tracker: PageResourceTracker = createPageTracker('FavoritePage')
+
+  private themeRef: ThemeReactive = themeReactive
+
+  private get isDark(): boolean {
+    if (this.themeRef.key >= 0) { /* trigger reactive */ }
+    return ThemeColors.getTheme() === ThemeMode.DARK;
+  }
+
+  private get pageBgGradient(): LinearGradient {
+    if (this.isDark) {
+      return { angle: 180, colors: [['#0D1B0E', 0.0], ['#1A2F1C', 0.5], ['#0A1A0D', 1.0]] };
+    }
+    return { angle: 180, colors: [['#FFF8E1', 0.0], ['#FFF3E0', 0.3], ['#FCE4EC', 0.7], ['#F3E5F5', 1.0]] };
+  }
 
   async aboutToAppear() {
     this.tracker.onAppear()
@@ -209,17 +225,17 @@ export struct FavoritePage {
     }
     switch (key) {
       case 'low_sodium':
-        return item.foodName.includes('浣庨挔');
+        return item.foodName.includes('低盐') || item.foodName.includes('低钠');
       case 'low_sugar':
-        return item.foodName.includes('浣庣硸') || item.foodName.includes('鏃犵硸');
+        return item.foodName.includes('低糖') || item.foodName.includes('无糖');
       case 'high_protein':
         return item.foodName.includes('高蛋白');
       case 'high_fiber':
-        return item.foodName.includes('高纤维');
+        return item.foodName.includes('高纤维') || item.foodName.includes('膳食纤维');
       case 'organic':
-        return item.foodName.includes('鏈夋満');
+        return item.foodName.includes('有机');
       case 'no_added_sugar':
-        return item.foodName.includes('鏃犳坊鍔犵硸') || item.foodName.includes('鏃犵硸');
+        return item.foodName.includes('无添加糖') || item.foodName.includes('0添加') || item.foodName.includes('无蔗糖');
       default:
         return false;
     }
@@ -230,15 +246,34 @@ export struct FavoritePage {
     this.applyFilter();
   }
 
+  private pendingDeleteId: string = ''
+
   private async handleRemove(foodId: string): Promise<void> {
-    try {
-      await this.appState.removeFavorite(foodId);
-        ToastHelper.show(this.getUIContext(), $r('app.string.favorite_removed'));
-        await this.loadFavorites();
-    } catch (error) {
-      hilog.error(DOMAIN_ZERO, TAG, 'Remove favorite failed: %{public}s', JSON.stringify(error));
-      ToastHelper.show(this.getUIContext(), $r('app.string.favorite_remove_failed'));
-    }
+    this.pendingDeleteId = foodId
+    const opts: ConfirmDialogOptions = new ConfirmDialogOptions()
+    opts.confirmText = '移除'
+    opts.cancelText = '取消'
+    opts.confirmColor = COLORS.ERROR
+    opts.onCancel = (): void => { this.pendingDeleteId = '' }
+    this.confirmDialog.showWithOptions(
+      '移除收藏',
+      '确定要移除这个收藏吗？',
+      async (): Promise<void> => {
+        const id = this.pendingDeleteId
+        this.pendingDeleteId = ''
+        try {
+          await this.appState.removeFavorite(id);
+          ToastHelper.show(this.getUIContext(), $r('app.string.favorite_removed'));
+          HapticHelper.success();
+          await this.loadFavorites();
+        } catch (error) {
+          hilog.error(DOMAIN_ZERO, TAG, 'Remove favorite failed: %{public}s', JSON.stringify(error));
+          ToastHelper.show(this.getUIContext(), $r('app.string.favorite_remove_failed'));
+          HapticHelper.error();
+        }
+      },
+      opts
+    )
   }
 
   private handleItemClick(item: FavoriteItem): void {
@@ -254,6 +289,11 @@ export struct FavoritePage {
     }
   }
 
+  @Builder
+  confirmDialogBuilder() {
+    ConfirmDialog({ state: this.confirmDialog })
+  }
+
   build() {
     Column() {
       Row() {
@@ -263,10 +303,10 @@ export struct FavoritePage {
             .fontColor(COLORS.TEXT_PRIMARY)
         }
         .width(40)
-        .height(BUTTON.HEIGHT_SMALL)
+        .height(BUTTON.HEIGHT_MD)
         .justifyContent(FlexAlign.Center)
         .onClick(() => { safeBack() })
-        .accessibilityText('杩斿洖')
+        .accessibilityText('返回')
         .accessibilityLevel('yes')
 
         Text($r('app.string.favorite_title'))
@@ -288,7 +328,7 @@ export struct FavoritePage {
       .padding({ left: 8, right: 8 })
       .backgroundColor(COLORS.BG_CARD)
 
-      // 鏍囩绛涢€夋爮
+      // 标签筛选栏
       if (!this.vm.isLoading && this.vm.allFavorites.length > 0) {
         FoodTagFilter({
           tags: this.vm.filterTags,
@@ -309,13 +349,13 @@ export struct FavoritePage {
         .justifyContent(FlexAlign.Center)
       } else if (this.vm.allFavorites.length === 0) {
         EmptyState({
-          icon: '鉂わ笍',
+          icon: '❤️',
           title: $r('app.string.favorite_empty_title'),
           subtitle: $r('app.string.favorite_empty_subtitle')
         })
       } else if (this.vm.filteredFavorites.length === 0 && this.vm.selectedFilterKeys.length > 0) {
         Column() {
-          Text('馃攳')
+          Text('🔍')
             .fontSize(48)
             .margin({ bottom: 12 })
           Text($r('app.string.favorite_no_match'))
@@ -382,7 +422,9 @@ export struct FavoritePage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(COLORS.BG_PAGE)
+    .linearGradient(this.pageBgGradient)
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
+    .bindContentCover(this.confirmDialog.visible, this.confirmDialogBuilder(), { modalTransition: ModalTransition.NONE })
   }
 
   pageTransition() {

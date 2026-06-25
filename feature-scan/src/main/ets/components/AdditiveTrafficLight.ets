@@ -187,38 +187,41 @@ export struct AdditiveTrafficLight {
   @Param showDescription: boolean = false;
 
   build() {
-    Row() {
-      Circle({ width: 8, height: 8 })
-        .fill(AdditiveClassifier.getRiskColor(this.entry.riskLevel))
-        .margin({ right: 8 })
+    Column() {
+      Row() {
+        Circle({ width: 8, height: 8 })
+          .fill(AdditiveClassifier.getRiskColor(this.entry.riskLevel))
+          .margin({ right: 8 })
 
-      Text(this.entry.name)
-        .fontSize(14)
-        .fontColor('#333333')
-        .maxLines(1)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
-        .layoutWeight(1)
+        Text(this.entry.name)
+          .fontSize(14)
+          .fontColor('#333333')
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+          .layoutWeight(1)
 
-      if (this.entry.eNumber.length > 0) {
-        Text(this.entry.eNumber)
-          .fontSize(11)
-          .fontColor('#888888')
-          .margin({ left: 4 })
+        if (this.entry.eNumber.length > 0) {
+          Text(this.entry.eNumber)
+            .fontSize(11)
+            .fontColor('#888888')
+            .margin({ left: 4 })
+        }
+      }
+      .width('100%')
+      .height(28)
+      .alignItems(VerticalAlign.Center)
+      .accessibilityText(this.entry.name + (this.entry.eNumber.length > 0 ? ' ' + this.entry.eNumber : '') + '，风险等级' + this.entry.riskLevel)
+      .accessibilityLevel('yes')
+
+      if (this.showDescription && this.entry.description.length > 0) {
+        Text(this.entry.description)
+          .fontSize(12)
+          .fontColor('#666666')
+          .margin({ left: 16, top: 2 })
+          .width('100%')
       }
     }
     .width('100%')
-    .height(28)
-    .alignItems(VerticalAlign.Center)
-    .accessibilityText(`${this.entry.name}${this.entry.eNumber.length > 0 ? ' ' + this.entry.eNumber : ''}，风险等级${this.entry.riskLevel}`)
-    .accessibilityLevel('yes')
-
-    if (this.showDescription && this.entry.description.length > 0) {
-      Text(this.entry.description)
-        .fontSize(12)
-        .fontColor('#666666')
-        .margin({ left: 16, top: 2 })
-        .width('100%')
-    }
   }
 }
 

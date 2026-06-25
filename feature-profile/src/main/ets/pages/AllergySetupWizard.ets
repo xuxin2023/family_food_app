@@ -48,7 +48,7 @@ struct AllergySetupWizard {
         this.selectedMemberName = params['memberName'] as string;
       }
     } catch (_e) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
+      hilog.warn(HILOG_DOMAIN_DEFAULT, TAG, "Exception: %{public}s", JSON.stringify(_e));
       // 从AppState获取
     }
   }
@@ -105,19 +105,23 @@ struct AllergySetupWizard {
     Column() {
       this.headerBar()
 
-      Column() {
-        this.progressIndicator()
+      Scroll() {
+        Column() {
+          this.progressIndicator()
 
-        if (this.step === 0) {
-          this.welcomeStep()
-        } else if (this.step === 1) {
-          this.allergyStep()
-        } else {
-          this.intoleranceStep()
+          if (this.step === 0) {
+            this.welcomeStep()
+          } else if (this.step === 1) {
+            this.allergyStep()
+          } else {
+            this.intoleranceStep()
+          }
         }
+        .width('100%')
       }
       .layoutWeight(1)
-      .scrollable(ScrollDirection.Vertical)
+      .scrollBar(BarState.Off)
+      .edgeEffect(EdgeEffect.Spring)
 
       this.bottomBar()
     }
@@ -148,7 +152,7 @@ struct AllergySetupWizard {
     }
     .width('100%')
     .height(48)
-    .padding({ left: SPACING.MEDIUM, right: SPACING.MEDIUM })
+    .padding({ left: SPACING.MD, right: SPACING.MD })
     .backgroundColor(COLORS.WHITE)
   }
 
@@ -185,7 +189,7 @@ struct AllergySetupWizard {
       })
     }
     .width('100%')
-    .padding(SPACING.MEDIUM)
+    .padding(SPACING.MD)
     .justifyContent(FlexAlign.Center)
     .backgroundColor(COLORS.WHITE)
   }
@@ -195,7 +199,7 @@ struct AllergySetupWizard {
     Column() {
       Text('🛡️')
         .fontSize(48)
-        .margin({ bottom: SPACING.MEDIUM })
+        .margin({ bottom: SPACING.MD })
 
       Text('设置过敏原档案')
         .fontSize(FONT_SIZE.LG)
@@ -206,7 +210,7 @@ struct AllergySetupWizard {
         .fontSize(FONT_SIZE.SMALL)
         .fontColor(COLORS.TEXT_SECONDARY)
         .textAlign(TextAlign.Center)
-        .margin({ top: SPACING.SMALL })
+        .margin({ top: SPACING.SM })
         .maxLines(3)
 
       Column() {
@@ -214,11 +218,11 @@ struct AllergySetupWizard {
         this.infoRow('🟡', '不耐受：消化系统反应，引起不适但非致命')
         this.infoRow('🟠', '交叉反应：与已知过敏原蛋白同源，谨慎注意')
       }
-      .margin({ top: SPACING.LARGE })
+      .margin({ top: SPACING.LG })
       .width('100%')
     }
     .width('100%')
-    .padding(SPACING.LARGE)
+    .padding(SPACING.LG)
     .flexGrow(1)
     .justifyContent(FlexAlign.Center)
   }
@@ -246,20 +250,20 @@ struct AllergySetupWizard {
           .fontColor(COLORS.TEXT_PRIMARY)
           .fontWeight(FONT_WEIGHT.BOLD)
           .width('100%')
-          .margin({ bottom: SPACING.SMALL })
+          .margin({ bottom: SPACING.SM })
 
         Text('请为每位家庭成员选择已知的食物过敏原')
           .fontSize(FONT_SIZE.TINY)
           .fontColor(COLORS.TEXT_TERTIARY)
           .width('100%')
-          .margin({ bottom: SPACING.SMALL })
+          .margin({ bottom: SPACING.SM })
 
         ForEach(this.allergyOptions, (opt: AllergyOption, idx: number) => {
           this.optionRow(opt, idx)
         })
       }
       .width('100%')
-      .padding(SPACING.MEDIUM)
+      .padding(SPACING.MD)
     }
   }
 
@@ -272,20 +276,20 @@ struct AllergySetupWizard {
           .fontColor(COLORS.TEXT_PRIMARY)
           .fontWeight(FONT_WEIGHT.BOLD)
           .width('100%')
-          .margin({ bottom: SPACING.SMALL })
+          .margin({ bottom: SPACING.SM })
 
         Text('不耐受通常不会危及生命，但需注意饮食')
           .fontSize(FONT_SIZE.TINY)
           .fontColor(COLORS.TEXT_TERTIARY)
           .width('100%')
-          .margin({ bottom: SPACING.SMALL })
+          .margin({ bottom: SPACING.SM })
 
         ForEach(this.intoleranceOptions, (opt: AllergyOption, idx: number) => {
           this.optionRow(opt, idx)
         })
       }
       .width('100%')
-      .padding(SPACING.MEDIUM)
+      .padding(SPACING.MD)
     }
   }
 
@@ -314,7 +318,7 @@ struct AllergySetupWizard {
     .height(44)
     .padding({ left: 8, right: 8 })
     .backgroundColor(COLORS.WHITE)
-    .borderRadius(RADIUS.SMALL)
+    .borderRadius(RADIUS.SM)
     .margin({ top: 4 })
   }
 
@@ -351,7 +355,7 @@ struct AllergySetupWizard {
     }
     .width('100%')
     .height(56)
-    .padding({ left: SPACING.MEDIUM, right: SPACING.MEDIUM })
+    .padding({ left: SPACING.MD, right: SPACING.MD })
     .backgroundColor(COLORS.WHITE)
   }
 }

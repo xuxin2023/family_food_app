@@ -1,5 +1,6 @@
-import { safeBack, FamilyProfile, DateUtil, COLORS, BasicDataSource, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker } from 'hsp_core';
+import { safeBack, HapticHelper, FamilyProfile, DateUtil, COLORS, SHADOWS, BasicDataSource, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker, ThemeReactive, themeReactive, ThemeColors, ThemeMode } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
+import { GradientHeader } from '../components/GradientHeader';
 import { AppState } from '../AppState';
 import { ScanHistoryRecord } from '../repository/HistoryRepository';
 import { EmptyState } from '../components/EmptyState';
@@ -16,6 +17,7 @@ class HistoryPageViewModel {
   @Trace isLoading: boolean = true
   @Trace isLoadingMore: boolean = false
   @Trace hasMore: boolean = true
+  @Trace isRefreshing: boolean = false
 }
 
 @Entry
@@ -32,6 +34,20 @@ export struct HistoryPage {
   private historyDS = new BasicDataSource<ScanHistoryRecord>()
 
   private tracker: PageResourceTracker = createPageTracker('HistoryPage')
+  private themeRef: ThemeReactive = themeReactive
+
+  private get isDark(): boolean {
+    if (this.themeRef.key >= 0) { /* trigger reactive */ }
+    return ThemeColors.getTheme() === ThemeMode.DARK;
+  }
+
+  private get pageBgGradient(): LinearGradient {
+    if (this.isDark) {
+      return { angle: 180, colors: [['#0D1B0E', 0.0], ['#1A2F1C', 0.5], ['#0A1A0D', 1.0]] };
+    }
+    return { angle: 180, colors: [['#E8EAF6', 0.0], ['#E0F2F1', 0.3], ['#FFF8E1', 0.7], ['#F3E5F5', 1.0]] };
+  }
+
   async aboutToAppear() {
         this.tracker.onAppear()
     this.vm.isLoading = true
@@ -51,18 +67,7 @@ export struct HistoryPage {
 
   build() {
     Column() {
-      Row() {
-        BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
-          .onClick(() => { safeBack() })
-          .accessibilityText('返回')
-          .accessibilityLevel('yes')
-        Text($r('app.string.history_record'))
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .margin({ left: 16 })
-      }
-      .width('100%')
-      .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+      GradientHeader({ title: $r('app.string.history_record') })
 
       if (this.vm.isLoading) {
         LoadingSkeleton({ variant: 'list', rowCount: 6 })
@@ -112,28 +117,41 @@ export struct HistoryPage {
             subtitle: $r('app.string.history_empty_hint')
           })
         } else {
-          List() {
-            LazyForEach(this.historyDS, (record: ScanHistoryRecord) => {
-              ListItem() {
-                this.HistoryCard(record)
-              }
-            }, (record: ScanHistoryRecord) => `${record.id}`)
-          }
-          .width('100%')
-          .layoutWeight(1)
-          .padding({ left: 16, right: 16 })
-          .cachedCount(5)
-          .onReachEnd(() => {
-            if (!this.vm.isLoadingMore && this.vm.hasMore) {
-              this.loadMoreRecords();
+          Refresh({ refreshing: $$this.vm.isRefreshing }) {
+            List() {
+              LazyForEach(this.historyDS, (record: ScanHistoryRecord) => {
+                ListItem() {
+                  this.HistoryCard(record)
+                }
+              }, (record: ScanHistoryRecord) => `${record.id}`)
             }
+            .width('100%')
+            .layoutWeight(1)
+            .padding({ left: 16, right: 16 })
+            .cachedCount(5)
+            .onReachEnd(() => {
+              if (!this.vm.isLoadingMore && this.vm.hasMore) {
+                this.loadMoreRecords();
+              }
+            })
+          }
+          .onRefreshing(async () => {
+            HapticHelper.light()
+            this.currentPage = 0
+            this.historyRecords = []
+            this.vm.hasMore = true
+            this.vm.familyMembers = await this.appState.getAllMembers()
+            await this.loadMoreRecords()
+            this.vm.isRefreshing = false
           })
+          .layoutWeight(1)
         }
       }
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(COLORS.BG_PAGE)
+    .linearGradient(this.pageBgGradient)
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   @Builder
@@ -183,6 +201,7 @@ export struct HistoryPage {
     .padding(14)
     .backgroundColor(COLORS.WHITE)
     .borderRadius(14)
+    .shadow(SHADOWS.MD)
     .margin({ bottom: 8 })
     .alignItems(HorizontalAlign.Start)
   }

@@ -1,6 +1,6 @@
 import { UIAbility, Want, AbilityConstant } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { HILOG_DOMAIN_DEFAULT, RoutePath } from 'hsp_core';
+import { HILOG_DOMAIN_DEFAULT, ROUTE_SCAN_PAGE, ROUTE_HOME_PAGE } from 'hsp_core';
 import { window } from '@kit.ArkUI';
 
 const TAG = 'ScanDirectAbility';
@@ -29,10 +29,10 @@ export default class ScanDirectAbility extends UIAbility {
   onWindowStageCreate(windowStage: window.WindowStage): void {
     hilog.info(DOMAIN_ZERO, TAG, 'ScanDirectAbility onWindowStageCreate');
 
-    windowStage.loadContent(RoutePath.SCAN_PAGE, (err, data) => {
+    windowStage.loadContent(ROUTE_SCAN_PAGE, (err, data) => {
       if (err.code) {
         hilog.error(DOMAIN_ZERO, TAG, 'Failed to load ScanPage: %{public}s', err.message);
-        windowStage.loadContent(RoutePath.HOME_PAGE, (fallbackErr) => {
+        windowStage.loadContent(ROUTE_HOME_PAGE, (fallbackErr) => {
           if (fallbackErr.code) {
             hilog.error(DOMAIN_ZERO, TAG, 'Failed to load HomePage fallback: %{public}s', fallbackErr.message);
           }

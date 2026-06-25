@@ -31,25 +31,27 @@ export class FavoriteRepository {
   async init(rdbStore: relationalStore.RdbStore): Promise<void> {
     this.rdbStore = rdbStore;
     try {
-      await rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_FAVORITES} (`
-        id TEXT PRIMARY KEY,
-        food_id TEXT NOT NULL,
-        food_name TEXT NOT NULL,
-        barcode TEXT DEFAULT '',
-        brand TEXT DEFAULT '',
-        image_url TEXT DEFAULT '',
-        nutri_grade TEXT DEFAULT '',
-        source TEXT DEFAULT '',
-        created_at INTEGER NOT NULL
-      )`);`
-      await rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_NUTRITION_TARGET} (`
-        member_id TEXT PRIMARY KEY,
-        calories_target REAL DEFAULT 2000,
-        sodium_target REAL DEFAULT 2000,
-        sugar_target REAL DEFAULT 50,
-        fat_target REAL DEFAULT 65,
-        updated_at INTEGER NOT NULL
-      )`);`
+      const favSql = 'CREATE TABLE IF NOT EXISTS ' + TABLE_FAVORITES + ' (' +
+        'id TEXT PRIMARY KEY, ' +
+        'food_id TEXT NOT NULL, ' +
+        'food_name TEXT NOT NULL, ' +
+        "barcode TEXT DEFAULT '', " +
+        "brand TEXT DEFAULT '', " +
+        "image_url TEXT DEFAULT '', " +
+        "nutri_grade TEXT DEFAULT '', " +
+        "source TEXT DEFAULT '', " +
+        'created_at INTEGER NOT NULL' +
+        ')';
+      await rdbStore.executeSql(favSql);
+      const ntSql = 'CREATE TABLE IF NOT EXISTS ' + TABLE_NUTRITION_TARGET + ' (' +
+        'member_id TEXT PRIMARY KEY, ' +
+        'calories_target REAL DEFAULT 2000, ' +
+        'sodium_target REAL DEFAULT 2000, ' +
+        'sugar_target REAL DEFAULT 50, ' +
+        'fat_target REAL DEFAULT 65, ' +
+        'updated_at INTEGER NOT NULL' +
+        ')';
+      await rdbStore.executeSql(ntSql);
       await this.loadFromDb();
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'init failed: %{public}s', JSON.stringify(e));

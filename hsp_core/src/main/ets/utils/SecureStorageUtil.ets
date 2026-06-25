@@ -4,9 +4,9 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG = 'SecureStorageUtil';
 const DOMAIN_ZERO = 0x0001;
-const FIXED_IV: Uint8Array = new Uint8Array(
-const FIXED_TAG_PLACEHOLDER: Uint8Array = new Uint8Array(
-const FIXED_AAD: Uint8Array = new Uint8Array(
+const FIXED_IV: Uint8Array = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+const FIXED_TAG_PLACEHOLDER: Uint8Array = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+const FIXED_AAD: Uint8Array = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0]);
 const B64_TABLE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 function makeGcmParams(iv: Uint8Array, aad: Uint8Array, authTag: Uint8Array): cryptoFramework.GcmParamsSpec {
@@ -41,7 +41,7 @@ function base64ToUint8Array(str: string): Uint8Array {
   if (len > 0 && str.charAt(len - 1) === '=') { padCount++; }
   if (len > 1 && str.charAt(len - 2) === '=') { padCount++; }
   const byteLen = (len * 3) / 4 - padCount;
-  const result: Uint8Array = new Uint8Array(
+  const result: Uint8Array = new Uint8Array(byteLen);
   let p = 0;
   for (let i = 0; i < len; i += 4) {
     const n = (lookup[str.charCodeAt(i)] << 18) | (lookup[str.charCodeAt(i + 1)] << 12) |

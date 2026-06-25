@@ -124,7 +124,7 @@ export class AiVisionService {
       label.source = FoodSource.OCR_RECOGNIZE;
       label.identifiedAt = Date.now();
 
-      const nutrition: NutritionPer100g = new NutritionPer100g(
+      const nutrition: NutritionPer100g = new NutritionPer100g();
       if (matchedCategory !== null) {
         nutrition.sodium = matchedCategory.sodium_mg;
         nutrition.sugar = matchedCategory.sugar_g;

@@ -5,18 +5,20 @@ import { backgroundTaskManager } from '@kit.BackgroundTasksKit';
 const TAG = 'ReminderService';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
+export interface ReminderConditions {
+  daysOfWeek: number[];
+  minIntervalMinutes: number;
+  budgetThresholdPercent?: number;
+  message?: string;
+}
+
 export interface ReminderRule {
   ruleId: string;
   memberId: string;
   type: 'scan_reminder' | 'budget_alert' | 'report_reminder' | 'meal_reminder' | 'custom';
   enabled: boolean;
   time: string;
-  conditions: {
-    daysOfWeek: number[];
-    minIntervalMinutes: number;
-    budgetThresholdPercent?: number;
-    message?: string;
-  };
+  conditions: ReminderConditions;
 }
 
 export interface ReminderEvent {

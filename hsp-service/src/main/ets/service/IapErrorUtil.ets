@@ -25,11 +25,9 @@ export class IapErrorUtil {
     if (extended !== undefined) return extended;
 
     if (IS_SANDBOX_ENABLED) {
-      const tpl: ResourceStr = $r('app.string.iap_err_sandbox_anomaly');
-      return (tpl as string).replace('%s', `${err.code}`) as ResourceStr;
+      return $r('app.string.iap_err_sandbox_anomaly');
     }
-    const fb: ResourceStr = $r('app.string.iap_err_payment_failed');
-    return (fb as string).replace('%s', `${err.code}`) as ResourceStr;
+    return $r('app.string.iap_err_payment_failed');
   }
 
   /**

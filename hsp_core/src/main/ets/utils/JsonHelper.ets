@@ -1,7 +1,6 @@
-// hsp-core: JsonHelper 类型安全反序列化升级
-// 使用 class-transformer + 运行时类型校验
+// hsp-core: JsonHelper JSON 反序列化工具
+// 提供类型安全的 JSON 解析辅助方法
 
-import { plainToInstance } from 'class-transformer';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
 
@@ -14,22 +13,22 @@ export class JsonHelper {
   }
 
   static getRecordNumber(rec: Map<string, Object>, key: string, defaultValue: number = 0): number {
-    const val = rec.get(key);
+    const val: Object | undefined = rec.get(key);
     if (val === undefined || val === null) return defaultValue;
-    const num = Number(val);
+    const num: number = Number(val);
     return isNaN(num) ? defaultValue : num;
   }
 
   static safeParseFloat(value: Object | undefined, defaultValue: number = 0): number {
     if (value === undefined || value === null) return defaultValue;
-    const num = Number(value);
+    const num: number = Number(value);
     return isNaN(num) ? defaultValue : num;
   }
 
   static safeNumber(value: Object | null | undefined, defaultValue: number = 0): number {
     if (value === undefined || value === null) return defaultValue;
     if (typeof value === 'number') return value;
-    const parsed = Number(value);
+    const parsed: number = Number(value);
     return isNaN(parsed) ? defaultValue : parsed;
   }
 
@@ -38,8 +37,10 @@ export class JsonHelper {
   }
 
   static recordToMap(raw: Record<string, Object>): Map<string, Object> {
-    const map = new Map<string, Object>();
-    for (const k of Object.keys(raw)) {
+    const map: Map<string, Object> = new Map<string, Object>();
+    const keys: string[] = Object.keys(raw);
+    for (let i = 0; i < keys.length; i++) {
+      const k: string = keys[i];
       map.set(k, raw[k]);
     }
     return map;
@@ -49,19 +50,11 @@ export class JsonHelper {
     return Object.keys(raw);
   }
 
-  /**
-   * 类型安全 JSON 反序列化 —— 使用 class-transformer + 运行时校验
-   * 替代原始 `JSON.parse() as T` 的类型断言模式
-   */
-  static safeParse<T extends object>(json: string, cls: Object, label: string): T | null {
+  static safeParse(json: string, label: string): Record<string, Object> | null {
     try {
       const raw: Record<string, Object> = JSON.parse(json) as Record<string, Object>;
-      const instance: T = plainToInstance(cls as Object, raw as Object, {
-        enableImplicitConversion: true,
-        excludeExtraneousValues: false,
-      } as Object) as T;
       hilog.debug(DOMAIN_ZERO, TAG, 'safeParse %{public}s OK', label);
-      return instance;
+      return raw;
     } catch (err) {
       hilog.error(DOMAIN_ZERO, TAG, 'safeParse %{public}s failed: %{public}s',
         label, JSON.stringify(err));
@@ -69,38 +62,26 @@ export class JsonHelper {
     }
   }
 
-  /**
-   * 批量类型安全反序列化
-   */
-  static safeParseArray<T extends object>(
-    json: string,
-    cls: Object,
-    label: string
-  ): T[] {
+  static safeParseArray(json: string, label: string): Record<string, Object>[] {
     try {
       const raw: Object[] = JSON.parse(json) as Object[];
-      return raw.map((item: Object) =>
-        plainToInstance(cls, item as Record<string, Object>, {
-          enableImplicitConversion: true,
-          excludeExtraneousValues: false,
-        })
-      );
+      const result: Record<string, Object>[] = [];
+      for (let i = 0; i < raw.length; i++) {
+        const item: Object = raw[i];
+        if (item !== null && typeof item === 'object') {
+          result.push(item as Record<string, Object>);
+        }
+      }
+      return result;
     } catch (err) {
       hilog.error(DOMAIN_ZERO, TAG, 'safeParseArray %{public}s failed', label);
       return [];
     }
   }
 
-  /**
-   * 安全序列化 —— 处理 BigInt / undefined 等非标准 JSON 值
-   */
   static safeStringify(obj: Object, label: string): string {
     try {
-      return JSON.stringify(obj, (_key: string, value: Object) => {
-        if (typeof value === 'bigint') return value.toString();
-        if (value === undefined) return null;
-        return value;
-      });
+      return JSON.stringify(obj);
     } catch (err) {
       hilog.error(DOMAIN_ZERO, TAG, 'safeStringify %{public}s failed', label);
       return '{}';

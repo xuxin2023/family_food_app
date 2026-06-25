@@ -57,7 +57,7 @@ export struct AllergyAlertBanner {
       Row() {
         Text(this.bannerIcon)
           .fontSize(18)
-          .margin({ right: SPACING.SMALL })
+          .margin({ right: SPACING.SM })
 
         Column() {
           Text(this.typeLabel)
@@ -79,14 +79,13 @@ export struct AllergyAlertBanner {
         if (this.data.affectedCount > 1) {
           Badge({
             value: `${this.data.affectedCount}人`,
-            color: '#FFFFFF',
-            badgeColor: 'rgba(255,255,255,0.3)'
+            style: { color: '#FFFFFF', badgeColor: 'rgba(255,255,255,0.3)' }
           })
         }
       }
       .width('100%')
-      .padding({ left: SPACING.MEDIUM, right: SPACING.MEDIUM,
-        top: SPACING.SMALL, bottom: SPACING.SMALL })
+      .padding({ left: SPACING.MD, right: SPACING.MD,
+        top: SPACING.SM, bottom: SPACING.SM })
 
       if (this.data.detail.length > 0) {
         Text(this.data.detail)
@@ -96,8 +95,8 @@ export struct AllergyAlertBanner {
           .maxLines(2)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
           .width('100%')
-          .padding({ left: SPACING.MEDIUM, right: SPACING.MEDIUM,
-            bottom: SPACING.SMALL })
+          .padding({ left: SPACING.MD, right: SPACING.MD,
+            bottom: SPACING.SM })
       }
 
       if (this.data.advice.length > 0) {
@@ -111,13 +110,13 @@ export struct AllergyAlertBanner {
             .layoutWeight(1)
         }
         .width('100%')
-        .padding({ left: SPACING.MEDIUM, right: SPACING.MEDIUM,
-          bottom: SPACING.SMALL })
+        .padding({ left: SPACING.MD, right: SPACING.MD,
+          bottom: SPACING.SM })
       }
     }
     .width('100%')
     .backgroundColor(this.bannerColor)
-    .borderRadius(RADIUS.MEDIUM)
+    .borderRadius(RADIUS.MD)
     .onClick(() => {
       if (this.onShowDetail) {
         this.onShowDetail();

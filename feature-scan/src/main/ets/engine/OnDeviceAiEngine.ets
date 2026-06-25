@@ -14,20 +14,13 @@ import { hilog } from '@kit.PerformanceAnalysisKit'
 import { HILOG_DOMAIN_DEFAULT } from 'hsp_core'
 import { common } from '@kit.AbilityKit'
 import { OnDeviceInferenceEngine } from './OnDeviceInferenceEngine'
-import { mindSporeLite, ModelContext } from '@kit.AIFoundation'
-import { AiClient } from 'hsp_service'
+import { AiClient, AiRequestOptions, AiCallResponse } from 'hsp_service'
 
 const TAG = 'OnDeviceAiEngine'
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT
 
+// @kit.AIFoundation not available in current SDK, keep flag for graceful degradation
 let mindSporeLiteAvailable = false;
-try {
-  mindSporeLiteAvailable = true;
-  hilog.info(DOMAIN_ZERO, TAG, 'AIFoundation kit available');
-} catch {
-  mindSporeLiteAvailable = false;
-  hilog.info(DOMAIN_ZERO, TAG, 'AIFoundation kit not available, using rule engine fallback');
-}
 
 class InferenceConfig {
   deviceType: 'npu' | 'cpu' = 'npu'
@@ -447,10 +440,14 @@ export class OnDeviceAiEngine {
   private async cloudIngredientAnalysis(ingredients: string[]): Promise<IngredientAnalysis> {
     try {
       const prompt = this.buildIngredientPrompt(ingredients);
-      const aiClient = AiClient.getInstance();
-      const cloudResult = await aiClient.chat(prompt);
-      if (cloudResult && cloudResult.length > 0) {
-        return this.parseIngredientResult(cloudResult);
+      const aiClient: AiClient = new AiClient();
+      const reqOpts: AiRequestOptions = new AiRequestOptions();
+      reqOpts.userPrompt = prompt;
+      reqOpts.temperature = 0.3;
+      reqOpts.maxTokens = 512;
+      const cloudResult: AiCallResponse | null = await aiClient.call(reqOpts);
+      if (cloudResult && cloudResult.text.length > 0) {
+        return this.parseIngredientResult(cloudResult.text);
       }
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Cloud AI ingredient analysis failed: %{public}s', JSON.stringify(e));
@@ -461,10 +458,14 @@ export class OnDeviceAiEngine {
   private async cloudAdviceGeneration(member: MemberProfile, foodLabel: FoodLabel): Promise<PersonalizedAdviceOutput> {
     try {
       const prompt = this.buildAdvicePrompt(member, foodLabel);
-      const aiClient = AiClient.getInstance();
-      const cloudResult = await aiClient.chat(prompt);
-      if (cloudResult && cloudResult.length > 0) {
-        return this.parseAdviceResult(cloudResult);
+      const aiClient: AiClient = new AiClient();
+      const reqOpts: AiRequestOptions = new AiRequestOptions();
+      reqOpts.userPrompt = prompt;
+      reqOpts.temperature = 0.3;
+      reqOpts.maxTokens = 512;
+      const cloudResult: AiCallResponse | null = await aiClient.call(reqOpts);
+      if (cloudResult && cloudResult.text.length > 0) {
+        return this.parseAdviceResult(cloudResult.text);
       }
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Cloud AI advice generation failed: %{public}s', JSON.stringify(e));

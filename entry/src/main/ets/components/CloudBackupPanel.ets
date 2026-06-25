@@ -249,8 +249,8 @@ export struct CloudBackupPanel {
     try {
       const foodLabels: FoodLabel[] = []
       const familyProfiles: FamilyProfile[] = []
-      const scanHistory: ESObject[] = []
-      const userSettings: ESObject = {}
+      const scanHistory: Object[] = []
+      const userSettings: Object = {}
 
       this.statusMessage = '上传备份到云端...'
       

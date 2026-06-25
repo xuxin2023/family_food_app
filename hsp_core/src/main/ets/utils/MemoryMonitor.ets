@@ -115,15 +115,14 @@ export class MemoryMonitor {
   triggerGC(): void {
     this.gcTriggerCount++;
     try {
-      const globalRecord: Object = globalThis as Object;
-      const gcFn = (globalRecord as Record<string, Object>)['gc'];
+      const globalRecord: Record<string, Object> = globalThis as Object as Record<string, Object>;
+      const gcFn = globalRecord['gc'];
       if (gcFn !== undefined && gcFn !== null) {
         (gcFn as Function)();
         hilog.info(DOMAIN_ZERO, TAG, 'Manual GC triggered (#%{public}d)', this.gcTriggerCount);
       }
     } catch (_e) {
       hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
-      // gc不可用
     }
   }
 
@@ -133,7 +132,7 @@ export class MemoryMonitor {
 
   getMemoryHealth(): MemoryHealth {
     const usage = this.getMemoryUsage();
-    const result: MemoryHealth = new MemoryHealth(
+    const result: MemoryHealth = new MemoryHealth()
     if (usage >= this.criticalThreshold) {
       result.status = 'critical';
       result.percentage = Math.round(usage / this.criticalThreshold * 100);

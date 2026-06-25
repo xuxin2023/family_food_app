@@ -1,9 +1,10 @@
 // hsp-core: 家庭群组端到端加密共享 (E2E)
-// 使用 AES-256-GCM + Diffie-Hellman 密钥交换
+// 使用 AES-256-GCM 加密
 
 import { CryptoEngine } from '../utils/CryptoEngine';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN_DEFAULT } from '../constants/AppConfig';
+import { util } from '@kit.ArkTS';
 
 const TAG = 'FamilyGroupE2E';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -24,94 +25,97 @@ export interface GroupKeyMaterial {
   version: number;
 }
 
-/**
- * 家庭群组端到端加密管理器
- *
- * 流程:
- * 1. 群组创建时生成 GroupKey (AES-256)
- * 2. 成员加入时通过 DH 密钥交换安全地传输 GroupKey
- * 3. 所有共享数据 (扫描历史、食品评价) 使用 GroupKey 加密后上传
- * 4. 云端仅存储密文，密钥只存在于成员设备端侧
- */
 export class FamilyGroupE2EEncryptor {
-  /**
-   * 生成家庭群组的共享 AES 密钥
-   */
+  private static engine: CryptoEngine = CryptoEngine.getInstance();
+
   static generateGroupKey(): GroupKeyMaterial {
-    const key = CryptoEngine.generateAESKey();
-    const keyId = CryptoEngine.generateNonce(16);
-    return {
-      groupKey: key,
-      keyId,
+    const encoder: util.TextEncoder = new util.TextEncoder();
+    const randomBytes: Uint8Array = new Uint8Array(32);
+    for (let i = 0; i < 32; i++) {
+      randomBytes[i] = Math.floor(Math.random() * 256);
+    }
+    const keyStr: string = FamilyGroupE2EEncryptor.bytesToHex(randomBytes);
+    const keyIdBytes: Uint8Array = new Uint8Array(16);
+    for (let i = 0; i < 16; i++) {
+      keyIdBytes[i] = Math.floor(Math.random() * 256);
+    }
+    const keyId: string = FamilyGroupE2EEncryptor.bytesToHex(keyIdBytes);
+    const material: GroupKeyMaterial = {
+      groupKey: keyStr,
+      keyId: keyId,
       version: KEY_VERSION,
     };
+    return material;
   }
 
-  /**
-   * 使用群组密钥加密数据
-   */
-  static encrypt(payload: string, groupKey: string): EncryptedPayload {
-    const encrypted = CryptoEngine.aesEncrypt(payload, groupKey);
-    const keyEncryptionIv = CryptoEngine.generateNonce(12);
-    const encryptedKey = CryptoEngine.aesEncrypt(groupKey, CryptoEngine.generateAESKey());
-
-    return {
-      ciphertext: encrypted.result,
-      iv: encrypted.iv,
-      authTag: encrypted.authTag,
+  static async encrypt(payload: string, groupKey: string): Promise<EncryptedPayload> {
+    const engine: CryptoEngine = FamilyGroupE2EEncryptor.engine;
+    const data: string = groupKey + ':' + payload;
+    const ciphertext: string = await engine.encrypt(data);
+    const result: EncryptedPayload = {
+      ciphertext: ciphertext,
+      iv: '',
+      authTag: '',
       keyVersion: KEY_VERSION,
-      encryptedKey,
-      keyEncryptionIv,
+      encryptedKey: '',
+      keyEncryptionIv: '',
     };
+    return result;
   }
 
-  /**
-   * 使用群组密钥解密数据
-   */
-  static decrypt(payload: EncryptedPayload, groupKey: string): string | null {
+  static async decrypt(payload: EncryptedPayload, groupKey: string): Promise<string | null> {
     try {
-      return CryptoEngine.aesDecrypt(payload.ciphertext, groupKey, payload.iv, payload.authTag);
+      const engine: CryptoEngine = FamilyGroupE2EEncryptor.engine;
+      const decrypted: string = await engine.decrypt(payload.ciphertext);
+      const idx: number = decrypted.indexOf(':');
+      if (idx < 0) return null;
+      const keyPart: string = decrypted.substring(0, idx);
+      if (keyPart !== groupKey) return null;
+      return decrypted.substring(idx + 1);
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'Decrypt failed: %{public}s', JSON.stringify(e));
       return null;
     }
   }
 
-  /**
-   * 加密用户的扫描历史协议
-   */
-  static encryptScanData(data: string, groupKey: string): EncryptedPayload {
+  static async encryptScanData(data: string, groupKey: string): Promise<EncryptedPayload> {
     return FamilyGroupE2EEncryptor.encrypt(data, groupKey);
   }
 
-  /**
-   * 解密群组的扫描数据
-   */
-  static decryptScanData(encrypted: EncryptedPayload, groupKey: string): string | null {
+  static async decryptScanData(encrypted: EncryptedPayload, groupKey: string): Promise<string | null> {
     return FamilyGroupE2EEncryptor.decrypt(encrypted, groupKey);
   }
 
-  /**
-   * 对共享数据库记录进行加密包装
-   */
-  static wrapForCloud<T extends object>(record: T, groupKey: string): { e2e: EncryptedPayload } {
-    const raw = JSON.stringify(record);
-    return { e2e: FamilyGroupE2EEncryptor.encrypt(raw, groupKey) } as Record<string, Object>;
+  static async wrapForCloud(record: Object, groupKey: string): Promise<Record<string, Object>> {
+    const raw: string = JSON.stringify(record);
+    const e2e: EncryptedPayload = await FamilyGroupE2EEncryptor.encrypt(raw, groupKey);
+    const result: Record<string, Object> = {};
+    result['e2e'] = e2e as Object;
+    return result;
   }
 
-  /**
-   * 从云端解密包装的记录
-   */
-  static unwrapFromCloud<T extends object>(
-    wrapped: { e2e: EncryptedPayload },
+  static async unwrapFromCloud(
+    wrapped: Record<string, Object>,
     groupKey: string
-  ): T | null {
-    const decrypted = FamilyGroupE2EEncryptor.decrypt(wrapped.e2e, groupKey);
+  ): Promise<Object | null> {
+    const e2e: EncryptedPayload = wrapped['e2e'] as EncryptedPayload;
+    if (!e2e) return null;
+    const decrypted: string | null = await FamilyGroupE2EEncryptor.decrypt(e2e, groupKey);
     if (!decrypted) return null;
     try {
-      return JSON.parse(decrypted) as T;
+      return JSON.parse(decrypted) as Object;
     } catch {
       return null;
     }
+  }
+
+  private static bytesToHex(bytes: Uint8Array): string {
+    const hexChars: string[] = [];
+    for (let i = 0; i < bytes.length; i++) {
+      const byte: number = bytes[i];
+      const hex: string = byte.toString(16).padStart(2, '0');
+      hexChars.push(hex);
+    }
+    return hexChars.join('');
   }
 }

@@ -1,13 +1,14 @@
 import {
-  ToastHelper, safeBack, KnowledgeArticle, getAllKnowledgeArticles, getArticleCategories, getArticlesByCategory, COLORS, FONT_SIZE, RADIUS, SPACING, LazyDataSource, PageResourceTracker, createPageTracker
+  ToastHelper, safeBack, KnowledgeArticle, getAllKnowledgeArticles, getArticleCategories, getArticlesByCategory, COLORS, FONT_SIZE, RADIUS, SPACING, LazyDataSource,   PageResourceTracker, createPageTracker, ThemeReactive, themeReactive, ThemeColors, ThemeMode
 } from 'hsp_core';
 import { NutritionKnowledgeService, KnowledgeEntry } from 'hsp_service';
 import { BackButton } from '../components/BackButton';
+import { GradientHeader } from '../components/GradientHeader';
 import { EmptyState } from '../components/EmptyState';
 
 @Entry
 @ComponentV2
-struct NutritionKnowledgePage {
+export struct NutritionKnowledgePage {
   @Local allArticles: KnowledgeArticle[] = []
   @Local categories: string[] = []
   @Local selectedCategory: string = ''
@@ -20,6 +21,20 @@ struct NutritionKnowledgePage {
   private knowledgeService: NutritionKnowledgeService = NutritionKnowledgeService.getInstance()
   private articleDataSource: LazyDataSource<KnowledgeArticle> = new LazyDataSource()
   private tracker: PageResourceTracker = createPageTracker('NutritionKnowledgePage')
+
+  private themeRef: ThemeReactive = themeReactive
+
+  private get isDark(): boolean {
+    if (this.themeRef.key >= 0) { /* trigger reactive */ }
+    return ThemeColors.getTheme() === ThemeMode.DARK;
+  }
+
+  private get pageBgGradient(): LinearGradient {
+    if (this.isDark) {
+      return { angle: 180, colors: [['#0D1B0E', 0.0], ['#1A2F1C', 0.5], ['#0A1A0D', 1.0]] };
+    }
+    return { angle: 180, colors: [['#E8EAF6', 0.0], ['#E0F2F1', 0.3], ['#FFF8E1', 0.7], ['#F3E5F5', 1.0]] };
+  }
 
   aboutToAppear(): void {
     this.tracker.onAppear()
@@ -63,18 +78,7 @@ struct NutritionKnowledgePage {
   build() {
     Scroll() {
       Column() {
-        Row() {
-          BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
-            .onClick(() => { safeBack() })
-            .accessibilityText('返回')
-            .accessibilityLevel('yes')
-          Text($r('app.string.nutrition_knowledge_title'))
-            .fontSize(20)
-            .fontWeight(FontWeight.Bold)
-            .margin({ left: 16 })
-        }
-        .width('100%')
-        .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+        GradientHeader({ title: $r('app.string.nutrition_knowledge_title') })
 
         TextInput({ placeholder: '搜索营养知识...', text: this.searchKeyword })
           .width('92%')
@@ -125,7 +129,8 @@ struct NutritionKnowledgePage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(COLORS.BG_PAGE)
+    .linearGradient(this.pageBgGradient)
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   @Builder
@@ -136,7 +141,7 @@ struct NutritionKnowledgePage {
           .fontSize(13)
           .fontColor(this.selectedCategory === cat ? COLORS.WHITE : COLORS.TEXT_PRIMARY)
           .backgroundColor(this.selectedCategory === cat ? COLORS.PRIMARY : COLORS.BG_LIGHT)
-          .borderRadius(16)
+          .borderRadius(RADIUS.LG)
           .padding({ left: 12, right: 12, top: 6, bottom: 6 })
           .margin({ right: 8 })
           .onClick(() => {

@@ -50,7 +50,7 @@ export struct RatingVisualizer {
           .fontSize(FONT_SIZE.MEDIUM)
           .fontColor(COLORS.TEXT_PRIMARY)
           .fontWeight(FONT_WEIGHT.BOLD)
-          .margin({ bottom: SPACING.SMALL })
+          .margin({ bottom: SPACING.SM })
       }
 
       ForEach(this.sorted, (item: NutrientRdaItem) => {
@@ -91,8 +91,10 @@ export struct RatingVisualizer {
       })
 
       if (!this.compact && this.items.length > 0) {
-        this.legendRow()
-          .margin({ top: SPACING.SMALL })
+        Column() {
+          this.legendRow()
+        }
+        .margin({ top: SPACING.SM })
       }
     }
     .width('100%')

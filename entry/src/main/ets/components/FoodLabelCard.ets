@@ -1,5 +1,5 @@
 import { FoodLabel, COLORS } from 'hsp_core';
-// 食品标签信息卡组件 — @ReusableV2 高频复用优化
+// 食品标签信息卡组件 @ReusableV2 高频复用优化
 
 
 @ReusableV2
@@ -47,7 +47,6 @@ export struct FoodLabelCard {
     .backgroundColor(COLORS.WHITE)
     .borderRadius(12)
     .alignItems(HorizontalAlign.Start)
-    .accessibilityRole('listItem')
     .accessibilityText(`食品：${this.foodLabel.foodName}，钠${this.foodLabel.nutrition.sodium}mg，糖${this.foodLabel.nutrition.sugar}g，热量${this.foodLabel.nutrition.calories}kcal`)
     .accessibilityLevel('yes')
   }

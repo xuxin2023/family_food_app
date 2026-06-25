@@ -33,7 +33,7 @@ export class FamilyGroupRepository {
 
   async createTables(): Promise<void> {
     if (!this.rdbStore) return;
-
+    try {
       const cols: string[] = []
       cols.push("group_id TEXT PRIMARY KEY")
       cols.push("group_name TEXT NOT NULL")
@@ -48,7 +48,7 @@ export class FamilyGroupRepository {
       cols.push("updated_at INTEGER NOT NULL")
       cols.push("is_archived INTEGER DEFAULT 0")
       const groupDef = cols.join(', ')
-    await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_GROUP} (${groupDef})`)
+      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_GROUP} (${groupDef})`)
 
       const mcols: string[] = []
       mcols.push("id TEXT PRIMARY KEY")
@@ -62,7 +62,7 @@ export class FamilyGroupRepository {
       mcols.push("is_left INTEGER DEFAULT 0")
       mcols.push("local_member_id TEXT DEFAULT ''")
       const memberDef = mcols.join(', ')
-    await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_GROUP_MEMBER} (${memberDef})`)
+      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_GROUP_MEMBER} (${memberDef})`)
 
       const rcols: string[] = []
       rcols.push("request_id TEXT PRIMARY KEY")
@@ -75,7 +75,7 @@ export class FamilyGroupRepository {
       rcols.push("reviewed_at INTEGER DEFAULT 0")
       rcols.push("reviewer_uid TEXT DEFAULT ''")
       const requestDef = rcols.join(', ')
-    await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_JOIN_REQUEST} (${requestDef})`)
+      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_JOIN_REQUEST} (${requestDef})`)
 
       const fcols: string[] = []
       fcols.push("feed_id TEXT PRIMARY KEY")
@@ -88,41 +88,47 @@ export class FamilyGroupRepository {
       fcols.push("comment_count INTEGER DEFAULT 0")
       fcols.push("like_count INTEGER DEFAULT 0")
       const feedDef = fcols.join(', ')
-    await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_GROUP_FEED} (${feedDef})`)
+      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_GROUP_FEED} (${feedDef})`)
 
-    // 创建索引
-    await this.rdbStore.executeSql(
-      `CREATE INDEX IF NOT EXISTS idx_member_group ON ${TABLE_GROUP_MEMBER} (group_id, uid)`
-    );
-    await this.rdbStore.executeSql(
-      `CREATE INDEX IF NOT EXISTS idx_feed_group ON ${TABLE_GROUP_FEED} (group_id, created_at)`
-    );
-    await this.rdbStore.executeSql(
-      `CREATE INDEX IF NOT EXISTS idx_request_group ON ${TABLE_JOIN_REQUEST} (group_id, status)`
-    );
+      await this.rdbStore.executeSql(
+        `CREATE INDEX IF NOT EXISTS idx_member_group ON ${TABLE_GROUP_MEMBER} (group_id, uid)`
+      );
+      await this.rdbStore.executeSql(
+        `CREATE INDEX IF NOT EXISTS idx_feed_group ON ${TABLE_GROUP_FEED} (group_id, created_at)`
+      );
+      await this.rdbStore.executeSql(
+        `CREATE INDEX IF NOT EXISTS idx_request_group ON ${TABLE_JOIN_REQUEST} (group_id, status)`
+      );
 
-    hilog.info(DOMAIN_ZERO, TAG, 'Group tables created');
+      hilog.info(DOMAIN_ZERO, TAG, 'Group tables created');
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'createTables failed: %{public}s', JSON.stringify(error));
+    }
   }
 
   // ========== 群组 CRUD ==========
 
   async saveGroup(group: FamilyGroup): Promise<void> {
     if (!this.rdbStore) return;
-    const bucket: relationalStore.ValuesBucket = {
-      group_id: group.groupId,
-      group_name: group.groupName,
-      group_avatar: group.groupAvatar,
-      description: group.description,
-      owner_uid: group.ownerUid,
-      owner_name: group.ownerName,
-      invite_code: group.inviteCode,
-      max_members: group.maxMembers,
-      member_count: group.memberCount,
-      created_at: group.createdAt,
-      updated_at: group.updatedAt,
-      is_archived: group.isArchived ? 1 : 0
-    };
-    await this.rdbStore.insert(TABLE_GROUP, bucket, relationalStore.ConflictResolution.ON_CONFLICT_REPLACE);
+    try {
+      const bucket: relationalStore.ValuesBucket = {
+        group_id: group.groupId,
+        group_name: group.groupName,
+        group_avatar: group.groupAvatar,
+        description: group.description,
+        owner_uid: group.ownerUid,
+        owner_name: group.ownerName,
+        invite_code: group.inviteCode,
+        max_members: group.maxMembers,
+        member_count: group.memberCount,
+        created_at: group.createdAt,
+        updated_at: group.updatedAt,
+        is_archived: group.isArchived ? 1 : 0
+      };
+      await this.rdbStore.insert(TABLE_GROUP, bucket, relationalStore.ConflictResolution.ON_CONFLICT_REPLACE);
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'saveGroup failed: %{public}s', JSON.stringify(error));
+    }
   }
 
   async getGroup(groupId: string): Promise<FamilyGroup | null> {
@@ -180,43 +186,55 @@ export class FamilyGroupRepository {
 
   async updateGroup(groupId: string, updates: Record<string, Object>): Promise<void> {
     if (!this.rdbStore) return;
-    const bucket: relationalStore.ValuesBucket = {};
-    if (updates.groupName !== undefined) bucket.group_name = updates.groupName as (string | number | boolean | null);
-    if (updates.description !== undefined) bucket.description = updates.description as (string | number | boolean | null);
-    if (updates.groupAvatar !== undefined) bucket.group_avatar = updates.groupAvatar as (string | number | boolean | null);
-    if (updates.memberCount !== undefined) bucket.member_count = updates.memberCount as (string | number | boolean | null);
-    if (updates.isArchived !== undefined) bucket.is_archived = (updates.isArchived as boolean) ? 1 : 0;
-    bucket.updated_at = Date.now();
+    try {
+      const bucket: relationalStore.ValuesBucket = {};
+      if (updates.groupName !== undefined) bucket.group_name = updates.groupName as (string | number | boolean | null);
+      if (updates.description !== undefined) bucket.description = updates.description as (string | number | boolean | null);
+      if (updates.groupAvatar !== undefined) bucket.group_avatar = updates.groupAvatar as (string | number | boolean | null);
+      if (updates.memberCount !== undefined) bucket.member_count = updates.memberCount as (string | number | boolean | null);
+      if (updates.isArchived !== undefined) bucket.is_archived = (updates.isArchived as boolean) ? 1 : 0;
+      bucket.updated_at = Date.now();
 
-    const predicates = new relationalStore.RdbPredicates(TABLE_GROUP);
-    predicates.equalTo('group_id', groupId);
-    await this.rdbStore.update(bucket, predicates);
+      const predicates = new relationalStore.RdbPredicates(TABLE_GROUP);
+      predicates.equalTo('group_id', groupId);
+      await this.rdbStore.update(bucket, predicates);
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'updateGroup failed: %{public}s', JSON.stringify(error));
+    }
   }
 
   async deleteGroup(groupId: string): Promise<void> {
     if (!this.rdbStore) return;
-    const predicates = new relationalStore.RdbPredicates(TABLE_GROUP);
-    predicates.equalTo('group_id', groupId);
-    await this.rdbStore.delete(predicates);
+    try {
+      const predicates = new relationalStore.RdbPredicates(TABLE_GROUP);
+      predicates.equalTo('group_id', groupId);
+      await this.rdbStore.delete(predicates);
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'deleteGroup failed: %{public}s', JSON.stringify(error));
+    }
   }
 
   // ========== 群组成员管理 ==========
 
   async addMember(member: GroupMember): Promise<void> {
     if (!this.rdbStore) return;
-    const bucket: relationalStore.ValuesBucket = {
-      id: member.id,
-      group_id: member.groupId,
-      uid: member.uid,
-      display_name: member.displayName,
-      role: member.role,
-      join_method: member.joinMethod,
-      joined_at: member.joinedAt,
-      last_active_at: member.lastActiveAt,
-      is_left: member.isLeft ? 1 : 0,
-      local_member_id: member.localMemberId
-    };
-    await this.rdbStore.insert(TABLE_GROUP_MEMBER, bucket, relationalStore.ConflictResolution.ON_CONFLICT_REPLACE);
+    try {
+      const bucket: relationalStore.ValuesBucket = {
+        id: member.id,
+        group_id: member.groupId,
+        uid: member.uid,
+        display_name: member.displayName,
+        role: member.role,
+        join_method: member.joinMethod,
+        joined_at: member.joinedAt,
+        last_active_at: member.lastActiveAt,
+        is_left: member.isLeft ? 1 : 0,
+        local_member_id: member.localMemberId
+      };
+      await this.rdbStore.insert(TABLE_GROUP_MEMBER, bucket, relationalStore.ConflictResolution.ON_CONFLICT_REPLACE);
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'addMember failed: %{public}s', JSON.stringify(error));
+    }
   }
 
   async getGroupMembers(groupId: string): Promise<GroupMember[]> {
@@ -263,50 +281,66 @@ export class FamilyGroupRepository {
 
   async updateMemberRole(groupId: string, uid: string, role: GroupRole): Promise<void> {
     if (!this.rdbStore) return;
-    const bucket: relationalStore.ValuesBucket = { role: role };
-    const predicates = new relationalStore.RdbPredicates(TABLE_GROUP_MEMBER);
-    predicates.equalTo('group_id', groupId);
-    predicates.equalTo('uid', uid);
-    await this.rdbStore.update(bucket, predicates);
+    try {
+      const bucket: relationalStore.ValuesBucket = { role: role };
+      const predicates = new relationalStore.RdbPredicates(TABLE_GROUP_MEMBER);
+      predicates.equalTo('group_id', groupId);
+      predicates.equalTo('uid', uid);
+      await this.rdbStore.update(bucket, predicates);
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'updateMemberRole failed: %{public}s', JSON.stringify(error));
+    }
   }
 
   async removeMember(groupId: string, uid: string): Promise<void> {
     if (!this.rdbStore) return;
-    const bucket: relationalStore.ValuesBucket = {
-      is_left: 1,
-      last_active_at: Date.now()
-    };
-    const predicates = new relationalStore.RdbPredicates(TABLE_GROUP_MEMBER);
-    predicates.equalTo('group_id', groupId);
-    predicates.equalTo('uid', uid);
-    await this.rdbStore.update(bucket, predicates);
+    try {
+      const bucket: relationalStore.ValuesBucket = {
+        is_left: 1,
+        last_active_at: Date.now()
+      };
+      const predicates = new relationalStore.RdbPredicates(TABLE_GROUP_MEMBER);
+      predicates.equalTo('group_id', groupId);
+      predicates.equalTo('uid', uid);
+      await this.rdbStore.update(bucket, predicates);
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'removeMember failed: %{public}s', JSON.stringify(error));
+    }
   }
 
   async updateLastActive(groupId: string, uid: string): Promise<void> {
     if (!this.rdbStore) return;
-    const bucket: relationalStore.ValuesBucket = { last_active_at: Date.now() };
-    const predicates = new relationalStore.RdbPredicates(TABLE_GROUP_MEMBER);
-    predicates.equalTo('group_id', groupId);
-    predicates.equalTo('uid', uid);
-    await this.rdbStore.update(bucket, predicates);
+    try {
+      const bucket: relationalStore.ValuesBucket = { last_active_at: Date.now() };
+      const predicates = new relationalStore.RdbPredicates(TABLE_GROUP_MEMBER);
+      predicates.equalTo('group_id', groupId);
+      predicates.equalTo('uid', uid);
+      await this.rdbStore.update(bucket, predicates);
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'updateLastActive failed: %{public}s', JSON.stringify(error));
+    }
   }
 
   // ========== 加群申请 ==========
 
   async saveJoinRequest(request: JoinRequest): Promise<void> {
     if (!this.rdbStore) return;
-    const bucket: relationalStore.ValuesBucket = {
-      request_id: request.requestId,
-      group_id: request.groupId,
-      requester_uid: request.requesterUid,
-      requester_name: request.requesterName,
-      message: request.message,
-      status: request.status,
-      requested_at: request.requestedAt,
-      reviewed_at: request.reviewedAt,
-      reviewer_uid: request.reviewerUid
-    };
-    await this.rdbStore.insert(TABLE_JOIN_REQUEST, bucket, relationalStore.ConflictResolution.ON_CONFLICT_REPLACE);
+    try {
+      const bucket: relationalStore.ValuesBucket = {
+        request_id: request.requestId,
+        group_id: request.groupId,
+        requester_uid: request.requesterUid,
+        requester_name: request.requesterName,
+        message: request.message,
+        status: request.status,
+        requested_at: request.requestedAt,
+        reviewed_at: request.reviewedAt,
+        reviewer_uid: request.reviewerUid
+      };
+      await this.rdbStore.insert(TABLE_JOIN_REQUEST, bucket, relationalStore.ConflictResolution.ON_CONFLICT_REPLACE);
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'saveJoinRequest failed: %{public}s', JSON.stringify(error));
+    }
   }
 
   async getPendingRequests(groupId: string): Promise<JoinRequest[]> {
@@ -320,32 +354,40 @@ export class FamilyGroupRepository {
 
   async updateRequestStatus(requestId: string, status: JoinRequestStatus, reviewerUid: string): Promise<void> {
     if (!this.rdbStore) return;
-    const bucket: relationalStore.ValuesBucket = {
-      status: status,
-      reviewed_at: Date.now(),
-      reviewer_uid: reviewerUid
-    };
-    const predicates = new relationalStore.RdbPredicates(TABLE_JOIN_REQUEST);
-    predicates.equalTo('request_id', requestId);
-    await this.rdbStore.update(bucket, predicates);
+    try {
+      const bucket: relationalStore.ValuesBucket = {
+        status: status,
+        reviewed_at: Date.now(),
+        reviewer_uid: reviewerUid
+      };
+      const predicates = new relationalStore.RdbPredicates(TABLE_JOIN_REQUEST);
+      predicates.equalTo('request_id', requestId);
+      await this.rdbStore.update(bucket, predicates);
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'updateRequestStatus failed: %{public}s', JSON.stringify(error));
+    }
   }
 
   // ========== 群组动态 ==========
 
   async saveFeed(feed: GroupFeed): Promise<void> {
     if (!this.rdbStore) return;
-    const bucket: relationalStore.ValuesBucket = {
-      feed_id: feed.feedId,
-      group_id: feed.groupId,
-      feed_type: feed.feedType,
-      sender_uid: feed.senderUid,
-      sender_name: feed.senderName,
-      content: feed.content,
-      created_at: feed.createdAt,
-      comment_count: feed.commentCount,
-      like_count: feed.likeCount
-    };
-    await this.rdbStore.insert(TABLE_GROUP_FEED, bucket, relationalStore.ConflictResolution.ON_CONFLICT_REPLACE);
+    try {
+      const bucket: relationalStore.ValuesBucket = {
+        feed_id: feed.feedId,
+        group_id: feed.groupId,
+        feed_type: feed.feedType,
+        sender_uid: feed.senderUid,
+        sender_name: feed.senderName,
+        content: feed.content,
+        created_at: feed.createdAt,
+        comment_count: feed.commentCount,
+        like_count: feed.likeCount
+      };
+      await this.rdbStore.insert(TABLE_GROUP_FEED, bucket, relationalStore.ConflictResolution.ON_CONFLICT_REPLACE);
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'saveFeed failed: %{public}s', JSON.stringify(error));
+    }
   }
 
   async getFeeds(groupId: string, offset: number, limit: number): Promise<GroupFeed[]> {
@@ -378,9 +420,13 @@ export class FamilyGroupRepository {
 
   async deleteFeed(feedId: string): Promise<void> {
     if (!this.rdbStore) return;
-    const predicates = new relationalStore.RdbPredicates(TABLE_GROUP_FEED);
-    predicates.equalTo('feed_id', feedId);
-    await this.rdbStore.delete(predicates);
+    try {
+      const predicates = new relationalStore.RdbPredicates(TABLE_GROUP_FEED);
+      predicates.equalTo('feed_id', feedId);
+      await this.rdbStore.delete(predicates);
+    } catch (error) {
+      hilog.error(DOMAIN_ZERO, TAG, 'deleteFeed failed: %{public}s', JSON.stringify(error));
+    }
   }
 
   // ========== 便捷方法（供 AppState 使用） ==========
@@ -481,18 +527,22 @@ export class FamilyGroupRepository {
 
   private parseGroup(resultSet: relationalStore.ResultSet): FamilyGroup {
     const g: FamilyGroup = new FamilyGroup()
-    g.groupId = resultSet.getString(resultSet.getColumnIndex('group_id'));
-    g.groupName = resultSet.getString(resultSet.getColumnIndex('group_name'));
-    g.groupAvatar = resultSet.getString(resultSet.getColumnIndex('group_avatar')) || '';
-    g.description = resultSet.getString(resultSet.getColumnIndex('description')) || '';
-    g.ownerUid = resultSet.getString(resultSet.getColumnIndex('owner_uid'));
-    g.ownerName = resultSet.getString(resultSet.getColumnIndex('owner_name')) || '';
-    g.inviteCode = resultSet.getString(resultSet.getColumnIndex('invite_code'));
-    g.maxMembers = resultSet.getLong(resultSet.getColumnIndex('max_members'));
-    g.memberCount = resultSet.getLong(resultSet.getColumnIndex('member_count'));
-    g.createdAt = resultSet.getLong(resultSet.getColumnIndex('created_at'));
-    g.updatedAt = resultSet.getLong(resultSet.getColumnIndex('updated_at'));
-    g.isArchived = resultSet.getLong(resultSet.getColumnIndex('is_archived')) === 1;
+    try {
+      g.groupId = resultSet.getString(resultSet.getColumnIndex('group_id'));
+      g.groupName = resultSet.getString(resultSet.getColumnIndex('group_name'));
+      g.groupAvatar = resultSet.getString(resultSet.getColumnIndex('group_avatar')) || '';
+      g.description = resultSet.getString(resultSet.getColumnIndex('description')) || '';
+      g.ownerUid = resultSet.getString(resultSet.getColumnIndex('owner_uid'));
+      g.ownerName = resultSet.getString(resultSet.getColumnIndex('owner_name')) || '';
+      g.inviteCode = resultSet.getString(resultSet.getColumnIndex('invite_code'));
+      g.maxMembers = resultSet.getLong(resultSet.getColumnIndex('max_members'));
+      g.memberCount = resultSet.getLong(resultSet.getColumnIndex('member_count'));
+      g.createdAt = resultSet.getLong(resultSet.getColumnIndex('created_at'));
+      g.updatedAt = resultSet.getLong(resultSet.getColumnIndex('updated_at'));
+      g.isArchived = resultSet.getLong(resultSet.getColumnIndex('is_archived')) === 1;
+    } catch (err) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'parseGroup field error: %{public}s', JSON.stringify(err));
+    }
     return g;
   }
 
@@ -519,16 +569,20 @@ export class FamilyGroupRepository {
 
   private parseMember(resultSet: relationalStore.ResultSet): GroupMember {
     const m: GroupMember = new GroupMember()
-    m.id = resultSet.getString(resultSet.getColumnIndex('id'))
-    m.groupId = resultSet.getString(resultSet.getColumnIndex('group_id'))
-    m.uid = resultSet.getString(resultSet.getColumnIndex('uid'))
-    m.displayName = resultSet.getString(resultSet.getColumnIndex('display_name')) || ''
-    m.role = resultSet.getString(resultSet.getColumnIndex('role')) as GroupRole
-    m.joinMethod = resultSet.getString(resultSet.getColumnIndex('join_method')) as JoinMethod
-    m.joinedAt = resultSet.getLong(resultSet.getColumnIndex('joined_at'))
-    m.lastActiveAt = resultSet.getLong(resultSet.getColumnIndex('last_active_at'))
-    m.isLeft = resultSet.getLong(resultSet.getColumnIndex('is_left')) === 1
-    m.localMemberId = resultSet.getString(resultSet.getColumnIndex('local_member_id')) || ''
+    try {
+      m.id = resultSet.getString(resultSet.getColumnIndex('id'))
+      m.groupId = resultSet.getString(resultSet.getColumnIndex('group_id'))
+      m.uid = resultSet.getString(resultSet.getColumnIndex('uid'))
+      m.displayName = resultSet.getString(resultSet.getColumnIndex('display_name')) || ''
+      m.role = resultSet.getString(resultSet.getColumnIndex('role')) as GroupRole
+      m.joinMethod = resultSet.getString(resultSet.getColumnIndex('join_method')) as JoinMethod
+      m.joinedAt = resultSet.getLong(resultSet.getColumnIndex('joined_at'))
+      m.lastActiveAt = resultSet.getLong(resultSet.getColumnIndex('last_active_at'))
+      m.isLeft = resultSet.getLong(resultSet.getColumnIndex('is_left')) === 1
+      m.localMemberId = resultSet.getString(resultSet.getColumnIndex('local_member_id')) || ''
+    } catch (err) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'parseMember field error: %{public}s', JSON.stringify(err));
+    }
     return m
   }
 
@@ -555,15 +609,19 @@ export class FamilyGroupRepository {
 
   private parseRequest(resultSet: relationalStore.ResultSet): JoinRequest {
     const r: JoinRequest = new JoinRequest()
-    r.requestId = resultSet.getString(resultSet.getColumnIndex('request_id'))
-    r.groupId = resultSet.getString(resultSet.getColumnIndex('group_id'))
-    r.requesterUid = resultSet.getString(resultSet.getColumnIndex('requester_uid'))
-    r.requesterName = resultSet.getString(resultSet.getColumnIndex('requester_name')) || ''
-    r.message = resultSet.getString(resultSet.getColumnIndex('message')) || ''
-    r.status = resultSet.getString(resultSet.getColumnIndex('status')) as JoinRequestStatus
-    r.requestedAt = resultSet.getLong(resultSet.getColumnIndex('requested_at'))
-    r.reviewedAt = resultSet.getLong(resultSet.getColumnIndex('reviewed_at'))
-    r.reviewerUid = resultSet.getString(resultSet.getColumnIndex('reviewer_uid')) || ''
+    try {
+      r.requestId = resultSet.getString(resultSet.getColumnIndex('request_id'))
+      r.groupId = resultSet.getString(resultSet.getColumnIndex('group_id'))
+      r.requesterUid = resultSet.getString(resultSet.getColumnIndex('requester_uid'))
+      r.requesterName = resultSet.getString(resultSet.getColumnIndex('requester_name')) || ''
+      r.message = resultSet.getString(resultSet.getColumnIndex('message')) || ''
+      r.status = resultSet.getString(resultSet.getColumnIndex('status')) as JoinRequestStatus
+      r.requestedAt = resultSet.getLong(resultSet.getColumnIndex('requested_at'))
+      r.reviewedAt = resultSet.getLong(resultSet.getColumnIndex('reviewed_at'))
+      r.reviewerUid = resultSet.getString(resultSet.getColumnIndex('reviewer_uid')) || ''
+    } catch (err) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'parseRequest field error: %{public}s', JSON.stringify(err));
+    }
     return r
   }
 
@@ -590,15 +648,19 @@ export class FamilyGroupRepository {
 
   private parseFeed(resultSet: relationalStore.ResultSet): GroupFeed {
     const feed: GroupFeed = new GroupFeed()
-    feed.feedId = resultSet.getString(resultSet.getColumnIndex('feed_id'));
-    feed.groupId = resultSet.getString(resultSet.getColumnIndex('group_id'));
-    feed.feedType = resultSet.getString(resultSet.getColumnIndex('feed_type')) as FeedType;
-    feed.senderUid = resultSet.getString(resultSet.getColumnIndex('sender_uid'));
-    feed.senderName = resultSet.getString(resultSet.getColumnIndex('sender_name')) || '';
-    feed.content = resultSet.getString(resultSet.getColumnIndex('content')) || '';
-    feed.createdAt = resultSet.getLong(resultSet.getColumnIndex('created_at'));
-    feed.commentCount = resultSet.getLong(resultSet.getColumnIndex('comment_count'));
-    feed.likeCount = resultSet.getLong(resultSet.getColumnIndex('like_count'));
+    try {
+      feed.feedId = resultSet.getString(resultSet.getColumnIndex('feed_id'));
+      feed.groupId = resultSet.getString(resultSet.getColumnIndex('group_id'));
+      feed.feedType = resultSet.getString(resultSet.getColumnIndex('feed_type')) as FeedType;
+      feed.senderUid = resultSet.getString(resultSet.getColumnIndex('sender_uid'));
+      feed.senderName = resultSet.getString(resultSet.getColumnIndex('sender_name')) || '';
+      feed.content = resultSet.getString(resultSet.getColumnIndex('content')) || '';
+      feed.createdAt = resultSet.getLong(resultSet.getColumnIndex('created_at'));
+      feed.commentCount = resultSet.getLong(resultSet.getColumnIndex('comment_count'));
+      feed.likeCount = resultSet.getLong(resultSet.getColumnIndex('like_count'));
+    } catch (err) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'parseFeed field error: %{public}s', JSON.stringify(err));
+    }
     return feed;
   }
 }

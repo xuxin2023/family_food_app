@@ -72,7 +72,15 @@ interface EToCnsMapping {
   cnsToE: Record<string, string>;
 }
 
-const ADDITIVE_DB: Record<string, { name: string; risk: AdditiveRiskLevel; category: string; desc: string; eu: string }> = {
+interface AdditiveEntry {
+  name: string;
+  risk: AdditiveRiskLevel;
+  category: string;
+  desc: string;
+  eu: string;
+}
+
+const ADDITIVE_DB: Record<string, AdditiveEntry> = {
   'E102': { name: '柠檬黄', risk: AdditiveRiskLevel.CAUTION, category: '着色剂', desc: '可能引起儿童多动症', eu: '允许' },
   'E104': { name: '喹啉黄', risk: AdditiveRiskLevel.AVOID, category: '着色剂', desc: '欧盟限用，可能致敏', eu: '限用' },
   'E110': { name: '日落黄', risk: AdditiveRiskLevel.CAUTION, category: '着色剂', desc: '可能引起过敏反应', eu: '允许' },
@@ -213,12 +221,12 @@ export class AdditiveSafetyEngine {
 
     const ingredientText = typeof ingredients === 'string' ? ingredients : ingredients.join(', ');
 
-    const execE: RegExp = new RegExp(
+    const execE: RegExp = new RegExp(/E(\d{3,4}[a-z]?)/gi);
     while ((match = execE.exec(ingredientText)) !== null) {
       foundENumbers.add(match[1].toUpperCase());
     }
 
-    const execCns: RegExp = new RegExp(
+    const execCns: RegExp = new RegExp(/CNS\s*(\d{2}\.\d{3})/g);
     while ((match = execCns.exec(ingredientText)) !== null) {
       foundCnsCodes.add(match[1]);
     }
@@ -329,7 +337,7 @@ export class AdditiveSafetyEngine {
       summary = `检测到${safeCount}种安全添加剂`;
     }
 
-    return { foodName: foodLabel.foodName, assessments, overallRisk, avoidCount, cautionCount, safeCount, summary, standardUsed } as Record<string, Object>;
+    return { foodName: foodLabel.foodName, assessments, overallRisk, avoidCount, cautionCount, safeCount, summary, standardUsed } as FoodAdditiveReport;
   }
 
   /**
@@ -409,7 +417,9 @@ export class AdditiveSafetyEngine {
    */
   searchByRiskLevel(level: AdditiveRiskLevel): AdditiveAssessment[] {
     const results: AdditiveAssessment[] = [];
-    for (const [eNum, info] of Object.keys(ADDITIVE_DB)) {
+    const entries: string[] = Object.keys(ADDITIVE_DB);
+    for (const eNum of entries) {
+      const info: AdditiveEntry = ADDITIVE_DB[eNum];
       if (info.risk === level) {
         results.push({
           eNumber: eNum, name: info.name, riskLevel: info.risk,

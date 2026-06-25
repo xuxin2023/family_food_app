@@ -1,0 +1,20 @@
+export const DS_CLAY: string = '#D4745C'; export const DS_CLAY_DARK: string = '#B85A45';
+export const DS_CLAY_BG: string = '#FEF4F1'; export const DS_SAGE: string = '#6B8E5A';
+export const DS_SAGE_BG: string = '#F4F8F1'; export const DS_AMBER: string = '#C89848';
+export const DS_AMBER_BG: string = '#FDF6EC'; export const DS_BG: string = '#FDF8F4';
+export const DS_SURFACE: string = '#FFFFFF'; export const DS_INK: string = '#2C1810';
+export const DS_INK_2: string = '#7D6E63'; export const DS_INK_3: string = '#B8A99C';
+export const DS_BORDER: string = '#F0EBE5';
+export const DS_GRADIENT_HERO: LinearGradient = { angle: 150,
+  colors: [['#B85A45', 0.0], ['#D4745C', 0.4], ['#E09078', 0.75], ['#E8A890', 1.0]] };
+export const DS_SHADOW_HERO: ShadowOptions = { radius: 32, color: '#30B85A45', offsetX: 0, offsetY: 14 };
+export const DS_SHADOW_CARD: ShadowOptions = { radius: 10, color: '#0A000006', offsetX: 0, offsetY: 3 };
+export const DS_SPACE_XS: number = 4; export const DS_SPACE_SM: number = 8;
+export const DS_SPACE_MD: number = 12; export const DS_SPACE_LG: number = 16;
+export const DS_SPACE_XL: number = 20; export const DS_SPACE_2XL: number = 24;
+export const DS_SPACE_3XL: number = 32; export const DS_RADIUS_SM: number = 12;
+export const DS_RADIUS_MD: number = 16; export const DS_RADIUS_LG: number = 20;
+export const DS_RADIUS_XL: number = 24;
+export const DS_FS_HERO: number = 28; export const DS_FS_TITLE: number = 22;
+export const DS_FS_SUBTITLE: number = 17; export const DS_FS_BODY: number = 15;
+export const DS_FS_CAPTION: number = 13; export const DS_FS_MICRO: number = 11;

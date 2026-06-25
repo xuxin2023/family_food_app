@@ -1,4 +1,4 @@
-import { FamilyProfile, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT } from 'hsp_core';
+import { FamilyProfile, AgeGroup, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT } from 'hsp_core';
 
 @ComponentV2
 export struct MemberSelector {
@@ -42,10 +42,7 @@ export struct MemberSelector {
   }
 
   static defaultEmoji(member: FamilyProfile): string {
-    switch (member.gender) {
-      case 'male': return '👨';
-      case 'female': return '👩';
-      default: return '🧑';
-    }
+    if (member.ageGroup === AgeGroup.CHILD) return '👶';
+    return '🧑';
   }
 }

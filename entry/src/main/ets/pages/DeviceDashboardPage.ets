@@ -4,8 +4,8 @@
 // 以及与饮食建议的联动效果
 
 import {
-  ToastHelper, safeBack, safePushUrl, FamilyProfile, COLORS, RADIUS, getPaywallTriggerForFeature, HILOG_DOMAIN_DEFAULT, HealthConfig, HealthSignal, StepLevel, SleepStatus, DataSource, HeartRateZone, SpO2Level, StressLevel,
-  PageResourceTracker, createPageTracker
+  ToastHelper, safeBack, safePushUrl, FamilyProfile, COLORS, SHADOWS, RADIUS, getPaywallTriggerForFeature, HILOG_DOMAIN_DEFAULT, HealthConfig, HealthSignal, StepLevel, SleepStatus, DataSource, HeartRateZone, SpO2Level, StressLevel,
+  PageResourceTracker, createPageTracker, ThemeReactive, themeReactive
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -41,7 +41,7 @@ class MetricCardData {
 
 @Entry
 @ComponentV2
-struct DeviceDashboardPage {
+export struct DeviceDashboardPage {
   @Local familyMembers: FamilyProfile[] = []
   @Local selectedMemberId: string = ''
   @Local healthSignal: HealthSignal = new HealthSignal()
@@ -54,6 +54,8 @@ struct DeviceDashboardPage {
 
   private appState: AppState = AppState.getInstance()
   private tracker: PageResourceTracker = createPageTracker('DeviceDashboardPage')
+
+  private themeRef: ThemeReactive = themeReactive
 
   async aboutToAppear() {
     this.tracker.onAppear()
@@ -111,6 +113,7 @@ struct DeviceDashboardPage {
       modalTransition: ModalTransition.NONE,
       onDisappear: () => { this.showPermissionGuide = false }
     })
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   @Builder
@@ -124,34 +127,25 @@ struct DeviceDashboardPage {
   @Builder
   buildHeader() {
     Row() {
-      BackButton({ fontSize: 28, fontColor: COLORS.PRIMARY })
-        .onClick(() => {
-          try {
-            safeBack();
-          } catch (e) {
-            hilog.warn(DOMAIN_ZERO, 'DeviceDashboardPage', 'safeBack failed: %{public}s', JSON.stringify(e));
-          }
-        })
-        .accessibilityText('返回')
-        .accessibilityLevel('yes')
+      BackButton({ fontColor: COLORS.WHITE })
       Column() {
         Text($r('app.string.device_dash_title'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
-          .fontColor(COLORS.TEXT_PRIMARY)
+          .fontColor(COLORS.WHITE)
         if (this.lastSyncTime.length > 0) {
           Text() { Span($r('app.string.device_dash_last_sync')); Span(`: ${this.lastSyncTime}`) }
             .fontSize(10)
-            .fontColor(COLORS.TEXT_TERTIARY)
+            .fontColor('rgba(255,255,255,0.7)')
         }
       }
       .alignItems(HorizontalAlign.Start)
-      .margin({ left: 12 })
+      .margin({ left: 8 })
       .layoutWeight(1)
 
       Text('⟳')
         .fontSize(24)
-        .fontColor(COLORS.PRIMARY)
+        .fontColor(COLORS.WHITE)
         .padding(8)
         .onClick(async () => {
           this.isLoading = true
@@ -163,7 +157,10 @@ struct DeviceDashboardPage {
         .accessibilityLevel('yes')
     }
     .width('100%')
-    .padding({ left: 16, right: 16, top: 16, bottom: 12 })
+    .padding({ left: 16, right: 16, top: 56, bottom: 12 })
+    .linearGradient({ angle: 135, colors: [['#004D40', 0.0], ['#00695C', 0.3], ['#00796B', 0.7], ['#26A69A', 1.0]] })
+    .borderRadius({ topLeft: 0, topRight: 0, bottomLeft: 24, bottomRight: 24 })
+    .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP])
   }
 
   @Builder
@@ -191,7 +188,7 @@ struct DeviceDashboardPage {
           .fontWeight(FontWeight.Bold)
           .padding({ left: 12, right: 12, top: 6, bottom: 6 })
           .backgroundColor('#FFFFFF30')
-          .borderRadius(16)
+          .borderRadius(RADIUS.LG)
           .onClick(() => { safePushUrl('pages/SubscriptionPage') })
           .accessibilityText('升级会员')
           .accessibilityLevel('yes')
@@ -268,7 +265,7 @@ struct DeviceDashboardPage {
           Text(member.nickname)
             .fontSize(12)
             .padding({ left: 12, right: 12, top: 6, bottom: 6 })
-            .borderRadius(16)
+            .borderRadius(RADIUS.LG)
             .backgroundColor(this.selectedMemberId === member.memberId ? COLORS.PRIMARY : COLORS.BG_LIGHT_GRAY_F5)
             .fontColor(this.selectedMemberId === member.memberId ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
             .margin({ right: 6 })
@@ -312,7 +309,7 @@ struct DeviceDashboardPage {
           .backgroundColor(COLORS.WHITE)
           .borderRadius(RADIUS.SM)
           .alignItems(HorizontalAlign.Center)
-          .shadow({ radius: 2, color: '#0A000000', offsetY: 1 })
+          .shadow(SHADOWS.SM)
         }
       }, (card: MetricCardData, i: number) => `metric_${i}`)
     }

@@ -234,7 +234,7 @@ export class OcrService {
   }
 
   private buildBounds(cornerPoints: Array<textRecognition.PixelPoint>): OcrBounds {
-    const bounds: OcrBounds = new OcrBounds(
+    const bounds: OcrBounds = new OcrBounds();
     if (cornerPoints.length === 0) {
       return bounds;
     }
@@ -271,7 +271,7 @@ export class OcrService {
 
   // 提取营养成分
   private extractNutrition(text: string): NutritionPer100g {
-    const nutrition: NutritionPer100g = new NutritionPer100g(
+    const nutrition: NutritionPer100g = new NutritionPer100g();
 
     // 钠（支持"钠"和"钠/Na"两种写法）
     const sodiumMatch = text.match(/(?:钠|Na)[^\d]*(\d+\.?\d*)\s*mg/);
@@ -329,7 +329,7 @@ export class OcrService {
 
   // 提取委托方/受托方
   private extractOemInfo(text: string): OemInfo {
-    const result: OemInfo = new OemInfo(
+    const result: OemInfo = new OemInfo();
     const principalMatch = text.match(/(?:委托方|委托生产企业|委托单位)[：:]\s*(.*?)(?:\n|$)/);
     const trusteeMatch = text.match(/(?:受托方|受托生产企业|受托单位|实际生产企业)[：:]\s*(.*?)(?:\n|$)/);
     result.principal = principalMatch ? principalMatch[1].trim() : '';

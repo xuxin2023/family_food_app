@@ -1,0 +1,47 @@
+{
+	"app":	{
+		"bundleName":	"com.familyfood.helper",
+		"vendor":	"familyfood",
+		"versionCode":	1000000,
+		"versionName":	"4.0.0",
+		"icon":	"$media:layered_image",
+		"label":	"$string:app_name",
+		"apiReleaseType":	"Release",
+		"compileSdkVersion":	"6.1.0.105",
+		"targetAPIVersion":	60100023,
+		"minAPIVersion":	60100023,
+		"compileSdkType":	"HarmonyOS",
+		"targetMinorAPIVersion":	0,
+		"targetPatchAPIVersion":	0,
+		"appEnvironments":	[],
+		"bundleType":	"app",
+		"buildMode":	"debug",
+		"debug":	true,
+		"iconId":	67108891,
+		"labelId":	67108868
+	},
+	"module":	{
+		"name":	"feature_report",
+		"type":	"shared",
+		"description":	"报告功能模块 — 营养报告、健康预警、数据分析",
+		"deviceTypes":	["phone", "tablet", "2in1"],
+		"deliveryWithInstall":	true,
+		"packageName":	"feature_report",
+		"installationFree":	false,
+		"virtualMachine":	"ark13.0.1.0",
+		"compileMode":	"esmodule",
+		"dependencies":	[{
+				"moduleName":	"hsp_core",
+				"versionCode":	1000000
+			}, {
+				"moduleName":	"feature_scan",
+				"versionCode":	1000000
+			}, {
+				"moduleName":	"hsp_service",
+				"versionCode":	1000000
+			}, {
+				"moduleName":	"hsp_rating",
+				"versionCode":	1000000
+			}]
+	}
+}

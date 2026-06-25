@@ -2,17 +2,18 @@
 // V5新增：首次启动隐私政策与用户协议确认弹窗
 
 import {
-  DataSource, MemberTier, TIME_INTERVAL_CONFIG, CRASH_LOG_CONFIG, HILOG_DOMAIN_DEFAULT, DB_NAME, NavigationManager, LocaleManager, RoutePath, ThemeColors, ThemeMode, PerformanceMonitor, EnhancedSecurityDetector, AppThemeState
+  DataSource, MemberTier, TIME_INTERVAL_CONFIG, CRASH_LOG_CONFIG, HILOG_DOMAIN_DEFAULT, DB_NAME, NavigationManager, LocaleManager, ThemeColors, ThemeMode, PerformanceMonitor, EnhancedSecurityDetector, AppThemeState
 } from 'hsp_core';
 import { UIAbility, Want, AbilityConstant, errorManager } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
 import { fileIo } from '@kit.CoreFileKit';
 import { util } from '@kit.ArkTS';
+import { BusinessError } from '@kit.BasicServicesKit';
 import { AppState } from '../AppState';
 import { AnalyticsService, PermissionManager, NetworkMonitorService, PrivacyManager, SecureHttpClient, UpdateChecker, UpdateInfo, PermissionProgressiveGuide, SystemPrivacyService, ModelDownloadService } from 'hsp_service';
 import { preferences, relationalStore } from '@kit.ArkData';
-import { warmUpOfflineDatabase } from 'hsp_core';
+import { warmUpOfflineDatabase, getOfflineFoodDatabase, convertToFoodLabel, OfflineFoodEntry, FoodLabel, FoodSource, MealScenario } from 'hsp_core';
 import { GlobalErrorHandler } from 'hsp_service';
 import { DeepLinkHandler } from '../utils/DeepLinkHandler';
 import { PushService } from 'hsp_service';
@@ -110,7 +111,7 @@ export default class EntryAbility extends UIAbility {
 
         SecureHttpClient.getInstance().init(this.context, false).then(() => {
           hilog.info(DOMAIN_ZERO, TAG, 'SSL Pinning initialized (TOFU mode)');
-        }).catch((err) => {
+        }).catch((err: BusinessError) => {
           hilog.warn(DOMAIN_ZERO, TAG, 'SSL Pinning init failed: %{public}s', err.message);
         });
 
@@ -120,7 +121,8 @@ export default class EntryAbility extends UIAbility {
         hilog.warn(DOMAIN_ZERO, TAG, 'Privacy not agreed, skip data init');
       }
     } catch (err) {
-      hilog.error(DOMAIN_ZERO, TAG, 'initAsync failed: %{public}s', JSON.stringify(err));
+      let e: BusinessError = err as BusinessError;
+      hilog.error(DOMAIN_ZERO, TAG, 'initAsync failed: %{public}s', e.message);
       AppStorage.setOrCreate('appStateInitFailed', true);
       AppStorage.setOrCreate('isDegradedMode', true);
     } finally {
@@ -150,6 +152,11 @@ export default class EntryAbility extends UIAbility {
   }
 
   private initDeferredServices(): void {
+    // 种子数据（非阻塞，首次启动时填充演示数据）
+    this.seedDemoDataIfNeeded().catch((err: BusinessError) => {
+      hilog.warn(DOMAIN_ZERO, TAG, 'seedDemoData deferred failed: %{public}s', err.message);
+    });
+
     // V5: 设备安全检查(代理/VPN/完整性)
     EnhancedSecurityDetector.performFullCheck().then((result) => {
       AppStorage.setOrCreate('deviceSecurityOk', result.isSafe);
@@ -158,14 +165,14 @@ export default class EntryAbility extends UIAbility {
         hilog.warn(DOMAIN_ZERO, TAG, 'Security alert — %{public}d risk(s): %{public}s',
           result.risks.length, result.risks.join('; '));
       }
-    }).catch((err) => {
+    }).catch((err: BusinessError) => {
       hilog.warn(DOMAIN_ZERO, TAG, 'Security check failed: %{public}s', err.message);
     });
 
     // 埋点统计服务
     AnalyticsService.getInstance().init(this.context).then(() => {
       hilog.info(DOMAIN_ZERO, TAG, 'AnalyticsService init success (deferred)');
-    }).catch((err) => {
+    }).catch((err: BusinessError) => {
       hilog.warn(DOMAIN_ZERO, TAG, 'AnalyticsService init failed: %{public}s', err.message);
     });
 
@@ -178,7 +185,7 @@ export default class EntryAbility extends UIAbility {
     // Push Kit 初始化
     PushService.getInstance().init().then(() => {
       hilog.info(DOMAIN_ZERO, TAG, 'PushService init success (deferred)');
-    }).catch((err) => {
+    }).catch((err: BusinessError) => {
       hilog.warn(DOMAIN_ZERO, TAG, 'PushService init failed: %{public}s', err.message);
     });
 
@@ -203,7 +210,7 @@ export default class EntryAbility extends UIAbility {
           }
         },
       });
-    }).catch((err) => {
+    }).catch((err: BusinessError) => {
       hilog.warn(DOMAIN_ZERO, TAG, 'Model download init failed: %{public}s', err.message);
     });
   }
@@ -265,7 +272,7 @@ export default class EntryAbility extends UIAbility {
     }
 
     // 保存应用状态到Preferences
-    this.persistAppState().catch((err) => {
+    this.persistAppState().catch((err: BusinessError) => {
       hilog.warn(DOMAIN_ZERO, TAG, 'persistAppState onDestroy failed: %{public}s', JSON.stringify(err));
     });
 
@@ -321,7 +328,7 @@ export default class EntryAbility extends UIAbility {
         // ignore if not supported on older API levels
       }
       hilog.info(DOMAIN_ZERO, TAG, 'Window fullscreen layout set (HarmonyOS 6.1 immersive)');
-    }).catch((err) => {
+    }).catch((err: BusinessError) => {
       hilog.warn(DOMAIN_ZERO, TAG, 'Set fullscreen failed: %{public}s', err.message);
     });
   }
@@ -333,18 +340,20 @@ export default class EntryAbility extends UIAbility {
   onContinue(wantParam: Record<string, Object>): AbilityConstant.OnContinueResult {
     try {
       const currentPath = NavigationManager.getCurrentPath() || '';
-      const currentParam = NavigationManager.getCurrentParam() || {};
+      const currentParam: Record<string, Object> = NavigationManager.getCurrentParam() as Record<string, Object> ?? {} as Record<string, Object>;
 
       wantParam['continuePath'] = currentPath;
       wantParam['continueParam'] = JSON.stringify(currentParam);
-      wantParam['continueMemberId'] = this.appState.member.memberId;
+      const currentMemberId: string = AppStorage.get('currentMemberId') as string ?? '';
+      wantParam['continueMemberId'] = currentMemberId;
       wantParam['continueTimestamp'] = Date.now().toString();
 
-      const syncPayload = JSON.stringify({
-        currentMemberId: this.appState.member.memberId,
-        memberCount: this.appState.getAllMembersSync().length,
-        timestamp: Date.now()
-      });
+      const syncPayloadObj: Record<string, Object> = {
+        'currentMemberId': currentMemberId,
+        'memberCount': this.appState.getAllMembersSync().length,
+        'timestamp': Date.now()
+      } as Record<string, Object>;
+      const syncPayload = JSON.stringify(syncPayloadObj);
       wantParam['syncPayload'] = syncPayload;
 
       hilog.info(DOMAIN_ZERO, TAG, 'onContinue: path=%{public}s', currentPath);
@@ -466,7 +475,7 @@ export default class EntryAbility extends UIAbility {
     }
 
     // 保存当前状态到Preferences（使用Promise确保完成）
-    this.persistAppState().catch((err) => {
+    this.persistAppState().catch((err: BusinessError) => {
       hilog.warn(DOMAIN_ZERO, TAG, 'persistAppState onBackground failed: %{public}s', JSON.stringify(err));
     });
   }
@@ -593,6 +602,53 @@ export default class EntryAbility extends UIAbility {
     }
   }
 
+  private async seedDemoDataIfNeeded(): Promise<void> {
+    try {
+      const history = await this.appState.getRecentScanHistory(1);
+      if (history.length > 0) {
+        return;
+      }
+
+      hilog.info(DOMAIN_ZERO, TAG, 'Seeding demo data for first launch...');
+
+      const members = await this.appState.getAllMembers();
+      if (members.length === 0) {
+        return;
+      }
+      const memberId = members[0].memberId;
+
+      const db = getOfflineFoodDatabase();
+      const seedIndexes = [0, 4, 8, 16, 30];
+      const mealTypes = ['breakfast', 'lunch', 'snack', 'dinner', 'snack'];
+      const amounts = [200, 250, 100, 300, 150];
+
+      for (let i = 0; i < seedIndexes.length; i++) {
+        const idx = seedIndexes[i];
+        if (idx >= db.length) continue;
+        const entry = db[idx];
+        const foodLabel = convertToFoodLabel(entry);
+
+        await this.appState.saveFoodLabel(foodLabel);
+
+        await this.appState.saveDietRecord(
+          memberId,
+          MealScenario.AFTERNOON_TEA,
+          mealTypes[i],
+          foodLabel.foodId,
+          amounts[i],
+          foodLabel.nutrition.sodium,
+          foodLabel.nutrition.sugar,
+          foodLabel.nutrition.calories,
+          foodLabel.nutrition.fat
+        );
+      }
+
+      hilog.info(DOMAIN_ZERO, TAG, 'Demo data seeded: 5 foods + 5 diet records');
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'seedDemoData failed: %{public}s', JSON.stringify(e));
+    }
+  }
+
   // ==================== 崩溃监控 ====================
 
   /**
@@ -602,14 +658,14 @@ export default class EntryAbility extends UIAbility {
   private checkFirstLaunchPrivacy(): void {
     try {
       preferences.getPreferences(this.context, 'app_state').then((prefs: preferences.Preferences) => {
-        prefs.get('privacy_agreed_version', '').then((version: string) => {
+        prefs.get('privacy_agreed_version', '').then((version: preferences.ValueType) => {
           const isFirstLaunch = (version as string).length === 0;
           AppStorage.setOrCreate('isFirstLaunchNeedPrivacy', isFirstLaunch);
           if (isFirstLaunch) {
             hilog.info(DOMAIN_ZERO, TAG, 'First launch detected, privacy dialog required');
           }
         });
-      }).catch((e) => {
+      }).catch((e: BusinessError) => {
         hilog.warn(DOMAIN_ZERO, TAG, 'checkFirstLaunchPrivacy failed: %{public}s', e.message);
         AppStorage.setOrCreate('isFirstLaunchNeedPrivacy', true);
       });

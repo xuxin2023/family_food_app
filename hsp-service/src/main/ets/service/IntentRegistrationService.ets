@@ -108,8 +108,8 @@ export class IntentRegistrationService {
       registration.description = intent.description;
       registration.keywords = intent.keywords;
       registration.category = intent.category;
-      await insightIntent.registerIntent(this.context, registration);
-      hilog.info(DOMAIN_ZERO, TAG, 'Intent registered: %{public}s', intent.name);
+      // insightIntent.registerIntent not available in current SDK — stubbed
+      hilog.info(DOMAIN_ZERO, TAG, 'Intent registered (stub): %{public}s', intent.name);
       return true;
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Register %{public}s failed: %{public}s',

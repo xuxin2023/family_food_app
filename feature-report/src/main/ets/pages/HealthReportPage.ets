@@ -6,10 +6,11 @@ import { router } from '@kit.ArkUI';
 import {
   COLORS, FONT_SIZE, FONT_WEIGHT, SPACING, RADIUS,
   safeBack, DateUtil, HILOG_DOMAIN_DEFAULT,
-  NutritionDaily, NutritionDailyRepository, AllergyProfile,
+  NutritionDaily, AllergyProfile,
   AllergyHint, Severity, severityToColor
 } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { NutritionDailyRepository } from 'hsp_service';
 
 const TAG = 'HealthReportPage';
 
@@ -54,7 +55,7 @@ struct HealthReportPage {
       for (let i = 0; i < days; i++) {
         const d = new Date();
         d.setDate(d.getDate() - i);
-        const dateStr = `${d.getFullYear()}-${().toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+        const dateStr = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
         const daily = NutritionDaily.createForDate('default', dateStr);
         if (daily.scanCount > 0) {
           data.dailySummaries.push(daily);
@@ -92,12 +93,12 @@ struct HealthReportPage {
 
         Blank()
 
-        this.periodTab($r('app.string.health_report_weekly'), ReportPeriod.WEEK)
-        this.periodTab($r('app.string.health_report_monthly'), ReportPeriod.MONTH)
+        this.periodTab('周报', ReportPeriod.WEEK)
+        this.periodTab('月报', ReportPeriod.MONTH)
       }
       .width('100%')
-      .padding({ left: SPACING.MEDIUM, right: SPACING.MEDIUM,
-        top: SPACING.SMALL, bottom: SPACING.SMALL })
+      .padding({ left: SPACING.MD, right: SPACING.MD,
+        top: SPACING.SM, bottom: SPACING.SM })
 
       if (this.isLoading) {
         Column() {
@@ -108,7 +109,7 @@ struct HealthReportPage {
           Text('加载报告中...')
             .fontSize(FONT_SIZE.BODY)
             .fontColor(COLORS.TEXT_TERTIARY)
-            .margin({ top: SPACING.SMALL })
+            .margin({ top: SPACING.SM })
         }
         .width('100%')
         .layoutWeight(1)
@@ -123,8 +124,8 @@ struct HealthReportPage {
             this.suggestionCard()
           }
           .width('100%')
-          .padding({ left: SPACING.MEDIUM, right: SPACING.MEDIUM,
-            top: SPACING.SMALL, bottom: 80 })
+          .padding({ left: SPACING.MD, right: SPACING.MD,
+            top: SPACING.SM, bottom: 80 })
         }
         .layoutWeight(1)
       }
@@ -140,11 +141,11 @@ struct HealthReportPage {
       .fontSize(FONT_SIZE.SMALL)
       .fontColor(this.selectedPeriod === period ? COLORS.WHITE : COLORS.PRIMARY)
       .fontWeight(this.selectedPeriod === period ? FONT_WEIGHT.BOLD : FONT_WEIGHT.REGULAR)
-      .padding({ left: SPACING.SMALL, right: SPACING.SMALL,
+      .padding({ left: SPACING.SM, right: SPACING.SM,
         top: 6, bottom: 6 })
       .backgroundColor(this.selectedPeriod === period ? COLORS.PRIMARY :
       'rgba(0,122,255,0.1)')
-      .borderRadius(RADIUS.SMALL)
+      .borderRadius(RADIUS.SM)
       .margin({ left: 8 })
       .onClick(() => {
         if (this.selectedPeriod !== period) {
@@ -168,13 +169,13 @@ struct HealthReportPage {
         this.statBlock('记录天数', `${this.reportData.dailySummaries.length}天`)
       }
       .width('100%')
-      .margin({ top: SPACING.SMALL })
+      .margin({ top: SPACING.SM })
     }
     .width('100%')
-    .padding(SPACING.MEDIUM)
+    .padding(SPACING.MD)
     .backgroundColor(COLORS.WHITE)
-    .borderRadius(RADIUS.MEDIUM)
-    .margin({ top: SPACING.SMALL })
+    .borderRadius(RADIUS.MD)
+    .margin({ top: SPACING.SM })
   }
 
   @Builder
@@ -207,10 +208,10 @@ struct HealthReportPage {
       this.nutritionRow('蛋白质', `${this.reportData.avgProtein}g`, 60)
     }
     .width('100%')
-    .padding(SPACING.MEDIUM)
+    .padding(SPACING.MD)
     .backgroundColor(COLORS.WHITE)
-    .borderRadius(RADIUS.MEDIUM)
-    .margin({ top: SPACING.SMALL })
+    .borderRadius(RADIUS.MD)
+    .margin({ top: SPACING.SM })
   }
 
   @Builder
@@ -258,10 +259,10 @@ struct HealthReportPage {
       }
     }
     .width('100%')
-    .padding(SPACING.MEDIUM)
+    .padding(SPACING.MD)
     .backgroundColor(COLORS.WHITE)
-    .borderRadius(RADIUS.MEDIUM)
-    .margin({ top: SPACING.SMALL })
+    .borderRadius(RADIUS.MD)
+    .margin({ top: SPACING.SM })
   }
 
   @Builder
@@ -285,10 +286,10 @@ struct HealthReportPage {
       }
     }
     .width('100%')
-    .padding(SPACING.MEDIUM)
+    .padding(SPACING.MD)
     .backgroundColor(COLORS.WHITE)
-    .borderRadius(RADIUS.MEDIUM)
-    .margin({ top: SPACING.SMALL })
+    .borderRadius(RADIUS.MD)
+    .margin({ top: SPACING.SM })
   }
 
   @Builder
@@ -308,10 +309,10 @@ struct HealthReportPage {
       .margin({ top: 8 })
     }
     .width('100%')
-    .padding(SPACING.MEDIUM)
+    .padding(SPACING.MD)
     .backgroundColor(COLORS.WHITE)
-    .borderRadius(RADIUS.MEDIUM)
-    .margin({ top: SPACING.SMALL })
+    .borderRadius(RADIUS.MD)
+    .margin({ top: SPACING.SM })
     .margin({ bottom: 16 })
   }
 

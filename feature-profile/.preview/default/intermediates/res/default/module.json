@@ -1,0 +1,41 @@
+{
+	"app":	{
+		"bundleName":	"com.familyfood.helper",
+		"vendor":	"familyfood",
+		"versionCode":	1000000,
+		"versionName":	"4.0.0",
+		"icon":	"$media:layered_image",
+		"label":	"$string:app_name",
+		"apiReleaseType":	"Release",
+		"compileSdkVersion":	"6.1.0.105",
+		"targetAPIVersion":	60100023,
+		"minAPIVersion":	60100023,
+		"compileSdkType":	"HarmonyOS",
+		"targetMinorAPIVersion":	0,
+		"targetPatchAPIVersion":	0,
+		"appEnvironments":	[],
+		"bundleType":	"app",
+		"buildMode":	"debug",
+		"debug":	true,
+		"iconId":	50331675,
+		"labelId":	50331652
+	},
+	"module":	{
+		"name":	"feature_profile",
+		"type":	"shared",
+		"description":	"个人档案模块 — 家庭档案管理、营养摄入追踪、扫描历史查询",
+		"deviceTypes":	["phone", "tablet", "2in1"],
+		"deliveryWithInstall":	true,
+		"packageName":	"feature_profile",
+		"installationFree":	false,
+		"virtualMachine":	"ark13.0.1.0",
+		"compileMode":	"esmodule",
+		"dependencies":	[{
+				"moduleName":	"hsp_core",
+				"versionCode":	1000000
+			}, {
+				"moduleName":	"hsp_service",
+				"versionCode":	1000000
+			}]
+	}
+}

@@ -72,7 +72,7 @@ export class AiClient {
   setApiKey(key: string): void {
     this.apiKey = key;
     try {
-      SecureKeyStore.save('AI_API_KEY', key);
+      SecureKeyStore.getInstance().saveKey('AI_API_KEY', key);
     } catch (_e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'SecureKeyStore save failed, using in-memory only');
     }
@@ -81,12 +81,12 @@ export class AiClient {
   private async loadApiKey(): Promise<string> {
     if (this.apiKey.length > 0) return this.apiKey;
     try {
-      const stored = await SecureKeyStore.load('AI_API_KEY');
+      const stored = await SecureKeyStore.getInstance().getKey('AI_API_KEY');
       if (stored && stored.length > 0) {
         this.apiKey = stored;
         return stored;
       }
-      const assetKey = AssetKeyManager.getInstance().getKey('AGENT_ARTS');
+      const assetKey = await AssetKeyManager.getInstance().getKey('AGENT_ARTS');
       if (assetKey && assetKey.length > 0) {
         this.apiKey = assetKey;
         return assetKey;

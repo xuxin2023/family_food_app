@@ -33,7 +33,7 @@ export struct AlternativeCard {
         }
         .width(40)
         .height(40)
-        .borderRadius(RADIUS.SMALL)
+        .borderRadius(RADIUS.SM)
         .backgroundColor(this.item.gradeColor)
         .justifyContent(FlexAlign.Center)
 
@@ -69,7 +69,7 @@ export struct AlternativeCard {
             .textOverflow({ overflow: TextOverflow.Ellipsis })
         }
         .layoutWeight(1)
-        .margin({ left: SPACING.SMALL })
+        .margin({ left: SPACING.SM })
         .alignItems(HorizontalAlign.Start)
 
         Row() {
@@ -81,8 +81,8 @@ export struct AlternativeCard {
         .justifyContent(FlexAlign.Center)
       }
       .width('100%')
-      .padding({ left: SPACING.MEDIUM, right: SPACING.MEDIUM,
-        top: SPACING.SMALL, bottom: SPACING.SMALL })
+      .padding({ left: SPACING.MD, right: SPACING.MD,
+        top: SPACING.SM, bottom: SPACING.SM })
 
       if (this.isExpanded) {
         Row() {
@@ -117,13 +117,13 @@ export struct AlternativeCard {
           .layoutWeight(1)
         }
         .width('100%')
-        .padding({ left: SPACING.MEDIUM, right: SPACING.MEDIUM,
-          bottom: SPACING.SMALL })
+        .padding({ left: SPACING.MD, right: SPACING.MD,
+          bottom: SPACING.SM })
       }
     }
     .width('100%')
     .backgroundColor(COLORS.WHITE)
-    .borderRadius(RADIUS.MEDIUM)
+    .borderRadius(RADIUS.MD)
     .onClick(() => this.onSelect())
     .accessibilityText(`替代品推荐: ${this.item.productName}，健康评分${this.item.healthScore}分，${this.item.reason}`)
     .accessibilityLevel('yes')

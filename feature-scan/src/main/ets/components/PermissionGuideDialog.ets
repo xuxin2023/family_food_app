@@ -18,28 +18,28 @@ export struct PermissionGuideDialog {
 
   build() {
     Column() {
-      Text($r('app.string.perm_guide_title'))
+      Text('权限引导')
         .fontSize(18)
         .fontWeight(FontWeight.Bold)
         .margin({ bottom: 12 })
 
-      Text(this.reason || $r('app.string.perm_guide_default_reason') as ResourceStr)
+      Text(this.reason || '此功能需要相关权限才能正常使用')
         .fontSize(14)
         .fontColor('#333333')
         .margin({ bottom: 16 })
 
-      Text($r('app.string.perm_guide_denied'))
+      Text('您已拒绝该权限授权')
         .fontSize(12)
         .fontColor('#999999')
         .margin({ bottom: 4 })
 
-      Text($r('app.string.perm_guide_path'))
+      Text('设置 → 应用管理 → 权限')
         .fontSize(12)
         .fontColor('#007AFF')
         .margin({ bottom: 20 })
 
       Row() {
-        Button($r('app.string.perm_guide_cancel'))
+        Button('取消')
           .fontSize(14)
           .fontColor('#999999')
           .backgroundColor('#F5F5F5')
@@ -47,9 +47,9 @@ export struct PermissionGuideDialog {
           .onClick(() => {
             this.onClose();
           })
-          .accessibilityText($r('app.string.perm_guide_deny_acc'))
+          .accessibilityText('拒绝授权')
 
-        Button($r('app.string.perm_guide_go_settings'))
+        Button('前往设置')
           .fontSize(14)
           .fontColor(Color.White)
           .backgroundColor('#007AFF')
@@ -59,14 +59,14 @@ export struct PermissionGuideDialog {
             this.openAppSettings();
             this.onClose();
           })
-          .accessibilityText($r('app.string.perm_guide_authorize_acc'))
+          .accessibilityText('授权')
       }
       .width('100%')
     }
     .padding(20)
     .backgroundColor(Color.White)
     .borderRadius(16)
-    .accessibilityText($r('app.string.perm_guide_title'))
+    .accessibilityText('权限引导')
     .accessibilityLevel('yes')
   }
 

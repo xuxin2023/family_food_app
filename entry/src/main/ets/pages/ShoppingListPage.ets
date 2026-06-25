@@ -1,5 +1,6 @@
-import { ToastHelper, safeBack, ShoppingItem, SHOPPING_CATEGORIES, COLORS, HILOG_DOMAIN_DEFAULT, DB_NAME, BasicDataSource, PageResourceTracker, createPageTracker } from 'hsp_core';
+import { ToastHelper, HapticHelper, safeBack, ShoppingItem, SHOPPING_CATEGORIES, COLORS, SHADOWS, HILOG_DOMAIN_DEFAULT, DB_NAME, BasicDataSource, PageResourceTracker, createPageTracker, ThemeReactive, themeReactive, ThemeColors, ThemeMode } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
+import { EmptyState } from '../components/EmptyState';
 import { AppState } from '../AppState';
 import { ShoppingListRepository } from '../repository/ShoppingListRepository';
 import { relationalStore } from '@kit.ArkData';
@@ -25,6 +26,7 @@ class ShoppingListPageViewModel {
   @Trace newItemQuantity: string = ''
   @Trace showCategoryPicker: boolean = false
   @Trace hasPurchased: boolean = false
+  @Trace isRefreshing: boolean = false
 }
 
 @Entry
@@ -36,6 +38,20 @@ export struct ShoppingListPage {
   private repo: ShoppingListRepository = new ShoppingListRepository()
   private appState: AppState = AppState.getInstance()
   private tracker: PageResourceTracker = createPageTracker('ShoppingListPage')
+
+  private themeRef: ThemeReactive = themeReactive
+
+  private get isDark(): boolean {
+    if (this.themeRef.key >= 0) { /* trigger reactive */ }
+    return ThemeColors.getTheme() === ThemeMode.DARK;
+  }
+
+  private get pageBgGradient(): LinearGradient {
+    if (this.isDark) {
+      return { angle: 180, colors: [['#0D1B0E', 0.0], ['#1A2F1C', 0.5], ['#0A1A0D', 1.0]] };
+    }
+    return { angle: 180, colors: [['#F3E5F5', 0.0], ['#FFF3E0', 0.3], ['#FFF8E1', 0.7], ['#E8F5E9', 1.0]] };
+  }
 
   async aboutToAppear() {
     this.tracker.onAppear()
@@ -60,33 +76,54 @@ export struct ShoppingListPage {
 
   build() {
     Column() {
-      Row() {
-        BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
-          .onClick(() => { safeBack() })
-          .accessibilityText('返回')
-          .accessibilityLevel('yes')
-        Text($r('app.string.shopping_title'))
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .margin({ left: 16 })
-        Blank()
-        Text(`${this.vm.unpurchasedCount}/${this.vm.totalCount}`)
-          .fontSize(14)
-          .fontColor(COLORS.TEXT_GRAY_7575)
+      Column() {
+        Row() {
+          BackButton({ fontColor: COLORS.WHITE })
+          Text($r('app.string.shopping_title'))
+            .fontSize(20)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(COLORS.WHITE)
+            .margin({ left: 8 })
+          Blank()
+          Text(`${this.vm.unpurchasedCount}/${this.vm.totalCount}`)
+            .fontSize(14)
+            .fontColor(COLORS.WHITE)
+        }
+        .width('100%')
+        .padding({ left: 16, right: 16, top: 56, bottom: 16 })
       }
       .width('100%')
-      .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+      .linearGradient({ angle: 135, colors: [['#E65100', 0.0], ['#F57C00', 0.3], ['#FF9800', 0.7], ['#FFB300', 1.0]] })
+      .borderRadius({ topLeft: 0, topRight: 0, bottomLeft: 24, bottomRight: 24 })
+      .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP])
 
       this.AddPanel()
 
-      Scroll() {
-        Column() {
-          this.UnpurchasedSection()
-          this.PurchasedSection()
+      if (!this.vm.isLoading && this.vm.totalCount === 0) {
+        EmptyState({
+          icon: '🛒',
+          title: '购物清单是空的',
+          subtitle: '扫描食品包装即可添加到购物清单'
+        })
+          .layoutWeight(1)
+      } else {
+        Refresh({ refreshing: $$this.vm.isRefreshing }) {
+          Scroll() {
+            Column() {
+              this.UnpurchasedSection()
+              this.PurchasedSection()
+            }
+            .width('100%')
+          }
+          .layoutWeight(1)
         }
-        .width('100%')
+        .onRefreshing(async () => {
+          HapticHelper.light()
+          await this.refreshList()
+          this.vm.isRefreshing = false
+        })
+        .layoutWeight(1)
       }
-      .layoutWeight(1)
 
       if (this.vm.hasPurchased) {
         Button($r('app.string.shopping_clear_purchased'))
@@ -97,13 +134,14 @@ export struct ShoppingListPage {
           .borderRadius(22)
           .margin({ top: 8, bottom: 16 })
           .onClick(() => { this.clearPurchased() })
-          .accessibilityText('濞撳懘娅庡鑼跺枠')
+          .accessibilityText('清除已完成项目')
           .accessibilityLevel('yes')
       }
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(COLORS.BG_PAGE)
+    .linearGradient(this.pageBgGradient)
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   @Builder
@@ -114,7 +152,7 @@ export struct ShoppingListPage {
           .width('40%')
           .height(40)
           .onChange((value: string) => { this.vm.newItemName = value })
-          .accessibilityText('清除已完成项目')
+          .accessibilityText('输入商品名称')
           .accessibilityLevel('yes')
 
         Text(this.vm.newItemCategory)
@@ -124,7 +162,7 @@ export struct ShoppingListPage {
           .border({ width: 1, color: COLORS.PRIMARY, radius: 16 })
           .margin({ left: 8 })
           .onClick(() => { this.vm.showCategoryPicker = !this.vm.showCategoryPicker })
-          .accessibilityText('闁瀚ㄩ崚鍡欒')
+          .accessibilityText('选择分类')
           .accessibilityLevel('yes')
 
         TextInput({ placeholder: $r('app.string.shopping_quantity') })
@@ -132,7 +170,7 @@ export struct ShoppingListPage {
           .height(40)
           .margin({ left: 8 })
           .onChange((value: string) => { this.vm.newItemQuantity = value })
-          .accessibilityText('编辑')
+          .accessibilityText('编辑数量')
           .accessibilityLevel('yes')
 
         Button($r('app.string.shopping_add'))
@@ -154,7 +192,7 @@ export struct ShoppingListPage {
               .fontSize(13)
               .padding({ left: 10, right: 10, top: 6, bottom: 6 })
               .borderRadius(14)
-              .backgroundColor(this.vm.newItemCategory === cat ? COLORS.PRIMARY : '#F5F5F5')
+              .backgroundColor(this.vm.newItemCategory === cat ? COLORS.PRIMARY : COLORS.BG_LIGHT)
               .fontColor(this.vm.newItemCategory === cat ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
               .margin({ right: 6, top: 6 })
               .onClick(() => {
@@ -175,6 +213,7 @@ export struct ShoppingListPage {
     .borderRadius(12)
     .margin({ bottom: 12 })
     .alignItems(HorizontalAlign.Start)
+    .shadow(SHADOWS.SM)
   }
 
   @Builder
@@ -212,6 +251,7 @@ export struct ShoppingListPage {
     .borderRadius(12)
     .margin({ bottom: 12 })
     .alignItems(HorizontalAlign.Start)
+    .shadow(SHADOWS.SM)
   }
 
   @Builder
@@ -241,6 +281,7 @@ export struct ShoppingListPage {
     .borderRadius(12)
     .margin({ bottom: 12 })
     .alignItems(HorizontalAlign.Start)
+    .shadow(SHADOWS.SM)
   }
 
   @Builder
@@ -272,7 +313,7 @@ export struct ShoppingListPage {
         .fontSize(16)
         .fontColor(COLORS.TEXT_GRAY_BDBD)
         .onClick(() => { this.removeItem(item.id) })
-        .accessibilityText('閸掔娀娅庨悧鈺佹惂')
+        .accessibilityText('删除项目')
         .accessibilityLevel('yes')
     }
     .width('100%')
@@ -300,6 +341,7 @@ export struct ShoppingListPage {
       this.vm.newItemQuantity = '';
       await this.refreshList();
       ToastHelper.show(this.getUIContext(), $r('app.string.shopping_added_toast'));
+      HapticHelper.success();
     } else {
       ToastHelper.show(this.getUIContext(), $r('app.string.shopping_add_failed_toast'));
     }
@@ -318,7 +360,7 @@ export struct ShoppingListPage {
   private async clearPurchased(): Promise<void> {
     const count = await this.repo.clearPurchased();
     await this.refreshList();
-    ToastHelper.show(this.getUIContext(), `瀹稿弶绔婚梽?{count}妞ょ);`
+    ToastHelper.show(this.getUIContext(), `已清除${count}项`);
   }
 
   private async refreshList(): Promise<void> {

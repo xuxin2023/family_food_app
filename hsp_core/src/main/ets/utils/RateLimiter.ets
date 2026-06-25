@@ -77,7 +77,11 @@ export class RateLimiter {
 
   async init(context: common.Context): Promise<void> {
     if (this.initialized) return;
-    this.prefs = await preferences.getPreferences(context, PREF_NAME);
+    try {
+      this.prefs = await preferences.getPreferences(context, PREF_NAME);
+    } catch (err) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'getPreferences failed: %{public}s', JSON.stringify(err));
+    }
     for (const cfg of DEFAULT_CONFIGS) {
       this.configs.set(cfg.endpoint, cfg);
     }

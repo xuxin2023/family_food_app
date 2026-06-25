@@ -1,23 +1,45 @@
-import { safeBack, COLORS, FONT_SIZE } from 'hsp_core';
-import { ElderModeManager } from 'hsp_service';
+import { NavigationManager, COLORS, FONT_SIZE } from 'hsp_core';
+import { AppIcon } from './AppIcon';
 
 @ComponentV2
 export struct BackButton {
   @Param fontColor: string = COLORS.TEXT_PRIMARY
   @Param fontSize: number = FONT_SIZE.TITLE_LG
+  @Param useSymbol: boolean = false
+  @Local isPressed: boolean = false
 
   build() {
-    Text('‹')
-      .fontSize(this.fontSize)
-      .fontColor(this.fontColor)
-      .fontWeight(500)
-      .padding({ left: 2, right: 6, top: 4, bottom: 4 })
-      .responseRegion({ x: 0, y: 0, width: ElderModeManager.getInstance().getTouchTarget(), height: ElderModeManager.getInstance().getTouchTarget() })
-      .focusable(true)
-      .accessibilityText('返回上一页')
-      .accessibilityLevel('yes')
-      .onClick(() => {
-        safeBack()
-      })
+    Row() {
+      if (this.useSymbol) {
+        AppIcon({
+          name: 'back',
+          iconSize: 24,
+          color: this.fontColor,
+          useSymbol: false
+        })
+      } else {
+        Text('\u2190')
+          .fontSize(24)
+          .fontColor(this.fontColor)
+          .fontWeight(FontWeight.Bold)
+      }
+    }
+    .width(44)
+    .height(44)
+    .borderRadius(22)
+    .justifyContent(FlexAlign.Center)
+    .alignItems(VerticalAlign.Center)
+    .scale({ x: this.isPressed ? 0.9 : 1.0, y: this.isPressed ? 0.9 : 1.0 })
+    .animation({ duration: 100, curve: Curve.EaseInOut })
+    .onTouch((event: TouchEvent) => {
+      if (event.type === TouchType.Down) {
+        this.isPressed = true;
+      } else if (event.type === TouchType.Up || event.type === TouchType.Cancel) {
+        this.isPressed = false;
+      }
+    })
+    .onClick(() => {
+      NavigationManager.pop()
+    })
   }
 }

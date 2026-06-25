@@ -8,7 +8,6 @@ import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { AiServiceBase } from './AiServiceBase';
 import { AiClient, AiRequestOptions, AiCallResponse } from './AiClient';
 import { AI_RETRY_CONFIG, SYSTEM_PROMPTS } from './AiConfig';
-import { mindSporeLite, ModelContext } from '@kit.AIFoundation';
 
 const TAG = 'OnDeviceLlmService';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -17,12 +16,8 @@ const ONDEVICE_LLM_MODEL_PATH = 'models/food_llm_quant.ms';
 const ONDEVICE_LLM_MAX_CONTEXT_TOKENS = 2048;
 const ONDEVICE_LLM_MAX_OUTPUT_TOKENS = 512;
 
+// @kit.MindSporeLiteKit not available in current SDK
 let mindSporeLiteAvailable = false;
-try {
-  mindSporeLiteAvailable = true;
-} catch {
-  mindSporeLiteAvailable = false;
-}
 
 export interface OnDeviceLlmChatOptions {
   systemPrompt?: string;
@@ -49,6 +44,8 @@ export class OnDeviceLlmService {
   private fallbackService: AiServiceBase | null = null;
   private fallbackClient: AiClient | null = null;
   private apiKey: string = '';
+  // 降级状态标记：端侧模型不可用时为 true，供上层（LlmChatProxy/UI）感知并提示
+  private degraded: boolean = !mindSporeLiteAvailable;
 
   private constructor() {}
 
@@ -74,6 +71,11 @@ export class OnDeviceLlmService {
     return mindSporeLiteAvailable && this.llmState.loaded;
   }
 
+  // 端侧 LLM 是否处于降级状态（MindSpore Lite 不可用 / 模型加载失败）
+  isDegraded(): boolean {
+    return this.degraded || !mindSporeLiteAvailable;
+  }
+
   async initialize(context?: common.Context): Promise<boolean> {
     if (this.llmState.loaded) return true;
 
@@ -82,7 +84,8 @@ export class OnDeviceLlmService {
     }
 
     if (!mindSporeLiteAvailable) {
-      hilog.info(DOMAIN_ZERO, TAG, 'MindSpore Lite Kit not available, on-device LLM disabled');
+      this.degraded = true;
+      hilog.info(DOMAIN_ZERO, TAG, 'MindSpore Lite Kit not available, on-device LLM disabled (degraded)');
       return false;
     }
 
@@ -106,13 +109,14 @@ export class OnDeviceLlmService {
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'On-device LLM init failed: %{public}s', JSON.stringify(error));
       this.llmState.loaded = false;
+      this.degraded = true;
       return false;
     }
   }
 
   async chat(prompt: string, context?: string, options?: OnDeviceLlmChatOptions): Promise<OnDeviceLlmResponse> {
     const startTime = Date.now();
-    const response: OnDeviceLlmResponse = new OnDeviceLlmResponse(
+    const response: OnDeviceLlmResponse = new OnDeviceLlmResponse();
 
     if (this.isOnDeviceLlmAvailable()) {
       try {

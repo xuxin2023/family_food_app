@@ -2,9 +2,10 @@
 // 用户反馈页面 - 支持 Bug报告/功能建议/使用问题/其他
 // 匿名模式：无需登录即可提交
 
-import { ToastHelper, safeBack, COLORS, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker } from 'hsp_core';
+import { ToastHelper, HapticHelper, safeBack, COLORS, SHADOWS, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker, ThemeReactive, themeReactive } from 'hsp_core';
 import { FeedbackService, FeedbackSubmission, FeedbackResult } from 'hsp_service';
 import { BackButton } from '../components/BackButton';
+import { GradientHeader } from '../components/GradientHeader';
 import { HuaweiCloudService } from 'hsp_service';
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -31,7 +32,7 @@ export class FeedbackData {
 
 @Entry
 @ComponentV2
-struct FeedbackPage {
+export struct FeedbackPage {
   @Local selectedTypeIndex: number = 0
   @Local content: string = ''
   @Local contact: string = ''
@@ -40,6 +41,8 @@ struct FeedbackPage {
 
   private tracker: PageResourceTracker = createPageTracker('FeedbackPage')
 
+  private themeRef: ThemeReactive = themeReactive
+
   aboutToAppear(): void {
     this.tracker.onAppear()
   }
@@ -47,18 +50,7 @@ struct FeedbackPage {
 
   build() {
     Column() {
-      Row() {
-        BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
-          .onClick(() => { safeBack() })
-          .accessibilityText('返回')
-          .accessibilityLevel('yes')
-        Text($r('app.string.feedback_title'))
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .margin({ left: 16 })
-      }
-      .width('100%')
-      .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+      GradientHeader({ title: $r('app.string.feedback_title') })
 
       Scroll() {
         Column() {
@@ -77,6 +69,7 @@ struct FeedbackPage {
     .height('100%')
     .backgroundColor(COLORS.BG_PAGE)
     .alignItems(HorizontalAlign.Center)
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   @Builder
@@ -93,7 +86,7 @@ struct FeedbackPage {
             .fontSize(13)
             .padding({ left: 12, right: 12, top: 8, bottom: 8 })
             .borderRadius(18)
-            .backgroundColor(this.selectedTypeIndex === index ? COLORS.PRIMARY : '#F5F5F5')
+            .backgroundColor(this.selectedTypeIndex === index ? COLORS.PRIMARY : COLORS.BG_LIGHT)
             .fontColor(this.selectedTypeIndex === index ? COLORS.WHITE : COLORS.TEXT_GRAY_2121)
             .margin({ right: 8 })
             .onClick(() => { this.selectedTypeIndex = index })
@@ -190,7 +183,7 @@ struct FeedbackPage {
               .width(20)
               .height(20)
               .borderRadius(10)
-              .backgroundColor('#88000000')
+              .shadow(SHADOWS.MD)
               .textAlign(TextAlign.Center)
               .position({ x: 62, y: 0 })
               .onClick(() => {
@@ -239,12 +232,13 @@ struct FeedbackPage {
     Button($r('app.string.feedback_submit'))
       .width('100%')
       .height(50)
-      .backgroundColor(this.content.length > 0 ? COLORS.PRIMARY : '#BDBDBD')
+      .backgroundColor(this.content.length > 0 ? COLORS.PRIMARY : COLORS.TEXT_GRAY_BDBD)
       .borderRadius(25)
       .fontColor(COLORS.WHITE)
       .fontSize(16)
       .enabled(this.content.length > 0 && !this.isSubmitting)
       .onClick(() => {
+        HapticHelper.medium()
         this.submitFeedback();
       })
       .margin({ bottom: 24 })

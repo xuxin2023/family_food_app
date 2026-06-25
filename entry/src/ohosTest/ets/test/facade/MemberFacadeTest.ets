@@ -1,8 +1,12 @@
 import { describe, it, expect } from '@ohos/hypium';
 import { MemberFacade } from '../../../../../src/main/ets/facade/MemberFacade';
 import { FamilyProfile, HealthSignal, DailyBudget, NutritionTarget } from 'hsp_core';
+import { FamilyRepository } from '../../../../../src/main/ets/repository/FamilyRepository';
+import { MemberManager } from 'hsp_service';
+import { CacheManager } from 'hsp_core';
+import { NutritionTargetRepository } from 'hsp_service';
 
-class MockFamilyRepository {
+class MockFamilyRepository extends FamilyRepository {
   private members: FamilyProfile[] = [];
 
   async getAllMembers(): Promise<FamilyProfile[]> {
@@ -23,16 +27,16 @@ class MockFamilyRepository {
   }
 }
 
-class MockMemberManager {
+class MockMemberManager extends MemberManager {
   syncMemberCount(count: number): void {}
 }
 
-class MockCacheManager {
+class MockCacheManager extends CacheManager {
   private healthSignals: Map<string, HealthSignal> = new Map();
   private budgets: Map<string, DailyBudget> = new Map();
 
-  getHealthSignalFromCache(mid: string): HealthSignal | null {
-    return this.healthSignals.get(mid) ?? null;
+  getHealthSignalFromCache(mid: string): HealthSignal | undefined {
+    return this.healthSignals.get(mid);
   }
 
   setHealthSignalToCache(mid: string, signal: HealthSignal): void {
@@ -48,7 +52,7 @@ class MockCacheManager {
   }
 }
 
-class MockNutritionTargetRepository {
+class MockNutritionTargetRepository extends NutritionTargetRepository {
   async getForMember(memberId: string): Promise<NutritionTarget | null> {
     return null;
   }
@@ -59,10 +63,10 @@ export default function memberFacadeTest() {
     it('saveMember_and_getAllMembersSync_should_work', 0, async () => {
       const familyRepo: MockFamilyRepository = new MockFamilyRepository()
       const facade: MemberFacade = new MemberFacade(
-        familyRepo as Object,
-        new MockMemberManager() as Object,
-        new MockCacheManager() as Object,
-        new MockNutritionTargetRepository() as Object
+        familyRepo,
+        new MockMemberManager(),
+        new MockCacheManager(),
+        new MockNutritionTargetRepository()
       );
 
       const profile: FamilyProfile = new FamilyProfile()
@@ -78,10 +82,10 @@ export default function memberFacadeTest() {
     it('deleteMember_should_remove_from_cache', 0, async () => {
       const familyRepo: MockFamilyRepository = new MockFamilyRepository()
       const facade: MemberFacade = new MemberFacade(
-        familyRepo as Object,
-        new MockMemberManager() as Object,
-        new MockCacheManager() as Object,
-        new MockNutritionTargetRepository() as Object
+        familyRepo,
+        new MockMemberManager(),
+        new MockCacheManager(),
+        new MockNutritionTargetRepository()
       );
 
       const profile: FamilyProfile = new FamilyProfile()
@@ -98,38 +102,38 @@ export default function memberFacadeTest() {
     it('getHealthSignal_should_return_default_for_new_member', 0, () => {
       const familyRepo: MockFamilyRepository = new MockFamilyRepository()
       const facade: MemberFacade = new MemberFacade(
-        familyRepo as Object,
-        new MockMemberManager() as Object,
-        new MockCacheManager() as Object,
-        new MockNutritionTargetRepository() as Object
+        familyRepo,
+        new MockMemberManager(),
+        new MockCacheManager(),
+        new MockNutritionTargetRepository()
       );
 
       const signal = facade.getHealthSignal('mem-003');
-      expect(signal).assertNotBeNull();
+      expect(signal !== undefined).assertTrue();
       expect(signal.memberId).assertEqual('mem-003');
     });
 
     it('getDailyBudgetSync_should_return_default_for_new_member', 0, () => {
       const familyRepo: MockFamilyRepository = new MockFamilyRepository()
       const facade: MemberFacade = new MemberFacade(
-        familyRepo as Object,
-        new MockMemberManager() as Object,
-        new MockCacheManager() as Object,
-        new MockNutritionTargetRepository() as Object
+        familyRepo,
+        new MockMemberManager(),
+        new MockCacheManager(),
+        new MockNutritionTargetRepository()
       );
 
       const budget = facade.getDailyBudgetSync('mem-004');
-      expect(budget).assertNotBeNull();
+      expect(budget !== undefined).assertTrue();
       expect(budget.memberId).assertEqual('mem-004');
     });
 
     it('getAllMembersSync_should_return_empty_initially', 0, () => {
       const familyRepo: MockFamilyRepository = new MockFamilyRepository()
       const facade: MemberFacade = new MemberFacade(
-        familyRepo as Object,
-        new MockMemberManager() as Object,
-        new MockCacheManager() as Object,
-        new MockNutritionTargetRepository() as Object
+        familyRepo,
+        new MockMemberManager(),
+        new MockCacheManager(),
+        new MockNutritionTargetRepository()
       );
 
       const members = facade.getAllMembersSync();

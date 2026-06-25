@@ -124,7 +124,7 @@ export class WeeklyReportEngine {
   }
 
   private generatePurchaseAdvice(data: WeeklyDietData, profile: FamilyProfile): PurchaseAdvice {
-    const advice: PurchaseAdvice = new PurchaseAdvice(
+    const advice: PurchaseAdvice = new PurchaseAdvice();
 
     if (data.highSodiumDays >= 2) {
       advice.buyLess.push('高盐调味品、方便面、卤味、加工肉');

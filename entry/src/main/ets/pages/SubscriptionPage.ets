@@ -3,8 +3,8 @@
 // 基于 MemberTier + ProductPlan 体系
 
 import {
-  ToastHelper, safeBack, MemberTier, PurchaseResult, ProductPlan, getProductPlanForTier, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, HILOG_DOMAIN_DEFAULT,
-  PageResourceTracker, createPageTracker
+  ToastHelper, safeBack, MemberTier, PurchaseResult, ProductPlan, getProductPlanForTier, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, SHADOWS, HILOG_DOMAIN_DEFAULT,
+  PageResourceTracker, createPageTracker, ThemeReactive, themeReactive
 } from 'hsp_core';
 import { AppState } from '../AppState';
 import { IapService } from 'hsp_service';
@@ -39,6 +39,8 @@ export struct SubscriptionPage {
   private appState: AppState = AppState.getInstance()
   private iapService: IapService = IapService.getInstance()
   private tracker: PageResourceTracker = createPageTracker('SubscriptionPage')
+
+  private themeRef: ThemeReactive = themeReactive
 
   async aboutToAppear() {
     this.tracker.onAppear()
@@ -133,6 +135,7 @@ export struct SubscriptionPage {
       direction: GradientDirection.Bottom,
       colors: [[COLORS.BG_GRADIENT_START, 0], [COLORS.BG_GRADIENT_END, 1]]
     })
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   // ==================== 当前状态卡片 ====================
@@ -174,7 +177,7 @@ export struct SubscriptionPage {
     .borderRadius(RADIUS.LG)
     .alignItems(HorizontalAlign.Center)
     .margin({ bottom: 16 })
-    .shadow({ radius: 8, color: COLORS.SHADOW_LIGHT, offsetX: 0, offsetY: 2 })
+    .shadow(SHADOWS.MD)
   }
 
   // ==================== 方案卡片 ====================

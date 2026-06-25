@@ -7,6 +7,11 @@ const TAG = 'TeenModeManager';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const PREF_NAME = 'teen_mode_prefs';
 
+export interface CanUseResult {
+  allowed: boolean;
+  reason: string;
+}
+
 export class TeenModeManager {
   private static instance: TeenModeManager;
   private isTeenModeEnabled: boolean = false;
@@ -118,17 +123,17 @@ export class TeenModeManager {
     return hour >= 22 || hour < 6;
   }
 
-  canUseAtCurrentTime(): Record<string, Object> {
+  canUseAtCurrentTime(): CanUseResult {
     if (!this.isTeenModeEnabled) {
-      return { allowed: true, reason: '' } as Record<string, Object>;
+      return { allowed: true, reason: '' } as CanUseResult;
     }
     if (this.isNightTimeRestricted()) {
-      return { allowed: false, reason: '青少年模式：22:00-06:00期间禁止使用' } as Record<string, Object>;
+      return { allowed: false, reason: '青少年模式：22:00-06:00期间禁止使用' } as CanUseResult;
     }
     if (this.isUsageTimeExceeded()) {
-      return { allowed: false, reason: `青少年模式：今日使用已满${this.getMaxDailyUsageMinutes()}分钟` } as Record<string, Object>;
+      return { allowed: false, reason: `青少年模式：今日使用已满${this.getMaxDailyUsageMinutes()}分钟` } as CanUseResult;
     }
-    return { allowed: true, reason: '' } as Record<string, Object>;
+    return { allowed: true, reason: '' } as CanUseResult;
   }
 
   private dailyUsageMinutes: number = 0;

@@ -47,10 +47,10 @@ export class ImageCache {
       const path = ImageCache.diskPath(url);
       if (fs.accessSync(path)) {
         const stat = fs.statSync(path);
-        const buf: ArrayBuffer = new ArrayBuffer(
-        const fd = fs.openSync(path, fs.OpenMode.READ_ONLY);
-        fs.readSync(fd, buf);
-        fs.closeSync(fd);
+        const buf: ArrayBuffer = new ArrayBuffer(stat.size)
+        const file = fs.openSync(path, fs.OpenMode.READ_ONLY);
+        fs.readSync(file.fd, buf);
+        fs.closeSync(file);
         const decoder = new util.TextDecoder('utf-8');
         return decoder.decodeToString(new Uint8Array(buf));
       }
@@ -67,11 +67,11 @@ export class ImageCache {
       if (fs.accessSync(localPath)) {
         fs.copyFileSync(localPath, dest);
       } else {
-        const fd = fs.openSync(dest, fs.OpenMode.CREATE | fs.OpenMode.WRITE_ONLY);
+        const file = fs.openSync(dest, fs.OpenMode.CREATE | fs.OpenMode.WRITE_ONLY);
         const encoder = new util.TextEncoder();
-        const data = encoder.encodeInto(localPath);
-        fs.writeSync(fd, data.buffer as ArrayBuffer);
-        fs.closeSync(fd);
+        const data: Uint8Array = encoder.encodeInto(localPath);
+        fs.writeSync(file.fd, data.buffer as ArrayBuffer);
+        fs.closeSync(file);
       }
     } catch (e) {
       hilog.warn(0, TAG, 'writeToDisk failed: %{public}s', JSON.stringify(e));

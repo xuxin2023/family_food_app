@@ -87,8 +87,8 @@ async function buildFormData(context: common.FormExtensionContext): Promise<form
       healthScore: healthScore.toString(),
       lastSyncTime: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
     });
-  } catch (err) {
-    hilog.warn(DOMAIN_NUMBER, TAG, `buildFormData fallback to default, err: ${JSON.stringify(err)}`);
+  } catch (_err) {
+    hilog.warn(DOMAIN_NUMBER, TAG, 'buildFormData fallback to default');
     // 降级：返回有意义的占位数据
     return formBindingData.createFormBindingData({
       formId: '',
@@ -134,15 +134,13 @@ export default class EntryFormAbility extends FormExtensionAbility {
     hilog.info(DOMAIN_NUMBER, TAG, 'onUpdateForm');
     // 从 AppState 获取真实数据
     buildFormData(this.context).then((formData) => {
-      // 注入 formId - JSON.parse 返回 Object，需要显式转换
-      const rawData: Object = JSON.parse(JSON.stringify(formData));
-      const data: Record<string, Object> = rawData as Record<string, Object>;
-      data['formId'] = formId;
-      const updatedData = formBindingData.createFormBindingData(data);
-      formProvider.updateForm(formId, updatedData).catch((err) => {
+      const rawData: Record<string, Object> = JSON.parse(JSON.stringify(formData)) as Record<string, Object>;
+      rawData['formId'] = formId;
+      const updatedData = formBindingData.createFormBindingData(rawData);
+      formProvider.updateForm(formId, updatedData).catch((err: BusinessError) => {
         hilog.error(DOMAIN_NUMBER, TAG, `updateForm failed, code: ${err.code}, msg: ${err.message}`);
       });
-    }).catch((err) => {
+    }).catch((err: BusinessError) => {
       hilog.error(DOMAIN_NUMBER, TAG, `buildFormData failed: ${err.message}`);
     });
   }
@@ -155,14 +153,13 @@ export default class EntryFormAbility extends FormExtensionAbility {
     hilog.info(DOMAIN_NUMBER, TAG, 'onFormEvent, formId: %{private}s, message: %{private}s', formId, message);
     // 点击刷新时获取真实数据
     buildFormData(this.context).then((formData) => {
-      const rawData: Object = JSON.parse(JSON.stringify(formData));
-      const data: Record<string, Object> = rawData as Record<string, Object>;
-      data['formId'] = formId;
-      const updatedData = formBindingData.createFormBindingData(data);
-      formProvider.updateForm(formId, updatedData).catch((err) => {
+      const rawData: Record<string, Object> = JSON.parse(JSON.stringify(formData)) as Record<string, Object>;
+      rawData['formId'] = formId;
+      const updatedData = formBindingData.createFormBindingData(rawData);
+      formProvider.updateForm(formId, updatedData).catch((err: BusinessError) => {
         hilog.error(DOMAIN_NUMBER, TAG, `onFormEvent updateForm failed: ${err.message}`);
       });
-    }).catch((err) => {
+    }).catch((err: BusinessError) => {
       hilog.error(DOMAIN_NUMBER, TAG, `onFormEvent buildFormData failed: ${err.message}`);
     });
   }

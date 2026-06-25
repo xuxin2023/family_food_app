@@ -556,7 +556,7 @@ export class FamilyGroupRepository {
   // ========== 内部解析方法 ==========
 
   private safeGetString(rs: relationalStore.ResultSet, col: string): string {
-    try { return rs.getString(rs.getColumnIndex(col).toString()); } catch (e) { return ''; }
+    try { return rs.getString(rs.getColumnIndex(col)); } catch (e) { return ''; }
   }
   private safeGetLong(rs: relationalStore.ResultSet, col: string): number {
     try { return Number(rs.getLong(rs.getColumnIndex(col))); } catch (e) { return 0; }

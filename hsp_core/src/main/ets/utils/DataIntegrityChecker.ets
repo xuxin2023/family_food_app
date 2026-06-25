@@ -21,7 +21,7 @@ export class ValidationResult {
 
 export class DataIntegrityChecker {
   static validateFoodLabel(label: FoodLabel): ValidationResult {
-    const result: ValidationResult = new ValidationResult(
+    const result: ValidationResult = new ValidationResult()
     if (label.foodName.length === 0) {
       result.addError('foodName不能为空');
     }
@@ -43,7 +43,7 @@ export class DataIntegrityChecker {
   }
 
   static validateNutrition(n: NutritionPer100g): ValidationResult {
-    const result: ValidationResult = new ValidationResult(
+    const result: ValidationResult = new ValidationResult()
     if (n.sodium < 0) {
       result.addError('sodium不能为负数');
     } else if (n.sodium >= NUTRIENT_LIMITS_V2.SODIUM_MAX_MG) {
@@ -78,7 +78,7 @@ export class DataIntegrityChecker {
   }
 
   static validateImportData(data: Map<string, Object>): ValidationResult {
-    const result: ValidationResult = new ValidationResult(
+    const result: ValidationResult = new ValidationResult()
     const versionVal = data.get('version');
     if (versionVal === undefined || versionVal === null) {
       result.addError('version字段不存在');

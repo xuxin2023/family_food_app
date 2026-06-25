@@ -1,7 +1,6 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 import { HuaweiCloudBackend } from './HuaweiCloudBackend';
-import { SecureKeyStore } from 'hsp_core';
 import { common } from '@kit.AbilityKit';
 
 const TAG = 'UserDataDeletionService';
@@ -13,6 +12,16 @@ export interface DeletionResult {
   deletedCloud: boolean;
   deletionTime: number;
   errors: string[];
+}
+
+interface DeletionRequestParams {
+  userId: string;
+  scope: string;
+}
+
+interface ExportRequestParams {
+  userId: string;
+  action: string;
 }
 
 export class UserDataDeletionService {
@@ -48,13 +57,6 @@ export class UserDataDeletionService {
       result.errors.push(`Cloud deletion failed: ${JSON.stringify(e)}`);
     }
 
-    try {
-      await SecureKeyStore.clearAll();
-    } catch (e) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(e));
-      result.errors.push(`SecureKeyStore clear failed: ${JSON.stringify(e)}`);
-    }
-
     result.success = result.deletedLocal && result.deletedCloud;
     hilog.info(DOMAIN_ZERO, TAG, 'Data deletion result: local=%{public}s cloud=%{public}s',
       result.deletedLocal.toString(), result.deletedCloud.toString());
@@ -70,7 +72,7 @@ export class UserDataDeletionService {
         'nutrition_targets', 'favorites', 'shopping_list', 'reminder_rules', 'recipes', 'family_groups'];
       for (const table of tables) {
         try {
-          rdb.executeSqlSync(`DELETE FROM ${table}`);
+          rdb.executeSync(`DELETE FROM ${table}`, []);
         } catch (_e) {
           // 表可能不存在
         }
@@ -86,7 +88,10 @@ export class UserDataDeletionService {
   private async deleteCloudData(userId: string): Promise<boolean> {
     try {
       const backend = HuaweiCloudBackend.getInstance();
-      const result = await backend.callFunction('user-data-deletion', { userId, scope: 'full' });
+      const deletionParams: Record<string, Object> = {}
+      deletionParams['userId'] = userId
+      deletionParams['scope'] = 'full'
+      const result = await backend.callFunction('user-data-deletion', deletionParams);
       return result !== null;
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(e));
@@ -98,7 +103,10 @@ export class UserDataDeletionService {
   async exportUserData(userId: string): Promise<string | null> {
     try {
       const backend = HuaweiCloudBackend.getInstance();
-      const result = await backend.callFunction('user-profile', { userId, action: 'export' });
+      const exportParams: Record<string, Object> = {}
+      exportParams['userId'] = userId
+      exportParams['action'] = 'export'
+      const result = await backend.callFunction('user-profile', exportParams);
       return result !== null ? JSON.stringify(result) : null;
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(e));

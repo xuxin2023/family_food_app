@@ -1,17 +1,19 @@
 import {
-  ToastHelper, safeBack, safePushUrl, FoodLabel, NutritionPer100g, FamilyProfile, AlternativeFood, COLORS, FONT_SIZE, RADIUS, SPACING, ROUTE_ALTERNATIVE_FOOD_PAGE, IOfflineFoodProvider, PageResourceTracker, createPageTracker, HILOG_DOMAIN_DEFAULT
+  ToastHelper, safeBack, safePushUrl, FoodLabel, NutritionPer100g, FamilyProfile, AlternativeFood, COLORS, SHADOWS, FONT_SIZE, RADIUS, SPACING, ROUTE_ALTERNATIVE_FOOD_PAGE, IOfflineFoodProvider, PageResourceTracker, createPageTracker, HILOG_DOMAIN_DEFAULT, ThemeReactive, themeReactive
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
+import { GradientHeader } from '../components/GradientHeader';
 import { AppState } from '../AppState';
 import { AlternativeRecommender, AlternativeCandidate, alternativeFoodRecommender } from 'feature_scan';
 import { OfflineFoodProvider } from 'hsp_core';
 import { EmptyState } from '../components/EmptyState';
 import { OnlineAlternativeSearchService } from 'hsp_service';
 import { AlternativeComparePanel } from 'feature_report';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+import { LoadingSkeleton } from '../components/SkeletonScreen';
 
 const TAG = 'AlternativeFoodPage';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
-import { hilog } from '@kit.PerformanceAnalysisKit';
 
 @Entry
 @ComponentV2
@@ -29,6 +31,8 @@ export struct AlternativeFoodPage {
   private componentActive: boolean = true
   private tracker: PageResourceTracker = createPageTracker('AlternativeFoodPage')
 
+  private themeRef: ThemeReactive = themeReactive
+
   aboutToAppear(): void {
     this.tracker.onAppear()
     const cachedFoodLabel = this.appState.reportCache.consumeFoodLabel()
@@ -42,7 +46,7 @@ export struct AlternativeFoodPage {
   private loadAlternatives(): void {
     this.isLoading = true
     this.recommendReady = false
-    const recommender: AlternativeRecommender = new AlternativeRecommender()
+    const recommender: AlternativeRecommender = new AlternativeRecommender(new OfflineFoodProvider())
     this.candidates = recommender.recommend(this.foodLabel)
     alternativeFoodRecommender.recommendAlternatives(
       this.foodLabel, this.familyMembers, 5
@@ -72,22 +76,11 @@ export struct AlternativeFoodPage {
   build() {
     Scroll() {
       Column() {
-        Row() {
-          BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
-            .onClick(() => { safeBack() })
-            .accessibilityText('杩斿洖')
-            .accessibilityLevel('yes')
-          Text($r('app.string.alternative_food_title'))
-            .fontSize(20)
-            .fontWeight(FontWeight.Bold)
-            .margin({ left: 16 })
-        }
-        .width('100%')
-        .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+        GradientHeader({ title: $r('app.string.alternative_food_title') })
 
         GridRow({
           columns: { sm: 4, md: 8, lg: 12 },
-          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
+          breakpoints: { value: ['320vp', '600vp'], reference: BreakpointsReference.WindowSize }
         }) {
           GridCol({ span: { sm: 4, md: 8, lg: 10 }, offset: { sm: 0, md: 0, lg: 1 } }) {
             Column() {
@@ -95,14 +88,7 @@ export struct AlternativeFoodPage {
 
               if (this.isLoading) {
                 Column() {
-                  LoadingProgress()
-                    .width(40)
-                    .height(40)
-                    .color(COLORS.PRIMARY)
-                  Text($r('app.string.alt_food_analyzing'))
-                    .fontSize(14)
-                    .fontColor(COLORS.TEXT_SECONDARY)
-                    .margin({ top: 12 })
+                  LoadingSkeleton({ variant: 'list' })
                 }
                 .width('92%')
                 .height(200)
@@ -111,7 +97,7 @@ export struct AlternativeFoodPage {
               } else if (this.recommendReady) {
                 if (this.candidates.length === 0 && this.legacyAlternatives.length === 0) {
                   EmptyState({
-                    icon: '馃攳',
+                    icon: '🔍',
                     title: $r('app.string.alt_food_no_alternative'),
                     subtitle: $r('app.string.alt_food_no_alternative_hint'),
                     topPadding: 40
@@ -119,14 +105,9 @@ export struct AlternativeFoodPage {
                 } else {
                   this.AlternativeListSection()
                   if (this.candidates.length > 0) {
-                    const altLabel: FoodLabel = new FoodLabel()
-                    altLabel.foodName = this.candidates[0].foodName;
-                    altLabel.manufacturer = this.candidates[0].brand;
-                    altLabel.barcode = this.candidates[0].barcode;
-                    altLabel.nutrition = this.candidates[0].nutrition;
                     AlternativeComparePanel({
                       originalFood: this.foodLabel,
-                      alternativeFood: altLabel
+                      alternativeFood: this.buildAltLabel()
                     })
                   }
                   this.LegacyAlternativeSection()
@@ -153,6 +134,7 @@ export struct AlternativeFoodPage {
     .width('100%')
     .height('100%')
     .backgroundColor(COLORS.BG_PAGE)
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   @Builder
@@ -184,6 +166,7 @@ export struct AlternativeFoodPage {
     .padding(16)
     .backgroundColor(COLORS.WHITE)
     .borderRadius(RADIUS.LG)
+    .shadow(SHADOWS.MD)
     .alignItems(HorizontalAlign.Center)
     .margin({ bottom: 14 })
   }
@@ -234,6 +217,7 @@ export struct AlternativeFoodPage {
       .padding(16)
       .backgroundColor(COLORS.WHITE)
       .borderRadius(RADIUS.LG)
+      .shadow(SHADOWS.MD)
       .alignItems(HorizontalAlign.Start)
       .margin({ bottom: 14 })
     }
@@ -383,7 +367,7 @@ export struct AlternativeFoodPage {
             .layoutWeight(1)
 
             Column() {
-              Text(`${alt.healthScore}分)`
+              Text(`${alt.healthScore}分`)
                 .fontSize(14)
                 .fontWeight(FontWeight.Bold)
                 .fontColor(COLORS.SUCCESS)
@@ -398,16 +382,27 @@ export struct AlternativeFoodPage {
       .padding(16)
       .backgroundColor(COLORS.WHITE)
       .borderRadius(RADIUS.LG)
+      .shadow(SHADOWS.MD)
       .alignItems(HorizontalAlign.Start)
       .margin({ bottom: 14 })
     }
   }
 
+  private buildAltLabel(): FoodLabel {
+    const altLabel: FoodLabel = new FoodLabel()
+    altLabel.foodName = this.candidates[0].foodName;
+    altLabel.manufacturer = this.candidates[0].brand;
+    altLabel.barcode = this.candidates[0].barcode;
+    altLabel.nutrition = this.candidates[0].nutrition;
+    return altLabel;
+  }
+
   private onAlternativeClick(item: AlternativeCandidate): void {
     if (item.barcode && item.barcode.length > 0) {
-      safePushUrl(`pages/ReportPage?barcode=${item.barcode}`)
+      const params: Record<string, string> = { 'barcode': item.barcode };
+      safePushUrl('pages/ReportPage', params)
     } else {
-      ToastHelper.show(this.getUIContext(), `宸查€夋嫨: ${item.foodName}`)
+      ToastHelper.show(this.getUIContext(), '已选择: ' + item.foodName)
     }
   }
 

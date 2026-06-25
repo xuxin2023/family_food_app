@@ -3,8 +3,7 @@ import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HILOG_DOMAIN_DEFAULT, API_TIMEOUT_CONFIG } from 'hsp_core';
-import { AssetKeyManager } from 'hsp_core';
-import { SecureHttpClient, SecureRequestOptions } from 'hsp_service';
+import { SecureHttpClient, SecureRequestOptions } from './SecureHttpClient';
 import { asset } from '@kit.AssetStoreKit';
 import { util } from '@kit.ArkTS';
 import { BusinessError } from '@kit.BasicServicesKit';
@@ -148,8 +147,9 @@ export class IapServerValidator {
 
   private async savePendingVerifications(): Promise<void> {
     if (!this.context) return;
+    let data: string = '';
     try {
-      const data = JSON.stringify(this.pendingVerifications);
+      data = JSON.stringify(this.pendingVerifications);
       const alias = 'iap_pending_verifications';
       const textEncoder = new util.TextEncoder();
       const aliasBytes = textEncoder.encode(alias);
@@ -159,8 +159,8 @@ export class IapServerValidator {
         const removeQuery: asset.AssetMap = new Map();
         removeQuery.set(asset.Tag.ALIAS, aliasBytes);
         await asset.remove(removeQuery);
-      } catch (_) {
-        hilog.debug(DOMAIN_ZERO, TAG, 'Asset remove before add failed: %{public}s', JSON.stringify(_));
+      } catch (removeErr) {
+        hilog.debug(DOMAIN_ZERO, TAG, 'Asset remove before add failed: %{public}s', JSON.stringify(removeErr));
       }
 
       const attr: asset.AssetMap = new Map();

@@ -122,6 +122,8 @@ export class AiNutritionistServiceImpl extends AiServiceBase implements IAiNutri
     return this.getAdvice(member, new HealthSignal(), budget, dietRecords, days, includeMealPlan);
   }
 
+  getRemainingQuota(): number { return this.MAX_TOKENS - this.tokensUsed; }
+
   isAvailable(): boolean { return this.getRemainingQuota() > 0; }
 
   private buildBaseAnalysis(
@@ -244,12 +246,7 @@ export class AiNutritionistServiceImpl extends AiServiceBase implements IAiNutri
   private buildNutritionistPrompt(baseResult: AiNutritionAdvice, member: FamilyProfile, signal: HealthSignal, budget: DailyBudget, records: DietRecord[], days: number, includeMealPlan: boolean): string {
     const budgetStatus = this.makeBudgetStatusValues(budget);
     const healthStatus = this.makePromptHealthStatus(signal);
-    return `你是家庭AI营养师。请根据以下脱敏数据提供个性化营养分析。`
-成员：${member.ageGroup}，目标：${member.healthGoals.map(h => getHealthGoalDescription(h)).join('、')}，过敏：${member.allergens.length > 0 ? member.allergens.join('、') : '无'}
-预算：钠${budgetStatus.sodiumPct}%/糖${budgetStatus.sugarPct}%/热量${budgetStatus.calPct}%/脂肪${budgetStatus.fatPct}%
-健康：血压${healthStatus.bp}/血糖${healthStatus.bs}/睡眠${healthStatus.sleep}/活动${healthStatus.steps}
-${days}天${records.length}次记录。规则引擎：${baseResult.summary}
-${includeMealPlan ? '请包含明日饮食计划。' : ''}输出JSON。`;`
+    return `你是家庭AI营养师。请根据以下脱敏数据提供个性化营养分析。\n成员：${member.ageGroup}，目标：${member.healthGoals.map(h => getHealthGoalDescription(h)).join('、')}，过敏：${member.allergens.length > 0 ? member.allergens.join('、') : '无'}\n预算：钠${budgetStatus.sodiumPct}%/糖${budgetStatus.sugarPct}%/热量${budgetStatus.calPct}%/脂肪${budgetStatus.fatPct}%\n健康：血压${healthStatus.bp}/血糖${healthStatus.bs}/睡眠${healthStatus.sleep}/活动${healthStatus.steps}\n${days}天${records.length}次记录。规则引擎：${baseResult.summary}\n${includeMealPlan ? '请包含明日饮食计划。' : ''}输出JSON。`;
   }
 
   private parseAiResponse(text: string, baseResult: AiNutritionAdvice, member: FamilyProfile, includeMealPlan: boolean): AiNutritionAdvice | null {

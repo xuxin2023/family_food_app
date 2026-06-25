@@ -1,8 +1,9 @@
 import {
   ToastHelper, safeBack, DietRecord, NutritionTarget, FamilyProfile, MealScenario,
-  COLORS, FONT_SIZE, RADIUS, SPACING, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker
+  COLORS, FONT_SIZE, RADIUS, SPACING, SHADOWS, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker, ThemeReactive, themeReactive, ThemeColors, ThemeMode
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
+import { GradientHeader } from '../components/GradientHeader';
 import { NutritionTargetGauge } from '../components/NutritionTargetGauge';
 import { AppState } from '../AppState';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -21,7 +22,7 @@ interface NutrientBucket {
 
 @Entry
 @ComponentV2
-struct DailyIntakePage {
+export struct DailyIntakePage {
   @Local selectedDate: string = ''
   @Local records: DietRecord[] = []
   @Local familyMembers: FamilyProfile[] = []
@@ -32,10 +33,26 @@ struct DailyIntakePage {
   private appState: AppState = AppState.getInstance()
 
   private tracker: PageResourceTracker = createPageTracker('DailyIntakePage')
+  private themeRef: ThemeReactive = themeReactive
+
+  private get isDark(): boolean {
+    if (this.themeRef.key >= 0) { /* trigger reactive */ }
+    return ThemeColors.getTheme() === ThemeMode.DARK;
+  }
+
+  private get pageBgGradient(): LinearGradient {
+    if (this.isDark) {
+      return { angle: 180, colors: [['#0D1B0E', 0.0], ['#1A2F1C', 0.5], ['#0A1A0D', 1.0]] };
+    }
+    return { angle: 180, colors: [['#E8EAF6', 0.0], ['#E0F2F1', 0.3], ['#FFF8E1', 0.7], ['#F3E5F5', 1.0]] };
+  }
+
   aboutToAppear(): void {
     this.tracker.onAppear()
     const now = new Date();
-    this.selectedDate = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    this.selectedDate = now.getFullYear().toString() + '-' + month + '-' + day;
     this.familyMembers = this.appState.getAllMembersSync();
     if (this.familyMembers.length > 0) {
       this.selectedMemberId = this.familyMembers[0].memberId;
@@ -58,11 +75,15 @@ struct DailyIntakePage {
     this.isLoading = false;
   }
 
-  private calcTotal(field: keyof DietRecord): number {
+  private calcTotal(field: string): number {
     let sum = 0;
     for (const r of this.records) {
-      const val = r[field];
-      if (typeof val === 'number') { sum += val; }
+      let val: number = 0;
+      if (field === 'sodiumIntake') { val = r.sodiumIntake; }
+      else if (field === 'sugarIntake') { val = r.sugarIntake; }
+      else if (field === 'calorieIntake') { val = r.calorieIntake; }
+      else if (field === 'fatIntake') { val = r.fatIntake; }
+      sum += val;
     }
     return sum;
   }
@@ -72,24 +93,13 @@ struct DailyIntakePage {
       { label: '热量', unit: 'kcal', current: this.calcTotal('calorieIntake'), target: this.target.caloriesTarget, color: COLORS.PRIMARY, lowerIsBetter: false },
       { label: '钠', unit: 'mg', current: this.calcTotal('sodiumIntake'), target: this.target.sodiumMax_mg, color: COLORS.ACCENT_RED_EF53, lowerIsBetter: true },
       { label: '糖', unit: 'g', current: this.calcTotal('sugarIntake'), target: this.target.sugarMax_g, color: COLORS.ORANGE_ACCENT, lowerIsBetter: true },
-      { label: '脂肪', unit: 'g', current: this.calcTotal('fatIntake'), target: this.target.fatMax_g, color: '#FF9800', lowerIsBetter: true },
+      { label: '脂肪', unit: 'g', current: this.calcTotal('fatIntake'), target: this.target.fatMax_g, color: COLORS.ORANGE_ACCENT, lowerIsBetter: true },
     ];
   }
 
   build() {
     Column() {
-      Row() {
-        BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
-          .onClick(() => { safeBack() })
-          .accessibilityText('返回')
-          .accessibilityLevel('yes')
-        Text('每日摄入追踪')
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .margin({ left: 16 })
-      }
-      .width('100%')
-      .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+      GradientHeader({ title: '每日摄入追踪' })
 
       if (this.familyMembers.length > 1) {
         this.MemberTabs()
@@ -118,7 +128,7 @@ struct DailyIntakePage {
             sugarTarget: this.target.sugarMax_g,
             fat: this.calcTotal('fatIntake'),
             fatTarget: this.target.fatMax_g,
-            protein: 0,
+            protein: this.calcTotal('proteinIntake'),
             proteinTarget: this.target.proteinTarget_g
           })
 
@@ -134,8 +144,9 @@ struct DailyIntakePage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(COLORS.BG_PAGE)
+    .linearGradient(this.pageBgGradient)
     .alignItems(HorizontalAlign.Center)
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   @Builder
@@ -145,7 +156,7 @@ struct DailyIntakePage {
         Text(member.nickname)
           .fontSize(13)
           .padding({ left: 10, right: 10, top: 6, bottom: 6 })
-          .borderRadius(16)
+          .borderRadius(RADIUS.LG)
           .backgroundColor(this.selectedMemberId === member.memberId ? COLORS.PRIMARY : COLORS.BG_LIGHT)
           .fontColor(this.selectedMemberId === member.memberId ? COLORS.WHITE : COLORS.TEXT_PRIMARY)
           .margin({ right: 6 })
@@ -175,7 +186,7 @@ struct DailyIntakePage {
             Text(bucket.label)
               .fontSize(12)
               .fontColor(COLORS.TEXT_SECONDARY)
-            Text(`${bucket.current.toFixed(0)} ${bucket.unit}`)
+            Text(bucket.current.toFixed(0) + ' ' + bucket.unit)
               .fontSize(18)
               .fontWeight(FontWeight.Bold)
               .fontColor(bucket.color)
@@ -187,7 +198,7 @@ struct DailyIntakePage {
             Text('目标')
               .fontSize(10)
               .fontColor(COLORS.TEXT_TERTIARY)
-            Text(`${bucket.target.toFixed(0)} ${bucket.unit}`)
+            Text(bucket.target.toFixed(0) + ' ' + bucket.unit)
               .fontSize(13)
               .fontColor(COLORS.TEXT_SECONDARY)
           }
@@ -199,7 +210,7 @@ struct DailyIntakePage {
         .width('100%')
         .padding({ top: 8, bottom: 8 })
         .border({ width: { bottom: 0.5 }, color: COLORS.DIVIDER })
-      }, (bucket: NutrientBucket, index: number) => `${index}`)
+      }, (bucket: NutrientBucket, index: number) => index.toString())
     }
     .width('92%')
     .padding(16)
@@ -207,6 +218,7 @@ struct DailyIntakePage {
     .borderRadius(RADIUS.LG)
     .margin({ bottom: 14 })
     .alignItems(HorizontalAlign.Start)
+    .shadow(SHADOWS.MD)
   }
 
   @Builder
@@ -232,16 +244,13 @@ struct DailyIntakePage {
         .margin({ bottom: 8 })
 
       ForEach(['breakfast', 'lunch', 'dinner', 'snack'], (mealType: string) => {
-        const mealRecords = this.records.filter(r => r.mealType === mealType);
-        if (mealRecords.length > 0) {
+        if (this.records.filter(r => r.mealType === mealType).length > 0) {
           Row() {
             Text(this.mealTypeLabel(mealType))
               .fontSize(14)
               .fontColor(COLORS.TEXT_PRIMARY)
               .layoutWeight(1)
-            let mealCal = 0;
-            for (const r of mealRecords) { mealCal += r.calorieIntake; }
-            Text(`${mealCal.toFixed(0)} kcal`)
+            Text(this.getMealCalories(mealType).toFixed(0) + ' 千卡')
               .fontSize(13)
               .fontColor(COLORS.TEXT_SECONDARY)
           }
@@ -256,6 +265,7 @@ struct DailyIntakePage {
     .borderRadius(RADIUS.LG)
     .margin({ bottom: 14 })
     .alignItems(HorizontalAlign.Start)
+    .shadow(SHADOWS.MD)
   }
 
   @Builder
@@ -267,10 +277,21 @@ struct DailyIntakePage {
         .margin({ bottom: 8 })
 
       if (this.records.length === 0) {
-        Text('暂无记录')
-          .fontSize(14)
-          .fontColor(COLORS.TEXT_TERTIARY)
-          .margin({ top: 12 })
+        Column() {
+          Text('🍽️')
+            .fontSize(48)
+            .margin({ bottom: 8 })
+          Text('今日暂无饮食记录')
+            .fontSize(14)
+            .fontColor(COLORS.TEXT_TERTIARY)
+            .margin({ bottom: 4 })
+          Text('扫描食品后添加到饮食日记即可查看')
+            .fontSize(12)
+            .fontColor(COLORS.TEXT_TERTIARY)
+        }
+        .width('100%')
+        .padding({ top: 24, bottom: 24 })
+        .alignItems(HorizontalAlign.Center)
       }
 
       ForEach(this.records, (record: DietRecord) => {
@@ -280,7 +301,7 @@ struct DailyIntakePage {
               .fontSize(13)
               .fontWeight(FontWeight.Medium)
               .fontColor(COLORS.TEXT_PRIMARY)
-            Text(`${record.amountG.toFixed(0)}g · ${record.calorieIntake.toFixed(0)}kcal`)
+            Text(record.amountG.toFixed(0) + '克 · ' + record.calorieIntake.toFixed(0) + '千卡')
               .fontSize(11)
               .fontColor(COLORS.TEXT_TERTIARY)
               .margin({ top: 2 })
@@ -289,10 +310,10 @@ struct DailyIntakePage {
           .layoutWeight(1)
 
           Column() {
-            Text(`钠${record.sodiumIntake.toFixed(0)}mg`)
+            Text('钠' + record.sodiumIntake.toFixed(0) + '毫克')
               .fontSize(10)
               .fontColor(COLORS.TEXT_TERTIARY)
-            Text(`糖${record.sugarIntake.toFixed(1)}g`)
+            Text('糖' + record.sugarIntake.toFixed(1) + 'g')
               .fontSize(10)
               .fontColor(COLORS.TEXT_TERTIARY)
               .margin({ top: 2 })
@@ -303,7 +324,7 @@ struct DailyIntakePage {
         .width('100%')
         .padding({ top: 8, bottom: 8 })
         .border({ width: { bottom: 0.5 }, color: COLORS.DIVIDER })
-      }, (record: DietRecord, index: number) => `${record.id}_${index}`)
+      }, (record: DietRecord, index: number) => record.id + '_' + index.toString())
     }
     .width('92%')
     .padding(16)
@@ -311,6 +332,7 @@ struct DailyIntakePage {
     .borderRadius(RADIUS.LG)
     .margin({ bottom: 24 })
     .alignItems(HorizontalAlign.Start)
+    .shadow(SHADOWS.MD)
   }
 
   private mealTypeLabel(type: string): string {
@@ -321,6 +343,14 @@ struct DailyIntakePage {
       case 'snack': return '加餐';
       default: return type;
     }
+  }
+
+  private getMealCalories(mealType: string): number {
+    let total = 0;
+    for (const r of this.records) {
+      if (r.mealType === mealType) total += r.calorieIntake;
+    }
+    return total;
   }
 
   aboutToDisappear(): void {

@@ -1,6 +1,6 @@
-import { sharing } from '@kit.ShareKit';
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { pasteboard } from '@kit.BasicServicesKit';
 import { HILOG_DOMAIN_DEFAULT } from 'hsp_core';
 
 const TAG = 'ShareKitService';
@@ -9,41 +9,26 @@ const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 export class ShareKitService {
   static async shareText(context: common.UIAbilityContext, text: string, title: string): Promise<void> {
     try {
-      const shareData: sharing.ShareData = {
-        text: text
-      };
-      const shareController: sharing.ShareController = new sharing.ShareController(shareData);
-      const config: sharing.ShareConfig = {
-        panelTitle: title,
-        selectionMode: sharing.SelectionMode.SINGLE
-      };
-      shareController.show(context, config);
-      hilog.info(DOMAIN_ZERO, TAG, 'Share text panel shown');
-    } catch (error) {
-      hilog.error(DOMAIN_ZERO, TAG, 'shareText failed: %{public}s', JSON.stringify(error));
-      throw new Error('系统分享失败');
+      const pasteData: pasteboard.PasteData = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, text);
+      const systemPasteboard: pasteboard.SystemPasteboard = pasteboard.getSystemPasteboard();
+      await systemPasteboard.setData(pasteData);
+      hilog.info(DOMAIN_ZERO, TAG, 'shareText copied to clipboard, title: %{public}s', title);
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'shareText clipboard fallback failed: %{public}s', JSON.stringify(e));
+      throw new Error('分享失败，请重试');
     }
   }
 
   static async shareImage(context: common.UIAbilityContext, imageUri: string, title: string): Promise<void> {
     try {
-      const shareData: sharing.ShareData = {
-        want: {
-          parameters: {
-            'ability.params.stream': imageUri
-          }
-        }
-      };
-      const shareController: sharing.ShareController = new sharing.ShareController(shareData);
-      const config: sharing.ShareConfig = {
-        panelTitle: title,
-        selectionMode: sharing.SelectionMode.SINGLE
-      };
-      shareController.show(context, config);
-      hilog.info(DOMAIN_ZERO, TAG, 'Share image panel shown, uri: %{public}s', imageUri);
-    } catch (error) {
-      hilog.error(DOMAIN_ZERO, TAG, 'shareImage failed: %{public}s', JSON.stringify(error));
-      throw new Error('图片分享失败');
+      const pasteData: pasteboard.PasteData =
+        pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, imageUri);
+      const systemPasteboard: pasteboard.SystemPasteboard = pasteboard.getSystemPasteboard();
+      await systemPasteboard.setData(pasteData);
+      hilog.info(DOMAIN_ZERO, TAG, 'shareImage uri copied to clipboard, title: %{public}s', title);
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'shareImage clipboard fallback failed: %{public}s', JSON.stringify(e));
+      throw new Error('图片分享失败，请重试');
     }
   }
 
@@ -52,32 +37,21 @@ export class ShareKitService {
     imageUris: string[],
     title: string
   ): Promise<void> {
-    if (imageUris.length === 0) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'No image URIs provided');
-      return;
-    }
-    if (imageUris.length === 1) {
-      await ShareKitService.shareImage(context, imageUris[0], title);
-      return;
-    }
     try {
-      const shareData: sharing.ShareData = {
-        want: {
-          parameters: {
-            'ability.params.stream': imageUris
-          }
+      let text: string = '';
+      for (let i = 0; i < imageUris.length; i++) {
+        if (i > 0) {
+          text += '\n';
         }
-      };
-      const shareController: sharing.ShareController = new sharing.ShareController(shareData);
-      const config: sharing.ShareConfig = {
-        panelTitle: title,
-        selectionMode: sharing.SelectionMode.SINGLE
-      };
-      shareController.show(context, config);
-      hilog.info(DOMAIN_ZERO, TAG, 'Share multiple images panel shown, count: %{public}d', imageUris.length);
-    } catch (error) {
-      hilog.error(DOMAIN_ZERO, TAG, 'shareMultipleImages failed: %{public}s', JSON.stringify(error));
-      throw new Error('多图分享失败');
+        text += imageUris[i];
+      }
+      const pasteData: pasteboard.PasteData = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, text);
+      const systemPasteboard: pasteboard.SystemPasteboard = pasteboard.getSystemPasteboard();
+      await systemPasteboard.setData(pasteData);
+      hilog.info(DOMAIN_ZERO, TAG, 'shareMultipleImages copied to clipboard, title: %{public}s', title);
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'shareMultipleImages clipboard fallback failed: %{public}s', JSON.stringify(e));
+      throw new Error('多图分享失败，请重试');
     }
   }
 }

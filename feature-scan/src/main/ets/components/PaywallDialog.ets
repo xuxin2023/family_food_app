@@ -43,7 +43,7 @@ export struct PaywallDialog {
               this.closeDialog();
             }
           })
-          .accessibilityText($r('app.string.paywall_close'))
+          .accessibilityText('关闭')
           .accessibilityLevel('yes')
 
         // 白色圆角卡片
@@ -62,7 +62,7 @@ export struct PaywallDialog {
             .textAlign(TextAlign.Center)
 
           // 需要等级提示
-          Text(`${$r('app.string.paywall_need')}${getTierDisplayName(this.trigger.requiredTier)}${$r('app.string.paywall_permission')}`)
+          Text('需要' + getTierDisplayName(this.trigger.requiredTier) + '权限')
             .fontSize(FONT_SIZE.SMALL)
             .fontColor(COLORS.ACCENT_PURPLE)
             .fontWeight(FONT_WEIGHT.MEDIUM)
@@ -113,11 +113,11 @@ export struct PaywallDialog {
                 this.closeDialog();
                 safePushUrl('pages/SubscriptionPage')
               })
-              .accessibilityText($r('app.string.paywall_upgrade'))
+              .accessibilityText('升级会员')
 
             // 次按钮：暂不升级（仅在软限制时显示）
             if (this.trigger.isSoftLimit) {
-              Button($r('app.string.paywall_not_now'))
+              Button('暂不升级')
                 .width('100%')
                 .height(44)
                 .backgroundColor(COLORS.WHITE)
@@ -128,7 +128,7 @@ export struct PaywallDialog {
                 .onClick(() => {
                   this.closeDialog();
                 })
-                .accessibilityText($r('app.string.paywall_not_now'))
+                .accessibilityText('暂不升级')
             }
           }
           .width('100%')

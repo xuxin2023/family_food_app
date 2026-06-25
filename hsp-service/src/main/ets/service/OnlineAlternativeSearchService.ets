@@ -163,7 +163,6 @@ export class OnlineAlternativeSearchService {
     }
     label.novaGroup = Number(product.nova_group ?? 0);
     label.allergenHints = String(product.allergens_text || '').split(',').filter((s: string) => s.length > 0);
-    label.imageUrl = String(product.image_url || '');
     label.source = FoodSource.CLOUD;
     return label;
   }

@@ -1,5 +1,5 @@
 // CommentList.ets
-// 评论列表组件 — 展示食谱评论，支持楼中楼回复
+// 评论列表组件 �?展示食谱评论，支持楼中楼回复
 
 import { COLORS, FONT_SIZE, FONT_WEIGHT, RADIUS, SPACING } from 'hsp_core';
 import { RecipeComment } from 'hsp_core';
@@ -21,7 +21,6 @@ export struct CommentList {
     }
     .width('100%')
     .divider({ strokeWidth: 0.5, color: COLORS.DIVIDER })
-    .accessibilityRole('list')
     .accessibilityText(`${this.comments.length}条评论`)
     .accessibilityLevel('yes')
   }

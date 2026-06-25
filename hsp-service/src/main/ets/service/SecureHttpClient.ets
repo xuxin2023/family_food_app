@@ -12,7 +12,6 @@
 
 import { http } from '@kit.NetworkKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { cryptoFramework } from '@kit.CryptoArchitectureKit';
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { HILOG_DOMAIN_DEFAULT, RateLimiter } from 'hsp_core';
@@ -91,7 +90,13 @@ export class CertPinExtractor {
   static async extractPinFromHost(hostname: string, port: number = 443): Promise<string> {
     const url = `https://${hostname}:${port}/`;
     try {
-      const client = http.createHttp();
+      let client: http.HttpRequest;
+      try {
+        client = http.createHttp();
+      } catch (createErr) {
+        hilog.error(DOMAIN_ZERO, TAG, `createHttp failed: ${JSON.stringify(createErr)}`);
+        return '';
+      }
       let resp: http.HttpResponse;
       try {
         resp = await client.request(url, {
@@ -217,7 +222,11 @@ export class SecureHttpClient {
    */
   async init(context: common.Context, enforce?: boolean): Promise<void> {
     this.enforceMode = enforce ?? CERT_PIN_ENFORCE;
-    this.pinPrefs = await preferences.getPreferences(context, PREF_NAME);
+    try {
+      this.pinPrefs = await preferences.getPreferences(context, PREF_NAME);
+    } catch (err) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'getPreferences failed: %{public}s', JSON.stringify(err));
+    }
     await this.loadTofuPins();
     const verifiedCount: number = this.getVerifiedDomainCount();
     hilog.info(DOMAIN_ZERO, TAG,
@@ -258,8 +267,20 @@ export class SecureHttpClient {
       }
     }
 
-    const client: http.HttpRequest = http.createHttp();
+    let client: http.HttpRequest | null = null;
     try {
+      try {
+        client = http.createHttp();
+      } catch (createErr) {
+        hilog.error(DOMAIN_ZERO, TAG, 'createHttp failed: %{public}s', JSON.stringify(createErr));
+        const errorResp: http.HttpResponse = {
+          responseCode: 500,
+          result: '',
+          header: {},
+          cookies: ''
+        } as http.HttpResponse;
+        return errorResp;
+      }
       const method: http.RequestMethod = options.method ?? http.RequestMethod.GET;
       const headerObj: Record<string, string> = {};
       if (options.header) {
@@ -282,7 +303,9 @@ export class SecureHttpClient {
 
       return response;
     } finally {
-      client.destroy();
+      if (client) {
+        client.destroy();
+      }
     }
   }
 

@@ -48,12 +48,27 @@ interface FodmapFoodEntry {
   alternative?: string;
 }
 
+interface FodmapFoodList {
+  foods: FodmapFoodEntry[];
+}
+
+interface FodmapCategories {
+  highFodmap: FodmapFoodList;
+  lowFodmap: FodmapFoodList;
+}
+
+interface HistamineFoodItem {
+  name: string;
+  examples: string[];
+}
+
+interface HistamineHigh {
+  foods: HistamineFoodItem[];
+}
+
 interface FodmapDatabase {
-  categories: {
-    highFodmap: { foods: FodmapFoodEntry[] };
-    lowFodmap: { foods: FodmapFoodEntry[] };
-  };
-  histamineHigh: { foods: { name: string; examples: string[] }[] };
+  categories: FodmapCategories;
+  histamineHigh: HistamineHigh;
 }
 
 export class IntoleranceEngine {
@@ -193,7 +208,7 @@ export class IntoleranceEngine {
   ]);
 
   check(intolerances: IntoleranceType[], ingredients: string[]): IntoleranceCheckResult {
-    const emptyResult: IntoleranceCheckResult = new IntoleranceCheckResult(
+    const emptyResult: IntoleranceCheckResult = new IntoleranceCheckResult();
     if (intolerances.length === 0 || ingredients.length === 0) {
       return emptyResult;
     }

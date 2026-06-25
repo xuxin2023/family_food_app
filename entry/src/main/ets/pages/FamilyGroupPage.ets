@@ -3,9 +3,11 @@
 
 import {
   ToastHelper, GroupMember, GroupRole, GroupSummary, COLORS, RADIUS, BUTTON, BasicDataSource, safePushUrl, HILOG_DOMAIN_DEFAULT,
-  PageResourceTracker, createPageTracker
+  HapticHelper, PageResourceTracker, createPageTracker, ThemeReactive, themeReactive, ThemeColors, ThemeMode
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
+import { GradientHeader } from '../components/GradientHeader';
+import { LoadingSkeleton } from '../components/SkeletonScreen';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppState } from '../AppState';
 
@@ -14,17 +16,34 @@ const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 @Entry
 @ComponentV2
-struct FamilyGroupPage {
+export struct FamilyGroupPage {
   @Local isLoading: boolean = true;
+  @Local isRefreshing: boolean = false;
   @Local createGroupName: string = '';
   @Local createDescription: string = '';
   @Local inviteCodeInput: string = '';
   @Local displayNameInput: string = '';
   @Local groupSummaries: GroupSummary[] = [];
+  @Local showCreateDialogState: boolean = false;
+  @Local showJoinDialogState: boolean = false;
 
   private appState: AppState = AppState.getInstance();
   private groupDS = new BasicDataSource<GroupSummary>();
   private tracker: PageResourceTracker = createPageTracker('FamilyGroupPage')
+
+  private themeRef: ThemeReactive = themeReactive
+
+  private get isDark(): boolean {
+    if (this.themeRef.key >= 0) { /* trigger reactive */ }
+    return ThemeColors.getTheme() === ThemeMode.DARK;
+  }
+
+  private get pageBgGradient(): LinearGradient {
+    if (this.isDark) {
+      return { angle: 180, colors: [['#0D1B0E', 0.0], ['#1A2F1C', 0.5], ['#0A1A0D', 1.0]] };
+    }
+    return { angle: 180, colors: [['#FCE4EC', 0.0], ['#FFF8E1', 0.3], ['#E8F5E9', 0.7], ['#E0F2F1', 1.0]] };
+  }
 
   async aboutToAppear() {
     this.tracker.onAppear()
@@ -47,65 +66,60 @@ struct FamilyGroupPage {
   }
 
   build() {
-    Column() {
-      // 顶栏
-      Row() {
-        BackButton()
-        .accessibilityText('返回')
+    Stack() {
+      Column() {
+        // 顶栏
+        GradientHeader({
+          title: $r('app.string.family_group'),
+          rightText: '创建群组',
+          onRightClick: () => { this.showCreateDialog() }
+        })
+
+        if (this.isLoading) {
+          LoadingSkeleton({ variant: 'list', rowCount: 5 })
+            .layoutWeight(1)
+        } else if (this.groupDS.totalCount() === 0) {
+          this.emptyState()
+        } else {
+          this.groupList()
+        }
+
+        // 加入群组按钮
+        Button() {
+          Row({ space: 8 }) {
+            Text('+')
+              .fontSize(20)
+              .fontColor(COLORS.WHITE)
+            Text($r('app.string.family_group_join'))
+              .fontSize(15)
+              .fontColor(COLORS.WHITE)
+          }
+        }
+        .width('90%')
+        .height(BUTTON.HEIGHT_PRIMARY)
+        .backgroundColor(COLORS.PRIMARY)
+        .borderRadius(BUTTON.RADIUS_PRIMARY)
+        .margin({ top: 16, bottom: 16 })
+        .onClick(() => {
+          this.showJoinDialog()
+        })
+        .accessibilityText('加入群组')
         .accessibilityLevel('yes')
-        Text($r('app.string.family_group'))
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .margin({ left: 12 })
-        Blank()
-        Text($r('app.string.create_group'))
-          .fontSize(14)
-          .fontColor(COLORS.PRIMARY)
-          .onClick(() => {
-            this.showCreateDialog()
-          })
-          .accessibilityText('创建群组')
-          .accessibilityLevel('yes')
       }
       .width('100%')
-      .padding(16)
+      .height('100%')
+      .linearGradient(this.pageBgGradient)
 
-      if (this.isLoading) {
-        LoadingProgress()
-          .width(32)
-          .height(32)
-          .margin({ top: 100 })
-      } else if (this.groupDS.totalCount() === 0) {
-        this.emptyState()
-      } else {
-        this.groupList()
+      if (this.showCreateDialogState) {
+        this.CreateGroupDialog()
       }
-
-      // 加入群组按钮
-      Button() {
-        Row({ space: 8 }) {
-          Text('+')
-            .fontSize(20)
-            .fontColor(COLORS.WHITE)
-          Text($r('app.string.family_group_join'))
-            .fontSize(15)
-            .fontColor(COLORS.WHITE)
-        }
+      if (this.showJoinDialogState) {
+        this.JoinGroupDialog()
       }
-      .width('90%')
-      .height(BUTTON.HEIGHT_PRIMARY)
-      .backgroundColor(COLORS.PRIMARY)
-      .borderRadius(BUTTON.RADIUS_PRIMARY)
-      .margin({ top: 16, bottom: 16 })
-      .onClick(() => {
-        this.showJoinDialog()
-      })
-      .accessibilityText('加入群组')
-      .accessibilityLevel('yes')
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(COLORS.BG_PAGE)
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   @Builder
@@ -131,18 +145,26 @@ struct FamilyGroupPage {
 
   @Builder
   groupList() {
-    List() {
-      LazyForEach(this.groupDS, (summary: GroupSummary) => {
-        ListItem() {
-          this.groupCard(summary)
-        }
-      }, (summary: GroupSummary) => `${summary.groupId}`)
+    Refresh({ refreshing: $$this.isRefreshing }) {
+      List() {
+        LazyForEach(this.groupDS, (summary: GroupSummary) => {
+          ListItem() {
+            this.groupCard(summary)
+          }
+        }, (summary: GroupSummary) => `${summary.groupId}`)
+      }
+      .width('100%')
+      .height('100%')
+      .layoutWeight(1)
+      .padding({ left: 16, right: 16 })
+      .cachedCount(5)
     }
-    .width('100%')
-    .height('100%')
+    .onRefreshing(async () => {
+      HapticHelper.light()
+      await this.loadGroups()
+      this.isRefreshing = false
+    })
     .layoutWeight(1)
-    .padding({ left: 16, right: 16 })
-    .cachedCount(5)
   }
 
   @Builder
@@ -253,40 +275,146 @@ struct FamilyGroupPage {
     .accessibilityLevel('yes')
   }
 
-  private showCreateDialog(): void {
-    AlertDialog.show({
-      title: $r('app.string.family_group_create_title'),
-      message: $r('app.string.family_group_create_message'),
-      autoCancel: false,
-      primaryButton: {
-        value: $r('app.string.family_group_create'),
-        action: () => {
-          this.handleCreateGroup()
+  @Builder
+  CreateGroupDialog() {
+    Column() {
+      Column() {
+        Text($r('app.string.family_group_create_title'))
+          .fontSize(18)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(COLORS.TEXT_PRIMARY)
+          .margin({ bottom: 16 })
+
+        Text($r('app.string.family_group_create_message'))
+          .fontSize(12)
+          .fontColor(COLORS.TEXT_GRAY_6161)
+          .margin({ bottom: 12 })
+
+        TextInput({ placeholder: '请输入群组名称', text: this.createGroupName })
+          .width('100%')
+          .height(44)
+          .borderRadius(RADIUS.MD)
+          .backgroundColor(COLORS.BG_LIGHT)
+          .margin({ bottom: 10 })
+          .onChange((v: string) => { this.createGroupName = v })
+          .accessibilityText('群组名称')
+          .accessibilityLevel('yes')
+
+        TextInput({ placeholder: '群组描述(选填)', text: this.createDescription })
+          .width('100%')
+          .height(44)
+          .borderRadius(RADIUS.MD)
+          .backgroundColor(COLORS.BG_LIGHT)
+          .margin({ bottom: 18 })
+          .onChange((v: string) => { this.createDescription = v })
+          .accessibilityText('群组描述')
+          .accessibilityLevel('yes')
+
+        Row({ space: 12 }) {
+          Button($r('app.string.family_group_cancel'))
+            .layoutWeight(1)
+            .height(42)
+            .backgroundColor(COLORS.BG_LIGHT)
+            .fontColor(COLORS.TEXT_PRIMARY)
+            .borderRadius(RADIUS.MD)
+            .onClick(() => { this.showCreateDialogState = false })
+          Button($r('app.string.family_group_create'))
+            .layoutWeight(1)
+            .height(42)
+            .backgroundColor(COLORS.PRIMARY)
+            .fontColor(COLORS.WHITE)
+            .borderRadius(RADIUS.MD)
+            .onClick(() => { this.handleCreateGroup() })
         }
-      },
-      secondaryButton: {
-        value: $r('app.string.family_group_cancel'),
-        action: () => {}
+        .width('100%')
       }
-    })
+      .width('82%')
+      .padding(20)
+      .backgroundColor(COLORS.WHITE)
+      .borderRadius(RADIUS.LG)
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor('rgba(0,0,0,0.5)')
+    .justifyContent(FlexAlign.Center)
+    .onClick(() => { this.showCreateDialogState = false })
+  }
+
+  @Builder
+  JoinGroupDialog() {
+    Column() {
+      Column() {
+        Text($r('app.string.family_group_join_title'))
+          .fontSize(18)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(COLORS.TEXT_PRIMARY)
+          .margin({ bottom: 16 })
+
+        Text($r('app.string.family_group_join_message'))
+          .fontSize(12)
+          .fontColor(COLORS.TEXT_GRAY_6161)
+          .margin({ bottom: 12 })
+
+        TextInput({ placeholder: '请输入邀请码', text: this.inviteCodeInput })
+          .width('100%')
+          .height(44)
+          .borderRadius(RADIUS.MD)
+          .backgroundColor(COLORS.BG_LIGHT)
+          .margin({ bottom: 10 })
+          .onChange((v: string) => { this.inviteCodeInput = v })
+          .accessibilityText('邀请码')
+          .accessibilityLevel('yes')
+
+        TextInput({ placeholder: '昵称(选填)', text: this.displayNameInput })
+          .width('100%')
+          .height(44)
+          .borderRadius(RADIUS.MD)
+          .backgroundColor(COLORS.BG_LIGHT)
+          .margin({ bottom: 18 })
+          .onChange((v: string) => { this.displayNameInput = v })
+          .accessibilityText('昵称')
+          .accessibilityLevel('yes')
+
+        Row({ space: 12 }) {
+          Button($r('app.string.family_group_cancel'))
+            .layoutWeight(1)
+            .height(42)
+            .backgroundColor(COLORS.BG_LIGHT)
+            .fontColor(COLORS.TEXT_PRIMARY)
+            .borderRadius(RADIUS.MD)
+            .onClick(() => { this.showJoinDialogState = false })
+          Button($r('app.string.family_group_join_action'))
+            .layoutWeight(1)
+            .height(42)
+            .backgroundColor(COLORS.PRIMARY)
+            .fontColor(COLORS.WHITE)
+            .borderRadius(RADIUS.MD)
+            .onClick(() => { this.handleJoinGroup() })
+        }
+        .width('100%')
+      }
+      .width('82%')
+      .padding(20)
+      .backgroundColor(COLORS.WHITE)
+      .borderRadius(RADIUS.LG)
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor('rgba(0,0,0,0.5)')
+    .justifyContent(FlexAlign.Center)
+    .onClick(() => { this.showJoinDialogState = false })
+  }
+
+  private showCreateDialog(): void {
+    this.createGroupName = '';
+    this.createDescription = '';
+    this.showCreateDialogState = true;
   }
 
   private showJoinDialog(): void {
-    AlertDialog.show({
-      title: $r('app.string.family_group_join_title'),
-      message: $r('app.string.family_group_join_message'),
-      autoCancel: false,
-      primaryButton: {
-        value: $r('app.string.family_group_join_action'),
-        action: () => {
-          this.handleJoinGroup()
-        }
-      },
-      secondaryButton: {
-        value: $r('app.string.family_group_cancel'),
-        action: () => {}
-      }
-    })
+    this.inviteCodeInput = '';
+    this.displayNameInput = '';
+    this.showJoinDialogState = true;
   }
 
   private showMemberManage(summary: GroupSummary): void {
@@ -317,9 +445,10 @@ struct FamilyGroupPage {
       ToastHelper.show(this.getUIContext(), $r('app.string.family_group_create_success'))
       this.groupSummaries = await this.appState.getMyGroups()
       this.groupDS.reload(this.groupSummaries)
+      this.showCreateDialogState = false
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'createGroup failed: %{public}s', JSON.stringify(e));
-      ToastHelper.show(this.getUIContext(), `创建失败: ${(e as Error).message}`)
+      ToastHelper.show(this.getUIContext(), '创建失败: ' + (e as Error).message)
     }
   }
 
@@ -334,9 +463,10 @@ struct FamilyGroupPage {
       ToastHelper.show(this.getUIContext(), $r('app.string.family_group_join_success'))
       this.groupSummaries = await this.appState.getMyGroups()
       this.groupDS.reload(this.groupSummaries)
+      this.showJoinDialogState = false
     } catch (e) {
       hilog.warn(DOMAIN_ZERO, TAG, 'joinGroup failed: %{public}s', JSON.stringify(e));
-      ToastHelper.show(this.getUIContext(), `加入失败: ${(e as Error).message}`)
+      ToastHelper.show(this.getUIContext(), '加入失败: ' + (e as Error).message)
     }
   }
 

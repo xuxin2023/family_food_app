@@ -34,7 +34,6 @@ function getEcoLabel(grade: EcoScore): string {
   }
 }
 
-@Reusable
 @ComponentV2
 export struct EcoScoreBadge {
   @Param grade: EcoScore = EcoScore.UNKNOWN;

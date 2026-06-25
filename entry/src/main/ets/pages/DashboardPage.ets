@@ -3,8 +3,8 @@
 // 整合各维度营养数据的可视化概览：均衡概览、趋势折线、构成分析、收支预算
 // V6.1: 引入 NumericTextTransition 数字翻牌动效，提升健康评分变化时的视觉反馈
 import {
-  safeBack, getPageParams, FamilyProfile, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, DateUtil, HILOG_DOMAIN_DEFAULT, HealthConfig, NutritionTarget, ToastHelper, DailyNutritionSummary, NutrientTrendData, TrendDirection, DailyNutrientPoint,
-  PageResourceTracker, createPageTracker
+  safeBack, getPageParams, FamilyProfile, COLORS, FONT_SIZE, SPACING, RADIUS, FONT_WEIGHT, SHADOWS, DateUtil, HILOG_DOMAIN_DEFAULT, HealthConfig, NutritionTarget, ToastHelper, DailyNutritionSummary, NutrientTrendData, TrendDirection, DailyNutrientPoint,
+  PageResourceTracker, createPageTracker, ThemeReactive, themeReactive, ThemeColors, ThemeMode
 } from 'hsp_core';
 import { BackButton } from '../components/BackButton';
 import { MemberSelector } from '../components/MemberSelector';
@@ -18,6 +18,7 @@ import { ReportExporter } from '../utils/ReportExporter';
 import { common } from '@kit.AbilityKit';
 import { HealthTrendPredictor, TrendPrediction } from 'feature_report';
 import { TrendPredictionBar } from 'feature_report';
+import { nutritionTrendEngine } from 'feature_report';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -108,6 +109,10 @@ class DashboardViewModel {
   @Trace familyLowestMemberRate: number = 100
   @Trace trendPredictions: TrendPrediction[] = []
   @Trace currentBreakpoint: string = 'md'
+  @Trace todaySodium: number = 0
+  @Trace todaySugar: number = 0
+  @Trace todayFat: number = 0
+  @Trace todayProtein: number = 0
 }
 
 @Entry
@@ -120,6 +125,20 @@ export struct DashboardPage {
   private trendPredictor: HealthTrendPredictor = new HealthTrendPredictor()
   private summaryDataSource: SummaryDataSource = new SummaryDataSource()
   private tracker: PageResourceTracker = createPageTracker('DashboardPage')
+
+  private themeRef: ThemeReactive = themeReactive
+
+  private get isDark(): boolean {
+    if (this.themeRef.key >= 0) { /* trigger reactive */ }
+    return ThemeColors.getTheme() === ThemeMode.DARK;
+  }
+
+  private get pageBgGradient(): LinearGradient {
+    if (this.isDark) {
+      return { angle: 180, colors: [['#0D1B0E', 0.0], ['#1A2F1C', 0.5], ['#0A1A0D', 1.0]] };
+    }
+    return { angle: 180, colors: [['#E0F2F1', 0.0], ['#E8EAF6', 0.3], ['#E8F5E9', 0.7], ['#FFF8E1', 1.0]] };
+  }
 
   async aboutToAppear() {
     this.tracker.onAppear()
@@ -143,8 +162,7 @@ export struct DashboardPage {
     }
   }
 
-  async onPageShow() {
-    await this.refreshDashboard()
+  onPageShow() {
   }
 
   private async loadMembers() {
@@ -167,6 +185,14 @@ export struct DashboardPage {
     this.vm.nutritionTarget = await this.appState.getNutritionTargetOrDefault(this.vm.selectedMemberId)
     const nt = this.vm.nutritionTarget
 
+    // 从今日预算计算已摄入量
+    const budget = this.appState.getDailyBudgetSync(this.vm.selectedMemberId)
+    this.vm.todaySodium = Math.max(0, budget.sodiumBudget - budget.sodiumRemaining)
+    this.vm.todaySugar = Math.max(0, budget.sugarBudget - budget.sugarRemaining)
+    this.vm.todayFat = Math.max(0, budget.fatBudget - budget.fatRemaining)
+    const todayCalories = Math.max(0, budget.calorieBudget - budget.calorieRemaining)
+    this.vm.todayProtein = todayCalories * 0.12 / 4
+
     // 计算日期范围并加载每日营养数据
     const endDate = DateUtil.getToday()
     const startDate = new Date()
@@ -177,15 +203,13 @@ export struct DashboardPage {
     this.summaryDataSource.updateData(summaries)
 
     // 构建趋势数据
-    const result: NutrientTrendData[] = []
     if (summaries.length > 0) {
-      const last: DailyNutritionSummary = summaries[summaries.length - 1]
-      const t1: NutrientTrendData = new NutrientTrendData()
-      const t2: NutrientTrendData = new NutrientTrendData()
-      const t3: NutrientTrendData = new NutrientTrendData()
-      const t4: NutrientTrendData = new NutrientTrendData()
+      this.vm.trendsData = nutritionTrendEngine.buildNutrientTrends(
+        summaries, nt.sodiumMax_mg, nt.sugarMax_g, nt.caloriesTarget, nt.fatMax_g
+      );
+    } else {
+      this.vm.trendsData = [];
     }
-    this.vm.trendsData = result
 
     // 构建圆环构成 + 概览统计 + 健康评分（合并为单次遍历）
     this.computeAllDashboardData()
@@ -363,58 +387,47 @@ export struct DashboardPage {
 
   build() {
     Column() {
-      // 导航栏
-      Row() {
+      // 渐变头部
+      Column() {
         Row() {
-          BackButton({ fontSize: 28, fontColor: COLORS.TEXT_PRIMARY })
-            .padding({ right: SPACING.SM })
-        }
-        .width(40)
-        .height(40)
-        .justifyContent(FlexAlign.Center)
-        .onClick(() => {
-          try {
-            safeBack();
-          } catch (e) {
-            hilog.warn(DOMAIN_ZERO, 'DashboardPage', 'safeBack failed: %{public}s', JSON.stringify(e));
+          BackButton({ fontColor: COLORS.WHITE })
+          Text($r('app.string.dashboard_title'))
+            .fontSize(20)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(COLORS.WHITE)
+            .margin({ left: 8 })
+            .layoutWeight(1)
+
+          // 周期切换
+          Row({ space: 4 }) {
+            ForEach(PERIOD_OPTIONS, (opt: PeriodOption, idx: number) => {
+              Text($r('app.string.' + opt.labelKey))
+                .fontSize(12)
+                .fontWeight(this.vm.selectedPeriodIndex === idx ? FontWeight.Bold : FontWeight.Normal)
+                .fontColor(this.vm.selectedPeriodIndex === idx ? COLORS.PRIMARY_DARK : 'rgba(255,255,255,0.7)')
+                .padding({ left: 10, right: 10, top: 4, bottom: 4 })
+                .borderRadius(12)
+                .backgroundColor(this.vm.selectedPeriodIndex === idx ? COLORS.WHITE : 'rgba(255,255,255,0.15)')
+                .onClick(() => { this.switchPeriod(idx) })
+            }, (opt: PeriodOption, idx: number) => 'period_' + idx.toString())
           }
-        })
-        .accessibilityText('返回')
-        .accessibilityLevel('yes')
 
-        Text($r('app.string.dashboard_title'))
-          .fontSize(FONT_SIZE.TITLE)
-          .fontWeight(FONT_WEIGHT.BOLD)
-          .fontColor(COLORS.TEXT_PRIMARY)
-          .margin({ left: SPACING.SM })
-
-        Blank()
-        // 周期切换
-        Row({ space: 4 }) {
-          ForEach(PERIOD_OPTIONS, (opt: PeriodOption, idx: number) => {
-            Text($r('app.string.' + opt.labelKey))
-              .fontSize(FONT_SIZE.SMALL)
-              .fontWeight(this.vm.selectedPeriodIndex === idx ? FONT_WEIGHT.BOLD : FONT_WEIGHT.REGULAR)
-              .fontColor(this.vm.selectedPeriodIndex === idx ? COLORS.WHITE : COLORS.TEXT_GRAY_6161)
-              .padding({ left: SPACING.MD, right: SPACING.MD, top: SPACING.XS, bottom: SPACING.XS })
-              .borderRadius(RADIUS.FULL)
-              .backgroundColor(this.vm.selectedPeriodIndex === idx ? COLORS.PRIMARY : COLORS.BG_LIGHT_GRAY_F5)
-              .onClick(() => { this.switchPeriod(idx) })
-              .accessibilityText(opt.label)
-              .accessibilityLevel('yes')
-          }, (opt: PeriodOption, idx: number) => `period_${idx}`)
+          Text($r('app.string.export_summary'))
+            .fontSize(12)
+            .fontColor('rgba(255,255,255,0.85)')
+            .margin({ left: 8 })
+            .onClick(() => { this.doExportSummary(); })
         }
-
-        Text($r('app.string.export_summary'))
-          .fontSize(FONT_SIZE.SMALL)
-          .fontColor(COLORS.PRIMARY)
-          .margin({ left: SPACING.SM })
-          .onClick(() => { this.doExportSummary(); })
-          .accessibilityText('导出摘要')
-          .accessibilityLevel('yes')
+        .width('100%')
+        .padding({ left: 16, right: 16, top: 56, bottom: 16 })
       }
       .width('100%')
-      .padding({ left: SPACING.LG, right: SPACING.LG, top: SPACING.LG, bottom: SPACING.MD })
+      .linearGradient({
+        angle: 135,
+        colors: [['#0D47A1', 0.0], ['#1565C0', 0.3], ['#1976D2', 0.7], ['#42A5F5', 1.0]]
+      })
+      .borderRadius({ topLeft: 0, topRight: 0, bottomLeft: 24, bottomRight: 24 })
+      .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP])
 
       if (this.vm.isLoading) {
         LoadingProgress()
@@ -445,7 +458,7 @@ export struct DashboardPage {
         // V2: Tab 切换（个人 / 家庭概览）
         GridRow({
           columns: { sm: 4, md: 8, lg: 12 },
-          breakpoints: { reference: BreakpointsReference.WindowSize, breakpoints: ['320vp', '600vp'] }
+          breakpoints: { value: ['320vp', '600vp'], reference: BreakpointsReference.WindowSize }
         }) {
           GridCol({ span: { sm: 4, md: 8, lg: 12 } }) {
             // Tab 栏
@@ -497,6 +510,8 @@ export struct DashboardPage {
                 }).margin({ bottom: SPACING.MD })
                 // ─══─②─ 健康概览卡片（左侧评分 + 右侧统计）─══─
                 this.buildHealthOverviewCard()
+                // ─══─②.5─ AI洞察卡片 ─══─
+                this.buildAiInsightCard()
                 // ─══─③─ 营养均衡雷达图面板（延迟加载）─══─
                 if (this.vm.chartReady) {
                   NutrientRadarPanel({
@@ -510,13 +525,13 @@ export struct DashboardPage {
                   NutritionTargetGauge({
                     calories: this.vm.overviewAvgCalorie,
                     caloriesTarget: this.vm.nutritionTarget.caloriesTarget,
-                    sodium: 0,
+                    sodium: this.vm.todaySodium,
                     sodiumTarget: this.vm.nutritionTarget.sodiumMax_mg,
-                    sugar: 0,
+                    sugar: this.vm.todaySugar,
                     sugarTarget: this.vm.nutritionTarget.sugarMax_g,
-                    fat: 0,
+                    fat: this.vm.todayFat,
                     fatTarget: this.vm.nutritionTarget.fatMax_g,
-                    protein: 0,
+                    protein: this.vm.todayProtein,
                     proteinTarget: this.vm.nutritionTarget.proteinTarget_g
                   })
                   .padding({ left: SPACING.LG, right: SPACING.LG })
@@ -598,6 +613,7 @@ export struct DashboardPage {
     .width('100%')
     .height('100%')
     .backgroundColor(COLORS.WHITE)
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
 
@@ -716,7 +732,108 @@ export struct DashboardPage {
     .backgroundColor(COLORS.WHITE)
     .borderRadius(RADIUS.LG)
     .margin({ left: SPACING.LG, right: SPACING.LG, bottom: SPACING.MD })
-    .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
+    .shadow(SHADOWS.MD)
+  }
+
+  // ─═══AI洞察卡片─══─
+  @Builder
+  buildAiInsightCard() {
+    Column() {
+      Row() {
+        Column() {
+          Text('🤖')
+            .fontSize(20)
+        }
+        .width(36)
+        .height(36)
+        .borderRadius(18)
+        .backgroundColor(COLORS.BG_WARM_BLUE)
+        .justifyContent(FlexAlign.Center)
+        .alignItems(HorizontalAlign.Center)
+
+        Text('智能营养洞察')
+          .fontSize(FONT_SIZE.MEDIUM)
+          .fontWeight(FONT_WEIGHT.BOLD)
+          .fontColor(COLORS.TEXT_PRIMARY)
+          .margin({ left: 8 })
+          .layoutWeight(1)
+      }
+      .width('100%')
+      .margin({ bottom: 10 })
+
+      this.buildInsightItem(
+        this.vm.overviewHighSodiumDays > this.vm.overviewDays / 3,
+        '🧂',
+        '钠摄入偏高',
+        '近' + this.vm.overviewDays.toString() + '天中有' + this.vm.overviewHighSodiumDays.toString() + '天钠超标，建议减少加工食品',
+        COLORS.BG_WARM_PINK, COLORS.ERROR
+      )
+
+      this.buildInsightItem(
+        this.vm.overviewAvgCalorie > this.vm.nutritionTarget.caloriesTarget,
+        '🔥',
+        '热量超标',
+        '平均每日' + this.vm.overviewAvgCalorie.toFixed(0) + 'kcal，超过目标' + this.vm.nutritionTarget.caloriesTarget.toString() + 'kcal',
+        COLORS.BG_WARM_ORANGE, COLORS.ORANGE_DEEP
+      )
+
+      this.buildInsightItem(
+        this.vm.healthScore >= 70,
+        '✅',
+        '整体表现优秀',
+        '健康评分' + this.vm.healthScore.toString() + '分，继续保持良好的饮食习惯',
+        COLORS.BG_LIGHT_GREEN, COLORS.PRIMARY_DARK
+      )
+
+      this.buildInsightItem(
+        this.vm.healthScore < 50 && this.vm.overviewDays > 0,
+        '⚠️',
+        '需要改善',
+        '健康评分较低，建议多选择天然食品，减少超加工食品',
+        COLORS.BG_WARM_PINK, COLORS.ERROR
+      )
+    }
+    .width('100%')
+    .padding(SPACING.LG)
+    .backgroundColor(COLORS.WHITE)
+    .borderRadius(RADIUS.LG)
+    .margin({ left: SPACING.LG, right: SPACING.LG, bottom: SPACING.MD })
+    .shadow(SHADOWS.MD)
+  }
+
+  @Builder
+  buildInsightItem(show: boolean, icon: string, title: string, detail: string, bgColor: string, textColor: string) {
+    if (show) {
+      Row() {
+        Column() {
+          Text(icon)
+            .fontSize(16)
+        }
+        .width(32)
+        .height(32)
+        .borderRadius(RADIUS.LG)
+        .backgroundColor(bgColor)
+        .justifyContent(FlexAlign.Center)
+        .alignItems(HorizontalAlign.Center)
+
+        Column() {
+          Text(title)
+            .fontSize(FONT_SIZE.SMALL)
+            .fontColor(textColor)
+            .fontWeight(FONT_WEIGHT.MEDIUM)
+          Text(detail)
+            .fontSize(FONT_SIZE.TINY)
+            .fontColor(COLORS.TEXT_SECONDARY)
+            .margin({ top: 2 })
+            .lineHeight(16)
+        }
+        .alignItems(HorizontalAlign.Start)
+        .layoutWeight(1)
+        .margin({ left: 8 })
+      }
+      .width('100%')
+      .padding({ top: 8, bottom: 8 })
+    }
   }
 
   // ─══─趋势折线图─══─
@@ -796,7 +913,7 @@ export struct DashboardPage {
         .backgroundColor(COLORS.WHITE)
         .borderRadius(RADIUS.MD)
         .margin({ left: SPACING.LG, right: SPACING.LG, bottom: SPACING.MD })
-        .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
+        .shadow(SHADOWS.MD)
       }, (trend: NutrientTrendData, i: number) => `trend_${i}`)
     }
   }
@@ -876,7 +993,7 @@ export struct DashboardPage {
     .backgroundColor(COLORS.WHITE)
     .borderRadius(RADIUS.LG)
     .margin({ left: SPACING.LG, right: SPACING.LG, bottom: SPACING.MD })
-    .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
+    .shadow(SHADOWS.MD)
   }
 
   // ─══─每日明细列表─══─
@@ -974,7 +1091,7 @@ export struct DashboardPage {
     .backgroundColor(COLORS.WHITE)
     .borderRadius(RADIUS.LG)
     .margin({ left: SPACING.LG, right: SPACING.LG, bottom: SPACING.MD })
-    .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
+    .shadow(SHADOWS.MD)
   }
 
   // ===== 辅助函数 =====
@@ -1173,7 +1290,7 @@ export struct DashboardPage {
         .backgroundColor(COLORS.WHITE)
         .borderRadius(RADIUS.LG)
         .margin({ left: SPACING.LG, right: SPACING.LG })
-        .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
+        .shadow(SHADOWS.MD)
 
         // 各成员今日摄入对比
         Column() {
@@ -1228,7 +1345,7 @@ export struct DashboardPage {
         .backgroundColor(COLORS.WHITE)
         .borderRadius(RADIUS.LG)
         .margin({ left: SPACING.LG, right: SPACING.LG })
-        .shadow({ radius: 2, color: '#1A000000', offsetY: 1 })
+        .shadow(SHADOWS.MD)
 
         // 底部留白
         Column()
@@ -1238,7 +1355,7 @@ export struct DashboardPage {
       .padding({ top: SPACING.MD })
     }
     .layoutWeight(1)
-    .backgroundColor(COLORS.BG_PAGE)
+    .linearGradient(this.pageBgGradient)
   }
 
   private getCompletionColor(rate: number): string {

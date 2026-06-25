@@ -1,6 +1,8 @@
-import { safeBack, COLORS, BUTTON, SPACING, FONT_SIZE, PageResourceTracker, createPageTracker } from 'hsp_core';
+import { safeBack, COLORS, BUTTON, SPACING, FONT_SIZE, PageResourceTracker, createPageTracker, ThemeReactive, themeReactive } from 'hsp_core';
 import { TeenModeManager } from 'hsp_service';
 import { promptAction } from '@kit.ArkUI';
+import { BackButton } from '../components/BackButton';
+import { GradientHeader } from '../components/GradientHeader';
 
 @Entry
 @ComponentV2
@@ -11,6 +13,8 @@ export struct TeenModePage {
   private teenModeManager: TeenModeManager = TeenModeManager.getInstance()
 
   private tracker: PageResourceTracker = createPageTracker('TeenModePage')
+  private themeRef: ThemeReactive = themeReactive
+
   aboutToAppear(): void {
     this.tracker.onAppear()
     this.isTeenModeEnabled = this.teenModeManager.isEnabled()
@@ -19,15 +23,7 @@ export struct TeenModePage {
 
   build() {
     Column() {
-      Row() {
-        Text($r('app.string.back_arrow')).fontSize(24).fontColor(COLORS.PRIMARY)
-          .onClick(() => { safeBack() })
-          .accessibilityText($r('app.string.teen_mode_back'))
-        Text($r('app.string.teen_mode_title')).fontSize(20).fontWeight(FontWeight.Bold)
-          .margin({ left: 16 })
-      }
-      .width('100%')
-      .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+      GradientHeader({ title: '青少年模式' })
 
       Scroll() {
         Column() {
@@ -102,7 +98,8 @@ export struct TeenModePage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#FAFAFA')
+    .backgroundColor(COLORS.BG_PAGE)
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   @Builder

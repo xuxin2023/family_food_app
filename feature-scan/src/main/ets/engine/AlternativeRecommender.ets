@@ -1,5 +1,5 @@
 import { FoodLabel, NutritionPer100g, IOfflineFoodProvider, OfflineFoodEntry, NutritionThreshold } from 'hsp_core';
-import { NutriScoreEngine } from './NutriScoreEngine';
+import { NutriScoreEngine, NutriScoreBreakdown, NutriScoreInput } from 'hsp_rating';
 
 export class AlternativeCandidate {
   foodName: string = '';
@@ -82,7 +82,7 @@ export class AlternativeRecommender {
     candidate.nutrition = entry.nutrition;
     candidate.category = entry.category;
 
-    const breakdown = NutriScoreEngine.calculateFromNutrition(entry.nutrition);
+    const breakdown: NutriScoreBreakdown = NutriScoreEngine.calculateScore(NutriScoreInput.fromNutrition(entry.nutrition));
     candidate.nutriGrade = breakdown.grade;
 
     const improvements: string[] = [];

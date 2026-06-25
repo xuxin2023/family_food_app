@@ -8,8 +8,14 @@ export interface ILocalCacheProvider {
   findFoodByBarcode(barcode: string): Promise<FoodLabel | null>;
 }
 
+export interface RemoteLookupResult {
+  found: boolean;
+  foodLabel: FoodLabel | null;
+  confidence: number;
+}
+
 export interface IRemoteLookupProvider {
-  lookupByBarcode(barcode: string): Promise<{ found: boolean; foodLabel: FoodLabel | null; confidence: number } | null>;
+  lookupByBarcode(barcode: string): Promise<RemoteLookupResult | null>;
 }
 
 export interface BatchScanResult {
@@ -18,6 +24,13 @@ export interface BatchScanResult {
   source: string;
   confidence: number;
   scanTimeMs: number;
+}
+
+export interface BatchScanSummary {
+  total: number;
+  hit: number;
+  miss: number;
+  avgTimeMs: number;
 }
 
 export class BatchScanService {
@@ -83,11 +96,12 @@ export class BatchScanService {
     return this.results;
   }
 
-  getSummary(): Record<string, Object> {
-    const total = this.results.length;
-    const hit = this.results.filter(r => r.foodLabel !== null).length;
-    const totalTime = this.results.reduce((s, r) => s + r.scanTimeMs, 0);
-    return { total, hit, miss: total - hit, avgTimeMs: total > 0 ? Math.round(totalTime / total) : 0 };
+  getSummary(): BatchScanSummary {
+    const total: number = this.results.length;
+    const hit: number = this.results.filter((r: BatchScanResult): boolean => r.foodLabel !== null).length;
+    const totalTime: number = this.results.reduce((s: number, r: BatchScanResult): number => s + r.scanTimeMs, 0);
+    const summary: BatchScanSummary = { total: total, hit: hit, miss: total - hit, avgTimeMs: total > 0 ? Math.round(totalTime / total) : 0 };
+    return summary;
   }
 
   clearResults(): void {

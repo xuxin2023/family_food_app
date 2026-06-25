@@ -32,8 +32,7 @@ export struct EcoScoreDetail {
   @Local showDetail: boolean = false;
 
   build() {
-    const eco = this.ecoResult
-    if (eco !== null && eco.grade !== EcoScoreGrade.UNKNOWN) {
+    if (this.ecoResult !== null && this.ecoResult.grade !== EcoScoreGrade.UNKNOWN) {
       Column() {
         Row() {
           Text($r('app.string.eco_detail_title'))
@@ -42,7 +41,7 @@ export struct EcoScoreDetail {
             .fontColor(COLORS.TEXT_PRIMARY)
           Blank()
           Row() {
-            Text(eco.grade)
+            Text(this.ecoResult.grade)
               .fontSize(16)
               .fontWeight(FontWeight.Bold)
               .fontColor(COLORS.WHITE)
@@ -50,12 +49,12 @@ export struct EcoScoreDetail {
               .height(28)
               .textAlign(TextAlign.Center)
               .borderRadius(RADIUS.SM)
-              .backgroundColor(getEcoColor(eco.grade))
-            Text(`${eco.score}${$r('app.string.eco_detail_score_unit')}`)
+              .backgroundColor(getEcoColor(this.ecoResult.grade))
+            Text(`${this.ecoResult.score}${$r('app.string.eco_detail_score_unit')}`)
               .fontSize(FONT_SIZE.SMALL)
               .fontColor(COLORS.TEXT_SECONDARY)
               .margin({ left: 6 })
-            Text(getEcoLabel(eco.grade))
+            Text(getEcoLabel(this.ecoResult.grade))
               .fontSize(FONT_SIZE.TINY)
               .fontColor(COLORS.TEXT_TERTIARY)
               .margin({ left: 4 })
@@ -73,10 +72,10 @@ export struct EcoScoreDetail {
               .borderRadius(3)
               .backgroundColor('#F0F0F0')
             Row()
-              .width(`${Math.max(2, eco.score)}%`)
+              .width(`${Math.max(2, this.ecoResult.score)}%`)
               .height(6)
               .borderRadius(3)
-              .backgroundColor(getEcoColor(eco.grade))
+              .backgroundColor(getEcoColor(this.ecoResult.grade))
           }
           .width('100%')
           .alignContent(Alignment.Start)
@@ -84,7 +83,7 @@ export struct EcoScoreDetail {
         .width('100%')
         .padding({ left: SPACING.LG, right: SPACING.LG, bottom: SPACING.XS })
 
-        if (eco.confidence < 0.8) {
+        if (this.ecoResult.confidence < 0.8) {
           Row() {
             Text($r('app.string.eco_detail_estimate_hint'))
               .fontSize(FONT_SIZE.TINY)
@@ -108,14 +107,14 @@ export struct EcoScoreDetail {
         .accessibilityText($r('app.string.eco_detail_view_detail'))
         .accessibilityLevel('yes')
 
-        if (this.showDetail && eco.factors.length > 0) {
+        if (this.showDetail && this.ecoResult.factors.length > 0) {
           Column() {
             Text($r('app.string.eco_detail_basis'))
               .fontSize(FONT_SIZE.SMALL)
               .fontColor(COLORS.TEXT_SECONDARY)
               .fontWeight(FONT_WEIGHT.MEDIUM)
               .margin({ bottom: 4 })
-            ForEach(eco.factors, (factor: EcoScoreFactor) => {
+            ForEach(this.ecoResult.factors, (factor: EcoScoreFactor) => {
               Row() {
                 Text('• ')
                   .fontSize(FONT_SIZE.SMALL)

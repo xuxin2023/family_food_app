@@ -13,8 +13,6 @@ import {
   TABLE_SHOPPING_LIST, TABLE_REMINDER_RULES,
   SecureDataStore, DataIntegrityChecker
 } from 'hsp_core';
-import { ShoppingListRepository } from '../repository/ShoppingListRepository';
-import { ReminderRuleRepository } from '../repository/ReminderRuleRepository';
 
 const TAG = 'DataBackupService';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -71,7 +69,7 @@ export class DataBackupService {
   }
 
   async exportBackup(context: common.Context, incremental: boolean = false): Promise<BackupResult> {
-    const result: BackupResult = new BackupResult(
+    const result: BackupResult = new BackupResult();
     try {
       const rdbStore = await this.getRdbStore(context);
       const manifest: BackupManifest = new BackupManifest()
@@ -102,7 +100,6 @@ export class DataBackupService {
       const filePath = `${docsDir}/${fileName}`;
 
       const encrypted = await this.secureStore.encrypt(jsonStr);
-      const bytes: Uint8Array = new Uint8Array(
       const hexStr = DataBackupService.arrayBufferToHex(encrypted);
       const file = fileIo.openSync(filePath, fileIo.OpenMode.CREATE | fileIo.OpenMode.TRUNC | fileIo.OpenMode.WRITE_ONLY);
       fileIo.writeSync(file.fd, hexStr);
@@ -131,10 +128,10 @@ export class DataBackupService {
   }
 
   async importBackup(filePath: string, context: common.Context): Promise<RestoreResult> {
-    const result: RestoreResult = new RestoreResult(
+    const result: RestoreResult = new RestoreResult();
     try {
       const stat = fileIo.statSync(filePath);
-      const buffer: ArrayBuffer = new ArrayBuffer(
+      const buffer: ArrayBuffer = new ArrayBuffer(stat.size);
       const file = fileIo.openSync(filePath, fileIo.OpenMode.READ_ONLY);
       fileIo.readSync(file.fd, buffer);
       fileIo.closeSync(file);
@@ -182,30 +179,36 @@ export class DataBackupService {
       securityLevel: relationalStore.SecurityLevel.S3,
       encrypt: true
     };
-    return await relationalStore.getRdbStore(context, rdbConfig);
+    try {
+      return await relationalStore.getRdbStore(context, rdbConfig);
+    } catch (err) {
+      hilog.error(DOMAIN_ZERO, TAG, 'getRdbStore failed: %{public}s', JSON.stringify(err));
+      throw new Error('getRdbStore failed');
+    }
   }
 
   private static async queryAllRows(store: relationalStore.RdbStore, table: string): Promise<Object[]> {
+    let resultSet: relationalStore.ResultSet | null = null;
     try {
-      const resultSet = await store.querySql(`SELECT * FROM ${table}`);
+      resultSet = await store.querySql(`SELECT * FROM ${table}`);
       const rows: Object[] = [];
       while (resultSet.goToNextRow()) {
         const row: Record<string, Object> = {};
         for (let i = 0; i < resultSet.columnCount; i++) {
           const colName = resultSet.getColumnName(i);
           try {
-            row[colName] = resultSet.geti.toString();
+            row[colName] = resultSet.getString(i);
           } catch (_e) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
+            hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
             try {
               row[colName] = resultSet.getLong(i);
             } catch (_e2) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e2));
+              hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e2));
               try {
                 row[colName] = resultSet.getDouble(i);
               } catch (_e3) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e3));
-                row[colName] = null;
+                hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e3));
+                row[colName] = '' as Object;
               }
             }
           }
@@ -215,14 +218,19 @@ export class DataBackupService {
       resultSet.close();
       return rows;
     } catch (e) {
+      if (resultSet) {
+        try { resultSet.close(); } catch (_) {}
+      }
       hilog.warn(DOMAIN_ZERO, TAG, 'queryAllRows failed for %{public}s: %{public}s', table, JSON.stringify(e));
       return [];
     }
   }
 
   private static async queryRowsSince(store: relationalStore.RdbStore, table: string, sinceTs: number): Promise<Object[]> {
+    let hasUpdated: relationalStore.ResultSet | null = null;
+    let resultSet: relationalStore.ResultSet | null = null;
     try {
-      const hasUpdated = await store.querySql(`PRAGMA table_info(${table})`);
+      hasUpdated = await store.querySql(`PRAGMA table_info(${table})`);
       let colNames: string[] = [];
       let hasUpdatedAt = false;
       while (hasUpdated.goToNextRow()) {
@@ -233,6 +241,7 @@ export class DataBackupService {
         }
       }
       hasUpdated.close();
+      hasUpdated = null;
 
       if (!hasUpdatedAt) {
         return await DataBackupService.queryAllRows(store, table);
@@ -240,21 +249,21 @@ export class DataBackupService {
 
       const tsCol = colNames.includes('updated_at') ? 'updated_at'
         : colNames.includes('createdAt') ? 'createdAt' : 'created_at';
-      const resultSet = await store.querySql(`SELECT * FROM ${table} WHERE ${tsCol} > ?`, [sinceTs]);
+      resultSet = await store.querySql(`SELECT * FROM ${table} WHERE ${tsCol} > ?`, [sinceTs]);
       const rows: Object[] = [];
       while (resultSet.goToNextRow()) {
         const row: Record<string, Object> = {};
         for (let i = 0; i < resultSet.columnCount; i++) {
           const colName = resultSet.getColumnName(i);
           try {
-            row[colName] = resultSet.geti.toString();
+            row[colName] = resultSet.getString(i);
           } catch (_e) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
+            hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
             try {
               row[colName] = resultSet.getLong(i);
             } catch (_e2) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e2));
-              row[colName] = null;
+              hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e2));
+              row[colName] = '' as Object;
             }
           }
         }
@@ -263,6 +272,8 @@ export class DataBackupService {
       resultSet.close();
       return rows;
     } catch (e) {
+      if (hasUpdated) { try { hasUpdated.close(); } catch (_) {} }
+      if (resultSet) { try { resultSet.close(); } catch (_) {} }
       hilog.warn(DOMAIN_ZERO, TAG, 'queryRowsSince failed for %{public}s: %{public}s', table, JSON.stringify(e));
       return [];
     }
@@ -272,13 +283,15 @@ export class DataBackupService {
     let count = 0;
     for (const row of rows) {
       try {
-        const cols = Object.keys(row);
-        const vals = cols.map(c => row[c]);
-        const placeholders = cols.map(() => '?').join(', ');
-        await store.executeSql(`INSERT OR REPLACE INTO ${table} (${cols.join(', ')}) VALUES (${placeholders})`, vals);
+        const cols: string[] = Object.keys(row);
+        const vals: relationalStore.ValueType[] = cols.map(c => row[c] as relationalStore.ValueType);
+        const placeholders: string = cols.map(() => '?').join(', ');
+        const sql: string = `INSERT OR REPLACE INTO ${table} (${cols.join(', ')}) VALUES (${placeholders})`;
+        await store.executeSql(sql, vals);
         count++;
       } catch (_e) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));}
+        hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
+      }
     }
     return count;
   }

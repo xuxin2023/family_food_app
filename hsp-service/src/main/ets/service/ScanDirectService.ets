@@ -53,7 +53,7 @@ export class ScanDirectService {
    */
   async startScanFromControlCenter(context: common.Context): Promise<ScanDirectResult> {
     const startMs = Date.now();
-    const result: ScanDirectResult = new ScanDirectResult(
+    const result: ScanDirectResult = new ScanDirectResult();
 
     try {
       // HarmonyOS 6.1 Scan Kit 增强配置

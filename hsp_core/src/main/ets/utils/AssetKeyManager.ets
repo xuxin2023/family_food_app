@@ -14,14 +14,24 @@ const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
 // 工具函数：string <-> Uint8Array
 function stringToArray(str: string): Uint8Array {
-  const textEncoder = new util.TextEncoder();
-  return textEncoder.encode(str);
+  try {
+    const textEncoder = new util.TextEncoder();
+    return textEncoder.encode(str);
+  } catch (err) {
+    hilog.warn(DOMAIN_ZERO, TAG, 'stringToArray failed: %{public}s', JSON.stringify(err));
+    return new Uint8Array(0);
+  }
 }
 
 function arrayToString(arr: Uint8Array): string {
   if (!arr || arr.length === 0) return '';
-  const textDecoder = util.TextDecoder.create('utf-8', { ignoreBOM: true });
-  return textDecoder.decodeWithStream(arr, { stream: false });
+  try {
+    const textDecoder = util.TextDecoder.create('utf-8', { ignoreBOM: true });
+    return textDecoder.decodeWithStream(arr, { stream: false });
+  } catch (err) {
+    hilog.warn(DOMAIN_ZERO, TAG, 'arrayToString failed: %{public}s', JSON.stringify(err));
+    return '';
+  }
 }
 
 // 预定义的 Key 别名（每条 Key 在 Asset 中唯一）
@@ -155,8 +165,12 @@ export class AssetKeyManager {
   // ==================== 内部方法 ====================
 
   private async removeKeyInternal(alias: string): Promise<void> {
-    const query: asset.AssetMap = new Map();
-    query.set(asset.Tag.ALIAS, stringToArray(alias));
-    await asset.remove(query);
+    try {
+      const query: asset.AssetMap = new Map();
+      query.set(asset.Tag.ALIAS, stringToArray(alias));
+      await asset.remove(query);
+    } catch (err) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'removeKeyInternal failed: %{public}s', JSON.stringify(err));
+    }
   }
 }

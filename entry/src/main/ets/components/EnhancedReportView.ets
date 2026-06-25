@@ -1,5 +1,6 @@
 import {
-  FoodLabel, FamilyProfile, Recommendation, AlternativeFood, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON
+  FoodLabel, FamilyProfile, Recommendation, AlternativeFood, COLORS, RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, BUTTON,
+  RecommendLevel, LevelColor, getLevelColorValue, RecommendationLevel
 } from 'hsp_core';
 import { NutriScoreBadge, AllergenHighlightList } from 'feature_scan';
 import { NovaGroupBadge, EcoScoreBadge } from 'feature_report';
@@ -14,13 +15,13 @@ struct RecommendationCard {
 
   private getLevelColor(): string {
     switch (this.recommendation.level) {
-      case 'good':
+      case RecommendLevel.SUITABLE:
         return COLORS.ACCENT_GREEN
-      case 'moderate':
+      case RecommendLevel.SMALL_OK:
         return COLORS.WARNING
-      case 'poor':
+      case RecommendLevel.CAUTIOUS:
         return COLORS.LEVEL_ORANGE
-      case 'bad':
+      case RecommendLevel.AVOID:
         return COLORS.LEVEL_RED
       default:
         return COLORS.TEXT_TERTIARY
@@ -29,13 +30,13 @@ struct RecommendationCard {
 
   private getLevelIcon(): string {
     switch (this.recommendation.level) {
-      case 'good':
+      case RecommendLevel.SUITABLE:
         return '✓'
-      case 'moderate':
+      case RecommendLevel.SMALL_OK:
         return '!'
-      case 'poor':
+      case RecommendLevel.CAUTIOUS:
         return '⚠'
-      case 'bad':
+      case RecommendLevel.AVOID:
         return '✗'
       default:
         return '?'
@@ -57,17 +58,19 @@ struct RecommendationCard {
         .justifyContent(FlexAlign.Center)
 
         Column() {
-          Text(this.recommendation.title)
+          Text(this.recommendation.summary || '健康建议')
             .fontSize(14)
             .fontColor(COLORS.TEXT_PRIMARY)
             .fontWeight(FontWeight.Medium)
 
-          Text(this.recommendation.reason)
-            .fontSize(12)
-            .fontColor(COLORS.TEXT_SECONDARY)
-            .margin({ top: 4 })
-            .maxLines(2)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
+          if (this.recommendation.reasons.length > 0) {
+            Text(this.recommendation.reasons[0])
+              .fontSize(12)
+              .fontColor(COLORS.TEXT_SECONDARY)
+              .margin({ top: 4 })
+              .maxLines(2)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+          }
         }
         .layoutWeight(1)
         .padding({ left: SPACING.MD })
@@ -89,7 +92,8 @@ struct RecommendationCard {
 
 @ComponentV2
 struct AlternativeCard {
-  @Param alternative: AlternativeFood = new AlternativeFood()
+  @Param alternative: AlternativeFood = new AlternativeFood('', '', 50, 
+    RecommendationLevel.GREEN, 0, 0, 0, '')
   @Param onTap: () => void = () => {}
   @Param index: number = 0
 
@@ -97,7 +101,7 @@ struct AlternativeCard {
     ScaleInView({ delay: this.index * 100 }) {
       Column() {
         Row() {
-          Text(this.alternative.foodName)
+          Text(this.alternative.productName)
             .fontSize(14)
             .fontColor(COLORS.TEXT_PRIMARY)
             .fontWeight(FontWeight.Medium)
@@ -105,32 +109,30 @@ struct AlternativeCard {
             .maxLines(1)
             .textOverflow({ overflow: TextOverflow.Ellipsis })
 
-          if (this.alternative.nutriScoreDiff !== undefined) {
-            Row() {
-              Text(this.alternative.nutriScoreDiff > 0 ? '+' : '')
-                .fontSize(12)
-              Text(`${this.alternative.nutriScoreDiff}`)
-                .fontSize(12)
-            }
-            .fontColor(this.alternative.nutriScoreDiff > 0 ? COLORS.ACCENT_GREEN : COLORS.LEVEL_RED)
+          Text(`${this.alternative.healthScore}分`)
+            .fontSize(12)
+            .fontColor(this.alternative.healthScore >= 60 ? COLORS.ACCENT_GREEN : COLORS.LEVEL_RED)
             .fontWeight(FontWeight.Bold)
-          }
         }
         .width('100%')
         .margin({ bottom: 8 })
 
         Row() {
-          if (this.alternative.tags && this.alternative.tags.length > 0) {
-            ForEach(this.alternative.tags.slice(0, 3), (tag: string) => {
-              Text(tag)
-                .fontSize(11)
-                .fontColor(COLORS.TEXT_SECONDARY)
-                .padding({ left: 8, right: 8, top: 4, bottom: 4 })
-                .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
-                .borderRadius(4)
-                .margin({ right: 6 })
-            }, (tag: string) => tag)
-          }
+          Text(`钠${this.alternative.sodium_mg}mg`)
+            .fontSize(11)
+            .fontColor(COLORS.TEXT_SECONDARY)
+            .padding({ left: 8, right: 8, top: 4, bottom: 4 })
+            .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
+            .borderRadius(4)
+            .margin({ right: 6 })
+
+          Text(`糖${this.alternative.sugar_g}g`)
+            .fontSize(11)
+            .fontColor(COLORS.TEXT_SECONDARY)
+            .padding({ left: 8, right: 8, top: 4, bottom: 4 })
+            .backgroundColor(COLORS.BG_LIGHT_GRAY_F5)
+            .borderRadius(4)
+            .margin({ right: 6 })
         }
 
         Text(this.alternative.reason || '更健康的选择')
@@ -149,7 +151,7 @@ struct AlternativeCard {
         color: COLORS.BG_LIGHT_GRAY_F5
       })
       .onClick(() => { this.onTap() })
-      .accessibilityText(`替代品：${this.alternative.foodName}`)
+      .accessibilityText(`替代品：${this.alternative.productName}`)
       .accessibilityLevel('yes')
     }
   }
@@ -161,11 +163,38 @@ struct FamilyMemberCard {
   @Param isSelected: boolean = false
   @Param onTap: () => void = () => {}
 
+  private getAgeGroupLabel(): string {
+    switch (this.member.ageGroup) {
+      case '婴儿': return '👶'
+      case '幼儿': return '🧒'
+      case '儿童': return '👦'
+      case '青少年': return '🧑'
+      case '成人': return '👨'
+      case '中老年': return '👴'
+      case '老年': return '👵'
+      default: return '👤'
+    }
+  }
+
+  private getHealthGoalLabels(): string[] {
+    const labels: string[] = []
+    for (const goal of this.member.healthGoals) {
+      switch (goal) {
+        case '控压': labels.push('控压'); break
+        case '控糖': labels.push('控糖'); break
+        case '控脂': labels.push('控脂'); break
+        case '减脂': labels.push('减脂'); break
+        case '儿童': labels.push('儿童'); break
+      }
+    }
+    return labels.slice(0, 2)
+  }
+
   build() {
     Column() {
       Row() {
         Column() {
-          Text(this.member.avatar || '👤')
+          Text(this.getAgeGroupLabel())
             .fontSize(32)
         }
         .width(56)
@@ -179,27 +208,27 @@ struct FamilyMemberCard {
         })
 
         Column() {
-          Text(this.member.name)
+          Text(this.member.nickname)
             .fontSize(15)
             .fontColor(COLORS.TEXT_PRIMARY)
             .fontWeight(FontWeight.Medium)
 
-          Text(`${this.member.age}岁 · ${this.member.gender === 'male' ? '男' : '女'}`)
+          Text(this.member.ageGroup)
             .fontSize(12)
             .fontColor(COLORS.TEXT_SECONDARY)
             .margin({ top: 4 })
 
-          if (this.member.healthSignals && this.member.healthSignals.length > 0) {
+          if (this.getHealthGoalLabels().length > 0) {
             Row() {
-              ForEach(this.member.healthSignals.slice(0, 2), (signal: string) => {
-                Text(signal)
+              ForEach(this.getHealthGoalLabels(), (label: string) => {
+                Text(label)
                   .fontSize(10)
                   .fontColor(COLORS.WARNING)
                   .padding({ left: 6, right: 6, top: 2, bottom: 2 })
                   .backgroundColor('#FFF3E0')
                   .borderRadius(4)
                   .margin({ right: 4 })
-              }, (signal: string) => signal)
+              }, (label: string) => label)
             }
             .margin({ top: 6 })
           }
@@ -219,11 +248,11 @@ struct FamilyMemberCard {
       color: this.isSelected ? COLORS.PRIMARY : COLORS.BG_LIGHT_GRAY_F5
     })
     .onClick(() => { this.onTap() })
-    .accessibilityText(`家庭成员：${this.member.name}`)
+    .accessibilityText(`家庭成员：${this.member.nickname}`)
     .accessibilityLevel('yes')
     .animation({
       duration: 200,
-      curve: curves.easeOut()
+      curve: curves.initCurve(Curve.EaseOut)
     })
   }
 }
@@ -254,17 +283,17 @@ export struct EnhancedReportView {
       Column() {
         if (this.showSkeleton) {
           Column() {
-            ShimmerLoading({ width: '100%', height: 140, borderRadius: RADIUS.LG })
+            ShimmerLoading({ widthValue: '100%', heightValue: 140, borderRadiusValue: RADIUS.LG })
               .margin({ bottom: SPACING.LG })
             
-            ShimmerLoading({ width: '80%', height: 24, borderRadius: RADIUS.SM })
+            ShimmerLoading({ widthValue: '80%', heightValue: 24, borderRadiusValue: RADIUS.SM })
               .margin({ bottom: SPACING.SM })
             
-            ShimmerLoading({ width: '100%', height: 80, borderRadius: RADIUS.MD })
+            ShimmerLoading({ widthValue: '100%', heightValue: 80, borderRadiusValue: RADIUS.MD })
               .margin({ bottom: SPACING.LG })
             
             ForEach([1, 2, 3], (i: number) => {
-              ShimmerLoading({ width: '100%', height: 60, borderRadius: RADIUS.MD })
+              ShimmerLoading({ widthValue: '100%', heightValue: 60, borderRadiusValue: RADIUS.MD })
                 .margin({ bottom: SPACING.SM })
             }, (i: number) => i.toString())
           }
@@ -272,80 +301,93 @@ export struct EnhancedReportView {
           .padding(SPACING.LG)
         } else {
           Column() {
-            FadeInView({ delay: 0 }) {
-              EnhancedNutritionDisplay({
-                nutriScore: this.nutriScore,
-                sodium: this.foodLabel.nutrition.sodium,
-                sugar: this.foodLabel.nutrition.sugar,
-                calories: this.foodLabel.nutrition.calories,
-                fat: this.foodLabel.nutrition.fat,
-                protein: this.foodLabel.nutrition.protein,
-                carbohydrate: this.foodLabel.nutrition.carbohydrate,
-                showDetails: true,
-                animating: true
-              })
+            Column() {
+              FadeInView({ delay: 0 }) {
+                EnhancedNutritionDisplay({
+                  nutriScore: this.nutriScore,
+                  sodium: this.foodLabel.nutrition.sodium,
+                  sugar: this.foodLabel.nutrition.sugar,
+                  calories: this.foodLabel.nutrition.calories,
+                  fat: this.foodLabel.nutrition.fat,
+                  protein: this.foodLabel.nutrition.protein,
+                  carbohydrate: this.foodLabel.nutrition.carbohydrate,
+                  showDetails: true,
+                  animating: true
+                })
+              }
             }
+            .width('100%')
             .margin({ bottom: SPACING.LG })
 
-            if (this.foodLabel.additives && this.foodLabel.additives.length > 0) {
-              SlideUpView({ delay: 100 }) {
-                Column() {
-                  Row() {
-                    Text('添加剂分析')
-                      .fontSize(16)
-                      .fontColor(COLORS.TEXT_PRIMARY)
-                      .fontWeight(FontWeight.Medium)
-                    
-                    Text(`${this.foodLabel.additives.length}种`)
-                      .fontSize(13)
-                      .fontColor(COLORS.TEXT_SECONDARY)
-                      .margin({ left: 8 })
+            if (this.foodLabel.allergens && this.foodLabel.allergens.length > 0) {
+              Column() {
+                SlideUpView({ delay: 100 }) {
+                  Column() {
+                    Row() {
+                      Text('过敏原分析')
+                        .fontSize(16)
+                        .fontColor(COLORS.TEXT_PRIMARY)
+                        .fontWeight(FontWeight.Medium)
+                      
+                      Text(`${this.foodLabel.allergens.length}种`)
+                        .fontSize(13)
+                        .fontColor(COLORS.TEXT_SECONDARY)
+                        .margin({ left: 8 })
+                    }
+                    .width('100%')
+                    .margin({ bottom: SPACING.SM })
+
+                    AllergenHighlightList({ 
+                      ingredients: this.foodLabel.ingredients,
+                      allergenHints: this.foodLabel.allergens,
+                      intolerances: []
+                    })
                   }
                   .width('100%')
-                  .margin({ bottom: SPACING.SM })
-
-                  AllergenHighlightList({ allergens: this.foodLabel.additives })
+                  .padding(SPACING.MD)
+                  .backgroundColor(COLORS.BG_CARD)
+                  .borderRadius(RADIUS.LG)
                 }
-                .width('100%')
-                .padding(SPACING.MD)
-                .backgroundColor(COLORS.BG_CARD)
-                .borderRadius(RADIUS.LG)
               }
+              .width('100%')
               .margin({ bottom: SPACING.LG })
             }
 
             if (this.familyMembers.length > 0) {
-              SlideUpView({ delay: 200 }) {
-                Column() {
-                  Text('家庭适配分析')
-                    .fontSize(16)
-                    .fontColor(COLORS.TEXT_PRIMARY)
-                    .fontWeight(FontWeight.Medium)
-                    .margin({ bottom: SPACING.MD })
+              Column() {
+                SlideUpView({ delay: 200 }) {
+                  Column() {
+                    Text('家庭适配分析')
+                      .fontSize(16)
+                      .fontColor(COLORS.TEXT_PRIMARY)
+                      .fontWeight(FontWeight.Medium)
+                      .margin({ bottom: SPACING.MD })
 
-                  Scroll() {
-                    Row() {
-                      ForEach(this.familyMembers, (member: FamilyProfile, index: number) => {
-                        Column() {
-                          FamilyMemberCard({
-                            member: member,
-                            isSelected: index === this.selectedMemberIndex,
-                            onTap: () => { this.onMemberSelect(index) }
-                          })
-                        }
-                        .width(200)
-                        .margin({ right: SPACING.MD })
-                      }, (member: FamilyProfile) => member.memberId)
+                    Scroll() {
+                      Row() {
+                        ForEach(this.familyMembers, (member: FamilyProfile, index: number) => {
+                          Column() {
+                            FamilyMemberCard({
+                              member: member,
+                              isSelected: index === this.selectedMemberIndex,
+                              onTap: () => { this.onMemberSelect(index) }
+                            })
+                          }
+                          .width(200)
+                          .margin({ right: SPACING.MD })
+                        }, (member: FamilyProfile) => member.memberId)
+                      }
                     }
+                    .scrollBar(BarState.Off)
+                    .width('100%')
                   }
-                  .scrollBar(BarState.Off)
                   .width('100%')
+                  .padding(SPACING.MD)
+                  .backgroundColor(COLORS.BG_CARD)
+                  .borderRadius(RADIUS.LG)
                 }
-                .width('100%')
-                .padding(SPACING.MD)
-                .backgroundColor(COLORS.BG_CARD)
-                .borderRadius(RADIUS.LG)
               }
+              .width('100%')
               .margin({ bottom: SPACING.LG })
             }
 
@@ -362,7 +404,7 @@ export struct EnhancedReportView {
                     recommendation: rec,
                     index: index
                   })
-                }, (rec: Recommendation) => rec.title)
+                }, (rec: Recommendation) => rec.memberId + rec.foodId)
               }
               .width('100%')
               .padding(SPACING.MD)
@@ -393,7 +435,7 @@ export struct EnhancedReportView {
                     onTap: () => { this.onAlternativeTap(alt) },
                     index: index
                   })
-                }, (alt: AlternativeFood) => alt.foodId)
+                }, (alt: AlternativeFood) => alt.productName)
               }
               .width('100%')
               .padding(SPACING.MD)
@@ -406,7 +448,7 @@ export struct EnhancedReportView {
           .opacity(this.showContent ? 1 : 0)
           .animation({
             duration: 300,
-            curve: curves.easeOut()
+            curve: curves.initCurve(Curve.EaseOut)
           })
         }
       }
@@ -417,20 +459,4 @@ export struct EnhancedReportView {
     .height('100%')
     .backgroundColor(COLORS.BG_PAGE)
   }
-}
-
-const COLORS = {
-  PRIMARY: '#1976D2',
-  ACCENT_GREEN: '#4CAF50',
-  WARNING: '#FF9800',
-  LEVEL_ORANGE: '#FF5722',
-  LEVEL_RED: '#F44336',
-  TEXT_PRIMARY: '#212121',
-  TEXT_SECONDARY: '#757575',
-  TEXT_TERTIARY: '#9E9E9E',
-  BG_PAGE: '#FAFAFA',
-  BG_CARD: '#FFFFFF',
-  BG_LIGHT_GRAY_F5: '#F5F5F5',
-  RADIUS: { SM: 4, MD: 8, LG: 12 },
-  SPACING: { XS: 4, SM: 8, MD: 12, LG: 16 }
 }

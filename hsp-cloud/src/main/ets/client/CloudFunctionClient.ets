@@ -18,6 +18,12 @@ export enum CloudFunctionEndpoint {
   INGREDIENT_HAZARD = '/v1/ingredient-hazard-assessment'
 }
 
+// 定义错误响应接口
+interface ErrorResponse {
+  error: string;
+  statusCode: number;
+}
+
 export class CloudFunctionClient {
   private netHandle: number = -1;
   private initialized: boolean = false;
@@ -42,13 +48,16 @@ export class CloudFunctionClient {
       const request = http.createHttp();
       const url = this.buildUrl(endpoint);
       const body = JSON.stringify(params);
-      const response = await request.request(url, {
+      
+      const options: http.HttpRequestOptions = {
         method: http.RequestMethod.POST,
         header: { 'Content-Type': 'application/json' },
-        body: body,
+        extraData: body,
         connectTimeout: 10000,
         readTimeout: 15000
-      });
+      };
+      
+      const response = await request.request(url, options);
 
       if (response.responseCode === 200) {
         const data = JSON.parse(response.result as string) as Record<string, Object>;
@@ -56,10 +65,12 @@ export class CloudFunctionClient {
         return data;
       }
       hilog.warn(DOMAIN_ZERO, TAG, 'CloudFunction %{public}s returned %{public}d', endpoint, response.responseCode);
-      return { error: `HTTP ${response.responseCode}`, statusCode: response.responseCode } as Record<string, Object>;
+      const errorResp: ErrorResponse = { error: `HTTP ${response.responseCode}`, statusCode: response.responseCode };
+      return errorResp as Object;
     } catch (err) {
       hilog.error(DOMAIN_ZERO, TAG, 'CloudFunction %{public}s failed: %{public}s', endpoint, err.toString());
-      return { error: err.toString(), statusCode: 500 } as Record<string, Object>;
+      const errorResp: ErrorResponse = { error: err.toString(), statusCode: 500 };
+      return errorResp as Object;
     }
   }
 
@@ -70,33 +81,45 @@ export class CloudFunctionClient {
       const request = http.createHttp();
       const qs = Object.keys(queryParams).map(k => `${k}=${encodeURIComponent(queryParams[k])}`).join('&');
       const url = `${this.buildUrl(endpoint)}?${qs}`;
-      const response = await request.request(url, {
+      
+      const options: http.HttpRequestOptions = {
         method: http.RequestMethod.GET,
         connectTimeout: 5000,
         readTimeout: 10000
-      });
+      };
+      
+      const response = await request.request(url, options);
 
       if (response.responseCode === 200) {
         return JSON.parse(response.result as string) as Record<string, Object>;
       }
       hilog.warn(DOMAIN_ZERO, TAG, 'CloudFunction GET %{public}s returned %{public}d', endpoint, response.responseCode);
-      return { error: `HTTP ${response.responseCode}`, statusCode: response.responseCode } as Record<string, Object>;
+      const errorResp: ErrorResponse = { error: `HTTP ${response.responseCode}`, statusCode: response.responseCode };
+      return errorResp as Object;
     } catch (err) {
       hilog.error(DOMAIN_ZERO, TAG, 'CloudFunction GET %{public}s failed: %{public}s', endpoint, err.toString());
-      return { error: err.toString(), statusCode: 500 } as Record<string, Object>;
+      const errorResp: ErrorResponse = { error: err.toString(), statusCode: 500 };
+      return errorResp as Object;
     }
   }
 
   async queryAdditive(code: string): Promise<Object> {
-    return this.get(CloudFunctionEndpoint.ADDITIVE_DATABASE, { code });
+    const params: Record<string, string> = {};
+    params['code'] = code;
+    return this.get(CloudFunctionEndpoint.ADDITIVE_DATABASE, params);
   }
 
   async getAlternatives(foodId: string, allergenProfile: string[]): Promise<Object> {
-    return this.call(CloudFunctionEndpoint.ALTERNATIVE_RECOMMENDATION, { foodId, allergenProfile });
+    const params: Record<string, Object> = {};
+    params['foodId'] = foodId;
+    params['allergenProfile'] = allergenProfile;
+    return this.call(CloudFunctionEndpoint.ALTERNATIVE_RECOMMENDATION, params);
   }
 
   async assessIngredients(ingredients: Object[]): Promise<Object> {
-    return this.call(CloudFunctionEndpoint.INGREDIENT_HAZARD, { ingredients });
+    const params: Record<string, Object> = {};
+    params['ingredients'] = ingredients;
+    return this.call(CloudFunctionEndpoint.INGREDIENT_HAZARD, params);
   }
 
   private buildUrl(endpoint: string): string {

@@ -396,14 +396,15 @@ export class OpenFoodFactsService {
       }
 
     try {
-      const options: SecureRequestOptions = {
-        url: imageUrl,
-        method: 'GET',
-        headers: { 'User-Agent': USER_AGENT },
-        connectTimeout: REQUEST_TIMEOUT,
-        readTimeout: REQUEST_TIMEOUT
-      };
-      const response = await SecureHttpClient.request(options);
+      const headerMap: Map<string, string> = new Map<string, string>();
+      headerMap.set('User-Agent', USER_AGENT);
+      const options: SecureRequestOptions = new SecureRequestOptions();
+      options.url = imageUrl;
+      options.method = http.RequestMethod.GET;
+      options.header = headerMap;
+      options.connectTimeout = REQUEST_TIMEOUT;
+      options.readTimeout = REQUEST_TIMEOUT;
+      const response = await SecureHttpClient.getInstance().request(options);
       if (response.responseCode !== 200 || !(response.result instanceof ArrayBuffer)) {
         hilog.warn(DOMAIN_ZERO, TAG, 'Image fetch failed with status: %{public}d', response.responseCode);
         return null;

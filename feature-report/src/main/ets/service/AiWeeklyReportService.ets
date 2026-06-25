@@ -83,7 +83,7 @@ Suggestions: ${report.suggestions.join('; ')}
 Buy less: ${report.buyLess.join(', ')}
 Buy more: ${report.buyMore.join(', ')}
 
-Output JSON: {"summary":"...","highlights":"...","suggestions":"...","personalizedTip":"...","motivationalMessage":"..."}`;`
+Output JSON: {"summary":"...","highlights":"...","suggestions":"...","personalizedTip":"...","motivationalMessage":"..."}`;
   }
 
   private parseAiResponse(text: string, fallback: WeeklyReport): AiWeeklyReportResult {

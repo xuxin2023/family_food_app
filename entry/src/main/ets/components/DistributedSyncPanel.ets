@@ -3,6 +3,7 @@ interface SyncType { key: string; label: string; icon: string }
 import { COLORS, RADIUS, SPACING, FONT_SIZE } from 'hsp_core';
 import { curves } from '@kit.ArkUI';
 import { DistributedDataService, SyncDataPayload } from 'hsp_service';
+import { common } from '@kit.AbilityKit';
 
 @ComponentV2
 struct DeviceListItem {
@@ -219,7 +220,8 @@ export struct DistributedSyncPanel {
   private distributedService: DistributedDataService = DistributedDataService.getInstance()
 
   async aboutToAppear(): Promise<void> {
-    await this.distributedService.initialize()
+    const context = this.getUIContext().getHostContext() as common.UIAbilityContext
+    await this.distributedService.initialize(context)
     await this.loadDevices()
     
     this.distributedService.registerSyncListener('food_label', (data: SyncDataPayload) => {

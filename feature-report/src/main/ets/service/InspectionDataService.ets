@@ -191,7 +191,7 @@ export class InspectionDataService {
     summary.recentFailDate = '';
     summary.failItems = [];
     summary.lastUpdate = Date.now();
-    summary.riskLevel = 'low';
+    summary.riskLevel = RiskLevel.LOW;
     return summary;
   }
 

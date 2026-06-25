@@ -5,15 +5,18 @@
 import { common } from '@kit.AbilityKit';
 import { bundleManager } from '@kit.AbilityKit';
 import { preferences } from '@kit.ArkData';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 import { ElderModeManager } from 'hsp_service';
 
+const DOMAIN_ZERO = 0;
+const TAG = 'PrivacyConsentDialog';
 const PREF_KEY_PRIVACY_AGREED = 'privacy_agreed_v2';
 
 @ComponentV2
 struct PolicyItemCmp {
   @Param title: ResourceStr = '';
   @Param desc: ResourceStr = '';
-  @Event onClick: () => void = () => {};
+  @Param onItemClick: () => void = () => {};
 
   build() {
     Row() {
@@ -37,7 +40,7 @@ struct PolicyItemCmp {
     .padding({ left: 16, right: 16, top: 12, bottom: 12 })
     .accessibilityText($r('app.string.view_policy'))
     .accessibilityLevel('yes')
-    .onClick(() => { this.onClick() })
+    .onClick(() => { this.onItemClick() })
   }
 }
 
@@ -94,19 +97,19 @@ export struct PrivacyConsentDialog {
           PolicyItemCmp({
             title: $r('app.string.privacy_policy') as ResourceStr,
             desc: $r('app.string.privacy_policy_desc') as ResourceStr,
-            onClick: () => this.openUrl('https://www.familyfood.app/privacy')
+            onItemClick: () => { this.openUrl('https://www.familyfood.app/privacy') }
           })
           Divider().color('#EEEEEE').margin({ left: 16, right: 16 })
           PolicyItemCmp({
             title: $r('app.string.user_agreement') as ResourceStr,
             desc: $r('app.string.user_agreement_desc') as ResourceStr,
-            onClick: () => this.openUrl('https://www.familyfood.app/terms')
+            onItemClick: () => { this.openUrl('https://www.familyfood.app/terms') }
           })
           Divider().color('#EEEEEE').margin({ left: 16, right: 16 })
           PolicyItemCmp({
             title: $r('app.string.data_collection_list') as ResourceStr,
             desc: $r('app.string.data_collection_list_desc') as ResourceStr,
-            onClick: () => this.openUrl('https://www.familyfood.app/data-list')
+            onItemClick: () => { this.openUrl('https://www.familyfood.app/data-list') }
           })
         }
         .width('100%')

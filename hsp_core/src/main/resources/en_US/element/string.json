@@ -2,11 +2,11 @@
   "string": [
     {
       "name": "hsp_core_name",
-      "value": "Food Adapt Core"
+      "value": "食品适配核心"
     },
     {
       "name": "hsp_core_desc",
-      "value": "Family Food Adapter Shared Core Module"
+      "value": "家庭食品适配助手共享核心模块"
     }
   ]
 }

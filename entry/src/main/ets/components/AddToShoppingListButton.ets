@@ -22,7 +22,7 @@ export struct AddToShoppingListButton {
         .fontColor(COLORS.WHITE)
         .backgroundColor(this.isAdding ? $r('app.color.btn_inactive') : COLORS.PRIMARY)
         .borderRadius(RADIUS.MD)
-        .height(BUTTON.HEIGHT_SM)
+        .height(BUTTON.HEIGHT_MD)
         .enabled(!this.isAdding)
         .onClick(async () => {
           this.isAdding = true;

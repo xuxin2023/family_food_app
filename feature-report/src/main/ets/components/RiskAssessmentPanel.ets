@@ -19,8 +19,7 @@ export struct RiskAssessmentPanel {
   @Param riskResult: CrossRiskResult | null = null
 
   build() {
-    const rr = this.riskResult
-    if (rr !== null && rr.riskFactors.length > 0) {
+    if (this.riskResult !== null && this.riskResult.riskFactors.length > 0) {
       Column() {
         Text('⚠️ 风险评估')
           .fontSize(FONT_SIZE.MEDIUM)
@@ -28,12 +27,12 @@ export struct RiskAssessmentPanel {
           .fontColor(COLORS.TEXT_PRIMARY)
           .margin({ bottom: SPACING.SM })
 
-        Text(rr.summary)
+        Text(this.riskResult.summary)
           .fontSize(FONT_SIZE.SMALL)
           .fontColor(this.getRiskColor())
           .margin({ bottom: SPACING.SM })
 
-        ForEach(rr.riskFactors, (factor: RiskFactor, index: number) => {
+        ForEach(this.riskResult.riskFactors, (factor: RiskFactor, index: number) => {
           Row() {
             Text(this.getSeverityIcon(factor.severity))
               .fontSize(16)
@@ -63,7 +62,7 @@ export struct RiskAssessmentPanel {
       .padding(SPACING.MD)
       .borderRadius(RADIUS.MD)
       .backgroundColor(COLORS.BG_WHITE)
-      .accessibilityText(rr.summary)
+      .accessibilityText(this.riskResult.summary)
       .accessibilityLevel('yes')
     }
   }

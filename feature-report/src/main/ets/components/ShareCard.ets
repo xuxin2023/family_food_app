@@ -61,7 +61,7 @@ export class ShareCardGenerator {
       // 1. 创建离屏 Canvas（1080x1080px）
       const canvasWidth = 1080;
       const canvasHeight = 1080;
-      const offCanvas: OffscreenCanvas = new OffscreenCanvas(
+      const offCanvas: OffscreenCanvas = new OffscreenCanvas(canvasWidth, canvasHeight);
       const ctx = offCanvas.getContext("2d");
 
       // 2. 绘制整个画布白色背景
@@ -247,18 +247,33 @@ export class ShareCardGenerator {
   private static getTopGradientColor(levelColor: string): GradientColorPair {
     const color = levelColor.toLowerCase();
     if (color === '#4caf50' || color === '#66bb6a') {
-      const cp: GradientColorPair = new GradientColorPair(
+      const cp: GradientColorPair = new GradientColorPair()
+      cp.start = '#81c784';
+      cp.end = '#4caf50';
+      return cp;
     }
     if (color === '#ff9800' || color === '#ffa726') {
-      const cp: GradientColorPair = new GradientColorPair(
+      const cp: GradientColorPair = new GradientColorPair()
+      cp.start = '#ffb74d';
+      cp.end = '#ff9800';
+      return cp;
     }
     if (color === '#ff5722' || color === '#ff7043') {
-      const cp: GradientColorPair = new GradientColorPair(
+      const cp: GradientColorPair = new GradientColorPair()
+      cp.start = '#ff8a65';
+      cp.end = '#ff5722';
+      return cp;
     }
     if (color === '#f44336' || color === '#e53935') {
-      const cp: GradientColorPair = new GradientColorPair(
+      const cp: GradientColorPair = new GradientColorPair()
+      cp.start = '#e57373';
+      cp.end = '#f44336';
+      return cp;
     }
-    const cp: GradientColorPair = new GradientColorPair(
+    const cp: GradientColorPair = new GradientColorPair()
+    cp.start = '#64b5f6';
+    cp.end = '#2196f3';
+    return cp;
   }
 
   /**
@@ -404,7 +419,7 @@ export struct ShareCard {
   build() {
     Column() {
       Column() {
-        Text($r('app.string.food_adapt_assistant'))
+        Text('家庭食品适配助手')
           .fontSize(11)
           .fontColor(COLORS.TEXT_GRAY_9E9E)
           .margin({ bottom: 4 })
@@ -436,7 +451,7 @@ export struct ShareCard {
           .fontSize(11)
           .fontColor(COLORS.TEXT_GRAY_9E9E)
           .margin({ top: 12, bottom: 4 })
-        Text($r('app.string.scan_food_peace_mind'))
+        Text('扫码食品，全家安心')
           .fontSize(11)
           .fontColor(COLORS.PRIMARY)
       }
@@ -471,7 +486,7 @@ export struct ShareCard {
         .margin({ left: 8 })
 
       if (rec.maxAmount > 0) {
-        Text() { Span($r('app.string.share_card_max')); Span(`${rec.maxAmount}g`) }
+        Text() { Span('最多'); Span(rec.maxAmount + 'g') }
           .fontSize(13)
           .fontColor(COLORS.TEXT_GRAY_2121)
           .margin({ left: 10 })

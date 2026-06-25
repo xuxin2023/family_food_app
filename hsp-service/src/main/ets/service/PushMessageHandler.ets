@@ -1,5 +1,17 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { PushSubscription } from 'hsp_core';
+// import { PushSubscription } from 'hsp_core';
+
+// Stub class — PushSubscription not yet implemented in hsp_core
+export class PushSubscription {
+  endpoint: string = '';
+  keys: Record<string, string> = {};
+  foodSafetyAlert: boolean = false;
+  additiveRisk: boolean = false;
+  nutritionTip: boolean = false;
+  productUpdate: boolean = false;
+  quietHoursStart: string = '';
+  quietHoursEnd: string = '';
+}
 
 const TAG = 'PushMessageHandler';
 const DOMAIN = 0;
@@ -58,30 +70,30 @@ export interface ProductUpdateData {
   after?: string;
 }
 
-function isFoodSafetyAlertData(raw: Record<string, string> | undefined): raw is Record<string, string> & FoodSafetyAlertData {
-  return raw !== undefined
-    && typeof raw.alertId === 'string'
-    && typeof raw.productName === 'string'
-    && typeof raw.reason === 'string';
+function isFoodSafetyAlertData(raw: Record<string, string> | undefined): boolean {
+  if (raw === undefined) return false;
+  return typeof raw['alertId'] === 'string'
+    && typeof raw['productName'] === 'string'
+    && typeof raw['reason'] === 'string';
 }
 
-function isAdditiveRiskData(raw: Record<string, string> | undefined): raw is Record<string, string> & AdditiveRiskData {
-  return raw !== undefined
-    && typeof raw.additiveName === 'string'
-    && typeof raw.riskLevel === 'string';
+function isAdditiveRiskData(raw: Record<string, string> | undefined): boolean {
+  if (raw === undefined) return false;
+  return typeof raw['additiveName'] === 'string'
+    && typeof raw['riskLevel'] === 'string';
 }
 
-function isNutritionTipData(raw: Record<string, string> | undefined): raw is Record<string, string> & NutritionTipData {
-  return raw !== undefined
-    && typeof raw.tipId === 'string'
-    && typeof raw.summary === 'string';
+function isNutritionTipData(raw: Record<string, string> | undefined): boolean {
+  if (raw === undefined) return false;
+  return typeof raw['tipId'] === 'string'
+    && typeof raw['summary'] === 'string';
 }
 
-function isProductUpdateData(raw: Record<string, string> | undefined): raw is Record<string, string> & ProductUpdateData {
-  return raw !== undefined
-    && typeof raw.productId === 'string'
-    && typeof raw.productName === 'string'
-    && typeof raw.updateType === 'string';
+function isProductUpdateData(raw: Record<string, string> | undefined): boolean {
+  if (raw === undefined) return false;
+  return typeof raw['productId'] === 'string'
+    && typeof raw['productName'] === 'string'
+    && typeof raw['updateType'] === 'string';
 }
 
 function parsePayloadData<T>(raw: Record<string, string> | undefined): T {
@@ -150,10 +162,14 @@ export class PushMessageHandler {
   private isInQuietHours(): boolean {
     const now = new Date();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    const [startH, startM] = this.subscription.quietHoursStart.split(':').map(Number);
-    const [endH, endM] = this.subscription.quietHoursEnd.split(':').map(Number);
-    const startMinutes = startH * 60 + startM;
-    const endMinutes = endH * 60 + endM;
+    const startParts: string[] = this.subscription.quietHoursStart.split(':');
+    const startH: number = parseInt(startParts[0]);
+    const startM: number = parseInt(startParts[1]);
+    const endParts: string[] = this.subscription.quietHoursEnd.split(':');
+    const endH: number = parseInt(endParts[0]);
+    const endM: number = parseInt(endParts[1]);
+    const startMinutes: number = startH * 60 + startM;
+    const endMinutes: number = endH * 60 + endM;
 
     if (startMinutes <= endMinutes) {
       return currentMinutes >= startMinutes && currentMinutes < endMinutes;

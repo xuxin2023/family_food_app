@@ -8,11 +8,11 @@
 // 4. 网络不可用时自动降级，不影响核心浏览功能
 
 import {
-  safeParseRecipeCategory, FamilyProfile, HealthGoal, DailyBudget, HealthSignal, BpStatus, BsStatus, AI_CACHE_CONFIG, HILOG_DOMAIN_DEFAULT, Recipe, RecipeCategory, DietTag, RecipeQueryParams, RecipeDifficulty, RecipeIngredient, RecipeNutrition, RecipeSortBy, AiRecipeRecommendation, AiRecipeRecommendationResult, AiRecipeRequest, AiRecommendationCacheEntry, getHealthGoalDescription
+  safeParseRecipeCategory, FamilyProfile, HealthGoal, DailyBudget, HealthSignal, BpStatus, BsStatus, AI_CACHE_CONFIG, HILOG_DOMAIN_DEFAULT, Recipe, RecipeCategory, DietTag, RecipeQueryParams, RecipeDifficulty, RecipeIngredient, RecipeNutrition, RecipeSortBy, AiRecipeRecommendation, AiRecipeRecommendationResult, AiRecipeRequest, AiRecommendationCacheEntry, getHealthGoalDescription,
+  IRecipeRepository
 } from 'hsp_core';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
-import { RecipeRepository } from 'feature_community';
 import { AiServiceBase } from './ai/AiServiceBase';
 import { AI_SERVICE_DEFAULTS } from './ai/AiConfig';
 
@@ -64,7 +64,7 @@ function createEmptyRecipe(): Recipe {
 }
 
 export class AiRecipeRecommenderService extends AiServiceBase {
-  private recipeRepo: RecipeRepository | null = null;
+  private recipeRepo: IRecipeRepository | null = null;
   private cache: Map<string, AiRecommendationCacheEntry> = new Map();
 
   protected getTag(): string {
@@ -83,7 +83,7 @@ export class AiRecipeRecommenderService extends AiServiceBase {
     return '你是一个家庭健康食谱推荐助手。输出必须是合法JSON。语气温暖鼓励，不恐吓。';
   }
 
-  setRecipeRepo(repo: RecipeRepository): void {
+  setRecipeRepo(repo: IRecipeRepository): void {
     this.recipeRepo = repo;
   }
 
@@ -414,7 +414,7 @@ Output JSON format:
     }
   ],
   "overallSummary": "summary (no more than 60 characters)"
-}`;`
+}`;
   }
 
   private parseAiResponse(

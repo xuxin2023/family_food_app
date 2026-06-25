@@ -2,12 +2,12 @@
 // 应用入口页面 - 判断引导状态后进入主页面
 // V2增强：三屏引导内容具体化
 
-import { safeReplaceUrl, COLORS, PageResourceTracker, createPageTracker } from 'hsp_core';
+import { safeReplaceUrl, COLORS, SHADOWS, PageResourceTracker, createPageTracker } from 'hsp_core';
 import { AppState } from '../AppState';
 
 @Entry
 @ComponentV2
-struct Index {
+export struct Index {
   @Local showGuide: boolean = false;
   @Local isReady: boolean = false;
   @Local isLoading: boolean = true;
@@ -255,7 +255,7 @@ export struct GuidePage {
       .padding(16)
       .backgroundColor(COLORS.WHITE)
       .borderRadius(12)
-      .shadow({ radius: 8, color: COLORS.SHADOW_LIGHT, offsetY: 4 })
+      .shadow(SHADOWS.MD)
       .margin({ bottom: 16 })
 
       Text($r('app.string.same_food_diff_advice'))

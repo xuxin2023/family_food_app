@@ -72,7 +72,7 @@ struct LoadingDots {
           .height(8)
           .fill(this.dotIndex === i ? COLORS.PRIMARY : COLORS.TEXT_TERTIARY)
           .margin({ left: 4, right: 4 })
-          .animation({ duration: 200, curve: curves.easeOut() })
+          .animation({ duration: 200, curve: curves.initCurve(Curve.EaseOut) })
       }, (i: number) => i.toString())
     }
     .justifyContent(FlexAlign.Center)
@@ -81,23 +81,23 @@ struct LoadingDots {
 
 @ComponentV2
 struct SkeletonLoader {
-  @Param width: number | string = '100%'
-  @Param height: number = 20
-  @Param borderRadius: number = 8
+  @Param widthValue: number | string = '100%'
+  @Param heightValue: number = 20
+  @Param borderRadiusValue: number = 8
 
   build() {
     Row()
-      .width(this.width)
-      .height(this.height)
+      .width(this.widthValue)
+      .height(this.heightValue)
       .backgroundColor('#E0E0E0')
-      .borderRadius(this.borderRadius)
+      .borderRadius(this.borderRadiusValue)
       .linearGradient({
         angle: 90,
         colors: [['#E0E0E0', 0], ['#F0F0F0', 0.5], ['#E0E0E0', 1]]
       })
       .animation({
         duration: 1500,
-        curve: curves.linear(),
+        curve: curves.initCurve(Curve.Linear),
         iterations: -1
       })
   }

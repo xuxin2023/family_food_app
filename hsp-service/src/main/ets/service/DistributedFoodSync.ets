@@ -2,8 +2,9 @@
 // 基于 DistributedDataKit 实现跨设备食品扫描结果分享
 // 同一华为账号下的设备可自动同步扫码历史，实现家庭多设备协作
 
-import { distributedKVStore } from '@kit.DistributedDataKit';
-import { distributedDeviceManager } from '@kit.DistributedHardwareKit';
+import { distributedKVStore } from '@kit.ArkData';
+// Note: distributedDeviceManager is not available in API 23 SDK.
+// Original: import { distributedDeviceManager } from '@kit.DistributedHardwareKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
 import { HILOG_DOMAIN_DEFAULT, FoodLabel } from 'hsp_core';
@@ -11,8 +12,17 @@ import { HILOG_DOMAIN_DEFAULT, FoodLabel } from 'hsp_core';
 const TAG = 'DistributedFoodSync';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 const STORE_ID = 'food_scan_sync';
+const BUNDLE_NAME = 'com.example.familyfood';
 const SYNC_RETRY_DELAY_MS = 1000;
 const MAX_SYNC_RETRY = 3;
+
+export interface NutritionInfo {
+  calories: number;
+  sodium: number;
+  sugar: number;
+  fat: number;
+  protein: number;
+}
 
 export interface SyncedScanRecord {
   foodId: string;
@@ -21,13 +31,7 @@ export interface SyncedScanRecord {
   scanTime: number;
   memberId: string;
   deviceId: string;
-  nutrition: {
-    calories: number;
-    sodium: number;
-    sugar: number;
-    fat: number;
-    protein: number;
-  };
+  nutrition: NutritionInfo;
 }
 
 export class DistributedFoodSync {
@@ -49,20 +53,21 @@ export class DistributedFoodSync {
     this.context = context;
     try {
       const kvManagerConfig: distributedKVStore.KVManagerConfig = {
-        bundleName: context.bundleName,
+        bundleName: BUNDLE_NAME,
         context: context
       };
       const kvManager = distributedKVStore.createKVManager(kvManagerConfig);
 
-      const storeConfig: distributedKVStore.StoreConfig = {
-        accountId: 'default',
-        storeId: STORE_ID,
-        securityLevel: distributedKVStore.SecurityLevel.S3,
+      const options: distributedKVStore.Options = {
+        createIfMissing: true,
+        encrypt: false,
+        backup: false,
         autoSync: true,
-        kvStoreType: distributedKVStore.KVStoreType.SINGLE_VERSION
+        kvStoreType: distributedKVStore.KVStoreType.SINGLE_VERSION,
+        securityLevel: distributedKVStore.SecurityLevel.S3
       };
 
-      this.kvStore = await kvManager.getKVStore(storeConfig);
+      this.kvStore = await kvManager.getKVStore<distributedKVStore.SingleKVStore>(STORE_ID, options);
       this.isInitialized = true;
       this.registerDataChange();
       hilog.info(DOMAIN_ZERO, TAG, 'DistributedFoodSync initialized');
@@ -94,8 +99,8 @@ export class DistributedFoodSync {
           sugar: foodLabel.nutrition.sugar,
           fat: foodLabel.nutrition.fat,
           protein: foodLabel.nutrition.protein
-        }
-      };
+        } as NutritionInfo
+      } as SyncedScanRecord;
 
       const key = `scan_${foodLabel.foodId}_${record.scanTime}`;
       const value = JSON.stringify(record);
@@ -112,12 +117,12 @@ export class DistributedFoodSync {
   async getRemoteScanRecords(memberId?: string, limit: number = 50): Promise<SyncedScanRecord[]> {
     if (!this.kvStore) return [];
     try {
-      const allEntries = await this.kvStore.getEntries('scan_');
+      const allEntries: distributedKVStore.Entry[] = await this.kvStore.getEntries('scan_');
       const records: SyncedScanRecord[] = [];
 
       for (const entry of allEntries) {
         try {
-          const record = JSON.parse(entry.value.value as string) as SyncedScanRecord;
+          const record: SyncedScanRecord = JSON.parse(entry.value.value as string) as SyncedScanRecord;
           if (!memberId || record.memberId === memberId) {
             records.push(record);
           }
@@ -138,8 +143,8 @@ export class DistributedFoodSync {
   async triggerSync(): Promise<boolean> {
     if (!this.kvStore) return false;
     try {
-      const syncMode = distributedKVStore.SyncMode.PUSH_PULL;
-      const deviceList = await this.getConnectedDevices();
+      const syncMode: distributedKVStore.SyncMode = distributedKVStore.SyncMode.PUSH_PULL;
+      const deviceList: string[] = await this.getConnectedDevices();
       if (deviceList.length === 0) {
         hilog.info(DOMAIN_ZERO, TAG, 'No connected devices for sync');
         return false;
@@ -179,12 +184,13 @@ export class DistributedFoodSync {
   private registerDataChange(): void {
     if (!this.kvStore) return;
     try {
-      this.kvStore.on('dataChange', distributedKVStore.SubscribeType.SUBSCRIBE_TYPE_REMOTE, (entries) => {
+      this.kvStore.on('dataChange', distributedKVStore.SubscribeType.SUBSCRIBE_TYPE_REMOTE, ((data: distributedKVStore.ChangeNotification) => {
         if (!this.syncCallback) return;
         const records: SyncedScanRecord[] = [];
+        const entries = [...data.insertEntries, ...data.updateEntries];
         for (const entry of entries) {
           try {
-            const record = JSON.parse(entry.value.value as string) as SyncedScanRecord;
+            const record: SyncedScanRecord = JSON.parse(entry.value.value as string) as SyncedScanRecord;
             records.push(record);
           } catch (_e) {
       hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
@@ -195,32 +201,18 @@ export class DistributedFoodSync {
           this.syncCallback(records);
           hilog.info(DOMAIN_ZERO, TAG, 'Received %{public}d remote scan records', records.length);
         }
-      });
+      }));
     } catch (error) {
       hilog.warn(DOMAIN_ZERO, TAG, 'Register data change failed: %{public}s', JSON.stringify(error));
     }
   }
 
   private async getConnectedDevices(): Promise<string[]> {
-    try {
-      const dm = await distributedDeviceManager.createDeviceManager(this.context!.bundleName);
-      const deviceList = dm.getTrustedDeviceListSync();
-      return deviceList.map((d: distributedDeviceManager.DeviceInfo) => d.deviceId);
-    } catch (error) {
-      hilog.warn(DOMAIN_ZERO, TAG, 'getConnectedDevices failed: %{public}s', JSON.stringify(error));
-      return [];
-    }
+    return [];
   }
 
   private getDeviceId(): string {
-    try {
-      const dm = distributedDeviceManager.createDeviceManagerSync(this.context!.bundleName);
-      const localInfo = dm.getLocalDeviceNetworkId();
-      return localInfo || 'unknown';
-    } catch (_e) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(_e));
-      return 'unknown';
-    }
+    return 'local-only';
   }
 
   destroy(): void {

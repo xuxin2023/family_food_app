@@ -517,7 +517,7 @@ export class OnlineShoppingParser {
       if (typeof raw === 'object' && raw !== null) {
         return JSON.stringify(raw);
       }
-      return raw.toString();
+      return (raw as Object).toString();
     }
     throw new Error('HTTP ' + resp.responseCode + ': ' + resp.error);
   }
@@ -575,7 +575,7 @@ export class OnlineShoppingParser {
    */
   async parseWithOcr(imageUri: string): Promise<ParsedLink> {
     try {
-      const ocrService: OcrService = new OcrService(
+      const ocrService: OcrService = new OcrService();
       await ocrService.init();
       const ocrResult = await ocrService.recognizeText(imageUri);
 

@@ -1,6 +1,9 @@
-import { COLORS, safeBack, FoodLabel, FamilyProfile, AgeGroup, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker } from 'hsp_core';
+import { COLORS, SHADOWS, safeBack, FoodLabel, FamilyProfile, AgeGroup, ToastHelper, HILOG_DOMAIN_DEFAULT, PageResourceTracker, createPageTracker, ThemeReactive, themeReactive, ThemeColors, ThemeMode } from 'hsp_core';
 import { ChildHealthAssessment } from 'feature_report';
 import { BackButton } from '../components/BackButton';
+import { GradientHeader } from '../components/GradientHeader';
+import { LoadingSkeleton } from '../components/SkeletonScreen';
+import { MemberSelector } from '../components/MemberSelector';
 import { AppState } from '../AppState';
 import { SnackImpactAssessment, AdditiveSafetyResult, AdditiveSafetyLevel } from 'feature_report';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -13,24 +16,39 @@ const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 export struct ChildHealthPage {
   @Local isLoading: boolean = true
   @Local foodName: string = ''
-  @Local todaySnackCalories: string = '0'
-  @Local todaySnackSugarG: string = '0'
+  @Local todaySnackCalories: number = 0
+  @Local todaySnackSugarG: number = 0
   @Local result: ChildHealthAssessment | null = null
   @Local childProfile: FamilyProfile = new FamilyProfile()
+  @Local childMembers: FamilyProfile[] = []
 
   private appState: AppState = AppState.getInstance()
 
   private tracker: PageResourceTracker = createPageTracker('ChildHealthPage')
+  private themeRef: ThemeReactive = themeReactive
+
+  private get isDark(): boolean {
+    if (this.themeRef.key >= 0) { /* trigger reactive */ }
+    return ThemeColors.getTheme() === ThemeMode.DARK;
+  }
+
+  private get pageBgGradient(): LinearGradient {
+    if (this.isDark) {
+      return { angle: 180, colors: [['#0D1B0E', 0.0], ['#1A2F1C', 0.5], ['#0A1A0D', 1.0]] };
+    }
+    return { angle: 180, colors: [['#FCE4EC', 0.0], ['#FFF8E1', 0.3], ['#E8F5E9', 0.7], ['#E0F2F1', 1.0]] };
+  }
+
   async aboutToAppear() {
     this.tracker.onAppear()
     this.isLoading = true
     try {
       const members = await this.appState.getAllMembers()
-      const children = members.filter((m: FamilyProfile) =>
+      this.childMembers = members.filter((m: FamilyProfile) =>
         m.ageGroup === AgeGroup.CHILD || m.ageGroup === AgeGroup.TEEN
       )
-      if (children.length > 0) {
-        this.childProfile = children[0]
+      if (this.childMembers.length > 0) {
+        this.childProfile = this.childMembers[0]
       }
     } catch (e) {
       hilog.error(DOMAIN_ZERO, TAG, 'aboutToAppear failed: %{public}s', JSON.stringify(e));
@@ -40,25 +58,23 @@ export struct ChildHealthPage {
 
   build() {
     Column() {
-      Row() {
-        BackButton({ fontSize: 24, fontColor: COLORS.PRIMARY })
-          .onClick(() => { safeBack() })
-          .accessibilityText('返回')
-          .accessibilityLevel('yes')
-        Text($r('app.string.child_health_title'))
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .margin({ left: 16 })
-      }
-      .width('100%')
-      .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+      GradientHeader({ title: $r('app.string.child_health_title') })
 
       if (this.isLoading) {
+        LoadingSkeleton({ variant: 'list', rowCount: 4 })
+          .layoutWeight(1)
+      } else if (this.childMembers.length === 0) {
         Column() {
-          LoadingProgress()
-            .width(48)
-            .height(48)
-            .color(COLORS.PRIMARY)
+          Text('👶')
+            .fontSize(48)
+            .margin({ bottom: 12 })
+          Text('暂无儿童/青少年成员')
+            .fontSize(16)
+            .fontColor(COLORS.TEXT_PRIMARY)
+            .margin({ bottom: 4 })
+          Text('请在家庭管理中添加儿童成员后再使用此功能')
+            .fontSize(13)
+            .fontColor(COLORS.TEXT_GRAY_7575)
         }
         .width('100%')
         .layoutWeight(1)
@@ -66,12 +82,29 @@ export struct ChildHealthPage {
       } else {
         Scroll() {
           Column() {
+            // 儿童成员选择器
+            Column() {
+              Text('选择儿童/青少年')
+                .fontSize(14)
+                .fontColor(COLORS.TEXT_GRAY_7575)
+                .margin({ left: 16, bottom: 8 })
+              MemberSelector({
+                members: this.childMembers,
+                selectedMemberId: this.childProfile.memberId,
+                showEmoji: true,
+                onSelectMember: (memberId: string) => { this.onChildSelected(memberId) }
+              })
+            }
+            .width('100%')
+            .margin({ bottom: 16 })
+
             Column() {
               Text($r('app.string.child_health_food_selection'))
                 .fontSize(16)
                 .fontWeight(FontWeight.Bold)
                 .margin({ bottom: 12 })
 
+              // 食品名称输入
               Column() {
                 Text($r('app.string.child_health_food_name'))
                   .fontSize(13)
@@ -86,36 +119,63 @@ export struct ChildHealthPage {
               .width('100%')
               .margin({ bottom: 12 })
 
+              // 今日零食热量 — Slider
               Row() {
-                Column() {
-                  Text($r('app.string.child_health_snack_calories'))
-                    .fontSize(12)
-                    .fontColor(COLORS.TEXT_GRAY_7575)
-                    .margin({ bottom: 4 })
-                  TextInput({ text: this.todaySnackCalories, placeholder: '0' })
-                    .height(40)
-                    .onChange((value: string) => { this.todaySnackCalories = value })
-                    .accessibilityText('零食卡路里')
-                    .accessibilityLevel('yes')
-                }
-                .layoutWeight(1)
-                .margin({ right: 8 })
-
-                Column() {
-                  Text($r('app.string.child_health_snack_sugar'))
-                    .fontSize(12)
-                    .fontColor(COLORS.TEXT_GRAY_7575)
-                    .margin({ bottom: 4 })
-                  TextInput({ text: this.todaySnackSugarG, placeholder: '0' })
-                    .height(40)
-                    .onChange((value: string) => { this.todaySnackSugarG = value })
-                    .accessibilityText('零食糖分(g)')
-                    .accessibilityLevel('yes')
-                }
-                .layoutWeight(1)
+                Text($r('app.string.child_health_snack_calories'))
+                  .fontSize(13)
+                  .fontColor(COLORS.TEXT_GRAY_7575)
+                  .layoutWeight(1)
+                Text(this.todaySnackCalories.toString() + ' 千卡')
+                  .fontSize(16)
+                  .fontWeight(FontWeight.Medium)
+                  .fontColor(COLORS.PRIMARY)
               }
               .width('100%')
-              .margin({ bottom: 16 })
+              .margin({ bottom: 4 })
+
+              Slider({
+                value: this.todaySnackCalories,
+                min: 0,
+                max: 500,
+                step: 10
+              })
+                .width('100%')
+                .selectedColor(COLORS.PRIMARY)
+                .onChange((value: number, mode: SliderChangeMode) => {
+                  if (mode === SliderChangeMode.End || mode === SliderChangeMode.Click) {
+                    this.todaySnackCalories = Math.round(value);
+                  }
+                })
+                .margin({ bottom: 12 })
+
+              // 今日零食糖分 — Slider
+              Row() {
+                Text($r('app.string.child_health_snack_sugar'))
+                  .fontSize(13)
+                  .fontColor(COLORS.TEXT_GRAY_7575)
+                  .layoutWeight(1)
+                Text(this.todaySnackSugarG + ' g')
+                  .fontSize(16)
+                  .fontWeight(FontWeight.Medium)
+                  .fontColor(COLORS.PRIMARY)
+              }
+              .width('100%')
+              .margin({ bottom: 4 })
+
+              Slider({
+                value: this.todaySnackSugarG,
+                min: 0,
+                max: 50,
+                step: 1
+              })
+                .width('100%')
+                .selectedColor(COLORS.PRIMARY)
+                .onChange((value: number, mode: SliderChangeMode) => {
+                  if (mode === SliderChangeMode.End || mode === SliderChangeMode.Click) {
+                    this.todaySnackSugarG = Math.round(value);
+                  }
+                })
+                .margin({ bottom: 16 })
 
               Button($r('app.string.child_health_start'))
                 .width('100%')
@@ -131,6 +191,7 @@ export struct ChildHealthPage {
             .padding(16)
             .backgroundColor(COLORS.WHITE)
             .borderRadius(12)
+            .shadow(SHADOWS.MD)
             .alignItems(HorizontalAlign.Start)
             .margin({ bottom: 16 })
 
@@ -177,8 +238,8 @@ export struct ChildHealthPage {
                       Text(ar.safetyLevel === AdditiveSafetyLevel.SAFE ? '✓' :
                         ar.safetyLevel === AdditiveSafetyLevel.AVOID ? '✗' : '⚠')
                         .fontSize(14)
-                        .fontColor(ar.safetyLevel === AdditiveSafetyLevel.SAFE ? '#4CAF50' :
-                          ar.safetyLevel === AdditiveSafetyLevel.AVOID ? '#E53935' : '#FF9800')
+                        .fontColor(ar.safetyLevel === AdditiveSafetyLevel.SAFE ? COLORS.LEVEL_GREEN :
+                          ar.safetyLevel === AdditiveSafetyLevel.AVOID ? COLORS.LEVEL_RED : COLORS.LEVEL_YELLOW)
                         .margin({ right: 8 })
                       Column() {
                         Text(`${ar.additiveName}(${ar.code})`)
@@ -209,6 +270,7 @@ export struct ChildHealthPage {
               .padding(16)
               .backgroundColor(COLORS.WHITE)
               .borderRadius(12)
+              .shadow(SHADOWS.MD)
               .alignItems(HorizontalAlign.Start)
               .margin({ bottom: 16 })
             }
@@ -221,23 +283,38 @@ export struct ChildHealthPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(COLORS.BG_PAGE)
+    .linearGradient(this.pageBgGradient)
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
+  }
+
+  private onChildSelected(memberId: string): void {
+    const member = this.childMembers.find((m: FamilyProfile) => m.memberId === memberId);
+    if (member) {
+      this.childProfile = member;
+    }
   }
 
   private async runAssessment(): Promise<void> {
     if (this.foodName.length === 0) return;
-    const foodLabel: FoodLabel = new FoodLabel()
-    foodLabel.foodName = this.foodName;
-    this.result = (await this.appState.assessChildHealth(
-      this.childProfile.memberId, foodLabel
-    )) as Object as ChildHealthAssessment;
+    this.isLoading = true
+    try {
+      const foodLabel: FoodLabel = new FoodLabel()
+      foodLabel.foodName = this.foodName;
+      this.result = (await this.appState.assessChildHealth(
+        this.childProfile.memberId, foodLabel
+      )) as Object as ChildHealthAssessment;
+    } catch (e) {
+      hilog.error(DOMAIN_ZERO, TAG, 'runAssessment failed: %{public}s', JSON.stringify(e));
+      ToastHelper.show(this.getUIContext(), '评估失败，请重试')
+      this.result = null
+    } finally {
+      this.isLoading = false
+    }
   }
 
   aboutToDisappear(): void {
     this.tracker.onDisappear()
   }
-
-
 
   pageTransition() {
     PageTransitionEnter({ duration: 350, curve: Curve.FastOutSlowIn })

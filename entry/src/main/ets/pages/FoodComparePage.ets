@@ -1,8 +1,9 @@
-﻿// FoodComparePage.ets
+// FoodComparePage.ets
 // 食品对比页面 - V5: 营养对比
-import { FoodLabel, NutritionPer100g, COLORS, RADIUS, HILOG_DOMAIN_DEFAULT, ToastHelper, NutritionSnapshot, resourceToStr, PageResourceTracker, createPageTracker, LazyDataSource } from 'hsp_core';
+import { FoodLabel, NutritionPer100g, COLORS, RADIUS, SHADOWS, FONT_SIZE, SPACING, HILOG_DOMAIN_DEFAULT, ToastHelper, HapticHelper, NutritionSnapshot, resourceToStr, PageResourceTracker, createPageTracker, LazyDataSource, ThemeReactive, themeReactive } from 'hsp_core';
 import { FoodCompareService, FoodCompareResult, NutritionDelta } from 'hsp_service';
 import { BackButton } from '../components/BackButton';
+import { GradientHeader } from '../components/GradientHeader';
 import { AppState } from '../AppState';
 import { NovaGroupBadge } from '../components/NovaGroupBadge';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -33,6 +34,7 @@ export struct FoodComparePage {
   @Local pickingSide: 1 | 2 = 1
   @Local savedSnapshots: NutritionSnapshot[] = []
   @Local compareResult: FoodCompareResult | null = null
+  @Local isRefreshing: boolean = false
 
   private appState: AppState = AppState.getInstance()
   private compareService: FoodCompareService = new FoodCompareService()
@@ -41,18 +43,20 @@ export struct FoodComparePage {
   private tracker: PageResourceTracker = createPageTracker('FoodComparePage')
   private recentFoodsDs: LazyDataSource<FoodLabel> = new LazyDataSource()
 
+  private themeRef: ThemeReactive = themeReactive
+
   async aboutToAppear(): Promise<void> {
     this.tracker.onAppear()
     this.componentActive = true;
     this.mContext = this.getUIContext() as UIContext;
     try {
       const allResults = await Promise.all([
-        this.appState.historyRepo.getRecentFoods(20).catch((e) => {
+        this.appState.historyRepo.getRecentFoods(20).catch((e: Object) => {
           hilog.warn(DOMAIN_ZERO, TAG, 'Load recent foods failed: %{public}s', JSON.stringify(e))
           const emptyArr: FoodLabel[] = []
           return emptyArr
         }),
-        this.appState.getNutritionSnapshots('', 20).catch((e) => {
+        this.appState.getNutritionSnapshots('', 20).catch((e: Object) => {
           hilog.warn(DOMAIN_ZERO, TAG, 'Load snapshots failed: %{public}s', JSON.stringify(e))
           const emptySnapshots: NutritionSnapshot[] = []
           return emptySnapshots
@@ -78,14 +82,7 @@ export struct FoodComparePage {
 
   build() {
     Column() {
-      Row() {
-        BackButton()
-        .accessibilityText('杩斿洖')
-        .accessibilityLevel('yes')
-        Text($r('app.string.food_compare_title')).fontSize(20).fontWeight(FontWeight.Bold).margin({ left: 12 })
-      }
-      .width('100%')
-      .padding(16)
+      GradientHeader({ title: $r('app.string.food_compare_title') })
 
       Scroll() {
         Column() {
@@ -109,6 +106,7 @@ export struct FoodComparePage {
     .width('100%')
     .height('100%')
     .backgroundColor(COLORS.BG_PAGE)
+    .opacity(this.themeRef.key >= 0 ? 1 : 1)
   }
 
   @Builder
@@ -161,45 +159,45 @@ export struct FoodComparePage {
     Column() {
       TextInput({ placeholder: $r('app.string.food_compare_barcode_placeholder'), text: side === 1 ? this.barcode1 : this.barcode2 })
         .width('100%')
-        .height(36)
-        .borderRadius(8)
+        .height(44)
+        .borderRadius(RADIUS.MD)
         .backgroundColor(COLORS.WHITE)
         .type(InputType.Number)
         .onChange((v: string) => {
           if (side === 1) { this.barcode1 = v } else { this.barcode2 = v }
         })
         .onSubmit(() => { this.searchByBarcode(side) })
-        .accessibilityText('鏉＄爜杈撳叆')
+        .accessibilityText('条码输入')
         .accessibilityLevel('yes')
 
       Text($r('app.string.food_compare_from_history'))
-        .fontSize(12)
+        .fontSize(FONT_SIZE.SMALL)
         .fontColor(COLORS.PRIMARY)
-        .margin({ top: 8 })
+        .margin({ top: SPACING.SM })
         .onClick(() => {
           this.pickingSide = side
           this.showHistoryPicker = true
         })
-        .accessibilityText('浠庡巻鍙查€夋嫨')
+        .accessibilityText('从历史选择')
         .accessibilityLevel('yes')
 
       if (this.savedSnapshots.length > 0) {
         Text($r('app.string.select_snapshot'))
-          .fontSize(12)
+          .fontSize(FONT_SIZE.SMALL)
           .fontColor(COLORS.ACCENT_PURPLE_9C27)
-          .margin({ top: 4 })
+          .margin({ top: SPACING.XS })
           .onClick(() => {
             this.pickingSide = side
             this.pickFromSnapshot(side)
           })
-          .accessibilityText('閫夋嫨蹇収')
+          .accessibilityText('选择快照')
           .accessibilityLevel('yes')
       }
     }
     .width('100%')
-    .padding(12)
+    .padding(SPACING.MD)
     .backgroundColor(COLORS.BG_LIGHT)
-    .borderRadius(RADIUS.MD)
+    .borderRadius(RADIUS.LG)
   }
 
   @Builder
@@ -215,7 +213,7 @@ export struct FoodComparePage {
         .onClick(() => {
           if (side === 1) { this.food1 = null } else { this.food2 = null }
         })
-        .accessibilityText('鏇挎崲椋熷搧')
+        .accessibilityText('替换食品')
         .accessibilityLevel('yes')
     }
     .width('100%')
@@ -234,44 +232,53 @@ export struct FoodComparePage {
         Text($r('app.string.food_compare_close')).fontSize(14).fontColor(COLORS.PRIMARY).onClick(() => {
           this.showHistoryPicker = false
         })
-        .accessibilityText('鍏抽棴')
+        .accessibilityText('关闭')
         .accessibilityLevel('yes')
       }
       .width('100%')
       .padding(16)
 
-      List() {
-        LazyForEach(this.recentFoodsDs, (food: FoodLabel, index: number) => {
-          ListItem() {
-            Row() {
-              Column() {
-                Text(food.foodName).fontSize(14).maxLines(1)
-                  .textOverflow({ overflow: TextOverflow.Ellipsis })
-                Text(food.manufacturer).fontSize(11).fontColor(COLORS.TEXT_TERTIARY).margin({ top: 2 })
+      Refresh({ refreshing: $$this.isRefreshing }) {
+        List() {
+          LazyForEach(this.recentFoodsDs, (food: FoodLabel, index: number) => {
+            ListItem() {
+              Row() {
+                Column() {
+                  Text(food.foodName).fontSize(14).maxLines(1)
+                    .textOverflow({ overflow: TextOverflow.Ellipsis })
+                  Text(food.manufacturer).fontSize(11).fontColor(COLORS.TEXT_TERTIARY).margin({ top: 2 })
+                }
+                .layoutWeight(1)
+                .alignItems(HorizontalAlign.Start)
               }
-              .layoutWeight(1)
-              .alignItems(HorizontalAlign.Start)
+              .width('100%')
+              .padding({ left: 16, right: 16, top: 10, bottom: 10 })
+              .onClick(() => {
+                if (this.pickingSide === 1) { this.food1 = food } else { this.food2 = food }
+                this.showHistoryPicker = false
+              })
+              .accessibilityText(food.foodName)
+              .accessibilityLevel('yes')
             }
-            .width('100%')
-            .padding({ left: 16, right: 16, top: 10, bottom: 10 })
-            .onClick(() => {
-              if (this.pickingSide === 1) { this.food1 = food } else { this.food2 = food }
-              this.showHistoryPicker = false
-            })
-            .accessibilityText(food.foodName)
-            .accessibilityLevel('yes')
-          }
-        }, (food: FoodLabel) => `${food.barcode}_0`)
+          }, (food: FoodLabel) => `${food.barcode}_0`)
+        }
+        .width('100%')
+        .layoutWeight(1)
+        .divider({ strokeWidth: 0.5, color: COLORS.BORDER })
       }
-      .width('100%')
+      .onRefreshing(async () => {
+        HapticHelper.light()
+        this.recentFoods = await this.appState.historyRepo.getRecentFoods(20)
+        this.recentFoodsDs.reloadData(this.recentFoods)
+        this.isRefreshing = false
+      })
       .layoutWeight(1)
-      .divider({ strokeWidth: 0.5, color: '#E0E0E0' })
     }
     .width('100%')
     .height('50%')
     .backgroundColor(COLORS.WHITE)
     .borderRadius({ topLeft: RADIUS.XL, topRight: RADIUS.XL })
-    .shadow({ radius: 8, color: '#1A000000', offsetX: 0, offsetY: -2 })
+    .shadow(SHADOWS.MD)
   }
 
   @Builder
@@ -294,7 +301,7 @@ export struct FoodComparePage {
       .layoutWeight(1)
       .padding({ right: 8 })
 
-      Text('VS').fontSize(16).fontWeight(FontWeight.Bold).fontColor(COLORS.TEXT_GRAY_9E9E)
+      Text('对比').fontSize(16).fontWeight(FontWeight.Bold).fontColor(COLORS.TEXT_GRAY_9E9E)
 
       Column() {
         Text(this.food2?.foodName ?? '').fontSize(14).fontWeight(FontWeight.Medium)
@@ -319,6 +326,7 @@ export struct FoodComparePage {
     .backgroundColor(COLORS.WHITE)
     .borderRadius(RADIUS.LG)
     .margin({ bottom: 12 })
+    .shadow(SHADOWS.SM)
   }
 
   @Builder
@@ -352,6 +360,7 @@ export struct FoodComparePage {
     .borderRadius(RADIUS.LG)
     .margin({ bottom: 12 })
     .alignItems(HorizontalAlign.Start)
+    .shadow(SHADOWS.SM)
   }
 
   @Builder
@@ -366,6 +375,7 @@ export struct FoodComparePage {
     .borderRadius(RADIUS.LG)
     .margin({ bottom: 12 })
     .alignItems(HorizontalAlign.Start)
+    .shadow(SHADOWS.SM)
   }
 
   private buildNutrientDiffs(): NutrientDiff[] {

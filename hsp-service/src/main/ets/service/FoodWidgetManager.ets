@@ -117,7 +117,7 @@ export class FoodWidgetManager {
   }
 
   private async getRecentScanSummary(context: Context): Promise<ScanSummary> {
-    const summary: ScanSummary = new ScanSummary(
+    const summary: ScanSummary = new ScanSummary();
     try {
       const rdbConfig: relationalStore.StoreConfig = { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 };
       const store = await relationalStore.getRdbStore(context, rdbConfig);

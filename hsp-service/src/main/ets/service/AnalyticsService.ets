@@ -1,4 +1,4 @@
-// 埋点统计服务 - 记录用户行为与增长指标
+// 埋点统计服务 - 记录用户行为与增长指标 (API 23 refined)
 // 使用关系型数据库本地持久化，支持批量写入和定时上报
 
 import {
@@ -13,11 +13,8 @@ import { PrivacyManager } from './PrivacyManager';
 const TAG = 'AnalyticsService';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
 
-/** 内存队列最大容量，达到此数量触发自动 flush */
 const FLUSH_BATCH_SIZE = TIME_INTERVAL_CONFIG.ANALYTICS_BATCH_SIZE;
-
-/** 自动 flush 的间隔（毫秒） */
-const FLUSH_INTERVAL_MS = TIME_INTERVAL_CONFIG.ANALYTICS_FLUSH_INTERVAL_MS; // 5 分钟
+const FLUSH_INTERVAL_MS = TIME_INTERVAL_CONFIG.ANALYTICS_FLUSH_INTERVAL_MS;
 
 let analyticsServiceInstance: AnalyticsService | null = null;
 
@@ -39,46 +36,38 @@ export class AnalyticsService {
     return analyticsServiceInstance;
   }
 
-  /**
-   * 初始化（必须在应用启动时调用一次）
-   * @param context 应用上下文，用于创建数据库
-   */
   async init(context: common.Context): Promise<void> {
-    // 生成会话ID
     if (this.sessionId.length === 0) {
-      this.sessionId = `sess_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+      this.sessionId = 'sess_' + String(Date.now()) + '_' + String(Math.floor(Math.random() * 10000));
     }
 
     try {
-      // 创建或打开事件数据库
       const rdbConfig: relationalStore.StoreConfig = { name: DB_NAME, securityLevel: relationalStore.SecurityLevel.S3 };
       this.rdbStore = await relationalStore.getRdbStore(context, rdbConfig);
 
-      // 创建事件表
-      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${ANALYTICS_TABLE_NAME} (`
-        ${ANALYTICS_COLUMNS.ID} INTEGER PRIMARY KEY AUTOINCREMENT,
-        ${ANALYTICS_COLUMNS.EVENT_ID} TEXT NOT NULL,
-        ${ANALYTICS_COLUMNS.EVENT_TYPE} TEXT NOT NULL,
-        ${ANALYTICS_COLUMNS.TIMESTAMP} INTEGER NOT NULL,
-        ${ANALYTICS_COLUMNS.PROPERTIES} TEXT,
-        ${ANALYTICS_COLUMNS.SESSION_ID} TEXT,
-        ${ANALYTICS_COLUMNS.USER_ID} TEXT,
-        ${ANALYTICS_COLUMNS.USER_TIER} TEXT,
-        ${ANALYTICS_COLUMNS.MEMBER_COUNT} INTEGER
-      )`);`
+      const createSql = 'CREATE TABLE IF NOT EXISTS ' + ANALYTICS_TABLE_NAME + ' (' +
+        ANALYTICS_COLUMNS.ID + ' INTEGER PRIMARY KEY AUTOINCREMENT, ' +
+        ANALYTICS_COLUMNS.EVENT_ID + ' TEXT NOT NULL, ' +
+        ANALYTICS_COLUMNS.EVENT_TYPE + ' TEXT NOT NULL, ' +
+        ANALYTICS_COLUMNS.TIMESTAMP + ' INTEGER NOT NULL, ' +
+        ANALYTICS_COLUMNS.PROPERTIES + ' TEXT, ' +
+        ANALYTICS_COLUMNS.SESSION_ID + ' TEXT, ' +
+        ANALYTICS_COLUMNS.USER_ID + ' TEXT, ' +
+        ANALYTICS_COLUMNS.USER_TIER + ' TEXT, ' +
+        ANALYTICS_COLUMNS.MEMBER_COUNT + ' INTEGER' +
+        ')';
+      await this.rdbStore.executeSql(createSql);
 
-      // 创建索引（按事件类型和时间戳查询优化）
       await this.rdbStore.executeSql(
-        `CREATE INDEX IF NOT EXISTS idx_event_type ON ${ANALYTICS_TABLE_NAME} (${ANALYTICS_COLUMNS.EVENT_TYPE})`
+        'CREATE INDEX IF NOT EXISTS idx_event_type ON ' + ANALYTICS_TABLE_NAME + ' (' + ANALYTICS_COLUMNS.EVENT_TYPE + ')'
       );
       await this.rdbStore.executeSql(
-        `CREATE INDEX IF NOT EXISTS idx_timestamp ON ${ANALYTICS_TABLE_NAME} (${ANALYTICS_COLUMNS.TIMESTAMP})`
+        'CREATE INDEX IF NOT EXISTS idx_timestamp ON ' + ANALYTICS_TABLE_NAME + ' (' + ANALYTICS_COLUMNS.TIMESTAMP + ')'
       );
 
       this.dbReady = true;
       hilog.info(DOMAIN_ZERO, TAG, 'Analytics DB initialized');
 
-      // 启动定时 flush 定时器
       this.startFlushTimer();
     } catch (error) {
       this.dbReady = false;
@@ -86,20 +75,13 @@ export class AnalyticsService {
     }
   }
 
-  // ==================== 事件追踪方法 ====================
-
-  /**
-   * 核心追踪方法
-   * @param type 事件类型（推荐使用 EventType 枚举值）
-   * @param properties 事件自定义属性
-   */
   trackEvent(type: string, properties: Map<string, string | number | boolean>): void {
     if (!PrivacyManager.isPrivacyAgreed()) {
       hilog.info(DOMAIN_ZERO, TAG, '隐私未同意，跳过分析');
       return;
     }
     this.ensureSession();
-    const event: AnalyticsEvent = new AnalyticsEvent()
+    const event: AnalyticsEvent = new AnalyticsEvent();
     event.eventId = this.generateEventId();
     event.eventType = type;
     event.timestamp = Date.now();
@@ -108,9 +90,6 @@ export class AnalyticsService {
     this.enqueue(event);
   }
 
-  /**
-   * 扫码行为追踪
-   */
   trackScan(productName: string, memberCount: number, scanType: string): void {
     const props = new Map<string, string | number | boolean>();
     props.set('product_name', productName);
@@ -119,9 +98,6 @@ export class AnalyticsService {
     this.trackEvent(EventType.SCAN, props);
   }
 
-  /**
-   * 分享行为追踪
-   */
   trackShare(platform: string, cardType: string): void {
     const props = new Map<string, string | number | boolean>();
     props.set('platform', platform);
@@ -129,18 +105,12 @@ export class AnalyticsService {
     this.trackEvent(EventType.SHARE, props);
   }
 
-  /**
-   * 美食平衡使用追踪
-   */
   trackMealBalance(scene: string): void {
     const props = new Map<string, string | number | boolean>();
     props.set('scene', scene);
     this.trackEvent(EventType.MEAL_BALANCE, props);
   }
 
-  /**
-   * 成员管理行为追踪
-   */
   trackMemberEdit(memberId: string, action: string): void {
     const props = new Map<string, string | number | boolean>();
     props.set('member_id', memberId);
@@ -148,18 +118,12 @@ export class AnalyticsService {
     this.trackEvent(EventType.MEMBER_EDIT, props);
   }
 
-  /**
-   * 页面浏览追踪
-   */
   trackPageView(pageName: string): void {
     const props = new Map<string, string | number | boolean>();
     props.set('page_name', pageName);
     this.trackEvent(EventType.PAGE_VIEW, props);
   }
 
-  /**
-   * 评分查看追踪
-   */
   trackScoreView(foodName: string, score: number): void {
     const props = new Map<string, string | number | boolean>();
     props.set('food_name', foodName);
@@ -167,9 +131,6 @@ export class AnalyticsService {
     this.trackEvent(EventType.SCORE_VIEW, props);
   }
 
-  /**
-   * 替代品点击追踪
-   */
   trackAlternativeClick(foodName: string, alternativeName: string, scoreDiff: number): void {
     const props = new Map<string, string | number | boolean>();
     props.set('food_name', foodName);
@@ -178,11 +139,6 @@ export class AnalyticsService {
     this.trackEvent(EventType.ALTERNATIVE_CLICK, props);
   }
 
-  // ==================== 用户画像追踪 ====================
-
-  /**
-   * 用户标识
-   */
   identifyUser(userId: string, healthGoals: string[]): void {
     this.userId = userId;
     this.healthGoals = healthGoals;
@@ -190,9 +146,6 @@ export class AnalyticsService {
       userId, JSON.stringify(healthGoals));
   }
 
-  /**
-   * 会员等级设置
-   */
   setUserTier(tier: string): void {
     this.userTier = tier;
     hilog.info(DOMAIN_ZERO, TAG, 'User tier set: %{public}s', tier);
@@ -202,26 +155,15 @@ export class AnalyticsService {
     this.trackEvent(EventType.SUBSCRIPTION, props);
   }
 
-  /**
-   * 家庭成员数更新
-   */
   updateMemberCount(count: number): void {
     this.memberCount = count;
     hilog.info(DOMAIN_ZERO, TAG, 'Member count updated: %{public}d', count);
   }
 
-  /**
-   * 获取家庭成员数
-   */
   getMemberCount(): number {
     return this.memberCount;
   }
 
-  // ==================== 批量写入 ====================
-
-  /**
-   * 将内存队列中的事件批量写入本地数据库
-   */
   async flush(): Promise<void> {
     if (this.eventQueue.length === 0) {
       return;
@@ -230,7 +172,6 @@ export class AnalyticsService {
     const batch = this.eventQueue.splice(0, this.eventQueue.length);
 
     if (!this.dbReady || this.rdbStore === null) {
-      // 数据库不可用，回退到日志输出
       for (const event of batch) {
         hilog.info(DOMAIN_ZERO, TAG,
           '[Analytics Fallback] eventType=%{public}s eventId=%{public}s ts=%{public}d props=%{public}s',
@@ -240,10 +181,9 @@ export class AnalyticsService {
     }
 
     try {
-      // 批量插入
       await this.rdbStore.beginTransaction();
       for (const event of batch) {
-        const valueBucket: relationalStore.ValuesBucket = {
+        const valueBucket: Record<string, string | number> = {
           'event_id': event.eventId,
           'event_type': event.eventType,
           'timestamp': event.timestamp,
@@ -258,21 +198,16 @@ export class AnalyticsService {
       await this.rdbStore.commit();
       hilog.info(DOMAIN_ZERO, TAG, 'Flushed %{public}d events to DB', batch.length);
     } catch (error) {
-      // 回滚事务
       try {
         await this.rdbStore.rollBack();
       } catch (e) {
         hilog.warn(DOMAIN_ZERO, TAG, '事务回滚失败: %{public}s', JSON.stringify(e));
       }
       hilog.error(DOMAIN_ZERO, TAG, 'Batch flush failed: %{public}s', JSON.stringify(error));
-      // 失败时将事件放回队列前端，避免丢失
-      this.eventQueue = [...batch, ...this.eventQueue];
+      this.eventQueue = batch.concat(this.eventQueue);
     }
   }
 
-  /**
-   * 查询历史事件（用于调试/周报）
-   */
   async queryEvents(
     type?: string,
     startTime?: number,
@@ -303,7 +238,7 @@ export class AnalyticsService {
       const events: AnalyticsEvent[] = [];
 
       while (resultSet.goToNextRow()) {
-        const event: AnalyticsEvent = new AnalyticsEvent()
+        const event: AnalyticsEvent = new AnalyticsEvent();
         event.eventId = resultSet.getString(resultSet.getColumnIndex(ANALYTICS_COLUMNS.EVENT_ID));
         event.eventType = resultSet.getString(resultSet.getColumnIndex(ANALYTICS_COLUMNS.EVENT_TYPE));
         event.timestamp = resultSet.getLong(resultSet.getColumnIndex(ANALYTICS_COLUMNS.TIMESTAMP));
@@ -322,9 +257,6 @@ export class AnalyticsService {
     }
   }
 
-  /**
-   * 获取事件数量统计（按类型分组）
-   */
   async getEventCounts(
     startTime?: number,
     endTime?: number
@@ -334,19 +266,19 @@ export class AnalyticsService {
     }
 
     try {
-      let sql = `SELECT ${ANALYTICS_COLUMNS.EVENT_TYPE}, COUNT(*) as cnt FROM ${ANALYTICS_TABLE_NAME} WHERE 1=1`;
+      let sql = 'SELECT ' + ANALYTICS_COLUMNS.EVENT_TYPE + ', COUNT(*) as cnt FROM ' + ANALYTICS_TABLE_NAME + ' WHERE 1=1';
       const args: number[] = [];
 
       if (startTime !== undefined) {
-        sql += ` AND ${ANALYTICS_COLUMNS.TIMESTAMP} >= ?`;
+        sql = sql + ' AND ' + ANALYTICS_COLUMNS.TIMESTAMP + ' >= ?';
         args.push(startTime);
       }
       if (endTime !== undefined) {
-        sql += ` AND ${ANALYTICS_COLUMNS.TIMESTAMP} <= ?`;
+        sql = sql + ' AND ' + ANALYTICS_COLUMNS.TIMESTAMP + ' <= ?';
         args.push(endTime);
       }
 
-      sql += ' GROUP BY event_type';
+      sql = sql + ' GROUP BY event_type';
 
       const resultSet = await this.rdbStore.querySql(sql, args);
       const counts: Map<string, number> = new Map();
@@ -365,9 +297,6 @@ export class AnalyticsService {
     }
   }
 
-  /**
-   * 清理旧数据（保留最近 90 天）
-   */
   async cleanOldData(retentionDays: number = 90): Promise<number> {
     if (!this.dbReady || this.rdbStore === null) {
       return 0;
@@ -386,11 +315,7 @@ export class AnalyticsService {
     }
   }
 
-  /**
-   * 析构（应用退出时调用）
-   */
   async destroy(): Promise<void> {
-    // 停止定时器
     if (this.flushTimerId !== -1) {
       try {
         clearInterval(this.flushTimerId);
@@ -399,48 +324,32 @@ export class AnalyticsService {
       }
       this.flushTimerId = -1;
     }
-    // 刷出剩余队列
     await this.flush();
     this.rdbStore = null;
     this.dbReady = false;
     hilog.info(DOMAIN_ZERO, TAG, 'AnalyticsService destroyed');
   }
 
-  // ==================== 内部方法 ====================
-
-  /**
-   * 确保会话已初始化
-   */
   private ensureSession(): void {
     if (this.sessionId.length === 0) {
-      this.sessionId = `sess_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+      this.sessionId = 'sess_' + String(Date.now()) + '_' + String(Math.floor(Math.random() * 10000));
     }
   }
 
-  /**
-   * 生成事件ID
-   */
   private generateEventId(): string {
-    return `evt_${Date.now()}_${Math.floor(Math.random() * 9999)}`;
+    return 'evt_' + String(Date.now()) + '_' + String(Math.floor(Math.random() * 9999));
   }
 
-  /**
-   * 入队事件，队列满时自动 flush
-   */
   private enqueue(event: AnalyticsEvent): void {
     this.eventQueue.push(event);
     hilog.info(DOMAIN_ZERO, TAG, '[Analytics] eventType=%{public}s eventId=%{public}s ts=%{public}d props=%{public}s',
       event.eventType, event.eventId, event.timestamp, JSON.stringify(event.properties));
 
-    // 队列达到阈值时自动写入
     if (this.eventQueue.length >= FLUSH_BATCH_SIZE) {
       this.flush();
     }
   }
 
-  /**
-   * 启动定时 flush 定时器
-   */
   private startFlushTimer(): void {
     if (this.flushTimerId !== -1) {
       try {
@@ -454,9 +363,6 @@ export class AnalyticsService {
     }, FLUSH_INTERVAL_MS);
   }
 
-  /**
-   * 解析 properties 字段 JSON 字符串
-   */
   private emptyProperties: Record<string, string | number | boolean> = {};
 
   private parseProperties(jsonStr: string): Record<string, string | number | boolean> {
@@ -466,7 +372,7 @@ export class AnalyticsService {
     try {
       const raw = JSON.parse(jsonStr) as Record<string, string | number | boolean>;
       return raw;
-    } catch {
+    } catch (e) {
       return this.emptyProperties;
     }
   }

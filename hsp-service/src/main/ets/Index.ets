@@ -8,7 +8,6 @@ export { FoodRepository } from './repository/FoodRepository';
 export { HistoryRepository, ScanHistoryRecord, ScanHistoryInput, DietRecordInput, RiskDaysResult } from './repository/HistoryRepository';
 export { RuleRepository, GoalAdjustment, DynamicFactor, DynamicModifiers, NutritionBudgetRule, MealBalanceTemplate, AllergenKeywordMap } from './repository/RuleRepository';
 export { FamilyGroupRepository } from './repository/FamilyGroupRepository';
-export { RecipeRepository } from './repository/RecipeRepository';
 export { FavoriteRepository, FavoriteItem } from './repository/FavoriteRepository';
 export { ShoppingListRepository } from './repository/ShoppingListRepository';
 export { ReminderRuleRepository } from './repository/ReminderRuleRepository';
@@ -44,6 +43,8 @@ export { HuaweiCloudService } from './service/HuaweiCloudService';
 export { UpdateChecker, UpdateInfo } from './service/UpdateChecker';
 export { SyncService, SyncEvent, SyncEventCallback } from './service/sync/SyncService';
 export { DataService } from './service/DataService';
+export { RuleEngineAdapter, RuleEngineParams } from './service/RuleEngineAdapter';
+export { AlternativeRecommenderAdapter } from './service/AlternativeRecommenderAdapter';
 export { ServiceGateway } from './service/ServiceGateway';
 export { CloudBackendService, CloudProductResponse, CloudProductRecord, CloudNutritionInfo, FoodSubmissionRequest, AlternativeQueryRequest, SyncMemberDataRequest } from './service/CloudBackendService';
 export { OnlineAlternativeSearchService, OnlineSearchResult, CloudAlternativeResult } from './service/OnlineAlternativeSearchService';
@@ -69,7 +70,7 @@ export { RepositoryManager } from './manager/RepositoryManager';
 export { SystemPrivacyService } from './service/SystemPrivacyService';
 export { UserDataDeletionService, DeletionResult } from './service/UserDataDeletionService';
 export { ScanToShoppingService, ShoppingItemInput, PriceCompareResult } from './service/ScanToShoppingService';
-export { HealthReportExportService, HealthReportRequest, HealthReportResult } from './service/HealthReportExportService';
+export { HealthReportExportService, HealthReportRequest, HealthReportResult, HealthReportData } from './service/HealthReportExportService';
 export { PermissionProgressiveGuide, PermissionGuideStep } from './service/PermissionProgressiveGuide';
 
 // ===== 电商直链服务 =====
@@ -80,15 +81,15 @@ export { UdmfFoodShareService, FoodShareData } from './service/UdmfFoodShareServ
 
 // ===== 功能增强服务 =====
 export { ConfigManager } from './service/ConfigManager';
-export { BatchScanService, BatchScanResult, ILocalCacheProvider, IRemoteLookupProvider } from './service/BatchScanService';
+export { BatchScanService, BatchScanResult, RemoteLookupResult, ILocalCacheProvider, IRemoteLookupProvider } from './service/BatchScanService';
 export { FoodCompareService, FoodCompareResult, NutritionDelta } from './service/FoodCompareService';
 export { NutritionKnowledgeService, KnowledgeEntry } from './service/NutritionKnowledgeService';
-export { MealPlanService, MealPlan, MealPlanItem } from './service/MealPlanService';
-export { ReminderService, ReminderRule, ReminderEvent } from './service/ReminderService';
+export { MealPlanService, MealPlan, MealPlanItem, MealPlanDailyTotal } from './service/MealPlanService';
+export { ReminderService, ReminderRule, ReminderConditions, ReminderEvent } from './service/ReminderService';
 export { FeedbackService, FeedbackSubmission, FeedbackResult } from './service/FeedbackService';
 
 // ===== T-068 entry瘦身迁移: AI服务层 =====
-export { AiClient } from './service/ai/AiClient';
+export { AiClient, AiRequestOptions, AiCallResponse } from './service/ai/AiClient';
 export { AiServiceDefaults as AiConfig, AI_SERVICE_DEFAULTS, SYSTEM_PROMPTS } from './service/ai/AiConfig';
 export { AiServiceBase } from './service/ai/AiServiceBase';
 export { OnDeviceLlmService } from './service/ai/OnDeviceLlmService';
@@ -98,7 +99,7 @@ export { AiVisionService } from './service/AiVisionService';
 export { ChatHistoryPrefsService } from './service/ChatHistoryPrefsService';
 
 // ===== T-068 entry瘦身迁移: 通用业务服务 =====
-export { CloudDbSchema } from './service/CloudDbSchema';
+export { CloudDbTableName, CloudDbField } from './service/CloudDbSchema';
 export { ComplianceService } from './service/ComplianceService';
 export { CrashMonitorManager } from './service/CrashMonitorManager';
 export { DataBackupService, BackupResult, RestoreResult } from './service/DataBackupService';
@@ -112,7 +113,7 @@ export { FoodWidgetManager } from './service/FoodWidgetManager';
 export { IapServerValidator } from './service/IapServerValidator';
 
 export { IntentRegistrationService } from './service/IntentRegistrationService';
-export { ModelConverter } from './service/ModelConverter';
+// ModelConverter 已弃用，不再导出;
 export { NutritionDomainService } from './service/NutritionDomainService';
 export { OfflineAiCache } from './service/OfflineAiCache';
 export { OfflineModeManager } from './service/OfflineModeManager';
@@ -121,7 +122,7 @@ export { PrivacySettingsService } from './service/PrivacySettingsService';
 export { PushMessageHandler, PushMessagePayload } from './service/PushMessageHandler';
 export { PushNotificationService } from './service/PushNotificationService';
 export { PushService } from './service/PushService';
-export { RemoteErrorReporter, remoteErrorReporter } from './service/RemoteErrorReporter';
+export { ErrorReportPayload, remoteErrorReporter } from './service/RemoteErrorReporter';
 export { ShareImageService } from './service/ShareImageService';
 export { ShareKitService } from './service/ShareKitService';
 export { SharePosterGenerator, PosterData, PosterNutritionItem } from './service/SharePosterGenerator';
@@ -166,8 +167,8 @@ export { IngredientAnalysisService } from './service/IngredientAnalysisService';
 export type { IngredientAnalysisResult, HazardItem } from './service/IngredientAnalysisService';
 
 // ===== V7 新增: IAP会员订阅完整落地 =====
-export { IapProductManager } from './service/IapProductManager';
-export type { IapProductDefinition } from './service/IapProductManager';
+export { IapProductManager, toIapKitProductType } from './service/IapProductManager';
+export type { IapProductDefinition, IapProductType } from './service/IapProductManager';
 export { SubscriptionStateManager, SubscriptionStatus } from './service/SubscriptionStateManager';
 export type { SubscriptionState } from './service/SubscriptionStateManager';
 

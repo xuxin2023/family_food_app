@@ -63,32 +63,34 @@ export class HistoryRepository {
 
     try {
       // 扫描历史表
-      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_SCAN_HISTORY} (`
-        ${COL_ID} INTEGER PRIMARY KEY AUTOINCREMENT,
-        ${COL_MEMBER_ID} TEXT NOT NULL,
-        ${COL_FOOD_ID} TEXT NOT NULL,
-        ${COL_FOOD_NAME} TEXT NOT NULL,
-        ${COL_LEVEL} TEXT NOT NULL,
-        ${COL_MAX_AMOUNT} REAL NOT NULL,
-        ${COL_REASONS} TEXT NOT NULL,
-        ${COL_SCANNED_AT} INTEGER NOT NULL
-      )`);
+      const scanSql = 'CREATE TABLE IF NOT EXISTS ' + TABLE_SCAN_HISTORY + ' (' +
+        COL_ID + ' INTEGER PRIMARY KEY AUTOINCREMENT, ' +
+        COL_MEMBER_ID + ' TEXT NOT NULL, ' +
+        COL_FOOD_ID + ' TEXT NOT NULL, ' +
+        COL_FOOD_NAME + ' TEXT NOT NULL, ' +
+        COL_LEVEL + ' TEXT NOT NULL, ' +
+        COL_MAX_AMOUNT + ' REAL NOT NULL, ' +
+        COL_REASONS + ' TEXT NOT NULL, ' +
+        COL_SCANNED_AT + ' INTEGER NOT NULL' +
+        ')';
+      await this.rdbStore.executeSql(scanSql);
 
       // 饮食记录表
-      await this.rdbStore.executeSql(`CREATE TABLE IF NOT EXISTS ${TABLE_DIET_RECORD} (`
-        ${COL_ID} INTEGER PRIMARY KEY AUTOINCREMENT,
-        ${COL_MEMBER_ID} TEXT NOT NULL,
-        ${COL_DATE} TEXT NOT NULL,
-        ${COL_SCENARIO} TEXT,
-        ${COL_MEAL_TYPE} TEXT DEFAULT 'breakfast',
-        ${COL_FOOD_ID} TEXT,
-        ${COL_AMOUNT_G} REAL,
-        ${COL_SODIUM_INTAKE} REAL,
-        ${COL_SUGAR_INTAKE} REAL,
-        ${COL_CALORIE_INTAKE} REAL,
-        ${COL_FAT_INTAKE} REAL,
-        ${COL_RECORDED_AT} INTEGER NOT NULL
-      )`);
+      const dietSql = 'CREATE TABLE IF NOT EXISTS ' + TABLE_DIET_RECORD + ' (' +
+        COL_ID + ' INTEGER PRIMARY KEY AUTOINCREMENT, ' +
+        COL_MEMBER_ID + ' TEXT NOT NULL, ' +
+        COL_DATE + ' TEXT NOT NULL, ' +
+        COL_SCENARIO + ' TEXT, ' +
+        COL_MEAL_TYPE + " TEXT DEFAULT 'breakfast', " +
+        COL_FOOD_ID + ' TEXT, ' +
+        COL_AMOUNT_G + ' REAL, ' +
+        COL_SODIUM_INTAKE + ' REAL, ' +
+        COL_SUGAR_INTAKE + ' REAL, ' +
+        COL_CALORIE_INTAKE + ' REAL, ' +
+        COL_FAT_INTAKE + ' REAL, ' +
+        COL_RECORDED_AT + ' INTEGER NOT NULL' +
+        ')';
+      await this.rdbStore.executeSql(dietSql);
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Init tables failed: %{public}s', JSON.stringify(error));
     }
@@ -338,48 +340,54 @@ export class HistoryRepository {
   // ========== 内部方法 ==========
 
   private scanRecordFromResultSet(resultSet: relationalStore.ResultSet): ScanHistoryRecord {
-    let reasons: string[] = [];
-    try {
-      reasons = JSON.parse(resultSet.getString(resultSet.getColumnIndex(COL_REASONS)) || '[]') as string[];
-    } catch (e) {
-      hilog.debug(DOMAIN_ZERO, TAG, 'fromScanRecord reasons failed: %{public}s', JSON.stringify(e));
-      reasons = [];
-    }
     const record: ScanHistoryRecord = new ScanHistoryRecord()
-    record.id = resultSet.getLong(resultSet.getColumnIndex(COL_ID));
-    record.memberId = resultSet.getString(resultSet.getColumnIndex(COL_MEMBER_ID));
-    record.foodId = resultSet.getString(resultSet.getColumnIndex(COL_FOOD_ID));
-    record.foodName = resultSet.getString(resultSet.getColumnIndex(COL_FOOD_NAME));
-    record.level = resultSet.getString(resultSet.getColumnIndex(COL_LEVEL));
-    record.maxAmount = resultSet.getDouble(resultSet.getColumnIndex(COL_MAX_AMOUNT));
-    record.reasons = reasons;
-    record.scannedAt = resultSet.getLong(resultSet.getColumnIndex(COL_SCANNED_AT));
+    try {
+      record.id = resultSet.getLong(resultSet.getColumnIndex(COL_ID));
+      record.memberId = resultSet.getString(resultSet.getColumnIndex(COL_MEMBER_ID));
+      record.foodId = resultSet.getString(resultSet.getColumnIndex(COL_FOOD_ID));
+      record.foodName = resultSet.getString(resultSet.getColumnIndex(COL_FOOD_NAME));
+      record.level = resultSet.getString(resultSet.getColumnIndex(COL_LEVEL));
+      record.maxAmount = resultSet.getDouble(resultSet.getColumnIndex(COL_MAX_AMOUNT));
+      const reasonsRaw = resultSet.getString(resultSet.getColumnIndex(COL_REASONS)) || '[]';
+      try {
+        record.reasons = JSON.parse(reasonsRaw) as string[];
+      } catch (e) {
+        hilog.debug(DOMAIN_ZERO, TAG, 'fromScanRecord reasons failed: %{public}s', JSON.stringify(e));
+        record.reasons = [];
+      }
+      record.scannedAt = resultSet.getLong(resultSet.getColumnIndex(COL_SCANNED_AT));
+    } catch (err) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'scanRecordFromResultSet field error: %{public}s', JSON.stringify(err));
+    }
     return record;
   }
 
   private dietRecordFromResultSet(resultSet: relationalStore.ResultSet): DietRecord {
     const record: DietRecord = new DietRecord()
-    record.id = resultSet.getLong(resultSet.getColumnIndex(COL_ID));
-    record.memberId = resultSet.getString(resultSet.getColumnIndex(COL_MEMBER_ID));
-    record.date = resultSet.getString(resultSet.getColumnIndex(COL_DATE));
-    record.scenario = resultSet.getString(resultSet.getColumnIndex(COL_SCENARIO));
-    let mealTypeCol = -1;
     try {
-      mealTypeCol = resultSet.getColumnIndex(COL_MEAL_TYPE);
-    } catch (e) {
-      hilog.debug(DOMAIN_ZERO, TAG, 'fromScanRecord mealType failed: %{public}s', JSON.stringify(e));
-      // 兼容旧数据：meal_type 列可能不存在
+      record.id = resultSet.getLong(resultSet.getColumnIndex(COL_ID));
+      record.memberId = resultSet.getString(resultSet.getColumnIndex(COL_MEMBER_ID));
+      record.date = resultSet.getString(resultSet.getColumnIndex(COL_DATE));
+      record.scenario = resultSet.getString(resultSet.getColumnIndex(COL_SCENARIO));
+      let mealTypeCol = -1;
+      try {
+        mealTypeCol = resultSet.getColumnIndex(COL_MEAL_TYPE);
+      } catch (e) {
+        hilog.debug(DOMAIN_ZERO, TAG, 'fromDietRecord mealType col failed: %{public}s', JSON.stringify(e));
+      }
+      if (mealTypeCol >= 0) {
+        record.mealType = resultSet.getString(mealTypeCol);
+      }
+      record.foodId = resultSet.getString(resultSet.getColumnIndex(COL_FOOD_ID));
+      record.amountG = resultSet.getDouble(resultSet.getColumnIndex(COL_AMOUNT_G));
+      record.sodiumIntake = resultSet.getDouble(resultSet.getColumnIndex(COL_SODIUM_INTAKE));
+      record.sugarIntake = resultSet.getDouble(resultSet.getColumnIndex(COL_SUGAR_INTAKE));
+      record.calorieIntake = resultSet.getDouble(resultSet.getColumnIndex(COL_CALORIE_INTAKE));
+      record.fatIntake = resultSet.getDouble(resultSet.getColumnIndex(COL_FAT_INTAKE));
+      record.recordedAt = resultSet.getLong(resultSet.getColumnIndex(COL_RECORDED_AT));
+    } catch (err) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'dietRecordFromResultSet field error: %{public}s', JSON.stringify(err));
     }
-    if (mealTypeCol >= 0) {
-      record.mealType = resultSet.getmealTypeCol.toString();
-    }
-    record.foodId = resultSet.getString(resultSet.getColumnIndex(COL_FOOD_ID));
-    record.amountG = resultSet.getDouble(resultSet.getColumnIndex(COL_AMOUNT_G));
-    record.sodiumIntake = resultSet.getDouble(resultSet.getColumnIndex(COL_SODIUM_INTAKE));
-    record.sugarIntake = resultSet.getDouble(resultSet.getColumnIndex(COL_SUGAR_INTAKE));
-    record.calorieIntake = resultSet.getDouble(resultSet.getColumnIndex(COL_CALORIE_INTAKE));
-    record.fatIntake = resultSet.getDouble(resultSet.getColumnIndex(COL_FAT_INTAKE));
-    record.recordedAt = resultSet.getLong(resultSet.getColumnIndex(COL_RECORDED_AT));
     return record;
   }
 
@@ -407,12 +415,16 @@ export class HistoryRepository {
       const snapshots: NutritionSnapshot[] = [];
       while (resultSet.goToNextRow()) {
         const snap: NutritionSnapshot = new NutritionSnapshot()
-        snap.memberId = memberId;
-        snap.date = resultSet.getString(resultSet.getColumnIndex(COL_DATE));
-        snap.calories = resultSet.getDouble(resultSet.getColumnIndex(COL_CALORIE_INTAKE));
-        snap.sodium = resultSet.getDouble(resultSet.getColumnIndex(COL_SODIUM_INTAKE));
-        snap.sugar = resultSet.getDouble(resultSet.getColumnIndex(COL_SUGAR_INTAKE));
-        snap.fat = resultSet.getDouble(resultSet.getColumnIndex(COL_FAT_INTAKE));
+        try {
+          snap.memberId = memberId;
+          snap.date = resultSet.getString(resultSet.getColumnIndex(COL_DATE));
+          snap.calories = resultSet.getDouble(resultSet.getColumnIndex(COL_CALORIE_INTAKE));
+          snap.sodium = resultSet.getDouble(resultSet.getColumnIndex(COL_SODIUM_INTAKE));
+          snap.sugar = resultSet.getDouble(resultSet.getColumnIndex(COL_SUGAR_INTAKE));
+          snap.fat = resultSet.getDouble(resultSet.getColumnIndex(COL_FAT_INTAKE));
+        } catch (err) {
+          hilog.warn(DOMAIN_ZERO, TAG, 'parseNutritionSnapshot field error: %{public}s', JSON.stringify(err));
+        }
         snapshots.push(snap);
       }
       return snapshots;
@@ -426,6 +438,6 @@ export class HistoryRepository {
 
   private getTodayDate(): string {
     const now = new Date();
-    return `${now.getFullYear()}-${().toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+    return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
   }
 }

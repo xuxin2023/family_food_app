@@ -27,7 +27,7 @@ export struct SkeletonBlock {
       .width(this.blockWidth)
       .height(this.blockHeight)
       .borderRadius(this.blockRadius)
-      .backgroundColor('#E8E8E8')
+      .backgroundColor(COLORS.BORDER_LIGHT_E8)
       .margin({ bottom: SPACING.SM })
   }
 }
@@ -42,7 +42,7 @@ export struct SkeletonCircle {
       .width(this.circleSize)
       .height(this.circleSize)
       .borderRadius('50%')
-      .backgroundColor('#E8E8E8')
+      .backgroundColor(COLORS.BORDER_LIGHT_E8)
       .margin({ right: SPACING.MD })
   }
 }

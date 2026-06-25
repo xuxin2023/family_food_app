@@ -27,17 +27,27 @@ export class SystemPrivacyService {
   }
 
   private async checkPrivacyWithSystemDialog(context: common.Context): Promise<boolean> {
-    const prefs = await import('@kit.ArkData').then(m => m.preferences.getPreferences(context, 'privacy_state'));
-    const agreed = await prefs.get('privacy_agreed', false) as boolean;
-    if (agreed) return true;
+    try {
+      const arkData = await import('@kit.ArkData');
+      const prefs = await arkData.preferences.getPreferences(context, 'privacy_state');
+      const agreed = await prefs.get('privacy_agreed', false) as boolean;
+      if (agreed) return true;
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'checkPrivacyWithSystemDialog failed: %{public}s', JSON.stringify(e));
+    }
     return false;
   }
 
   async markPrivacyAgreed(context: common.Context): Promise<void> {
-    const prefs = await import('@kit.ArkData').then(m => m.preferences.getPreferences(context, 'privacy_state'));
-    await prefs.put('privacy_agreed', true);
-    await prefs.put('privacy_agreed_time', Date.now().toString());
-    await prefs.flush();
-    hilog.info(DOMAIN_ZERO, TAG, 'Privacy agreed and persisted');
+    try {
+      const arkData = await import('@kit.ArkData');
+      const prefs = await arkData.preferences.getPreferences(context, 'privacy_state');
+      await prefs.put('privacy_agreed', true);
+      await prefs.put('privacy_agreed_time', Date.now().toString());
+      await prefs.flush();
+      hilog.info(DOMAIN_ZERO, TAG, 'Privacy agreed and persisted');
+    } catch (e) {
+      hilog.warn(DOMAIN_ZERO, TAG, 'markPrivacyAgreed failed: %{public}s', JSON.stringify(e));
+    }
   }
 }

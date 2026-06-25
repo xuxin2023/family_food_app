@@ -1,11 +1,12 @@
-// 食品标签数据仓库 - 商品缓存与食品数据
-
+// FoodRepository.ets - 食品标签数据仓库 (API 23 refined)
 import {
-  FoodLabel, FoodSource, NutritionPer100g, HILOG_DOMAIN_DEFAULT, TABLE_FOOD_LABEL, COL_FOOD_ID, COL_FOOD_NAME, COL_BARCODE, COL_INGREDIENTS, COL_NUTRITION, COL_ALLERGEN_HINTS, COL_MANUFACTURER, COL_SC_NUMBER, COL_PRINCIPAL, COL_TRUSTEE, COL_TRACE_CODE, COL_SOURCE, COL_IDENTIFIED_AT
+  FoodLabel, FoodSource, NutritionPer100g, HILOG_DOMAIN_DEFAULT, TABLE_FOOD_LABEL,
+  COL_FOOD_ID, COL_FOOD_NAME, COL_BARCODE, COL_INGREDIENTS, COL_NUTRITION,
+  COL_ALLERGEN_HINTS, COL_MANUFACTURER, COL_SC_NUMBER, COL_PRINCIPAL, COL_TRUSTEE,
+  COL_TRACE_CODE, COL_SOURCE, COL_IDENTIFIED_AT
 } from 'hsp_core';
 import { relationalStore } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-
 
 const TAG = 'FoodRepository';
 const DOMAIN_ZERO = HILOG_DOMAIN_DEFAULT;
@@ -15,22 +16,21 @@ export class FoodRepository {
 
   async init(rdbStore: relationalStore.RdbStore): Promise<void> {
     this.rdbStore = rdbStore;
-    const sql = `CREATE TABLE IF NOT EXISTS ${TABLE_FOOD_LABEL} (`
-      ${COL_FOOD_ID} TEXT PRIMARY KEY,
-      ${COL_FOOD_NAME} TEXT NOT NULL,
-      ${COL_BARCODE} TEXT,
-      ${COL_INGREDIENTS} TEXT NOT NULL,
-      ${COL_NUTRITION} TEXT NOT NULL,
-      ${COL_ALLERGEN_HINTS} TEXT,
-      ${COL_MANUFACTURER} TEXT,
-      ${COL_SC_NUMBER} TEXT,
-      ${COL_PRINCIPAL} TEXT,
-      ${COL_TRUSTEE} TEXT,
-      ${COL_TRACE_CODE} TEXT,
-      ${COL_SOURCE} TEXT NOT NULL,
-      ${COL_IDENTIFIED_AT} INTEGER NOT NULL
-    )`;
-
+    const sql = 'CREATE TABLE IF NOT EXISTS ' + TABLE_FOOD_LABEL + ' (' +
+      COL_FOOD_ID + ' TEXT PRIMARY KEY, ' +
+      COL_FOOD_NAME + ' TEXT NOT NULL, ' +
+      COL_BARCODE + ' TEXT, ' +
+      COL_INGREDIENTS + ' TEXT NOT NULL, ' +
+      COL_NUTRITION + ' TEXT NOT NULL, ' +
+      COL_ALLERGEN_HINTS + ' TEXT, ' +
+      COL_MANUFACTURER + ' TEXT, ' +
+      COL_SC_NUMBER + ' TEXT, ' +
+      COL_PRINCIPAL + ' TEXT, ' +
+      COL_TRUSTEE + ' TEXT, ' +
+      COL_TRACE_CODE + ' TEXT, ' +
+      COL_SOURCE + ' TEXT NOT NULL, ' +
+      COL_IDENTIFIED_AT + ' INTEGER NOT NULL' +
+      ')';
     try {
       await this.rdbStore.executeSql(sql);
     } catch (error) {
@@ -39,7 +39,9 @@ export class FoodRepository {
   }
 
   async saveFoodLabel(label: FoodLabel): Promise<void> {
-    if (!this.rdbStore) return;
+    if (!this.rdbStore) {
+      return;
+    }
     const valueBucket: relationalStore.ValuesBucket = {
       food_id: label.foodId,
       food_name: label.foodName,
@@ -64,7 +66,9 @@ export class FoodRepository {
   }
 
   async findByBarcode(barcode: string): Promise<FoodLabel | null> {
-    if (!this.rdbStore) return null;
+    if (!this.rdbStore) {
+      return null;
+    }
     let resultSet: relationalStore.ResultSet | null = null;
     try {
       const predicates = new relationalStore.RdbPredicates(TABLE_FOOD_LABEL);
@@ -79,22 +83,27 @@ export class FoodRepository {
       return null;
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe close */ }
+        try {
+          resultSet.close();
+        } catch (closeError) {
+          hilog.warn(DOMAIN_ZERO, TAG, 'Close resultSet failed: %{public}s', JSON.stringify(closeError));
+        }
       }
     }
   }
 
   async findByIds(foodIds: string[]): Promise<Map<string, FoodLabel>> {
     const resultMap = new Map<string, FoodLabel>();
-    if (!this.rdbStore || foodIds.length === 0) return resultMap;
+    if (!this.rdbStore || foodIds.length === 0) {
+      return resultMap;
+    }
     let resultSet: relationalStore.ResultSet | null = null;
     try {
       const uniqueMap: Record<string, boolean> = {};
       const uniqueIds: string[] = [];
       for (let i = 0; i < foodIds.length; i++) {
-        const id = foodIds[i];
-        if (!uniqueMap[id]) {
+        const id: string = foodIds[i];
+        if (uniqueMap[id] === undefined) {
           uniqueMap[id] = true;
           uniqueIds.push(id);
         }
@@ -103,22 +112,27 @@ export class FoodRepository {
       predicates.in(COL_FOOD_ID, uniqueIds);
       resultSet = await this.rdbStore.query(predicates);
       while (resultSet.goToNextRow()) {
-        const label = this.fromResultSet(resultSet);
+        const label: FoodLabel = this.fromResultSet(resultSet);
         resultMap.set(label.foodId, label);
       }
     } catch (error) {
       hilog.error(DOMAIN_ZERO, TAG, 'Batch find by ids failed: %{public}s', JSON.stringify(error));
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe close */ }
+        try {
+          resultSet.close();
+        } catch (closeError) {
+          hilog.warn(DOMAIN_ZERO, TAG, 'Close resultSet failed: %{public}s', JSON.stringify(closeError));
+        }
       }
     }
     return resultMap;
   }
 
   async findById(foodId: string): Promise<FoodLabel | null> {
-    if (!this.rdbStore) return null;
+    if (!this.rdbStore) {
+      return null;
+    }
     let resultSet: relationalStore.ResultSet | null = null;
     try {
       const predicates = new relationalStore.RdbPredicates(TABLE_FOOD_LABEL);
@@ -133,14 +147,19 @@ export class FoodRepository {
       return null;
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe close */ }
+        try {
+          resultSet.close();
+        } catch (closeError) {
+          hilog.warn(DOMAIN_ZERO, TAG, 'Close resultSet failed: %{public}s', JSON.stringify(closeError));
+        }
       }
     }
   }
 
-  async getRecentLabels(limit: number = 20): Promise<FoodLabel[]> {
-    if (!this.rdbStore) return [];
+  async getRecentLabels(limit: number): Promise<FoodLabel[]> {
+    if (!this.rdbStore) {
+      return [];
+    }
     let resultSet: relationalStore.ResultSet | null = null;
     try {
       const predicates = new relationalStore.RdbPredicates(TABLE_FOOD_LABEL);
@@ -157,14 +176,19 @@ export class FoodRepository {
       return [];
     } finally {
       if (resultSet) {
-        try { resultSet.close(); } catch (closeError) {
-      hilog.warn(DOMAIN_ZERO, TAG, "Exception: %{public}s", JSON.stringify(closeError)); /* safe close */ }
+        try {
+          resultSet.close();
+        } catch (closeError) {
+          hilog.warn(DOMAIN_ZERO, TAG, 'Close resultSet failed: %{public}s', JSON.stringify(closeError));
+        }
       }
     }
   }
 
   async deleteFoodLabel(foodId: string): Promise<void> {
-    if (!this.rdbStore) return;
+    if (!this.rdbStore) {
+      return;
+    }
     try {
       const predicates = new relationalStore.RdbPredicates(TABLE_FOOD_LABEL);
       predicates.equalTo(COL_FOOD_ID, foodId);
@@ -174,7 +198,6 @@ export class FoodRepository {
     }
   }
 
-  /** 安全读取 ResultSet 字符串列 */
   private safeGetString(rs: relationalStore.ResultSet, col: string): string {
     try {
       return rs.getString(rs.getColumnIndex(col));
@@ -184,7 +207,6 @@ export class FoodRepository {
     }
   }
 
-  /** 安全读取 ResultSet 长整型列 */
   private safeGetLong(rs: relationalStore.ResultSet, col: string): number {
     try {
       return rs.getLong(rs.getColumnIndex(col));
@@ -194,20 +216,20 @@ export class FoodRepository {
     }
   }
 
-  /** 安全解析 JSON 列 */
   private safeParseJson(rs: relationalStore.ResultSet, col: string, fallback: Object): Object {
     try {
       const raw: string = this.safeGetString(rs, col);
-      if (raw.length === 0) return fallback;
+      if (raw.length === 0) {
+        return fallback;
+      }
       return JSON.parse(raw) as Object;
     } catch (e) {
-      hilog.debug(DOMAIN_ZERO, TAG, 'safeParseJson failed: %{public}s', JSON.stringify(e));
       return fallback;
     }
   }
 
   private fromResultSet(resultSet: relationalStore.ResultSet): FoodLabel {
-    const label: FoodLabel = new FoodLabel()
+    const label: FoodLabel = new FoodLabel();
     label.foodId = this.safeGetString(resultSet, COL_FOOD_ID);
     label.foodName = this.safeGetString(resultSet, COL_FOOD_NAME);
     label.barcode = this.safeGetString(resultSet, COL_BARCODE);

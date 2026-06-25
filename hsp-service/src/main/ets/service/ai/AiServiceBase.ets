@@ -116,7 +116,7 @@ export abstract class AiServiceBase {
    * @param userPrompt user prompt 内容
    * @returns AI 响应文本；降级或失败时返回 null
    */
-  protected async callAi(userPrompt: string): Promise<string | null> {
+  public async callAi(userPrompt: string): Promise<string | null> {
     if (!this.shouldUseAi()) {
       return null;
     }

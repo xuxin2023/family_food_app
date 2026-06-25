@@ -11,17 +11,17 @@
 
 
 class LightThemeColors {
-  // 主色
-  PRIMARY: string = '#E8A0BF';
-  PRIMARY_LIGHT: string = '#F5D0E0';
-  PRIMARY_DARK: string = '#C77D9E';
-  SECONDARY: string = '#F5C6A0';
+  // 主色 — 绿色品牌（食品健康主题）
+  PRIMARY: string = '#43A047';
+  PRIMARY_LIGHT: string = '#E8F5E9';
+  PRIMARY_DARK: string = '#2E7D32';
+  SECONDARY: string = '#81C784';
   // 功能色
-  SUCCESS: string = '#7EC8A0';
-  WARNING: string = '#F0C060';
-  ERROR: string = '#E88A8A';
-  ACCENT_BLUE: string = '#80B8E0';
-  ACCENT_PURPLE: string = '#B8A0D4';
+  SUCCESS: string = '#66BB6A';
+  WARNING: string = '#FFA726';
+  ERROR: string = '#EF5350';
+  ACCENT_BLUE: string = '#42A5F5';
+  ACCENT_PURPLE: string = '#AB47BC';
   // 文字色
   TEXT_PRIMARY: string = '#1A1A1A';
   TEXT_SECONDARY: string = '#666666';
@@ -30,11 +30,11 @@ class LightThemeColors {
   TEXT_GRAY: string = '#757575';
   TEXT_GRAY_BDBD: string = '#BDBDBD';
   // 背景色
-  BG_PAGE: string = '#FAFAFA';
+  BG_PAGE: string = '#F2F7F2';
   BG_CARD: string = '#FFFFFF';
-  BG_CARD_HIGHLIGHT: string = '#FFF5F8';
-  BG_GRADIENT_START: string = '#FDE8F0';
-  BG_GRADIENT_END: string = '#FFF0E0';
+  BG_CARD_HIGHLIGHT: string = '#F1F8E9';
+  BG_GRADIENT_START: string = '#E8F5E9';
+  BG_GRADIENT_END: string = '#C8E6C9';
   BG_LIGHT: string = '#F5F5F5';
   BG_LIGHT_GRAY_F9: string = '#F9F9F9';
   BG_LIGHTER_GRAY_F8: string = '#F8F9FA';
@@ -68,11 +68,31 @@ class LightThemeColors {
   ACCENT_PURPLE_9C27: string = '#9C27B0';
   // 场景背景色
   BG_WARM_ORANGE: string = '#FFF3E0';
-  BG_WARM_PINK: string = '#FCE4EC';
+  BG_WARM_PINK: string = '#E8F5E9'; // 绿色系浅底（原粉色已废弃）
   BG_WARM_PURPLE: string = '#F3E5F5';
   BG_WARM_BLUE: string = '#E3F2FD';
   BG_WARM_YELLOW: string = '#FFF8E1';
   BG_LIGHT_GREEN: string = '#E8F5E9';
+  // ===== 玻璃拟态：浅色模式 =====
+  // 渐变背景
+  BG_GRADIENT_MID: string = '#F1F8E9';
+  // 毛玻璃
+  GLASS_BG: string = '#B3FFFFFF'; // rgba(255,255,255,0.70)
+  GLASS_BG_ELEVATED: string = '#CCFFFFFF'; // rgba(255,255,255,0.80)
+  GLASS_BG_HERO: string = '#E6FFFFFF'; // rgba(255,255,255,0.90)
+  GLASS_BORDER: string = '#E6FFFFFF'; // rgba(255,255,255,0.90) 1px边框高光
+  GLASS_BORDER_SUBTLE: string = '#3343A047'; // rgba(67,160,71,0.20) 淡绿边
+  // 霓虹/发光色（浅色模式用柔和版）
+  NEON_GREEN: string = '#69F0AE';
+  NEON_CYAN: string = '#4DD0E1';
+  NEON_ORANGE: string = '#FFAB40';
+  NEON_PINK: string = '#FF80AB';
+  // 发光阴影色(用于ShadowOptions color)
+  GLOW_GREEN_COLOR: string = '#2243A047'; // 柔和绿色发光
+  GLOW_GREEN_MD_COLOR: string = '#3366BB6A'; // 中等绿色发光
+  GLOW_CYAN_COLOR: string = '#224DD0E1'; // 柔和青色发光
+  // 英雄文字色
+  TEXT_HERO: string = '#1B5E20'; // 深绿色大标题
 
   toMap(): Map<string, string> {
     const map = new Map<string, string>();
@@ -128,16 +148,30 @@ class LightThemeColors {
     map.set('BG_WARM_BLUE', this.BG_WARM_BLUE);
     map.set('BG_WARM_YELLOW', this.BG_WARM_YELLOW);
     map.set('BG_LIGHT_GREEN', this.BG_LIGHT_GREEN);
+    map.set('BG_GRADIENT_MID', this.BG_GRADIENT_MID);
+    map.set('GLASS_BG', this.GLASS_BG);
+    map.set('GLASS_BG_ELEVATED', this.GLASS_BG_ELEVATED);
+    map.set('GLASS_BG_HERO', this.GLASS_BG_HERO);
+    map.set('GLASS_BORDER', this.GLASS_BORDER);
+    map.set('GLASS_BORDER_SUBTLE', this.GLASS_BORDER_SUBTLE);
+    map.set('NEON_GREEN', this.NEON_GREEN);
+    map.set('NEON_CYAN', this.NEON_CYAN);
+    map.set('NEON_ORANGE', this.NEON_ORANGE);
+    map.set('NEON_PINK', this.NEON_PINK);
+    map.set('GLOW_GREEN_COLOR', this.GLOW_GREEN_COLOR);
+    map.set('GLOW_GREEN_MD_COLOR', this.GLOW_GREEN_MD_COLOR);
+    map.set('GLOW_CYAN_COLOR', this.GLOW_CYAN_COLOR);
+    map.set('TEXT_HERO', this.TEXT_HERO);
     return map;
   }
 }
 
 class DarkThemeColors {
-  // 主色 (保持品牌色不变)
-  PRIMARY: string = '#E8A0BF';
-  PRIMARY_LIGHT: string = '#A86785'; // 暗色背景下提高对比度
-  PRIMARY_DARK: string = '#C77D9E';
-  SECONDARY: string = '#8B6F50';
+  // 主色 — 绿色品牌（暗色模式亮绿）
+  PRIMARY: string = '#66BB6A';
+  PRIMARY_LIGHT: string = '#2E7D32'; // 暗色背景下降低亮度
+  PRIMARY_DARK: string = '#81C784';
+  SECONDARY: string = '#4E6E50';
   // 功能色 (暗色模式下略微降低亮度)
   SUCCESS: string = '#4A9E6A';
   WARNING: string = '#B89040';
@@ -154,9 +188,9 @@ class DarkThemeColors {
   // 背景色 (暗色)
   BG_PAGE: string = '#121212';
   BG_CARD: string = '#1E1E1E';
-  BG_CARD_HIGHLIGHT: string = '#2A1E24';
-  BG_GRADIENT_START: string = '#2A1A24';
-  BG_GRADIENT_END: string = '#2A2018';
+  BG_CARD_HIGHLIGHT: string = '#1B3A1E';
+  BG_GRADIENT_START: string = '#1B3A1E';
+  BG_GRADIENT_END: string = '#1A2E20';
   BG_LIGHT: string = '#2C2C2C';
   BG_LIGHT_GRAY_F9: string = '#1A1A1A';
   BG_LIGHTER_GRAY_F8: string = '#181818';
@@ -190,11 +224,31 @@ class DarkThemeColors {
   ACCENT_PURPLE_9C27: string = '#AB47BC';
   // 场景背景色 (深度暗化)
   BG_WARM_ORANGE: string = '#2A2018';
-  BG_WARM_PINK: string = '#2A1E24';
+  BG_WARM_PINK: string = '#1A2820'; // 绿色系暗化（原粉色已废弃）
   BG_WARM_PURPLE: string = '#26202A';
   BG_WARM_BLUE: string = '#1A2228';
   BG_WARM_YELLOW: string = '#282418';
   BG_LIGHT_GREEN: string = '#1A2820';
+  // ===== 玻璃拟态：深色模式 =====
+  // 渐变背景
+  BG_GRADIENT_MID: string = '#1A2F1C';
+  // 毛玻璃
+  GLASS_BG: string = '#14FFFFFF'; // rgba(255,255,255,0.08)
+  GLASS_BG_ELEVATED: string = '#1FFFFFFF'; // rgba(255,255,255,0.12)
+  GLASS_BG_HERO: string = '#26FFFFFF'; // rgba(255,255,255,0.15)
+  GLASS_BORDER: string = '#1FFFFFFF'; // rgba(255,255,255,0.12) 1px边框
+  GLASS_BORDER_SUBTLE: string = '#3369F0AE'; // rgba(105,240,174,0.20) 霓虹绿边
+  // 霓虹/发光色（深色模式用强霓虹版）
+  NEON_GREEN: string = '#69F0AE';
+  NEON_CYAN: string = '#4DD0E1';
+  NEON_ORANGE: string = '#FFAB40';
+  NEON_PINK: string = '#FF80AB';
+  // 发光阴影色(用于ShadowOptions color)
+  GLOW_GREEN_COLOR: string = '#3369F0AE'; // 霓虹绿色发光
+  GLOW_GREEN_MD_COLOR: string = '#4469F0AE'; // 强霓虹绿色发光
+  GLOW_CYAN_COLOR: string = '#334DD0E1'; // 霓虹青色发光
+  // 英雄文字色
+  TEXT_HERO: string = '#69F0AE'; // 霓虹绿大标题
 
   toMap(): Map<string, string> {
     const map = new Map<string, string>();
@@ -250,6 +304,20 @@ class DarkThemeColors {
     map.set('BG_WARM_BLUE', this.BG_WARM_BLUE);
     map.set('BG_WARM_YELLOW', this.BG_WARM_YELLOW);
     map.set('BG_LIGHT_GREEN', this.BG_LIGHT_GREEN);
+    map.set('BG_GRADIENT_MID', this.BG_GRADIENT_MID);
+    map.set('GLASS_BG', this.GLASS_BG);
+    map.set('GLASS_BG_ELEVATED', this.GLASS_BG_ELEVATED);
+    map.set('GLASS_BG_HERO', this.GLASS_BG_HERO);
+    map.set('GLASS_BORDER', this.GLASS_BORDER);
+    map.set('GLASS_BORDER_SUBTLE', this.GLASS_BORDER_SUBTLE);
+    map.set('NEON_GREEN', this.NEON_GREEN);
+    map.set('NEON_CYAN', this.NEON_CYAN);
+    map.set('NEON_ORANGE', this.NEON_ORANGE);
+    map.set('NEON_PINK', this.NEON_PINK);
+    map.set('GLOW_GREEN_COLOR', this.GLOW_GREEN_COLOR);
+    map.set('GLOW_GREEN_MD_COLOR', this.GLOW_GREEN_MD_COLOR);
+    map.set('GLOW_CYAN_COLOR', this.GLOW_CYAN_COLOR);
+    map.set('TEXT_HERO', this.TEXT_HERO);
     return map;
   }
 }
@@ -258,6 +326,14 @@ export enum ThemeMode {
   LIGHT = 'light',
   DARK = 'dark'
 }
+
+@ObservedV2
+export class ThemeReactive {
+  @Trace key: number = 0
+  bump(): void { this.key++ }
+}
+
+export const themeReactive: ThemeReactive = new ThemeReactive()
 
 const LIGHT_INSTANCE: LightThemeColors = new LightThemeColors();
 const DARK_INSTANCE: DarkThemeColors = new DarkThemeColors();
@@ -270,10 +346,12 @@ export class ThemeColors {
     ThemeColors.manualOverride = mode;
     ThemeColors.currentTheme = mode;
     AppStorage.setOrCreate<ThemeMode>('currentThemeMode', mode);
+    themeReactive.bump();
   }
 
   static clearManualOverride(): void {
     ThemeColors.manualOverride = null;
+    themeReactive.bump();
   }
 
   static getManualOverride(): ThemeMode | null {
@@ -287,6 +365,7 @@ export class ThemeColors {
     const newMode: ThemeMode = systemMode === 'dark' ? ThemeMode.DARK : ThemeMode.LIGHT;
     ThemeColors.currentTheme = newMode;
     AppStorage.setOrCreate<ThemeMode>('currentThemeMode', newMode);
+    themeReactive.bump();
   }
 
   static initFromSystem(isDark: boolean): void {
@@ -402,6 +481,19 @@ export class COLORS {
   static get BG_WARM_YELLOW(): string { return TC('BG_WARM_YELLOW'); }
   static get BG_LIGHT_GREEN(): string { return TC('BG_LIGHT_GREEN'); }
 
+  // ===== 玻璃拟态色（双模式自适应） =====
+  static get GLASS_BG(): string { return TC('GLASS_BG'); }
+  static get GLASS_BG_ELEVATED(): string { return TC('GLASS_BG_ELEVATED'); }
+  static get GLASS_BG_HERO(): string { return TC('GLASS_BG_HERO'); }
+  static get GLASS_BORDER(): string { return TC('GLASS_BORDER'); }
+  static get GLASS_BORDER_SUBTLE(): string { return TC('GLASS_BORDER_SUBTLE'); }
+  static get NEON_GREEN(): string { return TC('NEON_GREEN'); }
+  static get NEON_CYAN(): string { return TC('NEON_CYAN'); }
+  static get NEON_ORANGE(): string { return TC('NEON_ORANGE'); }
+  static get NEON_PINK(): string { return TC('NEON_PINK'); }
+  static get TEXT_HERO(): string { return TC('TEXT_HERO'); }
+  static get BG_GRADIENT_MID(): string { return TC('BG_GRADIENT_MID'); }
+
   // ===== 废弃别名（向后兼容） =====
   static get TEXT_GRAY_2121(): string { return TC('TEXT_PRIMARY'); }
   static get TEXT_GRAY_6161(): string { return TC('TEXT_SECONDARY'); }
@@ -464,6 +556,11 @@ export class FONT_SIZE {
   static readonly TITLE_LG: number = 20;
   static readonly LARGE: number = 22;
   static readonly XL: number = 28;
+  // 玻璃拟态：大数字/英雄标题
+  static readonly NUMBER_MD: number = 28;
+  static readonly NUMBER_LG: number = 36;
+  static readonly DISPLAY: number = 40;
+  static readonly HERO: number = 56;
   // 兼容别名
   static readonly LG: number = 20;   // = TITLE_LG
   static readonly XXL: number = 28;  // = XL
@@ -492,4 +589,101 @@ export class SCORE_COLORS {
   static readonly ECO_C: string = '#FFD54F';
   static readonly ECO_D: string = '#FF8A65';
   static readonly ECO_E: string = '#F44336';
+}
+
+// ===== 统一阴影体系 =====
+export class SHADOWS {
+  static readonly NONE: ShadowOptions = { radius: 0, color: '#00000000', offsetX: 0, offsetY: 0 };
+  static readonly XS: ShadowOptions = { radius: 2, color: '#08000000', offsetX: 0, offsetY: 0.5 };
+  static readonly SM: ShadowOptions = { radius: 4, color: '#0A000000', offsetX: 0, offsetY: 1 };
+  static readonly MD: ShadowOptions = { radius: 8, color: '#12000000', offsetX: 0, offsetY: 2 };
+  static readonly LG: ShadowOptions = { radius: 12, color: '#1A000000', offsetX: 0, offsetY: 4 };
+  static readonly XL: ShadowOptions = { radius: 20, color: '#20000000', offsetX: 0, offsetY: 6 };
+  // ===== 玻璃拟态：发光阴影（主题感知，通过getter返回） =====
+  static get GLOW_GREEN_SOFT(): ShadowOptions {
+    return { radius: 8, color: TC('GLOW_GREEN_COLOR'), offsetX: 0, offsetY: 2 };
+  }
+  static get GLOW_GREEN_MD(): ShadowOptions {
+    return { radius: 16, color: TC('GLOW_GREEN_MD_COLOR'), offsetX: 0, offsetY: 4 };
+  }
+  static get GLOW_GREEN_LG(): ShadowOptions {
+    return { radius: 32, color: TC('GLOW_GREEN_MD_COLOR'), offsetX: 0, offsetY: 6 };
+  }
+  static get GLOW_CYAN(): ShadowOptions {
+    return { radius: 12, color: TC('GLOW_CYAN_COLOR'), offsetX: 0, offsetY: 2 };
+  }
+  static get ELEVATED_SM(): ShadowOptions {
+    return { radius: 6, color: '#15000000', offsetX: 0, offsetY: 2 };
+  }
+  static get ELEVATED_MD(): ShadowOptions {
+    return { radius: 12, color: '#1E000000', offsetX: 0, offsetY: 4 };
+  }
+  static get ELEVATED_LG(): ShadowOptions {
+    return { radius: 20, color: '#29000000', offsetX: 0, offsetY: 8 };
+  }
+}
+
+/**
+ * 玻璃拟态渐变定义
+ * 使用方式：.linearGradient(GRADIENTS.HERO_HEADER)
+ */
+export class GRADIENTS {
+  // 浅色页面背景 (更强的渐变，从深绿过渡到浅绿)
+  static readonly BG_LIGHT: LinearGradient = {
+    angle: 180,
+    colors: [['#C8E6C9', 0.0], ['#E0F2E1', 0.3], ['#F1F8E9', 1.0]]
+  };
+  // 深色页面背景
+  static readonly BG_DARK: LinearGradient = {
+    angle: 180,
+    colors: [['#0D1B0E', 0.0], ['#1A2F1C', 0.5], ['#0A1A0D', 1.0]]
+  };
+  // 浅色头部（更深的绿色渐变，视觉冲击力更强）
+  static readonly HERO_HEADER_LIGHT: LinearGradient = {
+    angle: 135,
+    colors: [['#1B5E20', 0.0], ['#43A047', 0.4], ['#66BB6A', 1.0]]
+  };
+  // 深色头部
+  static readonly HERO_HEADER_DARK: LinearGradient = {
+    angle: 160,
+    colors: [['#0D1B0E', 0.0], ['#1B3A1E', 0.4], ['#0A1A0D', 1.0]]
+  };
+  // 主按钮渐变（浅色模式更深更有力）
+  static readonly BUTTON: LinearGradient = {
+    angle: 135,
+    colors: [['#1B5E20', 0.0], ['#43A047', 0.5], ['#2E7D32', 1.0]]
+  };
+  // 橙色按钮渐变
+  static readonly BUTTON_ORANGE: LinearGradient = {
+    angle: 135,
+    colors: [['#E65100', 0.0], ['#FF9800', 0.5], ['#F57C00', 1.0]]
+  };
+  // 蓝色按钮渐变
+  static readonly BUTTON_BLUE: LinearGradient = {
+    angle: 135,
+    colors: [['#1565C0', 0.0], ['#42A5F5', 0.5], ['#1E88E5', 1.0]]
+  };
+  // 弧线渐变（绿）
+  static readonly ARC_GREEN: Array<[ResourceColor, number]> = [['#43A047', 0.0], ['#66BB6A', 0.5], ['#81C784', 1.0]];
+  // 评分弧线渐变（绿→青→紫）
+  static readonly ARC_SCORE: Array<[ResourceColor, number]> = [['#43A047', 0.0], ['#4DD0E1', 0.5], ['#AB47BC', 1.0]];
+  // 主题感知：根据当前模式返回对应头部渐变
+  static get HERO_HEADER(): LinearGradient {
+    const isDark: boolean = ThemeColors.getTheme() === ThemeMode.DARK;
+    return isDark ? GRADIENTS.HERO_HEADER_DARK : GRADIENTS.HERO_HEADER_LIGHT;
+  }
+  // 主题感知页面背景渐变
+  static get BG_PAGE(): LinearGradient {
+    const isDark: boolean = ThemeColors.getTheme() === ThemeMode.DARK;
+    return isDark ? GRADIENTS.BG_DARK : GRADIENTS.BG_LIGHT;
+  }
+}
+
+/**
+ * 玻璃模糊级别，对应 BlurStyle 枚举
+ */
+export class BLUR {
+  static readonly CARD: BlurStyle = BlurStyle.Thin;
+  static readonly OVERLAY: BlurStyle = BlurStyle.Regular;
+  static readonly DIALOG: BlurStyle = BlurStyle.Thick;
 }
